@@ -147,6 +147,7 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
+            onSignError={setSignError}
           />
         ) : null}
       </Modal>

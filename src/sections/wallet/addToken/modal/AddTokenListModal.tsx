@@ -8,6 +8,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMedia } from "react-use"
 import { SAssetsModalHeader } from "sections/assets/AssetsModal.styled"
 import {
   SELECTABLE_PARACHAINS_IDS,
@@ -17,6 +18,7 @@ import {
 import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
+import { theme } from "theme"
 
 const DEFAULT_PARACHAIN_ID = SELECTABLE_PARACHAINS_IDS[0]
 
@@ -36,6 +38,8 @@ export const AddTokenListModal: React.FC<Props> = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const [parachainId, setParachainId] = useState(DEFAULT_PARACHAIN_ID)
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const { data, isLoading } = useExternalAssetRegistry()
   const { isAdded } = useUserExternalTokenStore()
@@ -70,7 +74,7 @@ export const AddTokenListModal: React.FC<Props> = ({
       <Search
         value={search}
         setValue={setSearch}
-        css={{ margin: "0 20px 4px" }}
+        css={{ margin: `0 ${isDesktop ? 20 : 12}px 4px` }}
         placeholder={t("wallet.header.search")}
         autoFocus
       />

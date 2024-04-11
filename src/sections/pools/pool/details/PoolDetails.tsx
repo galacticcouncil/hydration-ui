@@ -2,7 +2,11 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
-import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
+import {
+  TPoolFullData,
+  TXYKPoolFullData,
+  useXYKSpotPrice,
+} from "sections/pools/PoolsPage.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -28,8 +32,8 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
 import { useDisplayPrice } from "utils/displayAsset"
-import { useSpotPrice } from "api/spotPrice"
 import { BN_1 } from "utils/constants"
+import BN from "bignumber.js"
 
 export const PoolDetails = ({
   pool,
@@ -135,12 +139,7 @@ export const PoolDetails = ({
             </div>
           </div>
 
-          {ixXYKPool && (
-            <div sx={{ flex: "row", gap: 6, flexWrap: "wrap" }}>
-              <XYKRate assetA={asset.iconId[0]} assetB={asset.iconId[1]} />
-              <XYKRate assetA={asset.iconId[1]} assetB={asset.iconId[0]} />
-            </div>
-          )}
+          {ixXYKPool && <XYKRateWrapper shareTokenId={pool.id} />}
         </div>
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
           {!ixXYKPool && (
@@ -221,8 +220,6 @@ export const PoolDetails = ({
                 <Text color="white" fs={[14, 16]} fw={600}>
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
-                  ) : pool.id === assets.native.id ? (
-                    "--"
                   ) : pool.stablepoolFee ? (
                     t("value.percentage", {
                       value: pool.stablepoolFee.times(100),
@@ -245,17 +242,7 @@ export const PoolDetails = ({
                     opacity={0.06}
                     sx={{ display: ["none", "inherit"] }}
                   />
-                  <SValue sx={{ align: "start" }}>
-                    <XYKAssetPrice assetId={asset.iconId[0]} />
-                  </SValue>
-                  <Separator
-                    orientation="vertical"
-                    color="white"
-                    opacity={0.06}
-                  />
-                  <SValue>
-                    <XYKAssetPrice assetId={asset.iconId[1]} />
-                  </SValue>
+                  <XYKAssetPrices shareTokenId={pool.id} />
                 </>
               )}
             </SValuesContainer>
@@ -293,41 +280,80 @@ export const PoolDetails = ({
   )
 }
 
-export const XYKAssetPrice = ({ assetId }: { assetId: string }) => {
+export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const meta = assets.getAsset(assetId)
-  const spotPrice = useDisplayPrice(assetId)
+
+  const prices = useXYKSpotPrice(shareTokenId)
+
+  const usdPriceA = useDisplayPrice(prices?.idB)
+  const usdPriceB = useDisplayPrice(prices?.idA)
+
+  if (!prices) return null
+
+  const displayPriceA = prices.priceA.times(usdPriceA.data?.spotPrice ?? 1)
+  const displayPriceB = prices.priceB.times(usdPriceB.data?.spotPrice ?? 1)
 
   return (
     <>
-      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <Icon size={14} icon={<AssetLogo id={assetId} />} />
-        <Text color="basic400" fs={[12, 13]}>
-          {t("liquidity.pool.details.price", { symbol: meta.symbol })}
+      <SValue sx={{ align: "start" }}>
+        <div sx={{ flex: "row", gap: 4, align: "center" }}>
+          <Icon size={14} icon={<AssetLogo id={prices.idA} />} />
+          <Text color="basic400" fs={[12, 13]}>
+            {t("liquidity.pool.details.price", { symbol: "" })}
+          </Text>
+        </div>
+        <Text color="white" fs={[14, 16]} fw={600}>
+          {usdPriceA.isLoading ? (
+            <Skeleton width={60} height={14} />
+          ) : (
+            <DisplayValue value={displayPriceA} type="token" />
+          )}
         </Text>
-      </div>
-      <Text color="white" fs={[14, 16]} fw={600}>
-        {spotPrice.isLoading ? (
-          <Skeleton width={60} height={14} />
-        ) : (
-          <DisplayValue value={spotPrice.data?.spotPrice} type="token" />
-        )}
-      </Text>
+      </SValue>
+      <Separator orientation="vertical" color="white" opacity={0.06} />
+      <SValue sx={{ align: "start" }}>
+        <div sx={{ flex: "row", gap: 4, align: "center" }}>
+          <Icon size={14} icon={<AssetLogo id={prices.idB} />} />
+          <Text color="basic400" fs={[12, 13]}>
+            {t("liquidity.pool.details.price", { symbol: "" })}
+          </Text>
+        </div>
+        <Text color="white" fs={[14, 16]} fw={600}>
+          {usdPriceB.isLoading ? (
+            <Skeleton width={60} height={14} />
+          ) : (
+            <DisplayValue value={displayPriceB} type="token" />
+          )}
+        </Text>
+      </SValue>
     </>
+  )
+}
+
+export const XYKRateWrapper = ({ shareTokenId }: { shareTokenId: string }) => {
+  const prices = useXYKSpotPrice(shareTokenId)
+
+  if (!prices) return null
+
+  return (
+    <div sx={{ flex: "row", gap: 6, flexWrap: "wrap" }}>
+      <XYKRate assetA={prices.idA} assetB={prices.idB} price={prices.priceA} />
+      <XYKRate assetA={prices.idB} assetB={prices.idA} price={prices.priceB} />
+    </div>
   )
 }
 
 export const XYKRate = ({
   assetA,
   assetB,
+  price,
 }: {
   assetA: string
   assetB: string
+  price: BN
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const spotPrice = useSpotPrice(assetA, assetB)
 
   const assetAMeta = assets.getAsset(assetA)
   const assetBMeta = assets.getAsset(assetB)
@@ -345,14 +371,10 @@ export const XYKRate = ({
         =
       </Text>
       <Text fs={13} lh={13} color="white">
-        {spotPrice.isInitialLoading ? (
-          <Skeleton height={12} width={50} />
-        ) : (
-          t("value.tokenWithSymbol", {
-            value: spotPrice.data?.spotPrice,
-            symbol: assetBMeta.symbol,
-          })
-        )}
+        {t("value.tokenWithSymbol", {
+          value: price,
+          symbol: assetBMeta.symbol,
+        })}
       </Text>
     </SXYKRateContainer>
   )

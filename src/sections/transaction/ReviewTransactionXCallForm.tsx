@@ -22,6 +22,7 @@ type Props = TxProps & {
   title?: string
   onCancel: () => void
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
+  onSignError?: (error: unknown) => void
 }
 
 export const ReviewTransactionXCallForm: FC<Props> = ({
@@ -30,6 +31,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   xcallMeta,
   onEvmSigned,
   onCancel,
+  onSignError,
 }) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
@@ -37,26 +39,30 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   const { wallet } = useWallet()
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
-    if (!account?.address) throw new Error("Missing active account")
-    if (!wallet) throw new Error("Missing wallet")
-    if (!wallet.signer) throw new Error("Missing signer")
-    if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
+    try {
+      if (!account?.address) throw new Error("Missing active account")
+      if (!wallet) throw new Error("Missing wallet")
+      if (!wallet.signer) throw new Error("Missing signer")
+      if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
-    if (wallet?.signer instanceof MetaMaskSigner) {
-      const { srcChain } = xcallMeta
+      if (wallet?.signer instanceof MetaMaskSigner) {
+        const { srcChain } = xcallMeta
 
-      const evmTx = await wallet.signer.sendTransaction(
-        {
-          from: account.address,
-          to: xcall.to,
-          data: xcall.data,
-        },
-        {
-          chain: srcChain,
-        },
-      )
+        const evmTx = await wallet.signer.sendTransaction(
+          {
+            from: account.address,
+            to: xcall.to,
+            data: xcall.data,
+          },
+          {
+            chain: srcChain,
+          },
+        )
 
-      onEvmSigned({ evmTx })
+        onEvmSigned({ evmTx })
+      }
+    } catch (error) {
+      onSignError?.(error)
     }
   })
 
@@ -78,8 +84,10 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           <ReviewTransactionData address={account?.address} xcall={xcall} />
         }
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -115,7 +123,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>
