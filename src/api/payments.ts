@@ -56,7 +56,7 @@ export const useSetAsFeePayment = () => {
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transferKeepAlive("", "0"),
+    api.tx.balances.transfer("", "0"),
   )
 
   return async (tokenId?: string, toast?: ToastMessage) => {
