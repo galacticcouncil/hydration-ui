@@ -119,7 +119,7 @@ export const useSendEvmTransactionMutation = (
     ISubmittableResult & {
       transactionLink?: string
     },
-    unknown,
+    TransactionError,
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
@@ -158,7 +158,7 @@ export const useSendEvmTransactionMutation = (
         })
       } catch (err) {
         const { error } = decodeError(err)
-        reject(new Error(error))
+        reject(new TransactionError(error))
       } finally {
         clearTimeout(timeout)
       }
@@ -322,12 +322,30 @@ const useBoundReferralToast = () => {
   }
 }
 
+const useErrorToastUpdate = (id: string) => {
+  const { edit } = useToast()
+
+  return (err: TransactionError) => {
+    if (err?.method) {
+      defer(() => {
+        edit(id, {
+          description: (
+            <p>
+              <strong>{err.method}</strong>
+              {err.docs ? ` - ${err.docs}` : ""}
+            </p>
+          ),
+        })
+      })
+    }
+  }
+}
+
 export const useSendTx = ({ id }: { id: string }) => {
   const [txType, setTxType] = useState<"default" | "evm" | null>(null)
 
-  const { edit } = useToast()
-
   const boundReferralToast = useBoundReferralToast()
+  const updateErrorToast = useErrorToastUpdate(id)
 
   const sendTx = useSendTransactionMutation({
     onMutate: (tx) => {
@@ -335,20 +353,7 @@ export const useSendTx = ({ id }: { id: string }) => {
       setTxType("default")
     },
     onSuccess: boundReferralToast.onSuccess,
-    onError: (err) => {
-      if (err?.method) {
-        defer(() => {
-          edit(id, {
-            description: (
-              <p>
-                <strong>{err.method}</strong>
-                {err.docs ? ` - ${err.docs}` : ""}
-              </p>
-            ),
-          })
-        })
-      }
-    },
+    onError: updateErrorToast,
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
@@ -357,6 +362,7 @@ export const useSendTx = ({ id }: { id: string }) => {
       setTxType("evm")
     },
     onSuccess: boundReferralToast.onSuccess,
+    onError: updateErrorToast,
   })
 
   const activeMutation = txType === "default" ? sendTx : sendEvmTx
