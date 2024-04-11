@@ -9,6 +9,14 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useTranslation } from "react-i18next"
+
+const EXTERNAL_ASSETS_WHITELIST = [
+  // DED
+  { id: "30", origin: 1000 },
+  // PINK
+  { id: "23", origin: 1000 },
+]
 
 const chains = Array.from(chainsMap.values())
 
@@ -55,6 +63,7 @@ export function getAssetName(symbol: string | null | undefined) {
 }
 
 export const AssetLogo = ({ id }: { id?: string }) => {
+  const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
   const asset = useMemo(() => {
@@ -64,9 +73,18 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       (chain) => chain.parachainId === Number(assetDetails?.parachainId),
     )
 
+    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
+      (item) =>
+        item.id === assetDetails?.generalIndex &&
+        item.origin === chain?.parachainId,
+    )
+
+    const displayWarning = assetDetails?.isExternal && !isWhitelisted
+
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
+      displayWarning,
     }
   }, [assets, id])
 
@@ -80,6 +98,11 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         }}
         symbol={asset.symbol}
         chain={asset?.chain}
+        warning={
+          asset?.displayWarning
+            ? t("wallet.addToken.tooltip.warning")
+            : undefined
+        }
       />
     )
 

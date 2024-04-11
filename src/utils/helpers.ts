@@ -102,6 +102,8 @@ export function isNotNil<T>(val: T | null | undefined): val is T {
   return !isNil(val)
 }
 
+export const identity = <T>(value: T): T => value
+
 const validKeys = [
   "data",
   "isError",

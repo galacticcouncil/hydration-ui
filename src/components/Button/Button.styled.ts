@@ -259,12 +259,19 @@ const variantStyles: Record<ButtonVariant, SerializedStyles> = {
 
     border: 1px solid rgba(${theme.rgbColors.white}, 0.03);
 
-    :hover,
-    :active {
+    @media (avtive: avtive) {
       background: ${theme.colors.brightBlue700};
       border: 1px solid ${theme.colors.brightBlue700};
-
       transition: all ${theme.transitions.default};
+    }
+
+    @media ${theme.viewport.gte.sm} {
+      :hover {
+        background: ${theme.colors.brightBlue700};
+        border: 1px solid ${theme.colors.brightBlue700};
+
+        transition: all ${theme.transitions.default};
+      }
     }
   `,
   transparent: css`
