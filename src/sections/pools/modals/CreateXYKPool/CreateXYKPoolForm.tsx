@@ -18,6 +18,7 @@ import BigNumber from "bignumber.js"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useState } from "react"
 
 type CreateXYKPoolFormProps = {
   assetA: string
@@ -126,6 +127,31 @@ export const CreateXYKPoolForm = ({
     )
   }
 
+  const [rateReversed, setRateReversed] = useState(false)
+
+  const rateAssets = [
+    { value: assetAValue, symbol: assetAMeta?.symbol },
+    { value: assetBValue, symbol: assetBMeta?.symbol },
+  ]
+
+  const [firstRateAsset, secondRateAsset] = rateReversed
+    ? [...rateAssets].reverse()
+    : rateAssets
+
+  const firstRate = firstRateAsset.value.gt(0)
+    ? {
+        amount: BN_1,
+        symbol: firstRateAsset.symbol,
+      }
+    : undefined
+
+  const secondRate = secondRateAsset.value.gt(0)
+    ? {
+        amount: secondRateAsset.value.div(firstRateAsset.value),
+        symbol: secondRateAsset.symbol,
+      }
+    : undefined
+
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
@@ -157,19 +183,9 @@ export const CreateXYKPoolForm = ({
       <TokensConversion
         label={t("liquidity.pool.xyk.exchangeRate")}
         placeholderValue="-"
-        firstValue={
-          assetAValue.gt(0)
-            ? { amount: BN_1, symbol: assetAMeta.symbol }
-            : undefined
-        }
-        secondValue={
-          assetBValue.gt(0)
-            ? {
-                amount: assetBValue.div(assetAValue),
-                symbol: assetBMeta.symbol,
-              }
-            : undefined
-        }
+        firstValue={firstRate}
+        secondValue={secondRate}
+        onClick={() => setRateReversed((prev) => !prev)}
       />
       <Controller
         name="assetB"
