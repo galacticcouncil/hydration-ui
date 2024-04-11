@@ -76,7 +76,7 @@ export const Web3ConnectWCSelector: React.FC<
               enable("polkadot")
             }}
           >
-            SUBSRTATE
+            SUBSTRATE
           </Button>
         </div>
       )}
