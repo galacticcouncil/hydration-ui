@@ -42,6 +42,8 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
+import { Option } from "@polkadot/types"
+import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 
 export const useAssetsTradability = () => {
   const {
@@ -107,7 +109,7 @@ export const derivePoolAccount = (assetId: string) => {
   return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
 }
 
-export const useAccountOmnipoolPositions = (givenAddress?: string) => {
+export const useAccountNFTPositions = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
@@ -117,15 +119,18 @@ export const useAccountOmnipoolPositions = (givenAddress?: string) => {
     QUERY_KEYS.accountOmnipoolPositions(address),
     address != null
       ? async () => {
-          const [omnipoolNftId, miningNftId] = await Promise.all([
-            api.consts.omnipool.nftCollectionId,
-            api.consts.omnipoolLiquidityMining.nftCollectionId,
-          ])
-
-          const [omnipoolNftsRaw, miningNftsRaw] = await Promise.all([
-            api.query.uniques.account.entries(address, omnipoolNftId),
-            api.query.uniques.account.entries(address, miningNftId),
-          ])
+          const [omnipoolNftId, miningNftId, xykMiningNftId] =
+            await Promise.all([
+              api.consts.omnipool.nftCollectionId,
+              api.consts.omnipoolLiquidityMining.nftCollectionId,
+              api.consts.xykLiquidityMining.nftCollectionId,
+            ])
+          const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
+            await Promise.all([
+              api.query.uniques.account.entries(address, omnipoolNftId),
+              api.query.uniques.account.entries(address, miningNftId),
+              api.query.uniques.account.entries(address, xykMiningNftId),
+            ])
 
           const omnipoolNfts = omnipoolNftsRaw.map(([storageKey]) => {
             const [owner, classId, instanceId] = storageKey.args
@@ -145,7 +150,16 @@ export const useAccountOmnipoolPositions = (givenAddress?: string) => {
             }
           })
 
-          return { omnipoolNfts, miningNfts }
+          const xykMiningNfts = xykMiningNftsRaw.map(([storageKey]) => {
+            const [owner, classId, instanceId] = storageKey.args
+            return {
+              owner: owner.toString(),
+              classId: classId.toString(),
+              instanceId: instanceId.toString(),
+            }
+          })
+
+          return { omnipoolNfts, miningNfts, xykMiningNfts }
         }
       : undefinedNoop,
     { enabled: !!address },
@@ -154,7 +168,7 @@ export const useAccountOmnipoolPositions = (givenAddress?: string) => {
 
 export const useAccountMiningPositions = () => {
   const { api } = useRpcProvider()
-  const { data } = useAccountOmnipoolPositions()
+  const { data } = useAccountNFTPositions()
 
   return useQueries({
     queries: data?.miningNfts
@@ -167,8 +181,38 @@ export const useAccountMiningPositions = () => {
   })
 }
 
+export const useAccountXYKMiningPositions = () => {
+  const { api } = useRpcProvider()
+  const { data } = useAccountNFTPositions()
+
+  return useQueries({
+    queries: data?.xykMiningNfts
+      ? data.xykMiningNfts.map((nft) => ({
+          queryKey: QUERY_KEYS.miningPositionXYK(nft.instanceId),
+          queryFn: getMiningPositionXYK(api, nft.instanceId),
+          enabled: !!nft.instanceId,
+        }))
+      : [],
+  })
+}
+
 const getMiningPosition = (api: ApiPromise, id: string) => async () => {
-  const dataRaw = await api.query.omnipoolWarehouseLM.deposit(id)
+  const key = api.query.omnipoolWarehouseLM.deposit.key(id)
+
+  const value = (await api.rpc.state.getStorage(
+    key,
+  )) as Option<PalletLiquidityMiningDepositData>
+
+  const data = api.registry.createType(
+    "OmnipoolLMDeposit",
+    value.unwrap(),
+  ) as PalletLiquidityMiningDepositData
+
+  return { id, data }
+}
+
+const getMiningPositionXYK = (api: ApiPromise, id: string) => async () => {
+  const dataRaw = await api.query.xykWarehouseLM.deposit(id)
   const data = dataRaw.unwrap()
 
   return { id, data }
@@ -575,11 +619,42 @@ export const useXYKPools = (withPositions?: boolean) => {
 
 export const useXYKPoolDetails = (pool: TXYKPool) => {
   const volume = useXYKPoolTradeVolumes([pool.poolAddress])
+  const miningPositions = useAccountXYKMiningPositions()
 
   const isInitialLoading = volume.isLoading
 
+  const miningNftPositions = miningPositions
+    .filter(
+      (position) =>
+        position.data?.data.ammPoolId.toString() === pool.poolAddress,
+    )
+    .map((position) => position.data)
+    .filter(isNotNil)
+    .sort((a, b) => {
+      const firstFarmLastBlock = a.data.yieldFarmEntries.reduce(
+        (acc, curr) =>
+          acc.lt(curr.enteredAt.toBigNumber())
+            ? curr.enteredAt.toBigNumber()
+            : acc,
+        BN_0,
+      )
+
+      const secondFarmLastBlock = b.data.yieldFarmEntries.reduce(
+        (acc, curr) =>
+          acc.lt(curr.enteredAt.toBigNumber())
+            ? curr.enteredAt.toBigNumber()
+            : acc,
+        BN_0,
+      )
+
+      return secondFarmLastBlock.minus(firstFarmLastBlock).toNumber()
+    })
+
   return {
-    data: { volumeDisplay: volume.data?.[0]?.volume ?? BN_0 },
+    data: {
+      volumeDisplay: volume.data?.[0]?.volume ?? BN_0,
+      miningNftPositions,
+    },
     isInitialLoading,
   }
 }
@@ -616,4 +691,66 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
   )
 
   return { priceA, priceB, idA: metaA.id, idB: metaB.id }
+}
+
+export const useDepositValues = (
+  assetId: string,
+  depositNft: TMiningNftPosition,
+) => {
+  const { assets } = useRpcProvider()
+  const totalIssuances = useShareOfPools([assetId])
+  const meta = assets.getAsset(assetId) as TShareToken
+
+  const balances = useTokensBalances(meta.assets, meta.poolAddress)
+  const shareTokeSpotPrices = useDisplayShareTokenPrice([assetId])
+
+  const data = useMemo(() => {
+    const defaultValue = {
+      assetA: undefined,
+      assetB: undefined,
+      amountUSD: undefined,
+    }
+
+    if (
+      !totalIssuances.data ||
+      balances.some((balance) => !balance.data) ||
+      !shareTokeSpotPrices.data
+    )
+      return defaultValue
+
+    const shareTokenIssuance = totalIssuances.data?.[0].totalShare
+
+    if (!shareTokenIssuance) {
+      console.error("Could not calculate deposit balances")
+      return defaultValue
+    }
+
+    const shares = depositNft.data.shares.toBigNumber()
+    const ratio = shares.div(shareTokenIssuance)
+
+    const amountUSD = scaleHuman(shareTokenIssuance, meta.decimals)
+      .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
+      .times(ratio)
+
+    const [assetA, assetB] = meta.assets.map((asset) => {
+      const meta = assets.getAsset(asset)
+      const balance =
+        balances.find((balance) => balance.data?.assetId === asset)?.data
+          ?.balance ?? BN_0
+      const amount = scaleHuman(balance.times(ratio), meta.decimals)
+      return { id: asset, symbol: meta.symbol, amount }
+    })
+
+    return { assetA, assetB, amountUSD }
+  }, [
+    assets,
+    balances,
+    depositNft.data.shares,
+    meta.assets,
+    meta.decimals,
+    shareTokeSpotPrices.data,
+    totalIssuances.data,
+  ])
+
+  return data
 }

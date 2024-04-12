@@ -5,7 +5,6 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
 import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
-import { ApiPromise, WsProvider } from "@polkadot/api"
 
 export const PROVIDERS = [
   {
@@ -100,11 +99,20 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      //const apiPool = SubstrateApis.getInstance()
-      const provider = new WsProvider(url)
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(rpcUrl)
 
-      const api = await ApiPromise.create({
-        provider,
+      api.registry.register({
+        XykLMDeposit: {
+          shares: "u128",
+          ammPoolId: "AccountId",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+        OmnipoolLMDeposit: {
+          shares: "u128",
+          ammPoolId: "u32",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
       })
 
       const {

@@ -18,7 +18,7 @@ import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { JoinFarmsButton } from "./JoinFarmsButton"
+import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
@@ -79,7 +79,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     return null
 
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
+    <div sx={{ flex: "column", gap: 12, bg: "gray" }}>
       <Text fs={15} font="FontOver">
         {t("liquidity.pool.positions.title")}
       </Text>

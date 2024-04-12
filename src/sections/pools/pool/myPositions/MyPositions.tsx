@@ -5,7 +5,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
@@ -125,6 +125,11 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   )
 }
 
-export const MyXYKPositions = ({ pool }: { pool: TXYKPool }) => {
-  return <XYKPosition pool={pool} />
+export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
+  return (
+    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
+      <XYKPosition pool={pool} />
+      <FarmingPositionWrapper pool={pool} positions={pool.miningNftPositions} />
+    </div>
+  )
 }

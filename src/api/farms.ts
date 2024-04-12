@@ -8,8 +8,8 @@ import {
 import { useQueries, useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import { BLOCK_TIME, BN_0, PARACHAIN_BLOCK_TIME } from "utils/constants"
-import { Maybe, isNotNil, undefinedNoop, useQueryReduce } from "utils/helpers"
+import { BLOCK_TIME, BN_0, BN_1, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
@@ -18,139 +18,17 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useIndexerUrl } from "./provider"
 import request, { gql } from "graphql-request"
 import { AccountId32 } from "@polkadot/types/interfaces"
+import { useMemo } from "react"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
-export function useActiveYieldFarms(poolIds: Array<Maybe<u32 | string>>) {
-  const { api } = useRpcProvider()
-
-  return useQueries({
-    queries: poolIds.map((poolId) => ({
-      queryKey: QUERY_KEYS.activeYieldFarms(poolId),
-      queryFn:
-        poolId != null ? getActiveYieldFarms(api, poolId) : undefinedNoop,
-      enabled: poolId != null,
-    })),
-  })
+type FarmIds = {
+  poolId: string
+  globalFarmId: string
+  yieldFarmId: string
 }
 
-export const getActiveYieldFarms =
-  (api: ApiPromise, poolId: u32 | string) => async () => {
-    const res =
-      await api.query.omnipoolWarehouseLM.activeYieldFarm.entries(poolId)
-    return res.map(([storageKey, codec]) => {
-      const [poolId, globalFarmId] = storageKey.args
-      const yieldFarmId = codec.unwrap()
-      return { poolId, globalFarmId, yieldFarmId }
-    })
-  }
-
-export function useYieldFarms(
-  ids: Maybe<
-    {
-      poolId: u32 | string
-      globalFarmId: u32 | string
-      yieldFarmId: u32 | string
-    }[]
-  >,
-) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.yieldFarms(ids),
-    ids != null ? getYieldFarms(api, ids) : undefinedNoop,
-    { enabled: ids != null },
-  )
-}
-
-const getYieldFarms =
-  (
-    api: ApiPromise,
-    ids: {
-      poolId: u32 | string
-      globalFarmId: u32 | string
-      yieldFarmId: u32 | string
-    }[],
-  ) =>
-  async () => {
-    const res = await Promise.all(
-      ids.map(({ poolId, globalFarmId, yieldFarmId }) =>
-        api.query.omnipoolWarehouseLM.yieldFarm(
-          poolId,
-          globalFarmId,
-          yieldFarmId,
-        ),
-      ),
-    )
-
-    return res.map((data) => data.unwrap())
-  }
-
-export function useYieldFarm(data: {
-  poolId: Maybe<u32 | string>
-  globalFarmId: Maybe<u32 | string>
-  yieldFarmId: Maybe<u32 | string>
-}) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.yieldFarm(data),
-    data.poolId != null && data.globalFarmId != null && data.yieldFarmId != null
-      ? getYieldFarm(api, data.poolId, data.globalFarmId, data.yieldFarmId)
-      : undefinedNoop,
-    {
-      enabled:
-        data.poolId != null &&
-        data.globalFarmId != null &&
-        data.yieldFarmId != null,
-    },
-  )
-}
-
-const getYieldFarm =
-  (
-    api: ApiPromise,
-    poolId: u32 | string,
-    globalFarmId: u32 | string,
-    yieldFarmId: u32 | string,
-  ) =>
-  async () => {
-    const yieldFarm = await api.query.omnipoolWarehouseLM.yieldFarm(
-      poolId,
-      globalFarmId,
-      yieldFarmId,
-    )
-    return yieldFarm.unwrap()
-  }
-
-export function useGlobalFarm(id: Maybe<u32 | string>) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.globalFarm(id),
-    id != null ? getGlobalFarm(api, id) : undefinedNoop,
-    { enabled: id != null },
-  )
-}
-
-const getGlobalFarm = (api: ApiPromise, id: u32 | string) => async () => {
-  const globalFarm = await api.query.omnipoolWarehouseLM.globalFarm(id)
-  return globalFarm.unwrap()
-}
-
-export function useGlobalFarms(ids: Maybe<{ globalFarmId: u32 }[]>) {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.globalFarms(ids),
-    ids != null ? getGlobalFarms(api, ids) : undefinedNoop,
-    { enabled: ids != null },
-  )
-}
-
-const getGlobalFarms =
-  (api: ApiPromise, ids: { globalFarmId: u32 }[]) => async () => {
-    const globalFarms = await api.query.omnipoolWarehouseLM.globalFarm.multi(
-      ids.map((i) => i.globalFarmId),
-    )
-    return globalFarms.map((i) => i.unwrap())
-  }
+type FarmAprs = ReturnType<typeof useFarmAprs>
 
 export interface Farm {
   globalFarm: PalletLiquidityMiningGlobalFarmData
@@ -158,44 +36,168 @@ export interface Farm {
   poolId: string
 }
 
-export type FarmAprs = ReturnType<typeof useFarmAprs>
+export const useFarmingPoolAssets = () => {
+  const { assets } = useRpcProvider()
 
-export type FarmQueryType = ReturnType<typeof useFarms>
+  console.log(assets.tradeAssets, assets.shareTokens)
+}
 
-export const useFarms = (poolIds: Array<u32 | string>) => {
-  const activeYieldFarms = useActiveYieldFarms(poolIds)
+export function useActiveYieldFarms(poolIds: Array<string>) {
+  const { api, assets } = useRpcProvider()
 
-  const data = activeYieldFarms
-    .reduce(
-      (acc, farm) => {
-        if (farm.data) acc.push(farm.data)
-        return acc
-      },
-      [] as Array<Array<FarmIds>>,
-    )
+  return useQueries({
+    queries: poolIds.map((poolId) => {
+      const meta = assets.getAsset(poolId)
+      const isXYK = assets.isShareToken(meta)
+
+      return {
+        queryKey: isXYK
+          ? QUERY_KEYS.activeYieldFarmsXYK(poolId)
+          : QUERY_KEYS.activeYieldFarms(poolId),
+        queryFn: getActiveYieldFarms(
+          api,
+          poolId,
+          isXYK ? meta.poolAddress : undefined,
+        ),
+        enabled: poolId != null,
+      }
+    }),
+  })
+}
+const getActiveYieldFarms =
+  (api: ApiPromise, poolId: string, poolAddress: string | undefined) =>
+  async () => {
+    const res = poolAddress
+      ? await api.query.xykWarehouseLM.activeYieldFarm.entries(poolAddress)
+      : await api.query.omnipoolWarehouseLM.activeYieldFarm.entries(poolId)
+
+    return res.map(([storageKey, codec]) => {
+      const [, globalFarmId] = storageKey.args
+      const yieldFarmId = codec.unwrap()
+      return {
+        poolId,
+        globalFarmId: globalFarmId.toString(),
+        yieldFarmId: yieldFarmId.toString(),
+      }
+    })
+  }
+
+export function useYieldFarms(ids: FarmIds[]) {
+  const { api, assets } = useRpcProvider()
+
+  return useQueries({
+    queries: ids.map(({ poolId, globalFarmId, yieldFarmId }) => {
+      const meta = assets.getAsset(poolId)
+      const isXYK = assets.isShareToken(meta)
+
+      return {
+        queryKey: isXYK
+          ? QUERY_KEYS.yieldFarmXYK(poolId)
+          : QUERY_KEYS.yieldFarm(poolId),
+        queryFn: getYieldFarm(
+          api,
+          isXYK ? meta.poolAddress : poolId,
+          globalFarmId,
+          yieldFarmId,
+          isXYK,
+        ),
+        enabled: poolId != null,
+      }
+    }),
+  })
+}
+
+const getYieldFarm =
+  (
+    api: ApiPromise,
+    poolId: string,
+    globalFarmId: string,
+    yieldFarmId: string,
+    isXYK: boolean,
+  ) =>
+  async () => {
+    const yieldFarm = isXYK
+      ? await api.query.xykWarehouseLM.yieldFarm(
+          poolId,
+          globalFarmId,
+          yieldFarmId,
+        )
+      : await api.query.omnipoolWarehouseLM.yieldFarm(
+          poolId,
+          globalFarmId,
+          yieldFarmId,
+        )
+
+    return yieldFarm.unwrap()
+  }
+
+export function useGlobalFarms(ids: FarmIds[]) {
+  const { api, assets } = useRpcProvider()
+
+  return useQueries({
+    queries: ids.map(({ poolId, globalFarmId }) => {
+      const meta = assets.getAsset(poolId)
+      const isXYK = assets.isShareToken(meta)
+
+      return {
+        queryKey: isXYK
+          ? QUERY_KEYS.globalFarmXYK(poolId)
+          : QUERY_KEYS.globalFarm(poolId),
+        queryFn: getGlobalFarm(api, globalFarmId, isXYK),
+        enabled: poolId != null,
+      }
+    }),
+  })
+}
+
+const getGlobalFarm =
+  (api: ApiPromise, id: string, isXYK: boolean) => async () => {
+    const globalFarm = isXYK
+      ? await api.query.xykWarehouseLM.globalFarm(id)
+      : await api.query.omnipoolWarehouseLM.globalFarm(id)
+
+    return globalFarm.unwrap()
+  }
+
+export const useFarms = (poolIds: Array<string>) => {
+  const activeYieldFarmsQuery = useActiveYieldFarms(poolIds)
+
+  const farmIds = activeYieldFarmsQuery
+    .reduce<Array<Array<FarmIds>>>((acc, farm) => {
+      if (farm.data) acc.push(farm.data)
+      return acc
+    }, [])
     .flat(2)
 
-  const globalFarms = useGlobalFarms(data)
-  const yieldFarms = useYieldFarms(data)
+  const globalFarms = useGlobalFarms(farmIds)
+  const yieldFarms = useYieldFarms(farmIds)
 
-  return useQueryReduce(
-    [globalFarms, yieldFarms, ...activeYieldFarms] as const,
-    (globalFarms, yieldFarms, ...activeYieldFarms) => {
-      const farms =
-        activeYieldFarms.flat(2).map((af) => {
-          if (!af) return undefined
+  const queries = [globalFarms, yieldFarms]
 
-          const globalFarm = globalFarms?.find((gf) =>
-            af.globalFarmId.eq(gf.id),
-          )
-          const yieldFarm = yieldFarms?.find((yf) => af.yieldFarmId.eq(yf.id))
-          if (!globalFarm || !yieldFarm) return undefined
-          return { globalFarm, yieldFarm, poolId: af.poolId.toString() }
-        }) ?? []
-
-      return farms.filter((x): x is Farm => x != null)
-    },
+  const isLoading = queries.some((querie) =>
+    querie.some((q) => q.isInitialLoading),
   )
+
+  const data = useMemo(() => {
+    return farmIds
+      .map((farmId) => {
+        const globalFarm = globalFarms.find(
+          (globalFarm) =>
+            globalFarm.data?.id.toString() === farmId.globalFarmId,
+        )?.data
+
+        const yieldFarm = yieldFarms.find(
+          (yieldFarm) => yieldFarm.data?.id.toString() === farmId.yieldFarmId,
+        )?.data
+
+        if (!globalFarm || !yieldFarm) return undefined
+
+        return { globalFarm, yieldFarm, poolId: farmId.poolId }
+      })
+      .filter((x): x is Farm => x != null)
+  }, [farmIds, globalFarms, yieldFarms])
+
+  return { data, isLoading }
 }
 
 function getGlobalRewardPerPeriod(
@@ -340,16 +342,29 @@ export const useFarmApr = (farm: {
   yieldFarm: PalletLiquidityMiningYieldFarmData
   poolId: string
 }) => {
+  //const { assets } = useRpcProvider()
   const bestNumber = useBestNumber()
   const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
   const incentivizedAsset = farm.globalFarm.incentivizedAsset.toString()
+
+  //const isXYK = assets.getAsset(farm.poolId).isShareToken
+
+  // const oraclePrice = useOraclePrice(
+  //   isXYK ? undefined : rewardCurrency,
+  //   incentivizedAsset,
+  // )
 
   const oraclePrice = useOraclePrice(rewardCurrency, incentivizedAsset)
 
   return useQueryReduce(
     [bestNumber, oraclePrice] as const,
     (bestNumber, oraclePrice) => {
-      return getFarmApr(bestNumber, farm, oraclePrice?.oraclePrice ?? BN_0)
+      return getFarmApr(
+        bestNumber,
+        farm,
+        oraclePrice?.oraclePrice ??
+          farm.globalFarm.priceAdjustment.toBigNumber(),
+      )
     },
   )
 }
@@ -380,7 +395,8 @@ export const useFarmAprs = (
       return getFarmApr(
         bestNumber,
         farm,
-        oraclePrice?.data?.oraclePrice ?? BN_0,
+        oraclePrice?.data?.oraclePrice ??
+          farm.globalFarm.priceAdjustment.toBigNumber(),
       )
     })
   })
@@ -426,11 +442,23 @@ const getOraclePrice =
       string,
       string,
     ]
+
+    if (rewardCurrency === incentivizedAsset)
+      return {
+        id: { rewardCurrency, incentivizedAsset },
+        oraclePrice: BN_1,
+      }
     const res = await api.query.emaOracle.oracles(
       "omnipool",
       orderedAssets,
       "TenMinutes",
     )
+
+    if (res.isNone)
+      return {
+        id: { rewardCurrency, incentivizedAsset },
+        oraclePrice: undefined,
+      }
 
     const [data] = res.unwrap()
     const n = data.price.n.toString()
@@ -462,12 +490,6 @@ export const getMinAndMaxAPR = (farms: FarmAprs) => {
     minApr,
     maxApr,
   }
-}
-
-export interface FarmIds {
-  poolId: u32
-  globalFarmId: u32
-  yieldFarmId: u32
 }
 
 export const useFarmsPoolAssets = () => {
@@ -533,35 +555,40 @@ export const useInactiveYieldFarms = (poolIds: (AccountId32 | string)[]) => {
 export const useInactiveFarms = (poolIds: Array<AccountId32 | string>) => {
   const activeYieldFarms = useInactiveYieldFarms(poolIds)
 
-  const data = activeYieldFarms.reduce<
-    {
-      poolId: string
-      globalFarmId: u32
-      yieldFarmId: u32
-    }[]
-  >((acc, farm) => (farm.data ? [...acc, ...farm.data] : acc), [])
-
-  const globalFarms = useGlobalFarms(
-    data.map((id) => ({ globalFarmId: id.globalFarmId })),
+  const farmIds = activeYieldFarms.reduce<FarmIds[]>(
+    (acc, farm) => (farm.data ? [...acc, ...farm.data] : acc),
+    [],
   )
-  const yieldFarms = useYieldFarms(data)
 
-  return useQueryReduce(
-    [globalFarms, yieldFarms, ...activeYieldFarms] as const,
-    (globalFarms, yieldFarms, ...activeYieldFarms) => {
-      const farms =
-        activeYieldFarms.flat(2).map((af) => {
-          const globalFarm = globalFarms?.find((gf) =>
-            af.globalFarmId.eq(gf.id),
-          )
-          const yieldFarm = yieldFarms?.find((yf) => af.yieldFarmId.eq(yf.id))
-          if (!globalFarm || !yieldFarm) return undefined
-          return { globalFarm, yieldFarm }
-        }) ?? []
+  const globalFarms = useGlobalFarms(farmIds)
+  const yieldFarms = useYieldFarms(farmIds)
 
-      return farms.filter(isNotNil)
-    },
+  const queries = [globalFarms, yieldFarms]
+
+  const isLoading = queries.some((querie) =>
+    querie.some((q) => q.isInitialLoading),
   )
+
+  const data = useMemo(() => {
+    return farmIds
+      .map((farmId) => {
+        const globalFarm = globalFarms.find(
+          (globalFarm) =>
+            globalFarm.data?.id.toString() === farmId.globalFarmId,
+        )?.data
+
+        const yieldFarm = yieldFarms.find(
+          (yieldFarm) => yieldFarm.data?.id.toString() === farmId.yieldFarmId,
+        )?.data
+
+        if (!globalFarm || !yieldFarm) return undefined
+
+        return { globalFarm, yieldFarm, poolId: farmId.poolId }
+      })
+      .filter((x): x is Farm => x != null)
+  }, [farmIds, globalFarms, yieldFarms])
+
+  return { data, isLoading }
 }
 
 const getInctiveYieldFarms =
@@ -582,13 +609,7 @@ const getInctiveYieldFarms =
       ),
     )
 
-    const stoppedFarms = globalFarms.reduce<
-      {
-        poolId: string
-        globalFarmId: u32
-        yieldFarmId: u32
-      }[]
-    >((acc, [globalFarm]) => {
+    const stoppedFarms = globalFarms.reduce<FarmIds[]>((acc, [globalFarm]) => {
       if (globalFarm) {
         const yieldFarm = globalFarm[1].unwrap()
 
@@ -597,8 +618,8 @@ const getInctiveYieldFarms =
         if (isStopped)
           acc.push({
             poolId: globalFarm[0].args[0].toString(),
-            globalFarmId: globalFarm[0].args[1],
-            yieldFarmId: yieldFarm.id,
+            globalFarmId: globalFarm[0].args[1].toString(),
+            yieldFarmId: yieldFarm.id.toString(),
           })
       }
 

@@ -142,6 +142,7 @@ function JoinedFarmsDetailsPositions(props: {
 
   const exit = useFarmExitAllMutation(
     [props.depositNft],
+    props.poolId,
     toast,
     props.onTxClose,
   )

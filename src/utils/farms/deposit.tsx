@@ -1,28 +1,48 @@
 import { useMutation } from "@tanstack/react-query"
-import { useFarms } from "api/farms"
+import { Farm } from "api/farms"
 import { StepProps } from "components/Stepper/Stepper"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TOAST_MESSAGES } from "state/toasts"
+import { scale } from "utils/balance"
 
 export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
 
 export const useFarmDepositMutation = (
   poolId: string,
-  positionId: string,
-  toast: ToastMessage,
+  farms: Farm[],
   onClose: () => void,
   onSuccess: () => void,
 ) => {
   const { createTransaction } = useStore()
-  const { api } = useRpcProvider()
-  const farms = useFarms([poolId])
+  const { api, assets } = useRpcProvider()
   const { t } = useTranslation()
 
+  const meta = assets.getAsset(poolId)
+  const isXYK = assets.isShareToken(meta)
+
   return useMutation(
-    async () => {
-      const [firstFarm, ...restFarm] = farms.data ?? []
+    async ({ shares, positionId }: { shares: string; positionId: string }) => {
+      const [firstFarm, ...restFarm] = farms ?? []
       if (firstFarm == null) throw new Error("Missing farm")
+
+      const toast = TOAST_MESSAGES.reduce((memo, type) => {
+        const msType = type === "onError" ? "onLoading" : type
+        memo[type] = (
+          <Trans
+            t={t}
+            i18nKey={`farms.modal.join.toast.${msType}`}
+            tOptions={{
+              amount: shares,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        )
+        return memo
+      }, {} as ToastMessage)
 
       const firstStep: StepProps[] = [
         {
@@ -37,11 +57,18 @@ export const useFarmDepositMutation = (
 
       const firstDeposit = await createTransaction(
         {
-          tx: api.tx.omnipoolLiquidityMining.depositShares(
-            firstFarm.globalFarm.id,
-            firstFarm.yieldFarm.id,
-            positionId,
-          ),
+          tx: isXYK
+            ? api.tx.xykLiquidityMining.depositShares(
+                firstFarm.globalFarm.id,
+                firstFarm.yieldFarm.id,
+                { assetIn: meta.assets[0], assetOut: meta.assets[1] },
+                scale(shares, meta.decimals).toString(),
+              )
+            : api.tx.omnipoolLiquidityMining.depositShares(
+                firstFarm.globalFarm.id,
+                firstFarm.yieldFarm.id,
+                positionId,
+              ),
         },
         {
           toast,
@@ -70,11 +97,18 @@ export const useFarmDepositMutation = (
           ]
 
           const txs = restFarm.map((farm) =>
-            api.tx.omnipoolLiquidityMining.redepositShares(
-              farm.globalFarm.id,
-              farm.yieldFarm.id,
-              depositId,
-            ),
+            isXYK
+              ? api.tx.xykLiquidityMining.redepositShares(
+                  firstFarm.globalFarm.id,
+                  firstFarm.yieldFarm.id,
+                  { assetIn: meta.assets[0], assetOut: meta.assets[1] },
+                  depositId,
+                )
+              : api.tx.omnipoolLiquidityMining.redepositShares(
+                  farm.globalFarm.id,
+                  farm.yieldFarm.id,
+                  depositId,
+                ),
           )
 
           if (txs.length > 0) {

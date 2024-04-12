@@ -5,11 +5,7 @@ import {
 import { u32 } from "@polkadot/types"
 import { useTokensBalances } from "api/balances"
 import { useApiIds } from "api/consts"
-import {
-  useAccountDepositIds,
-  useAllDeposits,
-  useOmniPositionIds,
-} from "api/deposits"
+import { useOmniPositionIds, useUserDeposits } from "api/deposits"
 import {
   OmnipoolPosition,
   useOmnipoolAssets,
@@ -17,7 +13,6 @@ import {
 } from "api/omnipool"
 import BN from "bignumber.js"
 import { useMemo } from "react"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
@@ -30,18 +25,9 @@ export const useAllUserDepositShare = ({
   address?: string
 } = {}) => {
   const { assets } = useRpcProvider()
-  const { account } = useAccount()
-  const accountDepositIds = useAccountDepositIds(address ?? account?.address)
-  const deposits = useAllDeposits()
+  const { omnipoolDeposits } = useUserDeposits(address)
 
-  const ids = new Set<string>(
-    accountDepositIds.data?.map((i) => i.instanceId.toString()),
-  )
-
-  const depositIds = deposits.data?.reduce((memo, item) => {
-    if (ids.has(item.id.toString())) memo.push(item.id.toString())
-    return memo
-  }, [] as Array<string>)
+  const depositIds = omnipoolDeposits.map((deposit) => deposit.id) ?? []
 
   const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets()

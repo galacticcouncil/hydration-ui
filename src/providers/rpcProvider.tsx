@@ -17,7 +17,7 @@ type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
   all: (TToken | TBond | TStableSwap | TShareToken)[]
   isStableSwap: (asset: TAsset) => asset is TStableSwap
   isBond: (asset: TAsset) => asset is TBond
-  isShareToken: (asset: TAsset) => asset is TShareToken
+  isShareToken: (asset: TAsset | undefined) => asset is TShareToken
   getAsset: (id: string) => TAsset
   getBond: (id: string) => TBond | undefined
   getAssets: (ids: string[]) => TAsset[]
@@ -86,8 +86,12 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
       const isBond = (asset: TAsset): asset is TBond => asset.isBond
 
-      const isShareToken = (asset: TAsset): asset is TShareToken =>
-        asset.isShareToken
+      const isShareToken = (
+        asset: TAsset | undefined,
+      ): asset is TShareToken => {
+        if (!asset) return false
+        return asset.isShareToken
+      }
 
       const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
 

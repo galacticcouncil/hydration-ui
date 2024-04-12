@@ -8,7 +8,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculatePositionLiquidity } from "utils/omnipool"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
+import { useAccountNFTPositions } from "sections/pools/PoolsPage.utils"
 import { useShareTokens } from "api/xyk"
 import { useAccountsBalances } from "api/accountBalances"
 import { useShareOfPools } from "api/pools"
@@ -21,7 +21,7 @@ export const useOmnipoolPositionsData = ({
   address,
 }: { search?: string; address?: string } = {}) => {
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions(address)
+  const accountPositions = useAccountNFTPositions(address)
   const positions = useOmnipoolPositions(
     accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
   )

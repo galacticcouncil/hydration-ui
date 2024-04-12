@@ -5,7 +5,7 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
+import { useAccountNFTPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
@@ -55,7 +55,7 @@ const MyLiquidity = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountNFTPositions()
 
   const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
   const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
