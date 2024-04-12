@@ -3,8 +3,6 @@ import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 
-export type TransferMethod = "transfer" | "transferKeepAlive"
-
 export function usePaymentFees({
   asset,
   currentAmount,
@@ -22,8 +20,8 @@ export function usePaymentFees({
 
   const { data: currentData } = usePaymentInfo(
     asset.toString() === assets.native.id
-      ? api.tx.balances.transferKeepAlive("", formattedCurrentAmount)
-      : api.tx.tokens.transferKeepAlive("", asset, formattedCurrentAmount),
+      ? api.tx.balances.transfer("", formattedCurrentAmount)
+      : api.tx.tokens.transfer("", asset, formattedCurrentAmount),
   )
 
   const formattedMaxAmount = !maxAmount?.isNaN() ? maxAmount.toString() : "0"
