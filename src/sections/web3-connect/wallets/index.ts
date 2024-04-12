@@ -63,6 +63,7 @@ const walletConnect: Wallet = new WalletConnect({
     if (!session) {
       const state = useWeb3ConnectStore.getState()
       state.disconnect()
+      state.toggle()
     }
   },
 })

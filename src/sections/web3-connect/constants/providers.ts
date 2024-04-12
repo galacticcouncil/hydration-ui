@@ -23,6 +23,16 @@ export const DESKTOP_PROVIDERS: WalletProviderType[] = [
 export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
   WalletProviderType.TalismanEvm,
+  WalletProviderType.WalletConnect,
+]
+
+export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Talisman,
+  WalletProviderType.SubwalletJS,
+  WalletProviderType.Enkrypt,
+  WalletProviderType.PolkadotJS,
+  WalletProviderType.NovaWallet,
+  WalletProviderType.WalletConnect,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

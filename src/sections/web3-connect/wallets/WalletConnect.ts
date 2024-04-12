@@ -23,8 +23,26 @@ const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 const HDX_EVM_CHAIN_ID = import.meta.env.VITE_EVM_CHAIN_ID
 const HDX_EVM_NAMESPACE_CHAIN_ID = `eip155:${HDX_EVM_CHAIN_ID}`
-const HDX_POLKADOT_NAMESPACE_CHAIN_ID = import.meta.env
-  .VITE_HDX_CAIP_ID as string as PolkadotNamespaceChainId
+
+export const POLKADOT_CAIP_ID_MAP: Record<string, PolkadotNamespaceChainId> = {
+  hydradx: import.meta.env
+    .VITE_HDX_CAIP_ID as string as PolkadotNamespaceChainId,
+  polkadot: "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+  acala: "polkadot:fc41b9bd8ef8fe53d58c7ea67c794c7e",
+  assethub: "polkadot:68d56f15f85d3136970ec16946040bc1",
+  astar: "polkadot:9eb76c5184c4ab8679d2d5d819fdf90b",
+  bifrost: "polkadot:262e1b2ad728475fd6fe88e62d34c200",
+  centrifuge: "polkadot:b3db41421702df9a7fcac62b53ffeac8",
+  crust: "polkadot:4319cc49ee79495b57a1fec4d2bd43f5",
+  interlay: "polkadot:bf88efe70e9e0e916416e8bed61f2b45",
+  nodle: "polkadot:97da7ede98d7bad4e36b4d734b605542",
+  phala: "polkadot:1bb969d85965e4bb5a651abbedf21a54",
+  subsocial: "polkadot:4a12be580bb959937a1c7a61d5cf2442",
+  unique: "polkadot:84322d9cddbf35088f1e54e9a85c967a",
+  zeitgeist: "polkadot:1bf2a2ecb4a868de66ea8610f2ce7c8c",
+}
+
+const POLKADOT_CHAIN_IDS = Object.values(POLKADOT_CAIP_ID_MAP)
 
 const walletConnectParams = {
   projectId: WC_PROJECT_ID,
@@ -55,7 +73,7 @@ const namespaces = {
   },
   polkadot: {
     methods: ["polkadot_signTransaction", "polkadot_signMessage"],
-    chains: [HDX_POLKADOT_NAMESPACE_CHAIN_ID],
+    chains: POLKADOT_CHAIN_IDS,
     events: ["accountsChanged", "disconnect"],
   },
 }
@@ -206,14 +224,8 @@ export class WalletConnect implements Wallet {
       }
 
       if (namespace === "polkadot") {
-        this._signer = new PolkadotSigner(
-          provider.client,
-          session,
-          HDX_POLKADOT_NAMESPACE_CHAIN_ID,
-        )
+        this._signer = new PolkadotSigner(provider.client, session)
       }
-    } catch (err) {
-      console.log({ err })
     } finally {
       this.modal?.closeModal()
     }

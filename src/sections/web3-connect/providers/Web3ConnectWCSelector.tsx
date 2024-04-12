@@ -24,8 +24,12 @@ const getWalletConnect = () => {
 export const Web3ConnectWCSelector: React.FC<
   Web3ConnectWCSelectorProps
 > = () => {
-  const { setStatus, setError, provider, status, account } =
+  const { setStatus, setError, provider, status, account, mode } =
     useWeb3ConnectStore()
+
+  const isDefaultMode = mode === "default"
+  const isEvmMode = mode === "evm"
+  const isSubstrateMode = mode === "substrate"
 
   const { enable, isLoading } = useEnableWallet(walletConnectType, {
     onSuccess: () =>
@@ -47,14 +51,22 @@ export const Web3ConnectWCSelector: React.FC<
 
   const isSessionActive = !!wallet?._session
 
-  const shouldTriggerAutoConnect = isConnectedToWc && !isSessionActive
+  const shouldTriggerAutoConnect =
+    (isConnectedToWc && !isSessionActive) || isEvmMode || isSubstrateMode
 
   useEffect(() => {
     if (shouldTriggerAutoConnect) {
-      const isEvm = isEvmAccount(account?.address)
+      const isEvm =
+        (isDefaultMode && isEvmAccount(account?.address)) || isEvmMode
       enable(isEvm ? "eip155" : "polkadot")
     }
-  }, [account?.address, enable, shouldTriggerAutoConnect])
+  }, [
+    account?.address,
+    enable,
+    isDefaultMode,
+    isEvmMode,
+    shouldTriggerAutoConnect,
+  ])
 
   return (
     <div sx={{ width: "100%" }}>
