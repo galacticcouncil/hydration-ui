@@ -176,10 +176,14 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
       ) : (
         <>
           <Text fs={[14, 13]} lh={13} fw={500} color="white">
-            {t("value.token", { value: 1 })} {props.pair.symbol}
+            {abbreviateNumber(props.price)}
           </Text>
           <Text fs={[14, 13]} lh={13} fw={500} color="whiteish500">
-            ({abbreviateNumber(props.price)})
+            (
+            {t("otc.offers.table.header.perToken", {
+              symbol: props.pair.symbol,
+            })}
+            )
           </Text>
         </>
       )}

@@ -1,7 +1,8 @@
 import styled from "@emotion/styled"
+import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
-export const SConvertionContainer = styled.div`
+export const SConvertionContainer = styled(ButtonTransparent)`
   background: ${theme.colors.darkBlue700};
   border: 1px solid ${theme.colors.darkBlue400};
   border-radius: 2px;
@@ -17,6 +18,8 @@ export const SConvertionContainer = styled.div`
   align-items: center;
   gap: 6px;
   width: max-content;
+
+  cursor: ${({ onClick }) => (onClick ? "pointer" : "default")};
 
   p {
     font-size: 11px;

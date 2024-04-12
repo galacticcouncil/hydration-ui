@@ -31,28 +31,36 @@ export const IconsWrapper = styled.div<{
     margin-left: calc(var(--logo-overlap) * -1);
   }
 
-  padding: var(--chain-offset) var(--chain-offset) 0 0;
-  margin-top: calc(var(--chain-offset) * -1);
-  margin-right: calc(var(--chain-offset) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
 
-  --mask-space: 1px;
-  --mask-gradient: calc(var(--chain-size) / 2),
-    black calc(var(--chain-size) / 2 - 1px),
-    transparent calc(var(--chain-size) / 2 - 1px),
-    transparent calc(var(--chain-size) / 2 + var(--mask-space)),
-    black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);
+    pointer-events: none;
 
-  --mask-offset: calc(
-    var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
-  );
+    padding: var(--chain-offset) var(--chain-offset) 0 0;
+    margin-top: calc(var(--chain-offset) * -1);
+    margin-right: calc(var(--chain-offset) * -1);
 
-  @media (${theme.viewport.gte.sm}) {
-    mask: ${({ maskConfig }) => maskConfig.map(mapToMask).join(",")},
-      linear-gradient(black, black);
+    --mask-space: 1px;
+    --mask-gradient: calc(var(--chain-size) / 2),
+      black calc(var(--chain-size) / 2 - 1px),
+      transparent calc(var(--chain-size) / 2 - 1px),
+      transparent calc(var(--chain-size) / 2 + var(--mask-space)),
+      black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);
+
+    --mask-offset: calc(
+      var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
+    );
+
+    @media (${theme.viewport.gte.sm}) {
+      mask: ${({ maskConfig }) => maskConfig.map(mapToMask).join(",")},
+        linear-gradient(black, black);
+    }
+
+    -webkit-mask-composite: destination-in;
+    mask-composite: exclude;
   }
-
-  -webkit-mask-composite: destination-in;
-  mask-composite: exclude;
 `
 
 function mapToMask(hasMask: boolean, index: number) {
