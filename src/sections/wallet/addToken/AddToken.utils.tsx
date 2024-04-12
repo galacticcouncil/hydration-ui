@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ToastMessage, useStore } from "state/store"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
@@ -122,7 +123,14 @@ export const useUserExternalTokenStore = create<Store>()(
         },
       ],
       addToken: (token) =>
-        set((store) => ({ tokens: [...store.tokens, token] })),
+        set((store) => {
+          const latest = { tokens: [...store.tokens, token] }
+          ExternalAssetCursor.reset({
+            state: latest,
+            version: 0.2,
+          })
+          return latest
+        }),
       isAdded: (id) =>
         id ? get().tokens.some((token) => token.id === id) : false,
     }),
