@@ -58,6 +58,11 @@ export const QUERY_KEYS = {
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   allDeposits: [QUERY_KEY_PREFIX, "deposits"],
+  omnipoolDeposits: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolDeposits",
+    ids.join("."),
+  ],
   poolDeposits: (poolId: Maybe<u32 | string>) => [
     QUERY_KEY_PREFIX,
     "deposits",
