@@ -56,8 +56,10 @@ export function SwapPage() {
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
 
+  const [assetsAdded, setAssetsAdded] = React.useState(false)
+
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount(isEvm)
+  const version = useRemount(isEvm || assetsAdded)
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -136,7 +138,12 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
       />
-      {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
+      {isLoaded && (
+        <ExternalAssetImportModal
+          assetIds={[assetIn, assetOut]}
+          onAssetsAdded={() => setAssetsAdded(true)}
+        />
+      )}
     </SContainer>
   )
 }

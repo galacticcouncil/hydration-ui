@@ -96,6 +96,8 @@ type Store = {
   isAdded: (id: string | undefined) => boolean
 }
 
+const STORE_VERSION = 0.2
+
 export const useUserExternalTokenStore = create<Store>()(
   persist(
     (set, get) => ({
@@ -127,7 +129,7 @@ export const useUserExternalTokenStore = create<Store>()(
           const latest = { tokens: [...store.tokens, token] }
           ExternalAssetCursor.reset({
             state: latest,
-            version: 0.2,
+            version: STORE_VERSION,
           })
           return latest
         }),
@@ -136,7 +138,7 @@ export const useUserExternalTokenStore = create<Store>()(
     }),
     {
       name: "external-tokens",
-      version: 0.2,
+      version: STORE_VERSION,
       merge(persistedState, currentState) {
         if (!persistedState) return currentState
 

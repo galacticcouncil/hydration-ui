@@ -18,18 +18,20 @@ import { useToast } from "state/toasts"
 
 type Props = {
   assetIds: string[]
+  onAssetsAdded?: (assets: TExternalAsset[]) => void
 }
 
 export const ExternalAssetImportModal: React.FC<Props> = ({
   assetIds = [],
+  onAssetsAdded,
 }) => {
   const { t } = useTranslation()
+  const { add } = useToast()
   const [isOpen, setIsOpen] = useState(true)
   const { assets } = useRpcProvider()
   const { isAdded, addToken } = useUserExternalTokenStore()
-  const { add } = useToast()
 
-  const { data } = useExternalAssetRegistry()
+  const { data, isSuccess } = useExternalAssetRegistry()
 
   const assetsMeta = assets.getAssets(assetIds)
 
@@ -48,7 +50,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
       .filter(isNotNil)
   }, [assets.external, assetsMeta, data, isAdded])
 
-  if (assetsToAdd.length === 0) {
+  if (assetsToAdd.length === 0 || !isSuccess) {
     return null
   }
 
@@ -71,7 +73,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
       })
     })
 
-    window.location.reload()
+    onAssetsAdded?.(assets)
   }
 
   return (
@@ -111,6 +113,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
                     {t("wallet.addToken.form.button.register.forMe")}
                   </Button>
                   <ButtonTransparent
+                    onClick={() => setIsOpen(false)}
                     sx={{ color: "basic300", pt: 10, mx: "auto" }}
                   >
                     {t("cancel")}
