@@ -67,9 +67,11 @@ export const useUserDeposits = (address?: string) => {
   const nftPositions = useAccountOmnipoolPositions(address)
 
   const { miningNfts = [] } = nftPositions.data ?? {}
+
   const omnipoolDeposits =
-    useOmnipoolDeposits(miningNfts.map((miningNft) => miningNft.instanceId))
-      .data ?? []
+    useOmnipoolDeposits(
+      miningNfts.map((miningNft) => miningNft.instanceId),
+    ).data?.filter((deposit) => deposit.data) ?? []
 
   return omnipoolDeposits
 }
