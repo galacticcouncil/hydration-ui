@@ -31,13 +31,9 @@ export const useClaimableAmount = (
   const allDeposits = useUserDeposits()
 
   const filteredDeposits = poolId
-    ? {
-        ...allDeposits,
-        data:
-          allDeposits.data?.filter(
-            (deposit) => deposit.data.ammPoolId.toString() === poolId,
-          ) ?? [],
-      }
+    ? allDeposits.filter(
+        (deposit) => deposit.data.ammPoolId.toString() === poolId,
+      )
     : allDeposits
 
   const omnipoolAssets = useOmnipoolAssets()
@@ -89,7 +85,6 @@ export const useClaimableAmount = (
 
   const queries = [
     bestNumberQuery,
-    filteredDeposits,
     farms,
     inactiveFarms,
     accountBalances,
@@ -100,14 +95,13 @@ export const useClaimableAmount = (
   const data = useMemo(() => {
     if (
       !bestNumberQuery.data ||
-      !filteredDeposits.data ||
+      !filteredDeposits ||
       !accountBalances.data ||
       !spotPrices.data
     )
       return undefined
 
-    const deposits =
-      depositNft != null ? [depositNft] : filteredDeposits.data ?? []
+    const deposits = depositNft != null ? [depositNft] : filteredDeposits ?? []
     const bestNumber = bestNumberQuery
 
     const multiCurrency = new MultiCurrencyContainer(
@@ -207,7 +201,7 @@ export const useClaimableAmount = (
     bestNumberQuery,
     depositNft,
     allFarms,
-    filteredDeposits.data,
+    filteredDeposits,
     metas,
     oraclePrices,
     spotPrices.data,
@@ -229,10 +223,10 @@ export const useClaimAllMutation = (
   const allUserDeposits = useUserDeposits()
 
   const filteredDeposits = poolId
-    ? allUserDeposits.data?.filter(
+    ? allUserDeposits.filter(
         (deposit) => deposit.data.ammPoolId.toString() === poolId.toString(),
       ) ?? []
-    : allUserDeposits.data
+    : allUserDeposits
 
   const deposits = depositNft ? [depositNft] : filteredDeposits
 
