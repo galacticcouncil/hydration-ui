@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useAccountDepositIds, useAllDeposits } from "api/deposits"
+import { useUserDeposits } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -16,7 +16,6 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
@@ -150,37 +149,18 @@ export const useFarmingPositionsData = ({
   search?: string
 } = {}) => {
   const { assets } = useRpcProvider()
-  const { account } = useAccount()
-  const allDeposits = useAllDeposits()
-  const accountDepositIds = useAccountDepositIds(account?.address)
+  const deposits = useUserDeposits()
   const accountDepositsShare = useAllUserDepositShare()
-
-  const accountDeposits = useMemo(
-    () =>
-      allDeposits.data?.filter(
-        (deposit) =>
-          accountDepositIds.data?.some(
-            (d) => d.instanceId.toString() === deposit.id.toString(),
-          ),
-      ),
-    [allDeposits.data, accountDepositIds.data],
-  )
 
   const bestNumber = useBestNumber()
 
-  const queries = [
-    allDeposits,
-    accountDepositIds,
-    accountDepositsShare,
-    bestNumber,
-  ]
+  const queries = [accountDepositsShare, bestNumber]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!accountDeposits || !accountDepositsShare.data || !bestNumber.data)
-      return []
+    if (!deposits || !accountDepositsShare.data || !bestNumber.data) return []
 
-    const rows: FarmingPositionsTableData[] = accountDeposits
+    const rows: FarmingPositionsTableData[] = deposits
       .map((deposit) => {
         const id = deposit.id.toString()
         const assetId = deposit.data.ammPoolId.toString()
@@ -230,13 +210,7 @@ export const useFarmingPositionsData = ({
       )
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [
-    search,
-    accountDeposits,
-    accountDepositsShare.data,
-    assets,
-    bestNumber.data,
-  ])
+  }, [search, accountDepositsShare.data, assets, bestNumber.data, deposits])
 
   return { data, isLoading }
 }
