@@ -115,6 +115,19 @@ export const useProviderData = (rpcUrl: string) => {
         },
       })
 
+      api.registry.register({
+        XykLMDeposit: {
+          shares: "u128",
+          ammPoolId: "AccountId",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+        OmnipoolLMDeposit: {
+          shares: "u128",
+          ammPoolId: "u32",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+      })
+
       const {
         isStableCoin,
         stableCoinId: chainStableCoinId,

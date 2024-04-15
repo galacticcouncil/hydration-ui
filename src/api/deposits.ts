@@ -35,13 +35,15 @@ const getDeposits =
       keys,
     )) as Option<PalletLiquidityMiningDepositData>[]
 
-    const data = values.map(
-      (value) =>
-        api.registry.createType(
-          type === "omnipool" ? "OmnipoolLMDeposit" : "XykLMDeposit",
-          value.unwrap(),
-        ) as PalletLiquidityMiningDepositData,
-    )
+    const data = values
+      .filter((value) => !value.isNone)
+      .map(
+        (value) =>
+          api.registry.createType(
+            type === "omnipool" ? "OmnipoolLMDeposit" : "XykLMDeposit",
+            value.unwrap(),
+          ) as PalletLiquidityMiningDepositData,
+      )
 
     const test = ids.map((id, i) => ({ id, data: data[i] }))
 
@@ -71,12 +73,14 @@ export const useUserDeposits = (address?: string) => {
 
   const { miningNfts = [], xykMiningNfts = [] } = nftPositions.data ?? {}
   const omnipoolDeposits =
-    useOmnipoolDeposits(miningNfts.map((miningNft) => miningNft.instanceId))
-      .data ?? []
+    useOmnipoolDeposits(
+      miningNfts.map((miningNft) => miningNft.instanceId),
+    ).data?.filter((deposit) => deposit.data) ?? []
 
   const xykDeposits =
-    useXYKDeposits(xykMiningNfts.map((xykMiningNft) => xykMiningNft.instanceId))
-      .data ?? []
+    useXYKDeposits(
+      xykMiningNfts.map((xykMiningNft) => xykMiningNft.instanceId),
+    ).data?.filter((deposit) => deposit.data) ?? []
 
   return { omnipoolDeposits, xykDeposits }
 }

@@ -158,7 +158,8 @@ export const useFarmingPositionsData = ({
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!accountDepositsShare.data || !bestNumber.data) return []
+    if (!omnipoolDeposits || !accountDepositsShare.data || !bestNumber.data)
+      return []
 
     const rows: FarmingPositionsTableData[] = omnipoolDeposits
       .map((deposit) => {

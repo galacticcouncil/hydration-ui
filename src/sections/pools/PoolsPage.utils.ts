@@ -203,6 +203,8 @@ const getMiningPosition = (api: ApiPromise, id: string) => async () => {
     key,
   )) as Option<PalletLiquidityMiningDepositData>
 
+  if (value.isNone) return undefined
+
   const data = api.registry.createType(
     "OmnipoolLMDeposit",
     value.unwrap(),
