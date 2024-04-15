@@ -80,7 +80,11 @@ const namespaces = {
 
 export type NamespaceType = keyof typeof namespaces
 
-const provider = await UniversalProvider.init(walletConnectParams)
+const provider = await UniversalProvider.init(walletConnectParams).catch(
+  (err) => {
+    console.error(err)
+  },
+)
 
 type ModalSubFn = (session?: SessionTypes.Struct) => void
 
@@ -181,6 +185,8 @@ export class WalletConnect implements Wallet {
   subscribeToProviderEvents = () => {
     const provider = this.rawExtension
 
+    if (!provider) return
+
     provider.on("display_uri", this.onDisplayUri)
     provider.on("session_update", this.onSessionUpdate)
   }
@@ -196,9 +202,15 @@ export class WalletConnect implements Wallet {
       )
     }
 
-    try {
-      const provider = this.rawExtension
+    const provider = this.rawExtension
 
+    if (!provider) {
+      throw new Error(
+        "WalletConnectError: Connection failed. Please try again.",
+      )
+    }
+
+    try {
       const session = await provider.connect({
         namespaces: this.namespace,
       })
@@ -209,7 +221,6 @@ export class WalletConnect implements Wallet {
         )
       }
 
-      this._extension = provider
       this._session = session
 
       const accounts = await this.getAccounts()
