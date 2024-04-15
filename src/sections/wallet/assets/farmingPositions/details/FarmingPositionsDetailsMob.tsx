@@ -10,12 +10,12 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { BN_0, BN_1 } from "utils/constants"
 import {
-  FarmingPositionsTableData,
+  FarmingTablePosition,
   isXYKPosition,
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 
 type Props = {
-  row: FarmingPositionsTableData
+  row: FarmingTablePosition
   onClose: () => void
 }
 

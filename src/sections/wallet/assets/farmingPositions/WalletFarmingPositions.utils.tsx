@@ -19,7 +19,7 @@ import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPos
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -31,10 +31,10 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
 import { scaleHuman } from "utils/balance"
 
-export const useFarmingPositionsTable = (data: FarmingPositionsTableData[]) => {
+export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { accessor } = createColumnHelper<FarmingPositionsTableData>()
+  const { accessor } = createColumnHelper<FarmingTablePosition>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -211,7 +211,7 @@ export const useFarmingPositionsData = ({
           decimals,
         )
 
-        let position
+        let position: XYKPosition | OmnipoolPosition
         if (isXyk) {
           const values = xykDepositValues.data.find(
             (value) => value.assetId === id,
@@ -234,21 +234,17 @@ export const useFarmingPositionsData = ({
               valueDisplay: amountUSD,
             }
           } else {
-            position = {
-              valueDisplay: BN_NAN,
-            }
+            return undefined
           }
         } else {
-          position = accountDepositsShare.data[poolId]?.find(
+          const omnipoolDeposit = accountDepositsShare.data[poolId]?.find(
             (d) => d.depositId?.toString() === deposit.id.toString(),
-          ) ?? {
-            symbol,
-            value: BN_NAN,
-            valueDisplay: BN_NAN,
-            lrna: BN_NAN,
-            amount: BN_NAN,
-            providedAmount: BN_NAN,
-            providedAmountDisplay: BN_NAN,
+          )
+
+          if (omnipoolDeposit) {
+            position = omnipoolDeposit
+          } else {
+            return undefined
           }
         }
 
@@ -299,7 +295,7 @@ type OmnipoolPosition = {
   providedAmountDisplay: BN
 }
 
-export type FarmingPositionsTableData = {
+export type FarmingTablePosition = {
   id: string
   assetId: string
   symbol: string

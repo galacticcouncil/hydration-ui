@@ -17,7 +17,7 @@ export const calculatePositionLiquidity = ({
   lrnaDecimals,
   assetDecimals,
 }: {
-  position: OmnipoolPosition
+  position: Omit<OmnipoolPosition, "id">
   omnipoolBalance?: BN
   omnipoolHubReserve?: u128
   omnipoolShares?: u128
