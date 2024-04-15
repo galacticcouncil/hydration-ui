@@ -47,7 +47,6 @@ const POLKADOT_CHAIN_IDS = Object.values(POLKADOT_CAIP_ID_MAP)
 const walletConnectParams = {
   projectId: WC_PROJECT_ID,
   relayUrl: "wss://relay.walletconnect.com",
-  logger: "debug",
   metadata: {
     name: POLKADOT_APP_NAME,
     description: POLKADOT_APP_NAME,
@@ -80,12 +79,6 @@ const namespaces = {
 
 export type NamespaceType = keyof typeof namespaces
 
-const provider = await UniversalProvider.init(walletConnectParams).catch(
-  (err) => {
-    console.error(err)
-  },
-)
-
 type ModalSubFn = (session?: SessionTypes.Struct) => void
 
 export class WalletConnect implements Wallet {
@@ -114,7 +107,6 @@ export class WalletConnect implements Wallet {
       projectId: WC_PROJECT_ID,
     })
 
-    this.subscribeToProviderEvents()
     this.subscribeToModalEvents(onModalOpen, onModalClose)
   }
 
@@ -139,6 +131,30 @@ export class WalletConnect implements Wallet {
   }
 
   get rawExtension() {
+    return this._extension
+  }
+
+  initializeProvider = async () => {
+    if (this.extension) {
+      return Promise.resolve(this.extension)
+    }
+
+    const provider = await UniversalProvider.init(walletConnectParams).catch(
+      (err) => {
+        console.error(err)
+      },
+    )
+
+    if (!provider) {
+      throw new Error(
+        "WalletConnectError: Connection failed. Please try again.",
+      )
+    }
+
+    this._extension = provider
+    provider.on("display_uri", this.onDisplayUri)
+    provider.on("session_update", this.onSessionUpdate)
+
     return provider
   }
 
@@ -182,15 +198,6 @@ export class WalletConnect implements Wallet {
     this._session = session
   }
 
-  subscribeToProviderEvents = () => {
-    const provider = this.rawExtension
-
-    if (!provider) return
-
-    provider.on("display_uri", this.onDisplayUri)
-    provider.on("session_update", this.onSessionUpdate)
-  }
-
   enable = async (dappName: string) => {
     if (!dappName) {
       throw new Error("MissingParamsError: Dapp name is required.")
@@ -202,11 +209,11 @@ export class WalletConnect implements Wallet {
       )
     }
 
-    const provider = this.rawExtension
+    const provider = await this.initializeProvider()
 
     if (!provider) {
       throw new Error(
-        "WalletConnectError: Connection failed. Please try again.",
+        "WalletConnectError: WalletConnect provider is not initialized.",
       )
     }
 
@@ -217,7 +224,7 @@ export class WalletConnect implements Wallet {
 
       if (!session) {
         throw new Error(
-          "WalletConnectError: Failed to connect to WalletConnect.",
+          "WalletConnectError: Failed to create WalletConnect sessopm.",
         )
       }
 
@@ -227,14 +234,14 @@ export class WalletConnect implements Wallet {
 
       const namespace = Object.keys(this.namespace).pop() as NamespaceType
 
-      if (namespace === "eip155") {
+      if (namespace === "eip155" && provider instanceof UniversalProvider) {
         const mainAddress = accounts[0]?.address
         this._signer = mainAddress
-          ? new EthereumSigner(mainAddress, this.rawExtension)
+          ? new EthereumSigner(mainAddress, provider)
           : undefined
       }
 
-      if (namespace === "polkadot") {
+      if (namespace === "polkadot" && provider.client) {
         this._signer = new PolkadotSigner(provider.client, session)
       }
     } finally {

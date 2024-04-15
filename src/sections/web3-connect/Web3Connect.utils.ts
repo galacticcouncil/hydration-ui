@@ -31,6 +31,7 @@ import { WalletAccount } from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -339,6 +340,10 @@ export function getWalletProviderByType(type?: WalletProviderType | null) {
 
 function getProviderQueryKey(type: WalletProviderType | null) {
   const { wallet } = getWalletProviderByType(type)
+
+  if (wallet?.signer instanceof PolkadotSigner) {
+    return [type, wallet.signer?.session?.topic].join("-")
+  }
 
   if (wallet?.signer instanceof EthereumSigner) {
     return [type, wallet.signer?.address].join("-")
