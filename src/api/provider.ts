@@ -100,20 +100,7 @@ export const useProviderData = (rpcUrl: string) => {
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(rpcUrl)
-
-      api.registry.register({
-        XykLMDeposit: {
-          shares: "u128",
-          ammPoolId: "AccountId",
-          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-        },
-        OmnipoolLMDeposit: {
-          shares: "u128",
-          ammPoolId: "u32",
-          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-        },
-      })
+      const api = await apiPool.api(url)
 
       api.registry.register({
         XykLMDeposit: {
