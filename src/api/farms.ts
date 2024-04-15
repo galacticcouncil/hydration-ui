@@ -36,12 +36,6 @@ export interface Farm {
   poolId: string
 }
 
-export const useFarmingPoolAssets = () => {
-  const { assets } = useRpcProvider()
-
-  console.log(assets.tradeAssets, assets.shareTokens)
-}
-
 export function useActiveYieldFarms(poolIds: Array<string>) {
   const { api, assets } = useRpcProvider()
 

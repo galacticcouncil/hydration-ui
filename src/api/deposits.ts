@@ -6,6 +6,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccountNFTPositions } from "sections/pools/PoolsPage.utils"
 import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 
+export type TDeposit = {
+  id: string
+  data: PalletLiquidityMiningDepositData
+}
+
 export const useOmnipoolDeposits = (ids: string[]) => {
   const { api } = useRpcProvider()
 

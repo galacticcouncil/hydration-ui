@@ -3,12 +3,11 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
 import { useBestNumber } from "api/chain"
-import { useUserDeposits } from "api/deposits"
+import { TDeposit, useUserDeposits } from "api/deposits"
 import { useFarms, useInactiveFarms, useOraclePrices } from "api/farms"
 import { useOmnipoolAssets } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { ToastMessage, useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import { BN_0 } from "utils/constants"
@@ -19,10 +18,7 @@ import { MultiCurrencyContainer } from "./claiming/multiCurrency"
 import { createMutableFarmEntries } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useClaimableAmount = (
-  poolId?: string,
-  depositNft?: TMiningNftPosition,
-) => {
+export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   const bestNumberQuery = useBestNumber()
   const { api, assets } = useRpcProvider()
   const { omnipoolDeposits, xykDeposits } = useUserDeposits()
@@ -220,31 +216,50 @@ export const useClaimableAmount = (
   return { data, isLoading }
 }
 
-export const useClaimAllMutation = (
+export const useClaimFarmMutation = (
   poolId?: string,
-  depositNft?: TMiningNftPosition,
+  depositNft?: TDeposit,
   toast?: ToastMessage,
   onClose?: () => void,
   onBack?: () => void,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
+  const meta = poolId ? assets.getAsset(poolId) : undefined
+  const isXYK = assets.isShareToken(meta)
 
-  //TODO: ADD xykDeposits as well
-  const { omnipoolDeposits } = useUserDeposits()
+  const { omnipoolDeposits, xykDeposits } = useUserDeposits()
 
-  const filteredDeposits = poolId
-    ? omnipoolDeposits.filter(
-        (deposit) => deposit.data.ammPoolId.toString() === poolId.toString(),
-      ) ?? []
-    : omnipoolDeposits
+  let omnipoolDeposits_: TDeposit[] = []
+  let xykDeposits_: TDeposit[] = []
 
-  const deposits = depositNft ? [depositNft] : filteredDeposits
+  if (depositNft) {
+    if (isXYK) {
+      xykDeposits_ = [depositNft]
+    } else {
+      omnipoolDeposits_ = [depositNft]
+    }
+  } else {
+    if (poolId) {
+      if (isXYK) {
+        xykDeposits_ = xykDeposits.filter(
+          (deposit) => deposit.data.ammPoolId.toString() === meta.poolAddress,
+        )
+      } else {
+        omnipoolDeposits_ = omnipoolDeposits.filter(
+          (deposit) => deposit.data.ammPoolId.toString() === poolId,
+        )
+      }
+    } else {
+      xykDeposits_ = xykDeposits
+      omnipoolDeposits_ = omnipoolDeposits
+    }
+  }
 
   return useMutation(async () => {
-    const txs =
-      deposits
-        ?.map((deposit) =>
+    const omnipoolTxs =
+      omnipoolDeposits_
+        .map((deposit) =>
           deposit.data.yieldFarmEntries.map((entry) =>
             api.tx.omnipoolLiquidityMining.claimRewards(
               deposit.id,
@@ -254,9 +269,25 @@ export const useClaimAllMutation = (
         )
         .flat(2) ?? []
 
-    if (txs.length > 0) {
+    const xykTxs =
+      xykDeposits_
+        .map((deposit) =>
+          deposit.data.yieldFarmEntries.map((entry) =>
+            api.tx.xykLiquidityMining.claimRewards(
+              deposit.id,
+              entry.yieldFarmId,
+            ),
+          ),
+        )
+        .flat(2) ?? []
+
+    const allTxs = [...omnipoolTxs, ...xykTxs]
+
+    if (allTxs.length > 0) {
       return await createTransaction(
-        { tx: txs.length > 1 ? api.tx.utility.forceBatch(txs) : txs[0] },
+        {
+          tx: allTxs.length > 1 ? api.tx.utility.forceBatch(allTxs) : allTxs[0],
+        },
         { toast, onBack, onClose },
       )
     }
