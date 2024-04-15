@@ -19,6 +19,7 @@ import { useIndexerUrl } from "./provider"
 import request, { gql } from "graphql-request"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMemo } from "react"
+import { scale } from "utils/balance"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -336,17 +337,9 @@ export const useFarmApr = (farm: {
   yieldFarm: PalletLiquidityMiningYieldFarmData
   poolId: string
 }) => {
-  //const { assets } = useRpcProvider()
   const bestNumber = useBestNumber()
   const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
   const incentivizedAsset = farm.globalFarm.incentivizedAsset.toString()
-
-  //const isXYK = assets.getAsset(farm.poolId).isShareToken
-
-  // const oraclePrice = useOraclePrice(
-  //   isXYK ? undefined : rewardCurrency,
-  //   incentivizedAsset,
-  // )
 
   const oraclePrice = useOraclePrice(rewardCurrency, incentivizedAsset)
 
@@ -440,7 +433,7 @@ const getOraclePrice =
     if (rewardCurrency === incentivizedAsset)
       return {
         id: { rewardCurrency, incentivizedAsset },
-        oraclePrice: BN_1,
+        oraclePrice: scale(BN_1, "q"),
       }
     const res = await api.query.emaOracle.oracles(
       "omnipool",
