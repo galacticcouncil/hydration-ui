@@ -3,7 +3,6 @@ import {
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
 import { u128 } from "@polkadot/types-codec"
-import { PalletOmnipoolPosition } from "@polkadot/types/lookup"
 import { OmnipoolPosition } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_10, BN_NAN } from "utils/constants"
@@ -18,7 +17,7 @@ export const calculatePositionLiquidity = ({
   lrnaDecimals,
   assetDecimals,
 }: {
-  position: PalletOmnipoolPosition | OmnipoolPosition
+  position: OmnipoolPosition
   omnipoolBalance?: BN
   omnipoolHubReserve?: u128
   omnipoolShares?: u128

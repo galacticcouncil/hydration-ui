@@ -7,7 +7,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
@@ -22,7 +22,7 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const meta = assets.getAsset(pool.id)
   const queryClient = useQueryClient()
 
-  const miningPositions = useAllUserDepositShare()
+  const miningPositions = useAllOmnipoolDeposits()
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,

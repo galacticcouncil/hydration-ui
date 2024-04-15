@@ -3,8 +3,9 @@ import { u128, u32, Option } from "@polkadot/types"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccountNFTPositions } from "sections/pools/PoolsPage.utils"
 import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
+import { undefinedNoop } from "utils/helpers"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type TDeposit = {
   id: string
@@ -50,9 +51,13 @@ const getDeposits =
           ) as PalletLiquidityMiningDepositData,
       )
 
-    const test = ids.map((id, i) => ({ id, data: data[i] }))
+    const data_ = ids.map((id, i) => ({
+      id,
+      data: data[i],
+      isXyk: type === "xyk",
+    }))
 
-    return test
+    return data_
   }
 
 export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
@@ -72,6 +77,63 @@ const getOmniPositionId =
       await api.query.omnipoolLiquidityMining.omniPositionId(depositionId)
     return { depositionId, value: res.value }
   }
+
+export const useAccountNFTPositions = (givenAddress?: string) => {
+  const { account } = useAccount()
+  const { api } = useRpcProvider()
+
+  const address = givenAddress ?? account?.address
+
+  return useQuery(
+    QUERY_KEYS.accountOmnipoolPositions(address),
+    address != null
+      ? async () => {
+          const [omnipoolNftId, miningNftId, xykMiningNftId] =
+            await Promise.all([
+              api.consts.omnipool.nftCollectionId,
+              api.consts.omnipoolLiquidityMining.nftCollectionId,
+              api.consts.xykLiquidityMining.nftCollectionId,
+            ])
+          const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
+            await Promise.all([
+              api.query.uniques.account.entries(address, omnipoolNftId),
+              api.query.uniques.account.entries(address, miningNftId),
+              api.query.uniques.account.entries(address, xykMiningNftId),
+            ])
+
+          const omnipoolNfts = omnipoolNftsRaw.map(([storageKey]) => {
+            const [owner, classId, instanceId] = storageKey.args
+            return {
+              owner: owner.toString(),
+              classId: classId.toString(),
+              instanceId: instanceId.toString(),
+            }
+          })
+
+          const miningNfts = miningNftsRaw.map(([storageKey]) => {
+            const [owner, classId, instanceId] = storageKey.args
+            return {
+              owner: owner.toString(),
+              classId: classId.toString(),
+              instanceId: instanceId.toString(),
+            }
+          })
+
+          const xykMiningNfts = xykMiningNftsRaw.map(([storageKey]) => {
+            const [owner, classId, instanceId] = storageKey.args
+            return {
+              owner: owner.toString(),
+              classId: classId.toString(),
+              instanceId: instanceId.toString(),
+            }
+          })
+
+          return { omnipoolNfts, miningNfts, xykMiningNfts }
+        }
+      : undefinedNoop,
+    { enabled: !!address },
+  )
+}
 
 export const useUserDeposits = (address?: string) => {
   const nftPositions = useAccountNFTPositions(address)

@@ -112,7 +112,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           </TableBodyContent>
         </Table>
       </TableContainer>
-      {!isDesktop && (
+      {!isDesktop && row && (
         <FarmingPositionsDetailsMob
           row={row}
           onClose={() => setRow(undefined)}

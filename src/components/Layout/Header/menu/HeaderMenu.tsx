@@ -6,8 +6,8 @@ import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountNFTPositions } from "sections/pools/PoolsPage.utils"
 import { useTokensBalances } from "api/balances"
+import { useAccountNFTPositions } from "api/deposits"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation()

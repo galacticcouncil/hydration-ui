@@ -21,6 +21,7 @@ type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
   getAsset: (id: string) => TAsset
   getBond: (id: string) => TBond | undefined
   getAssets: (ids: string[]) => TAsset[]
+  getShareTokenByAddress: (address: string) => TShareToken | undefined
   tradeAssets: TAsset[]
 }
 
@@ -93,6 +94,9 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         return asset.isShareToken
       }
 
+      const getShareTokenByAddress = (address: string) =>
+        shareTokens.find((shareToken) => shareToken.poolAddress === address)
+
       const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
 
       const getBond = (id: string) => {
@@ -118,6 +122,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           getAsset,
           getBond,
           getAssets,
+          getShareTokenByAddress,
           tradeAssets,
         },
         api: providerData.data.api,

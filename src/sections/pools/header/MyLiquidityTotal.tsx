@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useMyStablePoolaTotal } from "./StablePoolsTotal"
 import { useXYKPools } from "sections/pools/PoolsPage.utils"
 import { Text } from "components/Typography/Text/Text"
@@ -12,7 +12,7 @@ import { Trans, useTranslation } from "react-i18next"
 export const MyLiquidityTotal = () => {
   const { t } = useTranslation()
   const omnipoolPositions = useOmnipoolPositionsData()
-  const miningPositions = useAllUserDepositShare()
+  const totalFarms = useFarmDepositsTotal()
   const stablePoolTotal = useMyStablePoolaTotal()
   const xylPools = useXYKPools(true)
 
@@ -35,34 +35,24 @@ export const MyLiquidityTotal = () => {
     }, BN_0)
   }, [omnipoolPositions.data])
 
-  const totalFarms = useMemo(() => {
-    let calculatedShares = BN_0
-    for (const poolId in miningPositions.data) {
-      const poolTotal = miningPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueDisplay)
-      }, BN_0)
-      calculatedShares = calculatedShares.plus(poolTotal)
-    }
-    return calculatedShares
-  }, [miningPositions.data])
-
   const total = xykTotal
     .plus(totalOmnipool)
     .plus(stablePoolTotal.value)
-    .plus(totalFarms)
+    .plus(totalFarms.value)
 
   return (
     <HeaderTotalData
       isLoading={
         omnipoolPositions.isInitialLoading ||
         stablePoolTotal.isLoading ||
-        xylPools.isInitialLoading
+        xylPools.isInitialLoading ||
+        totalFarms.isLoading
       }
       value={total}
       subValue={
         <Text fs={12} color="white" css={{ opacity: "0.6" }}>
           <Trans t={t} i18nKey="liquidity.header.farms">
-            <DisplayValue value={totalFarms} />
+            <DisplayValue value={totalFarms.value} />
           </Trans>
         </Text>
       }

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import {
   TMiningNftPosition,
-  useDepositValues,
+  useXYKDepositValues,
 } from "sections/pools/PoolsPage.utils"
 import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { useEnteredDate } from "utils/block"
@@ -173,7 +173,7 @@ export const FarmingPosition = ({
         </SValueContainer>
         <SSeparator />
         {isXYK ? (
-          <XYKFields poolId={poolId} depositNft={depositNft} />
+          <XYKFields depositNft={depositNft} />
         ) : (
           <OmnipoolFields poolId={poolId} depositNft={depositNft} />
         )}
@@ -267,15 +267,10 @@ const OmnipoolFields = ({
   )
 }
 
-const XYKFields = ({
-  poolId,
-  depositNft,
-}: {
-  poolId: string
-  depositNft: TMiningNftPosition
-}) => {
+const XYKFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
   const { t } = useTranslation()
-  const { amountUSD, assetA, assetB } = useDepositValues(poolId, depositNft)
+  const { amountUSD, assetA, assetB } =
+    useXYKDepositValues([depositNft]).data?.[0] ?? {}
 
   return (
     <SValueContainer>
