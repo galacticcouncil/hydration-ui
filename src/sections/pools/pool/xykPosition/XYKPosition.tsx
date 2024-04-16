@@ -19,12 +19,15 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const queryClient = useQueryClient()
 
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
 
@@ -78,6 +81,12 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   if (!pool.shareTokenIssuance || pool.shareTokenIssuance.myPoolShare?.isZero())
     return null
 
+  const onSuccess = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+    )
+  }
+
   return (
     <div sx={{ flex: "column", gap: 12, bg: "gray" }}>
       <Text fs={15} font="FontOver">
@@ -109,10 +118,10 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 </Text>
               </div>
               <div sx={{ flex: "row", gap: 8 }}>
-                <JoinFarmsButton poolId={pool.id} onSuccess={() => null} />
+                <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
                 <LiquidityPositionRemoveLiquidity
                   pool={pool}
-                  onSuccess={() => null}
+                  onSuccess={onSuccess}
                 />
               </div>
             </div>

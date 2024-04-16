@@ -169,6 +169,9 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           queryClient.refetchQueries(
             QUERY_KEYS.accountOmnipoolPositions(account?.address),
           )
+          queryClient.refetchQueries(
+            QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+          )
         },
         onSubmitted: () => {
           onClose()
