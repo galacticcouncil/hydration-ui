@@ -8,7 +8,6 @@ import { Farm } from "api/farms"
 import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import i18n from "i18next"
-import BN from "bignumber.js"
 
 export const useZodSchema = (id: string, farms: Farm[]) => {
   const { account } = useAccount()
@@ -22,7 +21,7 @@ export const useZodSchema = (id: string, farms: Farm[]) => {
       const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
 
       return minDeposit.gt(acc) ? minDeposit : acc
-    }, BN(10000000))
+    }, BN_0)
   }, [farms])
 
   if (!balance) return undefined

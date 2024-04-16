@@ -85,6 +85,9 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     queryClient.refetchQueries(
       QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
     )
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
   }
 
   return (
