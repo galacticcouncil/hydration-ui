@@ -367,7 +367,7 @@
   "otc.offers.table.header.offer": "Offer",
   "otc.offers.table.header.accepting": "Accepting",
   "otc.offers.table.header.assets": "Assets",
-  "otc.offers.table.header.orderPrice": "Offer USD Price",
+  "otc.offers.table.header.orderPrice": "Offer Price",
   "otc.offers.table.header.perToken": "per {{ symbol }}",
   "otc.offers.table.header.marketPrice": "Market Price",
   "otc.offers.table.header.status": "Order status",
