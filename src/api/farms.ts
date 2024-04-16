@@ -275,7 +275,7 @@ function getFarmApr(
 
   let apr
   if (totalSharesZ.isZero()) {
-    apr = yieldPerPeriod.times(multiplier).times(periodsPerYear)
+    apr = yieldPerPeriod.times(multiplier).times(periodsPerYear).shiftedBy(-18)
   } else {
     const globalRewardPerPeriod = getGlobalRewardPerPeriod(
       totalSharesZ,
