@@ -1,5 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { FC, useEffect, useState } from "react"
+import { FC, useState } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"

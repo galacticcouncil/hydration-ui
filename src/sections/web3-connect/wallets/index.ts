@@ -66,6 +66,10 @@ const walletConnect: Wallet = new WalletConnect({
       state.toggle()
     }
   },
+  onSesssionDelete: () => {
+    const state = useWeb3ConnectStore.getState()
+    state.disconnect()
+  },
 })
 
 const externalWallet: Wallet = new ExternalWallet()

@@ -16,13 +16,11 @@ import {
   PolkadotNamespaceChainId,
   PolkadotSigner,
 } from "sections/web3-connect/signer/PolkadotSigner"
+import { noop } from "utils/helpers"
 
 const WC_LS_KEY_PREFIX = "wc@2"
 const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID as string
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
-
-const HDX_EVM_CHAIN_ID = import.meta.env.VITE_EVM_CHAIN_ID
-const HDX_EVM_NAMESPACE_CHAIN_ID = `eip155:${HDX_EVM_CHAIN_ID}`
 
 export const POLKADOT_CAIP_ID_MAP: Record<string, PolkadotNamespaceChainId> = {
   hydradx: import.meta.env
@@ -55,20 +53,28 @@ const walletConnectParams = {
   },
 }
 
+const evmChainsArr = Object.values(evmChains)
+
 const namespaces = {
   eip155: {
-    chains: [HDX_EVM_NAMESPACE_CHAIN_ID],
+    chains: evmChainsArr.map(({ id }) => `eip155:${id}`),
     methods: [
       "eth_sendTransaction",
       "eth_signTransaction",
       "eth_sign",
       "personal_sign",
       "eth_signTypedData",
+      "wallet_switchEthereumChain",
+      "wallet_addEthereumChain",
     ],
     events: ["chainChanged", "accountsChanged"],
-    rpcMap: {
-      [HDX_EVM_CHAIN_ID]: evmChains["hydradx"].rpcUrls.default.http[0],
-    },
+    rpcMap: evmChainsArr.reduce(
+      (prev, curr) => ({
+        ...prev,
+        [curr.id]: curr.rpcUrls.default.http[0],
+      }),
+      {},
+    ),
   },
   polkadot: {
     methods: ["polkadot_signTransaction", "polkadot_signMessage"],
@@ -96,18 +102,24 @@ export class WalletConnect implements Wallet {
   _session: SessionTypes.Struct | undefined
   _namespace: NamespaceConfig | undefined
 
+  onSessionDelete: () => void = noop
+
   constructor({
     onModalOpen,
     onModalClose,
+    onSesssionDelete,
   }: {
     onModalOpen?: ModalSubFn
     onModalClose?: ModalSubFn
+    onSesssionDelete?: () => void
   } = {}) {
     this._modal = new WalletConnectModal({
       projectId: WC_PROJECT_ID,
     })
 
     this.subscribeToModalEvents(onModalOpen, onModalClose)
+
+    if (onSesssionDelete) this.onSessionDelete = onSesssionDelete
   }
 
   get extension() {
@@ -152,8 +164,9 @@ export class WalletConnect implements Wallet {
     }
 
     this._extension = provider
-    provider.on("display_uri", this.onDisplayUri)
-    provider.on("session_update", this.onSessionUpdate)
+    provider.on("display_uri", this.handleDisplayUri)
+    provider.on("session_update", this.handleSessionUpdate)
+    provider.on("session_delete", this.handleSessionDelete)
 
     return provider
   }
@@ -190,12 +203,17 @@ export class WalletConnect implements Wallet {
     })
   }
 
-  onDisplayUri = async (uri: string) => {
+  handleDisplayUri = async (uri: string) => {
     await this.modal?.openModal({ uri, chains: this.getChains() })
   }
 
-  onSessionUpdate = ({ session }: { session: SessionTypes.Struct }) => {
+  handleSessionUpdate = ({ session }: { session: SessionTypes.Struct }) => {
     this._session = session
+  }
+
+  handleSessionDelete = () => {
+    this.disconnect()
+    this.onSessionDelete()
   }
 
   enable = async (dappName: string) => {
@@ -219,7 +237,7 @@ export class WalletConnect implements Wallet {
 
     try {
       const session = await provider.connect({
-        namespaces: this.namespace,
+        optionalNamespaces: this.namespace,
       })
 
       if (!session) {

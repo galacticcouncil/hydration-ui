@@ -8,8 +8,7 @@ import UniversalProvider from "@walletconnect/universal-provider/dist/types/Univ
 import { DISPATCH_ADDRESS } from "utils/evm"
 import {
   MetaMaskLikeProvider,
-  isMetaMask,
-  isMetaMaskLike,
+  isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
 
@@ -55,7 +54,7 @@ export class EthereumSigner {
     const { chain, ...tx } = transaction
     const from = chain && evmChains[chain] ? chain : "hydradx"
 
-    if (isMetaMask(this.provider) || isMetaMaskLike(this.provider)) {
+    if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain: from,
         onSwitch: () => {
