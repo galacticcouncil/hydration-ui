@@ -42,6 +42,8 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
+import { Option } from "@polkadot/types"
+import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 
 export const useAssetsTradability = () => {
   const {
@@ -168,8 +170,18 @@ export const useAccountMiningPositions = () => {
 }
 
 const getMiningPosition = (api: ApiPromise, id: string) => async () => {
-  const dataRaw = await api.query.omnipoolWarehouseLM.deposit(id)
-  const data = dataRaw.unwrap()
+  const key = api.query.omnipoolWarehouseLM.deposit.key(id)
+
+  const value = (await api.rpc.state.getStorage(
+    key,
+  )) as Option<PalletLiquidityMiningDepositData>
+
+  if (value.isNone) return undefined
+
+  const data = api.registry.createType(
+    "OmnipoolLMDeposit",
+    value.unwrap(),
+  ) as PalletLiquidityMiningDepositData
 
   return { id, data }
 }
