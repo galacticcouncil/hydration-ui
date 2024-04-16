@@ -87,8 +87,8 @@ export function useYieldFarms(ids: FarmIds[]) {
 
       return {
         queryKey: isXYK
-          ? QUERY_KEYS.yieldFarmXYK(poolId)
-          : QUERY_KEYS.yieldFarm(poolId),
+          ? QUERY_KEYS.yieldFarmXYK(yieldFarmId)
+          : QUERY_KEYS.yieldFarm(yieldFarmId),
         queryFn: async () => {
           const farm = await getYieldFarm(
             api,
@@ -139,8 +139,8 @@ export function useGlobalFarms(ids: FarmIds[]) {
 
       return {
         queryKey: isXYK
-          ? QUERY_KEYS.globalFarmXYK(poolId)
-          : QUERY_KEYS.globalFarm(poolId),
+          ? QUERY_KEYS.globalFarmXYK(globalFarmId)
+          : QUERY_KEYS.globalFarm(globalFarmId),
         queryFn: async () => {
           const farm = await getGlobalFarm(api, globalFarmId, isXYK)()
           return { farm, poolId }
