@@ -214,7 +214,7 @@ export const useFarmingPositionsData = ({
         let position: XYKPosition | OmnipoolPosition
         if (isXyk) {
           const values = xykDepositValues.data.find(
-            (value) => value.assetId === id,
+            (value) => value.depositId === deposit.id,
           )
 
           if (values?.amountUSD) {
@@ -238,7 +238,7 @@ export const useFarmingPositionsData = ({
           }
         } else {
           const omnipoolDeposit = accountDepositsShare.data[poolId]?.find(
-            (d) => d.depositId?.toString() === deposit.id.toString(),
+            (d) => d.depositId?.toString() === deposit.id,
           )
 
           if (omnipoolDeposit) {

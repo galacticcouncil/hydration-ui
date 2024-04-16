@@ -633,7 +633,6 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
       )?.totalShare
 
       if (!shareTokenIssuance) {
-        console.error("Could not calculate deposit balances")
         return { ...defaultValue, assetId: deposit.assetId }
       }
 
@@ -661,7 +660,13 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
           amount,
         }
       })
-      return { assetA, assetB, amountUSD, assetId: deposit.assetId }
+      return {
+        assetA,
+        assetB,
+        amountUSD,
+        assetId: deposit.assetId,
+        depositId: deposit.depositNft.id,
+      }
     })
   }, [
     assets,

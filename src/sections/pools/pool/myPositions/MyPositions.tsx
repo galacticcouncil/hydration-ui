@@ -126,8 +126,33 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
 }
 
 export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
+  const { t } = useTranslation()
+
+  const totalFarms = useMemo(() => {
+    return pool.miningPositions.reduce((memo, share) => {
+      return memo.plus(share.amountUSD ?? 0)
+    }, BN_0)
+  }, [pool.miningPositions])
+
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
+      <Text fs={15} font="FontOver">
+        {t("liquidity.pool.positions.title")}
+      </Text>
+      {!totalFarms.isZero() && (
+        <>
+          <SSeparator color="white" opacity={0.06} orientation="vertical" />
+          <div sx={{ flex: "column", gap: 6 }}>
+            <Text color="basic400" fs={[12, 13]}>
+              {t("liquidity.pool.positions.farming")}
+            </Text>
+            <Text color="white" fs={[14, 16]} fw={600}>
+              {t("value.usd", { amount: totalFarms })}
+            </Text>
+          </div>
+          <SSeparator color="darkBlue401" sx={{ my: 16 }} />
+        </>
+      )}
       <XYKPosition pool={pool} />
       <FarmingPositionWrapper pool={pool} positions={pool.miningNftPositions} />
     </div>
