@@ -107,6 +107,8 @@ export function OrderAssetPay(props: {
 }) {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.asset.toString())
+  const isBond = assets.isBond(asset)
+  const assetDetails = isBond ? assets.getAsset(asset.assetId) : asset
 
   const assetBalance = props.balance
   const assetDecimals = asset.decimals
@@ -140,8 +142,8 @@ export function OrderAssetPay(props: {
       selectable={false}
       readonly={props.readonly || false}
     >
-      <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+      <UigcAsset slot="asset" symbol={assetDetails?.symbol}>
+        <UigcAssetId slot="icon" symbol={assetDetails?.symbol} />
       </UigcAsset>
       <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
     </UigcAssetTransfer>
@@ -181,6 +183,9 @@ export function OrderAssetGet(props: {
 }) {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.asset.toString())
+  const isBond = assets.isBond(asset)
+  const assetDetails = isBond ? assets.getAsset(asset.assetId) : asset
+
   return (
     <UigcAssetTransfer
       ref={(el) => {
@@ -206,8 +211,8 @@ export function OrderAssetGet(props: {
       selectable={false}
       readonly={props.readonly || false}
     >
-      <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+      <UigcAsset slot="asset" symbol={assetDetails?.symbol}>
+        <UigcAssetId slot="icon" symbol={assetDetails?.symbol} />
       </UigcAsset>
       {props.onChange && (
         <div slot="balance" sx={{ display: "flex", justify: "end", gap: 2 }}>
