@@ -33,7 +33,10 @@ import {
 import { useShareOfPools } from "api/pools"
 import { TShareToken } from "api/assetDetails"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
-import { useAllOmnipoolDeposits } from "./farms/position/FarmingPosition.utils"
+import {
+  useAllOmnipoolDeposits,
+  useAllXYKDeposits,
+} from "./farms/position/FarmingPosition.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
@@ -420,6 +423,8 @@ export const useXYKPools = (withPositions?: boolean) => {
       : [],
   )
 
+  const deposits = useAllXYKDeposits()
+
   const queries = [
     pools,
     shareTokens,
@@ -469,6 +474,10 @@ export const useXYKPools = (withPositions?: boolean) => {
             (volume) => volume.poolAddress === pool.poolAddress,
           )?.volume ?? BN_NAN
 
+        const miningPositions = deposits.data.filter(
+          (deposit) => deposit.assetId === shareTokenMeta.id,
+        )
+
         return {
           id: shareTokenMeta.id,
           symbol: shareTokenMeta.symbol,
@@ -483,11 +492,15 @@ export const useXYKPools = (withPositions?: boolean) => {
           shareTokenIssuance,
           volume,
           isVolumeLoading: volumes.isLoading,
+          miningPositions,
         }
       })
       .filter(isNotNil)
       .filter((pool) =>
-        withPositions ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : true,
+        withPositions
+          ? pool.shareTokenIssuance?.myPoolShare?.gt(0) ||
+            pool.miningPositions.length
+          : true,
       )
       .sort((a, b) => b.tvlDisplay.minus(a.tvlDisplay).toNumber())
   }, [
@@ -499,6 +512,7 @@ export const useXYKPools = (withPositions?: boolean) => {
     totalIssuances.data,
     withPositions,
     volumes,
+    deposits,
   ])
 
   return { data, isInitialLoading }
