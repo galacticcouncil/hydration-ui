@@ -10,6 +10,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 export type TDeposit = {
   id: string
   data: PalletLiquidityMiningDepositData
+  isXyk: boolean
 }
 
 export const useOmnipoolDeposits = (ids: string[]) => {

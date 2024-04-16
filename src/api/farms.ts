@@ -89,13 +89,16 @@ export function useYieldFarms(ids: FarmIds[]) {
         queryKey: isXYK
           ? QUERY_KEYS.yieldFarmXYK(poolId)
           : QUERY_KEYS.yieldFarm(poolId),
-        queryFn: getYieldFarm(
-          api,
-          isXYK ? meta.poolAddress : poolId,
-          globalFarmId,
-          yieldFarmId,
-          isXYK,
-        ),
+        queryFn: async () => {
+          const farm = await getYieldFarm(
+            api,
+            isXYK ? meta.poolAddress : poolId,
+            globalFarmId,
+            yieldFarmId,
+            isXYK,
+          )()
+          return { farm, poolId }
+        },
         enabled: poolId != null,
       }
     }),
@@ -138,7 +141,10 @@ export function useGlobalFarms(ids: FarmIds[]) {
         queryKey: isXYK
           ? QUERY_KEYS.globalFarmXYK(poolId)
           : QUERY_KEYS.globalFarm(poolId),
-        queryFn: getGlobalFarm(api, globalFarmId, isXYK),
+        queryFn: async () => {
+          const farm = await getGlobalFarm(api, globalFarmId, isXYK)()
+          return { farm, poolId }
+        },
         enabled: poolId != null,
       }
     }),
@@ -176,14 +182,23 @@ export const useFarms = (poolIds: Array<string>) => {
   const data = useMemo(() => {
     return farmIds
       .map((farmId) => {
-        const globalFarm = globalFarms.find(
-          (globalFarm) =>
-            globalFarm.data?.id.toString() === farmId.globalFarmId,
-        )?.data
+        const globalFarm = globalFarms.find((globalFarm) => {
+          const data = globalFarm.data
 
-        const yieldFarm = yieldFarms.find(
-          (yieldFarm) => yieldFarm.data?.id.toString() === farmId.yieldFarmId,
-        )?.data
+          return (
+            data?.farm.id.toString() === farmId.globalFarmId &&
+            data.poolId === farmId.poolId
+          )
+        })?.data?.farm
+
+        const yieldFarm = yieldFarms.find((yieldFarm) => {
+          const data = yieldFarm.data
+
+          return (
+            data?.farm.id.toString() === farmId.yieldFarmId &&
+            data.poolId === farmId.poolId
+          )
+        })?.data?.farm
 
         if (!globalFarm || !yieldFarm) return undefined
 
@@ -559,14 +574,23 @@ export const useInactiveFarms = (poolIds: Array<AccountId32 | string>) => {
   const data = useMemo(() => {
     return farmIds
       .map((farmId) => {
-        const globalFarm = globalFarms.find(
-          (globalFarm) =>
-            globalFarm.data?.id.toString() === farmId.globalFarmId,
-        )?.data
+        const globalFarm = globalFarms.find((globalFarm) => {
+          const data = globalFarm.data
 
-        const yieldFarm = yieldFarms.find(
-          (yieldFarm) => yieldFarm.data?.id.toString() === farmId.yieldFarmId,
-        )?.data
+          return (
+            data?.farm.id.toString() === farmId.globalFarmId &&
+            data.poolId === farmId.poolId
+          )
+        })?.data?.farm
+
+        const yieldFarm = yieldFarms.find((yieldFarm) => {
+          const data = yieldFarm.data
+
+          return (
+            data?.farm.id.toString() === farmId.yieldFarmId &&
+            data.poolId === farmId.poolId
+          )
+        })?.data?.farm
 
         if (!globalFarm || !yieldFarm) return undefined
 

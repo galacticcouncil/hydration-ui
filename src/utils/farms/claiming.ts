@@ -15,7 +15,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { getAccountResolver } from "./claiming/accountResolver"
 import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
 import { MultiCurrencyContainer } from "./claiming/multiCurrency"
-import { createMutableFarmEntries } from "./claiming/mutableFarms"
+import { createMutableFarmEntry } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
@@ -119,15 +119,19 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
       metas ?? [],
     )
 
-    const { globalFarms, yieldFarms } = createMutableFarmEntries(allFarms ?? [])
-
     return deposits
       ?.map((record) =>
         record.data.yieldFarmEntries.map((farmEntry) => {
+          const poolId = record.isXyk
+            ? assets.getShareTokenByAddress(record.data.ammPoolId.toString())
+                ?.id
+            : record.data.ammPoolId.toString()
+
           const aprEntry = allFarms.find(
             (i) =>
               i.globalFarm.id.eq(farmEntry.globalFarmId) &&
-              i.yieldFarm.id.eq(farmEntry.yieldFarmId),
+              i.yieldFarm.id.eq(farmEntry.yieldFarmId) &&
+              i.poolId === poolId,
           )
 
           if (!aprEntry) return null
@@ -142,9 +146,11 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
 
           if (!oracle?.data) return null
 
+          const { globalFarm, yieldFarm } = createMutableFarmEntry(aprEntry)
+
           const reward = simulator.claim_rewards(
-            globalFarms[aprEntry.globalFarm.id.toString()],
-            yieldFarms[aprEntry.yieldFarm.id.toString()],
+            globalFarm,
+            yieldFarm,
             farmEntry,
             bestNumber.data.relaychainBlockNumber.toBigNumber(),
             oracle.data.oraclePrice ??
