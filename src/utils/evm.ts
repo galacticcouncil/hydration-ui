@@ -72,4 +72,17 @@ export function safeConvertAddressH160(value: string): string | null {
   }
 }
 
+export function getEvmChainById(chainId: number) {
+  const entries = Object.entries(evmChains).find(
+    ([_, chain]) => chain.id === chainId,
+  )
+  const [key, chain] = entries ?? []
+  if (key) {
+    return {
+      key,
+      ...chain,
+    }
+  }
+}
+
 export { getEvmAddress, isEvmAddress }
