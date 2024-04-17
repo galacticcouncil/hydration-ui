@@ -147,8 +147,9 @@ export class WalletConnect implements Wallet {
   }
 
   initializeProvider = async () => {
-    if (this.extension) {
-      return Promise.resolve(this.extension)
+    if (this._extension) {
+      await this._extension?.cleanupPendingPairings()
+      await this._extension?.disconnect()
     }
 
     const provider = await UniversalProvider.init(walletConnectParams).catch(
@@ -221,17 +222,17 @@ export class WalletConnect implements Wallet {
       throw new Error("MissingParamsError: Dapp name is required.")
     }
 
-    if (!this.namespace) {
-      throw new Error(
-        "WalletConnectError: Namespace is required to enable WalletConnect.",
-      )
-    }
-
     const provider = await this.initializeProvider()
 
     if (!provider) {
       throw new Error(
         "WalletConnectError: WalletConnect provider is not initialized.",
+      )
+    }
+
+    if (!this.namespace) {
+      throw new Error(
+        "WalletConnectError: Namespace is required to enable WalletConnect.",
       )
     }
 
@@ -296,9 +297,11 @@ export class WalletConnect implements Wallet {
   subscribeAccounts = async () => {}
 
   disconnect = () => {
+    this._extension?.cleanupPendingPairings()
+    this._extension?.disconnect()
+
     this._signer = undefined
     this._session = undefined
-    this._namespace = undefined
     this._extension = undefined
 
     // delete every WalletConnect v2 entry in local storage to forget the session
