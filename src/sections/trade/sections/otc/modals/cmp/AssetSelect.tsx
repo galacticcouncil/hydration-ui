@@ -54,6 +54,9 @@ export function OrderAssetSelect(props: {
     ? assets.getAsset(props.asset.toString())
     : undefined
 
+  const assetDetails =
+    asset && assets.isBond(asset) ? assets.getAsset(asset.assetId) : asset
+
   const assetBalance = props.balance
   const assetDecimals = asset?.decimals
 
@@ -84,7 +87,7 @@ export function OrderAssetSelect(props: {
       amount={props.value}
     >
       <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+        <UigcAssetId slot="icon" symbol={assetDetails?.symbol} />
       </UigcAsset>
       <UigcAssetBalance
         slot="balance"
