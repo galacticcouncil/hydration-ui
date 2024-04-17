@@ -7,6 +7,7 @@ import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
 import { useFarms } from "api/farms"
+import { useFarmRedepositMutation } from "utils/farms/redeposit"
 
 type RedepositFarmsProps = {
   depositNft: TMiningNftPosition
@@ -29,6 +30,13 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
             entry.yieldFarmId.eq(i.yieldFarm.id),
         ),
     ) ?? []
+
+  const redeposit = useFarmRedepositMutation(
+    availableYieldFarms,
+    depositNft,
+    poolId,
+    () => setJoinFarm(false),
+  )
 
   if (!availableYieldFarms.length) return null
 
@@ -61,8 +69,8 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
           poolId={poolId}
           initialShares={depositNft.data.shares.toBigNumber()}
           onClose={() => setJoinFarm(false)}
-          onSuccess={() => null}
           isRedeposit
+          mutation={redeposit}
         />
       )}
     </SContainer>

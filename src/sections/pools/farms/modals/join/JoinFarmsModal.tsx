@@ -9,7 +9,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
-import { useFarmDepositMutation } from "utils/farms/deposit"
+import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
@@ -23,27 +23,26 @@ import { useZodSchema } from "./JoinFarmsModal.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
+import { FarmRedepositMutationType } from "utils/farms/redeposit"
 
 type JoinFarmModalProps = {
   onClose: () => void
-  onSuccess: () => void
   poolId: string
   initialShares?: BigNumber
-  positionId?: string
   farms: Farm[]
   isRedeposit?: boolean
   depositNft?: TMiningNftPosition
+  mutation: FarmDepositMutationType | FarmRedepositMutationType
 }
 
 export const JoinFarmModal = ({
   onClose,
-  onSuccess,
   isRedeposit,
   poolId,
   initialShares,
-  positionId,
   depositNft,
   farms,
+  mutation,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -54,9 +53,7 @@ export const JoinFarmModal = ({
   const meta = assets.getAsset(poolId.toString())
   const bestNumber = useBestNumber()
 
-  const zodSchema = useZodSchema(meta.id, farms)
-
-  const mutation = useFarmDepositMutation(poolId, farms, onClose, onSuccess)
+  const zodSchema = useZodSchema(meta.id, farms, !!isRedeposit)
 
   const form = useForm<{ amount: string }>({
     mode: "onChange",
@@ -88,7 +85,7 @@ export const JoinFarmModal = ({
     )
 
   const onSubmit = (values: FormValues<typeof form>) => {
-    mutation.mutate({ shares: values.amount, positionId: positionId ?? "" })
+    mutation.mutate({ shares: values.amount })
   }
 
   const error = form.formState.errors.amount?.message

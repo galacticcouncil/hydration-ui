@@ -11,6 +11,7 @@ export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
 
 export const useFarmDepositMutation = (
   poolId: string,
+  positionId: string,
   farms: Farm[],
   onClose: () => void,
   onSuccess: () => void,
@@ -23,7 +24,7 @@ export const useFarmDepositMutation = (
   const isXYK = assets.isShareToken(meta)
 
   return useMutation(
-    async ({ shares, positionId }: { shares: string; positionId: string }) => {
+    async ({ shares }: { shares: string }) => {
       const [firstFarm, ...restFarm] = farms ?? []
       if (firstFarm == null) throw new Error("Missing farm")
 
@@ -81,7 +82,8 @@ export const useFarmDepositMutation = (
 
       for (const record of firstDeposit.events) {
         if (
-          api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event)
+          api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event) ||
+          api.events.xykLiquidityMining.SharesDeposited.is(record.event)
         ) {
           const depositId = record.event.data.depositId
 
@@ -99,8 +101,8 @@ export const useFarmDepositMutation = (
           const txs = restFarm.map((farm) =>
             isXYK
               ? api.tx.xykLiquidityMining.redepositShares(
-                  firstFarm.globalFarm.id,
-                  firstFarm.yieldFarm.id,
+                  farm.globalFarm.id,
+                  farm.yieldFarm.id,
                   { assetIn: meta.assets[0], assetOut: meta.assets[1] },
                   depositId,
                 )

@@ -7,6 +7,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useFarmDepositMutation } from "utils/farms/deposit"
 
 export const JoinFarmsButton = (props: {
   poolId: string
@@ -17,6 +18,14 @@ export const JoinFarmsButton = (props: {
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
   const farms = useFarms([props.poolId])
+
+  const mutation = useFarmDepositMutation(
+    props.poolId,
+    props.position?.id ?? "",
+    farms.data,
+    () => setJoinFarm(false),
+    props.onSuccess,
+  )
 
   return (
     <>
@@ -35,9 +44,8 @@ export const JoinFarmsButton = (props: {
           farms={farms.data}
           poolId={props.poolId}
           onClose={() => setJoinFarm(false)}
-          onSuccess={props.onSuccess}
           initialShares={props.position?.shares}
-          positionId={props.position?.id}
+          mutation={mutation}
         />
       )}
     </>

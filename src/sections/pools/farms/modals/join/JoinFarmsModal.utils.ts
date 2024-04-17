@@ -9,7 +9,11 @@ import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
 
-export const useZodSchema = (id: string, farms: Farm[]) => {
+export const useZodSchema = (
+  id: string,
+  farms: Farm[],
+  isRedeposit: boolean,
+) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
@@ -27,14 +31,16 @@ export const useZodSchema = (id: string, farms: Farm[]) => {
 
   if (!balance) return undefined
 
+  const rule = required.refine(
+    (value) => scale(value, meta.decimals).gte(minDeposit),
+    t("farms.modal.join.minDeposit", {
+      value: scaleHuman(minDeposit, meta.decimals),
+    }),
+  )
+
   return z.object({
-    amount: required
-      .pipe(maxBalance(balance?.balance ?? BN_0, meta.decimals))
-      .refine(
-        (value) => scale(value, meta.decimals).gte(minDeposit),
-        t("farms.modal.join.minDeposit", {
-          value: scaleHuman(minDeposit, meta.decimals),
-        }),
-      ),
+    amount: isRedeposit
+      ? rule
+      : rule.pipe(maxBalance(balance?.balance ?? BN_0, meta.decimals)),
   })
 }
