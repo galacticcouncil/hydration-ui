@@ -7,9 +7,10 @@ import { BN_0 } from "utils/constants"
 import { Farm } from "api/farms"
 import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
-import i18n from "i18next"
+import { useTranslation } from "react-i18next"
 
 export const useZodSchema = (id: string, farms: Farm[]) => {
+  const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const { data: balance } = useTokenBalance(id, account?.address)
@@ -31,7 +32,7 @@ export const useZodSchema = (id: string, farms: Farm[]) => {
       .pipe(maxBalance(balance?.balance ?? BN_0, meta.decimals))
       .refine(
         (value) => scale(value, meta.decimals).gte(minDeposit),
-        i18n.t("farms.modal.join.minDeposit", {
+        t("farms.modal.join.minDeposit", {
           value: scaleHuman(minDeposit, meta.decimals),
         }),
       ),

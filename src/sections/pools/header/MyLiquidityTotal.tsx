@@ -14,11 +14,11 @@ export const MyLiquidityTotal = () => {
   const omnipoolPositions = useOmnipoolPositionsData()
   const totalFarms = useFarmDepositsTotal()
   const stablePoolTotal = useMyStablePoolaTotal()
-  const xylPools = useXYKPools(true)
+  const xykPools = useXYKPools(true)
 
   const xykTotal = useMemo(() => {
-    if (xylPools.data) {
-      return xylPools.data.reduce((acc, xykPool) => {
+    if (xykPools.data) {
+      return xykPools.data.reduce((acc, xykPool) => {
         const myTotalDisplay = xykPool.tvlDisplay
           ?.div(100)
           .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
@@ -27,7 +27,7 @@ export const MyLiquidityTotal = () => {
       }, BN_0)
     }
     return BN_0
-  }, [xylPools.data])
+  }, [xykPools.data])
 
   const totalOmnipool = useMemo(() => {
     return omnipoolPositions.data.reduce((acc, position) => {
@@ -45,7 +45,7 @@ export const MyLiquidityTotal = () => {
       isLoading={
         omnipoolPositions.isInitialLoading ||
         stablePoolTotal.isLoading ||
-        xylPools.isInitialLoading ||
+        xykPools.isInitialLoading ||
         totalFarms.isLoading
       }
       value={total}
