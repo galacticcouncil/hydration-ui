@@ -12,8 +12,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 
 const EXTERNAL_ASSETS_WHITELIST = [
-  // DED
-  { id: "30", origin: 1000 },
   // PINK
   { id: "23", origin: 1000 },
 ]
