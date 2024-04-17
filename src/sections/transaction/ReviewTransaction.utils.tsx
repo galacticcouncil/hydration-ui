@@ -2,14 +2,12 @@ import {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { Hash } from "@open-web3/orml-types/interfaces"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
-import { useTransactionLink } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useRef, useState } from "react"
@@ -17,7 +15,8 @@ import { useTranslation } from "react-i18next"
 import { useMountedState } from "react-use"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useToast } from "state/toasts"
-import { H160, getEvmTxLink, isEvmAccount } from "utils/evm"
+import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
+import { getSubscanLinkByType } from "utils/formatting"
 
 type TxMethod = AnyJson & {
   method: string
@@ -107,9 +106,7 @@ function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
 }
 export const useSendEvmTransactionMutation = (
   options: MutationObserverOptions<
-    ISubmittableResult & {
-      transactionLink?: string
-    },
+    ISubmittableResult,
     unknown,
     {
       evmTx: TransactionResponse
@@ -118,6 +115,8 @@ export const useSendEvmTransactionMutation = (
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [txHash, setTxHash] = useState<string>("")
+
   const { account } = useEvmAccount()
 
   const sendTx = useMutation(async ({ evmTx }) => {
@@ -132,21 +131,11 @@ export const useSendEvmTransactionMutation = (
 
       try {
         setTxState("Broadcast")
+        setTxHash(evmTx?.hash ?? "")
         const receipt = await evmTx.wait()
         setTxState("InBlock")
 
-        const chainEntries = Object.entries(evmChains).find(
-          ([_, chain]) => chain.id === account?.chainId,
-        )
-
-        const chain = chainEntries?.[0]
-
-        const transactionLink = getEvmTxLink(receipt.transactionHash, chain)
-
-        return resolve({
-          transactionLink,
-          ...evmTxReceiptToSubmittableResult(receipt),
-        })
+        return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
         const { error } = decodeError(err)
         reject(new Error(error))
@@ -156,11 +145,16 @@ export const useSendEvmTransactionMutation = (
     })
   }, options)
 
+  const chain = account?.chainId ? getEvmChainById(account.chainId) : null
+  const txLink = txHash && chain ? getEvmTxLink(txHash, chain.key) : ""
+
   return {
     ...sendTx,
     txState,
+    txLink,
     reset: () => {
       setTxState(null)
+      setTxHash("")
       sendTx.reset()
     },
   }
@@ -168,15 +162,15 @@ export const useSendEvmTransactionMutation = (
 
 export const useSendTransactionMutation = (
   options: MutationObserverOptions<
-    ISubmittableResult & { transactionLink?: string },
+    ISubmittableResult,
     unknown,
     SubmittableExtrinsic<"promise">
   > = {},
 ) => {
   const { api } = useRpcProvider()
   const isMounted = useMountedState()
-  const link = useTransactionLink()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [txHash, setTxHash] = useState<string>("")
 
   const sendTx = useMutation(async (sign) => {
     return await new Promise(async (resolve, reject) => {
@@ -190,6 +184,7 @@ export const useSendTransactionMutation = (
           }, 60000)
 
           if (isMounted()) {
+            setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
           } else {
             clearTimeout(timeout)
@@ -211,16 +206,8 @@ export const useSendTransactionMutation = (
               clearTimeout(timeout)
               reject(new Error(errorMessage))
             } else {
-              const transactionLink = await link.mutateAsync({
-                blockHash: result.status.asInBlock.toString(),
-                txIndex: result.txIndex?.toString(),
-              })
-
               clearTimeout(timeout)
-              resolve({
-                transactionLink,
-                ...result,
-              })
+              resolve(result)
             }
 
             unsubscribe()
@@ -232,11 +219,17 @@ export const useSendTransactionMutation = (
     })
   }, options)
 
+  const txLink = txHash
+    ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
+    : undefined
+
   return {
     ...sendTx,
     txState,
+    txLink,
     reset: () => {
       setTxState(null)
+      setTxHash("")
       sendTx.reset()
     },
   }
