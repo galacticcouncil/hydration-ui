@@ -142,7 +142,7 @@ export function OrderAssetPay(props: {
       selectable={false}
       readonly={props.readonly || false}
     >
-      <UigcAsset slot="asset" symbol={assetDetails?.symbol}>
+      <UigcAsset slot="asset" symbol={asset?.symbol}>
         <UigcAssetId slot="icon" symbol={assetDetails?.symbol} />
       </UigcAsset>
       <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
@@ -211,7 +211,7 @@ export function OrderAssetGet(props: {
       selectable={false}
       readonly={props.readonly || false}
     >
-      <UigcAsset slot="asset" symbol={assetDetails?.symbol}>
+      <UigcAsset slot="asset" symbol={asset?.symbol}>
         <UigcAssetId slot="icon" symbol={assetDetails?.symbol} />
       </UigcAsset>
       {props.onChange && (
