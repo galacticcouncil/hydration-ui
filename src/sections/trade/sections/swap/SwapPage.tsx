@@ -29,7 +29,7 @@ const SwapApp = createComponent({
     onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
     onDcaSchedule: "gc:tx:scheduleDca" as EventName<CustomEvent<TxInfo>>,
     onDcaTerminate: "gc:tx:terminateDca" as EventName<CustomEvent<TxInfo>>,
-    onNewAssetClick: "gc:newAsset" as EventName<CustomEvent<TxInfo>>,
+    onNewAssetClick: "gc:external:new" as EventName<CustomEvent<TxInfo>>,
   },
 })
 
