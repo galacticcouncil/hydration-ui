@@ -2,6 +2,7 @@ import * as React from "react"
 import { createComponent } from "@lit-labs/react"
 import {
   AssetId,
+  AssetBadge,
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
@@ -27,6 +28,12 @@ export const UigcAssetPlaceholder = createComponent({
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
   elementClass: AssetId,
+  react: React,
+})
+
+export const UigcAssetBadge = createComponent({
+  tagName: "uigc-asset-badge",
+  elementClass: AssetBadge,
   react: React,
 })
 
@@ -77,12 +84,16 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         item.origin === chain?.parachainId,
     )
 
-    const displayWarning = assetDetails?.isExternal && !isWhitelisted
+    const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
+      ? isWhitelisted
+        ? "warning"
+        : "danger"
+      : ""
 
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
-      displayWarning,
+      badgeVariant,
     }
   }, [assets, id])
 
@@ -96,12 +107,15 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         }}
         symbol={asset.symbol}
         chain={asset?.chain}
-        warning={
-          asset?.displayWarning
-            ? t("wallet.addToken.tooltip.warning")
-            : undefined
-        }
-      />
+      >
+        {asset.badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={asset.badgeVariant}
+            text={t(`wallet.addToken.tooltip.${asset.badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
 
   return (
