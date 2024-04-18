@@ -94,7 +94,6 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
       badgeVariant,
-      isWhitelisted,
     }
   }, [assets, id])
 
