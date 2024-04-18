@@ -28,6 +28,7 @@ export const ReviewTransaction = (props: Transaction) => {
     data,
     txState,
     reset,
+    txLink,
   } = useSendTx()
 
   const isError = isSendError || !!signError
@@ -84,7 +85,7 @@ export const ReviewTransaction = (props: Transaction) => {
           isSuccess={isSuccess}
           isError={isError}
           error={error}
-          link={data?.transactionLink}
+          link={txLink}
           onReview={onReview}
           onClose={onClose}
           toastMessage={props.toastMessage}
