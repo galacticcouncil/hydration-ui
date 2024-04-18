@@ -3017,10 +3017,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.5.1.tgz#c925e81452919a1ed5cce9c31016e474d0e43be1"
-  integrity sha512-Itul1wn5xwYdI4vI+e4QexHYdp2zq0guaEkpIJq3YLJXP5tLhMJkEsGVYZmzWJvRteMF6YIL3n55htAU9euEKQ==
+"@galacticcouncil/apps@^3.5.2":
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.5.2.tgz#de8157c80f6c106f4f85dc708ad6bed82ecb3f2a"
+  integrity sha512-Xd75KKIRc0syx0ohJhRvI0XApjoj9juYN/vVcWBbkpm/v6wYyFQh8uHT09xLV4AJ8iKnC81dEabxDLaVKNnQ5Q==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3076,10 +3076,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.9":
-  version "3.1.9"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.9.tgz#c861f21e7e34d91d23d53cab5a2467f7aa3a8717"
-  integrity sha512-J3OCy1uWmYvooRtzDoklxYtJqfYhZWXh71XC2NFa81hEZkShJsU1gc7pCgr99G98Yeup+4dUEPAqhNpPEKYE7g==
+"@galacticcouncil/ui@^3.1.10":
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.10.tgz#78aeaec3bb0d079e1509a63604dcd3bc33b93aa4"
+  integrity sha512-QTHUeOfTb/0Y6EIBHU8Wffw9iQeJOuHVxKPyti3Cnj59uYfVDPai9a+ts/y+XecYOHgyA9zv234v8Roa+2c2+A==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
