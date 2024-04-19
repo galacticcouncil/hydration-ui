@@ -26,8 +26,6 @@ import {
 } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
-import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
-import { POLKADOT_APP_NAME } from "utils/api"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -94,13 +92,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (!address) throw new Error("Missing active account")
         if (!wallet) throw new Error("Missing wallet")
-
-        if (wallet instanceof WalletConnect && !wallet._session) {
-          const isEvm = isEvmAccount(address)
-          await wallet.setNamespace(isEvm ? "eip155" : "polkadot")
-          await wallet.enable(POLKADOT_APP_NAME)
-        }
-
         if (!wallet.signer) throw new Error("Missing signer")
 
         if (wallet?.signer instanceof EthereumSigner) {

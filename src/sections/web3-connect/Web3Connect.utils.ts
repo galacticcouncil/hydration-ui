@@ -164,8 +164,10 @@ export const useWeb3ConnectEagerEnable = () => {
       // skip if already enabled
       if (isEnabled) return
 
-      // skip WalletConnect eager enable
-      if (wallet instanceof WalletConnect) return
+      // disconnect on missing WalletConnect session
+      if (wallet instanceof WalletConnect && !wallet._session) {
+        return state.disconnect()
+      }
 
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()
