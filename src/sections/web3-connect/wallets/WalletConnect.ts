@@ -18,7 +18,6 @@ import {
 } from "sections/web3-connect/signer/PolkadotSigner"
 import { noop } from "utils/helpers"
 
-const WC_LS_KEY_PREFIX = "wc@2"
 const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID as string
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
@@ -147,10 +146,8 @@ export class WalletConnect implements Wallet {
   }
 
   initializeProvider = async () => {
-    if (this._extension) {
-      await this._extension?.cleanupPendingPairings()
-      await this._extension?.disconnect()
-    }
+    await this._extension?.cleanupPendingPairings()
+    await this._extension?.disconnect()
 
     const provider = await UniversalProvider.init(walletConnectParams).catch(
       (err) => {
@@ -304,11 +301,9 @@ export class WalletConnect implements Wallet {
     this._session = undefined
     this._extension = undefined
 
-    // delete every WalletConnect v2 entry in local storage to forget the session
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith(WC_LS_KEY_PREFIX)) {
-        localStorage.removeItem(key)
-      }
-    })
+    if ("indexedDB" in window) {
+      // reset previous saved settings of WC2 to avoid mismatch between EVM and Substrate
+      indexedDB.deleteDatabase("WALLET_CONNECT_V2_INDEXED_DB")
+    }
   }
 }
