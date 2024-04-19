@@ -88,18 +88,20 @@ export const RemoveLiquidityForm = ({
           <Text color="brightBlue300">
             {t("liquidity.remove.modal.receive")}
           </Text>
-
           <RemoveLiquidityReward
             id={id}
             name={name}
             symbol={symbol}
             amount={t("value", {
-              value: values?.tokensToGet,
+              value:
+                values && BN(values?.tokensToGet).gt(0)
+                  ? values.tokensToGet
+                  : BN(0),
               fixedPointScale: decimals,
               type: "token",
             })}
           />
-          {values && !BN(values.lrnaToGet).isZero() && (
+          {values && BN(values.lrnaToGet).gt(0) && (
             <RemoveLiquidityReward
               id={DEPOSIT_CLASS_ID}
               name={lrnaMeta.name}
@@ -160,7 +162,7 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={removeShares.isZero() || isFeeExceeded}
+          disabled={removeShares.decimalPlaces(0).isZero() || isFeeExceeded}
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>
