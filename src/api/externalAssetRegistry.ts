@@ -100,7 +100,7 @@ export const usePolkadotRegistry = () => {
     let polkadotAssets: TRegistryChain[] = []
 
     try {
-      polkadotAssets = data.assets.polkadot ?? []
+      polkadotAssets = data?.assets?.polkadot ?? []
     } catch (error) {}
 
     return polkadotAssets
