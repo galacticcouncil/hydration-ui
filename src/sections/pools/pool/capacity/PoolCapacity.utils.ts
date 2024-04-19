@@ -8,17 +8,7 @@ import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useDisplayAssetStore } from "utils/displayAsset"
-
-function calculateCapDifference(Qi: BN, Ri: BN, Q: BN, omega_i: BN): BN {
-  if (Qi.div(Q).lt(omega_i)) {
-    const numerator = omega_i.times(Q).minus(Qi).times(Ri)
-    const denominator = Qi.times(BN(1).minus(omega_i))
-    const deltaRi = numerator.div(denominator)
-    return deltaRi
-  } else {
-    return new BN(0)
-  }
-}
+import { OmniMath } from "@galacticcouncil/sdk"
 
 export const usePoolCapacity = (id: string) => {
   const { assets } = useRpcProvider()
@@ -67,35 +57,17 @@ export const usePoolCapacity = (id: string) => {
         symbol,
       }
 
-    /* 
-    const assetReserve = assetBalance.data.balance.toString()
     const assetHubReserve = asset.data.hubReserve.toString()
-    const assetCap = asset.data.cap.toString()
+    const assetReserve = assetBalance.data.balance.toString()
     const totalHubReserve = hubBalance.data.total.toString()
+    const assetCap = asset.data.cap.toString()
 
     let capDifference = OmniMath.calculateCapDifference(
-      assetReserve,
       assetHubReserve,
-      assetCap,
+      assetReserve,
       totalHubReserve,
+      assetCap,
     )
-    */
-
-    const Qi = asset.data.hubReserve.toBigNumber()
-    const Ri = assetBalance.data.balance
-    const Q = hubBalance.data.total
-    const omega_i = asset.data.cap.toBigNumber().shiftedBy(-18)
-
-    let capDifference = calculateCapDifference(Qi, Ri, Q, omega_i).toString()
-
-    console.log("======")
-    console.log(meta.symbol)
-    console.log("Qi:", asset.data.hubReserve.toString())
-    console.log("Ri:", assetBalance.data.balance.toString())
-    console.log("Q:", hubBalance.data.total.toString())
-    console.log("omega_i:", asset.data.cap.toString())
-    console.log("delta_ri:", capDifference.toString())
-    console.log("======")
 
     if (capDifference === "-1")
       return {
