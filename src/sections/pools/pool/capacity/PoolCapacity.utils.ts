@@ -57,16 +57,16 @@ export const usePoolCapacity = (id: string) => {
         symbol,
       }
 
-    const assetHubReserve = asset.data.hubReserve.toString()
     const assetReserve = assetBalance.data.balance.toString()
-    const totalHubReserve = hubBalance.data.total.toString()
+    const assetHubReserve = asset.data.hubReserve.toString()
     const assetCap = asset.data.cap.toString()
+    const totalHubReserve = hubBalance.data.total.toString()
 
-    let capDifference = OmniMath.calculateCapDifference(
-      assetHubReserve,
+    const capDifference = OmniMath.calculateCapDifference(
       assetReserve,
-      totalHubReserve,
+      assetHubReserve,
       assetCap,
+      totalHubReserve,
     )
 
     if (capDifference === "-1")
