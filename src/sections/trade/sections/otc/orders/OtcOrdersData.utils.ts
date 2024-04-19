@@ -2,7 +2,8 @@ import { useMemo } from "react"
 import { useOrdersData, useOrdersState, getOrderStateValue } from "api/otc"
 import BN from "bignumber.js"
 import { useAssetPrices } from "utils/displayAsset"
-import { calculateDiffToAvg, calculateDiffToRef } from "@galacticcouncil/sdk"
+import { calculateDiffToRef } from "@galacticcouncil/sdk"
+import { isNotNil } from "utils/helpers"
 
 export const useOrdersTableData = () => {
   const treasuryAddr = import.meta.env.VITE_TRSRY_ADDR
@@ -36,6 +37,15 @@ export const useOrdersTableData = () => {
   const data = useMemo(() => {
     if (!orders.data) return []
     return orders.data.map((order) => {
+      const assetInValid = order.assetIn?.isExternal
+        ? !!order.assetIn?.name
+        : true
+      const assetOutValid = order.assetOut?.isExternal
+        ? !!order.assetOut?.name
+        : true
+
+      if (!assetInValid || !assetOutValid) return null
+
       const orderState = ordersState.find(
         (state) => state.data?.orderId === parseInt(order.id),
       )
@@ -97,7 +107,7 @@ export const useOrdersTableData = () => {
         partiallyFillable: order.partiallyFillable,
         pol: order.owner === treasuryAddr,
       } as OrderTableData
-    })
+    }).filter(isNotNil)
   }, [orders.data, ordersState, treasuryAddr, assetPrices])
 
   return {
