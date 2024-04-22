@@ -12,6 +12,7 @@ import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
+import { Plutonication } from "./Plutonication/Plutonication"
 
 const EVM_ENABLED = Boolean(
   import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
@@ -27,6 +28,7 @@ export enum WalletProviderType {
   NovaWallet = "nova-wallet",
   WalletConnect = "walletconnect",
   ExternalWallet = "external",
+  Plutonication = "plutonication",
 }
 
 export type WalletProvider = {
@@ -67,12 +69,15 @@ const walletConnect: Wallet = new WalletConnect()
 
 const externalWallet: Wallet = new ExternalWallet()
 
+const plutonication: Wallet = new Plutonication()
+
 export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...(EVM_ENABLED ? [metaMask, talisman] : []),
   ...getWallets(),
   novaWallet,
   walletConnect,
   externalWallet,
+  plutonication,
 ].map((wallet) => ({
   wallet,
   type: normalizeProviderType(wallet),

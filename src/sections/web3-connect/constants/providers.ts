@@ -18,6 +18,7 @@ export const DESKTOP_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Enkrypt,
   WalletProviderType.PolkadotJS,
   WalletProviderType.WalletConnect,
+  WalletProviderType.Plutonication,
 ]
 
 export const EVM_PROVIDERS: WalletProviderType[] = [

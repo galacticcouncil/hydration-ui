@@ -44,6 +44,7 @@
     "@galacticcouncil/xcm-sdk": "^2.4.0",
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
+    "@plutonication/plutonication": "^1.0.98",
     "@polkadot/api": "10.9.1",
     "@polkadot/apps-config": "^0.132.1",
     "@polkadot/extension-inject": "^0.44.5",
