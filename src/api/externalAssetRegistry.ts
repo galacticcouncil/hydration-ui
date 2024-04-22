@@ -1,9 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
+import { Maybe } from "utils/helpers"
+
+export const HYDRADX_PARACHAIN_ACCOUNT =
+  "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
 
 export const getAssetHubAssets = async () => {
   const parachain = chainsMap.get("assethub")
@@ -103,7 +107,7 @@ export const useAssetHubTokenBalance = (
   id: string | u32,
 ) => {
   return useQuery(
-    QUERY_KEYS.assetHubAssetRegistry,
+    QUERY_KEYS.assetHubTokenBalance(account.toString(), id.toString()),
     getAssetHubTokenBalance(account, id),
     {
       retry: false,
@@ -112,4 +116,26 @@ export const useAssetHubTokenBalance = (
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
     },
   )
+}
+
+export const useAssetHubTokenBalances = (
+  account: AccountId32 | string,
+  ids: Maybe<u32 | string>[],
+) => {
+  const tokenIds = ids.filter((id): id is u32 => !!id)
+
+  return useQueries({
+    queries: tokenIds.map((id) => ({
+      queryKey: QUERY_KEYS.assetHubTokenBalance(
+        account.toString(),
+        id.toString(),
+      ),
+      queryFn: getAssetHubTokenBalance(account, id),
+      enabled: !!id,
+      retry: false,
+      refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    })),
+  })
 }

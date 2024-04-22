@@ -14,37 +14,13 @@ import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
 import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssetHubTokenBalance } from "api/externalAssetRegistry"
-import { useTotalIssuance } from "api/totalIssuance"
-import { Alert } from "components/Alert/Alert"
-import { Text } from "components/Typography/Text/Text"
+import { ExternalAssetsRugCheck } from "sections/assets/external/ExternalAssetsRugCheck"
 
 type Props = {
   className?: string
   children: ReactNode
   subHeader?: ReactNode
   subHeaderStyle?: Interpolation<Theme>
-}
-
-const IssuanceCheck = () => {
-  const { data: issuanceData } = useTotalIssuance("1000019")
-  const { data: balanceData } = useAssetHubTokenBalance(
-    "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6",
-    "30",
-  )
-
-  const issuance = issuanceData?.total
-  const balance = balanceData?.balance
-
-  const isOK = issuance && balance && balance.gte(issuance)
-
-  return !isOK ? (
-    <Alert variant="error">
-      <Text fs={16} tAlign="center">
-        💀 DED has been blocked 💀
-      </Text>
-    </Alert>
-  ) : null
 }
 
 export const Page = ({
@@ -66,7 +42,7 @@ export const Page = ({
 
   return (
     <>
-      {isLoaded && <IssuanceCheck />}
+      {isLoaded && <ExternalAssetsRugCheck />}
       <SPage ref={ref}>
         <div
           sx={{ flex: "column", height: "100%" }}
