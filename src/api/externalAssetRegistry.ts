@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { u32 } from "@polkadot/types"
+import { AccountId32 } from "@polkadot/types/interfaces"
 
 export const getAssetHubAssets = async () => {
   const parachain = chainsMap.get("assethub")
@@ -68,6 +70,41 @@ export const useAssetHubAssetRegistry = () => {
         return assetHub.data
       }
     },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    },
+  )
+}
+
+export const getAssetHubTokenBalance =
+  (account: AccountId32 | string, id: string | u32) => async () => {
+    const parachain = chainsMap.get("assethub")
+    try {
+      if (parachain) {
+        const apiPool = SubstrateApis.getInstance()
+        const api = await apiPool.api(parachain.ws)
+        const codec = await api.query.assets.account(id, account)
+
+        return {
+          accountId: account,
+          assetId: id,
+          // @ts-ignore
+          balance: codec.unwrap().balance.toBigNumber(),
+        }
+      }
+    } catch (e) {}
+  }
+
+export const useAssetHubTokenBalance = (
+  account: AccountId32 | string,
+  id: string | u32,
+) => {
+  return useQuery(
+    QUERY_KEYS.assetHubAssetRegistry,
+    getAssetHubTokenBalance(account, id),
     {
       retry: false,
       refetchOnWindowFocus: false,
