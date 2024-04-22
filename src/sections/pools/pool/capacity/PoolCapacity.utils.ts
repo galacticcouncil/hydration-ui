@@ -4,34 +4,11 @@ import { useTokensBalances } from "api/balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useMemo } from "react"
 import { BN_NAN } from "utils/constants"
-import BN, { BigNumber } from "bignumber.js"
+import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { OmniMath } from "@galacticcouncil/sdk"
-
-function calculateCapDifference(
-  assetReserve: string,
-  assetHubReserve: string,
-  assetCap: string,
-  totalHubReserve: string,
-): string {
-  const qi = BigNumber(assetHubReserve)
-  const ri = BigNumber(assetReserve)
-  const q = BigNumber(totalHubReserve)
-  const omegaI = BigNumber(assetCap)
-
-  const percentage = omegaI.shiftedBy(-18)
-  const isUnderWeightCap = qi.div(q).lt(percentage)
-
-  if (isUnderWeightCap) {
-    const numerator = percentage.times(q).minus(qi).times(ri)
-    const denominator = qi.times(BigNumber(1).minus(percentage))
-    return numerator.div(denominator).toFixed(0)
-  } else {
-    return "0"
-  }
-}
 
 export const usePoolCapacity = (id: string) => {
   const { assets } = useRpcProvider()
@@ -85,7 +62,7 @@ export const usePoolCapacity = (id: string) => {
     const assetCap = asset.data.cap.toString()
     const totalHubReserve = hubBalance.data.total.toString()
 
-    const capDifference = calculateCapDifference(
+    const capDifference = OmniMath.calculateCapDifference(
       assetReserve,
       assetHubReserve,
       assetCap,
