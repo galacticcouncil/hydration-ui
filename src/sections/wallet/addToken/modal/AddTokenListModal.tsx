@@ -45,9 +45,10 @@ export const AddTokenListModal: React.FC<Props> = ({
   const { isAdded } = useUserExternalTokenStore()
 
   const externalAssets = data?.[parachainId] ?? []
-  const internalAssets = assets.tokens.filter(
-    (asset) => asset.parachainId === parachainId.toString(),
-  )
+  const internalAssets =
+    assets?.tokens?.filter(
+      (asset) => asset.parachainId === parachainId.toString(),
+    ) ?? []
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
@@ -95,7 +96,7 @@ export const AddTokenListModal: React.FC<Props> = ({
               width: "100%",
             }}
             content={
-              isLoading ? (
+              isLoading || !assets ? (
                 <AddTokenListSkeleton />
               ) : (
                 <>

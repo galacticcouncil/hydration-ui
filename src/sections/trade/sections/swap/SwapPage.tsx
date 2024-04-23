@@ -144,7 +144,12 @@ export function SwapPage() {
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
       />
-      {addToken && <AddTokenModal onClose={() => setAddToken(false)} />}
+      {addToken && (
+        <AddTokenModal
+          css={{ zIndex: 9999 }}
+          onClose={() => setAddToken(false)}
+        />
+      )}
     </SContainer>
   )
 }
