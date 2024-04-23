@@ -36,7 +36,7 @@ export const AddTokenListModal: React.FC<Props> = ({
   setSearch,
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, isLoaded } = useRpcProvider()
   const [parachainId, setParachainId] = useState(DEFAULT_PARACHAIN_ID)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -96,7 +96,7 @@ export const AddTokenListModal: React.FC<Props> = ({
               width: "100%",
             }}
             content={
-              isLoading || !assets ? (
+              isLoading || !isLoaded ? (
                 <AddTokenListSkeleton />
               ) : (
                 <>
