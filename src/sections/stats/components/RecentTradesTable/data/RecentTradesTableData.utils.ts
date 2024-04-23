@@ -11,8 +11,13 @@ import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useAccountsIdentity } from "api/stats"
 import { useAllTrades } from "api/volume"
+import { groupBy } from "utils/rx"
+import { isNotNil } from "utils/helpers"
+import { BN_NAN } from "utils/constants"
 
 const withoutRefresh = true
+
+const EVENTS_LIMIT = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
   const { assets } = useRpcProvider()
@@ -50,7 +55,34 @@ export const useRecentTradesTableData = (assetId?: string) => {
     )
       return []
 
-    const trades = allTrades.data.events.reduce(
+    const groupedEvents = groupBy(
+      allTrades.data.events,
+      ({ extrinsic }) => extrinsic.hash,
+    )
+
+    const events = Object.entries(groupedEvents)
+      .map(([, value]) => {
+        // check if last event is Router event
+        const routerEvent =
+          value[value.length - 1]?.name === "Router.Executed"
+            ? value[value.length - 1]
+            : null
+
+        const [firstEvent] = value
+        if (firstEvent?.name === "Router.Executed") return null
+        if (!routerEvent) return firstEvent
+        return {
+          ...firstEvent,
+          args: {
+            ...firstEvent.args,
+            ...routerEvent.args,
+          },
+        }
+      })
+      .filter(isNotNil)
+      .slice(0, EVENTS_LIMIT)
+
+    const trades = events.reduce(
       (memo, trade) => {
         const isSelectedAsset = assetId
           ? assetId === trade.args.assetIn.toString() ||
@@ -61,7 +93,9 @@ export const useRecentTradesTableData = (assetId?: string) => {
           isSelectedAsset &&
           !memo.find((memoTrade) => memoTrade.id === trade.id)
         ) {
-          const isBuy = trade.name === "Omnipool.BuyExecuted"
+          const isBuy =
+            trade.name === "Omnipool.BuyExecuted" ||
+            trade.name === "XYK.BuyExecuted"
 
           const assetIn = trade.args.assetIn.toString()
           const amountInRaw = new BN(trade.args.amountIn)
@@ -84,7 +118,9 @@ export const useRecentTradesTableData = (assetId?: string) => {
             assetMetaOut.decimals,
           )
 
-          const tradeValue = amountIn.multipliedBy(spotPriceIn?.spotPrice ?? 1)
+          const tradeValue = amountIn.multipliedBy(
+            spotPriceIn?.spotPrice ?? BN_NAN,
+          )
 
           const hydraAddress = isHydraAddress(trade.args.who)
             ? trade.args.who

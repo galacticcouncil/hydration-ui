@@ -11,7 +11,12 @@ import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 
 export type TradeType = {
-  name: "Omnipool.SellExecuted" | "Omnipool.BuyExecuted" | "OTC.Placed"
+  name:
+    | "Omnipool.SellExecuted"
+    | "Omnipool.BuyExecuted"
+    | "XYK.SellExecuted"
+    | "XYK.BuyExecuted"
+    | "Router.Executed"
   id: string
   args: {
     who: string
@@ -155,19 +160,31 @@ export const getAllTrades =
           query TradeVolume($assetId: Int, $after: DateTime!) {
             events(
               where: {
-                name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                name_in: [
+                  "Omnipool.SellExecuted"
+                  "Omnipool.BuyExecuted"
+                  "XYK.SellExecuted"
+                  "XYK.BuyExecuted"
+                  "Router.Executed"
+                ]
                 args_jsonContains: { assetIn: $assetId }
                 phase_eq: "ApplyExtrinsic"
                 block: { timestamp_gte: $after }
                 OR: {
-                  name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
+                  name_in: [
+                    "Omnipool.SellExecuted"
+                    "Omnipool.BuyExecuted"
+                    "XYK.SellExecuted"
+                    "XYK.BuyExecuted"
+                    "Router.Executed"
+                  ]
                   args_jsonContains: { assetOut: $assetId }
                   phase_eq: "ApplyExtrinsic"
                   block: { timestamp_gte: $after }
                 }
               }
-              orderBy: [block_height_DESC]
-              limit: 10
+              orderBy: [block_height_DESC, pos_ASC]
+              limit: 100
             ) {
               id
               name
