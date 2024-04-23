@@ -17,6 +17,8 @@ const EXTERNAL_ASSETS_WHITELIST = [
   { id: "23", origin: 1000 },
   // STINK
   { id: "42069", origin: 1000 },
+  // WUD
+  { id: "31337", origin: 1000 },
 ]
 
 const chains = Array.from(chainsMap.values())
