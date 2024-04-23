@@ -13,7 +13,7 @@ import {
 export class Plutonication implements Wallet {
   extensionName = "plutonication"
   title = "Plutonication"
-  installUrl = ""
+  installUrl = "plutonication.com"
   logo = {
     src: PlutonicationIcon,
     alt: "Plutonication Logo",
@@ -23,10 +23,10 @@ export class Plutonication implements Wallet {
 
   account: WalletAccount | undefined
 
-  proxyWalletProvider = WalletProviderType.PolkadotJS
+  proxyWalletProvider = WalletProviderType.Plutonication
 
-  accountName = "External Account"
-  proxyAccountName = "Proxy Account"
+  accountName = "Plutonication Account"
+  proxyAccountName = "Proxy Plutonication Account"
 
   get extension() {
     return this._extension
@@ -55,26 +55,45 @@ export class Plutonication implements Wallet {
       const accessCredentials = new AccessCredentials(
         "wss://plutonication-acnha.ondigitalocean.app/",
         dappName,
-        "https://rostislavlitovkin.pythonanywhere.com/plutowalleticonwhite",
+        "https://plutonication-acnha.ondigitalocean.app/dapp/hydradx-icon",
       )
 
+      let pubkey = ""
       const injected = await initializePlutonicationDAppClientWithModal(
         accessCredentials,
-        (_: string) => {},
+        (receivedPubkey: string) => {
+          pubkey = receivedPubkey
+        },
       )
+
       this._signer = injected.signer
-    } finally {
+      this.account = {
+        address: pubkey,
+        source: this.extensionName,
+        name: this.accountName,
+        wallet: this,
+        signer: this.signer,
+      }
+    } catch (exception) {
+      console.log("Something failed ")
+      console.log(exception)
     }
+
+    console.log("done")
   }
 
   enableProxy = async (dappName: string) => {
-    const { wallet } = getWalletProviderByType(this.proxyWalletProvider)
+    console.warn("Unsupported")
+
+    return
+
+    /*const { wallet } = getWalletProviderByType(this.proxyWalletProvider)
 
     if (wallet?.installed) {
       await wallet?.enable(dappName)
       this._extension = wallet.extension
       this._signer = wallet.signer
-    }
+    }*/
   }
 
   setAddress = async (address?: string) => {

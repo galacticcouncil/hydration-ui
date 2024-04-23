@@ -4450,10 +4450,10 @@
     picocolors "^1.0.0"
     tslib "^2.6.0"
 
-"@plutonication/plutonication@^1.0.98":
-  version "1.0.98"
-  resolved "https://registry.yarnpkg.com/@plutonication/plutonication/-/plutonication-1.0.98.tgz#d0b6e7b39ce3c1bbb73af8f860fdd1f2ea0bcb8f"
-  integrity sha512-50/n8S0QjAy9yWIfHCqLZbmnHsZZl6h2MW+XZOGYm0t8iZ39HMJeVqiBcjt1lxa8iU1kLJ+qhgqKVIF4UDrgrQ==
+"@plutonication/plutonication@^1.0.101":
+  version "1.0.101"
+  resolved "https://registry.yarnpkg.com/@plutonication/plutonication/-/plutonication-1.0.101.tgz#6c0e52f3423e7fba572442fee091ac382812d4ed"
+  integrity sha512-ZX9yGIOmeaNMK6GJ2QAoRxzNt0WD/hywj0P71IAQim3Lv1GrtiLFbwAy1XGWNYkZMTNriHDMkcYGY8HNyXkK+Q==
   dependencies:
     "@babel/core" "^7.23.7"
     "@babel/plugin-proposal-export-default-from" "^7.23.3"
