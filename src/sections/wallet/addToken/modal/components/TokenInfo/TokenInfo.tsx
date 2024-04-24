@@ -17,6 +17,8 @@ import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
 
+const MASTER_KEY_WHITELIST = ["23", "31337", "42069"]
+
 export const TokenInfo = ({
   asset,
   isChainStored,
@@ -96,10 +98,19 @@ export const TokenInfo = ({
         </div>
 
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
-          <Text fs={12} color="red500">
-            {t("yes")}
-          </Text>
-          <Icon size={14} sx={{ color: "red500" }} icon={<WarningIcon />} />
+          {MASTER_KEY_WHITELIST.some((id) => id === asset.id) ? (
+            <Text fs={12} color="green600">
+              {t("no")}
+            </Text>
+          ) : (
+            <>
+              {" "}
+              <Text fs={12} color="red500">
+                {t("yes")}
+              </Text>
+              <Icon size={14} sx={{ color: "red500" }} icon={<WarningIcon />} />
+            </>
+          )}
         </div>
       </STokenInfoRow>
       <Separator opacity={0.3} color="darkBlue400" />
