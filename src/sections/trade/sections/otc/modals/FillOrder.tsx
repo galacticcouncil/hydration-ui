@@ -2,15 +2,15 @@ import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { BN_10 } from "utils/constants"
+import { BN_1, BN_10 } from "utils/constants"
 import { useStore } from "state/store"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
-import { OrderAssetPrice } from "./cmp/AssetPrice"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 
 type FillOrderProps = {
   orderId: string
@@ -40,7 +40,8 @@ export const FillOrder = ({
 
   const price = accepting.amount.div(offering.amount)
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
     if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
 
     if (assetInBalance.data?.balance == null)
@@ -128,10 +129,16 @@ export const FillOrder = ({
           readonly={true}
           error={error}
         />
-        <OrderAssetPrice
-          inputAsset={assetOutMeta.symbol}
-          outputAsset={assetInMeta.symbol}
-          price={price && price.toFixed()}
+        <TokensConversion
+          placeholderValue="-"
+          firstValue={{
+            amount: BN_1,
+            symbol: assetOutMeta.symbol,
+          }}
+          secondValue={{
+            amount: price,
+            symbol: assetInMeta.symbol,
+          }}
         />
         <OrderAssetGet
           title={t("otc.order.fill.getTitle")}
