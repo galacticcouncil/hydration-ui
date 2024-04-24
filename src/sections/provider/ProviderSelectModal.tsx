@@ -1,4 +1,8 @@
-import { PROVIDERS, useProviderRpcUrlStore } from "api/provider"
+import {
+  PROVIDERS,
+  useProviderData,
+  useProviderRpcUrlStore,
+} from "api/provider"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
@@ -20,12 +24,15 @@ export function ProviderSelectModal(props: {
   open: boolean
   onClose: () => void
 }) {
+  const { data } = useProviderData()
   const preference = useProviderRpcUrlStore()
   const activeRpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
   const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
   const { t } = useTranslation()
   const { rpcList, addRpc, removeRpc } = useRpcStore()
+
+  const provider = data?.provider
 
   const form = useForm<{ address: string }>({
     defaultValues: { address: "wss://" },
@@ -63,7 +70,7 @@ export function ProviderSelectModal(props: {
         title={t("rpc.change.modal.title")}
       >
         <>
-          {import.meta.env.VITE_ENV !== "production" && (
+          {/* {import.meta.env.VITE_ENV !== "production" && (
             <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
               <Controller
                 name="address"
@@ -103,10 +110,10 @@ export function ProviderSelectModal(props: {
                 )}
               />
             </form>
-          )}
+          )} */}
 
           <SContainer>
-            <SHeader>
+            {/* <SHeader>
               <div css={{ gridArea: "name" }}>
                 {t("rpc.change.modal.column.name")}
               </div>
@@ -116,9 +123,13 @@ export function ProviderSelectModal(props: {
               <div css={{ gridArea: "url" }} sx={{ textAlign: "right" }}>
                 {t("rpc.change.modal.column.rpc")}
               </div>
-            </SHeader>
+            </SHeader> */}
 
-            {PROVIDERS.filter((provider) =>
+            <p sx={{ color: "white", mt: 20, textAlign: "center" }}>
+              Connected to {provider?.endpoint}
+            </p>
+
+            {/* PROVIDERS.filter((provider) =>
               typeof provider.env === "string"
                 ? provider.env === import.meta.env.VITE_ENV
                 : provider.env.includes(import.meta.env.VITE_ENV),
@@ -136,9 +147,9 @@ export function ProviderSelectModal(props: {
                   )}
                 </Fragment>
               )
-            })}
+            }) */}
 
-            {import.meta.env.VITE_ENV !== "production" &&
+            {/* {import.meta.env.VITE_ENV !== "production" &&
               rpcList?.map((rpc, index) => (
                 <Fragment key={rpc.url}>
                   <ProviderItem
@@ -158,7 +169,7 @@ export function ProviderSelectModal(props: {
                     <Separator color="alpha0" opacity={0.06} />
                   )}
                 </Fragment>
-              ))}
+              ))} */}
           </SContainer>
 
           <Button

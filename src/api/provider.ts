@@ -94,20 +94,20 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-export const useProviderData = (rpcUrl: string) => {
+export const useProviderData = (rpcUrl?: string) => {
   const displayAsset = useDisplayAssetStore()
 
+  const providerUrls = PROVIDERS.filter((provider) =>
+    typeof provider.env === "string"
+      ? provider.env === "production"
+      : provider.env.includes("production"),
+  ).map(({ url }) => url)
+
   return useQuery(
-    QUERY_KEYS.provider(rpcUrl),
+    QUERY_KEYS.provider(providerUrls.join("-")),
     async ({ queryKey: [_, url] }) => {
       /* const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(url) */
-
-      const providerUrls = PROVIDERS.filter((provider) =>
-        typeof provider.env === "string"
-          ? provider.env === "production"
-          : provider.env.includes("production"),
-      ).map(({ url }) => url)
 
       const provider = new WsProvider(providerUrls, 250)
       const api = await ApiPromise.create({
@@ -164,6 +164,7 @@ export const useProviderData = (rpcUrl: string) => {
 
       return {
         api,
+        provider,
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
