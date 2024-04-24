@@ -5,6 +5,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
 import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 
 export const PROVIDERS = [
   {
@@ -99,8 +100,22 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(url)
+      /* const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(url) */
+
+      const providerUrls = PROVIDERS.filter((provider) =>
+        typeof provider.env === "string"
+          ? provider.env === "production"
+          : provider.env.includes("production"),
+      ).map(({ url }) => url)
+
+      const provider = new WsProvider(providerUrls, 250)
+      const api = await ApiPromise.create({
+        noInitWarn: true,
+        provider,
+      })
+
+      console.log("[RPC] Connected to", provider.endpoint)
 
       api.registry.register({
         XykLMDeposit: {
