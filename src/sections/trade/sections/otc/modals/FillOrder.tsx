@@ -2,7 +2,7 @@ import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BN_10 } from "utils/constants"
 import { useStore } from "state/store"
@@ -40,7 +40,8 @@ export const FillOrder = ({
 
   const price = accepting.amount.div(offering.amount)
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
     if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
 
     if (assetInBalance.data?.balance == null)
