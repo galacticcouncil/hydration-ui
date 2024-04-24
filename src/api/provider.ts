@@ -115,7 +115,9 @@ export const useProviderData = (rpcUrl?: string) => {
         provider,
       })
 
-      console.log("[RPC] Connected to", provider.endpoint)
+      if (provider.endpoint) {
+        console.log("[RPC] Connected to", provider.endpoint)
+      }
 
       api.registry.register({
         XykLMDeposit: {
