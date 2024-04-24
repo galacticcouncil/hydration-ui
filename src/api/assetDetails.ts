@@ -494,6 +494,7 @@ export const getAssets = async (api: ApiPromise) => {
       hub,
       rawTradeAssets,
     },
+    poolService,
     tradeRouter,
     featureFlags: {
       referrals: !!isReferralsEnabled,
