@@ -1,7 +1,8 @@
+import { useQuery } from "@tanstack/react-query"
 import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
 import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { BN_0 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
@@ -68,19 +69,23 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
   ]
 
   const missingAssets = useMissingExternalAssets(allAssetsInPools)
+  useQuery(
+    ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
+    async () => {
+      await poolService.syncRegistry([
+        ...externalTokensStored,
+        ...missingAssets,
+      ])
 
-  useEffect(() => {
-    const syncToken = async () => {
-      if (missingAssets.length && !valid) {
-        await poolService.syncRegistry([
-          ...externalTokensStored,
-          ...missingAssets,
-        ])
+      return true
+    },
+    {
+      onSuccess: () => {
         setValid(true)
-      }
-    }
-    syncToken()
-  }, [externalTokensStored, missingAssets, poolService, valid])
+      },
+      enabled: !valid && !!missingAssets.length,
+    },
+  )
 
   const spotPrices = useDisplayPrices(valid ? allAssetsInPools : [])
 
