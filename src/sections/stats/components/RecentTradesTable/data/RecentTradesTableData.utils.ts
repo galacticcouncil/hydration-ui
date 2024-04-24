@@ -1,5 +1,4 @@
 import { useApiIds } from "api/consts"
-import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useMemo } from "react"
@@ -21,46 +20,21 @@ const EVENTS_LIMIT = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
   const { assets } = useRpcProvider()
-  const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const apiIds = useApiIds()
   const allTrades = useAllTrades(assetId ? Number(assetId) : undefined)
   const displayAsset = useDisplayAssetStore()
-  const omnipoolAssetsIds = omnipoolAssets.data?.map((a) => a.id) ?? []
 
   const address = allTrades.data?.events.map((event) => event.args.who) ?? []
   const identities = useAccountsIdentity(address)
 
-  const spotPrices = useSpotPrices(
-    omnipoolAssetsIds,
-    displayAsset.stableCoinId,
-    withoutRefresh,
-  )
-
-  const queries = [
-    omnipoolAssets,
-    apiIds,
-    allTrades,
-    ...spotPrices,
-    ...identities,
-  ]
-
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
-
-  const data = useMemo(() => {
-    if (
-      !allTrades.data ||
-      !omnipoolAssets.data ||
-      !apiIds.data ||
-      spotPrices.some((q) => !q.data)
-    )
-      return []
-
+  const events = useMemo(() => {
+    if (!allTrades.data) return
     const groupedEvents = groupBy(
       allTrades.data.events,
       ({ extrinsic }) => extrinsic.hash,
     )
 
-    const events = Object.entries(groupedEvents)
+    return Object.entries(groupedEvents)
       .map(([, value]) => {
         // check if last event is Router event
         const routerEvent =
@@ -81,6 +55,24 @@ export const useRecentTradesTableData = (assetId?: string) => {
       })
       .filter(isNotNil)
       .slice(0, EVENTS_LIMIT)
+  }, [allTrades.data])
+
+  const assetIds = events
+    ? events?.map(({ args }) => args.assetIn.toString())
+    : []
+
+  const spotPrices = useSpotPrices(
+    assetIds,
+    displayAsset.stableCoinId,
+    withoutRefresh,
+  )
+
+  const queries = [apiIds, allTrades, ...spotPrices, ...identities]
+
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (!events || !apiIds.data || spotPrices.some((q) => !q.data)) return []
 
     const trades = events.reduce(
       (memo, trade) => {
@@ -171,15 +163,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     )
 
     return trades
-  }, [
-    allTrades.data,
-    omnipoolAssets.data,
-    apiIds.data,
-    spotPrices,
-    assetId,
-    assets,
-    identities,
-  ])
+  }, [events, apiIds.data, spotPrices, assetId, assets, identities])
 
   return { data, isLoading: isInitialLoading }
 }
