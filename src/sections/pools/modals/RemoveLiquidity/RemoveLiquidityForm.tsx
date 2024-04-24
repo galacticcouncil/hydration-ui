@@ -49,6 +49,9 @@ export const RemoveLiquidityForm = ({
     meta: { id, symbol, name, decimals },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
+  const tokensToGet =
+    values && BN(values?.tokensToGet).gt(0) ? values.tokensToGet : BN(0)
+
   return (
     <form
       onSubmit={form.handleSubmit(() => mutation.mutate())}
@@ -93,10 +96,7 @@ export const RemoveLiquidityForm = ({
             name={name}
             symbol={symbol}
             amount={t("value", {
-              value:
-                values && BN(values?.tokensToGet).gt(0)
-                  ? values.tokensToGet
-                  : BN(0),
+              value: tokensToGet,
               fixedPointScale: decimals,
               type: "token",
             })}
@@ -162,7 +162,7 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={removeShares.decimalPlaces(0).isZero() || isFeeExceeded}
+          disabled={tokensToGet.decimalPlaces(0).isZero() || isFeeExceeded}
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>
