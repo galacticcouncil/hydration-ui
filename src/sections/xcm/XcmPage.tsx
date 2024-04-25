@@ -148,6 +148,7 @@ export function XcmPage() {
           onXcmNew={handleSubmit}
           onWalletChange={handleWalletChange}
           ss58Prefix={ss58Prefix}
+          blacklist="pendulum"
         />
       </SContainer>
     </Page>
