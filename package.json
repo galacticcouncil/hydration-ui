@@ -39,7 +39,7 @@
     "@galacticcouncil/math-staking": "^0.2.0",
     "@galacticcouncil/math-xyk": "^0.2.0",
     "@galacticcouncil/sdk": "^2.2.3",
-    "@galacticcouncil/ui": "^3.1.12",
+    "@galacticcouncil/ui": "^3.1.13",
     "@galacticcouncil/xcm-cfg": "^1.11.6",
     "@galacticcouncil/xcm-sdk": "^2.4.0",
     "@hookform/resolvers": "^3.3.4",
