@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react"
 import { usePrevious } from "react-use"
 
-export const useRemount = (trigger: boolean) => {
+export const useRemount = <T extends string | number | boolean>(
+  triggers: T[],
+) => {
   const [version, setVersion] = useState(0)
-  const prevTriggerValue = usePrevious(trigger)
+  const prevTriggersValue = usePrevious(triggers)
 
-  const isChanged = !!prevTriggerValue !== trigger
+  const isChanged =
+    prevTriggersValue !== undefined
+      ? triggers.some((trigger, i) => prevTriggersValue[i] !== trigger)
+      : false
 
   useEffect(() => {
     if (isChanged) {

@@ -170,6 +170,7 @@ export const useProviderData = (rpcUrl?: string) => {
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
+        poolService: assets.poolService,
       }
     },
     { refetchOnWindowFocus: false },
