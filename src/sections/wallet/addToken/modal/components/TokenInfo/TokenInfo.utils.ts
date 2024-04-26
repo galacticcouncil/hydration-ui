@@ -23,7 +23,7 @@ const useMissingExternalAssets = (ids: string[]) => {
         .map((tokenId) => {
           const externalId = assets.external.find(
             (external) => external.id === tokenId,
-          )?.generalIndex
+          )?.externalId
 
           return externalAssets.data?.find(
             (externalAsset) => externalAsset.id === externalId,
@@ -103,7 +103,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
           const decimals = assetMeta.symbol
             ? assetMeta.decimals
             : missingAssets.find(
-                (missingAsset) => missingAsset.id === assetMeta.generalIndex,
+                (missingAsset) => missingAsset.id === assetMeta.externalId,
               )?.decimals ?? 0
 
           const sum = value.sums[assetMeta.id]

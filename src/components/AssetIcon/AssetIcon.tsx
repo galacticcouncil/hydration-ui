@@ -84,7 +84,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
 
     const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
       (item) =>
-        item.id === assetDetails?.generalIndex &&
+        item.id === assetDetails?.externalId &&
         item.origin === chain?.parachainId,
     )
 

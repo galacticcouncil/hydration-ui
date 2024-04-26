@@ -36,7 +36,7 @@ export const TokenInfo = ({
       return { isXYKPool: false, pools: undefined }
 
     const storedAsset = assets.external.find(
-      (external) => external.generalIndex === asset.id,
+      (external) => external.externalId === asset.id,
     )
 
     if (storedAsset) {

@@ -5,11 +5,11 @@ import { Trans, useTranslation } from "react-i18next"
 import {
   PARACHAIN_CONFIG,
   TExternalAsset,
+  TExternalAssetInput,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
-import { FormValues } from "utils/helpers"
-
+import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -18,14 +18,16 @@ import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
+import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
+import { getPendulumInputData } from "utils/externalAssets"
+import { omit } from "utils/rx"
 
 type Props = {
-  asset: TExternalAsset
+  asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }
   onClose: () => void
 }
 
 type FormFields = {
-  multilocation: (typeof PARACHAIN_CONFIG)[number]
   name: string
   decimals: string
   symbol: string
@@ -40,14 +42,16 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const mutation = useRegisterToken({
     onSuccess: () => {
-      addToken(asset)
+      addToken(omit(["location"], asset))
       refetchProvider()
     },
     assetName: asset.name,
   })
 
   const isChainStored = assets.external.some(
-    (chainAsset) => chainAsset.generalIndex === asset.id,
+    (chainAsset) =>
+      chainAsset.externalId === asset.id &&
+      chainAsset.parachainId === asset.origin.toString(),
   )
 
   const form = useForm<FormFields>({
@@ -56,31 +60,42 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       name: asset.name,
       symbol: asset.symbol,
       decimals: asset.decimals.toString(),
-      multilocation: asset.origin ? PARACHAIN_CONFIG[asset.origin] : {},
     },
   })
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
+  const onSubmit = async () => {
     if (!asset) throw new Error("Selected asset cannot be added")
 
-    const { parents, palletInstance } = values.multilocation
+    const { parents, palletInstance } = PARACHAIN_CONFIG[ASSET_HUB_ID]
 
-    await mutation.mutate({
-      parents,
-      interior: {
-        X3: [
-          {
-            Parachain: asset.origin.toString(),
-          },
-          {
-            PalletInstance: palletInstance,
-          },
-          {
-            GeneralIndex: asset.id,
-          },
-        ],
-      },
-    })
+    let input: TExternalAssetInput | undefined = undefined
+
+    if (asset.origin === ASSET_HUB_ID) {
+      input = {
+        parents,
+        interior: {
+          X3: [
+            {
+              Parachain: asset.origin.toString(),
+            },
+            {
+              PalletInstance: palletInstance,
+            },
+            {
+              GeneralIndex: asset.id,
+            },
+          ],
+        },
+      }
+    }
+
+    if (asset.origin === PENDULUM_ID && asset.location) {
+      input = getPendulumInputData(asset.location)
+    }
+
+    if (input) {
+      await mutation.mutate(input)
+    }
 
     onClose()
   }
@@ -164,7 +179,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
           <Button
             type="button"
             variant="primary"
-            onClick={() => onAddTokenToUser(asset)}
+            onClick={() => onAddTokenToUser(omit(["location"], asset))}
           >
             <PlusIcon width={18} height={18} />
             {t("wallet.addToken.form.button.register.forMe")}

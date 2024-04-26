@@ -408,4 +408,5 @@ export const QUERY_KEYS = {
   ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
+  pendulumAssetRegistry: ["pendulumAssetRegistry"],
 } as const

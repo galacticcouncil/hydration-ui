@@ -229,7 +229,7 @@ export const AddTokenAction = ({
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const { addToken } = useUserExternalTokenStore()
-  const { data } = useExternalAssetRegistry()
+  const externalRegistry = useExternalAssetRegistry()
 
   const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
@@ -237,18 +237,24 @@ export const AddTokenAction = ({
   const externalAsset = useMemo(() => {
     const meta = assets.getAsset(id)
 
-    for (const parachain in data) {
-      const externalAsset = data[Number(parachain)].find(
-        (externalAsset) => externalAsset.id === meta.generalIndex,
+    for (const parachain in externalRegistry) {
+      const externalAsset = externalRegistry[Number(parachain)].data?.find(
+        (externalAsset) => externalAsset.id === meta.externalId,
       )
 
       if (externalAsset) return externalAsset
     }
-  }, [assets, data, id])
+  }, [assets, externalRegistry, id])
 
   const onClick = externalAsset
     ? () => {
-        addToken(externalAsset)
+        addToken({
+          id: externalAsset.id,
+          name: externalAsset.name,
+          symbol: externalAsset.symbol,
+          decimals: externalAsset.decimals,
+          origin: externalAsset.origin,
+        })
         refetchProvider()
         add("success", {
           title: (

@@ -2,16 +2,18 @@ import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ToastMessage, useStore } from "state/store"
-import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
+import {
+  HydradxRuntimeXcmAssetLocation,
+  XcmV3Junction,
+} from "@polkadot/types/lookup"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import { mergeArrays } from "utils/rx"
+import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
 
-export const ASSET_HUB_ID = 1000
-
-export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID]
+export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID, PENDULUM_ID]
 
 export const PARACHAIN_CONFIG: {
   [x: number]: {
@@ -37,19 +39,23 @@ export type TExternalAsset = {
   origin: number
 }
 
+export type InteriorTypes = {
+  [x: string]: InteriorProp[]
+}
+
+export type InteriorProp = {
+  [K in XcmV3Junction["type"]]: { [P in K]: any }
+}[XcmV3Junction["type"]]
+
+export const isGeneralKey = (
+  prop: InteriorProp,
+): prop is { GeneralKey: string } => {
+  return typeof prop !== "string" && "GeneralKey" in prop
+}
+
 export type TExternalAssetInput = {
   parents: string
-  interior: {
-    X3: [
-      {
-        Parachain: string
-      },
-      { PalletInstance: string },
-      {
-        GeneralIndex: string
-      },
-    ]
-  }
+  interior: InteriorTypes | string
 }
 
 export const useRegisterToken = ({

@@ -12,6 +12,8 @@ import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
+import { PENDULUM_ID } from "./externalAssetRegistry"
+import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -53,28 +55,6 @@ const getTokenParachainId = (
   }
 }
 
-const getGeneralIndex = (
-  rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
-) => {
-  const location = rawLocation.unwrap()
-
-  const type = location.interior.type
-  if (location.interior && type !== "Here") {
-    const xcm = location.interior[`as${type}`]
-
-    const generalIndex = !Array.isArray(xcm)
-      ? xcm.isGeneralIndex
-        ? xcm.asGeneralIndex.unwrap().toString()
-        : undefined
-      : xcm
-          .find((el) => el.isGeneralIndex)
-          ?.asGeneralIndex.unwrap()
-          .toString()
-
-    return generalIndex
-  }
-}
-
 type TAssetCommon = {
   id: string
   existentialDeposit: BN
@@ -89,7 +69,7 @@ type TAssetCommon = {
   name: string
   parachainId: string | undefined
   iconId: string | string[]
-  generalIndex?: string
+  externalId?: string
   isSufficient: boolean
 }
 
@@ -102,7 +82,7 @@ export type TBond = TAssetCommon & {
 
 export type TToken = TAssetCommon & {
   assetType: "Token"
-  generalIndex?: string
+  externalId?: string
 }
 
 export type TStableSwap = TAssetCommon & {
@@ -252,7 +232,7 @@ export const getAssets = async (api: ApiPromise) => {
               location && !location.isNone
                 ? getTokenParachainId(location)
                 : undefined,
-            generalIndex:
+            externalId:
               location && !location.isNone
                 ? getGeneralIndex(location)
                 : undefined,
@@ -396,13 +376,16 @@ export const getAssets = async (api: ApiPromise) => {
           location && !location.isNone
             ? getTokenParachainId(location)
             : undefined
-        const generalIndex =
-          location && !location.isNone ? getGeneralIndex(location) : undefined
+        const externalId =
+          location && !location.isNone
+            ? parachainId === PENDULUM_ID.toString()
+              ? getGeneralKey(location)
+              : getGeneralIndex(location)
+            : undefined
 
         const externalTokenStored = externalTokensStored.find(
           (token) =>
-            token.origin.toString() === parachainId &&
-            token.id === generalIndex,
+            token.origin.toString() === parachainId && token.id === externalId,
         )
 
         const asset: TToken = {
@@ -412,10 +395,7 @@ export const getAssets = async (api: ApiPromise) => {
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
-          generalIndex:
-            location && !location.isNone
-              ? getGeneralIndex(location)
-              : undefined,
+          externalId,
           iconId: "",
           ...(externalTokenStored ? omit(["id"], externalTokenStored) : {}),
         }
