@@ -99,7 +99,7 @@ export const FillOrder = ({
   }
 
   const isDisabled =
-    assetInBalance.data?.balance?.lte(
+    assetInBalance.data?.balance?.lt(
       accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
     ) ?? false
 
