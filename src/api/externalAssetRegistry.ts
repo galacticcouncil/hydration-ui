@@ -36,7 +36,7 @@ const getPendulumAssetId = (assetId: string) => {
     }
   }
 
-  return id
+  return undefined
 }
 
 export const getAssetHubAssets = async () => {
