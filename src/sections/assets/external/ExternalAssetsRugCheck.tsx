@@ -15,9 +15,9 @@ import { zipArrays } from "utils/rx"
 export const ExternalAssetsRugCheck = () => {
   const { assets } = useRpcProvider()
 
-  const addedTokens = assets.external.filter(
-    ({ name, symbol }) => !!name && !!symbol,
-  )
+  const addedTokens = assets.external
+    .filter(({ name, symbol }) => !!name && !!symbol)
+    .filter(({ name }) => !["DED", "PINK", "DOTA"].includes(name))
 
   const addedTokensIds = addedTokens.map(({ id }) => id)
   const addedTokensGeneralIndexes = addedTokens.map(
@@ -30,6 +30,8 @@ export const ExternalAssetsRugCheck = () => {
     HYDRADX_PARACHAIN_ACCOUNT,
     addedTokensGeneralIndexes,
   )
+
+  console.log({ issuanceQueries, balanceQueries })
 
   const alerts = useMemo(() => {
     if (
@@ -54,6 +56,8 @@ export const ExternalAssetsRugCheck = () => {
       .filter(isNotNil)
   }, [assets, balanceQueries, issuanceQueries])
 
+  console.log({ alerts })
+
   if (alerts.length === 0) return null
 
   return (
@@ -65,7 +69,7 @@ export const ExternalAssetsRugCheck = () => {
             sx={{ flex: "row", justify: "center", align: "center" }}
           >
             <Icon sx={{ mr: 12 }} size={20} icon={<AssetLogo id={id} />} />{" "}
-            {name} has been blocked 💀
+            {name} rugpull warning. Admin has burned tokens from HydraDX 💀
           </Text>
         </Alert>
       ))}
