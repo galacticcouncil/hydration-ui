@@ -1,5 +1,5 @@
 import { TradeRouter, PoolService } from "@galacticcouncil/sdk"
-import { ApiPromise } from "@polkadot/api"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 import {
   TAsset,
   TBond,
@@ -26,6 +26,7 @@ type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
 
 type TProviderContext = {
   api: ApiPromise
+  provider: WsProvider
   assets: IContextAssets
   tradeRouter: TradeRouter
   poolService: PoolService
@@ -35,6 +36,7 @@ type TProviderContext = {
 const ProviderContext = createContext<TProviderContext>({
   isLoaded: false,
   api: {} as TProviderContext["api"],
+  provider: {} as TProviderContext["provider"],
   assets: {} as TProviderContext["assets"],
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
@@ -46,9 +48,7 @@ export const useRpcProvider = () => useContext(ProviderContext)
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const preference = useProviderRpcUrlStore()
 
-  const providerData = useProviderData(
-    preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
-  )
+  const providerData = useProviderData()
 
   useWindowFocus({
     onFocus: () => {
@@ -120,6 +120,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         },
         poolService: providerData.data.poolService,
         api: providerData.data.api,
+        provider: providerData.data.provider,
         tradeRouter: providerData.data.tradeRouter,
         featureFlags: providerData.data.featureFlags,
         isLoaded: true,
@@ -128,6 +129,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
     return {
       isLoaded: false,
       api: {} as TProviderContext["api"],
+      provider: {} as TProviderContext["provider"],
       assets: {} as TProviderContext["assets"],
       tradeRouter: {} as TradeRouter,
       featureFlags: {} as TProviderContext["featureFlags"],

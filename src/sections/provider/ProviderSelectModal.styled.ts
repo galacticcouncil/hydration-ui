@@ -17,3 +17,16 @@ export const SContainer = styled.div`
   margin: 0 calc(-1 * var(--modal-content-padding) + 1px);
   margin-top: 20px;
 `
+
+export const SSwitchContainer = styled.div`
+  padding: 18px 12px;
+  margin: 0 -12px;
+
+  border-top: 1px solid ${theme.colors.darkBlue401};
+  border-bottom: 1px solid ${theme.colors.darkBlue401};
+
+  @media ${theme.viewport.gte.sm} {
+    padding: 18px 24px;
+    margin: 0 -24px;
+  }
+`

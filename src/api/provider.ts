@@ -4,8 +4,10 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { undefinedNoop } from "utils/helpers"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const PROVIDERS = [
   {
@@ -64,18 +66,22 @@ export const PROVIDERS = [
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl?: string
+    autoMode: boolean
+    setAutoMode: (state: boolean) => void
     setRpcUrl: (rpcUrl: string | undefined) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
     (set) => ({
+      autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setAutoMode: (state) => set({ autoMode: state }),
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "rpcUrl",
-      version: 2,
+      version: 2.1,
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -94,30 +100,71 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-export const useProviderData = (rpcUrl?: string) => {
+const PROVIDER_CONNECT_TIMEOUT = 10000
+
+const predefinedRpcUrls = PROVIDERS.filter((provider) =>
+  typeof provider.env === "string"
+    ? provider.env === import.meta.env.VITE_ENV
+    : provider.env.includes(import.meta.env.VITE_ENV),
+).map(({ url }) => url)
+
+export const useProviderData = () => {
+  const { autoMode, rpcUrl } = useProviderRpcUrlStore()
   const displayAsset = useDisplayAssetStore()
+  const queryCleint = useQueryClient()
 
-  const providerUrls = PROVIDERS.filter((provider) =>
-    typeof provider.env === "string"
-      ? provider.env === import.meta.env.VITE_ENV
-      : provider.env.includes(import.meta.env.VITE_ENV),
-  ).map(({ url }) => url)
+  const [activeProvider, setActiveProvider] = useState<WsProvider>()
 
-  return useQuery(
-    QUERY_KEYS.provider(providerUrls.join("-")),
-    async ({ queryKey: [_, url] }) => {
+  const initialRpcUrlList = useRef(
+    autoMode
+      ? predefinedRpcUrls
+      : [rpcUrl ?? import.meta.env.VITE_PROVIDER_URL],
+  )
+  const [rpcUrlList, setRpcUrlList] = useState(initialRpcUrlList.current)
+
+  const switchRpcList = useCallback(
+    async (provider: WsProvider) => {
+      console.log("[RPC] error", provider?.endpoint)
+      await provider?.disconnect()
+      setRpcUrlList((prev) => {
+        const newList = prev.filter((item) => item !== provider?.endpoint)
+        return newList.length ? newList : initialRpcUrlList.current
+      })
+      queryCleint.refetchQueries(["provider"])
+    },
+    [queryCleint],
+  )
+
+  useEffect(() => {
+    if (!autoMode) return
+    const id = setTimeout(async () => {
+      if (activeProvider && !activeProvider?.isConnected) {
+        switchRpcList(activeProvider)
+      }
+    }, PROVIDER_CONNECT_TIMEOUT)
+
+    return () => clearTimeout(id)
+  }, [activeProvider, autoMode, switchRpcList])
+
+  const providerData = useQuery(
+    QUERY_KEYS.provider(rpcUrlList.toString()),
+    async () => {
       /* const apiPool = SubstrateApis.getInstance()
+      
       const api = await apiPool.api(url) */
 
-      const provider = new WsProvider(providerUrls, 250)
+      const provider = new WsProvider(rpcUrlList, 500)
+      console.log(
+        "[RPC] connected to",
+        provider?.endpoint,
+        rpcUrlList.toString(),
+      )
+
+      setActiveProvider(provider)
       const api = await ApiPromise.create({
         noInitWarn: true,
         provider,
       })
-
-      if (provider.endpoint) {
-        console.log("[RPC] Connected to", provider.endpoint)
-      }
 
       api.registry.register({
         XykLMDeposit: {
@@ -139,6 +186,7 @@ export const useProviderData = (rpcUrl?: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
+
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
@@ -173,8 +221,56 @@ export const useProviderData = (rpcUrl?: string) => {
         poolService: assets.poolService,
       }
     },
-    { refetchOnWindowFocus: false },
+    {
+      enabled: !!rpcUrlList,
+      refetchOnWindowFocus: false,
+      retry: false,
+      onSettled(_, error) {
+        if (error && autoMode && activeProvider) {
+          switchRpcList(activeProvider)
+        }
+      },
+    },
   )
+
+  useEffect(() => {
+    return onConnectErrorHandler(
+      providerData?.data?.api,
+      activeProvider,
+      () => {
+        if (!activeProvider) return
+        switchRpcList(activeProvider)
+      },
+    )
+  }, [activeProvider, providerData?.data?.api, switchRpcList])
+
+  return providerData
+}
+
+function onConnectErrorHandler(
+  api?: ApiPromise,
+  provider?: WsProvider,
+  onError = undefinedNoop,
+) {
+  let unsubApi: () => void
+  let unsubProvider: () => void
+
+  if (api && api?.isConnected) {
+    api.on("error", onError)
+
+    unsubApi = () => {
+      api.off("error", onError)
+    }
+  }
+
+  if (provider) {
+    unsubProvider = provider.on("error", onError)
+  }
+
+  return () => {
+    unsubApi?.()
+    unsubProvider?.()
+  }
 }
 
 export const useRefetchProviderData = () => {
@@ -206,4 +302,16 @@ export const useSquidUrl = () => {
   const indexerUrl =
     selectedProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
   return indexerUrl
+}
+
+export const useActiveProvider = () => {
+  const { rpcUrl, autoMode } = useProviderRpcUrlStore()
+
+  const { provider } = useRpcProvider()
+
+  const preferredRpcUrl = rpcUrl ?? import.meta.env.VITE_SQUID_URL
+  const activeRpcUrl =
+    autoMode && provider?.isConnected ? provider.endpoint : preferredRpcUrl
+
+  return PROVIDERS.find((provider) => provider.url === activeRpcUrl)
 }

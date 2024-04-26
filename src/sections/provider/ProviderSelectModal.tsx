@@ -1,66 +1,25 @@
-import {
-  PROVIDERS,
-  useProviderData,
-  useProviderRpcUrlStore,
-} from "api/provider"
-import { Button } from "components/Button/Button"
+import { useProviderRpcUrlStore } from "api/provider"
 import { Modal } from "components/Modal/Modal"
-import { Separator } from "components/Separator/Separator"
-import { Fragment, useState } from "react"
+import { useState } from "react"
 
-import { SContainer, SHeader } from "./ProviderSelectModal.styled"
+import { Switch } from "components/Switch/Switch"
+import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { Controller, useForm } from "react-hook-form"
-import { ProviderInput } from "./components/ProviderInput/ProviderInput"
+import { ProviderSelectForm } from "sections/provider/ProviderSelectForm"
 import { useRpcStore } from "state/store"
-import { FormValues } from "utils/helpers"
-import { useMutation } from "@tanstack/react-query"
-import { connectWsProvider } from "./ProviderSelectModal.utils"
-import { ProviderItem } from "./components/ProviderItem/ProviderItem"
+import { SSwitchContainer } from "./ProviderSelectModal.styled"
 import { DeleteModal } from "./components/DeleteModal/DeleteModal"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { Button } from "components/Button/Button"
 
 export function ProviderSelectModal(props: {
   open: boolean
   onClose: () => void
 }) {
-  const { data } = useProviderData()
-  const preference = useProviderRpcUrlStore()
-  const activeRpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
+  const { setRpcUrl, autoMode, setAutoMode } = useProviderRpcUrlStore()
   const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
+  const [tempAutoMode, setTempAutoMode] = useState(autoMode)
   const { t } = useTranslation()
-  const { rpcList, addRpc, removeRpc } = useRpcStore()
-
-  const provider = data?.provider
-
-  const form = useForm<{ address: string }>({
-    defaultValues: { address: "wss://" },
-    mode: "onChange",
-  })
-
-  const mutation = useMutation(async (value: FormValues<typeof form>) => {
-    try {
-      const provider = await connectWsProvider(value.address)
-
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
-
-      const relay = await api.query.parachainSystem.validationData()
-      const relayParentNumber = relay.unwrap().relayParentNumber
-
-      if (relayParentNumber.toNumber()) {
-        addRpc(value.address)
-        form.reset()
-      }
-    } catch (e) {
-      if (e === "disconnected")
-        form.setError("address", {
-          message: t("rpc.change.modal.errors.notExist"),
-        })
-      throw new Error(t("rpc.change.modal.errors.notExist"))
-    }
-  })
+  const { removeRpc } = useRpcStore()
 
   return (
     <>
@@ -68,136 +27,69 @@ export function ProviderSelectModal(props: {
         open={props.open}
         onClose={props.onClose}
         title={t("rpc.change.modal.title")}
+        headerVariant="FontOver"
       >
-        <>
-          {/* {import.meta.env.VITE_ENV !== "production" && (
-            <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
-              <Controller
-                name="address"
-                control={form.control}
-                rules={{
-                  required: t("wallet.assets.transfer.error.required"),
-                  validate: {
-                    duplicate: (value) => {
-                      const isDuplicate = rpcList.find(
-                        (rpc) => rpc.url === `wss://${value}`,
-                      )
-                      return (
-                        !isDuplicate || t("rpc.change.modal.errors.duplicate")
-                      )
-                    },
-                  },
-                }}
-                render={({
-                  field: { name, value, onChange },
-                  fieldState: { error },
-                }) => (
-                  <ProviderInput
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    error={error?.message}
-                    button={
-                      <Button
-                        size="small"
-                        type="submit"
-                        isLoading={mutation.isLoading}
-                      >
-                        {t("add")}
-                      </Button>
-                    }
-                  />
-                )}
-              />
-            </form>
-          )} */}
-
-          <SContainer>
-            {/* <SHeader>
-              <div css={{ gridArea: "name" }}>
-                {t("rpc.change.modal.column.name")}
-              </div>
-              <div css={{ gridArea: "status" }}>
-                {t("rpc.change.modal.column.status")}
-              </div>
-              <div css={{ gridArea: "url" }} sx={{ textAlign: "right" }}>
-                {t("rpc.change.modal.column.rpc")}
-              </div>
-            </SHeader> */}
-
-            <p sx={{ color: "white", mt: 20, textAlign: "center" }}>
-              Connected to {provider?.endpoint}
-            </p>
-
-            {/* PROVIDERS.filter((provider) =>
-              typeof provider.env === "string"
-                ? provider.env === import.meta.env.VITE_ENV
-                : provider.env.includes(import.meta.env.VITE_ENV),
-            ).map((provider, index) => {
-              return (
-                <Fragment key={provider.url}>
-                  <ProviderItem
-                    name={provider.name}
-                    url={provider.url}
-                    isActive={provider.url === userRpcUrl}
-                    onClick={() => setUserRpcUrl(provider.url)}
-                  />
-                  {index + 1 < PROVIDERS.length && (
-                    <Separator color="alpha0" opacity={0.06} />
-                  )}
-                </Fragment>
-              )
-            }) */}
-
-            {/* {import.meta.env.VITE_ENV !== "production" &&
-              rpcList?.map((rpc, index) => (
-                <Fragment key={rpc.url}>
-                  <ProviderItem
-                    name={
-                      rpc.name ??
-                      t("rpc.change.modal.name.label", { index: index + 1 })
-                    }
-                    url={rpc.url}
-                    isActive={rpc.url === userRpcUrl}
-                    onClick={() => setUserRpcUrl(rpc.url)}
-                    custom
-                    onRemove={(rpc) => {
-                      setRemoveRpcUrl(rpc)
-                    }}
-                  />
-                  {index + 1 < PROVIDERS.length && (
-                    <Separator color="alpha0" opacity={0.06} />
-                  )}
-                </Fragment>
-              ))} */}
-          </SContainer>
-
-          <Button
-            variant="primary"
-            fullWidth
-            sx={{ mt: 64 }}
-            onClick={() => {
-              preference.setRpcUrl(userRpcUrl)
-
-              if (activeRpcUrl !== userRpcUrl) {
-                window.location.reload()
-              } else {
-                props.onClose()
-              }
-            }}
-          >
-            {t("rpc.change.modal.save")}
-          </Button>
-        </>
-        {!!removeRpcUrl && (
-          <DeleteModal
-            onBack={() => setRemoveRpcUrl(undefined)}
-            onConfirm={() => {
-              removeRpc(removeRpcUrl)
-              setRemoveRpcUrl(undefined)
-            }}
+        <SSwitchContainer
+          sx={{
+            flex: "row",
+            align: "center",
+            justify: "space-between",
+            gap: 10,
+          }}
+        >
+          <div sx={{ maxWidth: 280 }}>
+            <Text fs={13} sx={{ mb: 4 }}>
+              {t("rpc.change.modal.autoMode.title")}
+            </Text>
+            <Text color="basic400" fs={12}>
+              {t("rpc.change.modal.autoMode.desc")}
+            </Text>
+          </div>
+          <Switch
+            name="rpc-auto-mode"
+            value={tempAutoMode}
+            onCheckedChange={setTempAutoMode}
           />
-        )}
+        </SSwitchContainer>
+
+        <div sx={{ pt: 12 }}>
+          {tempAutoMode ? (
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => {
+                setAutoMode(tempAutoMode)
+                props.onClose()
+                window.location.reload()
+              }}
+            >
+              {t("rpc.change.modal.save")}
+            </Button>
+          ) : (
+            <>
+              <ProviderSelectForm
+                onSave={(rpcUrl) => {
+                  setRpcUrl(rpcUrl)
+                  setAutoMode(tempAutoMode)
+                  props.onClose()
+                  window.location.reload()
+                }}
+                onRemove={(rpc) => {
+                  setRemoveRpcUrl(rpc)
+                }}
+              />
+              {!!removeRpcUrl && (
+                <DeleteModal
+                  onBack={() => setRemoveRpcUrl(undefined)}
+                  onConfirm={() => {
+                    removeRpc(removeRpcUrl)
+                    setRemoveRpcUrl(undefined)
+                  }}
+                />
+              )}
+            </>
+          )}
+        </div>
       </Modal>
     </>
   )
