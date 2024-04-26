@@ -154,11 +154,7 @@ export const useProviderData = () => {
       const api = await apiPool.api(url) */
 
       const provider = new WsProvider(rpcUrlList, 500)
-      console.log(
-        "[RPC] connected to",
-        provider?.endpoint,
-        rpcUrlList.toString(),
-      )
+      console.log("[RPC] connected to", provider?.endpoint)
 
       setActiveProvider(provider)
       const api = await ApiPromise.create({
