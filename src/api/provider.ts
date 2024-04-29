@@ -107,8 +107,8 @@ const PROVIDER_CONNECT_TIMEOUT = 5000
 
 const predefinedRpcUrls = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
-    ? provider.env === "production"
-    : provider.env.includes("production"),
+    ? provider.env === import.meta.env.VITE_ENV
+    : provider.env.includes(import.meta.env.VITE_ENV),
 ).map(({ url }) => url)
 
 export const useProviderData = () => {
