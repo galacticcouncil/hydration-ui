@@ -8,7 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useProviderRpcUrlStore, useSquidUrl } from "api/provider"
+import { useActiveProvider } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -52,10 +52,7 @@ export const BondsTrade = ({
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
 
-  const preference = useProviderRpcUrlStore()
-  const squidUrl = useSquidUrl()
-
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = BondsAppSearch.safeParse(rawSearch)
@@ -117,12 +114,12 @@ export const BondsTrade = ({
         }}
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
-        apiAddress={rpcUrl}
+        apiAddress={activeProvider?.url}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        squidUrl={squidUrl}
+        squidUrl={activeProvider?.squidUrl}
         onTxNew={(e) => handleSubmit(e)}
         onQueryUpdate={(e) => handleQueryUpdate(e)}
       />

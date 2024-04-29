@@ -8,7 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveProvider } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -48,7 +48,6 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
@@ -64,8 +63,7 @@ export function SwapPage() {
 
   const isEvm = isEvmAccount(account?.address)
   const version = useRemount([isEvm, externalTokensStored.length])
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
@@ -131,12 +129,12 @@ export function SwapPage() {
         }}
         assetIn={assetIn}
         assetOut={assetOut}
-        apiAddress={rpcUrl}
+        apiAddress={activeProvider?.url}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        indexerUrl={indexerUrl}
+        indexerUrl={activeProvider?.indexerUrl}
         grafanaUrl={grafanaUrl}
         grafanaDsn={grafanaDsn}
         onTxNew={(e) => handleSubmit(e)}

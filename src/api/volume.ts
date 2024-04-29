@@ -6,7 +6,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useIndexerUrl, useProviderRpcUrlStore } from "./provider"
+import { PROVIDERS, useActiveProvider, useIndexerUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 
@@ -190,10 +190,11 @@ export function useTradeVolumes(
   assetIds: Maybe<u32 | string>[],
   noRefresh?: boolean,
 ) {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
   const selectedProvider = PROVIDERS.find(
-    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+    (provider) =>
+      activeProvider &&
+      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
   )
 
   const indexerUrl =
@@ -230,10 +231,11 @@ export function useXYKTradeVolumes(assetIds: Maybe<u32 | string>[]) {
 }
 
 export function useAllTrades(assetId?: number) {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
   const selectedProvider = PROVIDERS.find(
-    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+    (provider) =>
+      activeProvider &&
+      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
   )
 
   const indexerUrl =

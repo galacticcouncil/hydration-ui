@@ -6,8 +6,9 @@ import BN from "bignumber.js"
 import { getUniques } from "./uniques"
 import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { PROVIDERS } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useActiveProvider } from "api/provider"
 
 interface ISubscanData {
   code: number
@@ -218,8 +219,8 @@ export type TAccumulatedRpsUpdated = StakeEventBase & {
 }
 
 export const useStakingEvents = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
+  const rpcUrl = activeProvider?.url
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
 
   const indexerUrl =
@@ -241,12 +242,10 @@ export const useStakingEvents = () => {
 }
 
 export const useStakingPositionBalances = (positionId: Maybe<string>) => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const activeProvider = useActiveProvider()
 
   const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+    activeProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
 
   return useQuery(
     QUERY_KEYS.stakingPositionBalances(positionId),

@@ -60,7 +60,7 @@ export function ProviderSelectModal(props: {
               onClick={() => {
                 setAutoMode(tempAutoMode)
                 props.onClose()
-                window.location.reload()
+                //window.location.reload()
               }}
             >
               {t("rpc.change.modal.save")}
@@ -72,7 +72,7 @@ export function ProviderSelectModal(props: {
                   setRpcUrl(rpcUrl)
                   setAutoMode(tempAutoMode)
                   props.onClose()
-                  window.location.reload()
+                  //window.location.reload()
                 }}
                 onRemove={(rpc) => {
                   setRemoveRpcUrl(rpc)

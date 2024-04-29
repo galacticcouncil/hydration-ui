@@ -9,6 +9,7 @@ import { theme } from "theme"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
+import { ProviderReloader } from "sections/provider/ProviderReloader"
 
 const AppsPersistenceProvider = createComponent({
   tagName: "gc-database-provider",
@@ -19,20 +20,22 @@ const AppsPersistenceProvider = createComponent({
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <TooltipProvider>
-      <RpcProvider>
-        <InvalidateOnBlock>
-          <ToastProvider>
-            <SkeletonTheme
-              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-              borderRadius={4}
-            >
-              <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
-              <Transactions />
-            </SkeletonTheme>
-          </ToastProvider>
-        </InvalidateOnBlock>
-      </RpcProvider>
+      <ProviderReloader>
+        <RpcProvider>
+          <InvalidateOnBlock>
+            <ToastProvider>
+              <SkeletonTheme
+                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                borderRadius={4}
+              >
+                <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
+                <Transactions />
+              </SkeletonTheme>
+            </ToastProvider>
+          </InvalidateOnBlock>
+        </RpcProvider>
+      </ProviderReloader>
     </TooltipProvider>
   )
 }

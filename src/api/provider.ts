@@ -6,8 +6,7 @@ import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { undefinedNoop } from "utils/helpers"
-import { useRpcProvider } from "providers/rpcProvider"
+import { omit } from "utils/rx"
 
 export const PROVIDERS = [
   {
@@ -67,8 +66,10 @@ export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl?: string
     autoMode: boolean
-    setAutoMode: (state: boolean) => void
+    autoModeRpcUrl?: string
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setAutoMode: (state: boolean) => void
+    setAutoModeRpcUrl: (rpcUrl: string | undefined) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
@@ -76,12 +77,14 @@ export const useProviderRpcUrlStore = create(
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setAutoMode: (state) => set({ autoMode: state }),
+      setAutoModeRpcUrl: (rpcUrl) => set({ autoModeRpcUrl: rpcUrl }),
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "rpcUrl",
       version: 2.1,
+      partialize: (state) => omit(["autoModeRpcUrl"], state),
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -100,18 +103,17 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-const PROVIDER_CONNECT_TIMEOUT = 10000
+const PROVIDER_CONNECT_TIMEOUT = 5000
 
 const predefinedRpcUrls = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
-    ? provider.env === import.meta.env.VITE_ENV
-    : provider.env.includes(import.meta.env.VITE_ENV),
+    ? provider.env === "production"
+    : provider.env.includes("production"),
 ).map(({ url }) => url)
 
 export const useProviderData = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore()
+  const { autoMode, rpcUrl, setAutoModeRpcUrl } = useProviderRpcUrlStore()
   const displayAsset = useDisplayAssetStore()
-  const queryCleint = useQueryClient()
 
   const [activeProvider, setActiveProvider] = useState<WsProvider>()
 
@@ -120,31 +122,30 @@ export const useProviderData = () => {
       ? predefinedRpcUrls
       : [rpcUrl ?? import.meta.env.VITE_PROVIDER_URL],
   )
-  const [rpcUrlList, setRpcUrlList] = useState(initialRpcUrlList.current)
 
-  const switchRpcList = useCallback(
-    async (provider: WsProvider) => {
-      console.log("[RPC] error", provider?.endpoint)
-      await provider?.disconnect()
-      setRpcUrlList((prev) => {
-        const newList = prev.filter((item) => item !== provider?.endpoint)
-        return newList.length ? newList : initialRpcUrlList.current
-      })
-      queryCleint.refetchQueries(["provider"])
-    },
-    [queryCleint],
+  const [rpcUrlList, setRpcUrlList] = useState<string[]>(
+    initialRpcUrlList.current,
   )
+
+  const updateRpcList = useCallback(async (provider: WsProvider) => {
+    await provider?.disconnect()
+    setRpcUrlList((prev) => {
+      const newList = prev.filter((item) => item !== provider?.endpoint)
+      return newList.length ? newList : initialRpcUrlList.current
+    })
+  }, [])
 
   useEffect(() => {
     if (!autoMode) return
     const id = setTimeout(async () => {
       if (activeProvider && !activeProvider?.isConnected) {
-        switchRpcList(activeProvider)
+        console.log("[RPC] timeout", activeProvider.endpoint)
+        updateRpcList(activeProvider)
       }
     }, PROVIDER_CONNECT_TIMEOUT)
 
     return () => clearTimeout(id)
-  }, [activeProvider, autoMode, switchRpcList])
+  }, [activeProvider, autoMode, updateRpcList])
 
   const providerData = useQuery(
     QUERY_KEYS.provider(rpcUrlList.toString()),
@@ -154,7 +155,6 @@ export const useProviderData = () => {
       const api = await apiPool.api(url) */
 
       const provider = new WsProvider(rpcUrlList, 500)
-      console.log("[RPC] connected to", provider?.endpoint)
 
       setActiveProvider(provider)
       const api = await ApiPromise.create({
@@ -221,93 +221,65 @@ export const useProviderData = () => {
       enabled: !!rpcUrlList,
       refetchOnWindowFocus: false,
       retry: false,
-      onSettled(_, error) {
+      onSettled(data, error) {
         if (error && autoMode && activeProvider) {
-          switchRpcList(activeProvider)
+          console.log("[RPC] error", activeProvider.endpoint)
+          updateRpcList(activeProvider)
+        }
+
+        if (data) {
+          console.log("[RPC] connected to", data.provider.endpoint)
+          if (autoMode) {
+            setAutoModeRpcUrl(data.provider.endpoint)
+          }
         }
       },
     },
   )
 
   useEffect(() => {
-    return onConnectErrorHandler(
-      providerData?.data?.api,
-      activeProvider,
-      () => {
+    if (activeProvider) {
+      return activeProvider.on("error", () => {
         if (!activeProvider) return
-        switchRpcList(activeProvider)
-      },
-    )
-  }, [activeProvider, providerData?.data?.api, switchRpcList])
+        updateRpcList(activeProvider)
+      })
+    }
+  }, [activeProvider, providerData?.data?.api, updateRpcList])
 
   return providerData
-}
-
-function onConnectErrorHandler(
-  api?: ApiPromise,
-  provider?: WsProvider,
-  onError = undefinedNoop,
-) {
-  let unsubApi: () => void
-  let unsubProvider: () => void
-
-  if (api && api?.isConnected) {
-    api.on("error", onError)
-
-    unsubApi = () => {
-      api.off("error", onError)
-    }
-  }
-
-  if (provider) {
-    unsubProvider = provider.on("error", onError)
-  }
-
-  return () => {
-    unsubApi?.()
-    unsubProvider?.()
-  }
 }
 
 export const useRefetchProviderData = () => {
   const queryClient = useQueryClient()
 
-  const preference = useProviderRpcUrlStore()
+  const activeProvider = useActiveProvider()
 
   return () => {
-    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+    const url = activeProvider?.url ?? import.meta.env.VITE_PROVIDER_URL
     url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
   }
 }
 
 export const useIndexerUrl = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const activeProvider = useActiveProvider()
 
   const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+    activeProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
   return indexerUrl
 }
 
 export const useSquidUrl = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_SQUID_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const activeProvider = useActiveProvider()
 
-  const indexerUrl =
-    selectedProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
+  const indexerUrl = activeProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
   return indexerUrl
 }
 
 export const useActiveProvider = () => {
-  const { rpcUrl, autoMode } = useProviderRpcUrlStore()
+  const { rpcUrl, autoMode, autoModeRpcUrl } = useProviderRpcUrlStore()
 
-  const { provider } = useRpcProvider()
-
-  const preferredRpcUrl = rpcUrl ?? import.meta.env.VITE_SQUID_URL
-  const activeRpcUrl =
-    autoMode && provider?.isConnected ? provider.endpoint : preferredRpcUrl
+  const preferredRpcUrl = rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeRpcUrl = autoMode ? autoModeRpcUrl : preferredRpcUrl
 
   return PROVIDERS.find((provider) => provider.url === activeRpcUrl)
 }
