@@ -34,12 +34,12 @@ export const WalletPaymentAsset = () => {
 
   const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
 
-  const isEvm = isEvmAccount(account?.address)
+  /*   const isEvm = isEvmAccount(account?.address)
 
   if (isEvm) {
     return null
   }
-
+ */
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
       <Text sx={{ opacity: 0.6 }} fs={14} lh={14}>

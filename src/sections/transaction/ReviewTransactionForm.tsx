@@ -95,8 +95,14 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet.signer) throw new Error("Missing signer")
 
         if (wallet?.signer instanceof MetaMaskSigner) {
-          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
-          return props.onEvmSigned({ evmTx, tx })
+          //const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+          const permit = await wallet.signer.sendPermitDispatch(
+            tx.method.toHex(),
+          )
+
+          console.log({ permit })
+
+          //return props.onEvmSigned({ evmTx, tx })
         }
 
         const signature = await tx.signAsync(address, {
@@ -125,17 +131,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
-  const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
+  /* const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
     ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-    : false
+    : false */
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
     shouldOpenPolkaJSUrl
       ? window.open(polkadotJSUrl, "_blank")
-      : isEvmFeePaymentAssetInvalid
-      ? openEditFeePaymentAssetModal()
       : isEnoughPaymentBalance
       ? signTx.mutate()
       : hasMultipleFeeAssets
@@ -148,7 +152,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
     )
-  } else if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
+  } else if (isEditPaymentBalance) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
     )
@@ -181,9 +185,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               <ReviewTransactionSummary
                 tx={props.tx}
                 transactionValues={transactionValues}
-                editFeePaymentAssetEnabled={
-                  hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
-                }
+                editFeePaymentAssetEnabled={hasMultipleFeeAssets}
                 xcallMeta={props.xcallMeta}
                 openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
                 onTipChange={isTippingEnabled ? setTipAmount : undefined}
@@ -214,14 +216,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
-                {!shouldOpenPolkaJSUrl && isEvmFeePaymentAssetInvalid && (
-                  <Text fs={16} color="pink600">
-                    {t(
-                      "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg",
-                      { symbol: NATIVE_EVM_ASSET_SYMBOL },
-                    )}
-                  </Text>
-                )}
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
                   <Text fs={16} color="pink600">
                     {t(
