@@ -79,6 +79,7 @@ export class MetaMaskSigner {
       }
 
       const [gas] = await this.getGasValues(tx)
+
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
@@ -159,16 +160,6 @@ export class MetaMaskSigner {
 
       const method = "eth_signTypedData_v4"
       const params = [this.address, typedData]
-
-      /* const signature = await this.signer._signTypedData(
-        typedData.domain,
-        typedData.types,
-        message,
-      )
- */
-      //const signature: SignatureLike = await provider.send(
-
-      //const ethersSignature = Signature.from(signature)
 
       return new Promise((resolve, reject) => {
         this.provider.sendAsync?.(

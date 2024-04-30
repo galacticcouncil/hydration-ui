@@ -20,16 +20,8 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import {
-  DISPATCH_ADDRESS,
-  NATIVE_EVM_ASSET_ID,
-  NATIVE_EVM_ASSET_SYMBOL,
-  isEvmAccount,
-} from "utils/evm"
-import {
-  getTransactionJSON,
-  isSetCurrencyExtrinsic,
-} from "sections/transaction/ReviewTransaction.utils"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
@@ -52,7 +44,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
   const { api } = useRpcProvider()
-  const { createTransaction } = useStore()
 
   const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
 
@@ -77,6 +68,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     acceptedFeePaymentAssets,
     isEnoughPaymentBalance,
     feePaymentMeta,
+    originalFeePaymentMeta,
     isLinkedAccount,
     storedReferralCode,
     tx,
@@ -102,29 +94,33 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet.signer) throw new Error("Missing signer")
 
         if (wallet?.signer instanceof MetaMaskSigner) {
-          //const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
-          const permit = await wallet.signer.sendPermitDispatch(
-            tx.method.toHex(),
-          )
-          console.log({ permit })
-
-          const res = await api.tx.multiTransactionPayment
-            .dispatchPermit(
-              permit.message.from,
-              permit.message.to,
-              permit.message.value,
-              permit.message.data,
-              permit.message.gaslimit,
-              permit.message.deadline,
-              permit.signature.v,
-              permit.signature.r,
-              permit.signature.s,
+          const shouldUsePermit =
+            originalFeePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+          if (shouldUsePermit) {
+            const permit = await wallet.signer.sendPermitDispatch(
+              tx.method.toHex(),
             )
-            .send()
 
-          console.log({ res })
+            const res = await api.tx.multiTransactionPayment
+              .dispatchPermit(
+                permit.message.from,
+                permit.message.to,
+                permit.message.value,
+                permit.message.data,
+                permit.message.gaslimit,
+                permit.message.deadline,
+                permit.signature.v,
+                permit.signature.r,
+                permit.signature.s,
+              )
+              .send()
+            // @TODO handle permit result
+            console.log({ res })
+            return
+          }
 
-          //return props.onEvmSigned({ evmTx, tx })
+          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+          return props.onEvmSigned({ evmTx, tx })
         }
 
         const signature = await tx.signAsync(address, {
@@ -152,10 +148,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       ? false
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
-
-  /* const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
-    ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-    : false */
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 

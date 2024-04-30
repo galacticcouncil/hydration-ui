@@ -90,6 +90,10 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
+  const originalFeePaymentMeta = feePaymentAssetId
+    ? assets.getAsset(feePaymentAssetId)
+    : undefined
+
   const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
@@ -131,6 +135,7 @@ export const useTransactionValues = ({
         isEnoughPaymentBalance: false,
         displayFeePaymentValue: BN_NAN,
         feePaymentMeta,
+        originalFeePaymentMeta,
         acceptedFeePaymentAssets: [],
         era,
         nonce: nonce.data,
