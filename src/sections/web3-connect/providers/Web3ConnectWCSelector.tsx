@@ -13,17 +13,13 @@ import {
 import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { isEvmAccount } from "utils/evm"
 
-export type Web3ConnectWCSelectorProps = {}
-
 const walletConnectType = WalletProviderType.WalletConnect
 
 const getWalletConnect = () => {
   return getWalletProviderByType(walletConnectType).wallet as WalletConnect
 }
 
-export const Web3ConnectWCSelector: React.FC<
-  Web3ConnectWCSelectorProps
-> = () => {
+export const Web3ConnectWCSelector = () => {
   const { setStatus, setError, provider, status, account, mode } =
     useWeb3ConnectStore()
 

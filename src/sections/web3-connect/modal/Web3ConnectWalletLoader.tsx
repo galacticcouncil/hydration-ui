@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import {
@@ -7,6 +6,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { FC } from "react"
 import { Spinner } from "components/Spinner/Spinner"
+import { SContainer, SContent } from "./Web3ConnectWalletLoader.styled"
 
 type Props = { provider: WalletProviderType }
 
@@ -14,21 +14,8 @@ export const Web3ConnectWalletLoader: FC<Props> = ({ provider }) => {
   const { t } = useTranslation()
   const { wallet } = getWalletProviderByType(provider)
   return (
-    <div sx={{ flex: "column", align: "center" }}>
-      <div
-        css={css`
-          display: grid;
-          grid-template-columns: 1fr;
-
-          align-items: center;
-          justify-items: center;
-
-          > * {
-            grid-column: 1;
-            grid-row: 1;
-          }
-        `}
-      >
+    <SContainer>
+      <SContent>
         <Spinner size={80} />
         <img
           src={wallet?.logo.src}
@@ -36,7 +23,7 @@ export const Web3ConnectWalletLoader: FC<Props> = ({ provider }) => {
           width={48}
           height={48}
         />
-      </div>
+      </SContent>
       <Text
         fs={19}
         fw={500}
@@ -54,6 +41,6 @@ export const Web3ConnectWalletLoader: FC<Props> = ({ provider }) => {
           })}
         </Text>
       </div>
-    </div>
+    </SContainer>
   )
 }
