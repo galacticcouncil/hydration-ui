@@ -81,6 +81,7 @@ export function YieldDcaPage() {
   return (
     <SContainer>
       <DcaYieldApp
+        key={activeProvider?.url}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}

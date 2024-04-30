@@ -86,6 +86,7 @@ export function DcaPage() {
   return (
     <SContainer>
       <DcaApp
+        key={activeProvider?.url}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}

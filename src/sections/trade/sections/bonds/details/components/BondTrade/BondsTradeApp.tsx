@@ -107,6 +107,7 @@ export const BondsTrade = ({
   return (
     <SContainer>
       <BondsApp
+        key={activeProvider?.url}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")

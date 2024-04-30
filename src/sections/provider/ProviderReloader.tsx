@@ -3,7 +3,6 @@ import { useProviderRpcUrlStore } from "api/provider"
 import { useRemount } from "hooks/useRemount"
 import { Fragment, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
-import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
   children,
@@ -31,10 +30,5 @@ export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
     }
   }, [autoMode, prevRpcVersion, queryClient, rpcVersion, selectedRpc])
 
-  return (
-    <Fragment key={`root-${version}`}>
-      {children}
-      <ProviderSelectButton />
-    </Fragment>
-  )
+  return <Fragment key={`root-${version}`}>{children}</Fragment>
 }

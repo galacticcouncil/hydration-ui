@@ -136,6 +136,7 @@ export function XcmPage() {
       <PageSwitch />
       <SContainer>
         <XcmApp
+          key={activeProvider?.url}
           ref={ref}
           srcChain={srcChainDefault}
           destChain={destChainDefault}
