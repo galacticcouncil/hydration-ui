@@ -1,52 +1,16 @@
 import { ApiPromise } from "@polkadot/api"
-import { u128, u32 } from "@polkadot/types"
-import { AccountId32 } from "@polkadot/types/interfaces"
+import { u128, u32, Option } from "@polkadot/types"
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Maybe, undefinedNoop, useQueryReduce } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
+import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
+import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 
-const DEPOSIT_NFT_COLLECTION_ID = "2584"
-
-export const useAccountDepositIds = (
-  accountId: Maybe<AccountId32 | string>,
-) => {
+export const useOmnipoolDeposits = (ids: string[]) => {
   const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.accountDepositIds(accountId),
-    accountId != null ? getAccountDepositIds(api, accountId) : undefinedNoop,
-    { enabled: !!accountId },
-  )
-}
 
-const getAccountDepositIds =
-  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const res = await api.query.uniques.account.entries(
-      accountId,
-      DEPOSIT_NFT_COLLECTION_ID,
-    )
-    const nfts = res.map(([storageKey]) => {
-      const [owner, classId, instanceId] = storageKey.args
-      return { owner, classId, instanceId }
-    })
-
-    return nfts
-  }
-
-export const useAllDeposits = () => {
-  const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.allDeposits, getDeposits(api))
-}
-
-export const usePoolDeposits = (poolId?: u32 | string) => {
-  const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.poolDeposits(poolId), getDeposits(api), {
-    enabled: !!poolId,
-    select: (data) =>
-      data.filter(
-        (item) => item.data.ammPoolId.toString() === poolId?.toString(),
-      ),
+  return useQuery(QUERY_KEYS.omnipoolDeposits(ids), getDeposits(api, ids), {
+    enabled: !!ids.length,
   })
 }
 
@@ -71,12 +35,25 @@ export const useOmniPositionIds = (positionIds: Array<u32 | string>) => {
   })
 }
 
-const getDeposits = (api: ApiPromise) => async () => {
-  const res = await api.query.omnipoolWarehouseLM.deposit.entries()
-  return res.map(([key, value]) => ({
-    id: key.args[0],
-    data: value.unwrap(),
-  }))
+const getDeposits = (api: ApiPromise, ids: string[]) => async () => {
+  if (!ids.length) return undefined
+
+  const keys = ids.map((id) => api.query.omnipoolWarehouseLM.deposit.key(id))
+  const values = (await api.rpc.state.queryStorageAt(
+    keys,
+  )) as Option<PalletLiquidityMiningDepositData>[]
+
+  const data = values
+    .filter((value) => !value.isNone)
+    .map(
+      (value) =>
+        api.registry.createType(
+          "OmnipoolLMDeposit",
+          value.unwrap(),
+        ) as PalletLiquidityMiningDepositData,
+    )
+
+  return ids.map((id, i) => ({ id, data: data[i] }))
 }
 
 const getOmniPositionId =
@@ -86,38 +63,15 @@ const getOmniPositionId =
     return { depositionId, value: res.value }
   }
 
-export const useAccountDeposits = (poolId?: u32) => {
-  const { account } = useAccount()
-  const accountDepositIds = useAccountDepositIds(account?.address)
-  const deposits = usePoolDeposits(poolId)
+export const useUserDeposits = (address?: string) => {
+  const nftPositions = useAccountOmnipoolPositions(address)
 
-  return useQueryReduce(
-    [accountDepositIds, deposits] as const,
-    (accountDepositIds, deposits) => {
-      const ids = new Set<string>(
-        accountDepositIds?.map((i) => i.instanceId.toString()),
-      )
-      return deposits.filter((item) => ids.has(item.id.toString()))
-    },
-  )
-}
+  const { miningNfts = [] } = nftPositions.data ?? {}
 
-export const useUserDeposits = () => {
-  const { account } = useAccount()
-  const accountDepositIds = useAccountDepositIds(account?.address)
-  const deposits = useAllDeposits()
+  const omnipoolDeposits =
+    useOmnipoolDeposits(
+      miningNfts.map((miningNft) => miningNft.instanceId),
+    ).data?.filter((deposit) => deposit.data) ?? []
 
-  const query = useQueryReduce(
-    [accountDepositIds, deposits] as const,
-    (accountDepositIds, deposits) => {
-      return deposits.filter(
-        (deposit) =>
-          accountDepositIds?.some(
-            (id) => id.instanceId.toString() === deposit.id.toString(),
-          ),
-      )
-    },
-  )
-
-  return query
+  return omnipoolDeposits
 }

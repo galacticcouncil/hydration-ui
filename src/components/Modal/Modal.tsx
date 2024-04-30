@@ -52,7 +52,6 @@ export const Modal = ({
 
     return (
       <ModalContents
-        className={className}
         page={0}
         direction={0}
         onClose={onClose}
@@ -61,7 +60,7 @@ export const Modal = ({
         contents={[{ content: children, ...contentProps }]}
       />
     )
-  }, [hasContentProps, children, className, onClose, onBack, contentProps])
+  }, [hasContentProps, children, onClose, onBack, contentProps])
 
   return (
     <Root open={open}>
@@ -69,6 +68,7 @@ export const Modal = ({
         <SOverlay
           variant={backdrop}
           onAnimationEnd={() => setIsAnimating(false)}
+          className={className}
           css={{ overflow: isAnimating ? "hidden" : undefined }}
         >
           <SContainer
