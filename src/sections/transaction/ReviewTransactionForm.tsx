@@ -21,11 +21,16 @@ import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
 import {
+  DISPATCH_ADDRESS,
   NATIVE_EVM_ASSET_ID,
   NATIVE_EVM_ASSET_SYMBOL,
   isEvmAccount,
 } from "utils/evm"
-import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import {
+  getTransactionJSON,
+  isSetCurrencyExtrinsic,
+} from "sections/transaction/ReviewTransaction.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -46,6 +51,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
+  const { api } = useRpcProvider()
+  const { createTransaction } = useStore()
 
   const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
 
@@ -99,8 +106,23 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const permit = await wallet.signer.sendPermitDispatch(
             tx.method.toHex(),
           )
-
           console.log({ permit })
+
+          const res = await api.tx.multiTransactionPayment
+            .dispatchPermit(
+              permit.message.from,
+              permit.message.to,
+              permit.message.value,
+              permit.message.data,
+              permit.message.gaslimit,
+              permit.message.deadline,
+              permit.signature.v,
+              permit.signature.r,
+              permit.signature.s,
+            )
+            .send()
+
+          console.log({ res })
 
           //return props.onEvmSigned({ evmTx, tx })
         }
