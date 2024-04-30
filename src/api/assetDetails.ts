@@ -12,8 +12,6 @@ import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
-import { PENDULUM_ID } from "./externalAssetRegistry"
-import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 import { useProviderRpcUrlStore } from "./provider"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
@@ -235,10 +233,7 @@ export const getAssets = async (api: ApiPromise) => {
               location && !location.isNone
                 ? getTokenParachainId(location)
                 : undefined,
-            externalId:
-              location && !location.isNone
-                ? getGeneralIndex(location)
-                : undefined,
+            externalId: undefined,
             iconId: assetCommon.id,
           }
 
@@ -379,16 +374,10 @@ export const getAssets = async (api: ApiPromise) => {
           location && !location.isNone
             ? getTokenParachainId(location)
             : undefined
-        const externalId =
-          location && !location.isNone
-            ? parachainId === PENDULUM_ID.toString()
-              ? getGeneralKey(location)
-              : getGeneralIndex(location)
-            : undefined
-
         const externalTokenStored = externalTokens[dataEnv].find(
           (token) =>
-            token.origin.toString() === parachainId && token.id === externalId,
+            token.origin.toString() === parachainId &&
+            token.internalId === assetCommon.id,
         )
 
         const asset: TToken = {
@@ -398,9 +387,14 @@ export const getAssets = async (api: ApiPromise) => {
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
-          externalId,
+          externalId: undefined,
           iconId: "",
-          ...(externalTokenStored ? omit(["id"], externalTokenStored) : {}),
+          ...(externalTokenStored
+            ? omit(["id", "internalId", "origin"], {
+                ...externalTokenStored,
+                externalId: externalTokenStored.id,
+              })
+            : {}),
         }
 
         external.push(asset)

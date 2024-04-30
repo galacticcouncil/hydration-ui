@@ -48,7 +48,7 @@ const testnet = [
   },
   {
     ...pink,
-    internalId: " 1000018",
+    internalId: "1000018",
   },
   {
     ...dota,
@@ -63,7 +63,7 @@ const mainnet = [
   },
   {
     ...pink,
-    internalId: " 1000021",
+    internalId: "1000021",
   },
   {
     ...dota,
