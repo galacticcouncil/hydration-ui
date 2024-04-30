@@ -76,8 +76,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
       .slice(0, EVENTS_LIMIT)
   }, [allTrades.data, assets])
 
-  console.log(events)
-
   const assetIds = events
     ? events?.map(({ args }) => args.assetIn.toString())
     : []
