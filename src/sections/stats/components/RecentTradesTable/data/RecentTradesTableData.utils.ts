@@ -37,25 +37,30 @@ export const useRecentTradesTableData = (assetId?: string) => {
     return Object.entries(groupedEvents)
       .map(([, value]) => {
         // check if last event is Router event
-        const routerEvent =
-          value[value.length - 1]?.name === "Router.Executed"
-            ? value[value.length - 1]
-            : null
-
+        const routerEvent = value.find(({ name }) => name === "Router.Executed")
         const [firstEvent] = value
+
         if (firstEvent?.name === "Router.Executed") return null
         if (!routerEvent) return firstEvent
-        return {
+
+        const event = {
           ...firstEvent,
           args: {
             ...firstEvent.args,
             ...routerEvent.args,
           },
         }
+
+        const assetInMeta = assets.getAsset(event.args.assetIn.toString())
+        const assetOutMeta = assets.getAsset(event.args.assetOut.toString())
+
+        if (!assetInMeta?.name || !assetOutMeta?.name) return null
+
+        return event
       })
       .filter(isNotNil)
       .slice(0, EVENTS_LIMIT)
-  }, [allTrades.data])
+  }, [allTrades.data, assets])
 
   const assetIds = events
     ? events?.map(({ args }) => args.assetIn.toString())
