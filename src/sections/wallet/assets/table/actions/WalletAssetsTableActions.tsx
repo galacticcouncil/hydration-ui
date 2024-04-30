@@ -254,6 +254,7 @@ export const AddTokenAction = ({
           symbol: externalAsset.symbol,
           decimals: externalAsset.decimals,
           origin: externalAsset.origin,
+          internalId: id,
         })
         refetchProvider()
         add("success", {

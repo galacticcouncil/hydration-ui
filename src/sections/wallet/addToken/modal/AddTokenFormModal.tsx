@@ -6,6 +6,7 @@ import {
   PARACHAIN_CONFIG,
   TExternalAsset,
   TExternalAssetInput,
+  TRegisteredAsset,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
@@ -41,14 +42,14 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { add } = useToast()
 
   const mutation = useRegisterToken({
-    onSuccess: () => {
-      addToken(omit(["location"], asset))
+    onSuccess: (id: string) => {
+      addToken({ ...omit(["location"], asset), internalId: id })
       refetchProvider()
     },
     assetName: asset.name,
   })
 
-  const isChainStored = assets.external.some(
+  const chainStored = assets.external.find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
@@ -102,7 +103,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const hasAsset = !!asset
 
-  const onAddTokenToUser = async (asset: TExternalAsset) => {
+  const onAddTokenToUser = async (asset: TRegisteredAsset) => {
     addToken(asset)
     refetchProvider()
     add("success", {
@@ -171,15 +172,20 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
         <Spacer size={0} />
 
-        <TokenInfo asset={asset} isChainStored={isChainStored} />
+        <TokenInfo asset={asset} isChainStored={!!chainStored} />
 
         <Spacer size={8} />
 
-        {isChainStored ? (
+        {chainStored ? (
           <Button
             type="button"
             variant="primary"
-            onClick={() => onAddTokenToUser(omit(["location"], asset))}
+            onClick={() =>
+              onAddTokenToUser({
+                ...omit(["location"], asset),
+                internalId: chainStored.id,
+              })
+            }
           >
             <PlusIcon width={18} height={18} />
             {t("wallet.addToken.form.button.register.forMe")}

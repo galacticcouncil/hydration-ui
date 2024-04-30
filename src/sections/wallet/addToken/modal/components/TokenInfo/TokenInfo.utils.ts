@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
+import { useProviderRpcUrlStore } from "api/provider"
 import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
@@ -41,6 +42,8 @@ const useMissingExternalAssets = (ids: string[]) => {
 export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const [valid, setValid] = useState(false)
   const { assets, poolService } = useRpcProvider()
+  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
   const volumes = useXYKTradeVolumes(poolsAddress)
 
@@ -73,7 +76,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
     ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
     async () => {
       await poolService.syncRegistry([
-        ...externalTokensStored,
+        ...externalTokensStored[dataEnv],
         ...missingAssets,
       ])
 
