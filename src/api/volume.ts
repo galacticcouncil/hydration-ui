@@ -22,9 +22,11 @@ export type TradeType = {
     who: string
     assetIn: number
     assetOut: number
+    amount?: string
     amountIn: string
     amountOut: string
   }
+
   block: {
     timestamp: string
   }

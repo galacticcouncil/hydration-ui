@@ -9,7 +9,7 @@ import { isHydraAddress } from "utils/formatting"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useAccountsIdentity } from "api/stats"
-import { useAllTrades } from "api/volume"
+import { TradeType, useAllTrades } from "api/volume"
 import { groupBy } from "utils/rx"
 import { isNotNil } from "utils/helpers"
 import { BN_NAN } from "utils/constants"
@@ -41,14 +41,28 @@ export const useRecentTradesTableData = (assetId?: string) => {
         const [firstEvent] = value
 
         if (firstEvent?.name === "Router.Executed") return null
-        if (!routerEvent) return firstEvent
 
-        const event = {
-          ...firstEvent,
-          args: {
-            ...firstEvent.args,
-            ...routerEvent.args,
-          },
+        let event: TradeType
+        if (!routerEvent) {
+          const lastEvent = value[value.length - 1]
+          event = {
+            ...firstEvent,
+            args: {
+              who: firstEvent.args.who,
+              assetIn: firstEvent.args.assetIn,
+              assetOut: lastEvent.args.assetOut,
+              amountIn: firstEvent.args.amount || firstEvent.args.amountIn,
+              amountOut: lastEvent.args.amount || lastEvent.args.amountOut,
+            },
+          }
+        } else {
+          event = {
+            ...firstEvent,
+            args: {
+              ...firstEvent.args,
+              ...routerEvent.args,
+            },
+          }
         }
 
         const assetInMeta = assets.getAsset(event.args.assetIn.toString())
@@ -61,6 +75,8 @@ export const useRecentTradesTableData = (assetId?: string) => {
       .filter(isNotNil)
       .slice(0, EVENTS_LIMIT)
   }, [allTrades.data, assets])
+
+  console.log(events)
 
   const assetIds = events
     ? events?.map(({ args }) => args.assetIn.toString())
