@@ -6,12 +6,14 @@ import {
   isAddress as isEvmAddress,
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { EvmParachain } from "@galacticcouncil/xcm-core"
 
-export const NATIVE_EVM_ASSET_SYMBOL =
-  evmChains["hydradx"].nativeCurrency.symbol
-export const NATIVE_EVM_ASSET_DECIMALS =
-  evmChains["hydradx"].nativeCurrency.decimals
+//@ts-ignore
+const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
+
+export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
+export const NATIVE_EVM_ASSET_DECIMALS = nativeEvmChain.client.chainDecimals
 export const NATIVE_EVM_ASSET_ID = import.meta.env
   .VITE_EVM_NATIVE_ASSET_ID as string
 
@@ -57,7 +59,9 @@ export class H160 {
 }
 
 export function getEvmTxLink(txHash: string, chain = "hydradx") {
-  const explorerUrl = evmChains[chain]?.blockExplorers?.default?.url
+  //@ts-ignore
+  const explorerUrl = (chainsMap.get(chain) as EvmParachain)?.client
+    .chainExplorer
 
   if (!explorerUrl) return ""
 
@@ -73,13 +77,13 @@ export function safeConvertAddressH160(value: string): string | null {
 }
 
 export function getEvmChainById(chainId: number) {
-  const entries = Object.entries(evmChains).find(
-    ([_, chain]) => chain.id === chainId,
+  const chain = Array.from(chainsMap.values()).find(
+    (chain) =>
+      chain instanceof EvmParachain && chain.client.chainId === chainId,
   )
-  const [key, chain] = entries ?? []
-  if (key) {
+  console.log(chain)
+  if (chain) {
     return {
-      key,
       ...chain,
     }
   }

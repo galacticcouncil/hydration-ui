@@ -1,4 +1,4 @@
-import { XCall } from "@galacticcouncil/xcm-sdk"
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
@@ -27,7 +27,7 @@ const MAX_DECODED_HEIGHT = 130
 type Props = {
   address?: string
   tx?: SubmittableExtrinsic
-  xcall?: XCall
+  xcall?: XCallEvm
 }
 
 const ExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {

@@ -6,8 +6,10 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { SContainer, SFilterButton } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
+import { Parachain } from "@galacticcouncil/xcm-core"
 
-const chains = Array.from(chainsMap.values()).filter(
+//@ts-ignore
+const chains = Array.from(chainsMap.values() as Parachain[]).filter(
   ({ parachainId, ecosystem }) =>
     SELECTABLE_PARACHAINS_IDS.includes(parachainId) && ecosystem === "polkadot",
 )

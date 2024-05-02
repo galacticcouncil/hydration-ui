@@ -3,9 +3,9 @@ import {
   TransactionRequest,
   Web3Provider,
 } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
 import { DISPATCH_ADDRESS } from "utils/evm"
 import { MetaMaskLikeProvider, requestNetworkSwitch } from "utils/metamask"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 export class MetaMaskSigner {
   address: string
@@ -45,7 +45,7 @@ export class MetaMaskSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && evmChains[chain] ? chain : "hydradx"
+    const from = chain && chainsMap.get(chain) ? chain : "hydradx"
     await requestNetworkSwitch(this.provider, {
       chain: from,
       onSwitch: () => {

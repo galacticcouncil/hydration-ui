@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
 import {
   ASSET_HUB_ID,
   TExternalAsset,
 } from "sections/wallet/addToken/AddToken.utils"
+import { Parachain } from "@galacticcouncil/xcm-core"
 
 type TRegistryChain = {
   assetCnt: string
@@ -18,12 +18,11 @@ type TRegistryChain = {
 const HYDRA_PARACHAIN_ID = 2034
 
 export const getAssetHubAssets = async () => {
-  const parachain = chainsMap.get("assethub")
+  const provider = chainsMap.get("assethub") as Parachain | undefined
 
   try {
-    if (parachain) {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(parachain.ws)
+    if (provider) {
+      const api = await provider.api
 
       const dataRaw = await api.query.assets.metadata.entries()
 
@@ -39,10 +38,10 @@ export const getAssetHubAssets = async () => {
           symbol: data.symbol.toHuman() as string,
           // @ts-ignore
           name: data.name.toHuman() as string,
-          origin: parachain.parachainId,
+          origin: provider.parachainId,
         }
       })
-      return { data, id: parachain.parachainId }
+      return { data, id: provider.parachainId }
     }
   } catch (e) {}
 }

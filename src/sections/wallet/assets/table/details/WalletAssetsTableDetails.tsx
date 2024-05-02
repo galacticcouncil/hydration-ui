@@ -13,8 +13,10 @@ import {
   AssetsTableData,
   useLockedValues,
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
 
-const chains = Array.from(chainsMap.values())
+//@ts-ignore
+const chains = Array.from(chainsMap.values()) as AnyParachain[]
 
 export const WalletAssetsTableDetails = ({
   reserved,

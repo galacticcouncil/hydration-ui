@@ -2,7 +2,8 @@ import { Buffer } from "buffer"
 import { Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { EvmParachain } from "@galacticcouncil/xcm-core"
 
 const METAMASK_LIKE_CHECKS = ["isTalisman"] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
@@ -29,7 +30,8 @@ export interface AddEvmChainParams {
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
-  const chainProps = evmChains[chain]
+  //@ts-ignore
+  const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
 
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),
@@ -65,7 +67,7 @@ export function isTalisman(
 
 type RequestNetworkSwitchOptions = {
   onSwitch?: () => void
-  chain?: keyof typeof evmChains
+  chain?: string
 }
 export async function requestNetworkSwitch(
   provider: Maybe<MetaMaskLikeProvider>,

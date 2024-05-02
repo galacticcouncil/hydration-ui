@@ -1,6 +1,7 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { isEvmAccount } from "utils/evm"
-import { XCall, SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
 
@@ -17,7 +18,7 @@ export async function getSubmittableExtrinsic(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
   const { srcChain } = meta ?? {}
-  const chain = chainsMap.get(srcChain)
+  const chain = chainsMap.get(srcChain) as Parachain | undefined
 
   const apiPool = SubstrateApis.getInstance()
   const api = await apiPool.api(chain?.ws ?? "")
@@ -34,7 +35,7 @@ export function getXCall(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
   return {
-    xcall: transaction.get<XCall>(),
+    xcall: transaction.get<XCallEvm>(),
     xcallMeta: meta,
   }
 }

@@ -11,6 +11,7 @@ import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
 
 const EXTERNAL_ASSETS_WHITELIST = [
   // PINK
@@ -21,7 +22,8 @@ const EXTERNAL_ASSETS_WHITELIST = [
   { id: "31337", origin: 1000 },
 ]
 
-const chains = Array.from(chainsMap.values())
+//@ts-ignore
+const chains = Array.from(chainsMap.values()) as AnyParachain[]
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",

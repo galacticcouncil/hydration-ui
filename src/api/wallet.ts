@@ -21,6 +21,7 @@ import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { Parachain } from "@galacticcouncil/xcm-core"
 
 export type TransactionType = "deposit" | "withdraw"
 
@@ -110,7 +111,8 @@ type TransferEvent = {
   }
 }
 
-const chains = Array.from(chainsMap.values())
+//@ts-ignore
+const chains = Array.from(chainsMap.values()) as Parachain[]
 
 const getChainById = (id: Maybe<number | string>) =>
   id ? chains.find((chain) => chain.parachainId === Number(id)) : null
@@ -178,7 +180,9 @@ const addressToDisplayAddress = (
   address: string,
   chainKey = HYDRADX_CHAIN_KEY,
 ) => {
-  const chain = chainKey ? chainsMap.get(chainKey) : null
+  const chain = chainKey
+    ? (chainsMap.get(chainKey) as Parachain | undefined)
+    : null
 
   const isEvmChain = chain?.isEvmParachain() || chainKey === HYDRADX_CHAIN_KEY
 
