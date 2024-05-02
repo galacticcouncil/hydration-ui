@@ -3092,10 +3092,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.0.0-beta.1.tgz#6fd6fc177ddefc4591a41289e444e485a6871532"
-  integrity sha512-xlSPiEYAuN691I9KEASMz4CpiJVbNLh0VM5ET+iFRv/R/XiFUL1/UGLRtUfF7gl+LOJp018R+LL5J2a8BuqLZg==
+"@galacticcouncil/xcm-cfg@^2.0.0-beta.2":
+  version "2.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.0.0-beta.2.tgz#fcc13672ab923960a19bdd01959f4393fd86f5c9"
+  integrity sha512-Qoc209Lf/BHNqqxh1LofelLWUA2wFweZn9HJmkQJryHqgaDv1j3p737tIqW1ZwPAxRIg3PVypSEI7XRsRQkCIw==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0-beta.0"
 
@@ -3113,10 +3113,10 @@
     "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.0.0-beta.2":
-  version "3.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.0-beta.2.tgz#968d424a9316c0ca932b948127ed6d9a80424ebd"
-  integrity sha512-03Jwle6IGupDtkLlTlFCKTYVRJPqoJcNLojZLdpzr20uF7LjEzTloaMZK1Fcp8cTirphvvn33qrcVtw+l4Y0RQ==
+"@galacticcouncil/xcm-sdk@^3.0.0-beta.3":
+  version "3.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.0-beta.3.tgz#d922029a9654889406de62a19ff89f0f281cb585"
+  integrity sha512-1UsR3MVUfOVhaR0Px8QXhV2N/oBYzJ7oeXpYmH5xUWSK3fNdRUbXoSOLJBy2P3PyAxw6l5730gzg/kwDXIq2FA==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0-beta.0"
 
