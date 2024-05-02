@@ -3092,26 +3092,12 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@2.0.0-beta.1":
+"@galacticcouncil/xcm-cfg@^2.0.0-beta.1":
   version "2.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.0.0-beta.1.tgz#6fd6fc177ddefc4591a41289e444e485a6871532"
   integrity sha512-xlSPiEYAuN691I9KEASMz4CpiJVbNLh0VM5ET+iFRv/R/XiFUL1/UGLRtUfF7gl+LOJp018R+LL5J2a8BuqLZg==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0-beta.0"
-
-"@galacticcouncil/xcm-core@1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0-beta.2.tgz#13bdc6a96fe001882475a84a425354d77950b3aa"
-  integrity sha512-3Hq2aEgXbXKem02T0Z3hYMN79qULyM6j9jWte1G7bZX74P7tLROVwg+beRySsuubLV5PkmF3scFHzYislBvb1A==
-  dependencies:
-    "@moonbeam-network/xcm-utils" "1.0.4"
-    "@thi.ng/cache" "^2.1.35"
-    "@wormhole-foundation/sdk-base" "^0.5.2"
-    "@wormhole-foundation/sdk-connect" "^0.5.2"
-    "@wormhole-foundation/sdk-definitions" "^0.5.2"
-    "@wormhole-foundation/sdk-evm" "^0.5.2"
-    "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
-    buffer "^6.0.3"
 
 "@galacticcouncil/xcm-core@^1.0.0-beta.0":
   version "1.0.0-beta.0"
@@ -3127,7 +3113,21 @@
     "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@3.0.0-beta.2":
+"@galacticcouncil/xcm-core@^1.0.0-beta.2":
+  version "1.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0-beta.2.tgz#13bdc6a96fe001882475a84a425354d77950b3aa"
+  integrity sha512-3Hq2aEgXbXKem02T0Z3hYMN79qULyM6j9jWte1G7bZX74P7tLROVwg+beRySsuubLV5PkmF3scFHzYislBvb1A==
+  dependencies:
+    "@moonbeam-network/xcm-utils" "1.0.4"
+    "@thi.ng/cache" "^2.1.35"
+    "@wormhole-foundation/sdk-base" "^0.5.2"
+    "@wormhole-foundation/sdk-connect" "^0.5.2"
+    "@wormhole-foundation/sdk-definitions" "^0.5.2"
+    "@wormhole-foundation/sdk-evm" "^0.5.2"
+    "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
+    buffer "^6.0.3"
+
+"@galacticcouncil/xcm-sdk@^3.0.0-beta.2":
   version "3.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.0-beta.2.tgz#968d424a9316c0ca932b948127ed6d9a80424ebd"
   integrity sha512-03Jwle6IGupDtkLlTlFCKTYVRJPqoJcNLojZLdpzr20uF7LjEzTloaMZK1Fcp8cTirphvvn33qrcVtw+l4Y0RQ==
