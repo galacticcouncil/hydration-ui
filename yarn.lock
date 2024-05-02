@@ -3099,21 +3099,7 @@
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0-beta.0"
 
-"@galacticcouncil/xcm-core@^1.0.0-beta.0":
-  version "1.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0-beta.0.tgz#cc759c6e422056824029b802208fb32738bf3378"
-  integrity sha512-BoB7/3/Dr7bcwN+xXSmKYp/FD8gImh2SViAfN+2devOEQzndSsuEnoA8TAgd9Om2nnjjiXnXoLL2JBpuufSROw==
-  dependencies:
-    "@moonbeam-network/xcm-utils" "1.0.4"
-    "@thi.ng/cache" "^2.1.35"
-    "@wormhole-foundation/sdk-base" "^0.5.2"
-    "@wormhole-foundation/sdk-connect" "^0.5.2"
-    "@wormhole-foundation/sdk-definitions" "^0.5.2"
-    "@wormhole-foundation/sdk-evm" "^0.5.2"
-    "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
-    buffer "^6.0.3"
-
-"@galacticcouncil/xcm-core@^1.0.0-beta.2":
+"@galacticcouncil/xcm-core@1.0.0-beta.2", "@galacticcouncil/xcm-core@^1.0.0-beta.0", "@galacticcouncil/xcm-core@^1.0.0-beta.2":
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0-beta.2.tgz#13bdc6a96fe001882475a84a425354d77950b3aa"
   integrity sha512-3Hq2aEgXbXKem02T0Z3hYMN79qULyM6j9jWte1G7bZX74P7tLROVwg+beRySsuubLV5PkmF3scFHzYislBvb1A==

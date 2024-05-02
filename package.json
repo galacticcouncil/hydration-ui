@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "resolutions": {
+    "@galacticcouncil/xcm-core": "1.0.0-beta.2",
     "@polkadot/api": "^10.9.1",
     "@polkadot/api-augment": "10.9.1",
     "@polkadot/api-derive": "10.9.1",
