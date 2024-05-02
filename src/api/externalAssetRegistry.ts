@@ -18,7 +18,7 @@ type TRegistryChain = {
 const HYDRA_PARACHAIN_ID = 2034
 
 export const getAssetHubAssets = async () => {
-  const provider = chainsMap.get("assethub") as Parachain | undefined
+  const provider = chainsMap.get("assethub") as Parachain
 
   try {
     if (provider) {

@@ -30,7 +30,6 @@ export interface AddEvmChainParams {
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
-  //@ts-ignore
   const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
 
   return {

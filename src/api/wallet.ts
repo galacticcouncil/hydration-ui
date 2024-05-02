@@ -15,7 +15,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
 import { EIP1559Transaction } from "@polkadot/types/interfaces/eth"
-import { Maybe } from "utils/helpers"
+import { isAnyParachain, Maybe } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
@@ -111,11 +111,14 @@ type TransferEvent = {
   }
 }
 
-//@ts-ignore
-const chains = Array.from(chainsMap.values()) as Parachain[]
+const chains = Array.from(chainsMap.values())
 
 const getChainById = (id: Maybe<number | string>) =>
-  id ? chains.find((chain) => chain.parachainId === Number(id)) : null
+  id
+    ? chains.find(
+        (chain) => isAnyParachain(chain) && chain.parachainId === Number(id),
+      )
+    : null
 
 const isParachainTransfer = (
   dest: string | TransferParachainDest | TransferPolkadotDest,

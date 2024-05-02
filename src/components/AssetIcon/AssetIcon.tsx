@@ -12,6 +12,7 @@ import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
 
 const EXTERNAL_ASSETS_WHITELIST = [
   // PINK
@@ -22,8 +23,7 @@ const EXTERNAL_ASSETS_WHITELIST = [
   { id: "31337", origin: 1000 },
 ]
 
-//@ts-ignore
-const chains = Array.from(chainsMap.values()) as AnyParachain[]
+const chains = Array.from(chainsMap.values())
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -81,8 +81,10 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     const assetDetails = id ? assets.getAsset(id) : undefined
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails?.parachainId),
+    ) as AnyParachain
 
     const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
       (item) =>

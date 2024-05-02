@@ -10,6 +10,7 @@ import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
 import BN from "bignumber.js"
+import { AnyChain, AnyParachain } from "@galacticcouncil/xcm-core"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -321,3 +322,6 @@ export function abbreviateNumber(price: BN): string {
 
   return formattedPrice
 }
+
+export const isAnyParachain = (chain: AnyChain): chain is AnyParachain =>
+  !!(chain as AnyParachain).parachainId

@@ -9,7 +9,6 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 
-//@ts-ignore
 const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
@@ -59,7 +58,6 @@ export class H160 {
 }
 
 export function getEvmTxLink(txHash: string, chain = "hydradx") {
-  //@ts-ignore
   const explorerUrl = (chainsMap.get(chain) as EvmParachain)?.client
     .chainExplorer
 
@@ -80,12 +78,10 @@ export function getEvmChainById(chainId: number) {
   const chain = Array.from(chainsMap.values()).find(
     (chain) =>
       chain instanceof EvmParachain && chain.client.chainId === chainId,
-  )
-  console.log(chain)
+  ) as EvmParachain
+
   if (chain) {
-    return {
-      ...chain,
-    }
+    return chain
   }
 }
 

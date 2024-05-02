@@ -6,13 +6,15 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { SContainer, SFilterButton } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
-import { Parachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
 
-//@ts-ignore
-const chains = Array.from(chainsMap.values() as Parachain[]).filter(
-  ({ parachainId, ecosystem }) =>
-    SELECTABLE_PARACHAINS_IDS.includes(parachainId) && ecosystem === "polkadot",
-)
+const chains = Array.from(chainsMap.values()).filter(
+  (chain) =>
+    isAnyParachain(chain) &&
+    SELECTABLE_PARACHAINS_IDS.includes(chain.parachainId) &&
+    chain.ecosystem === "polkadot",
+) as AnyParachain[]
 
 type Props = {
   className?: string
