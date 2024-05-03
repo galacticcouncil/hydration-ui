@@ -1,4 +1,4 @@
-import { TradeRouter } from "@galacticcouncil/sdk"
+import { TradeRouter, PoolService } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import {
   TAsset,
@@ -29,6 +29,7 @@ type TProviderContext = {
   api: ApiPromise
   assets: IContextAssets
   tradeRouter: TradeRouter
+  poolService: PoolService
   isLoaded: boolean
   featureFlags: Awaited<ReturnType<typeof getAssets>>["featureFlags"]
 }
@@ -38,6 +39,7 @@ const ProviderContext = createContext<TProviderContext>({
   assets: {} as TProviderContext["assets"],
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
+  poolService: {} as TProviderContext["poolService"],
 })
 
 export const useRpcProvider = () => useContext(ProviderContext)
@@ -125,6 +127,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           getShareTokenByAddress,
           tradeAssets,
         },
+        poolService: providerData.data.poolService,
         api: providerData.data.api,
         tradeRouter: providerData.data.tradeRouter,
         featureFlags: providerData.data.featureFlags,
@@ -137,6 +140,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       assets: {} as TProviderContext["assets"],
       tradeRouter: {} as TradeRouter,
       featureFlags: {} as TProviderContext["featureFlags"],
+      poolService: {} as TProviderContext["poolService"],
     }
   }, [preference._hasHydrated, providerData.data])
 
