@@ -137,16 +137,18 @@ export const useFarmDepositMutation = (
           .toString()
 
         if (depositId) await executeSecondMutation(depositId)
-      }
+      } else {
+        for (const record of firstDeposit.events) {
+          if (
+            api.events.omnipoolLiquidityMining.SharesDeposited.is(
+              record.event,
+            ) ||
+            api.events.xykLiquidityMining.SharesDeposited.is(record.event)
+          ) {
+            const depositId = record.event.data.depositId.toString()
 
-      for (const record of firstDeposit.events) {
-        if (
-          api.events.omnipoolLiquidityMining.SharesDeposited.is(record.event) ||
-          api.events.xykLiquidityMining.SharesDeposited.is(record.event)
-        ) {
-          const depositId = record.event.data.depositId.toString()
-
-          await executeSecondMutation(depositId)
+            await executeSecondMutation(depositId)
+          }
         }
       }
     },
