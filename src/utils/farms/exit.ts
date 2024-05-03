@@ -54,6 +54,9 @@ export const useFarmExitAllMutation = (
     {
       onSuccess: () => {
         queryClient.refetchQueries(
+          QUERY_KEYS.tokenBalance(meta.id, account?.address),
+        )
+        queryClient.refetchQueries(
           QUERY_KEYS.accountOmnipoolPositions(account?.address),
         )
       },
