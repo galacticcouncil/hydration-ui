@@ -167,17 +167,6 @@ export const ReviewTransactionXCallSummary: FC<
                 })
               : "-",
         },
-        {
-          label: t("liquidity.reviewTransaction.modal.detail.dstChainFee"),
-          content:
-            parseFloat(xcallMeta?.dstChainFee) > 0
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  type: "token",
-                  amount: new BN(xcallMeta.dstChainFee),
-                  symbol: xcallMeta?.dstChainFeeSymbol,
-                })
-              : "-",
-        },
       ]}
     />
   )

@@ -1,9 +1,10 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { isEvmAccount } from "utils/evm"
 import { XCallEvm } from "@galacticcouncil/xcm-sdk"
-import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
+import { isAnyParachain } from "utils/helpers"
 
 export const HYDRADX_CHAIN_KEY = "hydradx"
 export const DEFAULT_NATIVE_CHAIN = "polkadot"
@@ -18,17 +19,20 @@ export async function getSubmittableExtrinsic(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
   const { srcChain } = meta ?? {}
-  const chain = chainsMap.get(srcChain) as Parachain | undefined
 
-  const apiPool = SubstrateApis.getInstance()
-  const api = await apiPool.api(chain?.ws ?? "")
+  const chain = chainsMap.get(srcChain)
 
-  let tx: SubmittableExtrinsic | undefined
-  try {
-    tx = api.tx(transaction.hex)
-  } catch {}
+  if (chain && isAnyParachain(chain)) {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(chain?.ws ?? "")
 
-  return tx
+    let tx: SubmittableExtrinsic | undefined
+    try {
+      tx = api.tx(transaction.hex)
+    } catch {}
+
+    return tx
+  }
 }
 
 export function getXCall(txInfo: TxInfo) {

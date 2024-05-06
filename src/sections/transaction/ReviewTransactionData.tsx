@@ -9,7 +9,6 @@ import { FC, Fragment, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 import {
-  hexDataSlice,
   splitHexByZeroes,
   decodedResultToJson,
 } from "sections/transaction/ReviewTransactionData.utils"
@@ -117,11 +116,7 @@ const EvmExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
   )
 }
 
-const EvmXCallData: FC<
-  Pick<Props, "xcall"> & {
-    method: string
-  }
-> = ({ xcall, method }) => {
+const EvmXCallData: FC<Pick<Props, "xcall">> = ({ xcall }) => {
   const { t } = useTranslation()
 
   const [ref, { height }] = useMeasure<HTMLDivElement>()
@@ -137,17 +132,17 @@ const EvmXCallData: FC<
   const decodedData = useMemo(() => {
     if (xcall?.abi) {
       try {
-        const parsedAbi = JSON.parse(xcall.abi) as any[]
-        const types = parsedAbi.find((f) => f.name === method)?.inputs ?? []
-        const decoded = utils.defaultAbiCoder.decode(
-          types,
-          hexDataSlice(xcall.data, 10),
+        const iface = new utils.Interface(xcall.abi)
+        const decodedArgs = iface.decodeFunctionData(
+          xcall.data.slice(0, 10),
+          xcall.data,
         )
+        const method = iface.getFunction(xcall.data.slice(0, 10)).name
 
-        return decodedResultToJson(decoded)
+        return { data: decodedResultToJson(decodedArgs), method }
       } catch (error) {}
     }
-  }, [method, xcall])
+  }, [xcall])
 
   if (!decodedData) return null
   if (!xcall?.data) return null
@@ -174,7 +169,11 @@ const EvmXCallData: FC<
               overflow: "hidden",
             }}
           >
-            <TransactionCode ref={ref} name={method} src={decodedData} />
+            <TransactionCode
+              ref={ref}
+              name={decodedData.method}
+              src={decodedData.data}
+            />
             {allowDecodedFullExpand && (
               <SShowMoreButton
                 onClick={() => setDecodedFullyExpanded(true)}
@@ -222,6 +221,7 @@ export const ReviewTransactionData: FC<Props> = ({
 
   if (!isEVM) return <ExtrinsicData tx={tx} />
   if (isEVM && tx) return <EvmExtrinsicData tx={tx} />
-  if (isEVM && xcall) return <EvmXCallData method="transfer" xcall={xcall} />
+  if (isEVM && xcall) return <EvmXCallData xcall={xcall} />
+
   return null
 }
