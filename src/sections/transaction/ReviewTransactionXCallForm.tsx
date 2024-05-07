@@ -94,7 +94,10 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         footer={
           <>
             <div sx={{ mt: 15 }}>
-              <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+              <ReviewTransactionXCallSummary
+                xcallMeta={xcallMeta}
+                xcall={xcall}
+              />
             </div>
             <div
               sx={{
