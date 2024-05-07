@@ -54,6 +54,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           from: account.address,
           to: xcall.to,
           data: xcall.data,
+          value: xcall.value,
         })
 
         const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
