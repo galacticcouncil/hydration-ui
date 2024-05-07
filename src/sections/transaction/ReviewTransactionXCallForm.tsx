@@ -1,5 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { XApproveCursor } from "@galacticcouncil/apps"
+import { XItemCursor } from "@galacticcouncil/apps"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -58,7 +58,12 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
 
         const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
         if (isApproveTx) {
-          XApproveCursor.reset(evmTx.hash)
+          XItemCursor.reset({
+            data: evmTx.data as `0x${string}`,
+            hash: evmTx.hash as `0x${string}`,
+            nonce: evmTx.nonce,
+            to: evmTx.to as `0x${string}`,
+          })
         }
 
         onEvmSigned({ evmTx })
