@@ -324,4 +324,4 @@ export function abbreviateNumber(price: BN): string {
 }
 
 export const isAnyParachain = (chain: AnyChain): chain is AnyParachain =>
-  !!(chain as AnyParachain).parachainId
+  (chain as AnyParachain).parachainId !== undefined
