@@ -20,8 +20,8 @@ import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.u
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { theme } from "theme"
 import { WalletAssetsTableActionsMob } from "./actions/WalletAssetsTableActionsMob"
-// import { Button } from "components/Button/Button"
-// import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import { Button } from "components/Button/Button"
+import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
@@ -35,6 +35,8 @@ type Props = {
   setShowAll: (value: boolean) => void
 }
 
+const addTokenEnabled = import.meta.env.VITE_FF_ADD_TOKEN === "true"
+
 export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
@@ -46,6 +48,20 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const table = useAssetsTable(data, {
     onTransfer: setTransferAsset,
   })
+
+  const button = (
+    <Button
+      type="button"
+      size="micro"
+      sx={{ gap: 4 }}
+      onClick={() => setAddToken(true)}
+    >
+      <div sx={{ flex: "row", align: "center", gap: 4 }}>
+        <Icon icon={<PlusIcon />} />
+        {t("wallet.assets.table.addToken")}
+      </div>
+    </Button>
+  )
 
   return (
     <>
@@ -63,17 +79,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               : t("wallet.header.assets")}
           </Text>
           <div sx={{ flex: "row", gap: 32 }}>
-            {/* <Button
-              type="button"
-              size="micro"
-              sx={{ gap: 4 }}
-              onClick={() => setAddToken(true)}
-            >
-              <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                <Icon icon={<PlusIcon />} />
-                {t("wallet.assets.table.addToken")}
-              </div>
-            </Button> */}
+            {addTokenEnabled && isDesktop && button}
             <Switch
               value={showAll}
               onCheckedChange={(value) => setShowAll(value)}
@@ -179,6 +185,19 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             onClose={() => setRow(undefined)}
             onTransferClick={setTransferAsset}
           />
+        )}
+        {addTokenEnabled && !isDesktop && (
+          <div
+            sx={{
+              flex: "row",
+              justify: "center",
+              align: "center",
+              my: 15,
+              width: "100%",
+            }}
+          >
+            {button}
+          </div>
         )}
       </TableContainer>
       {addToken && <AddTokenModal onClose={() => setAddToken(false)} />}

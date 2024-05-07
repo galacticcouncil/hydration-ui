@@ -54,6 +54,11 @@ export function OrderAssetSelect(props: {
     ? assets.getAsset(props.asset.toString())
     : undefined
 
+  const assetIcon =
+    asset && assets.isBond(asset)
+      ? assets.getAsset(asset.assetId)?.symbol
+      : asset?.symbol
+
   const assetBalance = props.balance
   const assetDecimals = asset?.decimals
 
@@ -84,7 +89,7 @@ export function OrderAssetSelect(props: {
       amount={props.value}
     >
       <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+        <UigcAssetId slot="icon" symbol={assetIcon} />
       </UigcAsset>
       <UigcAssetBalance
         slot="balance"
@@ -107,6 +112,9 @@ export function OrderAssetPay(props: {
 }) {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.asset.toString())
+  const assetIcon = assets.isBond(asset)
+    ? assets.getAsset(asset.assetId)?.symbol
+    : asset?.symbol
 
   const assetBalance = props.balance
   const assetDecimals = asset.decimals
@@ -141,7 +149,7 @@ export function OrderAssetPay(props: {
       readonly={props.readonly || false}
     >
       <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+        <UigcAssetId slot="icon" symbol={assetIcon} />
       </UigcAsset>
       <UigcAssetBalance slot="balance" balance={blnc} visible={false} />
     </UigcAssetTransfer>
@@ -181,6 +189,10 @@ export function OrderAssetGet(props: {
 }) {
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(props.asset.toString())
+  const assetIcon = assets.isBond(asset)
+    ? assets.getAsset(asset.assetId)?.symbol
+    : asset?.symbol
+
   return (
     <UigcAssetTransfer
       ref={(el) => {
@@ -207,7 +219,7 @@ export function OrderAssetGet(props: {
       readonly={props.readonly || false}
     >
       <UigcAsset slot="asset" symbol={asset?.symbol}>
-        <UigcAssetId slot="icon" symbol={asset?.symbol} />
+        <UigcAssetId slot="icon" symbol={assetIcon} />
       </UigcAsset>
       {props.onChange && (
         <div slot="balance" sx={{ display: "flex", justify: "end", gap: 2 }}>

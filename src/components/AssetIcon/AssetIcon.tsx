@@ -2,6 +2,7 @@ import * as React from "react"
 import { createComponent } from "@lit-labs/react"
 import {
   AssetId,
+  AssetBadge,
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
@@ -9,6 +10,16 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useTranslation } from "react-i18next"
+
+const EXTERNAL_ASSETS_WHITELIST = [
+  // PINK
+  { id: "23", origin: 1000 },
+  // STINK
+  { id: "42069", origin: 1000 },
+  // WUD
+  { id: "31337", origin: 1000 },
+]
 
 const chains = Array.from(chainsMap.values())
 
@@ -21,6 +32,12 @@ export const UigcAssetPlaceholder = createComponent({
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
   elementClass: AssetId,
+  react: React,
+})
+
+export const UigcAssetBadge = createComponent({
+  tagName: "uigc-asset-badge",
+  elementClass: AssetBadge,
   react: React,
 })
 
@@ -55,6 +72,7 @@ export function getAssetName(symbol: string | null | undefined) {
 }
 
 export const AssetLogo = ({ id }: { id?: string }) => {
+  const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
   const asset = useMemo(() => {
@@ -64,9 +82,22 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       (chain) => chain.parachainId === Number(assetDetails?.parachainId),
     )
 
+    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
+      (item) =>
+        item.id === assetDetails?.generalIndex &&
+        item.origin === chain?.parachainId,
+    )
+
+    const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
+      ? isWhitelisted
+        ? "warning"
+        : "danger"
+      : ""
+
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
+      badgeVariant,
     }
   }, [assets, id])
 
@@ -80,7 +111,15 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         }}
         symbol={asset.symbol}
         chain={asset?.chain}
-      />
+      >
+        {asset.badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={asset.badgeVariant}
+            text={t(`wallet.addToken.tooltip.${asset.badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
 
   return (

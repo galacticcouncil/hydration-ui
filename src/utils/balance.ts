@@ -81,7 +81,7 @@ export const separateBalance = (
   value: Maybe<BigNumber>,
   options?: z.infer<typeof BigNumberFormatOptionsSchema>,
 ) => {
-  if (!value || value?.isNaN()) return null
+  if (!value || value?.isNaN()) return { num: "-", denom: "" }
   const formatted = formatBigNumber(value, options, i18n.languages[0])
   const separators = getFormatSeparators(i18n.languages[0])
   if (formatted) {
@@ -92,5 +92,5 @@ export const separateBalance = (
       denom,
     }
   }
-  return null
+  return { num: "-", denom: "" }
 }

@@ -56,6 +56,12 @@ export const Table = styled.table`
   width: 100%;
   border-spacing: 0;
   border-collapse: collapse;
+
+  border-bottom: 1px solid rgba(152, 176, 214, 0.27);
+
+  @media ${theme.viewport.gte.sm} {
+    border-bottom: none;
+  }
 `
 
 export const TableTitle = styled.div`

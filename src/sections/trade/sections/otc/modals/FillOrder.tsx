@@ -2,7 +2,7 @@ import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import { FormEvent, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BN_10 } from "utils/constants"
 import { useStore } from "state/store"
@@ -40,7 +40,8 @@ export const FillOrder = ({
 
   const price = accepting.amount.div(offering.amount)
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
     if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
 
     if (assetInBalance.data?.balance == null)
@@ -97,6 +98,11 @@ export const FillOrder = ({
     )
   }
 
+  const isDisabled =
+    assetInBalance.data?.balance?.lte(
+      accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
+    ) ?? false
+
   return (
     <Modal
       open={true}
@@ -135,7 +141,7 @@ export const FillOrder = ({
           asset={offering.asset}
           readonly={true}
         />
-        <Button sx={{ mt: 20 }} variant="primary">
+        <Button sx={{ mt: 20 }} variant="primary" disabled={isDisabled}>
           {t("otc.order.fill.confirm")}
         </Button>
       </form>

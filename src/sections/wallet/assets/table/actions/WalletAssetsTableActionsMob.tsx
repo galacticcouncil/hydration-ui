@@ -23,6 +23,7 @@ import {
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import Skeleton from "react-loading-skeleton"
 import { AddTokenAction } from "./WalletAssetsTableActions"
+import { isEvmAccount } from "utils/evm"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import BN from "bignumber.js"
@@ -49,6 +50,8 @@ export const WalletAssetsTableActionsMob = ({
   if (!row) return null
 
   const isNativeAsset = row.id === native.id
+
+  const isEvm = isEvmAccount(account?.address)
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -156,18 +159,20 @@ export const WalletAssetsTableActionsMob = ({
                 </Button>
               </Link>
 
-              <Button
-                sx={{ width: "100%" }}
-                size="small"
-                onClick={() => setFeeAsPayment(row.id)}
-                disabled={
-                  !row.couldBeSetAsPaymentFee ||
-                  account?.isExternalWalletConnected
-                }
-              >
-                <DollarIcon />
-                {t("wallet.assets.table.actions.payment.asset")}
-              </Button>
+              {!isEvm && (
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  onClick={() => setFeeAsPayment(row.id)}
+                  disabled={
+                    !row.couldBeSetAsPaymentFee ||
+                    account?.isExternalWalletConnected
+                  }
+                >
+                  <DollarIcon />
+                  {t("wallet.assets.table.actions.payment.asset")}
+                </Button>
+              )}
             </div>
           )}
         </SActionButtonsContainer>

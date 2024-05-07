@@ -4,7 +4,17 @@ import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
 
-export interface MetaMaskProvider extends ExternalProvider, EventEmitter {}
+const METAMASK_LIKE_CHECKS = ["isTalisman"] as const
+type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
+
+type MetaMaskLikeChecks = {
+  [key in MetaMaskLikeChecksValues]: boolean
+}
+
+export interface MetaMaskLikeProvider
+  extends ExternalProvider,
+    EventEmitter,
+    MetaMaskLikeChecks {}
 
 export interface AddEvmChainParams {
   chainId: string
@@ -34,8 +44,23 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
 
 export function isMetaMask(
   provider: Maybe<ExternalProvider>,
-): provider is Required<MetaMaskProvider> {
+): provider is Required<MetaMaskLikeProvider> {
   return !!provider && !!provider?.isMetaMask
+}
+
+export function isMetaMaskLike(
+  provider: Maybe<ExternalProvider>,
+): provider is Required<MetaMaskLikeProvider> {
+  return (
+    isMetaMask(provider) &&
+    METAMASK_LIKE_CHECKS.some((key) => !!provider?.[key])
+  )
+}
+
+export function isTalisman(
+  provider: Maybe<ExternalProvider>,
+): provider is Required<MetaMaskLikeProvider> {
+  return isMetaMaskLike(provider) && !!provider?.isTalisman
 }
 
 type RequestNetworkSwitchOptions = {
@@ -43,7 +68,7 @@ type RequestNetworkSwitchOptions = {
   chain?: keyof typeof evmChains
 }
 export async function requestNetworkSwitch(
-  provider: Maybe<MetaMaskProvider>,
+  provider: Maybe<MetaMaskLikeProvider>,
   options: RequestNetworkSwitchOptions = {},
 ) {
   if (!isMetaMask(provider)) return
@@ -59,7 +84,8 @@ export async function requestNetworkSwitch(
       .then(options?.onSwitch)
   } catch (error: any) {
     // missing or unsupported network error
-    if (error?.code === 4902) {
+    const errorCode = error.data?.originalError?.code || error?.code
+    if (errorCode === 4902) {
       try {
         await provider
           .request({
@@ -79,7 +105,7 @@ export type WatchAssetParams = {
 }
 
 export async function watchAsset(
-  provider: Maybe<MetaMaskProvider>,
+  provider: Maybe<MetaMaskLikeProvider>,
   assetId: number | string,
   params: WatchAssetParams,
 ) {
@@ -110,7 +136,9 @@ export async function watchAsset(
   })
 }
 
-export const requestAccounts = async (provider: Maybe<MetaMaskProvider>) => {
+export const requestAccounts = async (
+  provider: Maybe<MetaMaskLikeProvider>,
+) => {
   if (!isMetaMask(provider)) return
   await provider.request({
     method: "wallet_requestPermissions",
