@@ -8,6 +8,7 @@ import {
 } from "@ethersproject/address"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { isAnyEvmChain } from "./helpers"
 
 const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
 
@@ -58,6 +59,8 @@ export class H160 {
 }
 
 export function getEvmTxLink(txHash: string, chain = "hydradx") {
+  if (chain === "ethereum") return `https://wormholescan.io/#/tx/${txHash}`
+
   const explorerUrl = (chainsMap.get(chain) as EvmParachain)?.client
     .chainExplorer
 
@@ -76,8 +79,7 @@ export function safeConvertAddressH160(value: string): string | null {
 
 export function getEvmChainById(chainId: number) {
   const chain = Array.from(chainsMap.values()).find(
-    (chain) =>
-      chain instanceof EvmParachain && chain.client.chainId === chainId,
+    (chain) => isAnyEvmChain(chain) && chain.client.chainId === chainId,
   ) as EvmParachain
 
   if (chain) {
