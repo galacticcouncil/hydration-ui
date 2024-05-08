@@ -28,6 +28,8 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
+import { BN_0 } from "utils/constants"
+import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 
 type Props = {
   row?: AssetsTableData
@@ -77,7 +79,7 @@ export const WalletAssetsTableActionsMob = ({
             <Text fs={14} lh={14} color="white">
               {t("value", { value: row.total })}
             </Text>
-            <Text fs={12} lh={17} color="whiteish500">
+            <Text fs={12} lh={12} color="whiteish500">
               <DisplayValue value={row.totalDisplay} />
             </Text>
           </div>
@@ -88,7 +90,7 @@ export const WalletAssetsTableActionsMob = ({
             <Text fs={14} lh={14} color="white">
               {t("value", { value: row.transferable })}
             </Text>
-            <Text fs={12} lh={17} color="whiteish500">
+            <Text fs={12} lh={12} color="whiteish500">
               <DisplayValue value={row.transferableDisplay} />
             </Text>
           </div>
@@ -106,9 +108,9 @@ export const WalletAssetsTableActionsMob = ({
             />
           )}
           {row.isExternal && !row.name ? (
-            <AddTokenAction id={row.id} css={{ width: "100%" }} />
+            <AddTokenAction id={row.id} css={{ width: "100%", px: 8 }} />
           ) : (
-            <div sx={{ flex: "column", gap: 12 }}>
+            <div sx={{ flex: "column", gap: 12, px: 8 }}>
               <Link
                 to={LINKS.trade}
                 search={
@@ -188,6 +190,7 @@ const NativeLocks = ({
   reserved: BN
   reservedDisplay: BN
 }) => {
+  const { account } = useAccount()
   const { t } = useTranslation()
   const lockedTokens = useLockedNativeTokens()
   const unlocable = useUnlockableTokens()
@@ -234,7 +237,7 @@ const NativeLocks = ({
         {lockedTokens.isLoading ? (
           <Skeleton height={12} width={30} />
         ) : (
-          <Text fs={12} lh={17} color="whiteish500">
+          <Text fs={12} lh={12} color="whiteish500">
             <DisplayValue value={lockedTokens.lockStakingDisplay} />
           </Text>
         )}
@@ -242,30 +245,101 @@ const NativeLocks = ({
 
       <div
         sx={{
-          flex: "column",
-          gap: 4,
-          pr: 10,
-          mb: 20,
+          flex: "row",
+          align: "end",
+          justify: "end",
           flexBasis: "50%",
+          mb: 20,
         }}
       >
+        <div
+          sx={{
+            flex: "column",
+            gap: 4,
+          }}
+        >
+          <Text fs={14} lh={16} color="whiteish500">
+            {t("wallet.assets.table.details.lockedDemocracy")}
+          </Text>
+          {lockedTokens.isLoading ? (
+            <Skeleton height={14} width={40} />
+          ) : (
+            <Text fs={14} lh={14} color="white">
+              {t("value", { value: lockedTokens.lockDemocracy })}
+            </Text>
+          )}
+          {lockedTokens.isLoading ? (
+            <Skeleton height={12} width={30} />
+          ) : (
+            <Text fs={12} lh={12} color="whiteish500">
+              <DisplayValue value={lockedTokens.lockDemocracyDisplay} />
+            </Text>
+          )}
+          {unlocable.endDate?.isPositive ? (
+            <SLocksContainer sx={{ width: "fit-content" }}>
+              <Text fs={11} lh={15} color="darkBlue200">
+                {t("wallet.assets.table.details.expiring", {
+                  duration: unlocable.endDate.duration,
+                })}
+              </Text>
+            </SLocksContainer>
+          ) : null}
+        </div>
+      </div>
+
+      <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%", mb: 20 }}>
         <Text fs={14} lh={16} color="whiteish500">
-          {t("wallet.assets.table.details.lockedDemocracy")}
+          {t("wallet.assets.table.details.unlockable")}
         </Text>
-        {lockedTokens.isLoading ? (
-          <Skeleton height={14} width={40} />
-        ) : (
-          <Text fs={14} lh={14} color="white">
-            {t("value", { value: lockedTokens.lockDemocracy })}
-          </Text>
-        )}
-        {lockedTokens.isLoading ? (
-          <Skeleton height={12} width={30} />
-        ) : (
-          <Text fs={12} lh={17} color="whiteish500">
-            <DisplayValue value={lockedTokens.lockDemocracyDisplay} />
-          </Text>
-        )}
+
+        <Text fs={14} lh={14} color="white">
+          {unlocable.isLoading ? (
+            <Skeleton height={14} width={30} />
+          ) : (
+            t("value.token", { value: unlocable.value ?? BN_0 })
+          )}
+        </Text>
+        <Text fs={12} lh={12} color="whiteish500">
+          {unlocable.isLoading ? (
+            <Skeleton height={10} width={20} />
+          ) : (
+            <DisplayValue value={unlocable.displayValue ?? BN_0} />
+          )}
+        </Text>
+        {unlocable.votesUnlocked ? (
+          <SLocksContainer>
+            <Text fs={11} lh={15} color="darkBlue200">
+              {t("wallet.assets.table.details.expired", {
+                count: unlocable.votesUnlocked,
+              })}
+            </Text>
+          </SLocksContainer>
+        ) : null}
+      </div>
+
+      <div
+        sx={{
+          flex: "row",
+          align: "center",
+          justify: "end",
+          flexBasis: "50%",
+          mb: 20,
+        }}
+      >
+        <Button
+          variant="primary"
+          size="compact"
+          disabled={
+            account?.isExternalWalletConnected ||
+            unlocable.value.isZero() ||
+            !unlocable.ids.length ||
+            unlock.isLoading
+          }
+          onClick={() => unlock.mutate()}
+          isLoading={unlock.isLoading}
+        >
+          {t("wallet.assets.table.details.btn")}
+        </Button>
       </div>
 
       <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
@@ -275,29 +349,39 @@ const NativeLocks = ({
         <Text fs={14} lh={14} color="white">
           {t("value", { value: reserved })}
         </Text>
-        <Text fs={12} lh={17} color="whiteish500">
+        <Text fs={12} lh={12} color="whiteish500">
           <DisplayValue value={reservedDisplay} />
         </Text>
       </div>
 
-      <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
-        <Text fs={14} lh={16} color="whiteish500">
-          {t("wallet.assets.table.details.lockedVesting")}
-        </Text>
-        {lockedTokens.isLoading ? (
-          <Skeleton height={14} width={40} />
-        ) : (
-          <Text fs={14} lh={14} color="white">
-            {t("value", { value: lockedTokens.lockVesting })}
+      <div
+        sx={{
+          flex: "row",
+          align: "end",
+          justify: "end",
+          flexBasis: "50%",
+          mb: 20,
+        }}
+      >
+        <div sx={{ flex: "column", gap: 4 }}>
+          <Text fs={14} lh={16} color="whiteish500">
+            {t("wallet.assets.table.details.lockedVesting")}
           </Text>
-        )}
-        {lockedTokens.isLoading ? (
-          <Skeleton height={12} width={30} />
-        ) : (
-          <Text fs={12} lh={17} color="whiteish500">
-            <DisplayValue value={lockedTokens.lockVestingDisplay} />
-          </Text>
-        )}
+          {lockedTokens.isLoading ? (
+            <Skeleton height={14} width={40} />
+          ) : (
+            <Text fs={14} lh={14} color="white">
+              {t("value", { value: lockedTokens.lockVesting })}
+            </Text>
+          )}
+          {lockedTokens.isLoading ? (
+            <Skeleton height={12} width={30} />
+          ) : (
+            <Text fs={12} lh={12} color="whiteish500">
+              <DisplayValue value={lockedTokens.lockVestingDisplay} />
+            </Text>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -321,7 +405,7 @@ const Locks = ({
         <Text fs={14} lh={14} color="white">
           {t("value", { value: reserved })}
         </Text>
-        <Text fs={12} lh={17} color="whiteish500">
+        <Text fs={12} lh={12} color="whiteish500">
           <DisplayValue value={reservedDisplay} />
         </Text>
       </div>

@@ -41,6 +41,8 @@ export const SLocksContainer = styled.div`
   margin-top: 2px;
   padding: 0 4px;
 
+  width: fit-content;
+
   display: flex;
   justify-content: center;
   align-items: center;
