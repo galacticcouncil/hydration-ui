@@ -45,6 +45,8 @@ import {
 import { Option } from "@polkadot/types"
 import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
 
+export const XYK_TVL_VISIBILITY = 5000
+
 export const useAssetsTradability = () => {
   const {
     assets: { hub },

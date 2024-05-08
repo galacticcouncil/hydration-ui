@@ -1,9 +1,9 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { useXYKPools } from "sections/pools/PoolsPage.utils"
+import { useXYKPools, XYK_TVL_VISIBILITY } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
@@ -17,6 +17,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import { Switch } from "components/Switch/Switch"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -58,6 +59,7 @@ export const IsolatedPools = () => {
 
 const IsolatedPoolsData = () => {
   const { t } = useTranslation()
+  const [showAllXyk, setShowAllXyk] = useState(false)
   const { search } = useSearchFilter()
   const { id } = useSearch<{
     Search: {
@@ -117,6 +119,14 @@ const IsolatedPoolsData = () => {
       <SearchFilter />
       <Spacer size={24} />
       <div sx={{ flex: "row", mb: 14 }}>
+        <Switch
+          value={showAllXyk}
+          onCheckedChange={(value) => setShowAllXyk(value)}
+          size="small"
+          name="showAll"
+          label={t("liquidity.section.xyk.toggle")}
+          sx={{ pb: 20 }}
+        />
         <CreateXYKPoolModalButton
           sx={{ ml: "auto", width: ["100%", "auto"] }}
           disabled={xykPools.isInitialLoading}
@@ -125,7 +135,16 @@ const IsolatedPoolsData = () => {
       {xykPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
       ) : filteredPools.length ? (
-        <PoolsTable data={filteredPools} isXyk />
+        <PoolsTable
+          data={
+            showAllXyk
+              ? filteredPools
+              : filteredPools.filter((pool) =>
+                  pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
+                )
+          }
+          isXyk
+        />
       ) : (
         <EmptySearchState />
       )}
