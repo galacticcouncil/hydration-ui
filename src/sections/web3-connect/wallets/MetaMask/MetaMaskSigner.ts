@@ -64,7 +64,9 @@ export class MetaMaskSigner {
       this.signer.provider,
     )
 
-    return callPermit.nonces(this.address)
+    const nonces = await callPermit.nonces(this.address)
+
+    return nonces
   }
 
   sendPermitDispatch = async (

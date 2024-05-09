@@ -68,7 +68,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     acceptedFeePaymentAssets,
     isEnoughPaymentBalance,
     feePaymentMeta,
-    originalFeePaymentMeta,
     isLinkedAccount,
     storedReferralCode,
     tx,
@@ -94,8 +93,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet.signer) throw new Error("Missing signer")
 
         if (wallet?.signer instanceof MetaMaskSigner) {
-          const shouldUsePermit =
-            originalFeePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+          const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
           if (shouldUsePermit) {
             const permit = await wallet.signer.sendPermitDispatch(
               tx.method.toHex(),
@@ -115,7 +113,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               )
               .send()
             // @TODO handle permit result
-            console.log({ res })
+            const hash = res.toHex()
+            console.log({ hash })
             return
           }
 

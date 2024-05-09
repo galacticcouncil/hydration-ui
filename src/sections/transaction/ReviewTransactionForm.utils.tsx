@@ -11,7 +11,11 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_DECIMALS,
+  NATIVE_EVM_ASSET_ID,
+  isEvmAccount,
+} from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
@@ -39,7 +43,8 @@ export const useTransactionValues = ({
 
   const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
-  const isEvm = isEvmAccount(account?.address)
+  const shouldUseEvmPermit = feePaymentId !== NATIVE_EVM_ASSET_ID
+  const isEvm = !shouldUseEvmPermit && isEvmAccount(account?.address)
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
     isEvm ? account?.address : "",
@@ -90,10 +95,6 @@ export const useTransactionValues = ({
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const originalFeePaymentMeta = feePaymentAssetId
-    ? assets.getAsset(feePaymentAssetId)
-    : undefined
-
   const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
@@ -135,7 +136,6 @@ export const useTransactionValues = ({
         isEnoughPaymentBalance: false,
         displayFeePaymentValue: BN_NAN,
         feePaymentMeta,
-        originalFeePaymentMeta,
         acceptedFeePaymentAssets: [],
         era,
         nonce: nonce.data,
