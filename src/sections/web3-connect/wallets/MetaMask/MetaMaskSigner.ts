@@ -23,6 +23,8 @@ type PermitMessage = {
   deadline: number
 }
 
+export type PermitResult = { signature: Signature; message: PermitMessage }
+
 export class MetaMaskSigner {
   address: string
   provider: MetaMaskLikeProvider
@@ -69,9 +71,7 @@ export class MetaMaskSigner {
     return nonces
   }
 
-  sendPermitDispatch = async (
-    data: string,
-  ): Promise<{ signature: Signature; message: PermitMessage }> => {
+  getPermit = async (data: string): Promise<PermitResult> => {
     if (this.provider && this.address) {
       const nonce = await this.getPermitNonce()
       const tx = {

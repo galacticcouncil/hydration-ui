@@ -7,7 +7,10 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import {
+  MetaMaskSigner,
+  PermitResult,
+} from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
@@ -22,7 +25,6 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 import BN from "bignumber.js"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -31,6 +33,7 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 type Props = TxProps & {
   title?: string
   onCancel: () => void
+  onPermitDispatched: (permit: PermitResult) => void
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
@@ -43,7 +46,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
-  const { api } = useRpcProvider()
 
   const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
 
@@ -93,32 +95,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet.signer) throw new Error("Missing signer")
 
         if (wallet?.signer instanceof MetaMaskSigner) {
+          const txData = tx.method.toHex()
           const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-          if (shouldUsePermit) {
-            const permit = await wallet.signer.sendPermitDispatch(
-              tx.method.toHex(),
-            )
 
-            const res = await api.tx.multiTransactionPayment
-              .dispatchPermit(
-                permit.message.from,
-                permit.message.to,
-                permit.message.value,
-                permit.message.data,
-                permit.message.gaslimit,
-                permit.message.deadline,
-                permit.signature.v,
-                permit.signature.r,
-                permit.signature.s,
-              )
-              .send()
-            // @TODO handle permit result
-            const hash = res.toHex()
-            console.log({ hash })
-            return
+          if (shouldUsePermit) {
+            const permit = await wallet.signer.getPermit(txData)
+            return props.onPermitDispatched(permit)
           }
 
-          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
+          const evmTx = await wallet.signer.sendDispatch(txData)
           return props.onEvmSigned({ evmTx, tx })
         }
 

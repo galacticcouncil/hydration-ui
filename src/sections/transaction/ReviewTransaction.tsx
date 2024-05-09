@@ -21,6 +21,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const {
     sendTx,
     sendEvmTx,
+    sendPermitTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -125,6 +126,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onSigned={(signed) => {
               props.onSubmitted?.()
               sendTx(signed)
+            }}
+            onPermitDispatched={(permit) => {
+              props.onSubmitted?.()
+              sendPermitTx(permit)
             }}
             onSignError={setSignError}
           />
