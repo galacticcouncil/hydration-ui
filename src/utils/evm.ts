@@ -58,15 +58,16 @@ export class H160 {
   }
 }
 
-export function getEvmTxLink(txHash: string, chain = "hydradx") {
-  if (chain === "ethereum") return `https://wormholescan.io/#/tx/${txHash}`
+export function getEvmTxLink(txHash: string, key = "hydradx") {
+  const chain = chainsMap.get(key)
 
-  const explorerUrl = (chainsMap.get(chain) as EvmParachain)?.client
-    .chainExplorer
+  if (!chain) return ""
 
-  if (!explorerUrl) return ""
-
-  return `${explorerUrl}/tx/${txHash}`
+  if (chain.isEvmChain()) {
+    return `https://wormholescan.io/#/tx/${txHash}`
+  } else {
+    return `https://hydradx.subscan.io/tx/${txHash}`
+  }
 }
 
 export function safeConvertAddressH160(value: string): string | null {
