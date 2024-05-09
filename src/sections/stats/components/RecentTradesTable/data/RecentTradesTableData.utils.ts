@@ -9,7 +9,12 @@ import { isHydraAddress } from "utils/formatting"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useAccountsIdentity } from "api/stats"
-import { TradeType, useAllTrades } from "api/volume"
+import {
+  TradeType,
+  isStableswapEvent,
+  isTradeEvent,
+  useAllTrades,
+} from "api/volume"
 import { groupBy } from "utils/rx"
 import { isNotNil } from "utils/helpers"
 import { BN_NAN } from "utils/constants"
@@ -38,21 +43,46 @@ export const useRecentTradesTableData = (assetId?: string) => {
       .map(([, value]) => {
         // check if last event is Router event
         const routerEvent = value.find(({ name }) => name === "Router.Executed")
-        const [firstEvent] = value
+        const tradeEvents = value.filter(isTradeEvent)
+        const stableswapEvents = value.filter(isStableswapEvent)
+        const [firstEvent] = tradeEvents
 
+        if (!tradeEvents.length) return null
         if (firstEvent?.name === "Router.Executed") return null
 
         let event: TradeType
         if (!routerEvent) {
-          const lastEvent = value[value.length - 1]
+          const lastEvent = tradeEvents[tradeEvents.length - 1]
+          const assetIn = firstEvent.args.assetIn
+          const assetOut = lastEvent.args.assetOut
+
+          const stableswapIn = stableswapEvents.find(
+            ({ args }) => args.poolId === assetIn,
+          )
+          const stableswapAssetIn = stableswapIn?.args?.assets?.[0]?.assetId
+          const stableswapAmountIn = stableswapIn?.args?.assets?.[0]?.amount
+
+          const stableswapOut = stableswapEvents.find(
+            ({ args }) => args.poolId === assetOut,
+          )
+          const stableswapAssetOut = stableswapOut?.args?.amounts?.[0]?.assetId
+          const stableswapAmountOut = stableswapIn?.args?.amounts?.[0]?.amount
+
           event = {
             ...firstEvent,
+
             args: {
               who: firstEvent.args.who,
-              assetIn: firstEvent.args.assetIn,
-              assetOut: lastEvent.args.assetOut,
-              amountIn: firstEvent.args.amount || firstEvent.args.amountIn,
-              amountOut: lastEvent.args.amount || lastEvent.args.amountOut,
+              assetIn: stableswapAssetIn || assetIn,
+              assetOut: stableswapAssetOut || assetOut,
+              amountIn:
+                stableswapAmountIn ||
+                firstEvent.args.amount ||
+                firstEvent.args.amountIn,
+              amountOut:
+                stableswapAmountOut ||
+                lastEvent.args.amount ||
+                lastEvent.args.amountOut,
             },
           }
         } else {

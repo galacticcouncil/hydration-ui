@@ -26,7 +26,6 @@ export type TradeType = {
     amountIn: string
     amountOut: string
   }
-
   block: {
     timestamp: string
   }
@@ -34,6 +33,41 @@ export type TradeType = {
     hash: string
   }
 }
+
+export type StableswapType = {
+  name: "Stableswap.LiquidityAdded"
+  id: string
+  args: {
+    who: string
+    poolId: number
+    assets: { amount: string; assetId: number }[]
+    amounts: { amount: string; assetId: number }[]
+  }
+  block: {
+    timestamp: string
+  }
+  extrinsic: {
+    hash: string
+  }
+}
+
+export const isStableswapEvent = (
+  event: TradeType | StableswapType,
+): event is StableswapType =>
+  ["Stableswap.LiquidityAdded", "Stableswap.LiquidityRemoved"].includes(
+    event.name,
+  )
+
+export const isTradeEvent = (
+  event: TradeType | StableswapType,
+): event is TradeType =>
+  [
+    "Omnipool.SellExecuted",
+    "Omnipool.BuyExecuted",
+    "XYK.SellExecuted",
+    "XYK.BuyExecuted",
+    "Router.Executed",
+  ].includes(event.name)
 
 export const getTradeVolume =
   (indexerUrl: string, assetId: string) => async () => {
@@ -155,7 +189,7 @@ export const getAllTrades =
     // describe the event arguments at all
     return {
       ...(await request<{
-        events: Array<TradeType>
+        events: Array<TradeType | StableswapType>
       }>(
         indexerUrl,
         gql`
@@ -172,18 +206,29 @@ export const getAllTrades =
                 args_jsonContains: { assetIn: $assetId }
                 phase_eq: "ApplyExtrinsic"
                 block: { timestamp_gte: $after }
-                OR: {
-                  name_in: [
-                    "Omnipool.SellExecuted"
-                    "Omnipool.BuyExecuted"
-                    "XYK.SellExecuted"
-                    "XYK.BuyExecuted"
-                    "Router.Executed"
-                  ]
-                  args_jsonContains: { assetOut: $assetId }
-                  phase_eq: "ApplyExtrinsic"
-                  block: { timestamp_gte: $after }
-                }
+                OR: [
+                  {
+                    name_in: [
+                      "Omnipool.SellExecuted"
+                      "Omnipool.BuyExecuted"
+                      "XYK.SellExecuted"
+                      "XYK.BuyExecuted"
+                      "Router.Executed"
+                    ]
+                    args_jsonContains: { assetOut: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
+                  {
+                    name_in: [
+                      "Stableswap.LiquidityAdded"
+                      "Stableswap.LiquidityRemoved"
+                    ]
+                    args_jsonContains: { poolId: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
+                ]
               }
               orderBy: [block_height_DESC, pos_ASC]
               limit: 100
