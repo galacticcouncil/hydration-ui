@@ -4,6 +4,7 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
+import BigNumber from "bignumber.js"
 import { Contract, Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
 import {
@@ -59,16 +60,14 @@ export class MetaMaskSigner {
     })
   }
 
-  getPermitNonce = async () => {
+  getPermitNonce = async (): Promise<BigNumber> => {
     const callPermit = new Contract(
       CALL_PERMIT_ADDRESS,
       CALL_PERMIT_ABI,
       this.signer.provider,
     )
 
-    const nonces = await callPermit.nonces(this.address)
-
-    return nonces
+    return callPermit.nonces(this.address)
   }
 
   getPermit = async (data: string): Promise<PermitResult> => {
