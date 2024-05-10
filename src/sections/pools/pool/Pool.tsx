@@ -42,7 +42,8 @@ const XYKPool = ({ pool }: { pool: TXYKPool }) => {
   return (
     <SPoolContainer>
       <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
-      <MyXYKPositions pool={{ ...pool }} />
+      <MyXYKPositions pool={{ ...pool, ...poolDetails.data }} />
+      <AvailableFarms pool={pool} />
     </SPoolContainer>
   )
 }
