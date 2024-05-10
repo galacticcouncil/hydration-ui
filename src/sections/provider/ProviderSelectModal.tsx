@@ -45,11 +45,18 @@ export function ProviderSelectModal(props: {
               {t("rpc.change.modal.autoMode.desc")}
             </Text>
           </div>
-          <Switch
-            name="rpc-auto-mode"
-            value={tempAutoMode}
-            onCheckedChange={setTempAutoMode}
-          />
+          <div sx={{ flex: "row", align: "center", gap: 8 }}>
+            <Text fs={11} color="basic400">
+              {tempAutoMode
+                ? t("rpc.change.modal.autoMode.enabled")
+                : t("rpc.change.modal.autoMode.disabled")}
+            </Text>
+            <Switch
+              name="rpc-auto-mode"
+              value={tempAutoMode}
+              onCheckedChange={setTempAutoMode}
+            />
+          </div>
         </SSwitchContainer>
 
         <div sx={{ pt: 12 }}>

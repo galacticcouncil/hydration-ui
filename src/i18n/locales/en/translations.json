@@ -35,6 +35,8 @@
   "rpc.change.modal.save": "Save",
   "rpc.change.modal.close": "Close",
   "rpc.change.modal.autoMode.title": "Auto-connect to working RPC",
+  "rpc.change.modal.autoMode.enabled": "Auto mode",
+  "rpc.change.modal.autoMode.disabled": "Manual mode",
   "rpc.change.modal.autoMode.desc": " Enabling this will automatically switch RPCs when one of active ones is unavailable.",
   "rpc.change.modal.input.placeholdre": "Add custom RPC",
   "rpc.change.modal.removeRpc.title": "Remove Rpc",
