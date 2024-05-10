@@ -5,7 +5,6 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useTokensBalances } from "api/balances"
@@ -17,6 +16,7 @@ import {
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { useLocation } from "@tanstack/react-location"
 import { t } from "i18next"
+import { useAccountNFTPositions } from "api/deposits"
 
 const routeMap = new Map([
   [LINKS.allPools, t("liquidity.navigation.allPools")],
@@ -55,7 +55,7 @@ const MyLiquidity = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountNFTPositions()
 
   const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
   const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
