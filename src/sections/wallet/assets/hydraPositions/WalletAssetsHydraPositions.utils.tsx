@@ -21,7 +21,6 @@ import {
   isXYKPosition,
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 export const useHydraPositionsTable = (
   data: (HydraPositionsTableData | TXYKPosition)[],
@@ -82,37 +81,16 @@ export const useHydraPositionsTable = (
               textAlign: "center",
             }}
           >
-            {isXYKPosition(row.original) ? (
-              <div sx={{ flex: "column", align: ["end", "start"] }}>
-                <div sx={{ flex: "row", gap: 4 }}>
-                  <Text fs={14} lh={14} fw={500} color="white">
-                    {row.original.balances
-                      ?.map((balance) =>
-                        t("value.tokenWithSymbol", {
-                          value: balance.balanceHuman,
-                          symbol: balance.symbol,
-                        }),
-                      )
-                      .join(" | ")}
-                  </Text>
-                </div>
-                <Text
-                  fs={13}
-                  lh={20}
-                  fw={500}
-                  css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
-                >
-                  <DisplayValue value={row.original.valueDisplay} />
-                </Text>
-              </div>
-            ) : (
-              <WalletAssetsHydraPositionsDetails
-                assetId={row.original.assetId}
-                lrna={row.original.lrna}
-                amount={row.original.value}
-                amountDisplay={row.original.valueDisplay}
-              />
-            )}
+            <WalletAssetsHydraPositionsDetails
+              assetId={row.original.assetId}
+              lrna={isXYKPosition(row.original) ? undefined : row.original.lrna}
+              amount={row.original.value}
+              amountPair={
+                isXYKPosition(row.original) ? row.original.balances : undefined
+              }
+              amountDisplay={row.original.valueDisplay}
+            />
+
             {!isDesktop && (
               <ButtonTransparent>
                 <Icon
