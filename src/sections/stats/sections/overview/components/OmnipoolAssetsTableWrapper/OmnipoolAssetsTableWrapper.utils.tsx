@@ -19,6 +19,7 @@ import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import Skeleton from "react-loading-skeleton"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -145,11 +146,16 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       id: "volume",
       header: t("stats.overview.table.assets.header.volume"),
       sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text color="white" fs={14}>
-          <DisplayValue value={row.original.volume} isUSD />
-        </Text>
-      ),
+      cell: ({ row }) => {
+        if (row.original.isLoadingVolume) {
+          return <Skeleton width={60} height={18} />
+        }
+        return (
+          <Text color="white" fs={14}>
+            <DisplayValue value={row.original.volume} isUSD />
+          </Text>
+        )
+      },
     }),
     display({
       id: "apy",

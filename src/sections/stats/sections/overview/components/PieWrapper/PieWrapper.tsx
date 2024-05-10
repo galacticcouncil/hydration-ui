@@ -23,6 +23,8 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
     "overview",
   )
 
+  const isLoadingVolume = !!data?.some((pool) => pool.isLoadingVolume)
+
   const { totalTvl, totalPol, totalVolume } = useMemo(() => {
     return data.reduce(
       (acc, omnipoolAsset) => {
@@ -65,7 +67,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
         <PieTotalValue
           title={t("stats.overview.pie.values.volume")}
           data={totalVolume.div(2)}
-          isLoading={isLoading}
+          isLoading={isLoading || isLoadingVolume}
         />
       </div>
     </div>
