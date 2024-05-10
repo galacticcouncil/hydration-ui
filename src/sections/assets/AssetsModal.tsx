@@ -82,7 +82,9 @@ export const AssetsModalContent = ({
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
           accountAsset.asset.isToken ||
           accountAsset.asset.isStableSwap ||
-          (withExternal ? accountAsset.asset.isExternal : false),
+          (withExternal
+            ? accountAsset.asset.isExternal && !!accountAsset.asset.name
+            : false),
       )
 
   const bonds = allAssets

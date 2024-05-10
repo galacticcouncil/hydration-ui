@@ -113,7 +113,7 @@ export type TStableSwap = TAssetCommon & {
 export type TShareToken = TAssetCommon & {
   assetType: "ShareToken"
   assets: string[]
-  poolAddress: string | undefined
+  poolAddress: string
 }
 
 export type TAsset = TToken | TBond | TStableSwap | TShareToken
@@ -451,9 +451,9 @@ export const getAssets = async (api: ApiPromise) => {
         (token) => token.id === assetBId,
       ) as TToken
 
-      const isValdiTokens = assetA?.name && assetB?.name
+      const isValidTokens = assetA?.name && assetB?.name
 
-      if (isValdiTokens) {
+      if (isValidTokens) {
         const assetDecimal =
           Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 

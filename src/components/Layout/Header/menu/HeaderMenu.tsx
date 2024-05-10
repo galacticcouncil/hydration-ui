@@ -6,7 +6,7 @@ import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
+import { useAccountNFTPositions } from "api/deposits"
 import { useAccountBalances } from "api/accountBalances"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
@@ -75,7 +75,7 @@ const LiquidityMenuItem = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountNFTPositions()
 
   const balances = useAccountBalances(account?.address)
 

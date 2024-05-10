@@ -86,7 +86,7 @@ export const useRemoveLiquidity = (
         minlFeeQuery.data
       ) {
         const positionPrice = scale(position.price, "q")
-        const oraclePrice = oracle.data.oraclePrice
+        const oraclePrice = oracle.data.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery.data
 
         const lrnaSpotPrice = calculate_lrna_spot_price(
