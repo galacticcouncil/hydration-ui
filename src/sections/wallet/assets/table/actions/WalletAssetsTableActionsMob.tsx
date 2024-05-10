@@ -190,7 +190,7 @@ export const WalletAssetsTableActionsMob = ({
           ) : (
             <div sx={{ flex: "column", gap: 12 }}>
               <Link
-                to={LINKS.trade}
+                to={LINKS.swap}
                 search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
                 disabled={
                   !row.tradability.inTradeRouter ||

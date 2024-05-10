@@ -103,7 +103,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       onSelect: inTradeRouter
         ? () =>
             navigate({
-              to: "/trade/swap",
+              to: LINKS.swap,
               search: canBuy ? { assetOut: id } : { assetIn: id },
             })
         : undefined,
