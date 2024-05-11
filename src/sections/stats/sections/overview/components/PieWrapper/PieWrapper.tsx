@@ -14,9 +14,10 @@ import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
   isLoading: boolean
+  className?: string
 }
 
-export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
+export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
@@ -74,12 +75,7 @@ export const PieWrapper = ({ data, isLoading }: PieWrapperProps) => {
   )
 
   return (
-    <SContainerVertical
-      sx={{
-        width: ["100%", "fit-content"],
-        p: [20, 40],
-      }}
-    >
+    <SContainerVertical className={className}>
       {!isDesktop && (
         <ChartSwitchMobile onClick={setActiveSection} active={activeSection} />
       )}
