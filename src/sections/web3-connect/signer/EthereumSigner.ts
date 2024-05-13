@@ -4,6 +4,8 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
+import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
+
 import BigNumber from "bignumber.js"
 import { Contract, Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
@@ -12,7 +14,11 @@ import {
   CALL_PERMIT_ADDRESS,
   DISPATCH_ADDRESS,
 } from "utils/evm"
-import { MetaMaskLikeProvider, requestNetworkSwitch } from "utils/metamask"
+import {
+  MetaMaskLikeProvider,
+  isEthereumProvider,
+  requestNetworkSwitch,
+} from "utils/metamask"
 
 type PermitMessage = {
   from: string
@@ -26,18 +32,20 @@ type PermitMessage = {
 
 export type PermitResult = { signature: Signature; message: PermitMessage }
 
-export class MetaMaskSigner {
+type EthereumProvider = MetaMaskLikeProvider | UniversalProvider
+
+export class EthereumSigner {
   address: string
-  provider: MetaMaskLikeProvider
+  provider: EthereumProvider
   signer: JsonRpcSigner
 
-  constructor(address: string, provider: MetaMaskLikeProvider) {
+  constructor(address: string, provider: EthereumProvider) {
     this.address = address
     this.provider = provider
     this.signer = this.getSigner(provider)
   }
 
-  getSigner(provider: MetaMaskLikeProvider) {
+  getSigner(provider: EthereumProvider) {
     return new Web3Provider(provider).getSigner()
   }
 
@@ -190,13 +198,16 @@ export class MetaMaskSigner {
   ) => {
     const { chain, ...tx } = transaction
     const from = chain && evmChains[chain] ? chain : "hydradx"
-    await requestNetworkSwitch(this.provider, {
-      chain: from,
-      onSwitch: () => {
-        // update signer after network switch
-        this.signer = this.getSigner(this.provider)
-      },
-    })
+
+    if (isEthereumProvider(this.provider)) {
+      await requestNetworkSwitch(this.provider, {
+        chain: from,
+        onSwitch: () => {
+          // update signer after network switch
+          this.signer = this.getSigner(this.provider)
+        },
+      })
+    }
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)
