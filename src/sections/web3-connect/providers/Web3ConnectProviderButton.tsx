@@ -5,6 +5,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
+  WalletProviderType,
   useEnableWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { SProviderButton } from "./Web3ConnectProviders.styled"
@@ -34,7 +35,12 @@ export const Web3ConnectProviderButton: FC<Props> = ({ type, wallet }) => {
   })
 
   function onClick() {
-    installed ? enable() : openInstallUrl(installUrl)
+    if (type === WalletProviderType.WalletConnect) {
+      // defer WalletConnect enabling until the user clicks chooses a chain to connect to
+      setStatus(type, WalletProviderStatus.Pending)
+    } else {
+      installed ? enable() : openInstallUrl(installUrl)
+    }
   }
 
   return (

@@ -13,7 +13,7 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { Transaction } from "state/store"
 import { theme } from "theme"
 
@@ -46,7 +46,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
       if (!wallet.signer) throw new Error("Missing signer")
       if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
-      if (wallet?.signer instanceof MetaMaskSigner) {
+      if (wallet?.signer instanceof EthereumSigner) {
         const { srcChain } = xcallMeta
 
         const evmTx = await wallet.signer.sendTransaction({

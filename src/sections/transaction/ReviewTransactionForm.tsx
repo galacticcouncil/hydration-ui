@@ -7,10 +7,6 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
-import {
-  MetaMaskSigner,
-  PermitResult,
-} from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
@@ -25,6 +21,10 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 import BN from "bignumber.js"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import {
+  EthereumSigner,
+  PermitResult,
+} from "sections/web3-connect/signer/EthereumSigner"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -94,7 +94,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet) throw new Error("Missing wallet")
         if (!wallet.signer) throw new Error("Missing signer")
 
-        if (wallet?.signer instanceof MetaMaskSigner) {
+        if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
           const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
 

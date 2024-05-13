@@ -48,6 +48,8 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { useUserDeposits } from "api/deposits"
 
+export const XYK_TVL_VISIBILITY = 5000
+
 export const useAssetsTradability = () => {
   const {
     assets: { hub },

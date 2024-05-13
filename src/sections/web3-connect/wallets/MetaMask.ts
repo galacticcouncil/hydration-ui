@@ -1,6 +1,6 @@
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
 import {
@@ -26,7 +26,7 @@ export class MetaMask implements Wallet {
   }
 
   _extension: Required<MetaMaskLikeProvider> | undefined
-  _signer: MetaMaskSigner | undefined
+  _signer: EthereumSigner | undefined
 
   onAccountsChanged: SubscriptionFn | undefined
   onChainChanged: ChainSubscriptionFn | undefined
@@ -80,7 +80,7 @@ export class MetaMask implements Wallet {
         Array.isArray(addresses) && addresses.length > 0 ? addresses[0] : ""
 
       this._extension = metamask
-      this._signer = address ? new MetaMaskSigner(address, metamask) : undefined
+      this._signer = address ? new EthereumSigner(address, metamask) : undefined
 
       this.subscribeAccounts(this.onAccountsChanged)
       this.subscribeChain(this.onChainChanged)
