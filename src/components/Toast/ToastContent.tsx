@@ -81,13 +81,13 @@ export function ToastContent(props: {
         </div>
       </div>
 
-      <SLink variant={props.variant ?? "info"}>
-        {props.link && (
+      {props.link && (
+        <SLink>
           <a href={props.link} target="_blank" rel="noreferrer">
             <LinkIcon />
           </a>
-        )}
-      </SLink>
+        </SLink>
+      )}
       {props.children}
     </SContainer>
   )

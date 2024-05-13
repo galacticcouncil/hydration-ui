@@ -50,9 +50,6 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const enablePaymentFee =
-    couldBeSetAsPaymentFee && !isEvmAccount(account?.address)
-
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
     isEvmAccount(account?.address) &&
@@ -106,7 +103,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       onSelect: inTradeRouter
         ? () =>
             navigate({
-              to: "/trade/swap",
+              to: LINKS.swap,
               search: canBuy ? { assetOut: id } : { assetIn: id },
             })
         : undefined,
@@ -129,7 +126,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   ]
 
   const actionItems = [
-    enablePaymentFee
+    couldBeSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
           icon: <DollarIcon />,

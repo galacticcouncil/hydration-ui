@@ -22,7 +22,6 @@ import {
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import Skeleton from "react-loading-skeleton"
 import { AddTokenAction } from "./WalletAssetsTableActions"
-import { isEvmAccount } from "utils/evm"
 
 type Props = {
   row?: AssetsTableData
@@ -46,8 +45,6 @@ export const WalletAssetsTableActionsMob = ({
   const canBuy = row.tradability.inTradeRouter && row.tradability.canBuy
 
   const isNativeAsset = row.id === NATIVE_ASSET_ID
-
-  const isEvm = isEvmAccount(account?.address)
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -193,7 +190,7 @@ export const WalletAssetsTableActionsMob = ({
           ) : (
             <div sx={{ flex: "column", gap: 12 }}>
               <Link
-                to={LINKS.trade}
+                to={LINKS.swap}
                 search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
                 disabled={
                   !row.tradability.inTradeRouter ||
@@ -238,20 +235,18 @@ export const WalletAssetsTableActionsMob = ({
                 </Button>
               </Link>
 
-              {!isEvm && (
-                <Button
-                  sx={{ width: "100%" }}
-                  size="small"
-                  onClick={() => setFeeAsPayment(row.id)}
-                  disabled={
-                    !row.couldBeSetAsPaymentFee ||
-                    account?.isExternalWalletConnected
-                  }
-                >
-                  <DollarIcon />
-                  {t("wallet.assets.table.actions.payment.asset")}
-                </Button>
-              )}
+              <Button
+                sx={{ width: "100%" }}
+                size="small"
+                onClick={() => setFeeAsPayment(row.id)}
+                disabled={
+                  !row.couldBeSetAsPaymentFee ||
+                  account?.isExternalWalletConnected
+                }
+              >
+                <DollarIcon />
+                {t("wallet.assets.table.actions.payment.asset")}
+              </Button>
             </div>
           )}
         </SActionButtonsContainer>

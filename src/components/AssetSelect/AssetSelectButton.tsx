@@ -13,9 +13,10 @@ import { useTranslation } from "react-i18next"
 type Props = {
   onClick?: () => void
   assetId: string
+  className?: string
 }
 
-export const AssetSelectButton = ({ onClick, assetId }: Props) => {
+export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(assetId)
@@ -46,6 +47,7 @@ export const AssetSelectButton = ({ onClick, assetId }: Props) => {
 
   return (
     <SSelectAssetButton
+      className={className}
       size="small"
       onClick={(e) => {
         e.preventDefault()

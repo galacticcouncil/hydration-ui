@@ -6,6 +6,15 @@ import { FC, PropsWithChildren } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
 import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
+import * as React from "react"
+import * as Apps from "@galacticcouncil/apps"
+import { createComponent } from "@lit-labs/react"
+
+const AppsPersistenceProvider = createComponent({
+  tagName: "gc-database-provider",
+  elementClass: Apps.DatabaseProvider,
+  react: React,
+})
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
@@ -18,7 +27,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
               borderRadius={4}
             >
-              {children}
+              <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
               <Transactions />
             </SkeletonTheme>
           </ToastProvider>

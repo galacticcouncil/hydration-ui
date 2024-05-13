@@ -39,6 +39,7 @@ export function InfoTooltip({
       }}
     >
       <Trigger
+        type="button"
         asChild={asChild}
         onClick={(e) => {
           textOnClick && e.preventDefault()

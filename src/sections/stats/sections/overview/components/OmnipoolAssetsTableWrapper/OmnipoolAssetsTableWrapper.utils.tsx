@@ -69,7 +69,7 @@ const APY = ({
   } = useRpcProvider()
   const farms = useFarms([assetId])
 
-  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
+  if (isLoading || farms.isLoading) return <CellSkeleton />
 
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
