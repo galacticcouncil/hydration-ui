@@ -78,10 +78,23 @@ const IsolatedPoolsData = () => {
     return BN_0
   }, [xykPools.data])
 
-  const filteredPools =
-    (search && xykPools.data
-      ? arraySearch(xykPools.data, search, ["symbol", "name"])
-      : xykPools.data) ?? []
+  const filteredPools = useMemo(
+    () =>
+      (search && xykPools.data
+        ? arraySearch(xykPools.data, search, ["symbol", "name"])
+        : xykPools.data) ?? [],
+    [search, xykPools.data],
+  )
+
+  const visiblePools = useMemo(
+    () =>
+      showAllXyk
+        ? filteredPools
+        : filteredPools.filter((pool) =>
+            pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
+          ),
+    [filteredPools, showAllXyk],
+  )
 
   if (id != null) {
     const pool = xykPools.data?.find((pool) => pool.id === id.toString())
@@ -135,16 +148,7 @@ const IsolatedPoolsData = () => {
       {xykPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
       ) : filteredPools.length ? (
-        <PoolsTable
-          data={
-            showAllXyk
-              ? filteredPools
-              : filteredPools.filter((pool) =>
-                  pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
-                )
-          }
-          isXyk
-        />
+        <PoolsTable data={visiblePools} isXyk />
       ) : (
         <EmptySearchState />
       )}

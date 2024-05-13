@@ -120,10 +120,23 @@ const AllPoolsData = () => {
       ? arraySearch(pools.data, search, ["symbol", "name"])
       : pools.data) ?? []
 
-  const filteredXYKPools =
-    (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data) ?? []
+  const filteredXYKPools = useMemo(
+    () =>
+      (search && xylPools.data
+        ? arraySearch(xylPools.data, search, ["symbol", "name"])
+        : xylPools.data) ?? [],
+    [search, xylPools.data],
+  )
+
+  const visibleXykPools = useMemo(
+    () =>
+      showAllXyk
+        ? filteredXYKPools
+        : filteredXYKPools.filter((pool) =>
+            pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
+          ),
+    [filteredXYKPools, showAllXyk],
+  )
 
   if (id != null) {
     const pool = [...(pools.data ?? []), ...(xylPools.data ?? [])].find(
@@ -224,16 +237,7 @@ const AllPoolsData = () => {
             {xylPools.isInitialLoading ? (
               <PoolsTableSkeleton isXyk />
             ) : (
-              <PoolsTable
-                data={
-                  showAllXyk
-                    ? filteredXYKPools
-                    : filteredXYKPools.filter((pool) =>
-                        pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
-                      )
-                }
-                isXyk
-              />
+              <PoolsTable data={visibleXykPools} isXyk />
             )}
           </div>
         ) : null}
