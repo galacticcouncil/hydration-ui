@@ -70,6 +70,12 @@ export const STitle = styled(Title)`
   & .referralDesc {
     color: ${theme.colors.white};
   }
+
+  & strong,
+  & b {
+    font-weight: 700;
+    font-family: "ChakraPetchBold";
+  }
 `
 
 export const SClose = styled(Close)`

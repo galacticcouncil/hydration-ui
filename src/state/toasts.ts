@@ -21,6 +21,7 @@ type ToastParams = {
   id?: string
   link?: string
   title: ReactElement
+  description?: ReactElement
   actions?: ReactNode
   persist?: boolean
   hideTime?: number
@@ -32,6 +33,7 @@ type ToastData = ToastParams & {
   hidden: boolean
   dateCreated: string
   title: string
+  description?: string
 }
 
 type PersistState<T> = {
@@ -48,7 +50,6 @@ interface ToastStore {
     accoutAddress: Maybe<string>,
     callback: (toasts: Array<ToastData>) => Array<ToastData>,
   ) => void
-
   sidebar: boolean
   setSidebar: (value: boolean) => void
   updateToastsTemp: (
@@ -292,6 +293,26 @@ export const useToast = () => {
     return id
   }
 
+  const edit = (id: string, toast: Partial<ToastParams>) => {
+    const title = toast.title ? renderToString(toast.title) : undefined
+    const description = toast.description
+      ? renderToString(toast.description)
+      : undefined
+
+    store.update(account?.address, (toasts) =>
+      toasts.map((t) =>
+        t.id === id
+          ? ({
+              ...t,
+              ...toast,
+              title: title ?? t.title,
+              description: description ?? t.description,
+            } as ToastData)
+          : t,
+      ),
+    )
+  }
+
   const info = (toast: ToastParams) => add("info", toast)
   const success = (toast: ToastParams) => add("success", toast)
   const error = (toast: ToastParams) => add("error", toast)
@@ -331,6 +352,7 @@ export const useToast = () => {
     toastsTemp: store.toastsTemp,
     setSidebar,
     add,
+    edit,
     hide,
     remove,
     info,

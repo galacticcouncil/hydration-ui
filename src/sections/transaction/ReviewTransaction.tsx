@@ -30,7 +30,7 @@ export const ReviewTransaction = (props: Transaction) => {
     txState,
     reset,
     txLink,
-  } = useSendTx()
+  } = useSendTx({ id: props.id })
 
   const isError = isSendError || !!signError
   const error = sendError || signError

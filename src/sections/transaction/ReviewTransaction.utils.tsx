@@ -18,6 +18,7 @@ import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useToast } from "state/toasts"
 import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
+import { defer } from "utils/helpers"
 import { getSubscanLinkByType } from "utils/formatting"
 
 type TxMethod = AnyJson & {
@@ -87,6 +88,14 @@ export function getTransactionJSON(tx: SubmittableExtrinsic<"promise">) {
 
 export class UnknownTransactionState extends Error {}
 
+export class TransactionError extends Error {
+  docs: string = ""
+  method: string = ""
+  constructor(public error: string) {
+    super(error)
+  }
+}
+
 function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
   const isSuccess = txReceipt.status === 1
   const submittableResult: ISubmittableResult = {
@@ -123,18 +132,24 @@ const createResultOnCompleteHandler =
   (result: ISubmittableResult) => {
     if (result.isCompleted) {
       if (result.dispatchError) {
+        let docs = ""
+        let method = ""
         let errorMessage = result.dispatchError.toString()
 
         if (result.dispatchError.isModule) {
           const decoded = api.registry.findMetaError(
             result.dispatchError.asModule,
           )
-          errorMessage = `${decoded.section}.${
-            decoded.method
-          }: ${decoded.docs.join(" ")}`
+          docs = decoded.docs.join(" ")
+          method = decoded.method
+          errorMessage = `${decoded.section}.${decoded.method}: ${docs}`
         }
 
-        onError(new Error(errorMessage))
+        const error = new TransactionError(errorMessage)
+        error.docs = docs
+        error.method = method
+
+        onError(error)
       } else {
         onSuccess(result)
       }
@@ -145,8 +160,10 @@ const createResultOnCompleteHandler =
 
 export const useSendEvmTransactionMutation = (
   options: MutationObserverOptions<
-    ISubmittableResult,
-    unknown,
+    ISubmittableResult & {
+      transactionLink?: string
+    },
+    TransactionError,
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
@@ -177,7 +194,7 @@ export const useSendEvmTransactionMutation = (
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
         const { error } = decodeError(err)
-        reject(new Error(error))
+        reject(new TransactionError(error))
       } finally {
         clearTimeout(timeout)
       }
@@ -279,8 +296,8 @@ export const useSendDispatchPermit = (
 
 export const useSendTransactionMutation = (
   options: MutationObserverOptions<
-    ISubmittableResult,
-    unknown,
+    ISubmittableResult & { transactionLink?: string },
+    TransactionError,
     SubmittableExtrinsic<"promise">
   > = {},
 ) => {
@@ -408,12 +425,32 @@ const useBoundReferralToast = () => {
   }
 }
 
-export const useSendTx = () => {
+const useErrorToastUpdate = (id: string) => {
+  const { edit } = useToast()
+
+  return (err: TransactionError) => {
+    if (err?.method) {
+      defer(() => {
+        edit(id, {
+          description: (
+            <p>
+              <strong>{err.method}</strong>
+              {err.docs ? ` - ${err.docs}` : ""}
+            </p>
+          ),
+        })
+      })
+    }
+  }
+}
+
+export const useSendTx = ({ id }: { id: string }) => {
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
 
   const boundReferralToast = useBoundReferralToast()
+  const updateErrorToast = useErrorToastUpdate(id)
 
   const sendTx = useSendTransactionMutation({
     onMutate: (tx) => {
@@ -421,6 +458,7 @@ export const useSendTx = () => {
       setTxType("default")
     },
     onSuccess: boundReferralToast.onSuccess,
+    onError: updateErrorToast,
   })
 
   const sendEvmTx = useSendEvmTransactionMutation({
@@ -429,6 +467,7 @@ export const useSendTx = () => {
       setTxType("evm")
     },
     onSuccess: boundReferralToast.onSuccess,
+    onError: updateErrorToast,
   })
 
   const sendPermitTx = useSendDispatchPermit({

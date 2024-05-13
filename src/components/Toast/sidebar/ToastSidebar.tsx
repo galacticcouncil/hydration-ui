@@ -90,6 +90,15 @@ export function ToastSidebar() {
                                     }}
                                   />
                                 }
+                                description={
+                                  toast.description ? (
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: toast.description,
+                                      }}
+                                    />
+                                  ) : undefined
+                                }
                                 actions={toast.actions}
                                 dateCreated={
                                   typeof toast.dateCreated === "string"
@@ -115,6 +124,15 @@ export function ToastSidebar() {
                                       __html: toast.title,
                                     }}
                                   />
+                                }
+                                description={
+                                  toast.description ? (
+                                    <div
+                                      dangerouslySetInnerHTML={{
+                                        __html: toast.description,
+                                      }}
+                                    />
+                                  ) : undefined
                                 }
                                 actions={toast.actions}
                                 dateCreated={

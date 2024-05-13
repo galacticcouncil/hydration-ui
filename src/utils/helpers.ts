@@ -321,3 +321,15 @@ export function abbreviateNumber(price: BN): string {
 
   return formattedPrice
 }
+
+export function defer(callback: () => void) {
+  if (typeof callback === "function") {
+    if ("requestIdleCallback" in window) {
+      const id = requestIdleCallback(callback)
+      return () => cancelIdleCallback(id)
+    } else {
+      const id = setTimeout(callback, 1)
+      return () => clearTimeout(id)
+    }
+  }
+}
