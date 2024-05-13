@@ -27,7 +27,6 @@ type Props = {
   allAssets?: boolean
   withBonds?: boolean
   withExternal?: boolean
-  withShareTokens?: boolean
   confirmRequired?: boolean
   defaultSelectedAsssetId?: string
 }
@@ -40,7 +39,6 @@ export const AssetsModalContent = ({
   hideInactiveAssets,
   allAssets,
   withBonds,
-  withShareTokens,
   confirmRequired,
   defaultSelectedAsssetId,
   withExternal,
@@ -79,7 +77,6 @@ export const AssetsModalContent = ({
         ...assets.tokens,
         ...assets.stableswap,
         ...(withExternal ? assets.external.filter((token) => token.name) : []),
-        ...(withShareTokens ? assets.shareTokens : []),
       ])
     : accountAssets.filter(
         (accountAsset): accountAsset is { balance: TBalance; asset: TToken } =>
@@ -87,8 +84,7 @@ export const AssetsModalContent = ({
           accountAsset.asset.isStableSwap ||
           (withExternal
             ? accountAsset.asset.isExternal && !!accountAsset.asset.name
-            : false) ||
-          (withShareTokens ? accountAsset.asset.isShareToken : false),
+            : false),
       )
 
   const bonds = allAssets

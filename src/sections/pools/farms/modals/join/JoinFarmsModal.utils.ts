@@ -4,7 +4,7 @@ import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
-import { Farm } from "api/farms"
+import { Farm, useOraclePrice } from "api/farms"
 import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
@@ -18,6 +18,7 @@ export const useZodSchema = (
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const { data: balance } = useTokenBalance(id, account?.address)
+  const oraclePrice = useOraclePrice(assets.hub.id, id)
 
   const meta = assets.getAsset(id)
 
@@ -32,7 +33,13 @@ export const useZodSchema = (
   if (!balance) return undefined
 
   const rule = required.refine(
-    (value) => scale(value, meta.decimals).gte(minDeposit),
+    (value) => {
+      const valueInHub = scale(value, meta.decimals)
+        .times(oraclePrice.data?.price?.n ?? 1)
+        .div(oraclePrice.data?.price?.d ?? 1)
+
+      return valueInHub.gte(minDeposit)
+    },
     t("farms.modal.join.minDeposit", {
       value: scaleHuman(minDeposit, meta.decimals),
     }),
