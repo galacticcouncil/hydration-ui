@@ -7,7 +7,6 @@ import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { useTokensBalances } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   SubNavigation,
@@ -17,6 +16,7 @@ import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHea
 import { useLocation } from "@tanstack/react-location"
 import { t } from "i18next"
 import { useAccountNFTPositions } from "api/deposits"
+import { useAccountBalances } from "api/accountBalances"
 
 const routeMap = new Map([
   [LINKS.allPools, t("liquidity.navigation.allPools")],
@@ -57,20 +57,22 @@ const MyLiquidity = () => {
   const { assets } = useRpcProvider()
   const accountPositions = useAccountNFTPositions()
 
-  const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
-  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+  const balances = useAccountBalances(account?.address)
 
-  const userPositions = useTokensBalances(
-    [...shareTokensId, ...stableswapsId],
-    account?.address,
-  )
+  const isPoolBalances = balances.data?.balances.some((balance) => {
+    if (balance.freeBalance.gt(0)) {
+      const meta = assets.getAsset(balance.id)
+      return meta.isStableSwap || meta.isShareToken
+    }
+    return false
+  })
 
-  const isOmnipoolPositions =
+  const isPositions =
     accountPositions.data?.miningNfts.length ||
     accountPositions.data?.omnipoolNfts.length ||
-    userPositions.some((userPosition) => userPosition.data?.freeBalance.gt(0))
+    isPoolBalances
 
-  if (!isOmnipoolPositions) return null
+  if (!isPositions) return null
 
   return (
     <>
