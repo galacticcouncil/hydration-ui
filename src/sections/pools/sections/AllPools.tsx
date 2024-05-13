@@ -217,7 +217,17 @@ const AllPoolsData = () => {
                 align: ["flex-start", "flex-end"],
               }}
             >
-              <div sx={{ flex: "row", gap: 40, align: "flex-end" }}>
+              <div
+                sx={{
+                  flex: "row",
+                  gap: [4, 40],
+                  align: "baseline",
+                  width: "100%",
+                  justify: ["space-between", "start"],
+                  flexWrap: "wrap",
+                }}
+                css={{ whiteSpace: "nowrap" }}
+              >
                 <TableLabel label={t("liquidity.section.xyk")} />
                 <Switch
                   value={showAllXyk}

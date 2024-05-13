@@ -131,7 +131,15 @@ const IsolatedPoolsData = () => {
       />
       <SearchFilter />
       <Spacer size={24} />
-      <div sx={{ flex: "row", mb: 14 }}>
+      <div
+        sx={{
+          flex: "row",
+          mb: 14,
+          gap: 4,
+          align: "baseline",
+          flexWrap: "wrap",
+        }}
+      >
         <Switch
           value={showAllXyk}
           onCheckedChange={(value) => setShowAllXyk(value)}
