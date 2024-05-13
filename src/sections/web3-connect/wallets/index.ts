@@ -58,7 +58,19 @@ const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
-const walletConnect: Wallet = new WalletConnect()
+const walletConnect: Wallet = new WalletConnect({
+  onModalClose: (session) => {
+    if (!session) {
+      const state = useWeb3ConnectStore.getState()
+      state.disconnect()
+      state.toggle()
+    }
+  },
+  onSesssionDelete: () => {
+    const state = useWeb3ConnectStore.getState()
+    state.disconnect()
+  },
+})
 
 const externalWallet: Wallet = new ExternalWallet()
 
