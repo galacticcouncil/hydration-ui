@@ -62,7 +62,7 @@ const APYStatsCard = ({
       value={
         assetId === native.id ? "--" : t("value.percentage", { value: fee })
       }
-      loading={loading || farms.isInitialLoading}
+      loading={loading || farms.isLoading}
       tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
   )

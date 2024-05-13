@@ -1,5 +1,5 @@
 import { isTalisman } from "utils/metamask"
-import { MetaMask } from "./MetaMask/MetaMask"
+import { MetaMask } from "./MetaMask"
 
 import TalismanLogo from "assets/icons/TalismanLogo.svg"
 

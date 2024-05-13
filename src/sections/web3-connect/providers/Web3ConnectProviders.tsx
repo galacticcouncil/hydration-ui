@@ -15,9 +15,11 @@ import {
   DESKTOP_PROVIDERS,
   EVM_PROVIDERS,
   MOBILE_PROVIDERS,
+  SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
+import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnect"
 
-const useWalletProviders = (mode: WalletMode) => {
+const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return useMemo(() => {
@@ -34,13 +36,19 @@ const useWalletProviders = (mode: WalletMode) => {
         : MOBILE_PROVIDERS.includes(provider.type)
 
       const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
+      const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
 
       const byMode =
         isDefaultMode ||
         (isEvmMode && isEvmProvider) ||
-        (isSubstrateMode && !isEvmProvider)
+        (isSubstrateMode && isSubstrateProvider)
 
-      return byScreen && byMode
+      const byWalletConnect =
+        isSubstrateMode && provider.type === "walletconnect" && chain
+          ? !!POLKADOT_CAIP_ID_MAP[chain]
+          : true
+
+      return byScreen && byMode && byWalletConnect
     })
 
     const alternativeProviders = wallets.filter((provider) => {
@@ -52,15 +60,19 @@ const useWalletProviders = (mode: WalletMode) => {
       defaultProviders,
       alternativeProviders,
     }
-  }, [isDesktop, mode])
+  }, [isDesktop, mode, chain])
 }
 
 export const Web3ConnectProviders = () => {
   const { t } = useTranslation()
 
   const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
+  const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
 
-  const { defaultProviders, alternativeProviders } = useWalletProviders(mode)
+  const { defaultProviders, alternativeProviders } = useWalletProviders(
+    mode,
+    meta?.chain,
+  )
 
   return (
     <>

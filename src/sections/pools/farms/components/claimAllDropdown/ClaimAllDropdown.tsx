@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { HeaderSeparator } from "sections/pools/header/PoolsHeader"
 import { theme } from "theme"
-import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAllFarmDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { STriggerButton } from "./ClaimAllDrowpdown.styled"
 import { ClaimAllContent } from "./ClaimAllContent"
 
@@ -15,9 +15,9 @@ export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const depositShares = useAllUserDepositShare()
+  const deposits = useAllFarmDeposits()
 
-  if (!Object.keys(depositShares.data).length) {
+  if (!Object.keys(deposits.omnipool).length && !deposits.xyk.length) {
     return null
   }
 
