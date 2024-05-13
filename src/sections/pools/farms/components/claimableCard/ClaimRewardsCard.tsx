@@ -6,18 +6,18 @@ import { Text } from "components/Typography/Text/Text"
 import { Fragment, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { ToastMessage } from "state/store"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
-import { useClaimAllMutation, useClaimableAmount } from "utils/farms/claiming"
+import { useClaimFarmMutation, useClaimableAmount } from "utils/farms/claiming"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
+import { TDeposit } from "api/deposits"
 
 export const ClaimRewardsCard = (props: {
   poolId: string
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
@@ -67,7 +67,7 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const claimAll = useClaimAllMutation(
+  const claimAll = useClaimFarmMutation(
     props.poolId,
     props.depositNft,
     toast,

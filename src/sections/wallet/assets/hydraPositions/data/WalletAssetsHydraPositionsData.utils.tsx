@@ -8,20 +8,20 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculatePositionLiquidity } from "utils/omnipool"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useShareTokens } from "api/xyk"
 import { useAccountsBalances } from "api/accountBalances"
 import { useShareOfPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
 import { TShareToken } from "api/assetDetails"
+import { useAccountNFTPositions } from "api/deposits"
 
 export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions(address)
+  const accountPositions = useAccountNFTPositions(address)
   const positions = useOmnipoolPositions(
     accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
   )
@@ -184,7 +184,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
             .multipliedBy(totalIssuance?.myPoolShare ?? 1)
             .div(100)
 
-          return { balanceHuman, symbol: balanceMeta.symbol }
+          return { amount: balanceHuman, symbol: balanceMeta.symbol }
         }) ?? []
 
       if (meta.assets.includes(assets.native.id)) {
@@ -196,9 +196,12 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
         // order of the HDX in a share token pair
         if (meta.assets[0] === assets.native.id) {
-          balances.unshift({ balanceHuman, symbol: assets.native.symbol })
+          balances.unshift({
+            amount: balanceHuman,
+            symbol: assets.native.symbol,
+          })
         } else {
-          balances.push({ balanceHuman, symbol: assets.native.symbol })
+          balances.push({ amount: balanceHuman, symbol: assets.native.symbol })
         }
       }
 

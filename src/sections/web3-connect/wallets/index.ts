@@ -1,9 +1,4 @@
-import {
-  SubscriptionFn,
-  Wallet,
-  WalletAccount,
-  getWallets,
-} from "@talismn/connect-wallets"
+import { SubscriptionFn, Wallet, getWallets } from "@talismn/connect-wallets"
 
 import { ExternalWallet } from "./ExternalWallet"
 import { MetaMask } from "./MetaMask"
