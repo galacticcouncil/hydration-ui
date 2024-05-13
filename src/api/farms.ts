@@ -476,6 +476,7 @@ const getOraclePrice =
     return {
       id: { rewardCurrency, incentivizedAsset },
       oraclePrice: BN(oraclePrice),
+      price: { n, d },
     }
   }
 
