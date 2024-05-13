@@ -3066,10 +3066,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.7.2.tgz#d0bb7980d657b9579b59267af10637d64bff6e05"
-  integrity sha512-w+gjnhu8kNmDqaT720jEMBMgvziTZPvnZZViInyFGF6/tIUb/hMRa1wfOvt3L3t3+gWUA8JcNwQYqya3XiOuMQ==
+"@galacticcouncil/apps@^3.7.3":
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.7.3.tgz#c96f753f236141821905ee991732a47d297c68fe"
+  integrity sha512-mRB1lT70D14S0Ty9B2hrtlAVxeAJjOWe26mwZ4peDwi2ljIlKnyCk0/7iEv8URFIZ2Eazj5nJCAXnZSpeEy90w==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3157,10 +3157,10 @@
     "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.0.tgz#dff91b5b7ab2acbaf91265bdfd0eb03ccc57e06a"
-  integrity sha512-pnji13IrwlF7h1VEDk9mc9ISSVOukloZC6SikanewDw94w+bbS9vOW/aoCwFmxT0LDMjKsu48exC0T+mJnDFew==
+"@galacticcouncil/xcm-sdk@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.2.tgz#234f35f1771f5bdfb1518fa1cd9dddc9d5ffd8ff"
+  integrity sha512-a7w8w0mY+FdNxpuWYzM3+G5oqDSvQ6ctH9sKXyudEDJH7fK4mb9gu500EU8g619HR6Dm434BjM1n6si/tIUOQw==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0"
 
