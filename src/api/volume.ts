@@ -196,17 +196,19 @@ export const getAllTrades =
           query TradeVolume($assetId: Int, $after: DateTime!) {
             events(
               where: {
-                name_in: [
-                  "Omnipool.SellExecuted"
-                  "Omnipool.BuyExecuted"
-                  "XYK.SellExecuted"
-                  "XYK.BuyExecuted"
-                  "Router.Executed"
-                ]
-                args_jsonContains: { assetIn: $assetId }
-                phase_eq: "ApplyExtrinsic"
-                block: { timestamp_gte: $after }
                 OR: [
+                  {
+                    name_in: [
+                      "Omnipool.SellExecuted"
+                      "Omnipool.BuyExecuted"
+                      "XYK.SellExecuted"
+                      "XYK.BuyExecuted"
+                      "Router.Executed"
+                    ]
+                    args_jsonContains: { assetIn: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
                   {
                     name_in: [
                       "Omnipool.SellExecuted"

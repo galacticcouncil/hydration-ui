@@ -41,14 +41,27 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
     return Object.entries(groupedEvents)
       .map(([, value]) => {
-        // check if last event is Router event
         const routerEvent = value.find(({ name }) => name === "Router.Executed")
         const tradeEvents = value.filter(isTradeEvent)
         const stableswapEvents = value.filter(isStableswapEvent)
         const [firstEvent] = tradeEvents
 
         if (!tradeEvents.length) return null
-        if (firstEvent?.name === "Router.Executed") return null
+        if (firstEvent?.name === "Router.Executed") {
+          const who = stableswapEvents?.[0]?.args?.who
+          if (!who) return null
+          return {
+            value,
+            ...firstEvent,
+            args: {
+              who: stableswapEvents[0].args.who,
+              assetIn: firstEvent.args.assetIn,
+              assetOut: firstEvent.args.assetOut,
+              amountIn: firstEvent.args.amountIn,
+              amountOut: firstEvent.args.amountOut,
+            },
+          }
+        }
 
         let event: TradeType
         if (!routerEvent) {
@@ -70,7 +83,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
           event = {
             ...firstEvent,
-
             args: {
               who: firstEvent.args.who,
               assetIn: stableswapAssetIn || assetIn,
@@ -103,7 +115,6 @@ export const useRecentTradesTableData = (assetId?: string) => {
         return event
       })
       .filter(isNotNil)
-      .slice(0, EVENTS_LIMIT)
   }, [allTrades.data, assets])
 
   const assetIds = events
@@ -211,7 +222,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
       }>,
     )
 
-    return trades
+    return trades.slice(0, EVENTS_LIMIT)
   }, [events, apiIds.data, spotPrices, assetId, assets, identities])
 
   return { data, isLoading: isInitialLoading }
