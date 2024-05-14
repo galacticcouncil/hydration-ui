@@ -173,6 +173,7 @@
   "liquidity.pool.details.price": "{{symbol}} Price",
   "liquidity.section.omnipoolAndStablepool": "Omnipool + Stablepool",
   "liquidity.section.xyk": "Isolated pools",
+  "liquidity.section.xyk.toggle": "Show low liquidity pools",
   "liquidity.asset.title": "Asset",
   "liquidity.assets.title": "Assets",
   "liquidity.asset.details.fee": "Fee",
