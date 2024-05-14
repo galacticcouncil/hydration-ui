@@ -5,7 +5,7 @@ import type EventEmitter from "events"
 import { evmChains } from "@galacticcouncil/xcm-sdk"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
-const METAMASK_LIKE_CHECKS = ["isTalisman"] as const
+const METAMASK_LIKE_CHECKS = ["isTalisman", "isSubWallet"] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
 type MetaMaskLikeChecks = {
@@ -53,8 +53,11 @@ export function isMetaMaskLike(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider> {
   return (
-    isMetaMask(provider) &&
-    METAMASK_LIKE_CHECKS.some((key) => !!provider?.[key])
+    !!provider &&
+    typeof provider?.isMetaMask === "boolean" &&
+    METAMASK_LIKE_CHECKS.some(
+      (key) => !!(provider as MetaMaskLikeProvider)?.[key],
+    )
   )
 }
 
@@ -62,6 +65,10 @@ export function isTalisman(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider> {
   return isMetaMaskLike(provider) && !!provider?.isTalisman
+}
+
+export function isSubWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isSubWallet
 }
 
 export function isEthereumProvider(

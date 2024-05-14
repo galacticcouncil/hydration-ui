@@ -67,7 +67,7 @@ export class MetaMask implements Wallet {
     }
 
     try {
-      if (!isMetaMask(this.rawExtension)) return
+      if (!isMetaMaskLike(this.rawExtension)) return
 
       const metamask = this.rawExtension
 

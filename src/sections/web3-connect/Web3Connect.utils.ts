@@ -25,7 +25,7 @@ import {
 import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask"
-import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
+import { isMetaMaskLike, requestNetworkSwitch } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
 import { WalletAccount } from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
@@ -57,7 +57,7 @@ export const useEvmAccount = () => {
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
-      const chainId = isMetaMask(wallet?.extension)
+      const chainId = isMetaMaskLike(wallet?.extension)
         ? await wallet?.extension?.request({ method: "eth_chainId" })
         : null
 
