@@ -167,12 +167,11 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
             : poolBalance?.balances.find((balance) => balance.id === assetId)
                 ?.freeBalance
 
-        const myShare = myPool.balance.total.div(totalIssuance ?? 1).times(100)
+        const myShare = myPool.balance.total.div(totalIssuance ?? 1)
 
-        const balanceHuman = balance
-          ?.shiftedBy(-balanceMeta.decimals)
-          .multipliedBy(myShare)
-          .div(100)
+        const balanceHuman =
+          balance?.shiftedBy(-balanceMeta.decimals).multipliedBy(myShare) ??
+          BN_NAN
 
         return { amount: balanceHuman, symbol: balanceMeta.symbol }
       })
@@ -180,11 +179,10 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
       const spotPrice = spotPrices.data.find(
         (spotPrice) => spotPrice.tokenIn === meta.id,
       )
-      console.log(spotPrice, "spotPrice")
+
       const amount =
         totalIssuance
-          ?.div(myPool.balance.balance ?? 1)
-          .div(100)
+          ?.times(myPool.balance.total.div(totalIssuance ?? 1))
           .shiftedBy(-meta.decimals) ?? BN_NAN
 
       const valueDisplay = amount.multipliedBy(spotPrice?.spotPrice ?? 1)
