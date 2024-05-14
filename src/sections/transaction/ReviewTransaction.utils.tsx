@@ -270,6 +270,7 @@ export const useSendDispatchPermit = (
     ...sendTx,
     txState,
     txLink,
+    bridge: undefined,
     reset: () => {
       setTxState(null)
       setTxHash("")
@@ -336,6 +337,7 @@ export const useSendTransactionMutation = (
     ...sendTx,
     txState,
     txLink,
+    bridge: undefined,
     reset: () => {
       setTxState(null)
       setTxHash("")
