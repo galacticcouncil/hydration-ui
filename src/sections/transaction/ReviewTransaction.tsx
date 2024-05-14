@@ -32,6 +32,7 @@ export const ReviewTransaction = (props: Transaction) => {
     txState,
     reset,
     txLink,
+    bridge,
   } = useSendTx()
 
   if (!isLoaded) return null
@@ -94,6 +95,7 @@ export const ReviewTransaction = (props: Transaction) => {
           onReview={onReview}
           onClose={onClose}
           toastMessage={props.toastMessage}
+          bridge={bridge}
         />
       )}
 

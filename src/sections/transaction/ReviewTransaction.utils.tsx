@@ -191,6 +191,7 @@ export const useSendEvmTransactionMutation = (
     ...sendTx,
     txState,
     txLink,
+    bridge: !!chain?.isEvmChain(),
     reset: () => {
       setTxState(null)
       setTxHash("")
