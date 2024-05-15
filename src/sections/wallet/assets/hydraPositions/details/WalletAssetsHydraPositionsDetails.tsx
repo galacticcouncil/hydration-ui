@@ -34,7 +34,13 @@ export const WalletAssetsHydraPositionsDetails = ({
     <div sx={{ flex: "column", align: ["end", "start"] }}>
       {amountPair ? (
         <div sx={{ flex: "row", gap: 4 }}>
-          <Text fs={14} lh={14} fw={500} color="white">
+          <Text
+            fs={14}
+            lh={14}
+            fw={500}
+            color="white"
+            tAlign={["right", "left"]}
+          >
             {amountPair
               .map((balance) =>
                 t("value.tokenWithSymbol", {
