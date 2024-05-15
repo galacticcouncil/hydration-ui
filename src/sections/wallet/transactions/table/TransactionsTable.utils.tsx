@@ -103,7 +103,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
             <MultipleIcons
               size={16}
               icons={row.original.assetIconIds.map((id) => ({
-                icon: <AssetLogo id={id} />,
+                icon: <AssetLogo key={id} id={id} />,
               }))}
             />
             <Text fs={14} css={{ whiteSpace: "nowrap" }}>

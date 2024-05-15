@@ -42,7 +42,7 @@ export const WalletPaymentAsset = () => {
         <MultipleIcons
           size={18}
           icons={iconIds.map((asset) => ({
-            icon: <AssetLogo id={asset} />,
+            icon: <AssetLogo key={asset} id={asset} />,
           }))}
         />
         <Text fs={14} lh={14} font="ChakraPetchSemiBold">
