@@ -8,7 +8,7 @@ import { isAnyParachain } from "utils/helpers"
 
 export const HYDRADX_CHAIN_KEY = "hydradx"
 export const DEFAULT_NATIVE_CHAIN = "polkadot"
-export const DEFAULT_EVM_CHAIN = "moonbeam"
+export const DEFAULT_EVM_CHAIN = "ethereum"
 export const DEFAULT_DEST_CHAIN = HYDRADX_CHAIN_KEY
 
 export function getDefaultSrcChain(address?: string) {
