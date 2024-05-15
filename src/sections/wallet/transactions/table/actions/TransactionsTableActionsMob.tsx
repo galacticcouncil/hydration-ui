@@ -68,7 +68,7 @@ export const TransactionsTableActionsMob = ({
             <MultipleIcons
               size={16}
               icons={row.assetIconIds.map((id) => ({
-                icon: <AssetLogo id={id} />,
+                icon: <AssetLogo key={id} id={id} />,
               }))}
             />
             <Text fs={13} css={{ whiteSpace: "nowrap" }}>

@@ -59,7 +59,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
       ) : (
         <MultipleIcons
           icons={iconIds.map((asset) => ({
-            icon: <AssetLogo id={asset} />,
+            icon: <AssetLogo key={asset} id={asset} />,
           }))}
         />
       )}
