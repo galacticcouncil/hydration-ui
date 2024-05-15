@@ -5,7 +5,7 @@ import { Icon } from "components/Icon/Icon"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 import { Spacer } from "components/Spacer/Spacer"
-import { TPool, TPoolDetails } from "sections/pools/PoolsPage.utils"
+import { TPool, TPoolDetails, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { useFarmExitAllMutation } from "utils/farms/exit"
@@ -14,7 +14,7 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 interface Props {
-  pool: TPool
+  pool: TPool | TXYKPool
   positions: TPoolDetails["miningNftPositions"]
 }
 
@@ -32,7 +32,7 @@ export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
     return memo
   }, {} as ToastMessage)
 
-  const exit = useFarmExitAllMutation(positions, toast)
+  const exit = useFarmExitAllMutation(positions, pool.id, toast)
 
   if (!positions.length) return null
 

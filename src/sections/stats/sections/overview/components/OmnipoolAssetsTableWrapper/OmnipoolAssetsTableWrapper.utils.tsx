@@ -69,7 +69,7 @@ const APY = ({
   } = useRpcProvider()
   const farms = useFarms([assetId])
 
-  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
+  if (isLoading || farms.isLoading) return <CellSkeleton />
 
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
@@ -110,7 +110,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             <MultipleIcons
               size={[26, 30]}
               icons={row.original.iconIds.map((id) => ({
-                icon: <AssetLogo id={id} />,
+                icon: <AssetLogo key={id} id={id} />,
               }))}
             />
           )}

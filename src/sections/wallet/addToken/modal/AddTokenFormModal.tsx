@@ -17,6 +17,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
+import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 
 type Props = {
   asset: TExternalAsset
@@ -153,7 +154,11 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
           )}
         />
 
-        <Spacer size={24} />
+        <Spacer size={0} />
+
+        <TokenInfo asset={asset} isChainStored={isChainStored} />
+
+        <Spacer size={8} />
 
         {isChainStored ? (
           <Button

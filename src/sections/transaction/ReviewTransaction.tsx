@@ -21,6 +21,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const {
     sendTx,
     sendEvmTx,
+    sendPermitTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -28,6 +29,7 @@ export const ReviewTransaction = (props: Transaction) => {
     data,
     txState,
     reset,
+    txLink,
   } = useSendTx()
 
   const isError = isSendError || !!signError
@@ -84,7 +86,7 @@ export const ReviewTransaction = (props: Transaction) => {
           isSuccess={isSuccess}
           isError={isError}
           error={error}
-          link={data?.transactionLink}
+          link={txLink}
           onReview={onReview}
           onClose={onClose}
           toastMessage={props.toastMessage}
@@ -124,6 +126,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onSigned={(signed) => {
               props.onSubmitted?.()
               sendTx(signed)
+            }}
+            onPermitDispatched={(permit) => {
+              props.onSubmitted?.()
+              sendPermitTx(permit)
             }}
             onSignError={setSignError}
           />

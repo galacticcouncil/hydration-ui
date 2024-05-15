@@ -18,6 +18,7 @@ import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { scaleHuman } from "utils/balance"
 
 function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
   return depositNft.data.yieldFarmEntries.find(
@@ -33,42 +34,25 @@ function JoinedFarmsDetailsRedeposit(props: {
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
-  const { t } = useTranslation()
   const { assets } = useRpcProvider()
+  const { t } = useTranslation()
   const { account } = useAccount()
   const farms = useFarms([props.poolId])
-  const meta = assets.getAsset(props.poolId.toString())
+  const meta = assets.getAsset(props.poolId)
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
   )
 
-  const toast = TOAST_MESSAGES.reduce((memo, type) => {
-    const msType = type === "onError" ? "onLoading" : type
-    memo[type] = (
-      <Trans
-        t={t}
-        i18nKey={`farms.modal.join.toast.${msType}`}
-        tOptions={{
-          amount: props.depositNft.data.shares.toBigNumber(),
-          fixedPointScale: meta.decimals,
-        }}
-      >
-        <span />
-        <span className="highlight" />
-      </Trans>
-    )
-    return memo
-  }, {} as ToastMessage)
-
   const redeposit = useFarmRedepositMutation(
     availableFarms,
-    [props.depositNft],
-    toast,
+    props.depositNft,
+    props.poolId,
     props.onTxClose,
   )
 
   if (!availableFarms?.length) return null
+
   return (
     <>
       <Text color="neutralGray100" sx={{ mb: 18 }}>
@@ -92,7 +76,14 @@ function JoinedFarmsDetailsRedeposit(props: {
           fullWidth
           variant="primary"
           sx={{ mt: 16 }}
-          onClick={() => redeposit.mutate()}
+          onClick={() =>
+            redeposit.mutate({
+              shares: scaleHuman(
+                props.depositNft.data.shares.toString(),
+                meta.decimals,
+              ).toString(),
+            })
+          }
           disabled={account?.isExternalWalletConnected}
           isLoading={redeposit.isLoading}
         >
@@ -142,6 +133,7 @@ function JoinedFarmsDetailsPositions(props: {
 
   const exit = useFarmExitAllMutation(
     [props.depositNft],
+    props.poolId,
     toast,
     props.onTxClose,
   )

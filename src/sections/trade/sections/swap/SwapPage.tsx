@@ -15,6 +15,9 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useRemount } from "hooks/useRemount"
+import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
+import { useState } from "react"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
@@ -26,6 +29,7 @@ const SwapApp = createComponent({
     onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
     onDcaSchedule: "gc:tx:scheduleDca" as EventName<CustomEvent<TxInfo>>,
     onDcaTerminate: "gc:tx:terminateDca" as EventName<CustomEvent<TxInfo>>,
+    onNewAssetClick: "gc:external:new" as EventName<CustomEvent<TxInfo>>,
   },
 })
 
@@ -54,9 +58,12 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
+  const [addToken, setAddToken] = useState(false)
+
+  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount(isEvm)
+  const version = useRemount([isEvm, externalTokensStored.length])
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -119,6 +126,7 @@ export function SwapPage() {
           if (r) {
             r.setAttribute("chart", "")
             r.setAttribute("twapOn", "")
+            r.setAttribute("newAssetBtn", "")
           }
         }}
         assetIn={assetIn}
@@ -134,7 +142,14 @@ export function SwapPage() {
         onTxNew={(e) => handleSubmit(e)}
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
+        onNewAssetClick={() => setAddToken(true)}
       />
+      {addToken && (
+        <AddTokenModal
+          css={{ zIndex: 9999 }}
+          onClose={() => setAddToken(false)}
+        />
+      )}
     </SContainer>
   )
 }

@@ -48,12 +48,14 @@ export function ReviewTransactionToast(props: {
     if (isError) {
       if (error instanceof UnknownTransactionState) {
         toastRef.current.unknown({
+          link: props.link,
           title: props.toastMessage?.onError ?? (
             <p>{t("liquidity.reviewTransaction.toast.unknown")}</p>
           ),
         })
       } else {
         toastRef.current.error({
+          link: props.link,
           title: props.toastMessage?.onError ?? (
             <p>{t("liquidity.reviewTransaction.toast.error")}</p>
           ),
@@ -63,6 +65,7 @@ export function ReviewTransactionToast(props: {
 
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
+        link: props.link,
         title: props.toastMessage?.onLoading ?? (
           <p>{t("liquidity.reviewTransaction.toast.pending")}</p>
         ),
