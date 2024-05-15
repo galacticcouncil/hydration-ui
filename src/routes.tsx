@@ -4,6 +4,8 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
+import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
 
@@ -347,7 +349,7 @@ export const routes: Route[] = [
       {
         path: "overview",
         element: (
-          <Suspense>
+          <Suspense fallback={<StatsPageSkeleton />}>
             <StatsOverview />
           </Suspense>
         ),
@@ -355,7 +357,7 @@ export const routes: Route[] = [
       {
         path: "treasury",
         element: (
-          <Suspense>
+          <Suspense fallback={<StatsPageSkeleton />}>
             <StatsPOL />
           </Suspense>
         ),
@@ -363,7 +365,7 @@ export const routes: Route[] = [
       {
         path: "asset",
         element: (
-          <Suspense>
+          <Suspense fallback={<StatsAssetPageSkeleton />}>
             <StatsOmnipoolAsset />
           </Suspense>
         ),
