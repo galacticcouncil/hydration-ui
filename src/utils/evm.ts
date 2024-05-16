@@ -90,4 +90,8 @@ export function getEvmChainById(chainId: number) {
   }
 }
 
+export function getChainByKey(key: string) {
+  return chainsMap.get(key)
+}
+
 export { getEvmAddress, isEvmAddress }

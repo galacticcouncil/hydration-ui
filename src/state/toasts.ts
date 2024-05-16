@@ -23,7 +23,7 @@ type ToastParams = {
   title: ReactElement
   actions?: ReactNode
   persist?: boolean
-  bridge?: boolean
+  bridge?: string
   hideTime?: number
 }
 
@@ -298,6 +298,11 @@ export const useToast = () => {
     return id
   }
 
+  const edit = (id: string, props: Partial<ToastData>) =>
+    store.update(account?.address, (toasts) =>
+      toasts.map((toast) => (toast.id === id ? { ...toast, ...props } : toast)),
+    )
+
   const info = (toast: ToastParams) => add("info", toast)
   const success = (toast: ToastParams) => add("success", toast)
   const error = (toast: ToastParams) => add("error", toast)
@@ -345,5 +350,6 @@ export const useToast = () => {
     loading,
     unknown,
     temporary,
+    edit,
   }
 }

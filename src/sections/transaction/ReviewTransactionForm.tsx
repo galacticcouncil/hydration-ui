@@ -37,6 +37,7 @@ type Props = TxProps & {
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
+    xcallMeta?: Record<string, string>
   }) => void
   onSigned: (signed: SubmittableExtrinsic<"promise">) => void
   onSignError?: (error: unknown) => void
@@ -104,7 +105,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           }
 
           const evmTx = await wallet.signer.sendDispatch(txData)
-          return props.onEvmSigned({ evmTx, tx })
+          return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
         }
 
         const signature = await tx.signAsync(address, {

@@ -14,7 +14,7 @@ export function ReviewTransactionToast(props: {
   isSuccess: boolean
   isLoading: boolean
   error: unknown
-  bridge: boolean | undefined
+  bridge: string | undefined
 }) {
   const toast = useToast()
   const { t } = useTranslation()

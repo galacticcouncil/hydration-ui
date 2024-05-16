@@ -403,5 +403,5 @@ export const QUERY_KEYS = {
   ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
-  bridgeLink: (hash: string) => [QUERY_KEY_PREFIX, "bridgeLink", hash],
+  bridgeLink: (hash: string) => ["bridgeLink", hash],
 } as const

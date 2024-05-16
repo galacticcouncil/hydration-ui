@@ -17,7 +17,13 @@ import { useMountedState } from "react-use"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useToast } from "state/toasts"
-import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
+import {
+  H160,
+  getEvmChainById,
+  getChainByKey,
+  getEvmTxLink,
+  isEvmAccount,
+} from "utils/evm"
 import { getSubscanLinkByType } from "utils/formatting"
 
 type TxMethod = AnyJson & {
@@ -150,15 +156,19 @@ export const useSendEvmTransactionMutation = (
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
+      xcallMeta?: Record<string, string>
     }
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
 
   const { account } = useEvmAccount()
 
-  const sendTx = useMutation(async ({ evmTx }) => {
+  const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       const timeout = setTimeout(
         () => {
@@ -171,6 +181,7 @@ export const useSendEvmTransactionMutation = (
       try {
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
+        setCallMeta(xcallMeta)
         const receipt = await evmTx.wait()
         setTxState("InBlock")
 
@@ -187,11 +198,18 @@ export const useSendEvmTransactionMutation = (
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
   const txLink = txHash && chain ? getEvmTxLink(txHash, chain.key) : ""
 
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge =
+    chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
+
   return {
     ...sendTx,
     txState,
     txLink,
-    bridge: !!chain?.isEvmChain(),
+    bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
