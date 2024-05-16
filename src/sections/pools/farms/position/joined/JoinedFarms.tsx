@@ -64,7 +64,12 @@ export const JoinedFarms = ({ depositNft, poolId }: JoinedFarmsProps) => {
         <MultipleIcons
           size={22}
           icons={joinedFarmsAprs.map((joinedFarmsApr) => ({
-            icon: <AssetLogo id={joinedFarmsApr.assetId} />,
+            icon: (
+              <AssetLogo
+                key={joinedFarmsApr.assetId}
+                id={joinedFarmsApr.assetId}
+              />
+            ),
           }))}
         />
         <Text fs={16} color="white">

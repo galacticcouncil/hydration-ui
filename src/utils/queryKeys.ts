@@ -28,6 +28,7 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   miningPosition: (id: string) => ["miningPosition", id],
+  miningPositionXYK: (id: string) => ["miningPositionXYK", id],
   accountBalances: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -57,10 +58,15 @@ export const QUERY_KEYS = {
     address.toString(),
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
-  allDeposits: [QUERY_KEY_PREFIX, "deposits"],
+  allXYKDeposits: [QUERY_KEY_PREFIX, "allXYKDeposits"],
   omnipoolDeposits: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "omnipoolDeposits",
+    ids.join("."),
+  ],
+  xykDeposits: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "xykDeposits",
     ids.join("."),
   ],
   poolDeposits: (poolId: Maybe<u32 | string>) => [
@@ -68,39 +74,28 @@ export const QUERY_KEYS = {
     "deposits",
     poolId?.toString(),
   ],
-  accountDepositIds: (accountId: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "depositIds",
-    accountId?.toString(),
-  ],
-  globalFarms: (ids: Maybe<{ globalFarmId: u32 }[]>) => [
-    QUERY_KEY_PREFIX,
-    "globalFarms",
-    ids?.map((i) => i.globalFarmId.toString()),
-  ],
-  yieldFarms: (
-    ids: Maybe<
-      {
-        poolId: u32 | string
-        globalFarmId: u32 | string
-        yieldFarmId: u32 | string
-      }[]
-    >,
-  ) => [QUERY_KEY_PREFIX, "yieldFarms", ids],
   activeYieldFarms: (poolId: Maybe<u32 | string>) => [
     "activeYieldFarms",
     poolId?.toString(),
   ],
-  globalFarm: (id: Maybe<u32 | string>) => [
+  activeYieldFarmsXYK: (poolId: Maybe<u32 | string>) => [
+    "activeYieldFarmsXYK",
+    poolId?.toString(),
+  ],
+  globalFarm: (id: string, poolId: string) => [
     QUERY_KEY_PREFIX,
     "globalFarm",
-    id?.toString(),
+    id,
+    poolId,
   ],
-  yieldFarm: (ids: {
-    poolId: Maybe<u32 | string>
-    globalFarmId: Maybe<u32 | string>
-    yieldFarmId: Maybe<u32 | string>
-  }) => [QUERY_KEY_PREFIX, "yieldFarm", ids],
+  globalFarmXYK: (id: string, poolId: string) => [
+    QUERY_KEY_PREFIX,
+    "globalFarmXYK",
+    id,
+    poolId,
+  ],
+  yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
+  yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
   totalLiquidity: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
