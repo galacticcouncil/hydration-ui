@@ -5,6 +5,8 @@ import Skeleton from "react-loading-skeleton"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
+const COMPACT_THRESHOLD = 1000000000
+
 type PieTotalValueProps = {
   title: string
   data: BN
@@ -26,7 +28,11 @@ export const PieTotalValue = ({
       <Text color="brightBlue300">{title}</Text>
       <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
         <Text fs={[20, 42]} font="FontOver">
-          <DisplayValue value={data} isUSD />
+          <DisplayValue
+            value={data}
+            isUSD
+            compact={data.gt(COMPACT_THRESHOLD)}
+          />
         </Text>
       </div>
     </div>
