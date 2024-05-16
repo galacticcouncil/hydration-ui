@@ -39,7 +39,10 @@ type Props = TxProps & {
     tx: SubmittableExtrinsic<"promise">
     xcallMeta?: Record<string, string>
   }) => void
-  onSigned: (signed: SubmittableExtrinsic<"promise">) => void
+  onSigned: (
+    signed: SubmittableExtrinsic<"promise">,
+    xcallMeta?: Record<string, string>,
+  ) => void
   onSignError?: (error: unknown) => void
 }
 
@@ -115,7 +118,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           nonce: -1,
         })
 
-        return props.onSigned(signature)
+        return props.onSigned(signature, props.xcallMeta)
       } catch (error) {
         props.onSignError?.(error)
       }

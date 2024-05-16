@@ -213,6 +213,7 @@ export const useSendEvmTransactionMutation = (
     reset: () => {
       setTxState(null)
       setTxHash("")
+      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -301,18 +302,24 @@ export const useSendTransactionMutation = (
   options: MutationObserverOptions<
     ISubmittableResult,
     unknown,
-    SubmittableExtrinsic<"promise">
+    {
+      tx: SubmittableExtrinsic<"promise">
+      xcallMeta?: Record<string, string>
+    }
   > = {},
 ) => {
   const { api } = useRpcProvider()
   const isMounted = useMountedState()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
 
-  const sendTx = useMutation(async (sign) => {
+  const sendTx = useMutation(async ({ tx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        const unsubscribe = await sign.send(async (result) => {
+        const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
           const timeout = setTimeout(() => {
@@ -323,6 +330,7 @@ export const useSendTransactionMutation = (
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
+            setCallMeta(xcallMeta)
           } else {
             clearTimeout(timeout)
           }
@@ -351,14 +359,21 @@ export const useSendTransactionMutation = (
     ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
     : undefined
 
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge = destChain?.isEvmChain() ? "hydradx" : undefined
+
   return {
     ...sendTx,
     txState,
     txLink,
-    bridge: undefined,
+    bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
+      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -437,7 +452,7 @@ export const useSendTx = () => {
   const boundReferralToast = useBoundReferralToast()
 
   const sendTx = useSendTransactionMutation({
-    onMutate: (tx) => {
+    onMutate: ({ tx }) => {
       boundReferralToast.onLoading(tx)
       setTxType("default")
     },

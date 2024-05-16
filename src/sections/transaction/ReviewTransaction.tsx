@@ -129,9 +129,9 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
-            onSigned={(signed) => {
+            onSigned={(tx, xcallMeta) => {
               props.onSubmitted?.()
-              sendTx(signed)
+              sendTx({ tx, xcallMeta })
             }}
             onPermitDispatched={(permit) => {
               props.onSubmitted?.()
