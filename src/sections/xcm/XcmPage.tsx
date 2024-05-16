@@ -104,7 +104,11 @@ export function XcmPage() {
     const { srcChain } = e.detail
 
     const chain = chainsMap.get(srcChain)
-    const isEvm = chain?.isEvmParachain() || chain?.isEvmChain()
+
+    const isEvm =
+      chain?.key === "acala"
+        ? false
+        : chain?.isEvmParachain() || chain?.isEvmChain()
     const isHydra = chain?.key === "hydradx"
 
     const walletMode = isHydra
