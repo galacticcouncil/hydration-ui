@@ -91,7 +91,7 @@ export const LiquidityPosition = ({
             {assets.isStableSwap(meta) ? (
               <MultipleIcons
                 icons={meta.assets.map((asset: string) => ({
-                  icon: <AssetLogo id={asset} />,
+                  icon: <AssetLogo key={asset} id={asset} />,
                 }))}
               />
             ) : (
