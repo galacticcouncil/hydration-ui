@@ -6,8 +6,8 @@ import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
-import { useTokensBalances } from "api/balances"
+import { useAccountNFTPositions } from "api/deposits"
+import { useAccountBalances } from "api/accountBalances"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation()
@@ -75,26 +75,28 @@ const LiquidityMenuItem = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountNFTPositions()
 
-  const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
-  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+  const balances = useAccountBalances(account?.address)
 
-  const userPositions = useTokensBalances(
-    [...shareTokensId, ...stableswapsId],
-    account?.address,
-  )
+  const isPoolBalances = balances.data?.balances.some((balance) => {
+    if (balance.freeBalance.gt(0)) {
+      const meta = assets.getAsset(balance.id)
+      return meta.isStableSwap || meta.isShareToken
+    }
+    return false
+  })
 
-  const isOmnipoolPositions =
+  const isPositions =
     accountPositions.data?.miningNfts.length ||
     accountPositions.data?.omnipoolNfts.length ||
-    userPositions.some((userPosition) => userPosition.data?.freeBalance.gt(0))
+    isPoolBalances
 
   return (
     <Link
-      to={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      to={isPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
-      key={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      key={isPositions ? LINKS.myLiquidity : item.href}
       data-intersect={item.key}
     >
       {({ isActive }) => (
