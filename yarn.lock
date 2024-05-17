@@ -3066,8 +3066,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@file:../gc-apps/packages/apps":
+"@galacticcouncil/apps@^3.7.4":
   version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.7.4.tgz#cadffbac15cd770d150800ed4b60386127e870ec"
+  integrity sha512-tAjwf9E+oqKbsC5K8ClKE/rNnhgT9w3zOY2QD1Nm4I95MDOl0bdcMpUYCRE+btFRFtnSjeri5XvmVKyNJ9+edg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3145,6 +3147,18 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0.tgz#fa94a03f522ac94094efabe136eee32a364a59eb"
   integrity sha512-zozk6trS3BV+kdd7oKAFhMFQc1yUZU2QNOav1r5tzhT/Cbdz2at17j+to8M9FxOe2kmRtfOwGRRAFnqS5qcysQ==
+  dependencies:
+    "@moonbeam-network/xcm-utils" "1.0.4"
+    "@thi.ng/cache" "^2.1.35"
+    "@wormhole-foundation/sdk-base" "^0.5.2"
+    "@wormhole-foundation/sdk-connect" "^0.5.2"
+    "@wormhole-foundation/sdk-definitions" "^0.5.2"
+    "@wormhole-foundation/sdk-evm" "^0.5.2"
+    "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
+    buffer "^6.0.3"
+
+"@galacticcouncil/xcm-core@file:../gc-sdk/packages/xcm-core":
+  version "1.0.0"
   dependencies:
     "@moonbeam-network/xcm-utils" "1.0.4"
     "@thi.ng/cache" "^2.1.35"
