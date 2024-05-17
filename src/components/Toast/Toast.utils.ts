@@ -138,10 +138,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
                 bridge: "ethereum",
               })
             }
-          } catch (error) {
-            toast.remove(toastData.id)
-            toast.add("unknown", omit(["bridge"], toastData))
-          }
+          } catch (error) {}
         }
 
         return false
