@@ -37,6 +37,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
+  const { featureFlags } = useRpcProvider()
 
   const navigate = useNavigate()
 
@@ -125,8 +126,12 @@ export const WalletAssetsTableActions = (props: Props) => {
     },
   ]
 
+  const allowSetAsPaymentFee = isEvmAccount(account?.address)
+    ? featureFlags.dispatchPermit && couldBeSetAsPaymentFee
+    : couldBeSetAsPaymentFee
+
   const actionItems = [
-    couldBeSetAsPaymentFee
+    allowSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
           icon: <DollarIcon />,
