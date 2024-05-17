@@ -104,7 +104,11 @@ export function XcmPage() {
     const { srcChain } = e.detail
 
     const chain = chainsMap.get(srcChain)
-    const isEvm = chain?.isEvmParachain()
+
+    const isEvm =
+      chain?.key === "acala"
+        ? false
+        : chain?.isEvmParachain() || chain?.isEvmChain()
     const isHydra = chain?.key === "hydradx"
 
     const walletMode = isHydra
@@ -131,6 +135,11 @@ export function XcmPage() {
     search.success && search.data.asset ? search.data.asset : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
+  const blacklist =
+    import.meta.env.VITE_ENV === "production"
+      ? "pendulum,acala-evm"
+      : "pendulum"
+
   return (
     <Page>
       <PageSwitch />
@@ -148,7 +157,7 @@ export function XcmPage() {
           onXcmNew={handleSubmit}
           onWalletChange={handleWalletChange}
           ss58Prefix={ss58Prefix}
-          blacklist="pendulum"
+          blacklist={blacklist}
         />
       </SContainer>
     </Page>
