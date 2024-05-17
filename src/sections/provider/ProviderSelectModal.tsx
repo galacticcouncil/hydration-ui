@@ -17,7 +17,6 @@ export function ProviderSelectModal(props: {
 }) {
   const { setRpcUrl, autoMode, setAutoMode } = useProviderRpcUrlStore()
   const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
-  const [tempAutoMode, setTempAutoMode] = useState(autoMode)
   const { t } = useTranslation()
   const { removeRpc } = useRpcStore()
 
@@ -47,43 +46,39 @@ export function ProviderSelectModal(props: {
           </div>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Text fs={11} color="basic400">
-              {tempAutoMode
+              {autoMode
                 ? t("rpc.change.modal.autoMode.enabled")
                 : t("rpc.change.modal.autoMode.disabled")}
             </Text>
             <Switch
               name="rpc-auto-mode"
-              value={tempAutoMode}
-              onCheckedChange={setTempAutoMode}
+              value={autoMode}
+              onCheckedChange={setAutoMode}
             />
           </div>
         </SSwitchContainer>
 
         <div sx={{ pt: 12 }}>
-          {tempAutoMode ? (
+          {autoMode ? (
             <Button
               variant="primary"
               fullWidth
               onClick={() => {
-                setAutoMode(tempAutoMode)
                 props.onClose()
-                //window.location.reload()
               }}
             >
-              {t("rpc.change.modal.save")}
+              {t("rpc.change.modal.close")}
             </Button>
           ) : (
             <>
               <ProviderSelectForm
                 onSave={(rpcUrl) => {
                   setRpcUrl(rpcUrl)
-                  setAutoMode(tempAutoMode)
-                  props.onClose()
-                  //window.location.reload()
                 }}
                 onRemove={(rpc) => {
                   setRemoveRpcUrl(rpc)
                 }}
+                onClose={props.onClose}
               />
               {!!removeRpcUrl && (
                 <DeleteModal

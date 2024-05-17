@@ -3,7 +3,6 @@ import {
   TransactionRequest,
   Web3Provider,
 } from "@ethersproject/providers"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
 import BigNumber from "bignumber.js"
@@ -19,6 +18,7 @@ import {
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 type PermitMessage = {
   from: string
@@ -197,7 +197,7 @@ export class EthereumSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && evmChains[chain] ? chain : "hydradx"
+    const from = chain && chainsMap.get(chain) ? chain : "hydradx"
 
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {

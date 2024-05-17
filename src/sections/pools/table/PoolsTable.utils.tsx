@@ -76,8 +76,9 @@ const AssetTableName = ({ id }: { id: string }) => {
           icons={iconIds.map((asset) => {
             const meta = assets.getAsset(asset)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : asset
             return {
-              icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+              icon: <AssetLogo key={id} id={id} />,
             }
           })}
         />

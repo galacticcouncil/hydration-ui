@@ -1,9 +1,14 @@
-import { PROVIDERS, useProviderRpcUrlStore } from "api/provider"
+import {
+  PROVIDERS,
+  useProviderData,
+  useProviderRpcUrlStore,
+} from "api/provider"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { Fragment, useState } from "react"
+import { Fragment } from "react"
 
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+//import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { SubstrateApis } from "@galacticcouncil/apps"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,15 +22,16 @@ import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 export type ProviderSelectFormProps = {
   onSave: (rpcUrl: string) => void
   onRemove: (rpcUrl: string) => void
+  onClose: () => void
 }
 
 export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   onRemove,
   onSave,
+  onClose,
 }) => {
+  const { isLoading } = useProviderData()
   const { rpcUrl } = useProviderRpcUrlStore()
-  const activeRpcUrl = rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const [userRpcUrl, setUserRpcUrl] = useState(activeRpcUrl)
   const { t } = useTranslation()
   const { rpcList, addRpc } = useRpcStore()
 
@@ -36,10 +42,8 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
 
   const mutation = useMutation(async (value: FormValues<typeof form>) => {
     try {
-      const provider = await connectWsProvider(value.address)
-
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+      const api = await apiPool.api(value.address)
 
       const relay = await api.query.parachainSystem.validationData()
       const relayParentNumber = relay.unwrap().relayParentNumber
@@ -66,11 +70,12 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
             required: t("wallet.assets.transfer.error.required"),
             validate: {
               duplicate: (value) => {
-                const isDuplicate = rpcList.find(
-                  (rpc) => rpc.url === `wss://${value}`,
-                )
+                const isDuplicate = rpcList.some((rpc) => rpc.url === value)
                 return !isDuplicate || t("rpc.change.modal.errors.duplicate")
               },
+              invalid: (value) =>
+                value !== "wss://" ||
+                t("wallet.assets.transfer.error.required"),
             },
           }}
           render={({
@@ -87,6 +92,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                   size="small"
                   type="submit"
                   isLoading={mutation.isLoading}
+                  disabled={!form.formState.isValid}
                 >
                   {t("add")}
                 </Button>
@@ -96,7 +102,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         />
       </form>
 
-      <SContainer>
+      <SContainer isLoading={isLoading}>
         <SHeader>
           <div css={{ gridArea: "name" }}>
             {t("rpc.change.modal.column.name")}
@@ -119,8 +125,8 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
               <ProviderItem
                 name={provider.name}
                 url={provider.url}
-                isActive={provider.url === userRpcUrl}
-                onClick={() => setUserRpcUrl(provider.url)}
+                isActive={provider.url === rpcUrl}
+                onClick={() => onSave(provider.url)}
               />
               {index + 1 < PROVIDERS.length && (
                 <Separator color="alpha0" opacity={0.06} />
@@ -137,8 +143,8 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                 t("rpc.change.modal.name.label", { index: index + 1 })
               }
               url={rpc.url}
-              isActive={rpc.url === userRpcUrl}
-              onClick={() => setUserRpcUrl(rpc.url)}
+              isActive={rpc.url === rpcUrl}
+              onClick={() => onSave(rpc.url)}
               custom
               onRemove={onRemove}
             />
@@ -149,13 +155,8 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         ))}
       </SContainer>
 
-      <Button
-        variant="primary"
-        fullWidth
-        sx={{ mt: 50 }}
-        onClick={() => onSave(userRpcUrl)}
-      >
-        {t("rpc.change.modal.save")}
+      <Button variant="primary" fullWidth sx={{ mt: 50 }} onClick={onClose}>
+        {t("rpc.change.modal.close")}
       </Button>
     </>
   )

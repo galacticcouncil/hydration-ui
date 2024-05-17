@@ -4,9 +4,13 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
-import { ApiPromise, WsProvider } from "@polkadot/api"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { omit } from "utils/rx"
+//import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { SubstrateApis } from "@galacticcouncil/apps"
+import { useMemo } from "react"
+import { useShallow } from "hooks/useShallow"
+import { pick } from "utils/rx"
+import { ApiOptions } from "@polkadot/api/types"
+import { WsProvider } from "@polkadot/api"
 
 export const PROVIDERS = [
   {
@@ -24,18 +28,26 @@ export const PROVIDERS = [
     env: "production",
   },
   {
+    name: "Dotters",
+    url: "wss://hydradx.paras.dotters.network",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    env: "production",
+  },
+  {
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
   },
+
   {
-    name: "Dotters",
-    url: "wss://hydradx.paras.dotters.network",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
-    env: "production",
+    name: "Testnet",
+    url: "wss://rpc.nice.hydration.cloud",
+    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
+    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    env: ["development"],
   },
   {
     name: "Rococo via GC",
@@ -44,13 +56,6 @@ export const PROVIDERS = [
     squidUrl:
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
-  },
-  {
-    name: "Testnet",
-    url: "wss://rpc.nice.hydration.cloud",
-    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
-    env: ["development"],
   },
   /*{
     name: "Testnet",
@@ -62,29 +67,32 @@ export const PROVIDERS = [
   },*/
 ]
 
+export const PROVIDER_URLS = PROVIDERS.filter((provider) =>
+  typeof provider.env === "string"
+    ? provider.env === import.meta.env.VITE_ENV
+    : provider.env.includes(import.meta.env.VITE_ENV),
+).map(({ url }) => url)
+
 export const useProviderRpcUrlStore = create(
   persist<{
-    rpcUrl?: string
+    rpcUrl: string
     autoMode: boolean
-    autoModeRpcUrl?: string
     setRpcUrl: (rpcUrl: string | undefined) => void
     setAutoMode: (state: boolean) => void
-    setAutoModeRpcUrl: (rpcUrl: string | undefined) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
     (set) => ({
+      rpcUrl: import.meta.env.VITE_PROVIDER_URL,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setAutoMode: (state) => set({ autoMode: state }),
-      setAutoModeRpcUrl: (rpcUrl) => set({ autoModeRpcUrl: rpcUrl }),
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "rpcUrl",
       version: 2.1,
-      partialize: (state) => omit(["autoModeRpcUrl"], state),
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -103,64 +111,22 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-const PROVIDER_CONNECT_TIMEOUT = 5000
-
-const predefinedRpcUrls = PROVIDERS.filter((provider) =>
-  typeof provider.env === "string"
-    ? provider.env === import.meta.env.VITE_ENV
-    : provider.env.includes(import.meta.env.VITE_ENV),
-).map(({ url }) => url)
+export const useActiveRpcUrlList = () => {
+  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  )
+  return autoMode ? PROVIDER_URLS : [rpcUrl]
+}
 
 export const useProviderData = () => {
-  const { autoMode, rpcUrl, setAutoModeRpcUrl } = useProviderRpcUrlStore()
+  const rpcUrlList = useActiveRpcUrlList()
   const displayAsset = useDisplayAssetStore()
 
-  const [activeProvider, setActiveProvider] = useState<WsProvider>()
-
-  const initialRpcUrlList = useRef(
-    autoMode
-      ? predefinedRpcUrls
-      : [rpcUrl ?? import.meta.env.VITE_PROVIDER_URL],
-  )
-
-  const [rpcUrlList, setRpcUrlList] = useState<string[]>(
-    initialRpcUrlList.current,
-  )
-
-  const updateRpcList = useCallback(async (provider: WsProvider) => {
-    await provider?.disconnect()
-    setRpcUrlList((prev) => {
-      const newList = prev.filter((item) => item !== provider?.endpoint)
-      return newList.length ? newList : initialRpcUrlList.current
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!autoMode) return
-    const id = setTimeout(async () => {
-      if (activeProvider && !activeProvider?.isConnected) {
-        console.log("[RPC] timeout", activeProvider.endpoint)
-        updateRpcList(activeProvider)
-      }
-    }, PROVIDER_CONNECT_TIMEOUT)
-
-    return () => clearTimeout(id)
-  }, [activeProvider, autoMode, updateRpcList])
-
   const providerData = useQuery(
-    QUERY_KEYS.provider(rpcUrlList.toString()),
+    QUERY_KEYS.provider(rpcUrlList.join()),
     async () => {
-      /* const apiPool = SubstrateApis.getInstance()
-      
-      const api = await apiPool.api(url) */
-
-      const provider = new WsProvider(rpcUrlList, 500)
-
-      setActiveProvider(provider)
-      const api = await ApiPromise.create({
-        noInitWarn: true,
-        provider,
-      })
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(rpcUrlList)
 
       api.registry.register({
         XykLMDeposit: {
@@ -210,7 +176,6 @@ export const useProviderData = () => {
 
       return {
         api,
-        provider,
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
@@ -218,33 +183,10 @@ export const useProviderData = () => {
       }
     },
     {
-      enabled: !!rpcUrlList,
       refetchOnWindowFocus: false,
       retry: false,
-      onSettled(data, error) {
-        if (error && autoMode && activeProvider) {
-          console.log("[RPC] error", activeProvider.endpoint)
-          updateRpcList(activeProvider)
-        }
-
-        if (data) {
-          console.log("[RPC] connected to", data.provider.endpoint)
-          if (autoMode) {
-            setAutoModeRpcUrl(data.provider.endpoint)
-          }
-        }
-      },
     },
   )
-
-  useEffect(() => {
-    if (activeProvider) {
-      return activeProvider.on("error", () => {
-        if (!activeProvider) return
-        updateRpcList(activeProvider)
-      })
-    }
-  }, [activeProvider, providerData?.data?.api, updateRpcList])
 
   return providerData
 }
@@ -276,10 +218,20 @@ export const useSquidUrl = () => {
 }
 
 export const useActiveProvider = () => {
-  const { rpcUrl, autoMode, autoModeRpcUrl } = useProviderRpcUrlStore()
+  const { data } = useProviderData()
 
-  const preferredRpcUrl = rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const activeRpcUrl = autoMode ? autoModeRpcUrl : preferredRpcUrl
+  const activeRpcUrl = useMemo(() => {
+    let rpcUrl = import.meta.env.VITE_PROVIDER_URL
+    try {
+      // @ts-ignore
+      const options = data?.api?._options as ApiOptions
+      const provider = options?.provider as WsProvider
+      if (provider.endpoint) {
+        rpcUrl = provider.endpoint
+      }
+    } catch (e) {}
+    return rpcUrl
+  }, [data?.api])
 
   return PROVIDERS.find((provider) => provider.url === activeRpcUrl)
 }

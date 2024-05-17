@@ -8,7 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useActiveProvider } from "api/provider"
+import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -63,6 +63,7 @@ export function SwapPage() {
 
   const isEvm = isEvmAccount(account?.address)
   const version = useRemount([isEvm, externalTokensStored.length])
+  const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -119,7 +120,7 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
-        key={`${version}-${activeProvider?.url}`}
+        key={version}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
@@ -129,7 +130,7 @@ export function SwapPage() {
         }}
         assetIn={assetIn}
         assetOut={assetOut}
-        apiAddress={activeProvider?.url}
+        apiAddress={rpcUrlList.join()}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

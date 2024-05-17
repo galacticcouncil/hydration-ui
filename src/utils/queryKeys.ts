@@ -16,7 +16,7 @@ export const QUERY_KEYS = {
     provider,
   ],
   walletEnable: (provider: string | null) => ["web3Enable", provider],
-  bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
+  bestNumber: (ws: string) => [QUERY_KEY_PREFIX, "bestNumber", ws],
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "assetsTable",
@@ -82,8 +82,18 @@ export const QUERY_KEYS = {
     "activeYieldFarmsXYK",
     poolId?.toString(),
   ],
-  globalFarm: (id: string) => [QUERY_KEY_PREFIX, "globalFarm", id],
-  globalFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "globalFarmXYK", id],
+  globalFarm: (id: string, poolId: string) => [
+    QUERY_KEY_PREFIX,
+    "globalFarm",
+    id,
+    poolId,
+  ],
+  globalFarmXYK: (id: string, poolId: string) => [
+    QUERY_KEY_PREFIX,
+    "globalFarmXYK",
+    id,
+    poolId,
+  ],
   yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
   yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
@@ -393,4 +403,5 @@ export const QUERY_KEYS = {
   ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
+  bridgeLink: (hash: string) => ["bridgeLink", hash],
 } as const

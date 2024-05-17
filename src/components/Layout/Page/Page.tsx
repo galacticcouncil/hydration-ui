@@ -13,7 +13,6 @@ import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
 import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
 import { useRpcProvider } from "providers/rpcProvider"
-import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 type Props = {
   className?: string
@@ -53,7 +52,6 @@ export const Page = ({
               <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
             )}
             <SPageInner className={className}>{children}</SPageInner>
-            <ProviderSelectButton />
           </SPageContent>
           <MobileNavBar />
         </div>

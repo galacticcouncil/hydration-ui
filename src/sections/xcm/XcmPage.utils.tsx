@@ -1,12 +1,15 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { isEvmAccount } from "utils/evm"
-import { XCall, SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
+//import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { SubstrateApis } from "@galacticcouncil/apps"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
+import { isAnyParachain } from "utils/helpers"
 
 export const HYDRADX_CHAIN_KEY = "hydradx"
 export const DEFAULT_NATIVE_CHAIN = "polkadot"
-export const DEFAULT_EVM_CHAIN = "moonbeam"
+export const DEFAULT_EVM_CHAIN = "ethereum"
 export const DEFAULT_DEST_CHAIN = HYDRADX_CHAIN_KEY
 
 export function getDefaultSrcChain(address?: string) {
@@ -17,24 +20,27 @@ export async function getSubmittableExtrinsic(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
   const { srcChain } = meta ?? {}
+
   const chain = chainsMap.get(srcChain)
 
-  const apiPool = SubstrateApis.getInstance()
-  const api = await apiPool.api(chain?.ws ?? "")
+  if (chain && isAnyParachain(chain)) {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(chain?.ws ?? "")
 
-  let tx: SubmittableExtrinsic | undefined
-  try {
-    tx = api.tx(transaction.hex)
-  } catch {}
+    let tx: SubmittableExtrinsic | undefined
+    try {
+      tx = api.tx(transaction.hex)
+    } catch {}
 
-  return tx
+    return tx
+  }
 }
 
 export function getXCall(txInfo: TxInfo) {
   const { transaction, meta } = txInfo
 
   return {
-    xcall: transaction.get<XCall>(),
+    xcall: transaction.get<XCallEvm>(),
     xcallMeta: meta,
   }
 }

@@ -4,6 +4,7 @@ import { ResponsiveValue } from "utils/responsive"
 import { Icon, IconProps } from "components/Icon/Icon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { isAnyParachain } from "utils/helpers"
 
 const chains = Array.from(chainsMap.values())
 
@@ -28,7 +29,10 @@ export const MultipleIcons: FC<DualAssetIconsProps> = ({
 
     return assetProps.map(
       ({ parachainId }) =>
-        !!chains.find((chain) => chain.parachainId === Number(parachainId)),
+        !!chains.find(
+          (chain) =>
+            isAnyParachain(chain) && chain.parachainId === Number(parachainId),
+        ),
     )
   }, [assets, icons])
 

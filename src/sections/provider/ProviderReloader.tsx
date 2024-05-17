@@ -1,15 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
 import { Fragment, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { autoMode, rpcUrl, autoModeRpcUrl } = useProviderRpcUrlStore()
-  const selectedRpc = autoMode ? autoModeRpcUrl : rpcUrl
-  const rpcVersion = useRemount([selectedRpc ?? ""])
+  const rpcUrlList = useActiveRpcUrlList()
+  const rpcVersion = useRemount(rpcUrlList)
   const prevRpcVersion = usePrevious(rpcVersion)
   const queryClient = useQueryClient()
 
@@ -18,9 +18,8 @@ export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
   useEffect(() => {
     const prev = prevRpcVersion ?? 0
     const curr = rpcVersion ?? 0
-    const isInitialAutoModeVersion = autoMode ? prev === 0 : false
 
-    const shouldReset = !isInitialAutoModeVersion && curr > prev
+    const shouldReset = curr > prev
 
     if (shouldReset) {
       queryClient.clear()
@@ -28,7 +27,12 @@ export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
         setVersion((prev) => prev + 1)
       })
     }
-  }, [autoMode, prevRpcVersion, queryClient, rpcVersion, selectedRpc])
+  }, [prevRpcVersion, queryClient, rpcVersion])
 
-  return <Fragment key={`root-${version}`}>{children}</Fragment>
+  return (
+    <>
+      <Fragment key={`root-${version}`}>{children}</Fragment>
+      <ProviderSelectButton />
+    </>
+  )
 }

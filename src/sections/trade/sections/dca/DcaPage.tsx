@@ -6,7 +6,7 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
-import { useActiveProvider } from "api/provider"
+import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
@@ -39,6 +39,7 @@ export function DcaPage() {
   } = useAccountCurrency(isLoaded ? account?.address : "")
   const { stableCoinId } = useDisplayAssetStore()
 
+  const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
@@ -86,11 +87,10 @@ export function DcaPage() {
   return (
     <SContainer>
       <DcaApp
-        key={activeProvider?.url}
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={activeProvider?.url}
+        apiAddress={rpcUrlList.join()}
         assetIn={!isLoading ? assetInDefault : ""}
         assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}

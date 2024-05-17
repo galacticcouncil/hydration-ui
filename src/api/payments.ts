@@ -12,6 +12,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcountAssets } from "api/assetDetails"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -102,15 +103,24 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
 }
 
 export const useAccountFeePaymentAssets = () => {
+  const { assets, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const accountAssets = useAcountAssets(account?.address)
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
   const allowedFeePaymentAssetsIds = useMemo(() => {
+    if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
+      const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
+      return uniqBy(
+        identity,
+        [evmNativeAssetId, feePaymentAssetId].filter(isNotNil),
+      )
+    }
+
     const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
-  }, [accountAssets, feePaymentAssetId])
+  }, [featureFlags, account?.address, accountAssets, assets, feePaymentAssetId])
 
   const acceptedFeePaymentAssets = useAcceptedCurrencies(
     allowedFeePaymentAssetsIds,
