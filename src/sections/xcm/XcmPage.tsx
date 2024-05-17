@@ -24,7 +24,6 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { PageSwitch } from "sections/xcm/components/PageSwitch"
 import { genesisHashToChain } from "utils/helpers"
 
 type WalletChangeDetail = {
@@ -142,7 +141,6 @@ export function XcmPage() {
 
   return (
     <Page>
-      <PageSwitch />
       <SContainer>
         <XcmApp
           ref={ref}
