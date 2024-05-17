@@ -134,10 +134,7 @@ export function XcmPage() {
     search.success && search.data.asset ? search.data.asset : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist =
-    import.meta.env.VITE_ENV === "production"
-      ? "pendulum,acala-evm"
-      : "pendulum"
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
 
   return (
     <Page>
