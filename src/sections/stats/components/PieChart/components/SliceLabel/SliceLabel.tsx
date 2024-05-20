@@ -41,7 +41,7 @@ export const SliceLabel = ({
         <MultipleIcons
           size={[20, 36]}
           icons={iconIds.map((id) => ({
-            icon: <AssetLogo id={id} />,
+            icon: <AssetLogo key={id} id={id} />,
           }))}
         />
       )}

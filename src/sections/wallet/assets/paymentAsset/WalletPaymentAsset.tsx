@@ -8,10 +8,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useEditFeePaymentAsset } from "sections/transaction/ReviewTransactionForm.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
 
 export const WalletPaymentAsset = () => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const { data: accountCurrencyId } = useAccountCurrency(account?.address)
   const accountCurrencyMeta = accountCurrencyId
@@ -33,6 +34,10 @@ export const WalletPaymentAsset = () => {
 
   const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
 
+  if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
+    return null
+  }
+
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
       <Text sx={{ opacity: 0.6 }} fs={14} lh={14}>
@@ -42,7 +47,7 @@ export const WalletPaymentAsset = () => {
         <MultipleIcons
           size={18}
           icons={iconIds.map((asset) => ({
-            icon: <AssetLogo id={asset} />,
+            icon: <AssetLogo key={asset} id={asset} />,
           }))}
         />
         <Text fs={14} lh={14} font="ChakraPetchSemiBold">

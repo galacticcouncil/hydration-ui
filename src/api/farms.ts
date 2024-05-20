@@ -139,8 +139,8 @@ export function useGlobalFarms(ids: FarmIds[]) {
 
       return {
         queryKey: isXYK
-          ? QUERY_KEYS.globalFarmXYK(globalFarmId)
-          : QUERY_KEYS.globalFarm(globalFarmId),
+          ? QUERY_KEYS.globalFarmXYK(globalFarmId, poolId)
+          : QUERY_KEYS.globalFarm(globalFarmId, poolId),
         queryFn: async () => {
           const farm = await getGlobalFarm(api, globalFarmId, isXYK)()
           return { farm, poolId }

@@ -104,9 +104,14 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
             <div sx={{ flex: "row", justify: "space-between" }}>
               <div sx={{ flex: "row", gap: 7, align: "center" }}>
                 <MultipleIcons
-                  icons={assetsMeta.map((asset: TAsset) => ({
-                    icon: <AssetLogo id={asset.id} />,
-                  }))}
+                  icons={assetsMeta.map((asset: TAsset) => {
+                    const isBond = assets.isBond(asset)
+                    const id = isBond ? asset.assetId : asset.id
+
+                    return {
+                      icon: <AssetLogo key={id} id={id} />,
+                    }
+                  })}
                 />
 
                 <Text fs={[14, 18]} color={["white", "basic100"]}>

@@ -13,6 +13,8 @@ import {
   AssetsTableData,
   useLockedValues,
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
 
 const chains = Array.from(chainsMap.values())
 
@@ -30,8 +32,10 @@ export const WalletAssetsTableDetails = ({
     const assetDetails = assets.getAsset(id)
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails.parachainId),
+    ) as AnyParachain
 
     return {
       chain: chain?.key,
