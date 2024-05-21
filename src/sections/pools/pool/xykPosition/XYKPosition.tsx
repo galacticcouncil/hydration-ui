@@ -106,11 +106,10 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 <MultipleIcons
                   icons={assetsMeta.map((asset: TAsset) => {
                     const isBond = assets.isBond(asset)
+                    const id = isBond ? asset.assetId : asset.id
 
                     return {
-                      icon: (
-                        <AssetLogo id={isBond ? asset.assetId : asset.id} />
-                      ),
+                      icon: <AssetLogo key={id} id={id} />,
                     }
                   })}
                 />

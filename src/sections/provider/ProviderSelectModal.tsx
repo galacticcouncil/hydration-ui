@@ -14,7 +14,7 @@ import { useMutation } from "@tanstack/react-query"
 import { connectWsProvider } from "./ProviderSelectModal.utils"
 import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 import { DeleteModal } from "./components/DeleteModal/DeleteModal"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 export function ProviderSelectModal(props: {
   open: boolean

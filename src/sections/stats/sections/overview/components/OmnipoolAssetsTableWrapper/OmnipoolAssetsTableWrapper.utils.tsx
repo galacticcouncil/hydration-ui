@@ -110,7 +110,7 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
             <MultipleIcons
               size={[26, 30]}
               icons={row.original.iconIds.map((id) => ({
-                icon: <AssetLogo id={id} />,
+                icon: <AssetLogo key={id} id={id} />,
               }))}
             />
           )}
@@ -145,11 +145,16 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       id: "volume",
       header: t("stats.overview.table.assets.header.volume"),
       sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
-      cell: ({ row }) => (
-        <Text color="white" fs={14}>
-          <DisplayValue value={row.original.volume} isUSD />
-        </Text>
-      ),
+      cell: ({ row }) => {
+        if (row.original.isLoadingVolume) {
+          return <CellSkeleton />
+        }
+        return (
+          <Text color="white" fs={14}>
+            <DisplayValue value={row.original.volume} isUSD />
+          </Text>
+        )
+      },
     }),
     display({
       id: "apy",

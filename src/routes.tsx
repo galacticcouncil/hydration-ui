@@ -18,7 +18,6 @@ import { ReferralsWrapper } from "sections/referrals/ReferralsPage"
 import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
 import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
-import { BridgePage } from "sections/xcm/BridgePage"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
@@ -116,10 +115,6 @@ export const routes = [
   {
     path: "cross-chain",
     element: <XcmPage />,
-  },
-  {
-    path: "bridge",
-    element: <BridgePage />,
   },
   {
     path: "stats",
