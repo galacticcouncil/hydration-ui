@@ -1,10 +1,5 @@
-import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-} from "@galacticcouncil/math-omnipool"
 import { u32 } from "@polkadot/types"
 import { useTokensBalances } from "api/balances"
-import { useApiIds } from "api/consts"
 import { useOmniPositionIds, useUserDeposits } from "api/deposits"
 import {
   OmnipoolPosition,
@@ -14,22 +9,14 @@ import {
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { BN_10, BN_NAN } from "utils/constants"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
-import { normalizeBigNumber } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
+import { calculatePositionLiquidity } from "utils/omnipool"
+import { BN_0 } from "utils/constants"
 
-export const useAllUserDepositShare = ({
-  address,
-}: {
-  address?: string
-} = {}) => {
+export const useOmnipoolDepositValues = (depositIds: string[]) => {
   const { assets } = useRpcProvider()
-  const deposits = useUserDeposits(address)
-
-  const depositIds = deposits.map((deposit) => deposit.id) ?? []
-
-  const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolAssetIds =
     omnipoolAssets.data?.map((asset) => asset.id.toString()) ?? []
@@ -38,9 +25,7 @@ export const useAllUserDepositShare = ({
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
-  const lrnaMeta = apiIds.data?.hubId
-    ? assets.getAsset(apiIds.data.hubId)
-    : undefined
+  const lrnaMeta = assets.hub
 
   const positionIds = useOmniPositionIds(depositIds ?? [])
 
@@ -49,10 +34,9 @@ export const useAllUserDepositShare = ({
   )
 
   const spotPrices = useDisplayPrices(omnipoolAssetIds)
-  const lrnaSp = useDisplayPrice(apiIds.data?.hubId ?? "")
+  const lrnaSp = useDisplayPrice(lrnaMeta.id)
 
   const queries = [
-    apiIds,
     omnipoolAssets,
     lrnaSp,
     spotPrices,
@@ -90,62 +74,25 @@ export const useAllUserDepositShare = ({
           meta &&
           omnipoolAsset?.data &&
           position.data &&
-          lrnaMeta &&
           spotPrice &&
           lrnaSp.data
         ) {
-          let lernaOutResult = "-1"
-          let liquidityOutResult = "-1"
-
-          const [nom, denom] =
-            position.data.price.map((n) => new BN(n.toString())) ?? []
-          const price = nom.div(denom)
-          const positionPrice = price.times(BN_10.pow(18))
-
-          const params: Parameters<typeof calculate_liquidity_out> = [
-            omnipoolBalance.balance.toString(),
-            omnipoolAsset.data.hubReserve.toString(),
-            omnipoolAsset.data.shares.toString(),
-            position.data.amount.toString(),
-            position.data.shares.toString(),
-            positionPrice.toFixed(0),
-            position.data.shares.toString(),
-            "0", // fee zero
-          ]
-
-          lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
-          liquidityOutResult = calculate_liquidity_out.apply(this, params)
-
-          const lrnaDp = BN_10.pow(lrnaMeta.decimals)
-          const lrna =
-            lernaOutResult !== "-1"
-              ? new BN(lernaOutResult).div(lrnaDp)
-              : BN_NAN
-
-          const valueDp = BN_10.pow(meta.decimals)
-          const value =
-            liquidityOutResult !== "-1"
-              ? new BN(liquidityOutResult).div(valueDp)
-              : BN_NAN
-
-          let valueDisplay = BN_NAN
-
-          if (liquidityOutResult !== "-1" && spotPrice) {
-            valueDisplay = value.times(spotPrice.spotPrice)
-
-            if (lrna.gt(0)) {
-              valueDisplay = !lrnaSp
-                ? BN_NAN
-                : valueDisplay.plus(lrna.times(lrnaSp.data.spotPrice))
-            }
-          }
-
-          const providedAmount = normalizeBigNumber(
-            position.data.amount,
-          ).shiftedBy(-1 * meta.decimals)
-          const providedAmountDisplay = spotPrice?.spotPrice
-            ? providedAmount.times(spotPrice.spotPrice)
-            : BN_NAN
+          const {
+            lrna,
+            value,
+            valueDisplay,
+            providedAmount,
+            providedAmountDisplay,
+          } = calculatePositionLiquidity({
+            position: position.data,
+            omnipoolBalance: omnipoolBalance.balance,
+            omnipoolHubReserve: omnipoolAsset.data.hubReserve,
+            omnipoolShares: omnipoolAsset.data.shares,
+            lrnaSpotPrice: lrnaSp.data.spotPrice,
+            valueSpotPrice: spotPrice.spotPrice,
+            lrnaDecimals: lrnaMeta.decimals,
+            assetDecimals: meta.decimals,
+          })
 
           const index = position.data?.assetId.toString()
 
@@ -203,11 +150,61 @@ export const useAllUserDepositShare = ({
 }
 
 export const useDepositShare = (poolId: u32 | string, depositNftId: string) => {
-  const deposits = useAllUserDepositShare()
+  const deposits = useAllOmnipoolDeposits()
 
   const deposit = deposits.data[poolId.toString()]?.find(
     (deposit) => deposit.depositId === depositNftId,
   )
 
   return { data: deposit, isLoading: deposits.isLoading }
+}
+
+export const useAllOmnipoolDeposits = (address?: string) => {
+  const { omnipoolDeposits } = useUserDeposits(address)
+
+  return useOmnipoolDepositValues(omnipoolDeposits.map((deposit) => deposit.id))
+}
+
+export const useAllXYKDeposits = (address?: string) => {
+  const { xykDeposits } = useUserDeposits(address)
+
+  return useXYKDepositValues(xykDeposits)
+}
+
+export const useAllFarmDeposits = (address?: string) => {
+  const omnipoolDepositValues = useAllOmnipoolDeposits(address)
+  const xykDepositValues = useAllXYKDeposits(address)
+
+  const isLoading =
+    omnipoolDepositValues.isLoading || xykDepositValues.isLoading
+
+  return {
+    isLoading,
+    omnipool: omnipoolDepositValues.data,
+    xyk: xykDepositValues.data,
+  }
+}
+
+export const useFarmDepositsTotal = (address?: string) => {
+  const { isLoading, omnipool, xyk } = useAllFarmDeposits(address)
+
+  const total = useMemo(() => {
+    let poolsTotal = BN_0
+
+    for (const poolId in omnipool) {
+      const poolTotal = omnipool[poolId].reduce((memo, share) => {
+        return memo.plus(share.valueDisplay)
+      }, BN_0)
+      poolsTotal = poolsTotal.plus(poolTotal)
+    }
+
+    const xykTotal = xyk.reduce((memo, deposit) => {
+      if (deposit.amountUSD) return memo.plus(deposit.amountUSD)
+      return memo
+    }, BN_0)
+
+    return poolsTotal.plus(xykTotal)
+  }, [omnipool, xyk])
+
+  return { isLoading: isLoading, value: total }
 }

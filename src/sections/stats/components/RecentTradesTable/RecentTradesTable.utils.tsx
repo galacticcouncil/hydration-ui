@@ -125,7 +125,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <MultipleIcons
                 size={18}
                 icons={iconInIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
+                  icon: <AssetLogo key={id} id={id} />,
                 }))}
               />
             )}
@@ -147,7 +147,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <MultipleIcons
                 size={18}
                 icons={iconOutIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
+                  icon: <AssetLogo key={id} id={id} />,
                 }))}
               />
             )}

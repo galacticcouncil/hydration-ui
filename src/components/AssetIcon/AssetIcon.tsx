@@ -2,6 +2,7 @@ import * as React from "react"
 import { createComponent } from "@lit-labs/react"
 import {
   AssetId,
+  AssetBadge,
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
@@ -10,12 +11,16 @@ import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
 
 const EXTERNAL_ASSETS_WHITELIST = [
-  // DED
-  { id: "30", origin: 1000 },
   // PINK
   { id: "23", origin: 1000 },
+  // STINK
+  { id: "42069", origin: 1000 },
+  // WUD
+  { id: "31337", origin: 1000 },
 ]
 
 const chains = Array.from(chainsMap.values())
@@ -29,6 +34,12 @@ export const UigcAssetPlaceholder = createComponent({
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
   elementClass: AssetId,
+  react: React,
+})
+
+export const UigcAssetBadge = createComponent({
+  tagName: "uigc-asset-badge",
+  elementClass: AssetBadge,
   react: React,
 })
 
@@ -70,8 +81,10 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     const assetDetails = id ? assets.getAsset(id) : undefined
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails?.parachainId),
+    ) as AnyParachain
 
     const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
       (item) =>
@@ -79,12 +92,16 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         item.origin === chain?.parachainId,
     )
 
-    const displayWarning = assetDetails?.isExternal && !isWhitelisted
+    const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
+      ? isWhitelisted
+        ? "warning"
+        : "danger"
+      : ""
 
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
-      displayWarning,
+      badgeVariant,
     }
   }, [assets, id])
 
@@ -98,12 +115,15 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         }}
         symbol={asset.symbol}
         chain={asset?.chain}
-        warning={
-          asset?.displayWarning
-            ? t("wallet.addToken.tooltip.warning")
-            : undefined
-        }
-      />
+      >
+        {asset.badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={asset.badgeVariant}
+            text={t(`wallet.addToken.tooltip.${asset.badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
 
   return (

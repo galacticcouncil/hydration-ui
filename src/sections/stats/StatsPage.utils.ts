@@ -63,7 +63,6 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     omnipoolAssets,
     apiIds,
     uniques,
-    volumes,
     tvls,
     ...spotPrices,
     ...positions,
@@ -75,7 +74,6 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     if (
       !omnipoolAssets.data ||
       !apiIds.data ||
-      !volumes.data ||
       !tvls.data ||
       spotPrices.some((q) => !q.data) ||
       omnipoolAssetBalances.some((q) => !q.data) ||
@@ -204,6 +202,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         price: spotPrice,
         fee,
         isLoadingFee: fees.isInitialLoading,
+        isLoadingVolume: volumes.isInitialLoading,
       }
     })
     return rows
@@ -218,6 +217,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     spotPrices,
     tvls.data,
     volumes.data,
+    volumes.isInitialLoading,
   ])
     .filter(isNotNil)
     .sort((assetA, assetB) => {

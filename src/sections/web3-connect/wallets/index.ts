@@ -1,9 +1,4 @@
-import {
-  SubscriptionFn,
-  Wallet,
-  WalletAccount,
-  getWallets,
-} from "@talismn/connect-wallets"
+import { SubscriptionFn, Wallet, getWallets } from "@talismn/connect-wallets"
 
 import { ExternalWallet } from "./ExternalWallet"
 import { MetaMask } from "./MetaMask"
@@ -12,6 +7,7 @@ import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
+import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
 
 const EVM_ENABLED = Boolean(
   import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
@@ -22,9 +18,11 @@ export enum WalletProviderType {
   Talisman = "talisman",
   TalismanEvm = "talisman-evm",
   SubwalletJS = "subwallet-js",
-  Enkrypt = "enkrypt",
+  SubwalletEvm = "subwallet-evm",
   PolkadotJS = "polkadot-js",
   NovaWallet = "nova-wallet",
+  Phantom = "phantom",
+  Enkrypt = "enkrypt",
   WalletConnect = "walletconnect",
   ExternalWallet = "external",
 }
@@ -59,16 +57,34 @@ const talisman: Wallet = new TalismanEvm({
     WalletProviderType.TalismanEvm,
   ),
 })
+const subwallet: Wallet = new SubWalletEvm({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.SubwalletEvm,
+  ),
+})
+
 const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
-const walletConnect: Wallet = new WalletConnect()
+const walletConnect: Wallet = new WalletConnect({
+  onModalClose: (session) => {
+    if (!session) {
+      const state = useWeb3ConnectStore.getState()
+      state.disconnect()
+      state.toggle()
+    }
+  },
+  onSesssionDelete: () => {
+    const state = useWeb3ConnectStore.getState()
+    state.disconnect()
+  },
+})
 
 const externalWallet: Wallet = new ExternalWallet()
 
 export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
-  ...(EVM_ENABLED ? [metaMask, talisman] : []),
+  ...(EVM_ENABLED ? [metaMask, talisman, subwallet] : []),
   ...getWallets(),
   novaWallet,
   walletConnect,

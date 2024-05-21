@@ -7,13 +7,17 @@ import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useFarmExitAllMutation = (
   depositNfts: TMiningNftPosition[],
+  poolId: string,
   toast: ToastMessage,
   onClose?: () => void,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const queryClient = useQueryClient()
+
+  const meta = assets.getAsset(poolId)
+  const isXYK = assets.isShareToken(meta)
 
   return useMutation(
     async () => {
@@ -21,10 +25,16 @@ export const useFarmExitAllMutation = (
         depositNfts
           ?.map((record) => {
             return record.data.yieldFarmEntries.map((entry) => {
-              return api.tx.omnipoolLiquidityMining.withdrawShares(
-                record.id,
-                entry.yieldFarmId,
-              )
+              return isXYK
+                ? api.tx.xykLiquidityMining.withdrawShares(
+                    record.id,
+                    entry.yieldFarmId,
+                    { assetIn: meta.assets[0], assetOut: meta.assets[1] },
+                  )
+                : api.tx.omnipoolLiquidityMining.withdrawShares(
+                    record.id,
+                    entry.yieldFarmId,
+                  )
             })
           })
           .flat(2) ?? []
@@ -43,6 +53,9 @@ export const useFarmExitAllMutation = (
     },
     {
       onSuccess: () => {
+        queryClient.refetchQueries(
+          QUERY_KEYS.tokenBalance(meta.id, account?.address),
+        )
         queryClient.refetchQueries(
           QUERY_KEYS.accountOmnipoolPositions(account?.address),
         )

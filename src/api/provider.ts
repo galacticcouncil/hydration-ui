@@ -4,7 +4,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 export const PROVIDERS = [
   {
@@ -152,6 +152,7 @@ export const useProviderData = (rpcUrl: string) => {
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
+        poolService: assets.poolService,
       }
     },
     { refetchOnWindowFocus: false },

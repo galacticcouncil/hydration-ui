@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { SContainer, SIcon, SRow } from "./FarmDetailsCard.styled"
 import { FillBar } from "components/FillBar/FillBar"
-import { getFloatingPointAmount } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
@@ -120,11 +120,11 @@ export const FarmDetailsCard = ({
               t={t}
               i18nKey="farms.details.card.distribution"
               tOptions={{
-                distributed: getFloatingPointAmount(
+                distributed: scaleHuman(
                   apr.data.distributedRewards,
-                  12,
+                  asset.decimals,
                 ),
-                max: getFloatingPointAmount(apr.data.maxRewards, 12),
+                max: scaleHuman(apr.data.maxRewards, asset.decimals),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -155,10 +155,7 @@ export const FarmDetailsCard = ({
                 css={{ justifySelf: "end" }}
               >
                 {t("farms.details.card.lockedShares.value", {
-                  value: getFloatingPointAmount(
-                    depositNft.data.shares,
-                    assetMeta.decimals,
-                  ),
+                  value: scaleHuman(depositNft.data.shares, assetMeta.decimals),
                 })}
               </GradientText>
             </SRow>

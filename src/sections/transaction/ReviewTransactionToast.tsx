@@ -14,6 +14,7 @@ export function ReviewTransactionToast(props: {
   isSuccess: boolean
   isLoading: boolean
   error: unknown
+  bridge: string | undefined
 }) {
   const toast = useToast()
   const { t } = useTranslation()
@@ -31,7 +32,7 @@ export function ReviewTransactionToast(props: {
   }, [props.onClose, props.id])
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && !props.bridge) {
       // toast should be still present, even if ReviewTransaction is unmounted
       toastRef.current.success({
         title: props.toastMessage?.onSuccess ?? (
@@ -48,12 +49,14 @@ export function ReviewTransactionToast(props: {
     if (isError) {
       if (error instanceof UnknownTransactionState) {
         toastRef.current.unknown({
+          link: props.link,
           title: props.toastMessage?.onError ?? (
             <p>{t("liquidity.reviewTransaction.toast.unknown")}</p>
           ),
         })
       } else {
         toastRef.current.error({
+          link: props.link,
           title: props.toastMessage?.onError ?? (
             <p>{t("liquidity.reviewTransaction.toast.error")}</p>
           ),
@@ -63,16 +66,27 @@ export function ReviewTransactionToast(props: {
 
     if (isLoading) {
       toRemoveId = toastRef.current.loading({
+        link: props.link,
         title: props.toastMessage?.onLoading ?? (
           <p>{t("liquidity.reviewTransaction.toast.pending")}</p>
         ),
+        bridge: props.bridge || undefined,
       })
     }
 
     return () => {
-      if (toRemoveId) toastRef.current.remove(toRemoveId)
+      if (toRemoveId && !props.bridge) toastRef.current.remove(toRemoveId)
     }
-  }, [t, props.toastMessage, isError, error, isSuccess, isLoading, props.link])
+  }, [
+    t,
+    props.toastMessage,
+    isError,
+    error,
+    isSuccess,
+    isLoading,
+    props.link,
+    props.bridge,
+  ])
 
   return null
 }

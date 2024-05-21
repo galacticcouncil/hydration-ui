@@ -113,7 +113,7 @@ export type TStableSwap = TAssetCommon & {
 export type TShareToken = TAssetCommon & {
   assetType: "ShareToken"
   assets: string[]
-  poolAddress: string | undefined
+  poolAddress: string
 }
 
 export type TAsset = TToken | TBond | TStableSwap | TShareToken
@@ -161,13 +161,19 @@ export const getAssets = async (api: ApiPromise) => {
     rawAssetsData,
     rawAssetsLocations,
     hubAssetId,
+    poolAddresses,
+    xykPoolAssets,
     isReferralsEnabled,
+    isDispatchPermitEnabled,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
     api.query.assetRegistry.assetLocations.entries(),
     api.consts.omnipool.hubAssetId,
+    api.query.xyk.shareToken.entries(),
+    api.query.xyk.poolAssets.entries(),
     api.query.referrals,
+    api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
@@ -193,7 +199,7 @@ export const getAssets = async (api: ApiPromise) => {
       //@ts-ignore
       const isExternal = assetType === "External"
       //@ts-ignore
-      const isSufficient = data.isSufficient.toPrimitive()
+      const isSufficient = data.isSufficient?.toPrimitive() ?? false
 
       let meta
       if (rawAssetsMeta) {
@@ -369,7 +375,6 @@ export const getAssets = async (api: ApiPromise) => {
           stableswap.push(asset)
         }
       } else if (isShareToken) {
-        const poolAddresses = await api.query.xyk.shareToken.entries()
         const poolAddress = poolAddresses
           .find(
             (poolAddress) => poolAddress[1].toString() === assetCommon.id,
@@ -377,16 +382,21 @@ export const getAssets = async (api: ApiPromise) => {
           .args[0].toString()
 
         if (poolAddress) {
-          const poolAssets = await api.query.xyk.poolAssets(poolAddress)
-          const assets = poolAssets
-            .unwrap()
-            .map((poolAsset) => poolAsset.toString())
+          const poolAssets = xykPoolAssets.find(
+            (xykPool) => xykPool[0].args[0].toString() === poolAddress,
+          )?.[1]
 
-          shareTokensRaw.push({
-            ...assetCommon,
-            assets,
-            poolAddress,
-          })
+          if (poolAssets) {
+            const assets = poolAssets
+              .unwrap()
+              .map((poolAsset) => poolAsset.toString())
+
+            shareTokensRaw.push({
+              ...assetCommon,
+              assets,
+              poolAddress,
+            })
+          }
         }
       } else if (isExternal) {
         const location = rawAssetsLocations.find(
@@ -432,6 +442,8 @@ export const getAssets = async (api: ApiPromise) => {
 
   const shareTokens = shareTokensRaw.reduce<Array<TShareToken>>(
     (acc, shareToken) => {
+      if (!shareToken.assets) return acc
+
       const [assetAId, assetBId] = shareToken.assets
 
       const assetA = [...tokens, ...bonds, ...external].find(
@@ -441,9 +453,9 @@ export const getAssets = async (api: ApiPromise) => {
         (token) => token.id === assetBId,
       ) as TToken
 
-      const isValdiTokens = assetA?.name && assetB?.name
+      const isValidTokens = assetA?.name && assetB?.name
 
-      if (isValdiTokens) {
+      if (isValidTokens) {
         const assetDecimal =
           Number(assetA.id) > Number(assetB.id) ? assetB : assetA
 
@@ -494,9 +506,11 @@ export const getAssets = async (api: ApiPromise) => {
       hub,
       rawTradeAssets,
     },
+    poolService,
     tradeRouter,
     featureFlags: {
       referrals: !!isReferralsEnabled,
+      dispatchPermit: !!isDispatchPermitEnabled,
     },
   }
 }
