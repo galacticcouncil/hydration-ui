@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { isJson } from "utils/helpers"
@@ -40,12 +40,11 @@ const getPendulumAssetId = (assetId: string) => {
 }
 
 export const getAssetHubAssets = async () => {
-  const parachain = chainsMap.get("assethub")
+  const provider = chainsMap.get("assethub") as Parachain
 
   try {
-    if (parachain) {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(parachain.ws)
+    if (provider) {
+      const api = await provider.api
 
       const dataRaw = await api.query.assets.metadata.entries()
 
@@ -61,10 +60,10 @@ export const getAssetHubAssets = async () => {
           symbol: data.symbol.toHuman() as string,
           // @ts-ignore
           name: data.name.toHuman() as string,
-          origin: parachain.parachainId,
+          origin: provider.parachainId,
         }
       })
-      return { data, id: parachain.parachainId }
+      return { data, id: provider.parachainId }
     }
   } catch (e) {}
 }

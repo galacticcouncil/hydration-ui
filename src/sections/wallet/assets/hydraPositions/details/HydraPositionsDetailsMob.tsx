@@ -40,7 +40,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           {row.balances
             ?.map((balance) =>
               t("value.tokenWithSymbol", {
-                value: balance.balanceHuman,
+                value: balance.amount,
                 symbol: balance.symbol,
               }),
             )

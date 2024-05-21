@@ -77,13 +77,20 @@ export const useOrdersTable = (
         id: "offer",
         enableSorting: false,
         header: t("otc.offers.table.header.offer"),
-        cell: ({ row }) => <OrderAssetColumn pair={row.original.offer} />,
+        cell: ({ row }) => (
+          <OrderAssetColumn key={row.original.id} pair={row.original.offer} />
+        ),
       }),
       accessor("accepting", {
         id: "accepting",
         enableSorting: false,
         header: t("otc.offers.table.header.accepting"),
-        cell: ({ row }) => <OrderAssetColumn pair={row.original.accepting} />,
+        cell: ({ row }) => (
+          <OrderAssetColumn
+            key={row.original.id}
+            pair={row.original.accepting}
+          />
+        ),
       }),
       accessor("orderPrice", {
         id: "orderPrice",

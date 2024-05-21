@@ -1,4 +1,8 @@
-import { SMaskContainer, SActiveReferendumIcon } from "./Bell.styled"
+import {
+  SMaskContainer,
+  SActiveReferendumIcon,
+  SPendingBridgeIcon,
+} from "./Bell.styled"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
@@ -16,10 +20,16 @@ export const Bell = () => {
   const { t } = useTranslation()
 
   const referendumsQuery = useReferendums("ongoing")
-  const loadingToasts = toasts.filter((toast) => toast.variant === "progress")
+  const loadingToasts = toasts.filter(
+    (toast) => toast.variant === "progress" && !toast.bridge,
+  )
+  const bridgeToasts = toasts.filter(
+    (toast) => toast.bridge && toast.variant === "progress",
+  )
   const isLoading = !!loadingToasts.length || referendumsQuery.isLoading
 
   const hasReferendum = !!referendumsQuery.data?.length
+  const hasBridgeToasts = !!bridgeToasts.length
 
   const tooltipText = `
     ${
@@ -39,7 +49,7 @@ export const Bell = () => {
     >
       <SToolbarButton onClick={() => setSidebar(true)}>
         {isLoading && <Spinner size={42} css={{ position: "absolute" }} />}
-        <SMaskContainer cropped={hasReferendum}>
+        <SMaskContainer cropped={hasReferendum || hasBridgeToasts}>
           <motion.div
             sx={{ flex: "row", align: "center" }}
             whileTap={{ rotate: 30 }}
@@ -54,7 +64,11 @@ export const Bell = () => {
             <SToolbarIcon as={BellIcon} aria-label={t("toast.sidebar.title")} />
           </motion.div>
         </SMaskContainer>
-        {hasReferendum && <SActiveReferendumIcon />}
+        {hasBridgeToasts ? (
+          <SPendingBridgeIcon />
+        ) : hasReferendum ? (
+          <SActiveReferendumIcon />
+        ) : null}
       </SToolbarButton>
     </InfoTooltip>
   )

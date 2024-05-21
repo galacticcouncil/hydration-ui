@@ -26,7 +26,7 @@ export const AllPoolsVolumeTotal = () => {
     !!pools.data?.some((pool) => pool.isVolumeLoading)
 
   const totalVolumes = pools.data?.reduce(
-    (memo, pool) => memo.plus(pool.volume ?? BN_0),
+    (memo, pool) => memo.plus(!pool.volume.isNaN() ? pool.volume : BN_0),
     BN_0,
   )
 

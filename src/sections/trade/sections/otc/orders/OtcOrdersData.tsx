@@ -30,13 +30,9 @@ export const OrderPairColumn = (props: {
           icons={offerAssetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />
@@ -67,13 +63,9 @@ export const OrderPairColumn = (props: {
           icons={acceptAssetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />
@@ -117,13 +109,9 @@ export const OrderAssetColumn = (props: {
           icons={assetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />

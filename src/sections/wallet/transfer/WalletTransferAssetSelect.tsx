@@ -20,6 +20,8 @@ export const WalletTransferAssetSelect = (props: {
   balance?: BN
   balanceMax?: BN
   withoutMaxBtn?: boolean
+  withoutMaxValue?: boolean
+  disabled?: boolean
 
   error?: string
 }) => {
@@ -42,6 +44,8 @@ export const WalletTransferAssetSelect = (props: {
       error={props.error}
       balanceLabel={t("selectAsset.balance.label")}
       withoutMaxBtn={props.withoutMaxBtn}
+      withoutMaxValue={props.withoutMaxValue}
+      disabled={props.disabled}
     />
   )
 }

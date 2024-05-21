@@ -1,7 +1,11 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { usePools, useXYKPools } from "sections/pools/PoolsPage.utils"
+import {
+  usePools,
+  useXYKPools,
+  XYK_TVL_VISIBILITY,
+} from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
@@ -18,6 +22,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import { Switch } from "components/Switch/Switch"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -86,6 +91,7 @@ const AllPoolsData = () => {
 
   const pools = usePools()
   const xylPools = useXYKPools()
+  const [showAllXyk, setShowAllXyk] = useState(false)
 
   const omnipoolTotal = useMemo(
     () =>
@@ -114,10 +120,23 @@ const AllPoolsData = () => {
       ? arraySearch(pools.data, search, ["symbol", "name"])
       : pools.data) ?? []
 
-  const filteredXYKPools =
-    (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data) ?? []
+  const filteredXYKPools = useMemo(
+    () =>
+      (search && xylPools.data
+        ? arraySearch(xylPools.data, search, ["symbol", "name"])
+        : xylPools.data) ?? [],
+    [search, xylPools.data],
+  )
+
+  const visibleXykPools = useMemo(
+    () =>
+      showAllXyk
+        ? filteredXYKPools
+        : filteredXYKPools.filter((pool) =>
+            pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
+          ),
+    [filteredXYKPools, showAllXyk],
+  )
 
   if (id != null) {
     const pool = [...(pools.data ?? []), ...(xylPools.data ?? [])].find(
@@ -198,7 +217,28 @@ const AllPoolsData = () => {
                 align: ["flex-start", "flex-end"],
               }}
             >
-              <TableLabel label={t("liquidity.section.xyk")} />
+              <div
+                sx={{
+                  flex: "row",
+                  gap: [4, 40],
+                  align: "baseline",
+                  width: "100%",
+                  justify: ["space-between", "start"],
+                  flexWrap: "wrap",
+                }}
+                css={{ whiteSpace: "nowrap" }}
+              >
+                <TableLabel label={t("liquidity.section.xyk")} />
+                <Switch
+                  value={showAllXyk}
+                  onCheckedChange={(value) => setShowAllXyk(value)}
+                  size="small"
+                  name="showAll"
+                  label={t("liquidity.section.xyk.toggle")}
+                  sx={{ pb: 20 }}
+                />
+              </div>
+
               <CreateXYKPoolModalButton
                 disabled={xylPools.isInitialLoading}
                 sx={{ mb: 14, width: ["100%", "auto"] }}
@@ -207,7 +247,7 @@ const AllPoolsData = () => {
             {xylPools.isInitialLoading ? (
               <PoolsTableSkeleton isXyk />
             ) : (
-              <PoolsTable data={filteredXYKPools} isXyk />
+              <PoolsTable data={visibleXykPools} isXyk />
             )}
           </div>
         ) : null}

@@ -11,6 +11,7 @@ import { useRegistrationLinkFee } from "api/referrals"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ReviewTransactionAuthorTip } from "sections/transaction/ReviewTransactionAuthorTip"
 import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { Transaction } from "state/store"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -149,13 +150,26 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
 }
 
 export const ReviewTransactionXCallSummary: FC<
-  Pick<ReviewTransactionSummaryProps, "xcallMeta">
-> = ({ xcallMeta }) => {
+  Pick<Transaction, "xcallMeta" | "xcall">
+> = ({ xcallMeta, xcall }) => {
   const { t } = useTranslation()
+
   if (!xcallMeta) return null
+
   return (
     <Summary
       rows={[
+        ...(xcall?.value
+          ? [
+              {
+                label: t("liquidity.reviewTransaction.modal.detail.amount"),
+                content: t("value.tokenWithSymbol", {
+                  value: new BN(xcall.value.toString()).shiftedBy(-18),
+                  symbol: xcallMeta?.srcChainFeeSymbol,
+                }),
+              },
+            ]
+          : []),
         {
           label: t("liquidity.reviewTransaction.modal.detail.srcChainFee"),
           content:
@@ -164,17 +178,6 @@ export const ReviewTransactionXCallSummary: FC<
                   type: "token",
                   amount: new BN(xcallMeta.srcChainFee),
                   symbol: xcallMeta?.srcChainFeeSymbol,
-                })
-              : "-",
-        },
-        {
-          label: t("liquidity.reviewTransaction.modal.detail.dstChainFee"),
-          content:
-            parseFloat(xcallMeta?.dstChainFee) > 0
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  type: "token",
-                  amount: new BN(xcallMeta.dstChainFee),
-                  symbol: xcallMeta?.dstChainFeeSymbol,
                 })
               : "-",
         },

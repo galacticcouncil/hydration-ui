@@ -118,3 +118,73 @@ export function createMutableFarmEntries(
 
   return { yieldFarms, globalFarms }
 }
+
+export function createMutableFarmEntry({
+  globalFarm,
+  yieldFarm,
+}: {
+  globalFarm: PalletLiquidityMiningGlobalFarmData
+  yieldFarm: PalletLiquidityMiningYieldFarmData
+}) {
+  const globalFarm_ = {
+    id: globalFarm.id,
+    incentivizedAsset: globalFarm.incentivizedAsset,
+    owner: globalFarm.owner,
+    rewardCurrency: globalFarm.rewardCurrency,
+    state: globalFarm.state,
+    // PeriodOf<T>
+    updatedAt: globalFarm.updatedAt.toBigNumber(),
+    // Balance
+    totalSharesZ: globalFarm.totalSharesZ.toBigNumber(),
+    // FixedU128
+    accumulatedRpz: globalFarm.accumulatedRpz.toBigNumber(),
+    // Balance
+    pendingRewards: globalFarm.pendingRewards.toBigNumber(),
+    // Balance
+    accumulatedPaidRewards: globalFarm.accumulatedPaidRewards.toBigNumber(),
+    // Perquintill
+    yieldPerPeriod: globalFarm.yieldPerPeriod
+      .toBigNumber()
+      .dividedBy(BN_QUINTILL),
+    // PeriodOf<T>
+    plannedYieldingPeriods: globalFarm.plannedYieldingPeriods.toBigNumber(),
+    // BlockNumberFor<T>
+    blocksPerPeriod: globalFarm.blocksPerPeriod.toBigNumber(),
+    // Balance
+    maxRewardPerPeriod: globalFarm.maxRewardPerPeriod.toBigNumber(),
+    // Balance
+    minDeposit: globalFarm.minDeposit.toBigNumber(),
+    // u32
+    liveYieldFarmsCount: globalFarm.liveYieldFarmsCount.toBigNumber(),
+    // u32
+    totalYieldFarmsCount: globalFarm.totalYieldFarmsCount.toBigNumber(),
+    // FixedU128
+    priceAdjustment: globalFarm.priceAdjustment.toBigNumber(),
+  }
+
+  const yieldFarm_ = {
+    id: yieldFarm.id,
+    // PeriodOf<T>
+    updatedAt: yieldFarm.updatedAt.toBigNumber(),
+    // Balance
+    totalShares: yieldFarm.totalShares.toBigNumber(),
+    // Balance
+    totalValuedShares: yieldFarm.totalValuedShares.toBigNumber(),
+    // FixedU128
+    accumulatedRpvs: yieldFarm.accumulatedRpvs.toBigNumber(),
+    // FixedU128
+    accumulatedRpz: yieldFarm.accumulatedRpz.toBigNumber(),
+    // FarmMultiplier
+    multiplier: yieldFarm.multiplier.toBigNumber(),
+    // u64
+    entriesCount: yieldFarm.entriesCount.toBigNumber(),
+    // Balance
+    leftToDistribute: yieldFarm.leftToDistribute.toBigNumber(),
+    // PeriodOf<T>
+    totalStopped: yieldFarm.totalStopped.toBigNumber(),
+    loyaltyCurve: yieldFarm.loyaltyCurve,
+    state: yieldFarm.state,
+  }
+
+  return { yieldFarm: yieldFarm_, globalFarm: globalFarm_ }
+}
