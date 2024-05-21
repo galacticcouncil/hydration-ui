@@ -8,7 +8,6 @@ import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
-import { Phantom } from "sections/web3-connect/wallets/Phantom"
 
 const EVM_ENABLED = Boolean(
   import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
@@ -63,9 +62,7 @@ const subwallet: Wallet = new SubWalletEvm({
     WalletProviderType.SubwalletEvm,
   ),
 })
-const phantom: Wallet = new Phantom({
-  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.Phantom),
-})
+
 const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
