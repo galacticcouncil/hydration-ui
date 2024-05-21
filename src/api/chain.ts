@@ -19,7 +19,7 @@ export const useBestNumber = (disable?: boolean) => {
       return { parachainBlockNumber, relaychainBlockNumber, timestamp }
     },
     {
-      enabled: !!activeProvider?.url && !disable,
+      enabled: "query" in api && !!activeProvider?.url && !disable,
     },
   )
 }

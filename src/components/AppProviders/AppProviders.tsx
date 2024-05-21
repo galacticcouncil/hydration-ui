@@ -20,8 +20,8 @@ const AppsPersistenceProvider = createComponent({
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <TooltipProvider>
-      <ProviderReloader>
-        <RpcProvider>
+      <RpcProvider>
+        <ProviderReloader>
           <InvalidateOnBlock>
             <ToastProvider>
               <SkeletonTheme
@@ -34,8 +34,8 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               </SkeletonTheme>
             </ToastProvider>
           </InvalidateOnBlock>
-        </RpcProvider>
-      </ProviderReloader>
+        </ProviderReloader>
+      </RpcProvider>
     </TooltipProvider>
   )
 }

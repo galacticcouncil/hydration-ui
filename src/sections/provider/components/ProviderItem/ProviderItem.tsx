@@ -120,12 +120,6 @@ export const ProviderItem = ({
 const ProviderSelectItemLive = ({ className }: { className?: string }) => {
   const number = useBestNumber()
 
-  console.log(
-    "live",
-    number.data?.parachainBlockNumber.toNumber(),
-    number.error,
-  )
-
   return (
     <>
       {number.data?.parachainBlockNumber != null ? (

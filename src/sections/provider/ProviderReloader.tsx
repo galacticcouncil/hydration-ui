@@ -31,7 +31,7 @@ export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
 
   return (
     <>
-      <Fragment key={`root-${version}`}>{children}</Fragment>
+      <Fragment key={`provider-${version}`}>{children}</Fragment>
       <ProviderSelectButton />
     </>
   )

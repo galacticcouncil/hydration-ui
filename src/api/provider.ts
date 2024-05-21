@@ -66,11 +66,13 @@ export const PROVIDERS = [
   },*/
 ]
 
-export const PROVIDER_URLS = PROVIDERS.filter((provider) =>
+export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
     ? provider.env === import.meta.env.VITE_ENV
     : provider.env.includes(import.meta.env.VITE_ENV),
-).map(({ url }) => url)
+)
+
+export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
 export const useProviderRpcUrlStore = create(
   persist<{

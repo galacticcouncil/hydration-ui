@@ -1,5 +1,6 @@
 import {
-  PROVIDERS,
+  PROVIDER_LIST,
+  PROVIDER_URLS,
   useProviderData,
   useProviderRpcUrlStore,
 } from "api/provider"
@@ -16,6 +17,8 @@ import { FormValues } from "utils/helpers"
 import { SContainer, SHeader } from "./ProviderSelectModal.styled"
 import { ProviderInput } from "./components/ProviderInput/ProviderInput"
 import { ProviderItem } from "./components/ProviderItem/ProviderItem"
+import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 export type ProviderSelectFormProps = {
   onSave: (rpcUrl: string) => void
@@ -33,30 +36,46 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   const { t } = useTranslation()
   const { rpcList, addRpc } = useRpcStore()
 
+  const fullRpcUrlList = [...PROVIDER_URLS, ...rpcList.map(({ url }) => url)]
+
   const form = useForm<{ address: string }>({
     defaultValues: { address: "wss://" },
     mode: "onChange",
+    resolver: zodResolver(useProviderSelectFormSchema(fullRpcUrlList)),
   })
 
   const mutation = useMutation(async (value: FormValues<typeof form>) => {
-    try {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(value.address)
-
-      const relay = await api.query.parachainSystem.validationData()
-      const relayParentNumber = relay.unwrap().relayParentNumber
-
-      if (relayParentNumber.toNumber()) {
-        addRpc(value.address)
-        form.reset()
-      }
-    } catch (e) {
-      if (e === "disconnected")
+    return await new Promise(async (resolve, reject) => {
+      const errMessage = t("rpc.change.modal.errors.notExist")
+      const timeout = setTimeout(() => {
+        clearTimeout(timeout)
         form.setError("address", {
-          message: t("rpc.change.modal.errors.notExist"),
+          message: errMessage,
         })
-      throw new Error(t("rpc.change.modal.errors.notExist"))
-    }
+        reject(new Error(errMessage))
+      }, 10000)
+
+      try {
+        const apiPool = SubstrateApis.getInstance()
+        const api = await apiPool.api(value.address)
+
+        const relay = await api.query.parachainSystem.validationData()
+        const relayParentNumber = relay.unwrap().relayParentNumber
+
+        if (relayParentNumber.toNumber()) {
+          addRpc(value.address)
+          form.reset()
+        }
+        resolve(true)
+      } catch (e) {
+        form.setError("address", {
+          message: errMessage,
+        })
+        reject(new Error(errMessage))
+      } finally {
+        clearTimeout(timeout)
+      }
+    })
   })
   return (
     <>
@@ -64,18 +83,6 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         <Controller
           name="address"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              duplicate: (value) => {
-                const isDuplicate = rpcList.some((rpc) => rpc.url === value)
-                return !isDuplicate || t("rpc.change.modal.errors.duplicate")
-              },
-              invalid: (value) =>
-                value !== "wss://" ||
-                t("wallet.assets.transfer.error.required"),
-            },
-          }}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -90,7 +97,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                   size="small"
                   type="submit"
                   isLoading={mutation.isLoading}
-                  disabled={!form.formState.isValid}
+                  disabled={mutation.isLoading}
                 >
                   {t("add")}
                 </Button>
@@ -113,11 +120,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
           </div>
         </SHeader>
 
-        {PROVIDERS.filter((provider) =>
-          typeof provider.env === "string"
-            ? provider.env === import.meta.env.VITE_ENV
-            : provider.env.includes(import.meta.env.VITE_ENV),
-        ).map((provider, index) => {
+        {PROVIDER_LIST.map((provider, index) => {
           return (
             <Fragment key={provider.url}>
               <ProviderItem
@@ -126,7 +129,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                 isActive={provider.url === rpcUrl}
                 onClick={() => onSave(provider.url)}
               />
-              {index + 1 < PROVIDERS.length && (
+              {index + 1 < PROVIDER_LIST.length && (
                 <Separator color="alpha0" opacity={0.06} />
               )}
             </Fragment>
@@ -146,7 +149,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
               custom
               onRemove={onRemove}
             />
-            {index + 1 < PROVIDERS.length && (
+            {index + 1 < rpcList.length && (
               <Separator color="alpha0" opacity={0.06} />
             )}
           </Fragment>
