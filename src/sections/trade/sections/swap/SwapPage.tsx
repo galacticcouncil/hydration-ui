@@ -146,6 +146,7 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
+        isTestnet={preference.getDataEnv() === "testnet"}
       />
       {addToken && (
         <AddTokenModal
