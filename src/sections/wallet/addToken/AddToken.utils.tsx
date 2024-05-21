@@ -152,7 +152,7 @@ const internalIds = new Map([
   ["2230", "1000073"],
 ])
 
-export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID, PENDULUM_ID]
+export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID /*PENDULUM_ID*/]
 
 export const PARACHAIN_CONFIG: {
   [x: number]: {
