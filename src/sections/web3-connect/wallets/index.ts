@@ -87,7 +87,7 @@ const walletConnect: Wallet = new WalletConnect({
 const externalWallet: Wallet = new ExternalWallet()
 
 export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
-  ...(EVM_ENABLED ? [metaMask, talisman, subwallet, phantom] : []),
+  ...(EVM_ENABLED ? [metaMask, talisman, subwallet] : []),
   ...getWallets(),
   novaWallet,
   walletConnect,
