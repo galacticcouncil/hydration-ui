@@ -23,7 +23,6 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { PageSwitch } from "sections/xcm/components/PageSwitch"
 import { genesisHashToChain } from "utils/helpers"
 
 type WalletChangeDetail = {
@@ -103,7 +102,11 @@ export function XcmPage() {
     const { srcChain } = e.detail
 
     const chain = chainsMap.get(srcChain)
-    const isEvm = chain?.isEvmParachain()
+
+    const isEvm =
+      chain?.key === "acala"
+        ? false
+        : chain?.isEvmParachain() || chain?.isEvmChain()
     const isHydra = chain?.key === "hydradx"
 
     const walletMode = isHydra
@@ -130,26 +133,25 @@ export function XcmPage() {
     search.success && search.data.asset ? search.data.asset : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+
   return (
-    <>
-      <PageSwitch />
-      <SContainer>
-        <XcmApp
-          ref={ref}
-          srcChain={srcChainDefault}
-          destChain={destChainDefault}
-          asset={assetDefault}
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-          apiAddress={rpcUrl}
-          stableCoinAssetId={stableCoinAssetId}
-          onXcmNew={handleSubmit}
-          onWalletChange={handleWalletChange}
-          ss58Prefix={ss58Prefix}
-          blacklist="pendulum"
-        />
-      </SContainer>
-    </>
+    <SContainer>
+      <XcmApp
+        ref={ref}
+        srcChain={srcChainDefault}
+        destChain={destChainDefault}
+        asset={assetDefault}
+        accountName={account?.name}
+        accountProvider={account?.provider}
+        accountAddress={account?.address}
+        apiAddress={rpcUrl}
+        stableCoinAssetId={stableCoinAssetId}
+        onXcmNew={handleSubmit}
+        onWalletChange={handleWalletChange}
+        ss58Prefix={ss58Prefix}
+        blacklist={blacklist}
+      />
+    </SContainer>
   )
 }

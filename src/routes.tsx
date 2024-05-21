@@ -76,10 +76,6 @@ const XcmPage = lazy(async () => ({
   default: (await import("sections/xcm/XcmPage")).XcmPage,
 }))
 
-const BridgePage = lazy(async () => ({
-  default: (await import("sections/xcm/BridgePage")).BridgePage,
-}))
-
 const StatsOverview = lazy(async () => ({
   default: (await import("sections/stats/sections/overview/StatsOverview"))
     .StatsOverview,
@@ -324,18 +320,6 @@ export const routes: Route[] = [
         }
       >
         <XcmPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "bridge",
-    element: (
-      <Suspense
-        fallback={
-          <SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto", mt: 50 }} />
-        }
-      >
-        <BridgePage />
       </Suspense>
     ),
   },

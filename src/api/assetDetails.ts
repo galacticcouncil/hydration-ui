@@ -164,6 +164,7 @@ export const getAssets = async (api: ApiPromise) => {
     poolAddresses,
     xykPoolAssets,
     isReferralsEnabled,
+    isDispatchPermitEnabled,
   ] = await Promise.all([
     api.rpc.system.properties(),
     api.query.assetRegistry.assets.entries(),
@@ -172,6 +173,7 @@ export const getAssets = async (api: ApiPromise) => {
     api.query.xyk.shareToken.entries(),
     api.query.xyk.poolAssets.entries(),
     api.query.referrals,
+    api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
@@ -508,6 +510,7 @@ export const getAssets = async (api: ApiPromise) => {
     tradeRouter,
     featureFlags: {
       referrals: !!isReferralsEnabled,
+      dispatchPermit: !!isDispatchPermitEnabled,
     },
   }
 }
