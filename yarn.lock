@@ -3066,10 +3066,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.7.4":
-  version "3.7.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.7.4.tgz#cadffbac15cd770d150800ed4b60386127e870ec"
-  integrity sha512-tAjwf9E+oqKbsC5K8ClKE/rNnhgT9w3zOY2QD1Nm4I95MDOl0bdcMpUYCRE+btFRFtnSjeri5XvmVKyNJ9+edg==
+"@galacticcouncil/apps@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.8.0.tgz#bc76a3d5efcb455aaa8d87d577dfd447a964b7af"
+  integrity sha512-8h4r+EfK67v8mRGf4HIm6Wd1bgHLJ4wezVg0Tqq/XR11uf/Y3t7GDLqAcbbAghv4nryzT3XboRxvaaedYpD7Ww==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -3112,12 +3112,13 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-2.3.0.tgz#a7a488846daa7ddf4fc8b9cb08d157469aaa09c8"
-  integrity sha512-K/cc5V8J/aabeKcrY+Oq9s1oBnECZDDsrPXqv0SkD3pSGVS+AKjQeONDXs1P9vhoDPcTt2QMhFSNwTm6tWLkyw==
+"@galacticcouncil/sdk@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-3.0.0.tgz#947001ad629414b40e031d8af0d146adb9227e06"
+  integrity sha512-vm6mqQ5u3HyX5+0oLP0an6BkmuKi06dNWOcHFKIgaBMXYwrwL5RbqiN5hG+baSefla0yWl1PB+o4VB5pfvhpFA==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
+    "@galacticcouncil/math-liquidity-mining" "^1.0.0"
     "@galacticcouncil/math-omnipool" "^1.0.0"
     "@galacticcouncil/math-stableswap" "^1.0.0"
     "@galacticcouncil/math-xyk" "^1.0.0"
@@ -6176,10 +6177,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.4.3.tgz#af975e367743fa91989cd666666aec31a8f50591"
   integrity sha512-kCUc5MEwaEMakkO5x7aoD+DLi02ehmEM2QCGWvNqAS1dV/fAvORWEjnjsEIvml59M7Y5kCkWN6fCCyPOe8OL6Q==
 
-"@thi.ng/api@^8.11.1":
-  version "8.11.1"
-  resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.1.tgz#a854bb18cec7c74ca7c12398c7af96f7bff47be7"
-  integrity sha512-040+C6WGLZXkqwTXJvMB8Rf8n/ZZzvKjDHu2JE2bFpi+0Spmtrt48iZzt2+5gqoTtjfUEuG4rQ3e7VNdvRepMA==
+"@thi.ng/api@^8.11.2":
+  version "8.11.2"
+  resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.2.tgz#12a6234d62fb37193ef6f9450d2e111d3c236c26"
+  integrity sha512-5i00GGTZ2E0JXGdcCuQL9HvA8fIxgYdYog3aFku6zmLh5fJCxfZVNNay5LV87Ev5uj3iuaqz0vbl33JuZc6/iw==
 
 "@thi.ng/api@^8.8.0":
   version "8.8.0"
@@ -6199,14 +6200,14 @@
     "@thi.ng/random" "^3.4.0"
 
 "@thi.ng/atom@^5.1.3":
-  version "5.2.45"
-  resolved "https://registry.yarnpkg.com/@thi.ng/atom/-/atom-5.2.45.tgz#3628ab11800f24b6ec89c2bec54ae19321705bab"
-  integrity sha512-Dv3HPqKSCgSrH/dCHuvgORC5b7OTSc/+jCqXXt8amCQfPLqnA663N2i8fIKh9iGMmuTTgDD12ekrMhIF124Gdw==
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@thi.ng/atom/-/atom-5.3.0.tgz#a74c879bcb6fca596b69011f9e9ca7d280ea2e34"
+  integrity sha512-U8y8KVAPpmcbc1pDWbI19b7zI+swulwHYui3XAXW9ge++f6bT39K1DMrx5ZRKkojW6OlOGBu0E2NdFy0NX6aTw==
   dependencies:
-    "@thi.ng/api" "^8.11.1"
-    "@thi.ng/equiv" "^2.1.57"
-    "@thi.ng/errors" "^2.5.6"
-    "@thi.ng/paths" "^5.1.80"
+    "@thi.ng/api" "^8.11.2"
+    "@thi.ng/equiv" "^2.1.58"
+    "@thi.ng/errors" "^2.5.7"
+    "@thi.ng/paths" "^5.1.81"
     tslib "^2.6.2"
 
 "@thi.ng/cache@^2.1.35":
@@ -6225,10 +6226,10 @@
   dependencies:
     tslib "^2.5.0"
 
-"@thi.ng/checks@^3.6.3":
-  version "3.6.3"
-  resolved "https://registry.yarnpkg.com/@thi.ng/checks/-/checks-3.6.3.tgz#6d151bedd3dc380b4445e805f073fa8559156aba"
-  integrity sha512-tvAs6gEu4fB0f7t8v2/bYhuCcXHg4YC8RJpsOS8Jm4fbQWWPy5WEal3P6iuMUYf9trdHYlLu/IVH1q5354XIWw==
+"@thi.ng/checks@^3.6.4":
+  version "3.6.4"
+  resolved "https://registry.yarnpkg.com/@thi.ng/checks/-/checks-3.6.4.tgz#b3a999afee06df07cb5b0452983e779f80e48253"
+  integrity sha512-qZugzKHi6v1W6HenPnOmVWm8Tj2iT6to2X+jtkrpwCrzzp9cdN4zqcfpgWn6FcZUgD+Kl1Jvfu7REuiA0sfOCw==
   dependencies:
     tslib "^2.6.2"
 
@@ -6265,20 +6266,20 @@
   resolved "https://registry.yarnpkg.com/@thi.ng/equiv/-/equiv-2.1.22.tgz#2d65de478b33233e731008aefab40c66228893d8"
   integrity sha512-Cx+9NGFO7nFGOyalqxpq9tW15NyuZ0xitEVEikUx1a9GOA1RBragjuAPs7D77l6HlVswroAyka1Q9D0jqm6BCQ==
 
-"@thi.ng/equiv@^2.1.57":
-  version "2.1.57"
-  resolved "https://registry.yarnpkg.com/@thi.ng/equiv/-/equiv-2.1.57.tgz#cf40f8856d7343f59b0f39e505ad42cd8c067642"
-  integrity sha512-kHzN+3QXsH/YZo+/JDUoR2Ovoeiv7u/oHzLyjgb6ffAoX8Pv9TBMnoFdK/3Qu1jyW4UfMjlRHIv0fNZzbtpYCw==
+"@thi.ng/equiv@^2.1.58":
+  version "2.1.58"
+  resolved "https://registry.yarnpkg.com/@thi.ng/equiv/-/equiv-2.1.58.tgz#9e696a08e51a30dae323ee47b42ca740939dad29"
+  integrity sha512-9qL+16bUJKKmQvB81M4GrZy/dKxq7XR2VZWjDuPBIdugCQyn/1/zV9uHVSVU45OIXIcq71fcZLR0IsBSM5yz6w==
 
 "@thi.ng/errors@^2.2.15":
   version "2.2.15"
   resolved "https://registry.yarnpkg.com/@thi.ng/errors/-/errors-2.2.15.tgz#626349585a1641aa9c6c46dbcad8da0f1829ced6"
   integrity sha512-zyaHmu4Sqpkl5t5tSQLfZPMzfV+pM29EbONXTRNW/8BnTE++iiHwUwFU0rHbeTMPmH0BMp5g4wNG8K+A5xewsw==
 
-"@thi.ng/errors@^2.5.6":
-  version "2.5.6"
-  resolved "https://registry.yarnpkg.com/@thi.ng/errors/-/errors-2.5.6.tgz#2d6326f296b30e41375e91e5d34eea20a98d1a43"
-  integrity sha512-i2mNaye+ieK3lIugMRdjac12vgnwyq52wE6dMSF/PRN1hciY+zV+q9VObbL1X19Nqy/G5xMghIrzDOeIRcObLg==
+"@thi.ng/errors@^2.5.7":
+  version "2.5.7"
+  resolved "https://registry.yarnpkg.com/@thi.ng/errors/-/errors-2.5.7.tgz#1f28dd373c14d00af995aa21d99fbc523f9333dc"
+  integrity sha512-yha1STRQmkTWEFNMHpTlgXETjwyvZfyDZH6o2nfQ8rBMqco270h4BtOOXA+lFn0afXJAZ9iXmCKbPrlMlJvHuQ==
 
 "@thi.ng/hex@^2.3.9":
   version "2.3.9"
@@ -6292,14 +6293,14 @@
   dependencies:
     "@thi.ng/api" "^8.8.0"
 
-"@thi.ng/paths@^5.1.80":
-  version "5.1.80"
-  resolved "https://registry.yarnpkg.com/@thi.ng/paths/-/paths-5.1.80.tgz#b2f7997ac5e4b4768566f461050b7a0f99268808"
-  integrity sha512-GI9Yie2Ut4aC1NHFbU/EhXuBjqCJZVhJAyZaQzUJoAHEPhrh3qy122FEUuLiNcf33MERg7qcW1VFzhNS1Bs85Q==
+"@thi.ng/paths@^5.1.81":
+  version "5.1.81"
+  resolved "https://registry.yarnpkg.com/@thi.ng/paths/-/paths-5.1.81.tgz#95e1d074a5f91d79777ed5d3ddd3a6b217150a53"
+  integrity sha512-rZeIQWFzcs5o1mGKv1U2/Mq7zOLK4daZoNAyRueFLADvVkQmlwjtFbvfuZK9AKX2dcDEjhjeLMa0ekFa97ZM6Q==
   dependencies:
-    "@thi.ng/api" "^8.11.1"
-    "@thi.ng/checks" "^3.6.3"
-    "@thi.ng/errors" "^2.5.6"
+    "@thi.ng/api" "^8.11.2"
+    "@thi.ng/checks" "^3.6.4"
+    "@thi.ng/errors" "^2.5.7"
 
 "@thi.ng/random@^3.4.0":
   version "3.4.0"
@@ -10985,10 +10986,10 @@ isomorphic-unfetch@3.1.0:
     node-fetch "^2.6.1"
     unfetch "^4.2.0"
 
-isows@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.3.tgz#93c1cf0575daf56e7120bab5c8c448b0809d0d74"
-  integrity sha512-2cKei4vlmg2cxEjm3wVSqn8pcoRF/LX/wpifuuNquFO4SQmPwarClT+SUCA2lt+l581tTeZIPIZuIDo2jWN1fg==
+isows@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.4.tgz#810cd0d90cc4995c26395d2aa4cfa4037ebdf061"
+  integrity sha512-hEzjY+x9u9hPmBom9IIAqdJCwNLax+xrPb51vEPpERoFlIxgmZcHzsT5jKG06nvInKOBGvReAVz80Umed5CczQ==
 
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.0:
   version "3.2.0"
@@ -11377,9 +11378,9 @@ levn@^0.4.1:
     type-check "~0.4.0"
 
 lightweight-charts@^4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/lightweight-charts/-/lightweight-charts-4.1.3.tgz#467fb88a5efc3665bea64c193591cfc082d84300"
-  integrity sha512-SJacmEyx3LmT2Qsc7Kq7cEX7nEHtQv0MOlujhRlcDxhW62pG6nkBlcM52/jNqkq8B28KQeVmgOQ7zrdJ4BCPDw==
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/lightweight-charts/-/lightweight-charts-4.1.4.tgz#8a41df9183a1af43dde6c12e2475a02fc64661dd"
+  integrity sha512-jsQOK27a3wiw/Db3Eoo3VX93LGovXA/sOWHVEiEosGOOGtxSSuIWTYVebjRKGK0SWkkUwI8AHQ4j7HZSKm7fxA==
   dependencies:
     fancy-canvas "2.1.0"
 
@@ -14813,9 +14814,9 @@ victory-vendor@^36.6.8:
     d3-timer "^3.0.1"
 
 viem@^2.7.19:
-  version "2.9.31"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.31.tgz#cfe8e1bb81d358c9117e5e1144d26a95d8aab3dd"
-  integrity sha512-8aJ8Dm/591Czwb/nRayo0z8Ls5KxqC4QYE33fmHwhx2tDUWC/hHcPZqjLRSTWFtAfi0aZKvP7BeB6UZ3ZkTRhQ==
+  version "2.11.1"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.11.1.tgz#03ff205734c21748b7a0df8e5f956db61ebaf1c5"
+  integrity sha512-4iypXhxWkXoWO45XStxQvhj/vYZ5+3AtSEngHiOnuHOSNoiIsYfDvTMoTiAO53PeyYvExyVzJc9BFwejGHh7pg==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
@@ -14823,7 +14824,7 @@ viem@^2.7.19:
     "@scure/bip32" "1.3.2"
     "@scure/bip39" "1.2.1"
     abitype "1.0.0"
-    isows "1.0.3"
+    isows "1.0.4"
     ws "8.13.0"
 
 vite-node@0.34.5:
