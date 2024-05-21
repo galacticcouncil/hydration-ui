@@ -63,10 +63,8 @@ export function SwapPage() {
 
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
-  const [assetsAdded, setAssetsAdded] = React.useState(false)
-
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm, assetsAdded, externalTokensStored.length])
+  const version = useRemount([isEvm, externalTokensStored.length])
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
@@ -147,12 +145,7 @@ export function SwapPage() {
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
       />
-      {isLoaded && (
-        <ExternalAssetImportModal
-          assetIds={[assetIn, assetOut]}
-          onAssetsAdded={() => setAssetsAdded(true)}
-        />
-      )}
+      {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {addToken && (
         <AddTokenModal
           css={{ zIndex: 9999 }}
