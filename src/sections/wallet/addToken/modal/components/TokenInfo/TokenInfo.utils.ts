@@ -26,9 +26,15 @@ const useMissingExternalAssets = (ids: string[]) => {
             (external) => external.id === tokenId,
           )?.externalId
 
-          return externalAssets.data?.find(
+          const meta = externalAssets.data?.find(
             (externalAsset) => externalAsset.id === externalId,
           )
+          return meta
+            ? {
+                ...meta,
+                internalId: tokenId,
+              }
+            : undefined
         })
         .filter(isNotNil)
     }

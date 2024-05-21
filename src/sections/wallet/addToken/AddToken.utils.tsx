@@ -276,7 +276,7 @@ export const useUserExternalTokenStore = create<Store>()(
           }
 
           ExternalAssetCursor.reset({
-            state: { tokens: latest.tokens[dataEnv] },
+            state: { tokens: latest.tokens },
             version,
           })
           return latest

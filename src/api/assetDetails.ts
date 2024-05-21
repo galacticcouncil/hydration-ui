@@ -13,6 +13,8 @@ import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
 import { useProviderRpcUrlStore } from "./provider"
+import { PENDULUM_ID } from "./externalAssetRegistry"
+import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -390,6 +392,13 @@ export const getAssets = async (api: ApiPromise) => {
             token.internalId === assetCommon.id,
         )
 
+        const externalId =
+          location && !location.isNone
+            ? parachainId === PENDULUM_ID.toString()
+              ? getGeneralKey(location)
+              : getGeneralIndex(location)
+            : undefined
+
         const asset: TToken = {
           ...assetCommon,
           assetType,
@@ -397,7 +406,7 @@ export const getAssets = async (api: ApiPromise) => {
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
-          externalId: undefined,
+          externalId,
           iconId: "",
           ...(externalTokenStored
             ? omit(["id", "internalId", "origin"], {
@@ -456,9 +465,6 @@ export const getAssets = async (api: ApiPromise) => {
     },
     [],
   )
-
-  // pass external tokens to trade router
-  await poolService.syncRegistry(externalTokens[dataEnv])
 
   try {
     rawTradeAssets = await tradeRouter.getAllAssets()
