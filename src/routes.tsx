@@ -4,6 +4,7 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
 import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
@@ -373,7 +374,7 @@ export const routes: Route[] = [
   {
     path: "referrals",
     element: (
-      <Suspense>
+      <Suspense fallback={<ReferralsSkeleton />}>
         <ReferralsWrapper />
       </Suspense>
     ),
