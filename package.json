@@ -41,7 +41,7 @@
     "@galacticcouncil/sdk": "^2.3.0",
     "@galacticcouncil/ui": "^3.1.17",
     "@galacticcouncil/xcm-cfg": "^2.0.3",
-    "@galacticcouncil/xcm-core": "^1.0.0",
+    "@galacticcouncil/xcm-core": "^1.1.0",
     "@galacticcouncil/xcm-sdk": "^3.0.3",
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
