@@ -24,7 +24,6 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { PageSwitch } from "sections/xcm/components/PageSwitch"
 import { genesisHashToChain } from "utils/helpers"
 
 type WalletChangeDetail = {
@@ -135,14 +134,10 @@ export function XcmPage() {
     search.success && search.data.asset ? search.data.asset : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist =
-    import.meta.env.VITE_ENV === "production"
-      ? "pendulum,acala-evm"
-      : "pendulum"
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
 
   return (
     <Page>
-      <PageSwitch />
       <SContainer>
         <XcmApp
           ref={ref}
