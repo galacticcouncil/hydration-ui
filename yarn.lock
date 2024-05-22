@@ -2550,7 +2550,7 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.1.1.tgz#0f6142b4ab6ea5b55f7a9edfac29db22f9c2c4c3"
   integrity sha512-mFabCN8NuK4dffXbb30Dr1wU1breblT+BpXI4L1UcJ73QG1QI/dvdupSvBcFg8DuLIPK86CsXCJP0ud3MGTvdQ==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.0.0"
+    "@galacticcouncil/xcm-core" "^1.1.0"
 
 "@galacticcouncil/xcm-core@^1.1.0":
   version "1.1.0"
@@ -2571,7 +2571,7 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.4.tgz#fa51f11c2a7bbaca53f9f85d8dfb749fdb1fd008"
   integrity sha512-Sz8zSdvxgsVMwHdN2NTdiGKHdf5n5H5kqxaw7Qdcr97ALRMoo/ndzlksppzkgiQ0VGHPJ3CluYrP5VLI/S+BBg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.0.0"
+    "@galacticcouncil/xcm-core" "^1.1.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"

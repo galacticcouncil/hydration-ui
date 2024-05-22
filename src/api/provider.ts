@@ -87,7 +87,7 @@ export const PROVIDERS: ProviderProps[] = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
   },*/
-] as const
+]
 
 
 
