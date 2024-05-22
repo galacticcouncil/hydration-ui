@@ -2405,11 +2405,11 @@
   integrity sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==
 
 "@floating-ui/core@^1.0.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.6.0.tgz#fa41b87812a16bf123122bf945946bae3fdf7fc1"
-  integrity sha512-PcF++MykgmTj3CIyOQbKA/hDzOAiqI3mhuoN44WRCopIs1sgoDoU4oty4Jtqaj/y3oDU6fnVSm4QG0a3t5i0+g==
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.6.2.tgz#d37f3e0ac1f1c756c7de45db13303a266226851a"
+  integrity sha512-+2XpQV9LLZeanU4ZevzRnGFg2neDeKHgFLjP6YLW+tly0IvrhqT4u8enLGjLH3qeh85g19xY5rsAusfwTdn5lg==
   dependencies:
-    "@floating-ui/utils" "^0.2.1"
+    "@floating-ui/utils" "^0.2.0"
 
 "@floating-ui/core@^1.4.1":
   version "1.4.1"
@@ -2427,9 +2427,9 @@
     "@floating-ui/utils" "^0.1.1"
 
 "@floating-ui/dom@^1.5.1":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.6.3.tgz#954e46c1dd3ad48e49db9ada7218b0985cee75ef"
-  integrity sha512-RnDthu3mzPlQ31Ss/BTwQ1zjzIhr3lk1gZB1OC56h/1vEtaXkESrOqL5fQVMfXpwGtRwX+YsZBdyHtJMQnkArw==
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.6.5.tgz#323f065c003f1d3ecf0ff16d2c2c4d38979f4cb9"
+  integrity sha512-Nsdud2X65Dz+1RHjAIP0t8z5e2ff/IRbei6BqFrl1urT8sDVzM1HMQ+R0XcU5ceRfyO3I6ayeqIfh+6Wb8LGTw==
   dependencies:
     "@floating-ui/core" "^1.0.0"
     "@floating-ui/utils" "^0.2.0"
@@ -2446,10 +2446,10 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.1.1.tgz#1a5b1959a528e374e8037c4396c3e825d6cf4a83"
   integrity sha512-m0G6wlnhm/AX0H12IOWtK8gASEMffnX08RtKkCgTdHb9JpHKGloI7icFfLg9ZmQeavcvR0PKmzxClyuFPSjKWw==
 
-"@floating-ui/utils@^0.2.0", "@floating-ui/utils@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.1.tgz#16308cea045f0fc777b6ff20a9f25474dd8293d2"
-  integrity sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==
+"@floating-ui/utils@^0.2.0":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.2.tgz#d8bae93ac8b815b2bd7a98078cf91e2724ef11e5"
+  integrity sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==
 
 "@fragnova/api-augment@0.1.0-spec-1.0.4-mainnet":
   version "0.1.0-spec-1.0.4-mainnet"
@@ -2534,10 +2534,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.17":
-  version "3.1.17"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.17.tgz#8aa99cc70e3b933f65810761403da4c2a99c16ce"
-  integrity sha512-XojA9vb/YpCpzpY0kXPzmCcf7z50eRgs91qH58ooXiZTZ9e8MrTQztFs+0lDEIhk4skNCwxPnTlV/wK2dLsJMQ==
+"@galacticcouncil/ui@^3.1.18":
+  version "3.1.18"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.18.tgz#b80b05328c1c94c1998c18917450bba1adfe0c0d"
+  integrity sha512-kd82Ph7Kc6XjvSKQ1hlKOBtnAZVosUickhBqBOh51C9tzKtJ79oAF7YNW49L6QpbjVLD/vsPMcznjBBGsHN4DA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -2545,10 +2545,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.0.3.tgz#3071a082b6a349bbcf3153153a073d6f15d2058b"
-  integrity sha512-95aFjghYdfpgQmiojFSske6T3o8SO67oCe6hVNIUm6u/e6OZW0+sx3mp2JdodWnyPywws9CydX8LUdqQKHsTnw==
+"@galacticcouncil/xcm-cfg@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.1.1.tgz#0f6142b4ab6ea5b55f7a9edfac29db22f9c2c4c3"
+  integrity sha512-mFabCN8NuK4dffXbb30Dr1wU1breblT+BpXI4L1UcJ73QG1QI/dvdupSvBcFg8DuLIPK86CsXCJP0ud3MGTvdQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0"
 
@@ -2566,10 +2566,10 @@
     "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.3.tgz#442396f32df3e617160eb3d18403aebc6ecabda6"
-  integrity sha512-VPGmpIu407/VmLV7rx72JxD6v3G4ncjAD7+8Bh+fNQHakzbPgdpRMIdCq6962yybVMCTH/qM4//IFWEzT4gdPQ==
+"@galacticcouncil/xcm-sdk@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.4.tgz#fa51f11c2a7bbaca53f9f85d8dfb749fdb1fd008"
+  integrity sha512-Sz8zSdvxgsVMwHdN2NTdiGKHdf5n5H5kqxaw7Qdcr97ALRMoo/ndzlksppzkgiQ0VGHPJ3CluYrP5VLI/S+BBg==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0"
 
