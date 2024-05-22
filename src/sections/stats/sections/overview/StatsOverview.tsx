@@ -29,13 +29,19 @@ export const StatsOverview = () => {
           <PieWrapper
             data={[...omnipoolOverview.data].reverse()}
             isLoading={omnipoolOverview.isLoading}
+            sx={{
+              p: [20, 40],
+              width: ["100%", 420],
+              minWidth: 0,
+            }}
           />
           {isDesktop && (
             <SContainerVertical
               sx={{
                 p: 24,
                 justify: "space-between",
-                flexGrow: 3,
+                flexGrow: 1,
+                minWidth: 0,
                 gap: 20,
               }}
             >

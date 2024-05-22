@@ -7,24 +7,24 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
+  usePolkadotJSTxUrl,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import {
-  NATIVE_EVM_ASSET_ID,
-  NATIVE_EVM_ASSET_SYMBOL,
-  isEvmAccount,
-} from "utils/evm"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import {
+  EthereumSigner,
+  PermitResult,
+} from "sections/web3-connect/signer/EthereumSigner"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -33,11 +33,16 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 type Props = TxProps & {
   title?: string
   onCancel: () => void
+  onPermitDispatched: (permit: PermitResult) => void
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
+    xcallMeta?: Record<string, string>
   }) => void
-  onSigned: (signed: SubmittableExtrinsic<"promise">) => void
+  onSigned: (
+    signed: SubmittableExtrinsic<"promise">,
+    xcallMeta?: Record<string, string>,
+  ) => void
   onSignError?: (error: unknown) => void
 }
 
@@ -45,6 +50,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
+
+  const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
+
+  const shouldOpenPolkaJSUrl =
+    polkadotJSUrl && account?.isExternalWalletConnected && !account?.delegate
 
   const { transactions } = useStore()
 
@@ -88,9 +98,17 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         if (!wallet) throw new Error("Missing wallet")
         if (!wallet.signer) throw new Error("Missing signer")
 
-        if (wallet?.signer instanceof MetaMaskSigner) {
-          const evmTx = await wallet.signer.sendDispatch(tx.method.toHex())
-          return props.onEvmSigned({ evmTx, tx })
+        if (wallet?.signer instanceof EthereumSigner) {
+          const txData = tx.method.toHex()
+          const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+
+          if (shouldUsePermit) {
+            const permit = await wallet.signer.getPermit(txData)
+            return props.onPermitDispatched(permit)
+          }
+
+          const evmTx = await wallet.signer.sendDispatch(txData)
+          return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
         }
 
         const signature = await tx.signAsync(address, {
@@ -100,7 +118,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           nonce: -1,
         })
 
-        return props.onSigned(signature)
+        return props.onSigned(signature, props.xcallMeta)
       } catch (error) {
         props.onSignError?.(error)
       }
@@ -119,15 +137,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
-  const isEvmFeePaymentAssetInvalid = isEvmAccount(account?.address)
-    ? feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-    : false
-
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
 
   const onConfirmClick = () =>
-    isEvmFeePaymentAssetInvalid
-      ? openEditFeePaymentAssetModal()
+    shouldOpenPolkaJSUrl
+      ? window.open(polkadotJSUrl, "_blank")
       : isEnoughPaymentBalance
       ? signTx.mutate()
       : hasMultipleFeeAssets
@@ -136,7 +150,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
-  if (isEditPaymentBalance || isEvmFeePaymentAssetInvalid) {
+  if (shouldOpenPolkaJSUrl) {
+    btnText = t(
+      "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
+    )
+  } else if (isEditPaymentBalance) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
     )
@@ -164,18 +182,18 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={<ReviewTransactionData address={account?.address} tx={tx} />}
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionSummary
-              tx={props.tx}
-              transactionValues={transactionValues}
-              editFeePaymentAssetEnabled={
-                hasMultipleFeeAssets || isEvmFeePaymentAssetInvalid
-              }
-              xcallMeta={props.xcallMeta}
-              openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
-              onTipChange={isTippingEnabled ? setTipAmount : undefined}
-              referralCode={isLinking ? storedReferralCode : undefined}
-            />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionSummary
+                tx={props.tx}
+                transactionValues={transactionValues}
+                editFeePaymentAssetEnabled={hasMultipleFeeAssets}
+                xcallMeta={props.xcallMeta}
+                openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
+                onTipChange={isTippingEnabled ? setTipAmount : undefined}
+                referralCode={isLinking ? storedReferralCode : undefined}
+              />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -200,14 +218,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
-                {isEvmFeePaymentAssetInvalid && (
-                  <Text fs={16} color="pink600">
-                    {t(
-                      "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg",
-                      { symbol: NATIVE_EVM_ASSET_SYMBOL },
-                    )}
-                  </Text>
-                )}
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
                   <Text fs={16} color="pink600">
                     {t(
@@ -224,7 +234,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>

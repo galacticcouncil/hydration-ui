@@ -12,7 +12,13 @@ enum ModalPage {
   Form,
 }
 
-export const AddTokenModal = ({ onClose }: { onClose: () => void }) => {
+export const AddTokenModal = ({
+  onClose,
+  className,
+}: {
+  onClose: () => void
+  className?: string
+}) => {
   const { t } = useTranslation()
   const [selectedAsset, selectedAssetSet] = useState<
     TExternalAsset | undefined
@@ -25,7 +31,7 @@ export const AddTokenModal = ({ onClose }: { onClose: () => void }) => {
   if (!selectedAsset && page !== 0) paginateTo(ModalPage.List)
 
   return (
-    <Modal open disableCloseOutside onClose={onClose}>
+    <Modal open disableCloseOutside onClose={onClose} className={className}>
       <ModalContents
         onClose={onClose}
         page={page}

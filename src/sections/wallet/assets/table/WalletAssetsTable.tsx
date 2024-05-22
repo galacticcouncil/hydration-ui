@@ -51,6 +51,20 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
     onTransfer: setTransferAsset,
   })
 
+  const button = (
+    <Button
+      type="button"
+      size="micro"
+      sx={{ gap: 4 }}
+      onClick={() => setAddToken(true)}
+    >
+      <div sx={{ flex: "row", align: "center", gap: 4 }}>
+        <Icon icon={<PlusIcon />} />
+        {t("wallet.assets.table.addToken")}
+      </div>
+    </Button>
+  )
+
   return (
     <>
       <TableContainer css={assetsTableStyles}>
@@ -67,29 +81,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               : t("wallet.header.assets")}
           </Text>
           <div sx={{ flex: "row", gap: 32 }}>
-            <Button
-              type="button"
-              size="micro"
-              sx={{ gap: 4 }}
-              onClick={() => setCreateToken(true)}
-            >
-              <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                Create token
-              </div>
-            </Button>
-            {addTokenEnabled && (
-              <Button
-                type="button"
-                size="micro"
-                sx={{ gap: 4 }}
-                onClick={() => setAddToken(true)}
-              >
-                <div sx={{ flex: "row", align: "center", gap: 4 }}>
-                  <Icon icon={<PlusIcon />} />
-                  {t("wallet.assets.table.addToken")}
-                </div>
-              </Button>
-            )}
+            {addTokenEnabled && isDesktop && button}
             <Switch
               value={showAll}
               onCheckedChange={(value) => setShowAll(value)}
@@ -194,6 +186,19 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             onClose={() => setRow(undefined)}
             onTransferClick={setTransferAsset}
           />
+        )}
+        {addTokenEnabled && !isDesktop && (
+          <div
+            sx={{
+              flex: "row",
+              justify: "center",
+              align: "center",
+              my: 15,
+              width: "100%",
+            }}
+          >
+            {button}
+          </div>
         )}
       </TableContainer>
       {addToken && <AddTokenModal onClose={() => setAddToken(false)} />}

@@ -22,6 +22,8 @@ import {
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import Skeleton from "react-loading-skeleton"
 import { AddTokenAction } from "./WalletAssetsTableActions"
+import { isEvmAccount } from "utils/evm"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   row?: AssetsTableData
@@ -37,6 +39,7 @@ export const WalletAssetsTableActionsMob = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
+  const { featureFlags } = useRpcProvider()
 
   const lockedValues = useLockedValues(row?.id ?? "")
 
@@ -45,6 +48,10 @@ export const WalletAssetsTableActionsMob = ({
   const canBuy = row.tradability.inTradeRouter && row.tradability.canBuy
 
   const isNativeAsset = row.id === NATIVE_ASSET_ID
+
+  const displayFeePaymentAssetButton = isEvmAccount(account?.address)
+    ? featureFlags.dispatchPermit
+    : true
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -190,7 +197,7 @@ export const WalletAssetsTableActionsMob = ({
           ) : (
             <div sx={{ flex: "column", gap: 12 }}>
               <Link
-                to={LINKS.trade}
+                to={LINKS.swap}
                 search={canBuy ? { assetOut: row.id } : { assetIn: row.id }}
                 disabled={
                   !row.tradability.inTradeRouter ||
@@ -235,18 +242,20 @@ export const WalletAssetsTableActionsMob = ({
                 </Button>
               </Link>
 
-              <Button
-                sx={{ width: "100%" }}
-                size="small"
-                onClick={() => setFeeAsPayment(row.id)}
-                disabled={
-                  !row.couldBeSetAsPaymentFee ||
-                  account?.isExternalWalletConnected
-                }
-              >
-                <DollarIcon />
-                {t("wallet.assets.table.actions.payment.asset")}
-              </Button>
+              {displayFeePaymentAssetButton && (
+                <Button
+                  sx={{ width: "100%" }}
+                  size="small"
+                  onClick={() => setFeeAsPayment(row.id)}
+                  disabled={
+                    !row.couldBeSetAsPaymentFee ||
+                    account?.isExternalWalletConnected
+                  }
+                >
+                  <DollarIcon />
+                  {t("wallet.assets.table.actions.payment.asset")}
+                </Button>
+              )}
             </div>
           )}
         </SActionButtonsContainer>

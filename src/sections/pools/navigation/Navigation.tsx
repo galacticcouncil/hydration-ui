@@ -5,10 +5,8 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { useTokensBalances } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   SubNavigation,
@@ -17,6 +15,8 @@ import {
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { useLocation } from "@tanstack/react-location"
 import { t } from "i18next"
+import { useAccountNFTPositions } from "api/deposits"
+import { useAccountBalances } from "api/accountBalances"
 
 const routeMap = new Map([
   [LINKS.allPools, t("liquidity.navigation.allPools")],
@@ -55,22 +55,24 @@ const MyLiquidity = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountNFTPositions()
 
-  const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
-  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+  const balances = useAccountBalances(account?.address)
 
-  const userPositions = useTokensBalances(
-    [...shareTokensId, ...stableswapsId],
-    account?.address,
-  )
+  const isPoolBalances = balances.data?.balances.some((balance) => {
+    if (balance.freeBalance.gt(0)) {
+      const meta = assets.getAsset(balance.id)
+      return meta.isStableSwap || meta.isShareToken
+    }
+    return false
+  })
 
-  const isOmnipoolPositions =
+  const isPositions =
     accountPositions.data?.miningNfts.length ||
     accountPositions.data?.omnipoolNfts.length ||
-    userPositions.some((userPosition) => userPosition.data?.freeBalance.gt(0))
+    isPoolBalances
 
-  if (!isOmnipoolPositions) return null
+  if (!isPositions) return null
 
   return (
     <>

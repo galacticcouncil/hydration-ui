@@ -36,7 +36,7 @@ export const DefaultSliceLabel = ({
         <MultipleIcons
           size={[20, 36]}
           icons={sortedSlices.map((slice) => ({
-            icon: <AssetLogo id={slice.id} />,
+            icon: <AssetLogo key={slice.id} id={slice.id} />,
           }))}
         />
         <Text color="basic100" fs={[12, 18]}>

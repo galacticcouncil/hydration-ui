@@ -1,4 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
+import { XItemCursor } from "@galacticcouncil/apps"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -12,7 +13,7 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { Transaction } from "state/store"
 import { theme } from "theme"
 
@@ -22,6 +23,7 @@ type Props = TxProps & {
   title?: string
   onCancel: () => void
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
+  onSignError?: (error: unknown) => void
 }
 
 export const ReviewTransactionXCallForm: FC<Props> = ({
@@ -30,6 +32,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   xcallMeta,
   onEvmSigned,
   onCancel,
+  onSignError,
 }) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
@@ -37,22 +40,37 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   const { wallet } = useWallet()
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
-    if (!account?.address) throw new Error("Missing active account")
-    if (!wallet) throw new Error("Missing wallet")
-    if (!wallet.signer) throw new Error("Missing signer")
-    if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
+    try {
+      if (!account?.address) throw new Error("Missing active account")
+      if (!wallet) throw new Error("Missing wallet")
+      if (!wallet.signer) throw new Error("Missing signer")
+      if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
-    if (wallet?.signer instanceof MetaMaskSigner) {
-      const { srcChain } = xcallMeta
+      if (wallet?.signer instanceof EthereumSigner) {
+        const { srcChain } = xcallMeta
 
-      const evmTx = await wallet.signer.sendTransaction({
-        chain: srcChain,
-        from: account.address,
-        to: xcall.to,
-        data: xcall.data,
-      })
+        const evmTx = await wallet.signer.sendTransaction({
+          chain: srcChain,
+          from: account.address,
+          to: xcall.to,
+          data: xcall.data,
+          value: xcall.value,
+        })
 
-      onEvmSigned({ evmTx })
+        const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
+        if (isApproveTx) {
+          XItemCursor.reset({
+            data: evmTx.data as `0x${string}`,
+            hash: evmTx.hash as `0x${string}`,
+            nonce: evmTx.nonce,
+            to: evmTx.to as `0x${string}`,
+          })
+        }
+
+        onEvmSigned({ evmTx })
+      }
+    } catch (error) {
+      onSignError?.(error)
     }
   })
 
@@ -74,8 +92,13 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           <ReviewTransactionData address={account?.address} xcall={xcall} />
         }
         footer={
-          <div sx={{ mt: 15 }}>
-            <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+          <>
+            <div sx={{ mt: 15 }}>
+              <ReviewTransactionXCallSummary
+                xcallMeta={xcallMeta}
+                xcall={xcall}
+              />
+            </div>
             <div
               sx={{
                 mt: ["auto", 24],
@@ -111,7 +134,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
                 )}
               </div>
             </div>
-          </div>
+          </>
         }
       />
     </>

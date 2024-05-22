@@ -24,7 +24,7 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { PageSwitch } from "sections/xcm/components/PageSwitch"
+import { genesisHashToChain } from "utils/helpers"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -103,7 +103,11 @@ export function XcmPage() {
     const { srcChain } = e.detail
 
     const chain = chainsMap.get(srcChain)
-    const isEvm = chain?.isEvmParachain()
+
+    const isEvm =
+      chain?.key === "acala"
+        ? false
+        : chain?.isEvmParachain() || chain?.isEvmChain()
     const isHydra = chain?.key === "hydradx"
 
     const walletMode = isHydra
@@ -128,10 +132,12 @@ export function XcmPage() {
 
   const assetDefault =
     search.success && search.data.asset ? search.data.asset : undefined
+  const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
+
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
 
   return (
     <Page>
-      <PageSwitch />
       <SContainer>
         <XcmApp
           ref={ref}
@@ -145,6 +151,8 @@ export function XcmPage() {
           stableCoinAssetId={stableCoinAssetId}
           onXcmNew={handleSubmit}
           onWalletChange={handleWalletChange}
+          ss58Prefix={ss58Prefix}
+          blacklist={blacklist}
         />
       </SContainer>
     </Page>

@@ -11,7 +11,7 @@ export const STrigger = styled(Tooltip.Trigger)`
 `
 
 export const SContent = styled(Tooltip.Content)<{ type: "default" | "black" }>`
-  z-index: 10;
+  z-index: 99999;
 
   max-width: calc(100vw - 12px * 2);
 

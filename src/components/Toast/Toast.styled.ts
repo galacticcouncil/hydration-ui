@@ -42,17 +42,11 @@ export const SIcon = styled.div`
   }
 `
 
-export const SLink = styled.div<{ variant: ToastVariant }>`
+export const SLink = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ variant }) => {
-    if (variant === "progress") {
-      return theme.colors.white
-    }
-
-    return `rgba(${theme.rgbColors.white}, 0.6)`
-  }};
+  color: rgba(${theme.rgbColors.white}, 0.6);
 
   svg {
     width: 16px;

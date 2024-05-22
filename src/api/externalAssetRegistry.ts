@@ -1,8 +1,22 @@
-import { WsProvider } from "@polkadot/api"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import {
+  ASSET_HUB_ID,
+  TExternalAsset,
+} from "sections/wallet/addToken/AddToken.utils"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { WsProvider } from "@polkadot/api"
+
+type TRegistryChain = {
+  assetCnt: string
+  id: string
+  paraID: number
+  relayChain: "polkadot" | "kusama"
+  data: (TExternalAsset & { currencyID: string })[]
+}
+
+const HYDRA_PARACHAIN_ID = 2034
 
 const parachain = chainsMap.get("assethub")
 const assetHubProvider = new WsProvider(parachain?.ws)
@@ -48,10 +62,10 @@ export const getAssetHubAssets = async () => {
           symbol: data.symbol.toHuman() as string,
           // @ts-ignore
           name: data.name.toHuman() as string,
-          origin: parachain.parachainId,
+          origin: provider.parachainId,
         }
       })
-      return { data, id: parachain.parachainId }
+      return { data, id: provider.parachainId }
     }
   } catch (e) {}
 }
@@ -98,4 +112,48 @@ export const useAssetHubAssetRegistry = () => {
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
     },
   )
+}
+
+export const usePolkadotRegistry = () => {
+  return useQuery(["polkadotRegistry"], async () => {
+    const res = await fetch(
+      "https://cdn.jsdelivr.net/gh/colorfulnotion/xcm-global-registry/metadata/xcmgar.json",
+    )
+    const data = await res.json()
+    let polkadotAssets: TRegistryChain[] = []
+
+    try {
+      polkadotAssets = data?.assets?.polkadot ?? []
+    } catch (error) {}
+
+    return polkadotAssets
+  })
+}
+
+export const useParachainAmount = (id: string) => {
+  const chains = usePolkadotRegistry()
+
+  const validChains = chains.data?.reduce<any[]>((acc, chain) => {
+    // skip asst hub and hydra chains
+    if (chain.paraID === ASSET_HUB_ID || chain.paraID === HYDRA_PARACHAIN_ID)
+      return acc
+
+    const assets = chain.data
+
+    const isAsset = assets.some((asset) => {
+      try {
+        return asset.currencyID === id
+      } catch (error) {
+        return false
+      }
+    })
+
+    if (isAsset) {
+      acc.push(chain)
+    }
+
+    return acc
+  }, [])
+
+  return { chains: validChains ?? [], amount: validChains?.length ?? 0 }
 }

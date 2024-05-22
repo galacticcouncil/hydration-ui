@@ -1,11 +1,10 @@
-import { WsProvider } from "@polkadot/api"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 export const PROVIDERS = [
   {
@@ -100,10 +99,21 @@ export const useProviderData = (rpcUrl: string) => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrl),
     async ({ queryKey: [_, url] }) => {
-      const provider = new WsProvider(url)
-
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(provider.endpoint)
+      const api = await apiPool.api(url)
+
+      api.registry.register({
+        XykLMDeposit: {
+          shares: "u128",
+          ammPoolId: "AccountId",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+        OmnipoolLMDeposit: {
+          shares: "u128",
+          ammPoolId: "u32",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+      })
 
       const {
         isStableCoin,
@@ -142,7 +152,7 @@ export const useProviderData = (rpcUrl: string) => {
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
-        provider,
+        poolService: assets.poolService,
       }
     },
     { refetchOnWindowFocus: false },

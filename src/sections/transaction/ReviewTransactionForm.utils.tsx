@@ -11,12 +11,18 @@ import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_DECIMALS,
+  NATIVE_EVM_ASSET_ID,
+  isEvmAccount,
+} from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import { useEvmPaymentFee } from "api/evm"
+import { useProviderRpcUrlStore } from "api/provider"
+import { useMemo } from "react"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -37,7 +43,8 @@ export const useTransactionValues = ({
 
   const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
-  const isEvm = isEvmAccount(account?.address)
+  const shouldUseEvmPermit = feePaymentId !== NATIVE_EVM_ASSET_ID
+  const isEvm = !shouldUseEvmPermit && isEvmAccount(account?.address)
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
     isEvm ? account?.address : "",
@@ -280,4 +287,18 @@ export const useEditFeePaymentAsset = (
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
   }
+}
+
+export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
+  const provider = useProviderRpcUrlStore()
+
+  const rpcUrl = encodeURIComponent(
+    provider.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
+  )
+
+  return useMemo(() => {
+    return tx
+      ? `https://polkadot.js.org/apps/?rpc=${rpcUrl}#/extrinsics/decode/${tx.method.toHex()}`
+      : ""
+  }, [rpcUrl, tx])
 }
