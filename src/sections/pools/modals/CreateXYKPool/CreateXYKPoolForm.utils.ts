@@ -69,7 +69,7 @@ export const useAllowedXYKPoolAssets = () => {
       const shouldBeVisible = isTradable || isNotTradableWithBalance
 
       if (asset.isExternal) {
-        return shouldBeVisible && isAdded(asset.generalIndex)
+        return shouldBeVisible && isAdded(asset.externalId)
       }
 
       return shouldBeVisible
