@@ -5,77 +5,149 @@ import { Buffer } from "buffer"
 import { keccak256 } from "ethers/lib/utils"
 import { omit } from "utils/rx"
 import { differenceInMinutes } from "date-fns"
+import { useRpcProvider } from "providers/rpcProvider"
+import request, { gql } from "graphql-request"
+import { useIndexerUrl } from "api/provider"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
-const getEvmTxHash = async (hash: string) => {
-  const checkHashEndpoint = "https://hydradx.api.subscan.io/api/scan/check_hash"
-  const body = JSON.stringify({
-    hash,
+const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
+
+type TExtrinsic = {
+  hash: string
+  block: {
+    height: string
+  }
+  indexInBlock: string
+}
+
+const getExtrinsicByHash = async (indexerUrl: string, hash: string) => {
+  return {
+    ...(await request<{
+      extrinsics: TExtrinsic[]
+    }>(
+      indexerUrl,
+      gql`
+        query GetHash($hash: String!) {
+          extrinsics(where: { hash_eq: $hash }) {
+            hash
+            block {
+              height
+            }
+            indexInBlock
+          }
+        }
+      `,
+      { hash },
+    )),
+  }
+}
+
+const getExtrinsicByBlockNumber = async (
+  indexerUrl: string,
+  blockNumber: number,
+) => {
+  return {
+    ...(await request<{
+      extrinsics: TExtrinsic[]
+    }>(
+      indexerUrl,
+      gql`
+        query GetHash($blockNumber: Int) {
+          extrinsics(
+            where: {
+              block: { height_eq: $blockNumber }
+              AND: { call: { name_eq: "Ethereum.transact" } }
+            }
+          ) {
+            indexInBlock
+            hash
+            block {
+              height
+            }
+          }
+        }
+      `,
+      { blockNumber },
+    )),
+  }
+}
+
+const getExtrinsicIndex = (
+  { extrinsics }: { extrinsics: TExtrinsic[] },
+  i?: number,
+) => {
+  const extrinsic = extrinsics?.length ? extrinsics[i ?? 0] : undefined
+
+  if (!extrinsic) return undefined
+
+  // get block details of extrinsic
+  const blockNumber = extrinsic.block.height.toString()
+  const index = extrinsic.indexInBlock.toString()
+
+  return `${blockNumber}-${index}`
+}
+
+const getWormholeTx = async (extrinsicIndex: string) => {
+  // find xcm transfer
+  const xcmListEndpoint = "https://polkadot.api.subscan.io/api/scan/xcm/list"
+  const xcmBody = JSON.stringify({
+    extrinsic_index: extrinsicIndex,
+    message_type: "transfer",
+    row: 1,
   })
 
-  const hashRes = await fetch(checkHashEndpoint, {
+  const xcmRes = await fetch(xcmListEndpoint, {
     method: "POST",
-    body,
+    body: xcmBody,
   })
+  const xcmListData = await xcmRes.json()
 
-  const hashDataRaw = await hashRes.json()
+  const tx = xcmListData?.data?.list?.[0]
 
-  try {
-    const hashData = hashDataRaw?.data
-    const extrinsicIndex = hashData?.extrinsic_index
-    const hashType = hashData?.hash_type
+  if (!tx) return undefined
 
-    if (hashType !== "evm") return
+  const destExtrinsicIndex = tx.dest_extrinsic_index
+  const [destBlockNumber] = destExtrinsicIndex.split("-")
+  const fromAccountId = tx.to_account_id
 
-    const xcmListEndpoint = "https://polkadot.api.subscan.io/api/scan/xcm/list"
-    const xcmBody = JSON.stringify({
-      extrinsic_index: extrinsicIndex,
-      message_type: "transfer",
-      row: 1,
-    })
+  const apiPool = SubstrateApis.getInstance()
+  const moonbeamApi = await apiPool.api(moonbeamRpc)
 
-    const xcmRes = await fetch(xcmListEndpoint, {
-      method: "POST",
-      body: xcmBody,
-    })
-    const xcmListData = await xcmRes.json()
+  const txCount =
+    await moonbeamApi.rpc.eth.getBlockTransactionCountByNumber(destBlockNumber)
 
-    const tx = xcmListData?.data?.list?.[0]
+  const moonbeamTxs = await Promise.all(
+    [...Array(txCount.toNumber()).keys()].map((i) =>
+      moonbeamApi.rpc.eth.getTransactionByBlockNumberAndIndex(
+        destBlockNumber,
+        i,
+      ),
+    ),
+  )
 
-    const destExtrinsicIndex = tx.dest_extrinsic_index
-    const destBlockNumber = destExtrinsicIndex.split("-")?.[0]
-    const toAccountId = tx.to_account_id
+  const wormholeTxHash = moonbeamTxs
+    .find((tx) => tx.from.toString() === fromAccountId)
+    ?.toHuman()
 
-    const moonbeamEvmTxEndpoint =
-      "https://moonbeam.api.subscan.io/api/scan/evm/v2/transactions"
-    const body = JSON.stringify({
-      address: toAccountId,
-      block_num: Number(destBlockNumber),
-    })
-
-    const evmTxRes = await fetch(moonbeamEvmTxEndpoint, {
-      method: "POST",
-      body,
-    })
-
-    const evmTxDataRaw = await evmTxRes.json()
-    const evmTxData = evmTxDataRaw?.data?.list?.[0]
-
-    const hash = evmTxData.hash
-    const isMoonbeamSuccess = evmTxData.success
-
-    return { hash, isMoonbeamSuccess }
-  } catch (e) {
-    throw new Error(`Hash ${hash} doesn't exist`)
+  if (destBlockNumber && fromAccountId && !wormholeTxHash) {
+    return { hash: null, isMoonbeamSuccess: false }
+  } else if (wormholeTxHash) {
+    return { hash: wormholeTxHash.hash as string, isMoonbeamSuccess: true }
   }
 }
 
 export const useBridgeToast = (toasts: ToastData[]) => {
+  const { api, isLoaded } = useRpcProvider()
+  const indexerUrl = useIndexerUrl()
   const toast = useToast()
 
   useQueries({
     queries: toasts.map((toastData) => ({
       queryKey: QUERY_KEYS.bridgeLink(toastData.id),
       queryFn: async () => {
+        if (!isLoaded) return null
+
         const chainKey = toastData.bridge as string
         const url = new URL(toastData.link as string)
 
@@ -110,7 +182,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           } catch {}
           return false
         } else {
-          if (diffInMinutes > 2) {
+          if (diffInMinutes > 30) {
             toast.remove(toastData.id)
             toast.add("unknown", omit(["bridge"], toastData))
           }
@@ -118,7 +190,28 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           const hash = url.pathname.split("/").slice(-1)[0]
 
           try {
-            const evmTx = await getEvmTxHash(hash)
+            let extrinsicIndex
+            if (chainKey !== "substrate") {
+              // if hash is evm
+              const ethTx = await api.rpc.eth.getTransactionByHash(hash)
+              const blockNumber = ethTx.blockNumber.toString()
+              const transactionIndex = Number(ethTx.transactionIndex.toString())
+
+              const extrinsic = await getExtrinsicByBlockNumber(
+                indexerUrl,
+                Number(blockNumber),
+              )
+
+              extrinsicIndex = getExtrinsicIndex(extrinsic, transactionIndex)
+            } else {
+              // if hash is substrate
+              const extrinsic = await getExtrinsicByHash(indexerUrl, hash)
+              extrinsicIndex = getExtrinsicIndex(extrinsic)
+            }
+
+            if (!extrinsicIndex) return false
+
+            const evmTx = await getWormholeTx(extrinsicIndex)
 
             if (evmTx?.isMoonbeamSuccess === false && evmTx.hash) {
               toast.remove(toastData.id)
@@ -130,7 +223,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
                 }),
               )
             }
-
             if (evmTx?.isMoonbeamSuccess === true && evmTx.hash) {
               //udpate a link to show tx details on wormhole
               toast.edit(toastData.id, {
@@ -143,7 +235,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
 
         return false
       },
-      enabled: !!toastData.id && !!toastData.link,
+      enabled: (!!toastData.id && !!toastData.link) || !isLoaded,
       refetchInterval: toastData.bridge === "ethereum" ? 60000 : 30000,
     })),
   })

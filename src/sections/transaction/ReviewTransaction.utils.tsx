@@ -162,6 +162,7 @@ export const useSendEvmTransactionMutation = (
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [txData, setTxData] = useState<string>()
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
     undefined,
   )
@@ -181,6 +182,7 @@ export const useSendEvmTransactionMutation = (
       try {
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
+        setTxData(evmTx?.data)
         setCallMeta(xcallMeta)
         const receipt = await evmTx.wait()
         setTxState("InBlock")
@@ -196,7 +198,7 @@ export const useSendEvmTransactionMutation = (
   }, options)
 
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
-  const txLink = txHash && chain ? getEvmTxLink(txHash, chain.key) : ""
+  const txLink = txHash && chain ? getEvmTxLink(txHash, txData, chain.key) : ""
 
   const destChain = xcallMeta?.dstChain
     ? getChainByKey(xcallMeta.dstChain)
@@ -363,7 +365,7 @@ export const useSendTransactionMutation = (
     ? getChainByKey(xcallMeta.dstChain)
     : undefined
 
-  const bridge = destChain?.isEvmChain() ? "hydradx" : undefined
+  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
 
   return {
     ...sendTx,
