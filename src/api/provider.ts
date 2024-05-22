@@ -18,6 +18,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Dwellir",
@@ -25,6 +26,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Dotters",
@@ -39,14 +41,23 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
-
+  {
+    name: "Dotters",
+    url: "wss://hydradx.paras.dotters.network",
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    env: "production",
+    dataEnv: "mainnet",
+  },
   {
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
     squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
     env: ["development"],
+    dataEnv: "testnet",
   },
   {
     name: "Rococo via GC",
@@ -55,6 +66,7 @@ export const PROVIDERS = [
     squidUrl:
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
+    dataEnv: "testnet",
   },
   /*{
     name: "Testnet",
@@ -64,7 +76,9 @@ export const PROVIDERS = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
   },*/
-]
+] as const
+
+export type TEnv = "testnet" | "mainnet"
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
@@ -79,15 +93,27 @@ export const useProviderRpcUrlStore = create(
     rpcUrl: string
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
+    getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
-    (set) => ({
+    (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setAutoMode: (state) => set({ autoMode: state }),
+      getDataEnv: () => {
+        const { rpcUrl, autoMode } = get()
+        if (!autoMode) {
+          return (
+            PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
+            "mainnet"
+          )
+        }
+
+        return import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet"
+      },
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),

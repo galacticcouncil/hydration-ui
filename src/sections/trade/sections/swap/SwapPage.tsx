@@ -8,7 +8,11 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
+import {
+  useActiveProvider,
+  useActiveRpcUrlList,
+  useProviderRpcUrlStore,
+} from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -57,14 +61,17 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
+  const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
-
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm, externalTokensStored.length])
   const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
+  const version = useRemount([
+    isEvm,
+    externalTokensStored[preference.getDataEnv()].length,
+  ])
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
@@ -142,6 +149,7 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
+        isTestnet={preference.getDataEnv() === "testnet"}
       />
       {addToken && (
         <AddTokenModal
