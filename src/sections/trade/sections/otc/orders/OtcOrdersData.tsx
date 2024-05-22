@@ -6,7 +6,9 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { OfferingPair } from "./OtcOrdersData.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { abbreviateNumber } from "utils/helpers"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair
@@ -28,13 +30,9 @@ export const OrderPairColumn = (props: {
           icons={offerAssetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />
@@ -65,13 +63,9 @@ export const OrderPairColumn = (props: {
           icons={acceptAssetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />
@@ -115,13 +109,9 @@ export const OrderAssetColumn = (props: {
           icons={assetDetails.assets.map((assetId: string) => {
             const meta = assets.getAsset(assetId)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : assetId
             return {
-              icon: (
-                <Icon
-                  size={22}
-                  icon={<AssetLogo id={isBond ? meta.assetId : assetId} />}
-                />
-              ),
+              icon: <Icon size={22} icon={<AssetLogo key={id} id={id} />} />,
             }
           })}
         />
@@ -154,12 +144,13 @@ export const OrderAssetColumn = (props: {
 
 export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "center",
+        justifyContent: isDesktop ? "center" : "flex-end",
         alignItems: "center",
         height: "100%",
         width: "100%",
@@ -173,10 +164,14 @@ export const OrderPriceColumn = (props: { pair: OfferingPair; price: BN }) => {
       ) : (
         <>
           <Text fs={[14, 13]} lh={13} fw={500} color="white">
-            {t("value.token", { value: 1 })} {props.pair.symbol}
+            <DisplayValue value={props.price} compact />
           </Text>
           <Text fs={[14, 13]} lh={13} fw={500} color="whiteish500">
-            ({abbreviateNumber(props.price)})
+            (
+            {t("otc.offers.table.header.perToken", {
+              symbol: props.pair.symbol,
+            })}
+            )
           </Text>
         </>
       )}

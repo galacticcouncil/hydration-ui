@@ -13,6 +13,10 @@ declare global {
   interface Window {
     ethereum?: MetaMaskLikeProvider
     talismanEth?: MetaMaskLikeProvider
+    SubWallet?: MetaMaskLikeProvider
+    phantom?: {
+      ethereum: MetaMaskLikeProvider
+    }
     injectedWeb3?: Record<string, InjectedWindowProvider>
     walletExtension?: { isNovaWallet?: boolean }
   }

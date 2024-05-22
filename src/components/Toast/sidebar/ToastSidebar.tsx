@@ -81,6 +81,7 @@ export function ToastSidebar() {
                             {pendingToasts.map((toast) => (
                               <ToastContent
                                 key={toast.id}
+                                link={toast.link}
                                 variant={toast.variant}
                                 title={
                                   <div

@@ -10,8 +10,12 @@ import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
-import { BN_1, BN_NAN } from "utils/constants"
+import {
+  NATIVE_EVM_ASSET_DECIMALS,
+  NATIVE_EVM_ASSET_ID,
+  isEvmAccount,
+} from "utils/evm"
+import { BN_NAN, BN_1 } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
@@ -38,7 +42,8 @@ export const useTransactionValues = ({
 
   const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
-  const isEvm = isEvmAccount(account?.address)
+  const shouldUseEvmPermit = feePaymentId !== NATIVE_EVM_ASSET_ID
+  const isEvm = !shouldUseEvmPermit && isEvmAccount(account?.address)
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
     isEvm ? account?.address : "",

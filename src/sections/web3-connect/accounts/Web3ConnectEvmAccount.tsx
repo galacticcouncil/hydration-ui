@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
@@ -8,7 +9,7 @@ import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAc
 import { SAccountItem } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { isMetaMask, isTalisman, requestAccounts } from "utils/metamask"
+import { isMetaMask, isMetaMaskLike, requestAccounts } from "utils/metamask"
 
 export const Web3ConnectEvmAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
@@ -16,13 +17,14 @@ export const Web3ConnectEvmAccount: FC<
   const { t } = useTranslation()
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
   const { wallet } = useWallet()
+  const navigate = useNavigate()
 
   const isActive = currentAccount?.address === account.address
 
   // Allow account changing for MetaMask wallets,
-  // but disable for Talisman as it doesn't provide a way to open the account selection programmatically
+  // but disable for MetaMask-like as it doesn't provide a way to open the account selection programmatically
   const shouldAllowAccountChange =
-    isMetaMask(wallet?.extension) && !isTalisman(wallet?.extension)
+    isMetaMask(wallet?.extension) && !isMetaMaskLike(wallet?.extension)
 
   return (
     <>
@@ -31,6 +33,7 @@ export const Web3ConnectEvmAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
+          navigate({ search: { account: undefined } })
         }}
       >
         <div

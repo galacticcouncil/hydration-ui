@@ -134,6 +134,7 @@ export const AssetSelect = (props: {
           <AssetSelectButton
             assetId={props.id}
             onClick={props.onSelectAssetClick}
+            css={{ pointerEvents: !props.onSelectAssetClick ? "none" : "auto" }}
           />
           <AssetInput
             disabled={props.disabled}

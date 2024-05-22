@@ -75,3 +75,23 @@ export function diffBy<T>(
 
   return result
 }
+
+export function mergeArrays<TArr, TKey extends keyof TArr>(
+  arr1: TArr[],
+  arr2: TArr[],
+  key: TKey,
+) {
+  const mergedArray = arr1.reduce(
+    (acc, obj) => {
+      // Check if the object already exists in the merged array
+      const existingObj = acc.find((item) => item[key] === obj[key])
+      if (!existingObj) {
+        acc.push(obj) // Add the object if it doesn't exist
+      }
+      return acc
+    },
+    [...arr2],
+  ) // Start with a copy of arr2
+
+  return mergedArray
+}

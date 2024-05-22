@@ -10,6 +10,7 @@ type TokensConversionProps = {
   firstValue?: { amount: BN; symbol: string }
   secondValue?: { amount: BN; symbol: string }
   placeholderValue?: string
+  onClick?: () => void
 }
 
 export const TokensConversion = ({
@@ -17,6 +18,7 @@ export const TokensConversion = ({
   firstValue,
   secondValue,
   placeholderValue,
+  onClick,
 }: TokensConversionProps) => {
   const { t } = useTranslation()
 
@@ -26,7 +28,7 @@ export const TokensConversion = ({
       css={{ position: "relative" }}
     >
       <Separator />
-      <SConvertionContainer>
+      <SConvertionContainer onClick={onClick}>
         <Text fs={11} lh={15}>
           {label ?? t("price")}
         </Text>

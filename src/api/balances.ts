@@ -225,3 +225,28 @@ export const useMaxBalance = (
     fee,
   }
 }
+
+export const useShareTokenBalances = (shareTokenIds: string[]) => {
+  const { api, assets } = useRpcProvider()
+
+  const shareTokens = assets
+    .getAssets(shareTokenIds)
+    .reduce<{ id: string; address: string }[]>((acc, asset) => {
+      if (assets.isShareToken(asset)) {
+        asset.assets.forEach((id) =>
+          acc.push({ id, address: asset.poolAddress }),
+        )
+      }
+
+      return acc
+    }, [])
+
+  return useQueries({
+    queries: shareTokens.map(({ id, address }) => ({
+      queryKey: QUERY_KEYS.tokenBalanceLive(id, address),
+      queryFn:
+        address != null ? getTokenBalance(api, address, id) : undefinedNoop,
+      enabled: !!id && !!address,
+    })),
+  })
+}

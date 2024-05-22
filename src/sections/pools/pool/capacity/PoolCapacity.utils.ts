@@ -5,10 +5,10 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useMemo } from "react"
 import { BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
-import { calculate_cap_difference } from "@galacticcouncil/math-omnipool"
 import { getFloatingPointAmount } from "utils/balance"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useDisplayAssetStore } from "utils/displayAsset"
+import { OmniMath } from "@galacticcouncil/sdk"
 
 export const usePoolCapacity = (id: string) => {
   const { assets } = useRpcProvider()
@@ -62,7 +62,7 @@ export const usePoolCapacity = (id: string) => {
     const assetCap = asset.data.cap.toString()
     const totalHubReserve = hubBalance.data.total.toString()
 
-    let capDifference = calculate_cap_difference(
+    const capDifference = OmniMath.calculateCapDifference(
       assetReserve,
       assetHubReserve,
       assetCap,

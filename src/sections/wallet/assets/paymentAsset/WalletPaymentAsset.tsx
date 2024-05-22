@@ -12,7 +12,7 @@ import { isEvmAccount } from "utils/evm"
 
 export const WalletPaymentAsset = () => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const { data: accountCurrencyId } = useAccountCurrency(account?.address)
   const accountCurrencyMeta = accountCurrencyId
@@ -34,9 +34,7 @@ export const WalletPaymentAsset = () => {
 
   const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
 
-  const isEvm = isEvmAccount(account?.address)
-
-  if (isEvm) {
+  if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
     return null
   }
 
@@ -49,7 +47,7 @@ export const WalletPaymentAsset = () => {
         <MultipleIcons
           size={18}
           icons={iconIds.map((asset) => ({
-            icon: <AssetLogo id={asset} />,
+            icon: <AssetLogo key={asset} id={asset} />,
           }))}
         />
         <Text fs={14} lh={14} font="ChakraPetchSemiBold">

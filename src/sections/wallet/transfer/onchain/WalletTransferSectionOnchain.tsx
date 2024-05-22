@@ -94,6 +94,10 @@ export function WalletTransferSectionOnchain({
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
+    const amount = new BigNumber(values.amount)
+      .multipliedBy(BN_10.pow(assetMeta.decimals))
+      .decimalPlaces(0)
+
     const normalizedDest =
       safeConvertAddressH160(values.dest) !== null
         ? new H160(values.dest).toAccount()
