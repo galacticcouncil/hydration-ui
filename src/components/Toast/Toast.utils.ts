@@ -8,9 +8,10 @@ import { differenceInMinutes } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import request, { gql } from "graphql-request"
 import { useIndexerUrl } from "api/provider"
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
-const moonbeamRpc = "wss://wss.api.moonbeam.network"
+const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
 
 type TExtrinsic = {
   hash: string
