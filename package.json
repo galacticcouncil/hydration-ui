@@ -168,7 +168,7 @@
     "prop-types": "^15.8.1",
     "storybook": "^8.1.1",
     "ts-node": "^10.9.1",
-    "vite": "5.2.11",
+    "vite": "4.4.6",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^1.6.0"
