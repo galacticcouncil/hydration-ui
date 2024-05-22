@@ -9,6 +9,7 @@ import { theme } from "theme"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
+import { MigrationProvider } from "sections/migration/MigrationProvider"
 
 const AppsPersistenceProvider = createComponent({
   tagName: "gc-database-provider",
