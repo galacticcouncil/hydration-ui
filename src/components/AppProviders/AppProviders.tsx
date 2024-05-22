@@ -17,6 +17,7 @@ const AppsPersistenceProvider = createComponent({
 })
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
+  console.log("test")
   return (
     <TooltipProvider>
       <RpcProvider>
