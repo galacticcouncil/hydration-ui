@@ -466,6 +466,9 @@ export const getAssets = async (api: ApiPromise) => {
     [],
   )
 
+  // pass external tokens to trade router
+  await poolService.syncRegistry(externalTokens[dataEnv])
+
   try {
     rawTradeAssets = await tradeRouter.getAllAssets()
   } catch (e) {}
