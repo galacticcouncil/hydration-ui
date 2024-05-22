@@ -23,10 +23,11 @@ type ToastParams = {
   title: ReactElement
   actions?: ReactNode
   persist?: boolean
+  bridge?: string
   hideTime?: number
 }
 
-type ToastData = ToastParams & {
+export type ToastData = ToastParams & {
   id: string
   variant: ToastVariant
   hidden: boolean
@@ -134,7 +135,9 @@ const useToastsStore = create<ToastStore>()(
                 for (const account of allAccounts) {
                   const accountToasts = allToasts[account]
                   const loadingToastsIds = accountToasts
-                    .filter((toast) => toast.variant === "progress")
+                    .filter(
+                      (toast) => toast.variant === "progress" && !toast.bridge,
+                    )
                     .map((toast) => toast.id)
 
                   allToasts[account] = accountToasts.map((toast) => {
@@ -245,7 +248,10 @@ export const useToast = () => {
   const add = (variant: ToastVariant, toast: ToastParams) => {
     const id = toast.id ?? uuid()
     const dateCreated = new Date().toISOString()
-    const title = renderToString(toast.title)
+    const title =
+      typeof toast.title === "string"
+        ? toast.title
+        : renderToString(toast.title)
 
     if (variant !== "temporary") {
       store.update(account?.address, (toasts) => {
@@ -291,6 +297,11 @@ export const useToast = () => {
 
     return id
   }
+
+  const edit = (id: string, props: Partial<ToastData>) =>
+    store.update(account?.address, (toasts) =>
+      toasts.map((toast) => (toast.id === id ? { ...toast, ...props } : toast)),
+    )
 
   const info = (toast: ToastParams) => add("info", toast)
   const success = (toast: ToastParams) => add("success", toast)
@@ -339,5 +350,6 @@ export const useToast = () => {
     loading,
     unknown,
     temporary,
+    edit,
   }
 }

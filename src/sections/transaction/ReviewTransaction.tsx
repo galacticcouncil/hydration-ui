@@ -12,8 +12,10 @@ import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
+  const { isLoaded } = useRpcProvider()
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
   const [signError, setSignError] = useState<unknown>()
@@ -30,7 +32,10 @@ export const ReviewTransaction = (props: Transaction) => {
     txState,
     reset,
     txLink,
+    bridge,
   } = useSendTx()
+
+  if (!isLoaded) return null
 
   const isError = isSendError || !!signError
   const error = sendError || signError
@@ -90,6 +95,7 @@ export const ReviewTransaction = (props: Transaction) => {
           onReview={onReview}
           onClose={onClose}
           toastMessage={props.toastMessage}
+          bridge={bridge}
         />
       )}
 
@@ -123,9 +129,9 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
-            onSigned={(signed) => {
+            onSigned={(tx, xcallMeta) => {
               props.onSubmitted?.()
-              sendTx(signed)
+              sendTx({ tx, xcallMeta })
             }}
             onPermitDispatched={(permit) => {
               props.onSubmitted?.()

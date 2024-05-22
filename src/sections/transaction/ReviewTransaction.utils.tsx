@@ -17,7 +17,13 @@ import { useMountedState } from "react-use"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useToast } from "state/toasts"
-import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
+import {
+  H160,
+  getEvmChainById,
+  getChainByKey,
+  getEvmTxLink,
+  isEvmAccount,
+} from "utils/evm"
 import { getSubscanLinkByType } from "utils/formatting"
 
 type TxMethod = AnyJson & {
@@ -150,15 +156,20 @@ export const useSendEvmTransactionMutation = (
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
+      xcallMeta?: Record<string, string>
     }
   > = {},
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [txData, setTxData] = useState<string>()
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
 
   const { account } = useEvmAccount()
 
-  const sendTx = useMutation(async ({ evmTx }) => {
+  const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       const timeout = setTimeout(
         () => {
@@ -171,6 +182,8 @@ export const useSendEvmTransactionMutation = (
       try {
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
+        setTxData(evmTx?.data)
+        setCallMeta(xcallMeta)
         const receipt = await evmTx.wait()
         setTxState("InBlock")
 
@@ -185,15 +198,26 @@ export const useSendEvmTransactionMutation = (
   }, options)
 
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
-  const txLink = txHash && chain ? getEvmTxLink(txHash, chain.key) : ""
+  const txLink = txHash && chain ? getEvmTxLink(txHash, txData, chain.key) : ""
+
+  const isApproveTx = txData?.startsWith("0x095ea7b3")
+
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge =
+    chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
 
   return {
     ...sendTx,
     txState,
     txLink,
+    bridge: isApproveTx ? undefined : bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
+      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -203,15 +227,21 @@ export const useSendDispatchPermit = (
   options: MutationObserverOptions<
     ISubmittableResult,
     unknown,
-    PermitResult
+    {
+      permit: PermitResult
+      xcallMeta?: Record<string, string>
+    }
   > = {},
 ) => {
   const { api } = useRpcProvider()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
   const isMounted = useMountedState()
 
-  const sendTx = useMutation(async (permit) => {
+  const sendTx = useMutation(async ({ permit, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         const unsubscribe = await api.tx.multiTransactionPayment
@@ -237,6 +267,7 @@ export const useSendDispatchPermit = (
             if (isMounted()) {
               setTxHash(result.txHash.toHex())
               setTxState(result.status.type)
+              setCallMeta(xcallMeta)
             } else {
               clearTimeout(timeout)
             }
@@ -265,10 +296,17 @@ export const useSendDispatchPermit = (
     ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
     : undefined
 
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+
   return {
     ...sendTx,
     txState,
     txLink,
+    bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
@@ -281,18 +319,24 @@ export const useSendTransactionMutation = (
   options: MutationObserverOptions<
     ISubmittableResult,
     unknown,
-    SubmittableExtrinsic<"promise">
+    {
+      tx: SubmittableExtrinsic<"promise">
+      xcallMeta?: Record<string, string>
+    }
   > = {},
 ) => {
   const { api } = useRpcProvider()
   const isMounted = useMountedState()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
 
-  const sendTx = useMutation(async (sign) => {
+  const sendTx = useMutation(async ({ tx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        const unsubscribe = await sign.send(async (result) => {
+        const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
           const timeout = setTimeout(() => {
@@ -303,6 +347,7 @@ export const useSendTransactionMutation = (
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
+            setCallMeta(xcallMeta)
           } else {
             clearTimeout(timeout)
           }
@@ -331,13 +376,21 @@ export const useSendTransactionMutation = (
     ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
     : undefined
 
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+
   return {
     ...sendTx,
     txState,
     txLink,
+    bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
+      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -416,7 +469,7 @@ export const useSendTx = () => {
   const boundReferralToast = useBoundReferralToast()
 
   const sendTx = useSendTransactionMutation({
-    onMutate: (tx) => {
+    onMutate: ({ tx }) => {
       boundReferralToast.onLoading(tx)
       setTxType("default")
     },

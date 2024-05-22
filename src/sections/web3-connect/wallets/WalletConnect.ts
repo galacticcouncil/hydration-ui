@@ -8,7 +8,7 @@ import {
 } from "@walletconnect/universal-provider"
 import WalletConnectLogo from "assets/icons/WalletConnect.svg"
 import { POLKADOT_APP_NAME } from "utils/api"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { isEvmAddress } from "utils/evm"
 import { shortenAccountAddress } from "utils/formatting"
@@ -17,6 +17,7 @@ import {
   PolkadotSigner,
 } from "sections/web3-connect/signer/PolkadotSigner"
 import { noop } from "utils/helpers"
+import { EvmParachain } from "@galacticcouncil/xcm-core"
 
 const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID as string
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
@@ -52,7 +53,9 @@ const walletConnectParams = {
   },
 }
 
-const evmChainsArr = Object.values(evmChains)
+const evmChainsArr = Array.from(chainsMap.values())
+  .filter((chain) => chain.isEvmParachain())
+  .map((chain) => (chain as EvmParachain).client.chain)
 
 const namespaces = {
   eip155: {

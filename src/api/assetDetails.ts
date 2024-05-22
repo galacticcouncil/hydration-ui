@@ -12,6 +12,9 @@ import { Asset, PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
+import { useProviderRpcUrlStore } from "./provider"
+import { PENDULUM_ID } from "./externalAssetRegistry"
+import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -53,28 +56,6 @@ const getTokenParachainId = (
   }
 }
 
-const getGeneralIndex = (
-  rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
-) => {
-  const location = rawLocation.unwrap()
-
-  const type = location.interior.type
-  if (location.interior && type !== "Here") {
-    const xcm = location.interior[`as${type}`]
-
-    const generalIndex = !Array.isArray(xcm)
-      ? xcm.isGeneralIndex
-        ? xcm.asGeneralIndex.unwrap().toString()
-        : undefined
-      : xcm
-          .find((el) => el.isGeneralIndex)
-          ?.asGeneralIndex.unwrap()
-          .toString()
-
-    return generalIndex
-  }
-}
-
 type TAssetCommon = {
   id: string
   existentialDeposit: BN
@@ -89,7 +70,7 @@ type TAssetCommon = {
   name: string
   parachainId: string | undefined
   iconId: string | string[]
-  generalIndex?: string
+  externalId?: string
   isSufficient: boolean
 }
 
@@ -102,7 +83,7 @@ export type TBond = TAssetCommon & {
 
 export type TToken = TAssetCommon & {
   assetType: "Token"
-  generalIndex?: string
+  externalId?: string
 }
 
 export type TStableSwap = TAssetCommon & {
@@ -176,7 +157,9 @@ export const getAssets = async (api: ApiPromise) => {
     api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
-  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
+  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
@@ -258,10 +241,7 @@ export const getAssets = async (api: ApiPromise) => {
               location && !location.isNone
                 ? getTokenParachainId(location)
                 : undefined,
-            generalIndex:
-              location && !location.isNone
-                ? getGeneralIndex(location)
-                : undefined,
+            externalId: undefined,
             iconId: assetCommon.id,
           }
 
@@ -406,14 +386,18 @@ export const getAssets = async (api: ApiPromise) => {
           location && !location.isNone
             ? getTokenParachainId(location)
             : undefined
-        const generalIndex =
-          location && !location.isNone ? getGeneralIndex(location) : undefined
-
-        const externalTokenStored = externalTokensStored.find(
+        const externalTokenStored = externalTokens[dataEnv].find(
           (token) =>
             token.origin.toString() === parachainId &&
-            token.id === generalIndex,
+            token.internalId === assetCommon.id,
         )
+
+        const externalId =
+          location && !location.isNone
+            ? parachainId === PENDULUM_ID.toString()
+              ? getGeneralKey(location)
+              : getGeneralIndex(location)
+            : undefined
 
         const asset: TToken = {
           ...assetCommon,
@@ -422,12 +406,14 @@ export const getAssets = async (api: ApiPromise) => {
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
-          generalIndex:
-            location && !location.isNone
-              ? getGeneralIndex(location)
-              : undefined,
+          externalId,
           iconId: "",
-          ...(externalTokenStored ? omit(["id"], externalTokenStored) : {}),
+          ...(externalTokenStored
+            ? omit(["id", "internalId", "origin"], {
+                ...externalTokenStored,
+                externalId: externalTokenStored.id,
+              })
+            : {}),
         }
 
         external.push(asset)
@@ -479,9 +465,6 @@ export const getAssets = async (api: ApiPromise) => {
     },
     [],
   )
-
-  // pass external tokens to trade router
-  await poolService.syncRegistry(externalTokensStored)
 
   try {
     rawTradeAssets = await tradeRouter.getAllAssets()
