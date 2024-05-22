@@ -60,6 +60,18 @@ export class EthereumSigner {
     ])
   }
 
+  requestNetworkSwitch = async (chain: string) => {
+    if (isEthereumProvider(this.provider)) {
+      await requestNetworkSwitch(this.provider, {
+        chain,
+        onSwitch: () => {
+          // update signer after network switch
+          this.signer = this.getSigner(this.provider)
+        },
+      })
+    }
+  }
+
   sendDispatch = async (data: string) => {
     return this.sendTransaction({
       to: DISPATCH_ADDRESS,
@@ -80,6 +92,7 @@ export class EthereumSigner {
 
   getPermit = async (data: string): Promise<PermitResult> => {
     if (this.provider && this.address) {
+      await this.requestNetworkSwitch("hydradx")
       const nonce = await this.getPermitNonce()
       const tx = {
         from: this.address,
@@ -199,15 +212,7 @@ export class EthereumSigner {
     const { chain, ...tx } = transaction
     const from = chain && chainsMap.get(chain) ? chain : "hydradx"
 
-    if (isEthereumProvider(this.provider)) {
-      await requestNetworkSwitch(this.provider, {
-        chain: from,
-        onSwitch: () => {
-          // update signer after network switch
-          this.signer = this.getSigner(this.provider)
-        },
-      })
-    }
+    await this.requestNetworkSwitch(from)
 
     if (from === "hydradx") {
       const [gas, gasPrice] = await this.getGasValues(tx)
