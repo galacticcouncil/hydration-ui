@@ -11,7 +11,17 @@ import { pick } from "utils/rx"
 import { ApiOptions } from "@polkadot/api/types"
 import { WsProvider } from "@polkadot/api"
 
-export const PROVIDERS = [
+export type TEnv = "testnet" | "mainnet"
+export type ProviderProps = {
+  name: string
+  url: string
+  indexerUrl: string
+  squidUrl: string
+  env: string | string[]
+  dataEnv: TEnv
+}
+
+export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
@@ -79,7 +89,7 @@ export const PROVIDERS = [
   },*/
 ] as const
 
-export type TEnv = "testnet" | "mainnet"
+
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
@@ -261,5 +271,5 @@ export const useActiveProvider = () => {
     return rpcUrl
   }, [data?.api])
 
-  return PROVIDERS.find((provider) => provider.url === activeRpcUrl)
+  return PROVIDERS.find((provider) => provider.url === activeRpcUrl) as ProviderProps
 }

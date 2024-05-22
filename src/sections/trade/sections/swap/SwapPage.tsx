@@ -11,7 +11,6 @@ import { MakeGenerics, useSearch } from "@tanstack/react-location"
 import {
   useActiveProvider,
   useActiveRpcUrlList,
-  useProviderRpcUrlStore,
 } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -61,7 +60,6 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
-  const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
@@ -70,7 +68,7 @@ export function SwapPage() {
   const activeProvider = useActiveProvider()
   const version = useRemount([
     isEvm,
-    externalTokensStored[preference.getDataEnv()].length,
+    externalTokensStored[activeProvider.dataEnv].length,
   ])
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -149,7 +147,7 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
-        isTestnet={preference.getDataEnv() === "testnet"}
+        isTestnet={activeProvider.dataEnv === "testnet"}
       />
       {addToken && (
         <AddTokenModal
