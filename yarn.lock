@@ -2534,10 +2534,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.17":
-  version "3.1.17"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.17.tgz#8aa99cc70e3b933f65810761403da4c2a99c16ce"
-  integrity sha512-XojA9vb/YpCpzpY0kXPzmCcf7z50eRgs91qH58ooXiZTZ9e8MrTQztFs+0lDEIhk4skNCwxPnTlV/wK2dLsJMQ==
+"@galacticcouncil/ui@^3.1.18":
+  version "3.1.18"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.18.tgz#b80b05328c1c94c1998c18917450bba1adfe0c0d"
+  integrity sha512-kd82Ph7Kc6XjvSKQ1hlKOBtnAZVosUickhBqBOh51C9tzKtJ79oAF7YNW49L6QpbjVLD/vsPMcznjBBGsHN4DA==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -2545,10 +2545,10 @@
     lit "^2.5.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.0.3.tgz#3071a082b6a349bbcf3153153a073d6f15d2058b"
-  integrity sha512-95aFjghYdfpgQmiojFSske6T3o8SO67oCe6hVNIUm6u/e6OZW0+sx3mp2JdodWnyPywws9CydX8LUdqQKHsTnw==
+"@galacticcouncil/xcm-cfg@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.1.1.tgz#0f6142b4ab6ea5b55f7a9edfac29db22f9c2c4c3"
+  integrity sha512-mFabCN8NuK4dffXbb30Dr1wU1breblT+BpXI4L1UcJ73QG1QI/dvdupSvBcFg8DuLIPK86CsXCJP0ud3MGTvdQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0"
 
@@ -2566,10 +2566,10 @@
     "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.3.tgz#442396f32df3e617160eb3d18403aebc6ecabda6"
-  integrity sha512-VPGmpIu407/VmLV7rx72JxD6v3G4ncjAD7+8Bh+fNQHakzbPgdpRMIdCq6962yybVMCTH/qM4//IFWEzT4gdPQ==
+"@galacticcouncil/xcm-sdk@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.4.tgz#fa51f11c2a7bbaca53f9f85d8dfb749fdb1fd008"
+  integrity sha512-Sz8zSdvxgsVMwHdN2NTdiGKHdf5n5H5kqxaw7Qdcr97ALRMoo/ndzlksppzkgiQ0VGHPJ3CluYrP5VLI/S+BBg==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.0.0"
 
