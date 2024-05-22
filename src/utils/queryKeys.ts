@@ -403,4 +403,6 @@ export const QUERY_KEYS = {
   ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
+  pendulumAssetRegistry: ["pendulumAssetRegistry"],
+  bridgeLink: (hash: string) => ["bridgeLink", hash],
 } as const

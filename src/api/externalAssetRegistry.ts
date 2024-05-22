@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
-import {
-  ASSET_HUB_ID,
-  TExternalAsset,
-} from "sections/wallet/addToken/AddToken.utils"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { isJson } from "utils/helpers"
 
 type TRegistryChain = {
   assetCnt: string
@@ -16,18 +15,40 @@ type TRegistryChain = {
 }
 
 const HYDRA_PARACHAIN_ID = 2034
+export const ASSET_HUB_ID = 1000
+export const PENDULUM_ID = 2094
+
+const getPendulumAssetId = (assetId: string) => {
+  const id = isJson(assetId) ? JSON.parse(assetId) : assetId
+
+  if (id instanceof Object) {
+    const key = Object.keys(id)[0]
+    const data = id[key]
+
+    if (key === "stellar") {
+      const innerKey = Object.keys(data)[0]
+      if (innerKey === "stellarNative") return innerKey
+
+      const idHex = data?.alphaNum4?.code
+      return idHex
+    } else if (key === "xcm") {
+      return undefined
+    }
+  }
+
+  return undefined
+}
 
 export const getAssetHubAssets = async () => {
-  const parachain = chainsMap.get("assethub")
+  const provider = chainsMap.get("assethub") as Parachain
 
   try {
-    if (parachain) {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(parachain.ws)
+    if (provider) {
+      const api = await provider.api
 
       const dataRaw = await api.query.assets.metadata.entries()
 
-      const data = dataRaw.map(([key, dataRaw]) => {
+      const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
         const id = key.args[0].toString()
         const data = dataRaw
 
@@ -39,11 +60,49 @@ export const getAssetHubAssets = async () => {
           symbol: data.symbol.toHuman() as string,
           // @ts-ignore
           name: data.name.toHuman() as string,
-          origin: parachain.parachainId,
+          origin: provider.parachainId,
         }
       })
-      return { data, id: parachain.parachainId }
+      return { data, id: provider.parachainId }
     }
+  } catch (e) {}
+}
+
+export const getPedulumAssets = async () => {
+  try {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api("wss://rpc-pendulum.prd.pendulumchain.tech")
+
+    const dataRaw = await api.query.assetRegistry.metadata.entries()
+
+    const data = dataRaw.reduce<
+      Array<TExternalAsset & { location: HydradxRuntimeXcmAssetLocation }>
+    >((acc, [key, dataRaw]) => {
+      const idRaw = key.args[0].toString()
+
+      //@ts-ignore
+      const data = dataRaw.unwrap()
+      const location = data.location.unwrap()
+
+      if (location.isV2 && location.asV2.interior.toString() !== "Here") {
+        const id = getPendulumAssetId(idRaw)
+        if (id)
+          acc.push({
+            id,
+            // @ts-ignore
+            decimals: data.decimals.toNumber() as number,
+            // @ts-ignore
+            symbol: data.symbol.toHuman() as string,
+            // @ts-ignore
+            name: data.name.toHuman() as string,
+            location: location.asV2 as HydradxRuntimeXcmAssetLocation,
+            origin: PENDULUM_ID,
+          })
+      }
+
+      return acc
+    }, [])
+    return { data, id: PENDULUM_ID }
   } catch (e) {}
 }
 
@@ -51,22 +110,13 @@ export const getAssetHubAssets = async () => {
  * Used for fetching tokens from supported parachains
  */
 export const useExternalAssetRegistry = () => {
-  return useQuery(
-    QUERY_KEYS.externalAssetRegistry,
-    async () => {
-      const assetHub = await getAssetHubAssets()
+  const assetHub = useAssetHubAssetRegistry()
+  //const pendulum = usePendulumAssetRegistry()
 
-      if (assetHub) {
-        return { [assetHub.id]: assetHub.data }
-      }
-    },
-    {
-      retry: false,
-      refetchOnWindowFocus: false,
-      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
-      staleTime: 1000 * 60 * 60 * 1, // 1 hour
-    },
-  )
+  return {
+    [ASSET_HUB_ID as number]: assetHub,
+    // [PENDULUM_ID as number]: pendulum,
+  }
 }
 
 /**
@@ -80,6 +130,27 @@ export const useAssetHubAssetRegistry = () => {
 
       if (assetHub) {
         return assetHub.data
+      }
+    },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    },
+  )
+}
+
+/**
+ * Used for fetching tokens only from Pendulum parachain
+ */
+export const usePendulumAssetRegistry = () => {
+  return useQuery(
+    QUERY_KEYS.pendulumAssetRegistry,
+    async () => {
+      const pendulum = await getPedulumAssets()
+      if (pendulum) {
+        return pendulum.data
       }
     },
     {

@@ -17,7 +17,7 @@ import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
 
-const MASTER_KEY_WHITELIST = ["23", "31337", "42069"]
+const MASTER_KEY_WHITELIST = ["23", "31337", "42069", "17", "8889"]
 
 export const TokenInfo = ({
   asset,
@@ -36,7 +36,7 @@ export const TokenInfo = ({
       return { isXYKPool: false, pools: undefined }
 
     const storedAsset = assets.external.find(
-      (external) => external.generalIndex === asset.id,
+      (external) => external.externalId === asset.id,
     )
 
     if (storedAsset) {
@@ -85,34 +85,40 @@ export const TokenInfo = ({
       </STokenInfoRow>
       <Separator opacity={0.3} color="darkBlue400" />
 
-      <STokenInfoRow>
-        <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <InfoTooltip
-            text={t("wallet.addToken.form.info.masterAccount.tooltip")}
-          >
-            <SInfoIcon />
-          </InfoTooltip>
-          <Text fs={12} color="basic400">
-            {t("wallet.addToken.form.info.masterAccount")}
-          </Text>
-        </div>
-
-        <div sx={{ flex: "row", gap: 8, align: "center" }}>
-          {MASTER_KEY_WHITELIST.some((id) => id === asset.id) ? (
-            <Text fs={12} color="green600">
-              {t("no")}
+      {asset.origin !== 2094 && (
+        <STokenInfoRow>
+          <div sx={{ flex: "row", gap: 4, align: "center" }}>
+            <InfoTooltip
+              text={t("wallet.addToken.form.info.masterAccount.tooltip")}
+            >
+              <SInfoIcon />
+            </InfoTooltip>
+            <Text fs={12} color="basic400">
+              {t("wallet.addToken.form.info.masterAccount")}
             </Text>
-          ) : (
-            <>
-              {" "}
-              <Text fs={12} color="red500">
-                {t("yes")}
+          </div>
+
+          <div sx={{ flex: "row", gap: 8, align: "center" }}>
+            {MASTER_KEY_WHITELIST.some((id) => id === asset.id) ? (
+              <Text fs={12} color="green600">
+                {t("no")}
               </Text>
-              <Icon size={14} sx={{ color: "red500" }} icon={<WarningIcon />} />
-            </>
-          )}
-        </div>
-      </STokenInfoRow>
+            ) : (
+              <>
+                {" "}
+                <Text fs={12} color="red500">
+                  {t("yes")}
+                </Text>
+                <Icon
+                  size={14}
+                  sx={{ color: "red500" }}
+                  icon={<WarningIcon />}
+                />
+              </>
+            )}
+          </div>
+        </STokenInfoRow>
+      )}
       <Separator opacity={0.3} color="darkBlue400" />
 
       <STokenInfoRow>

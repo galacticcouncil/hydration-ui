@@ -2,10 +2,11 @@ import { Buffer } from "buffer"
 import { Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
-import { evmChains } from "@galacticcouncil/xcm-sdk"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { EvmParachain } from "@galacticcouncil/xcm-core"
 
-const METAMASK_LIKE_CHECKS = ["isTalisman"] as const
+const METAMASK_LIKE_CHECKS = ["isTalisman", "isSubWallet", "isPhantom"] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
 type MetaMaskLikeChecks = {
@@ -30,7 +31,7 @@ export interface AddEvmChainParams {
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
-  const chainProps = evmChains[chain]
+  const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
 
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),
@@ -53,8 +54,11 @@ export function isMetaMaskLike(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider> {
   return (
-    isMetaMask(provider) &&
-    METAMASK_LIKE_CHECKS.some((key) => !!provider?.[key])
+    !!provider &&
+    typeof provider?.isMetaMask === "boolean" &&
+    METAMASK_LIKE_CHECKS.some(
+      (key) => !!(provider as MetaMaskLikeProvider)?.[key],
+    )
   )
 }
 
@@ -62,6 +66,14 @@ export function isTalisman(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider> {
   return isMetaMaskLike(provider) && !!provider?.isTalisman
+}
+
+export function isSubWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isSubWallet
+}
+
+export function isPhantom(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isPhantom
 }
 
 export function isEthereumProvider(
@@ -72,7 +84,7 @@ export function isEthereumProvider(
 
 type RequestNetworkSwitchOptions = {
   onSwitch?: () => void
-  chain?: keyof typeof evmChains
+  chain?: string
 }
 export async function requestNetworkSwitch(
   provider: Maybe<MetaMaskLikeProvider>,
