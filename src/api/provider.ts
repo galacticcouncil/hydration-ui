@@ -89,8 +89,6 @@ export const PROVIDERS: ProviderProps[] = [
   },*/
 ]
 
-
-
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   typeof provider.env === "string"
     ? provider.env === import.meta.env.VITE_ENV
@@ -160,7 +158,7 @@ export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
   const displayAsset = useDisplayAssetStore()
 
-  const providerData = useQuery(
+  return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
     async () => {
       const apiPool = SubstrateApis.getInstance()
@@ -225,34 +223,25 @@ export const useProviderData = () => {
       retry: false,
     },
   )
-
-  return providerData
 }
 
 export const useRefetchProviderData = () => {
   const queryClient = useQueryClient()
-
-  const activeProvider = useActiveProvider()
+  const rpcList = useActiveRpcUrlList()
 
   return () => {
-    const url = activeProvider?.url ?? import.meta.env.VITE_PROVIDER_URL
-    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
+    queryClient.invalidateQueries(QUERY_KEYS.provider(rpcList.join()))
   }
 }
 
 export const useIndexerUrl = () => {
   const activeProvider = useActiveProvider()
-
-  const indexerUrl =
-    activeProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return indexerUrl
+  return activeProvider.indexerUrl
 }
 
-export const useSquidUrl = () => {
+export const useSquidUrl = (): ProviderProps => {
   const activeProvider = useActiveProvider()
-
-  const indexerUrl = activeProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
-  return indexerUrl
+  return activeProvider.squidUrl
 }
 
 export const useActiveProvider = () => {
@@ -271,5 +260,15 @@ export const useActiveProvider = () => {
     return rpcUrl
   }, [data?.api])
 
-  return PROVIDERS.find((provider) => provider.url === activeRpcUrl) as ProviderProps
+  return (
+    PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
+      name: "",
+      url: import.meta.env.VITE_PROVIDER_URL,
+      indexerUrl: import.meta.env.VITE_INDEXER_URL,
+      squidUrl: import.meta.env.VITE_SQUID_URL,
+      env: import.meta.env.VITE_ENV,
+      dataEnv:
+        import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet",
+    }
+  )
 }
