@@ -239,12 +239,12 @@ export const useIndexerUrl = () => {
   return activeProvider.indexerUrl
 }
 
-export const useSquidUrl = (): ProviderProps => {
+export const useSquidUrl = () => {
   const activeProvider = useActiveProvider()
   return activeProvider.squidUrl
 }
 
-export const useActiveProvider = () => {
+export const useActiveProvider = (): ProviderProps => {
   const { data } = useProviderData()
 
   const activeRpcUrl = useMemo(() => {
