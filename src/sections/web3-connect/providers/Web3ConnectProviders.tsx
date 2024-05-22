@@ -1,6 +1,9 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { getSupportedWallets } from "sections/web3-connect/Web3Connect.utils"
+import {
+  WalletProviderType,
+  getSupportedWallets,
+} from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3ConnectProviderButton"
 import { useMemo } from "react"
 import { useMedia } from "react-use"
@@ -29,27 +32,32 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
     const isEvmMode = mode === "evm"
     const isSubstrateMode = mode === "substrate"
 
-    const defaultProviders = wallets.filter((provider) => {
-      if (isEvmMode) return EVM_PROVIDERS.includes(provider.type)
-      const byScreen = isDesktop
-        ? DESKTOP_PROVIDERS.includes(provider.type)
-        : MOBILE_PROVIDERS.includes(provider.type)
+    const defaultProviders = wallets
+      .filter((provider) => {
+        if (isEvmMode) return EVM_PROVIDERS.includes(provider.type)
+        const byScreen = isDesktop
+          ? DESKTOP_PROVIDERS.includes(provider.type)
+          : MOBILE_PROVIDERS.includes(provider.type)
 
-      const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
-      const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
+        const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
+        const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
 
-      const byMode =
-        isDefaultMode ||
-        (isEvmMode && isEvmProvider) ||
-        (isSubstrateMode && isSubstrateProvider)
+        const byMode =
+          isDefaultMode ||
+          (isEvmMode && isEvmProvider) ||
+          (isSubstrateMode && isSubstrateProvider)
 
-      const byWalletConnect =
-        isSubstrateMode && provider.type === "walletconnect" && chain
-          ? !!POLKADOT_CAIP_ID_MAP[chain]
-          : true
+        const byWalletConnect =
+          isSubstrateMode && provider.type === "walletconnect" && chain
+            ? !!POLKADOT_CAIP_ID_MAP[chain]
+            : true
 
-      return byScreen && byMode && byWalletConnect
-    })
+        return byScreen && byMode && byWalletConnect
+      })
+      .sort((a, b) => {
+        const order = Object.values(WalletProviderType)
+        return order.indexOf(a.type) - order.indexOf(b.type)
+      })
 
     const alternativeProviders = wallets.filter((provider) => {
       if (isEvmMode || isSubstrateMode) return false

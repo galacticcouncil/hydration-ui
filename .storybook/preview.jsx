@@ -30,9 +30,6 @@ const withSkeletonTheme = (Story) => (
 
 const preview = {
   parameters: {
-    actions: {
-      argTypesRegex: "^on[A-Z].*",
-    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -75,6 +72,7 @@ const preview = {
       default: "dark",
     },
   },
+  tags: ["autodocs"]
 }
 
 export const decorators = [
