@@ -200,6 +200,8 @@ export const useSendEvmTransactionMutation = (
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
   const txLink = txHash && chain ? getEvmTxLink(txHash, txData, chain.key) : ""
 
+  const isApproveTx = txData?.startsWith("0x095ea7b3")
+
   const destChain = xcallMeta?.dstChain
     ? getChainByKey(xcallMeta.dstChain)
     : undefined
@@ -211,7 +213,7 @@ export const useSendEvmTransactionMutation = (
     ...sendTx,
     txState,
     txLink,
-    bridge,
+    bridge: isApproveTx ? undefined : bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
@@ -225,15 +227,21 @@ export const useSendDispatchPermit = (
   options: MutationObserverOptions<
     ISubmittableResult,
     unknown,
-    PermitResult
+    {
+      permit: PermitResult
+      xcallMeta?: Record<string, string>
+    }
   > = {},
 ) => {
   const { api } = useRpcProvider()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
+  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+    undefined,
+  )
   const isMounted = useMountedState()
 
-  const sendTx = useMutation(async (permit) => {
+  const sendTx = useMutation(async ({ permit, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         const unsubscribe = await api.tx.multiTransactionPayment
@@ -259,6 +267,7 @@ export const useSendDispatchPermit = (
             if (isMounted()) {
               setTxHash(result.txHash.toHex())
               setTxState(result.status.type)
+              setCallMeta(xcallMeta)
             } else {
               clearTimeout(timeout)
             }
@@ -287,11 +296,17 @@ export const useSendDispatchPermit = (
     ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
     : undefined
 
+  const destChain = xcallMeta?.dstChain
+    ? getChainByKey(xcallMeta.dstChain)
+    : undefined
+
+  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+
   return {
     ...sendTx,
     txState,
     txLink,
-    bridge: undefined,
+    bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
