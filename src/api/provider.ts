@@ -34,6 +34,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Helikon",
