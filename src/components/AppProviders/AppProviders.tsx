@@ -19,21 +19,23 @@ const AppsPersistenceProvider = createComponent({
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <TooltipProvider>
-      <RpcProvider>
-        <InvalidateOnBlock>
-          <ToastProvider>
-            <SkeletonTheme
-              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-              borderRadius={4}
-            >
-              <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
-              <Transactions />
-            </SkeletonTheme>
-          </ToastProvider>
-        </InvalidateOnBlock>
-      </RpcProvider>
-    </TooltipProvider>
+    <MigrationProvider>
+      <TooltipProvider>
+        <RpcProvider>
+          <InvalidateOnBlock>
+            <ToastProvider>
+              <SkeletonTheme
+                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                borderRadius={4}
+              >
+                <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
+                <Transactions />
+              </SkeletonTheme>
+            </ToastProvider>
+          </InvalidateOnBlock>
+        </RpcProvider>
+      </TooltipProvider>
+    </MigrationProvider>
   )
 }

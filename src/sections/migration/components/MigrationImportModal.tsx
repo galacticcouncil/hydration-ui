@@ -7,7 +7,7 @@ import {
   importToLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
 
-export const MigrationImport: FC<{ data: string }> = ({ data }) => {
+export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
   const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
   const handleImport = (data: string) => {
     if (data) {
@@ -37,18 +37,29 @@ export const MigrationImport: FC<{ data: string }> = ({ data }) => {
   return (
     <Modal open headerVariant="FontOver" title="Hydration Migration">
       <Text sx={{ mb: 20 }} color="basic300">
-        You already migrated your settings on {lastImportDate.toLocaleString()}.
-        Do you want to overwrite your current settings?
+        You already transferred your settings on{" "}
+        {lastImportDate.toLocaleString()}. Do you want to overwrite your current
+        settings?
       </Text>
 
-      <Button
-        variant="primary"
-        onClick={() => {
-          handleImport(data)
-        }}
-      >
-        Overwrite my settings
-      </Button>
+      <div sx={{ flex: "row", gap: 20, justify: "space-between" }}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            handleImport(data)
+          }}
+        >
+          Close
+        </Button>
+        <Button
+          variant="mutedError"
+          onClick={() => {
+            window.location.href = window.location.origin
+          }}
+        >
+          Overwrite my settings
+        </Button>
+      </div>
     </Modal>
   )
 }

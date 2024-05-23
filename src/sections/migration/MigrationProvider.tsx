@@ -1,12 +1,14 @@
 import { FC, PropsWithChildren } from "react"
 import { useLocation } from "react-use"
-import { MigrationModal } from "./components/MigrationModal"
-import { MigrationImport } from "./components/MigrationImport"
+import { MigrationExportModal } from "./components/MigrationExportModal"
+import { MigrationImportModal } from "./components/MigrationImportModal"
 
 import {
-  MIGRATION_TRIGGER_URLS,
+  MIGRATION_TRIGGER_URL,
   MIGRATION_TARGET_URL,
   MIGRATION_QUERY_PARAM,
+  MIGRATION_LS_KEYS,
+  serializeLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -14,16 +16,20 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const urlParams = new URLSearchParams(search)
 
+  const shouldExport = MIGRATION_TRIGGER_URL === origin
   const shouldImport =
     MIGRATION_TARGET_URL === origin && urlParams.has(MIGRATION_QUERY_PARAM)
-  const shouldMigrate = origin ? MIGRATION_TRIGGER_URLS.includes(origin) : false
 
   if (shouldImport) {
-    return <MigrationImport data={urlParams.get(MIGRATION_QUERY_PARAM) ?? ""} />
+    return (
+      <MigrationImportModal data={urlParams.get(MIGRATION_QUERY_PARAM) ?? ""} />
+    )
   }
 
-  if (shouldMigrate) {
-    return <MigrationModal />
+  if (shouldExport) {
+    return (
+      <MigrationExportModal data={serializeLocalStorage(MIGRATION_LS_KEYS)} />
+    )
   }
 
   return <>{children}</>
