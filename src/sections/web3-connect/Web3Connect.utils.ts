@@ -66,7 +66,6 @@ export const useEvmAccount = () => {
           ? await wallet?.extension?.request({ method: "eth_chainId" })
           : null
 
-      console.log({ chainId })
       return {
         chainId: Number(chainId),
       }
