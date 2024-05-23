@@ -1,6 +1,11 @@
 import { Buffer } from "buffer"
 
-export const MIGRATION_LS_KEYS = ["external-tokens", "address-book"]
+export const MIGRATION_LS_KEYS = [
+  "external-tokens",
+  "address-book",
+  "toasts",
+  "hydradx-rpc-list",
+]
 export const MIGRATION_CHECK_KEY = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"
 export const MIGRATION_TRIGGER_URL =
