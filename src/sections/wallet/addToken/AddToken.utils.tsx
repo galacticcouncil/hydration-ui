@@ -10,7 +10,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
-import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
+import { ASSET_HUB_ID } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
@@ -98,7 +98,7 @@ const internalIds = new Map([
   ["6", undefined],
   ["65454", undefined],
   ["8889", "1000091"],
-  ["8889", "1000108"],
+  ["8886", "1000108"],
   ["42069", "1000034"],
   ["77", undefined],
   ["9002", "1000105"],
@@ -289,9 +289,25 @@ export const useUserExternalTokenStore = create<Store>()(
           : false
       },
     }),
+
     {
       name: "external-tokens",
       version,
+      merge: (persistedState, currentState) => {
+        if (!persistedState) return currentState
+
+        const { tokens: storedTokens } = persistedState as Store
+
+        return {
+          ...currentState,
+          tokens: {
+            ...storedTokens,
+            mainnet: storedTokens.mainnet.map((token) =>
+              token.id === "8889" ? { ...token, internalId: "1000091" } : token,
+            ),
+          },
+        }
+      },
       migrate: (persistedState) => {
         const state = persistedState as Store
 
