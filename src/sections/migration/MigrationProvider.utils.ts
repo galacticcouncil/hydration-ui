@@ -3,8 +3,10 @@ import { Buffer } from "buffer"
 export const MIGRATION_LS_KEYS = ["external-tokens", "address-book"]
 export const MIGRATION_CHECK_KEY = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"
-export const MIGRATION_TARGET_URL = "http://localhost:5173"
-export const MIGRATION_TRIGGER_URL = "http://localhost:5173"
+export const MIGRATION_TRIGGER_URL =
+  "https://deploy-preview-1333--testnet-hydra-app.netlify.app"
+export const MIGRATION_TARGET_URL =
+  "https://deploy-preview-1334--testnet-hydra-app.netlify.app"
 
 export const serializeLocalStorage = (keys: string[]): string => {
   const data: { [key: string]: any } = {}
