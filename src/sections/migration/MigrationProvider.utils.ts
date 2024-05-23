@@ -30,7 +30,7 @@ export const serializeLocalStorage = (keys: string[]): string => {
 }
 
 export const importToLocalStorage = (data: string) => {
-  const json = Buffer.from(data, "base64").toString("binary")
+  const json = Buffer.from(data, "base64").toString("utf-8")
   const ls = JSON.parse(json)
 
   const keys = Object.keys(ls)

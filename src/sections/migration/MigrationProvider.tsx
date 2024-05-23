@@ -14,16 +14,13 @@ import {
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { origin, search } = useLocation()
 
-  const urlParams = new URLSearchParams(search)
+  const data = search?.replace(`?${MIGRATION_QUERY_PARAM}=`, "") ?? ""
 
   const shouldExport = MIGRATION_TRIGGER_URL === origin
-  const shouldImport =
-    MIGRATION_TARGET_URL === origin && urlParams.has(MIGRATION_QUERY_PARAM)
+  const shouldImport = MIGRATION_TARGET_URL === origin && !!data
 
   if (shouldImport) {
-    return (
-      <MigrationImportModal data={urlParams.get(MIGRATION_QUERY_PARAM) ?? ""} />
-    )
+    return <MigrationImportModal data={data} />
   }
 
   if (shouldExport) {

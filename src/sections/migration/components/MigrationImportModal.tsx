@@ -12,8 +12,8 @@ export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
   const handleImport = (data: string) => {
     if (data) {
       importToLocalStorage(data)
-      window.location.href = window.location.origin
       localStorage.setItem(MIGRATION_CHECK_KEY, new Date().toISOString())
+      window.location.href = window.location.origin
     }
   }
 
