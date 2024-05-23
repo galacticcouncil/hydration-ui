@@ -46,7 +46,7 @@ export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
         <Button
           variant="secondary"
           onClick={() => {
-            handleImport(data)
+            window.location.href = window.location.origin
           }}
         >
           Close
@@ -54,7 +54,7 @@ export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
         <Button
           variant="mutedError"
           onClick={() => {
-            window.location.href = window.location.origin
+            handleImport(data)
           }}
         >
           Overwrite my settings

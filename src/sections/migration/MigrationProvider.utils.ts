@@ -4,7 +4,9 @@ export const MIGRATION_LS_KEYS = [
   "external-tokens",
   "address-book",
   "toasts",
+  "rpcUrl",
   "hydradx-rpc-list",
+  "referral-codes",
 ]
 export const MIGRATION_CHECK_KEY = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"
