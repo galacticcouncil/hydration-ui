@@ -3,7 +3,7 @@ import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   TExternalAsset,
@@ -25,7 +25,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
   const { isAdded } = useUserExternalTokenStore()
   const { page, direction, paginateTo } = useModalPagination()
 
-  const { data, isSuccess } = useExternalAssetRegistry()
+  const externalAssets = useExternalAssetRegistry()
 
   const assetsMeta = assets.getAssets(assetIds)
   const assetsToAddRef = useRef<TExternalAsset[]>([])
@@ -34,27 +34,23 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
 
   useEffect(() => {
     const assetsToAdd = assetsMeta
-      .filter(({ id, generalIndex }) => {
+      .filter(({ id, externalId }) => {
         const isChainStored = assets.external.some((asset) => asset.id === id)
-        const isUserStored = isAdded(generalIndex)
+        const isUserStored = isAdded(externalId)
         return isChainStored && !isUserStored
       })
-      .map(({ parachainId, generalIndex }) => {
+      .map(({ parachainId, externalId }) => {
         if (!parachainId) return null
-        const assets = data?.[+parachainId] ?? []
-        return assets.find(({ id }) => id === generalIndex)
+        const assets = externalAssets?.[+parachainId]
+        return assets?.data?.find(({ id }) => id === externalId)
       })
       .filter(isNotNil)
 
-    if (
-      isSuccess &&
-      assetsToAdd.length > 0 &&
-      assetsToAddRef.current.length === 0
-    ) {
+    if (assetsToAdd.length > 0 && assetsToAddRef.current.length === 0) {
       assetsToAddRef.current = assetsToAdd
       setIsOpen(true)
     }
-  }, [isSuccess, assetsMeta, assets.external, isAdded, data])
+  }, [assets.external, assetsMeta, externalAssets, isAdded])
 
   return (
     <Modal open={isOpen} disableCloseOutside={true} onClose={onClose}>
