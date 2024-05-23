@@ -21,6 +21,10 @@ const EXTERNAL_ASSETS_WHITELIST = [
   { id: "42069", origin: 1000 },
   // WUD
   { id: "31337", origin: 1000 },
+  // WIFD
+  { id: "17", origin: 1000 },
+  // BNDT
+  { id: "8889", origin: 1000 },
 ]
 
 const chains = Array.from(chainsMap.values())
@@ -88,7 +92,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
 
     const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
       (item) =>
-        item.id === assetDetails?.generalIndex &&
+        item.id === assetDetails?.externalId &&
         item.origin === chain?.parachainId,
     )
 

@@ -59,13 +59,16 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
+  const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
-
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm, externalTokensStored.length])
-  const preference = useProviderRpcUrlStore()
+  const version = useRemount([
+    isEvm,
+    externalTokensStored[preference.getDataEnv()].length,
+  ])
+
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -144,6 +147,7 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
+        isTestnet={preference.getDataEnv() === "testnet"}
       />
       {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {addToken && (

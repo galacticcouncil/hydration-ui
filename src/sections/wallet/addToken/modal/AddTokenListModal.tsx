@@ -6,12 +6,10 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Search } from "components/Search/Search"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { SAssetsModalHeader } from "sections/assets/AssetsModal.styled"
 import {
-  SELECTABLE_PARACHAINS_IDS,
   TExternalAsset,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
@@ -20,13 +18,13 @@ import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { theme } from "theme"
 
-const DEFAULT_PARACHAIN_ID = SELECTABLE_PARACHAINS_IDS[0]
-
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
   onCustomAssetClick?: () => void
   search: string
   setSearch: (search: string) => void
+  parachainId: number
+  setParachainId: (id: number) => void
 }
 
 export const AddTokenListModal: React.FC<Props> = ({
@@ -34,17 +32,20 @@ export const AddTokenListModal: React.FC<Props> = ({
   onCustomAssetClick,
   search,
   setSearch,
+  parachainId,
+  setParachainId,
 }) => {
   const { t } = useTranslation()
   const { assets, isLoaded } = useRpcProvider()
-  const [parachainId, setParachainId] = useState(DEFAULT_PARACHAIN_ID)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const { data, isLoading } = useExternalAssetRegistry()
+  const assetRegistry = useExternalAssetRegistry()
   const { isAdded } = useUserExternalTokenStore()
 
-  const externalAssets = data?.[parachainId] ?? []
+  const selectedParachain = assetRegistry?.[parachainId]
+
+  const externalAssets = selectedParachain.data ?? []
   const internalAssets =
     assets?.tokens?.filter(
       (asset) => asset.parachainId === parachainId.toString(),
@@ -55,7 +56,7 @@ export const AddTokenListModal: React.FC<Props> = ({
     if (isDOT) return false
 
     const isChainStored = internalAssets.some(
-      (internalAsset) => internalAsset.generalIndex === asset.id,
+      (internalAsset) => internalAsset.externalId === asset.id,
     )
     if (isChainStored) return false
 
@@ -96,7 +97,7 @@ export const AddTokenListModal: React.FC<Props> = ({
               width: "100%",
             }}
             content={
-              isLoading || !isLoaded ? (
+              selectedParachain.isLoading || !isLoaded ? (
                 <AddTokenListSkeleton />
               ) : (
                 <>

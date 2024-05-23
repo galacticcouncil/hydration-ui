@@ -33,7 +33,13 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 type Props = TxProps & {
   title?: string
   onCancel: () => void
-  onPermitDispatched: (permit: PermitResult) => void
+  onPermitDispatched: ({
+    permit,
+    xcallMeta,
+  }: {
+    permit: PermitResult
+    xcallMeta?: Record<string, string>
+  }) => void
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
@@ -104,7 +110,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
           if (shouldUsePermit) {
             const permit = await wallet.signer.getPermit(txData)
-            return props.onPermitDispatched(permit)
+            return props.onPermitDispatched({
+              permit,
+              xcallMeta: props.xcallMeta,
+            })
           }
 
           const evmTx = await wallet.signer.sendDispatch(txData)
