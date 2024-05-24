@@ -6,7 +6,7 @@ import {
 } from "api/provider"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { Fragment } from "react"
+import { Fragment, useEffect, useState } from "react"
 
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMutation } from "@tanstack/react-query"
@@ -19,6 +19,7 @@ import { ProviderInput } from "./components/ProviderInput/ProviderInput"
 import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTimeoutFn } from "react-use"
 
 export type ProviderSelectFormProps = {
   onSave: (rpcUrl: string) => void
@@ -35,6 +36,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   const { rpcUrl } = useProviderRpcUrlStore()
   const { t } = useTranslation()
   const { rpcList, addRpc } = useRpcStore()
+  const [timeoutedRpc, setTimeoutedRpc] = useState("")
 
   const fullRpcUrlList = [...PROVIDER_URLS, ...rpcList.map(({ url }) => url)]
 
@@ -44,7 +46,22 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     resolver: zodResolver(useProviderSelectFormSchema(fullRpcUrlList)),
   })
 
+  useTimeoutFn(async () => {
+    if (isLoading) {
+      setTimeoutedRpc(rpcUrl)
+    }
+  }, 10000)
+
+  useEffect(() => {
+    return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
+      if (state.rpcUrl !== prevState.rpcUrl) {
+        setTimeoutedRpc("")
+      }
+    })
+  }, [])
+
   const mutation = useMutation(async (value: FormValues<typeof form>) => {
+    setTimeoutedRpc("")
     return await new Promise(async (resolve, reject) => {
       const errMessage = t("rpc.change.modal.errors.notExist")
       const timeout = setTimeout(() => {
@@ -77,6 +94,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
       }
     })
   })
+
   return (
     <>
       <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
@@ -107,7 +125,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         />
       </form>
 
-      <SContainer isLoading={isLoading}>
+      <SContainer isLoading={isLoading && !timeoutedRpc}>
         <SHeader>
           <div css={{ gridArea: "name" }}>
             {t("rpc.change.modal.column.name")}
@@ -127,6 +145,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                 name={provider.name}
                 url={provider.url}
                 isActive={provider.url === rpcUrl}
+                isError={provider.url === timeoutedRpc}
                 onClick={() => onSave(provider.url)}
               />
               {index + 1 < PROVIDER_LIST.length && (
@@ -145,6 +164,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
               }
               url={rpc.url}
               isActive={rpc.url === rpcUrl}
+              isError={rpc.url === timeoutedRpc}
               onClick={() => onSave(rpc.url)}
               custom
               onRemove={onRemove}

@@ -12,11 +12,13 @@ import { useEffect, useState } from "react"
 import { u32, u64 } from "@polkadot/types"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { Spinner } from "components/Spinner/Spinner"
 
 type ProviderItemProps = {
   name: string
   url: string
   isActive?: boolean
+  isError?: boolean
   custom?: boolean
   onClick: () => void
   onRemove?: (id: string) => void
@@ -26,6 +28,7 @@ export const ProviderItem = ({
   name,
   url,
   isActive,
+  isError,
   custom,
   onClick,
   onRemove,
@@ -58,11 +61,24 @@ export const ProviderItem = ({
           {name}
         </Text>
       </div>
-      {isLive ? (
-        <ProviderSelectItemLive css={{ gridArea: "status" }} />
+      {isError ? (
+        <span
+          sx={{ width: 7, height: 7, display: "block" }}
+          css={{ background: "#FF4B4B" }}
+        />
       ) : (
-        <ProviderSelectItemExternal url={url} css={{ gridArea: "status" }} />
+        <>
+          {isLive ? (
+            <ProviderSelectItemLive css={{ gridArea: "status" }} />
+          ) : (
+            <ProviderSelectItemExternal
+              url={url}
+              css={{ gridArea: "status" }}
+            />
+          )}
+        </>
       )}
+
       <div
         css={{ gridArea: "url" }}
         sx={{
@@ -130,7 +146,9 @@ const ProviderSelectItemLive = ({ className }: { className?: string }) => {
           side="left"
         />
       ) : (
-        <span className={className} />
+        <span className={className}>
+          <Spinner size={16} />
+        </span>
       )}
     </>
   )
@@ -200,7 +218,9 @@ const ProviderSelectItemExternal = ({
           side="left"
         />
       ) : (
-        <span className={className} />
+        <span className={className}>
+          <Spinner size={16} />
+        </span>
       )}
     </>
   )
