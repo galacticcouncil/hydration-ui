@@ -39,14 +39,6 @@ export const PROVIDERS: ProviderProps[] = [
     dataEnv: "mainnet",
   },
   {
-    name: "Dotters",
-    url: "wss://hydradx.paras.dotters.network",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
-    env: "production",
-    dataEnv: "mainnet",
-  },
-  {
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
