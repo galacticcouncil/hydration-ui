@@ -21,6 +21,12 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import Skeleton from "react-loading-skeleton"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 const chains = Array.from(chainsMap.values())
 
@@ -234,8 +240,10 @@ const AssetDetails = ({
     const assetDetails = assets.getAsset(id)
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails.parachainId),
+    ) as AnyParachain
 
     if (!chain) return undefined
 
@@ -273,5 +281,28 @@ const AssetDetails = ({
         </Text>
       </div>
     </SContainer>
+  )
+}
+
+export const ExternalAssetRow = ({ row }: { row: AssetsTableData }) => {
+  const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  return (
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <AssetTableName {...row} />
+      {isDesktop && (
+        <>
+          <Text fs={13} color="whiteish500">
+            {t("wallet.assets.table.addToken.desc")}
+          </Text>
+          <WalletAssetsTableActions
+            toggleExpanded={() => null}
+            isExpanded={false}
+            onTransferClick={() => null}
+            asset={row}
+          />
+        </>
+      )}
+    </div>
   )
 }

@@ -10,6 +10,7 @@ import { genesisHashToChain } from "utils/helpers"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import BN from "bignumber.js"
 import { availableNetworks } from "@polkadot/networks"
+import { isEvmAccount } from "utils/evm"
 
 type Props = Account & {
   isProxy?: boolean
@@ -32,7 +33,9 @@ export const Web3ConnectAccount: FC<Props> = ({
 
   const { hydraAddress } = getAddressVariants(address)
 
-  const chain = genesisHashToChain(genesisHash)
+  const chain = !isEvmAccount(address)
+    ? genesisHashToChain(genesisHash)
+    : undefined
 
   const addr = displayAddress || hydraAddress
   const isHydraAddr = addr && isHydraAddress(addr)

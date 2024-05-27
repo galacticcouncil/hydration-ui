@@ -27,9 +27,9 @@ import { isEvmAccount } from "utils/evm"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import BN from "bignumber.js"
-import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   row?: AssetsTableData
@@ -48,12 +48,17 @@ export const WalletAssetsTableActionsMob = ({
   } = useRpcProvider()
   const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
+  const { featureFlags } = useRpcProvider()
 
   if (!row) return null
 
   const isNativeAsset = row.id === native.id
 
-  const isEvm = isEvmAccount(account?.address)
+  const displayFeePaymentAssetButton = isEvmAccount(account?.address)
+    ? featureFlags.dispatchPermit
+    : true
+
+  const isUnknownExternalAsset = row.isExternal && !row.name
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -72,28 +77,32 @@ export const WalletAssetsTableActionsMob = ({
             flexWrap: "wrap",
           }}
         >
-          <div sx={{ flex: "column", gap: 4 }}>
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.table.header.total")}
+          {isUnknownExternalAsset ? (
+            <Text fs={13} color="whiteish500" sx={{ p: 8 }}>
+              {t("wallet.assets.table.addToken.desc")}
             </Text>
-            <Text fs={14} lh={14} color="white">
-              {t("value", { value: row.total })}
-            </Text>
-            <Text fs={12} lh={12} color="whiteish500">
-              <DisplayValue value={row.totalDisplay} />
-            </Text>
-          </div>
-          <div sx={{ flex: "column", gap: 4 }}>
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.table.header.transferable")}
-            </Text>
-            <Text fs={14} lh={14} color="white">
-              {t("value", { value: row.transferable })}
-            </Text>
-            <Text fs={12} lh={12} color="whiteish500">
-              <DisplayValue value={row.transferableDisplay} />
-            </Text>
-          </div>
+          ) : (
+            <>
+              <Text fs={14} lh={14} color="white">
+                {t("value", { value: row.total })}
+              </Text>
+              <Text fs={12} lh={12} color="whiteish500">
+                <DisplayValue value={row.totalDisplay} />
+              </Text>
+
+              <div sx={{ flex: "column", gap: 4 }}>
+                <Text fs={14} lh={16} color="whiteish500">
+                  {t("wallet.assets.table.header.transferable")}
+                </Text>
+                <Text fs={14} lh={14} color="white">
+                  {t("value", { value: row.transferable })}
+                </Text>
+                <Text fs={12} lh={12} color="whiteish500">
+                  <DisplayValue value={row.transferableDisplay} />
+                </Text>
+              </div>
+            </>
+          )}
         </div>
         <SActionButtonsContainer>
           {isNativeAsset ? (
@@ -107,75 +116,82 @@ export const WalletAssetsTableActionsMob = ({
               reservedDisplay={row.reservedDisplay}
             />
           )}
-          {row.isExternal && !row.name ? (
-            <AddTokenAction id={row.id} css={{ width: "100%", px: 8 }} />
+          {isUnknownExternalAsset ? (
+            <AddTokenAction
+              id={row.id}
+              css={{ width: "100%", marginTop: 20 }}
+              onClick={onClose}
+            />
           ) : (
-            <div sx={{ flex: "column", gap: 12, px: 8 }}>
-              <Link
-                to={LINKS.trade}
-                search={
-                  row.tradability.canBuy
-                    ? { assetOut: row.id }
-                    : { assetIn: row.id }
-                }
-                disabled={
-                  !row.tradability.inTradeRouter ||
-                  account?.isExternalWalletConnected
-                }
-                sx={{ width: "100%" }}
-              >
-                <Button
-                  sx={{ width: "100%" }}
-                  size="small"
+            <>
+              <div sx={{ flex: "column", gap: 12, px: 8 }}>
+                <Link
+                  to={LINKS.swap}
+                  search={
+                    row.tradability.canBuy
+                      ? { assetOut: row.id }
+                      : { assetIn: row.id }
+                  }
                   disabled={
                     !row.tradability.inTradeRouter ||
                     account?.isExternalWalletConnected
                   }
+                  sx={{ width: "100%" }}
                 >
-                  <TradeIcon />
-                  {t("wallet.assets.table.actions.trade")}
-                </Button>
-              </Link>
+                  <Button
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={
+                      !row.tradability.inTradeRouter ||
+                      account?.isExternalWalletConnected
+                    }
+                  >
+                    <TradeIcon />
+                    {t("wallet.assets.table.actions.trade")}
+                  </Button>
+                </Link>
 
-              <Button
-                sx={{ width: "100%" }}
-                size="small"
-                disabled={account?.isExternalWalletConnected}
-                onClick={() => onTransferClick(row.id)}
-              >
-                <TransferIcon />
-                {t("wallet.assets.table.actions.transfer")}
-              </Button>
-              <Link
-                to={LINKS.cross_chain}
-                disabled={account?.isExternalWalletConnected}
-                sx={{ width: "100%" }}
-              >
                 <Button
                   sx={{ width: "100%" }}
                   size="small"
                   disabled={account?.isExternalWalletConnected}
+                  onClick={() => onTransferClick(row.id)}
                 >
-                  <PlusIcon />
-                  {t("wallet.assets.table.actions.deposit")}
+                  <TransferIcon />
+                  {t("wallet.assets.table.actions.transfer")}
                 </Button>
-              </Link>
 
-              {!isEvm && (
-                <Button
+                <Link
+                  to={LINKS.cross_chain}
+                  disabled={account?.isExternalWalletConnected}
                   sx={{ width: "100%" }}
-                  size="small"
-                  onClick={() => setFeeAsPayment(row.id)}
-                  disabled={
-                    !row.couldBeSetAsPaymentFee ||
-                    account?.isExternalWalletConnected
-                  }
                 >
-                  <DollarIcon />
-                  {t("wallet.assets.table.actions.payment.asset")}
-                </Button>
-              )}
-            </div>
+                  <Button
+                    sx={{ width: "100%" }}
+                    size="small"
+                    disabled={account?.isExternalWalletConnected}
+                  >
+                    <PlusIcon />
+                    {t("wallet.assets.table.actions.deposit")}
+                  </Button>
+                </Link>
+
+                {displayFeePaymentAssetButton && (
+                  <Button
+                    sx={{ width: "100%" }}
+                    size="small"
+                    onClick={() => setFeeAsPayment(row.id)}
+                    disabled={
+                      !row.couldBeSetAsPaymentFee ||
+                      account?.isExternalWalletConnected
+                    }
+                  >
+                    <DollarIcon />
+                    {t("wallet.assets.table.actions.payment.asset")}
+                  </Button>
+                )}
+              </div>
+            </>
           )}
         </SActionButtonsContainer>
       </div>
