@@ -75,6 +75,8 @@ export function getEvmTxLink(
     return isApproveTx
       ? `https://etherscan.io/tx/${txHash}`
       : `https://wormholescan.io/#/tx/${txHash}`
+  } else if (key === "moonbeam") {
+    return `https://moonbeam.subscan.io/tx/${txHash}`
   } else {
     return `https://hydradx.subscan.io/tx/${txHash}`
   }
