@@ -40,9 +40,9 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
         return isChainStored && !isUserStored
       })
       .map(({ parachainId, externalId }) => {
-        if (!parachainId) return null
+        if (!parachainId || !externalId) return null
         const assets = externalAssets?.[+parachainId]
-        return assets?.data?.find(({ id }) => id === externalId)
+        return assets?.data?.get(externalId)
       })
       .filter(isNotNil)
 

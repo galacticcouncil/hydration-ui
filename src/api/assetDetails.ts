@@ -402,10 +402,7 @@ export const getAssets = async (api: ApiPromise) => {
         const asset: TToken = {
           ...assetCommon,
           assetType,
-          parachainId:
-            location && !location.isNone
-              ? getTokenParachainId(location)
-              : undefined,
+          parachainId,
           externalId,
           iconId: "",
           ...(externalTokenStored

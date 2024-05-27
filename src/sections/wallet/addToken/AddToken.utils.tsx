@@ -349,10 +349,10 @@ export const useExternalTokenMeta = (id: string | undefined) => {
   const externalRegistry = useExternalAssetRegistry()
 
   const externalAsset = useMemo(() => {
-    if (asset?.isExternal && !asset?.symbol) {
+    if (asset?.externalId && asset?.isExternal && !asset?.symbol) {
       for (const parachain in externalRegistry) {
-        const externalAsset = externalRegistry[Number(parachain)].data?.find(
-          (externalAsset) => externalAsset.id === asset.externalId,
+        const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
+          asset.externalId,
         )
         if (externalAsset) {
           const meta = assets.external.find(

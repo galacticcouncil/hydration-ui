@@ -45,7 +45,10 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const selectedParachain = assetRegistry?.[parachainId]
 
-  const externalAssets = selectedParachain.data ?? []
+  const externalAssets = selectedParachain.data
+    ? Array.from(selectedParachain.data.values())
+    : []
+
   const internalAssets =
     assets?.tokens?.filter(
       (asset) => asset.parachainId === parachainId.toString(),

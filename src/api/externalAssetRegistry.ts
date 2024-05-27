@@ -14,9 +14,19 @@ type TRegistryChain = {
   data: (TExternalAsset & { currencyID: string })[]
 }
 
+export type TExternalAssetRegistry = ReturnType<typeof useExternalAssetRegistry>
+
 const HYDRA_PARACHAIN_ID = 2034
 export const ASSET_HUB_ID = 1000
 export const PENDULUM_ID = 2094
+
+const createMapFromAssetData = (data?: TExternalAsset[]) => {
+  return new Map(
+    (data || []).map((asset) => {
+      return [asset.id, asset]
+    }),
+  )
+}
 
 const getPendulumAssetId = (assetId: string) => {
   const id = isJson(assetId) ? JSON.parse(assetId) : assetId
@@ -119,6 +129,16 @@ export const useExternalAssetRegistry = () => {
   }
 }
 
+export const useExternalAssetRegistryMap = () => {
+  const assetHub = useAssetHubAssetRegistry()
+  //const pendulum = usePendulumAssetRegistry()
+
+  return {
+    [ASSET_HUB_ID]: assetHub,
+    // [PENDULUM_ID]: pendulum,
+  }
+}
+
 /**
  * Used for fetching tokens only from Asset Hub parachain
  */
@@ -137,6 +157,7 @@ export const useAssetHubAssetRegistry = () => {
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: createMapFromAssetData,
     },
   )
 }
@@ -158,6 +179,7 @@ export const usePendulumAssetRegistry = () => {
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: createMapFromAssetData,
     },
   )
 }
