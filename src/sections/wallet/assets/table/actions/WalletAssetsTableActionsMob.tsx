@@ -83,12 +83,17 @@ export const WalletAssetsTableActionsMob = ({
             </Text>
           ) : (
             <>
-              <Text fs={14} lh={14} color="white">
-                {t("value", { value: row.total })}
-              </Text>
-              <Text fs={12} lh={12} color="whiteish500">
-                <DisplayValue value={row.totalDisplay} />
-              </Text>
+              <div sx={{ flex: "column", gap: 4 }}>
+                <Text fs={14} lh={16} color="whiteish500">
+                  {t("wallet.assets.table.header.total")}
+                </Text>
+                <Text fs={14} lh={14} color="white">
+                  {t("value", { value: row.total })}
+                </Text>
+                <Text fs={12} lh={17} color="whiteish500">
+                  <DisplayValue value={row.totalDisplay} />
+                </Text>
+              </div>
 
               <div sx={{ flex: "column", gap: 4 }}>
                 <Text fs={14} lh={16} color="whiteish500">
@@ -105,17 +110,6 @@ export const WalletAssetsTableActionsMob = ({
           )}
         </div>
         <SActionButtonsContainer>
-          {isNativeAsset ? (
-            <NativeLocks
-              reserved={row.reserved}
-              reservedDisplay={row.reservedDisplay}
-            />
-          ) : (
-            <Locks
-              reserved={row.reserved}
-              reservedDisplay={row.reservedDisplay}
-            />
-          )}
           {isUnknownExternalAsset ? (
             <AddTokenAction
               id={row.id}
@@ -124,6 +118,17 @@ export const WalletAssetsTableActionsMob = ({
             />
           ) : (
             <>
+              {isNativeAsset ? (
+                <NativeLocks
+                  reserved={row.reserved}
+                  reservedDisplay={row.reservedDisplay}
+                />
+              ) : (
+                <Locks
+                  reserved={row.reserved}
+                  reservedDisplay={row.reservedDisplay}
+                />
+              )}
               <div sx={{ flex: "column", gap: 12, px: 8 }}>
                 <Link
                   to={LINKS.swap}
