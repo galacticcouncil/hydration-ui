@@ -26,7 +26,7 @@ export const DegenModeModal: FC<DegenModeModalProps> = ({
   const [accepted, setAccepted] = useState(false)
   return (
     <Modal open={open} onClose={onClose}>
-      <div sx={{ width: ["100%", "66%"], mx: "auto" }}>
+      <div sx={{ p: [20, 32] }}>
         <div
           css={{ position: "relative" }}
           sx={{
@@ -50,37 +50,43 @@ export const DegenModeModal: FC<DegenModeModalProps> = ({
             css={{ position: "absolute" }}
           />
         </div>
-        <Text font="FontOver" tAlign="center" fs={19} sx={{ mt: 20 }}>
-          {t("header.settings.degenMode.title")}
-        </Text>
-        <Text color="basic400" tAlign="center" sx={{ mt: 20 }}>
-          {t("header.settings.degenMode.description")}
-        </Text>
-        <Text tAlign="center" sx={{ mt: 10 }}>
-          <SLearnMoreLink>
-            {t("stats.tiles.link")}
-            <IconLink />
-          </SLearnMoreLink>
-        </Text>
-        <Separator sx={{ mt: 20 }} />
-        <CheckBox
-          sx={{ mt: 14 }}
-          size="small"
-          variant="secondary"
-          checked={accepted}
-          onChange={setAccepted}
-          label={
-            <Text fs={14} color="brightBlue300">
-              {t("header.settings.degenMode.disclaimer")}
-            </Text>
-          }
+        <div sx={{ width: ["100%", "75%"], mx: "auto" }}>
+          <Text font="FontOver" tAlign="center" fs={19} sx={{ mt: 20 }}>
+            {t("header.settings.degenMode.title")}
+          </Text>
+          <Text color="basic400" tAlign="center" sx={{ mt: 20 }}>
+            {t("header.settings.degenMode.description")}
+          </Text>
+          <Text tAlign="center" sx={{ mt: 10 }}>
+            <SLearnMoreLink>
+              {t("stats.tiles.link")}
+              <IconLink />
+            </SLearnMoreLink>
+          </Text>
+          <Separator sx={{ mt: 20 }} color="darkBlue401" />
+          <CheckBox
+            sx={{ mt: 14, mb: 32 }}
+            size="small"
+            variant="secondary"
+            checked={accepted}
+            onChange={setAccepted}
+            label={
+              <Text fs={14} color="brightBlue300">
+                {t("header.settings.degenMode.disclaimer")}
+              </Text>
+            }
+          />
+        </div>
+        <Separator
+          sx={{ mt: 20, mx: [-20, -32], width: "auto", my: 20 }}
+          color="darkBlue401"
         />
-      </div>
-      <div sx={{ flex: "row", justify: "space-between", mt: 20, p: 20 }}>
-        <Button onClick={onClose}>{t("close")}</Button>
-        <Button variant="primary" disabled={!accepted} onClick={onAccept}>
-          {t("header.settings.degenMode.enable")}
-        </Button>
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Button onClick={onClose}>{t("close")}</Button>
+          <Button variant="primary" disabled={!accepted} onClick={onAccept}>
+            {t("header.settings.degenMode.enable")}
+          </Button>
+        </div>
       </div>
     </Modal>
   )
