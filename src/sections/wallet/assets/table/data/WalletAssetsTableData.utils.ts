@@ -9,7 +9,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
 import { useAccountVotes } from "api/democracy"
-import { customFormatDuration } from "utils/formatting"
+import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -302,10 +302,7 @@ export const useUnlockableTokens = () => {
   const date = votes.data?.maxLockedBlock.times(BLOCK_TIME)
   const endDate =
     votes.data && !votes.data.maxLockedBlock.isZero()
-      ? customFormatDuration({
-          end: date?.times(1000).toNumber() ?? 0,
-          isShort: true,
-        })
+      ? durationInDaysAndHoursFromNow(date?.times(1000).toNumber() ?? 0)
       : undefined
 
   return {

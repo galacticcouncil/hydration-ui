@@ -127,11 +127,11 @@ const NativeAssetDetails = ({
             <DisplayValue value={lockedTokens.lockDemocracyDisplay} />
           )}
         </Text>
-        {unlocable.endDate?.isPositive ? (
+        {unlocable.endDate ? (
           <SLocksContainer sx={{ width: "fit-content" }}>
             <Text fs={11} lh={15} color="darkBlue200">
               {t("wallet.assets.table.details.expiring", {
-                duration: unlocable.endDate.duration,
+                duration: unlocable.endDate,
               })}
             </Text>
           </SLocksContainer>
