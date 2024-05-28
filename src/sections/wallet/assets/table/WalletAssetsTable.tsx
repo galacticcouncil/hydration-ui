@@ -124,6 +124,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
                 if (!row.original.symbol && row.original.isExternal)
                   return (
                     <TableRow
+                      key={row.original.id}
                       onClick={() => {
                         !isDesktop && setRow(row.original)
                       }}

@@ -2,7 +2,7 @@ import { useAccountBalances } from "api/accountBalances"
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BLOCK_TIME, BN_0, BN_1 } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
 import { arraySearch } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -27,7 +27,7 @@ export const useAssetsData = ({
   const { account } = useAccount()
   const address = givenAddress ?? account?.address
 
-  const balances = useAccountBalances(address)
+  const balances = useAccountBalances(address, true)
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
@@ -63,6 +63,7 @@ export const useAssetsData = ({
   )
 
   const data = useMemo(() => {
+    if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
       let { decimals, id, name, symbol, isExternal } = assets.getAsset(
         balance.id,
@@ -73,7 +74,7 @@ export const useAssetsData = ({
       )
       const spotPrice =
         spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
-          ?.spotPrice ?? BN_1
+          ?.spotPrice ?? BN_NAN
 
       const reserved = balance.reservedBalance.shiftedBy(-decimals)
       const reservedDisplay = reserved.times(spotPrice)
@@ -189,7 +190,7 @@ export const useAssetsData = ({
     allAssets,
   ])
 
-  return { data, isLoading: balances.isLoading }
+  return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
 }
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]

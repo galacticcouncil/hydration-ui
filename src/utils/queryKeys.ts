@@ -29,8 +29,12 @@ export const QUERY_KEYS = {
   ],
   miningPosition: (id: string) => ["miningPosition", id],
   miningPositionXYK: (id: string) => ["miningPositionXYK", id],
-  accountBalances: (id: Maybe<AccountId32 | string>) => [
+  accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
+    "accountBalances",
+    id?.toString(),
+  ],
+  accountBalances: (id: Maybe<AccountId32 | string>) => [
     "accountBalances",
     id?.toString(),
   ],
