@@ -1,33 +1,39 @@
-import { FC, useEffect, useState } from "react"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
+import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
+import { FC, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   MIGRATION_CHECK_KEY,
   importToLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
+import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 
-export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
+const reloadAppWithTimestamp = (ts: string) => {
+  window.location.href = window.location.origin
+  localStorage.setItem(MIGRATION_CHECK_KEY, ts || "0")
+}
+
+export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
+  const { t } = useTranslation()
   const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
-  const handleImport = (data: string) => {
-    if (data) {
-      importToLocalStorage(data)
-      localStorage.setItem(MIGRATION_CHECK_KEY, new Date().toISOString())
-      window.location.href = window.location.origin
-    }
-  }
 
   useEffect(() => {
     const migrationStatus = localStorage.getItem(MIGRATION_CHECK_KEY)
-    const migrationCompletedOn = migrationStatus
-      ? new Date(migrationStatus)
-      : null
+    const migrationCompletedOn =
+      migrationStatus && migrationStatus !== "0"
+        ? new Date(migrationStatus)
+        : null
 
-    if (migrationCompletedOn) {
+    if (migrationCompletedOn && !!data) {
       setLastImportDate(new Date(migrationCompletedOn))
-    } else {
-      handleImport(data)
+      return
+    } else if (!!data) {
+      importToLocalStorage(data)
     }
+
+    reloadAppWithTimestamp(data ? new Date().toISOString() : "0")
   }, [data])
 
   if (!lastImportDate) {
@@ -35,30 +41,41 @@ export const MigrationImportModal: FC<{ data: string }> = ({ data }) => {
   }
 
   return (
-    <Modal open headerVariant="FontOver" title="Hydration Migration">
-      <Text sx={{ mb: 20 }} color="basic300">
-        You already transferred your settings on{" "}
-        {lastImportDate.toLocaleString()}. Do you want to overwrite your current
-        settings?
+    <Modal open headerVariant="FontOver">
+      <MigrationLogo sx={{ mx: "auto" }} />
+      <Text tAlign="center" font="FontOver" fs={19} sx={{ mt: 12 }}>
+        {t("migration.import.title")}
       </Text>
-
-      <div sx={{ flex: "row", gap: 20, justify: "space-between" }}>
+      <Text
+        tAlign="center"
+        sx={{ mt: 12, maxWidth: 500, mx: "auto" }}
+        color="basic400"
+      >
+        {t("migration.import.description", { date: lastImportDate })}
+      </Text>
+      <Separator
+        sx={{ mx: [-20, -32], mt: ["auto", 50], mb: [12, 30], width: "auto" }}
+        color="darkBlue401"
+      />
+      <div sx={{ flex: "row", justify: "space-between" }}>
         <Button
-          variant="secondary"
           onClick={() => {
             window.location.href = window.location.origin
           }}
         >
-          Close
+          {t("toast.close")}
         </Button>
-        <Button
-          variant="mutedError"
-          onClick={() => {
-            handleImport(data)
-          }}
-        >
-          Overwrite my settings
-        </Button>
+        {data && (
+          <Button
+            variant="mutedError"
+            onClick={() => {
+              importToLocalStorage(data)
+              reloadAppWithTimestamp(new Date().toISOString())
+            }}
+          >
+            {t("migration.import.button")}
+          </Button>
+        )}
       </div>
     </Modal>
   )

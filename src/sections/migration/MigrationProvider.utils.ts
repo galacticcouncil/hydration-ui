@@ -7,6 +7,8 @@ export const MIGRATION_LS_KEYS = [
   "rpcUrl",
   "hydradx-rpc-list",
   "referral-codes",
+  "dca.settings",
+  "trade.settings",
 ]
 export const MIGRATION_CHECK_KEY = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"

@@ -6,23 +6,54 @@ import {
   MIGRATION_QUERY_PARAM,
   MIGRATION_TARGET_URL,
 } from "sections/migration/MigrationProvider.utils"
+import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
+import { useTranslation } from "react-i18next"
+import { Separator } from "components/Separator/Separator"
 
 export const MigrationExportModal: FC<{ data: string }> = ({ data }) => {
+  const { t } = useTranslation()
   return (
-    <Modal open headerVariant="FontOver" title="Hydration Migration">
-      <Text sx={{ mb: 20 }} color="basic300">
-        HydraDX is migrating to new domain. Click the button below to transfer
-        your settings.
+    <Modal open headerVariant="FontOver">
+      <MigrationLogo sx={{ mx: "auto" }} />
+      <Text tAlign="center" font="FontOver" fs={19} sx={{ mt: 12 }}>
+        {t("migration.export.title")}
       </Text>
-
-      <Button
-        variant="primary"
-        onClick={() => {
-          window.location.href = `${MIGRATION_TARGET_URL}?${MIGRATION_QUERY_PARAM}=${data}`
-        }}
+      <Text
+        tAlign="center"
+        sx={{ mt: 12, maxWidth: 500, mx: "auto" }}
+        color="basic400"
       >
-        Transfer my settings
-      </Button>
+        {t("migration.export.description")}
+      </Text>
+      <Text
+        tAlign="center"
+        sx={{ mt: 12, maxWidth: 500, mx: "auto" }}
+        color="basic400"
+      >
+        {t("migration.export.question")}
+      </Text>
+      <Separator
+        sx={{ mx: [-20, -32], mt: ["auto", 50], mb: [12, 30], width: "auto" }}
+        color="darkBlue401"
+      />
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <Button
+          onClick={() => {
+            window.location.href = `${MIGRATION_TARGET_URL}?${MIGRATION_QUERY_PARAM}=`
+          }}
+        >
+          {t("toast.close")}
+        </Button>
+
+        <Button
+          variant="primary"
+          onClick={() => {
+            window.location.href = `${MIGRATION_TARGET_URL}?${MIGRATION_QUERY_PARAM}=${data}`
+          }}
+        >
+          {t("migration.export.button")}
+        </Button>
+      </div>
     </Modal>
   )
 }

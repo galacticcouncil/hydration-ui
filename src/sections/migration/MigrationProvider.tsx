@@ -17,7 +17,9 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const data = search?.replace(`?${MIGRATION_QUERY_PARAM}=`, "") ?? ""
 
   const shouldExport = MIGRATION_TRIGGER_URL === origin
-  const shouldImport = MIGRATION_TARGET_URL === origin && !!data
+  const shouldImport =
+    MIGRATION_TARGET_URL === origin &&
+    search?.startsWith(`?${MIGRATION_QUERY_PARAM}`)
 
   if (shouldImport) {
     return <MigrationImportModal data={data} />
