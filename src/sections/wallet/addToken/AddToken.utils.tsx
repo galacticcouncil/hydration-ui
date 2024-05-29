@@ -10,10 +10,15 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
-import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
+import {
+  ASSET_HUB_ID,
+  useExternalAssetRegistry,
+} from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
+import { useMemo } from "react"
+import { omit } from "utils/rx"
 
 const pink = {
   decimals: 10,
@@ -98,7 +103,7 @@ const internalIds = new Map([
   ["6", undefined],
   ["65454", undefined],
   ["8889", "1000091"],
-  ["8889", "1000108"],
+  ["8886", "1000108"],
   ["42069", "1000034"],
   ["77", undefined],
   ["9002", "1000105"],
@@ -289,9 +294,25 @@ export const useUserExternalTokenStore = create<Store>()(
           : false
       },
     }),
+
     {
       name: "external-tokens",
       version,
+      merge: (persistedState, currentState) => {
+        if (!persistedState) return currentState
+
+        const { tokens: storedTokens } = persistedState as Store
+
+        return {
+          ...currentState,
+          tokens: {
+            ...storedTokens,
+            mainnet: storedTokens.mainnet.map((token) =>
+              token.id === "8889" ? { ...token, internalId: "1000091" } : token,
+            ),
+          },
+        }
+      },
       migrate: (persistedState) => {
         const state = persistedState as Store
 
@@ -320,3 +341,40 @@ export const useUserExternalTokenStore = create<Store>()(
     },
   ),
 )
+
+export const useExternalTokenMeta = (id: string | undefined) => {
+  const { assets } = useRpcProvider()
+  const asset = id ? assets.getAsset(id) : undefined
+
+  const externalRegistry = useExternalAssetRegistry()
+
+  const externalAsset = useMemo(() => {
+    if (asset?.isExternal && !asset?.symbol) {
+      for (const parachain in externalRegistry) {
+        const externalAsset = externalRegistry[Number(parachain)].data?.find(
+          (externalAsset) => externalAsset.id === asset.externalId,
+        )
+        if (externalAsset) {
+          const meta = assets.external.find(
+            (asset) => asset.externalId === externalAsset.id,
+          )
+
+          if (meta) {
+            const externalMeta = omit(["id"], externalAsset)
+
+            return {
+              ...meta,
+              ...externalMeta,
+            }
+          }
+
+          return undefined
+        }
+      }
+    }
+
+    return undefined
+  }, [asset, externalRegistry, assets.external])
+
+  return externalAsset
+}

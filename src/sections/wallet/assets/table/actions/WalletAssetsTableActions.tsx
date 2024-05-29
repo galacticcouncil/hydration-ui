@@ -20,11 +20,12 @@ import { LINKS } from "utils/navigation"
 import { useNavigate } from "@tanstack/react-location"
 import { AssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import {
+  useExternalTokenMeta,
+  useUserExternalTokenStore,
+} from "sections/wallet/addToken/AddToken.utils"
 import { useRefetchProviderData } from "api/provider"
 import { useToast } from "state/toasts"
-import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { useMemo } from "react"
 
 type Props = {
   toggleExpanded: () => void
@@ -161,10 +162,10 @@ export const WalletAssetsTableActions = (props: Props) => {
         justify: "end",
       }}
     >
-      {props.asset.isExternal && !props.asset.name ? (
-        <AddTokenAction id={props.asset.id} />
-      ) : (
-        <>
+      <>
+        {props.asset.isExternal && !props.asset.name ? (
+          <AddTokenAction id={props.asset.id} />
+        ) : (
           <div
             sx={{
               flex: "row",
@@ -188,23 +189,24 @@ export const WalletAssetsTableActions = (props: Props) => {
               </TableAction>
             ))}
           </div>
-          <Dropdown
-            items={
-              account?.isExternalWalletConnected
-                ? []
-                : [
-                    ...buttons.filter((button) =>
-                      hiddenElementsKeys.includes(button.key),
-                    ),
-                    ...actionItems,
-                  ]
-            }
-            onSelect={(item) => item.onSelect?.()}
-          >
-            <MoreIcon />
-          </Dropdown>
-        </>
-      )}
+        )}
+
+        <Dropdown
+          items={
+            account?.isExternalWalletConnected
+              ? []
+              : [
+                  ...buttons.filter((button) =>
+                    hiddenElementsKeys.includes(button.key),
+                  ),
+                  ...actionItems,
+                ]
+          }
+          onSelect={(item) => item.onSelect?.()}
+        >
+          <MoreIcon />
+        </Dropdown>
+      </>
 
       <ButtonTransparent
         onClick={props.toggleExpanded}
@@ -223,32 +225,22 @@ export const WalletAssetsTableActions = (props: Props) => {
 export const AddTokenAction = ({
   id,
   className,
+  onClick,
 }: {
   id: string
   className?: string
+  onClick?: () => void
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const { addToken } = useUserExternalTokenStore()
-  const externalRegistry = useExternalAssetRegistry()
+
+  const externalAsset = useExternalTokenMeta(id)
 
   const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
 
-  const externalAsset = useMemo(() => {
-    const meta = assets.getAsset(id)
-
-    for (const parachain in externalRegistry) {
-      const externalAsset = externalRegistry[Number(parachain)].data?.find(
-        (externalAsset) => externalAsset.id === meta.externalId,
-      )
-
-      if (externalAsset) return externalAsset
-    }
-  }, [assets, externalRegistry, id])
-
-  const onClick = externalAsset
+  const addExternalAsset = externalAsset
     ? () => {
         addToken({
           id: externalAsset.id,
@@ -279,11 +271,14 @@ export const AddTokenAction = ({
   return (
     <TableAction
       icon={<PlusIcon />}
-      onClick={onClick}
+      onClick={() => {
+        addExternalAsset?.()
+        onClick?.()
+      }}
       disabled={account?.isExternalWalletConnected || !externalAsset}
       className={className}
     >
-      {t("wallet.assets.table.addToken")}
+      {t("wallet.assets.table.actions.add")}
     </TableAction>
   )
 }

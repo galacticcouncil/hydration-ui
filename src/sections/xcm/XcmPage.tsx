@@ -131,7 +131,11 @@ export function XcmPage() {
       : DEFAULT_DEST_CHAIN
 
   const assetDefault =
-    search.success && search.data.asset ? search.data.asset : undefined
+    search.success && search.data.asset
+      ? search.data.asset
+      : srcChain === "ethereum"
+      ? "eth"
+      : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
