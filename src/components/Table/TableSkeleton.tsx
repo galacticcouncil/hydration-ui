@@ -108,7 +108,7 @@ export const TableStatsSkeleton = ({
       {title && (
         <StatsTableTitle>
           {typeof title === "string" ? (
-            <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+            <Text fs={[15, 19]} lh={20} color="white" font="GeistMono">
               {title}
             </Text>
           ) : (

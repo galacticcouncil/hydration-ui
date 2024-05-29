@@ -1,13 +1,3 @@
-import ChakraPetch from "assets/fonts/ChakraPetch/ChakraPetch.ttf"
-import ChakraPetchBold from "assets/fonts/ChakraPetch/ChakraPetchBold.ttf"
-import ChakraPetchSemiBold from "assets/fonts/ChakraPetch/ChakraPetchSemiBold.ttf"
-import FontOver from "assets/fonts/FontOver/FontOver.ttf"
-import SatoshiVariable from "assets/fonts/SatoshiVariable/SatoshiVariable.ttf"
-import Geist from "assets/fonts/Geist/Geist-Regular.ttf"
-import GeistMono from "assets/fonts/GeistMono/GeistMono-Regular.otf"
-import GeistBold from "assets/fonts/Geist/Geist-Bold.ttf"
-import GeistMedium from "assets/fonts/Geist/Geist-Medium.ttf"
-
 import { theme } from "theme"
 
 export const normalize = `
@@ -160,71 +150,6 @@ export const normalize = `
 `
 
 export const GlobalStyle = `
-  @font-face {
-    font-family: 'ChakraPetch';
-    src: local("ChakraPetch"),
-    url(${ChakraPetch}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'ChakraPetchBold';
-    src: local("ChakraPetchBold"),
-    url(${ChakraPetchBold}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'ChakraPetchSemiBold';
-    src: local("ChakraPetchSemiBold"),
-    url(${ChakraPetchSemiBold}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'FontOver';
-    src: local("FontOver"),
-    url(${FontOver}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'SatoshiVariable';
-    src: local("SatoshiVariable"),
-    url(${SatoshiVariable}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'Geist';
-    src: local("Geist"),
-    url(${Geist}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'GeistMono';
-    src: local("GeistMono"),
-    url(${GeistMono}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'GeistMedium';
-    src: local("GeistMedium"),
-    url(${GeistMedium}) format("truetype");
-    font-display: auto;
-  };
-
-  @font-face {
-    font-family: 'GeistBold';
-    src: local("GeistBold"),
-    url(${GeistBold}) format("truetype");
-    font-display: auto;
-  };
-
-
-
   ${normalize}
   
   html { 

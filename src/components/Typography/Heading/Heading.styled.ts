@@ -7,7 +7,7 @@ import {
 
 export const SHeading = styled.h1<STypographyProps>`
   color: ${theme.colors.basic100};
-  font-family: Geist;
+  font-family: GeistMonoSemiBold;
 
   ${handleTypographyProps}
 `

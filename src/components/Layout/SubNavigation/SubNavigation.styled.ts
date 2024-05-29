@@ -67,7 +67,7 @@ export const SBadge = styled.p`
   text-transform: uppercase;
   font-size: 7px;
   line-height: 1;
-  font-family: ChakraPetchSemiBold;
+  font-family: GeistSemiBold;
 
   position: relative;
   right: 12px;

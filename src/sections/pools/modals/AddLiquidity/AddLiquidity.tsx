@@ -59,7 +59,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose }: Props) => {
               />
             ),
             noPadding: true,
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
           },
         ]}
       />

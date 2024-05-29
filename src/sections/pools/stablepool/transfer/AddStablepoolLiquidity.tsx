@@ -176,7 +176,7 @@ export const AddStablepoolLiquidity = ({
         <Spacer size={10} />
         <CurrencyReserves reserves={reserves} />
         <Spacer size={20} />
-        <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
+        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
         <Summary

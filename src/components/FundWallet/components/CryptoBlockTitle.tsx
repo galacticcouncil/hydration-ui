@@ -8,7 +8,7 @@ export const CryptoBlockTitle = () => {
   return (
     <div sx={{ display: "flex", align: "center", gap: 9, width: "100%" }}>
       <FundCryptoIcon />
-      <Heading font="ChakraPetch" as="h2" fw={600} fs={20}>
+      <Heading as="h2" fw={600} fs={20}>
         {t("fund.modal.crypto.title")}
       </Heading>
     </div>

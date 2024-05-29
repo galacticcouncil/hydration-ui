@@ -16,7 +16,7 @@ export const HeroBanner: FC<Props> = ({ children }) => {
       <div sx={{ maxWidth: [400, 600] }}>
         <Heading
           fs={[20, 40]}
-          font="FontOver"
+          font="GeistMono"
           sx={{ mb: 20 }}
           fw={400}
           css={{ textWrap: "balance" }}

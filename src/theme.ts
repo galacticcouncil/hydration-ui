@@ -10,7 +10,7 @@ const colors = {
   pink400: "#FF8BBA",
   pink500: "#FF67A4",
   pink600: "#FC408C",
-  pink700: "#F6297C",
+  pink700: "#E53E76",
   pink400Alpha: "#FF0369",
   paleBlue: "#DDE5FF",
   brightBlue100: "#A6DDFF",

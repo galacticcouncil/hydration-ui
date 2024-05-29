@@ -7,6 +7,8 @@ import { AppProviders } from "components/AppProviders/AppProviders"
 import { useEffect } from "react"
 import { routes } from "./routes"
 
+import "unfonts.css"
+
 const history = createBrowserHistory()
 const location = new ReactLocation({ history })
 

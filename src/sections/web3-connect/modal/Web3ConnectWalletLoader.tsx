@@ -30,7 +30,7 @@ export const Web3ConnectWalletLoader: FC<Props> = ({ provider }) => {
         tAlign="center"
         sx={{ mt: 20 }}
         tTransform="uppercase"
-        font="FontOver"
+        font="GeistMono"
       >
         {t("walletConnect.pending.title")}
       </Text>

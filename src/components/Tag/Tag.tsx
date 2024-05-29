@@ -8,7 +8,7 @@ export const Tag = (props: { children?: ReactNode; className?: string }) => {
       <Text
         fs={9}
         sx={{ color: "black" }}
-        font="ChakraPetchBold"
+        font="GeistMedium"
         css={{ textTransform: "uppercase", lineHeight: "normal" }}
       >
         {props.children}
