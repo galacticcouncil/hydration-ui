@@ -32,7 +32,11 @@ export const SubNavigationTabLink = ({
         <>
           <STabContainer active={isActive}>
             <Icon icon={icon} />
-            <Text fs={13} color={isActive ? "white" : "iconGray"}>
+            <Text
+              fs={13}
+              color={isActive ? "white" : "iconGray"}
+              tTransform="uppercase"
+            >
               {label}
             </Text>
             {badge && <SBadge>{badge}</SBadge>}

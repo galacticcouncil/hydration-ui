@@ -3,6 +3,10 @@ import ChakraPetchBold from "assets/fonts/ChakraPetch/ChakraPetchBold.ttf"
 import ChakraPetchSemiBold from "assets/fonts/ChakraPetch/ChakraPetchSemiBold.ttf"
 import FontOver from "assets/fonts/FontOver/FontOver.ttf"
 import SatoshiVariable from "assets/fonts/SatoshiVariable/SatoshiVariable.ttf"
+import Geist from "assets/fonts/Geist/Geist-Regular.ttf"
+import GeistMono from "assets/fonts/GeistMono/GeistMono-Regular.otf"
+import GeistBold from "assets/fonts/Geist/Geist-Bold.ttf"
+import GeistMedium from "assets/fonts/Geist/Geist-Medium.ttf"
 
 import { theme } from "theme"
 
@@ -191,6 +195,36 @@ export const GlobalStyle = `
     font-display: auto;
   };
 
+  @font-face {
+    font-family: 'Geist';
+    src: local("Geist"),
+    url(${Geist}) format("truetype");
+    font-display: auto;
+  };
+
+  @font-face {
+    font-family: 'GeistMono';
+    src: local("GeistMono"),
+    url(${GeistMono}) format("truetype");
+    font-display: auto;
+  };
+
+  @font-face {
+    font-family: 'GeistMedium';
+    src: local("GeistMedium"),
+    url(${GeistMedium}) format("truetype");
+    font-display: auto;
+  };
+
+  @font-face {
+    font-family: 'GeistBold';
+    src: local("GeistBold"),
+    url(${GeistBold}) format("truetype");
+    font-display: auto;
+  };
+
+
+
   ${normalize}
   
   html { 
@@ -200,7 +234,7 @@ export const GlobalStyle = `
   body {
     font-size: 1.6rem;
     margin: 0;
-    font-family: 'ChakraPetch', sans-serif;
+    font-family: 'Geist', sans-serif;
     background: ${theme.colors.bg};
   }
 

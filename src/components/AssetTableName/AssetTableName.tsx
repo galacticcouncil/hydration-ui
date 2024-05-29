@@ -62,18 +62,18 @@ export const AssetTableName = ({
           />
         )}
 
-        <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
+        <div sx={{ flex: "column", width: "100%", gap: [0, 2] }}>
           <Text
             fs={large ? 18 : 14}
             lh={large ? 16 : 14}
-            font="ChakraPetchSemiBold"
+            font="GeistMedium"
             color="white"
           >
             {externalAsset?.symbol ?? symbol}
           </Text>
           <Text
-            fs={large ? 14 : 13}
-            lh={large ? 17 : 13}
+            fs={large ? 14 : 12}
+            lh={large ? 17 : 12}
             sx={{ display: !large ? ["none", "block"] : undefined }}
             color="whiteish500"
           >
@@ -86,9 +86,8 @@ export const AssetTableName = ({
           fs={10}
           sx={{
             mt: 4,
-            ml: large ? 30 : [32, 36],
+            ml: large ? 30 : [32, 34],
           }}
-          font="ChakraPetchSemiBold"
           color="brightBlue300"
           tTransform="uppercase"
         >

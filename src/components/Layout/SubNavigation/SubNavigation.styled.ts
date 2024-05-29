@@ -21,7 +21,7 @@ export const SSubNavigationContainer = styled.div`
   @media (${theme.viewport.gte.sm}) {
     gap: 42px;
 
-    padding: 0 40px;
+    padding: 0 20px;
   }
 `
 

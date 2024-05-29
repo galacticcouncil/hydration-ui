@@ -1,4 +1,3 @@
-import HydraLogo from "assets/icons/HydraLogo.svg?react"
 import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { SHeader } from "components/Layout/Header/Header.styled"
@@ -7,8 +6,6 @@ import { WarningMessage } from "components/WarningMessage/WarningMessage"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { HeaderToolbar } from "./toolbar/HeaderToolbar"
 import { Link, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
@@ -18,8 +15,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 export const Header = () => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
-
-  const isMediumMedia = useMedia(theme.viewport.lt.md)
 
   const warnings = useWarningsStore()
   const search = useSearch()
@@ -39,10 +34,7 @@ export const Header = () => {
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>
             <Link to={LINKS.swap} search={resetSearchParams(search)}>
-              <Icon
-                sx={{ color: "white" }}
-                icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
-              />
+              <Icon sx={{ color: "white" }} icon={<HydraLogoFull />} />
             </Link>
             <HeaderMenu ref={observe} />
           </div>

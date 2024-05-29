@@ -39,7 +39,6 @@ export const HeaderTotalData = ({
           t("value.usd", { amount: value })
         ) : (
           <DisplayValue
-            withGap
             value={
               <Trans
                 t={t}
