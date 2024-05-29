@@ -29,8 +29,8 @@ export const Settings = () => {
   const onClose = () => setOpen(false)
   const onDegenModalClose = () => setDegenModalOpen(false)
   const onDegenModalAccept = () => {
-    toggleDegenMode()
     setDegenModalOpen(false)
+    toggleDegenMode()
   }
 
   return (

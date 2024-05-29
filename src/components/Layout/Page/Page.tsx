@@ -14,6 +14,7 @@ import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
 import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
 
 type Props = {
   className?: string
@@ -31,6 +32,8 @@ export const Page = ({
   const { featureFlags } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
+
+  useDegenModeSubscription()
 
   useEffect(() => {
     ref.current?.scrollTo({

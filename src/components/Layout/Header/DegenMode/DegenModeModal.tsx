@@ -33,7 +33,7 @@ export const DegenModeModal: FC<DegenModeModalProps> = ({
             flex: "row",
             align: "center",
             justify: "center",
-            mt: [25, 50],
+            p: 20,
           }}
         >
           <PixelBg />

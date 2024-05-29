@@ -8,12 +8,6 @@ import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
-import { useSettingsStore } from "state/store"
-import {
-  TExternalAssetRegistry,
-  useExternalAssetRegistry,
-} from "api/externalAssetRegistry"
-import { pick } from "utils/rx"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -26,10 +20,7 @@ export const useAssetsData = ({
 } = {}) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
-  const { degenMode } = useSettingsStore()
   const address = givenAddress ?? account?.address
-
-  const externalRegistry = useExternalAssetRegistry()
 
   const balances = useAccountBalances(address)
   const nativeTokenWithBalance = balances.data?.native
@@ -68,22 +59,9 @@ export const useAssetsData = ({
 
   const data = useMemo(() => {
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      let {
-        decimals: assetDecimals,
-        id,
-        name,
-        symbol,
-        isExternal,
-        externalId,
-        parachainId,
-      } = assets.getAsset(balance.id)
-
-      const externalAssetMeta =
-        degenMode && externalId && parachainId
-          ? getExternalAssetMeta(externalId, parachainId, externalRegistry)
-          : undefined
-
-      const decimals = externalAssetMeta?.decimals ?? assetDecimals
+      let { decimals, id, name, symbol, isExternal } = assets.getAsset(
+        balance.id,
+      )
 
       const inTradeRouter = assets.tradeAssets.some(
         (tradeAsset) => tradeAsset.id === id,
@@ -129,7 +107,6 @@ export const useAssetsData = ({
         transferableDisplay,
         tradability,
         isExternal,
-        ...(externalAssetMeta ?? {}),
       }
     })
 
@@ -171,13 +148,6 @@ export const useAssetsData = ({
                 transferableDisplay: BN_0,
                 tradability,
                 isExternal,
-                ...(degenMode && externalId && parachainId
-                  ? getExternalAssetMeta(
-                      externalId,
-                      parachainId,
-                      externalRegistry,
-                    )
-                  : {}),
               }
 
               if (asset.symbol) {
@@ -217,8 +187,6 @@ export const useAssetsData = ({
     search,
     isAllAssets,
     allAssets,
-    externalRegistry,
-    degenMode,
   ])
 
   return { data, isLoading: balances.isLoading }
@@ -273,19 +241,4 @@ export const useLockedValues = (id: string) => {
     data,
     isLoading: locks.isInitialLoading || spotPrice.isInitialLoading,
   }
-}
-
-const getExternalAssetMeta = (
-  externalId: string,
-  parachainId: string,
-  externalRegistry: TExternalAssetRegistry,
-) => {
-  const externalAsset = externalId
-    ? externalRegistry[Number(parachainId)]?.data?.get(externalId)
-    : undefined
-  const externalAssetMeta = externalAsset
-    ? pick(externalAsset, ["decimals", "name", "symbol"])
-    : undefined
-
-  return externalAssetMeta
 }
