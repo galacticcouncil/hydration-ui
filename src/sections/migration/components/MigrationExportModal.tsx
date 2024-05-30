@@ -10,7 +10,10 @@ import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
 
-export const MigrationExportModal: FC<{ data: string }> = ({ data }) => {
+export const MigrationExportModal: FC<{
+  data: string
+  onCancel: () => void
+}> = ({ data, onCancel }) => {
   const { t } = useTranslation()
   return (
     <Modal open headerVariant="FontOver">
@@ -37,13 +40,7 @@ export const MigrationExportModal: FC<{ data: string }> = ({ data }) => {
         color="darkBlue401"
       />
       <div sx={{ flex: "row", justify: "space-between" }}>
-        <Button
-          onClick={() => {
-            window.location.href = `${MIGRATION_TARGET_URL}?${MIGRATION_QUERY_PARAM}=`
-          }}
-        >
-          {t("toast.close")}
-        </Button>
+        <Button onClick={onCancel}>{t("toast.close")}</Button>
 
         <Button
           variant="primary"

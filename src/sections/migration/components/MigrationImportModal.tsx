@@ -5,14 +5,14 @@ import { Text } from "components/Typography/Text/Text"
 import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  MIGRATION_CHECK_KEY,
+  MIGRATION_COMPLETE_FLAG,
   importToLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
 import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 
 const reloadAppWithTimestamp = (ts: string) => {
   window.location.href = window.location.origin
-  localStorage.setItem(MIGRATION_CHECK_KEY, ts || "0")
+  localStorage.setItem(MIGRATION_COMPLETE_FLAG, ts || "0")
 }
 
 export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
@@ -20,7 +20,7 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
   const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
 
   useEffect(() => {
-    const migrationStatus = localStorage.getItem(MIGRATION_CHECK_KEY)
+    const migrationStatus = localStorage.getItem(MIGRATION_COMPLETE_FLAG)
     const migrationCompletedOn =
       migrationStatus && migrationStatus !== "0"
         ? new Date(migrationStatus)

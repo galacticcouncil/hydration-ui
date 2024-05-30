@@ -10,7 +10,8 @@ export const MIGRATION_LS_KEYS = [
   "dca.settings",
   "trade.settings",
 ]
-export const MIGRATION_CHECK_KEY = "__migration-completed"
+export const MIGRATION_COMPLETE_FLAG = "__migration-completed"
+export const MIGRATION_CANCELED_FLAG = "__migration-canceled"
 export const MIGRATION_QUERY_PARAM = "migration"
 export const MIGRATION_TRIGGER_URL =
   "https://deploy-preview-1333--testnet-hydra-app.netlify.app"
