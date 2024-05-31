@@ -9,15 +9,12 @@ import {
   MIGRATION_QUERY_PARAM,
   MIGRATION_LS_KEYS,
   serializeLocalStorage,
-  MIGRATION_CANCELED_FLAG,
 } from "sections/migration/MigrationProvider.utils"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { origin, search } = useLocation()
 
-  const [migrationCanceled, setMigrationCanceled] = useState(
-    localStorage.getItem(MIGRATION_CANCELED_FLAG) === "true",
-  )
+  const [migrationCanceled, setMigrationCanceled] = useState(false)
 
   const paramKey = `?${MIGRATION_QUERY_PARAM}=`
   const data = search?.replace(paramKey, "") ?? ""
@@ -35,7 +32,6 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
       <MigrationExportModal
         data={serializeLocalStorage(MIGRATION_LS_KEYS)}
         onCancel={() => {
-          localStorage.setItem(MIGRATION_CANCELED_FLAG, "true")
           setMigrationCanceled(true)
         }}
       />
