@@ -12,6 +12,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import {
   ASSET_HUB_ID,
+  PENDULUM_ID,
   useExternalAssetRegistry,
 } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore } from "api/provider"
@@ -157,7 +158,7 @@ const internalIds = new Map([
   ["2230", "1000073"],
 ])
 
-export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID /*PENDULUM_ID*/]
+export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID, PENDULUM_ID]
 
 export const PARACHAIN_CONFIG: {
   [x: number]: {

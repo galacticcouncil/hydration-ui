@@ -111,11 +111,11 @@ export const getPedulumAssets = async () => {
  */
 export const useExternalAssetRegistry = () => {
   const assetHub = useAssetHubAssetRegistry()
-  //const pendulum = usePendulumAssetRegistry()
+  const pendulum = usePendulumAssetRegistry()
 
   return {
     [ASSET_HUB_ID as number]: assetHub,
-    // [PENDULUM_ID as number]: pendulum,
+    [PENDULUM_ID as number]: pendulum,
   }
 }
 
