@@ -12,7 +12,7 @@ import {
 } from "sections/migration/MigrationProvider.utils"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { origin, search, hostname } = useLocation()
+  const { search, hostname } = useLocation()
 
   const [migrationCanceled, setMigrationCanceled] = useState(false)
 
@@ -21,7 +21,7 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const shouldExport = MIGRATION_TRIGGER_DOMAIN === hostname
   const shouldImport =
-    MIGRATION_TARGET_DOMAIN === origin && search?.startsWith(paramKey)
+    MIGRATION_TARGET_DOMAIN === hostname && search?.startsWith(paramKey)
 
   if (shouldImport) {
     return <MigrationImportModal data={data} />
