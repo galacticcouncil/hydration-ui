@@ -10,6 +10,7 @@
     # route1 audit will use the top level thresholds
     [[plugins.inputs.audits]]
     path = "liquidity/all-pools"
+    path = "wallet/assets"
 
 
     output_path = "reports/liquidity/all-pools.html"
