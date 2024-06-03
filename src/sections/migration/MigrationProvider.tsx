@@ -1,15 +1,16 @@
 import { FC, PropsWithChildren, useState } from "react"
 import { useLocation } from "react-use"
-import { MigrationExportModal } from "./components/MigrationExportModal"
-import { MigrationImportModal } from "./components/MigrationImportModal"
-
 import {
-  MIGRATION_TRIGGER_DOMAIN,
-  MIGRATION_TARGET_DOMAIN,
-  MIGRATION_QUERY_PARAM,
+  MIGRATION_COMPLETE_FLAG,
   MIGRATION_LS_KEYS,
+  MIGRATION_QUERY_PARAM,
+  MIGRATION_TARGET_DOMAIN,
+  MIGRATION_TRIGGER_DOMAIN,
   serializeLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
+import { MigrationWarning } from "sections/migration/components/MigrationWarning"
+import { MigrationExportModal } from "./components/MigrationExportModal"
+import { MigrationImportModal } from "./components/MigrationImportModal"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { search, hostname } = useLocation()
@@ -32,11 +33,41 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
       <MigrationExportModal
         data={serializeLocalStorage(MIGRATION_LS_KEYS)}
         onCancel={() => {
-          setMigrationCanceled(true)
+          const qs = new URLSearchParams(search)
+          const from = qs.get("from")
+
+          if (from) {
+            window.location.href = `https://${from}`
+          } else {
+            setMigrationCanceled(true)
+          }
         }}
       />
     )
   }
 
-  return <>{children}</>
+  const shouldShowWarning =
+    MIGRATION_TARGET_DOMAIN === hostname &&
+    !localStorage.getItem(MIGRATION_COMPLETE_FLAG) &&
+    !migrationCanceled
+
+  return (
+    <>
+      {shouldShowWarning && (
+        <MigrationWarning
+          onClick={() =>
+            (window.location.href = `https://${MIGRATION_TRIGGER_DOMAIN}?from=${MIGRATION_TARGET_DOMAIN}`)
+          }
+          onClose={() => {
+            setMigrationCanceled(true)
+            localStorage.setItem(
+              MIGRATION_COMPLETE_FLAG,
+              new Date().toISOString(),
+            )
+          }}
+        />
+      )}
+      {children}
+    </>
+  )
 }

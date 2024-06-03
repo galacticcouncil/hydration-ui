@@ -903,5 +903,6 @@
   "migration.export.button": "Migrate Settings",
   "migration.import.title": "Do you wish to overwrite your settings?",
   "migration.import.description": "You already transferred your settings on {{ date, dd/MM/yyyy hh:mm:ss }}. Do you wish to overwrite your current settings?",
-  "migration.import.button": "Overwrite Settings"
+  "migration.import.button": "Overwrite Settings",
+  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration. <0>Learn more</0>"
 }
