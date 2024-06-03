@@ -11,4 +11,7 @@
     [[plugins.inputs.audits]]
     path = "liquidity/all-pools"
 
+
+    output_path = "reports/liquidity/all-pools.html"
+
  
