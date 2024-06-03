@@ -84,9 +84,12 @@ export const getPedulumAssets = async () => {
       const data = dataRaw.unwrap()
       const location = data.location.unwrap()
 
-      if (location.isV3 && location.asV3.interior.toString() !== "Here") {
+      if (location) {
+        const type = location.type.toString()
+        const interior = location[`as${type}`].interior.toString()
+
         const id = getPendulumAssetId(idRaw)
-        if (id)
+        if (interior !== "Here" && id)
           acc.push({
             id,
             // @ts-ignore
@@ -95,7 +98,7 @@ export const getPedulumAssets = async () => {
             symbol: data.symbol.toHuman() as string,
             // @ts-ignore
             name: data.name.toHuman() as string,
-            location: location.asV3 as HydradxRuntimeXcmAssetLocation,
+            location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
             origin: PENDULUM_ID,
           })
       }
