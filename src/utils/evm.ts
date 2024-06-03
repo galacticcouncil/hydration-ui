@@ -60,13 +60,23 @@ export class H160 {
   }
 }
 
-export function getEvmTxLink(txHash: string, key = "hydradx") {
+export function getEvmTxLink(
+  txHash: string,
+  txData: string | undefined,
+  key = "hydradx",
+) {
   const chain = chainsMap.get(key)
 
   if (!chain) return ""
 
   if (chain.isEvmChain()) {
-    return `https://wormholescan.io/#/tx/${txHash}`
+    const isApproveTx = txData?.startsWith("0x095ea7b3")
+
+    return isApproveTx
+      ? `https://etherscan.io/tx/${txHash}`
+      : `https://wormholescan.io/#/tx/${txHash}`
+  } else if (key === "moonbeam") {
+    return `https://moonbeam.subscan.io/tx/${txHash}`
   } else {
     return `https://hydradx.subscan.io/tx/${txHash}`
   }

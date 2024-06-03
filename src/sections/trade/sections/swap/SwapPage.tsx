@@ -15,6 +15,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useRemount } from "hooks/useRemount"
+import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
@@ -54,17 +55,20 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
+  const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
-
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm, externalTokensStored.length])
-  const preference = useProviderRpcUrlStore()
+  const version = useRemount([
+    isEvm,
+    externalTokensStored[preference.getDataEnv()].length,
+  ])
+
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -143,7 +147,9 @@ export function SwapPage() {
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
+        isTestnet={preference.getDataEnv() === "testnet"}
       />
+      {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {addToken && (
         <AddTokenModal
           css={{ zIndex: 9999 }}

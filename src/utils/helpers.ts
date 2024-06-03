@@ -328,3 +328,14 @@ export const isAnyParachain = (chain: AnyChain): chain is AnyParachain =>
 
 export const isAnyEvmChain = (chain: AnyChain): chain is AnyEvmChain =>
   !!(chain as AnyEvmChain).client
+
+export const isJson = (item: string) => {
+  let value = typeof item !== "string" ? JSON.stringify(item) : item
+  try {
+    value = JSON.parse(value)
+  } catch (e) {
+    return false
+  }
+
+  return typeof value === "object" && value !== null
+}

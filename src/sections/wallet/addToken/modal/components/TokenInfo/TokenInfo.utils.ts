@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
+import { useProviderRpcUrlStore } from "api/provider"
 import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
@@ -23,11 +24,17 @@ const useMissingExternalAssets = (ids: string[]) => {
         .map((tokenId) => {
           const externalId = assets.external.find(
             (external) => external.id === tokenId,
-          )?.generalIndex
+          )?.externalId
 
-          return externalAssets.data?.find(
+          const meta = externalAssets.data?.find(
             (externalAsset) => externalAsset.id === externalId,
           )
+          return meta
+            ? {
+                ...meta,
+                internalId: tokenId,
+              }
+            : undefined
         })
         .filter(isNotNil)
     }
@@ -41,6 +48,8 @@ const useMissingExternalAssets = (ids: string[]) => {
 export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const [valid, setValid] = useState(false)
   const { assets, poolService } = useRpcProvider()
+  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
   const volumes = useXYKTradeVolumes(poolsAddress)
 
@@ -73,7 +82,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
     ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
     async () => {
       await poolService.syncRegistry([
-        ...externalTokensStored,
+        ...externalTokensStored[dataEnv],
         ...missingAssets,
       ])
 
@@ -103,7 +112,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
           const decimals = assetMeta.symbol
             ? assetMeta.decimals
             : missingAssets.find(
-                (missingAsset) => missingAsset.id === assetMeta.generalIndex,
+                (missingAsset) => missingAsset.id === assetMeta.externalId,
               )?.decimals ?? 0
 
           const sum = value.sums[assetMeta.id]
