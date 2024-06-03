@@ -7,10 +7,17 @@
     package = "@netlify/plugin-lighthouse"
 
     [[plugins.inputs.audits]]
-        path = "/"
-        
+        path = "trade/swap"
+    [[plugins.inputs.audits]]
+        path = "trade/yield-dca"
+    [[plugins.inputs.audits]]
+        path = "trade/dca"
+    [[plugins.inputs.audits]]
+        path = "trade/bonds"
     [[plugins.inputs.audits]]
        path = "liquidity/all-pools"
+    [[plugins.inputs.audits]]
+       path = "lwallet/assets"
 
 
 
