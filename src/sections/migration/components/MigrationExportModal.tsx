@@ -4,7 +4,7 @@ import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import {
   MIGRATION_QUERY_PARAM,
-  MIGRATION_TARGET_URL,
+  MIGRATION_TARGET_DOMAIN,
 } from "sections/migration/MigrationProvider.utils"
 import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 import { useTranslation } from "react-i18next"
@@ -45,7 +45,8 @@ export const MigrationExportModal: FC<{
         <Button
           variant="primary"
           onClick={() => {
-            window.location.href = `${MIGRATION_TARGET_URL}?${MIGRATION_QUERY_PARAM}=${data}`
+            const targetUrl = `https://${MIGRATION_TARGET_DOMAIN}?${MIGRATION_QUERY_PARAM}=${data}`
+            window.location.href = targetUrl
           }}
         >
           {t("migration.export.button")}

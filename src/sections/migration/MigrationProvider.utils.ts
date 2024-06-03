@@ -12,10 +12,11 @@ export const MIGRATION_LS_KEYS = [
 ]
 export const MIGRATION_COMPLETE_FLAG = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"
-export const MIGRATION_TRIGGER_URL =
-  "https://deploy-preview-1333--testnet-hydra-app.netlify.app"
-export const MIGRATION_TARGET_URL =
-  "https://deploy-preview-1334--testnet-hydra-app.netlify.app"
+export const MIGRATION_TRIGGER_DOMAIN = import.meta.env
+  .VITE_MIGRATION_TRIGGER_DOMAIN as string
+
+export const MIGRATION_TARGET_DOMAIN = import.meta.env
+  .VITE_MIGRATION_TARGET_DOMAIN
 
 export const serializeLocalStorage = (keys: string[]): string => {
   const data: { [key: string]: any } = {}
