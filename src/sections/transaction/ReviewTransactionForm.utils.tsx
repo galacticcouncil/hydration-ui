@@ -9,14 +9,13 @@ import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   NATIVE_EVM_ASSET_DECIMALS,
   NATIVE_EVM_ASSET_ID,
   isEvmAccount,
 } from "utils/evm"
-import { BN_NAN } from "utils/constants"
+import { BN_NAN, BN_1 } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
@@ -91,14 +90,14 @@ export const useTransactionValues = ({
   // fee payment asset which should be displayed on the screen
   const accountFeePaymentId = feePaymentId ?? feePaymentAssetId
 
+  const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
+
   const feePaymentMeta = accountFeePaymentId
     ? assets.getAsset(accountFeePaymentId)
     : undefined
 
-  const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
-  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
-
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
+  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
   const nonce = useNextNonce(account?.address)
 
@@ -119,16 +118,16 @@ export const useTransactionValues = ({
     feePaymentAssets.isInitialLoading ||
     evmPaymentFee.isInitialLoading ||
     isPaymentInfoLoading ||
-    spotPrice.isInitialLoading ||
     nonce.isLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
-    referrer.isInitialLoading
+    referrer.isInitialLoading ||
+    spotPrice.isInitialLoading
 
   if (
     !feePaymentMeta ||
-    !paymentFeeHDX ||
     !feeAssetBalance.data ||
-    !accountFeePaymentId
+    !accountFeePaymentId ||
+    !paymentFeeHDX
   )
     return {
       isLoading,

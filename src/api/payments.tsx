@@ -13,6 +13,9 @@ import { useAcountAssets } from "api/assetDetails"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { useSpotPrice } from "./spotPrice"
+import { BN_1, BN_NAN } from "utils/constants"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -35,10 +38,15 @@ export const useAcceptedCurrencies = (ids: string[]) => {
     assets: { native },
   } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
-    select: (assets) => {
+  const query = useQuery(
+    QUERY_KEYS.acceptedCurrencies,
+    getAcceptedCurrency(api),
+  )
+
+  const assets = useMemo(() => {
+    if (query.data) {
       return ids.map((id) => {
-        const response = assets.find((asset) => asset.id === id)
+        const response = query.data.find((asset) => asset.id === id)
 
         return response
           ? response
@@ -46,8 +54,11 @@ export const useAcceptedCurrencies = (ids: string[]) => {
           ? { id, accepted: true, data: undefined }
           : { id, accepted: false, data: undefined }
       })
-    },
-  })
+    }
+    return undefined
+  }, [ids, native.id, query.data])
+
+  return { ...query, data: assets }
 }
 
 export const useSetAsFeePayment = () => {
@@ -147,5 +158,43 @@ export const useAccountFeePaymentAssets = () => {
     isLoading,
     isInitialLoading,
     isSuccess,
+  }
+}
+
+export const useTransactionFeeInfo = (
+  extrinsic: SubmittableExtrinsic,
+  customFeeId?: string,
+) => {
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+
+  const accountCurrency = useAccountCurrency(account?.address)
+  const paymentInfo = usePaymentInfo(extrinsic)
+
+  const currencyMeta = customFeeId
+    ? assets.getAsset(customFeeId)
+    : accountCurrency.data
+    ? assets.getAsset(accountCurrency.data)
+    : undefined
+
+  const spotPriceQuery = useSpotPrice(assets.native.id, currencyMeta?.id)
+
+  let spotPrice = spotPriceQuery.data?.spotPrice ?? BN_1
+
+  const nativeFee = paymentInfo.data?.partialFee.toBigNumber()
+
+  const fee = nativeFee
+    ? nativeFee.shiftedBy(-assets.native.decimals).times(spotPrice)
+    : undefined
+
+  return {
+    isLoading:
+      accountCurrency.isInitialLoading ||
+      paymentInfo.isInitialLoading ||
+      spotPriceQuery.isInitialLoading,
+    fee,
+    feeSymbol: currencyMeta?.symbol,
+    nativeFee: nativeFee ?? BN_NAN,
+    feeId: currencyMeta?.id,
   }
 }

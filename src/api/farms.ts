@@ -460,6 +460,7 @@ const getOraclePrice =
       return {
         id: { rewardCurrency, incentivizedAsset },
         oraclePrice: undefined,
+        isNone: true,
       }
 
     const [data] = res.unwrap()
@@ -477,6 +478,7 @@ const getOraclePrice =
       id: { rewardCurrency, incentivizedAsset },
       oraclePrice: BN(oraclePrice),
       price: { n, d },
+      isNone: false,
     }
   }
 
