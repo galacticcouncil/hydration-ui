@@ -89,7 +89,7 @@ const colors = {
 
 const gradients = {
   background:
-    "radial-gradient(73.65% 123% at 57% -38.76%, rgba(93, 177, 255, 0.59) 0%, rgba(0, 194, 255, 0) 100%), linear-gradient(180deg, #00579F 0%, #023B6A 25%, #060917 100%)",
+    "linear-gradient(180deg, #004596 0%, rgba(4, 56, 117, 0.00) 100%)",
   backgroundStats: `
     radial-gradient(
       59.04% 80.58% at 114.9% 36.2%,
