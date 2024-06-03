@@ -9,7 +9,6 @@ import {
 import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
-import { useLocation } from "react-use"
 
 export const MigrationExportModal: FC<{
   data: string

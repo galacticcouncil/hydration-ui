@@ -21,7 +21,7 @@ export const MigrationWarning: React.FC<MigrationWarningProps> = ({
       <SSecondaryItem />
       <SWarningMessageContent>
         <Trans t={t} i18nKey="migration.warning.text">
-          <span css={{ textDecoration: "underline" }} />
+          <span css={{ textDecoration: "underline", whiteSpace: "nowrap" }} />
         </Trans>
       </SWarningMessageContent>
       <SSecondaryItem
