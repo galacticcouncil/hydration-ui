@@ -306,8 +306,13 @@ export class WalletConnect implements Wallet {
   subscribeAccounts = async () => {}
 
   disconnect = () => {
-    this._extension?.cleanupPendingPairings()
-    this._extension?.disconnect()
+    const provider = this._extension
+    provider?.off("display_uri", this.handleDisplayUri)
+    provider?.off("session_update", this.handleSessionUpdate)
+    provider?.off("session_delete", this.handleSessionDelete)
+
+    provider?.cleanupPendingPairings()
+    provider?.disconnect()
 
     this._signer = undefined
     this._session = undefined
