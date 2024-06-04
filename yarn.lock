@@ -2646,10 +2646,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.0.tgz#6a59466f7d44c8a9cb5f02e09b011a0c57b67be2"
-  integrity sha512-NaFMcPvvLdch8z0BFQiTEPE2/C+SOsp2jA3fMkBVd8pIdXfwl1uu/GxYcKka/JclTBdMn8qAzK40oo9XT13KEA==
+"@galacticcouncil/ui@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.1.tgz#4695daf8fa40de47ec8208321d821bc2b4afe955"
+  integrity sha512-DPM8+5i8452wM1ngtHxqWiQsU+4F9fScX5HaEK+DdgSSn5YhFfOvQ4cDvuYhPCEQFK6EJ1i5y8h4QmxO26cLNQ==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
