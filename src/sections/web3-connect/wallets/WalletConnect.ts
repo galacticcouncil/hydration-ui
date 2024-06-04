@@ -65,6 +65,7 @@ const namespaces = {
       "eth_signTransaction",
       "eth_sign",
       "personal_sign",
+      "eth_signTypedData_v4",
       "eth_signTypedData",
       "wallet_switchEthereumChain",
       "wallet_addEthereumChain",
