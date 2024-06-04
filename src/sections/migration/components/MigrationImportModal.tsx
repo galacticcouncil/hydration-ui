@@ -2,28 +2,31 @@ import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  MIGRATION_COMPLETE_FLAG,
   importToLocalStorage,
+  useMigrationStore,
 } from "sections/migration/MigrationProvider.utils"
 import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
-
-const reloadAppWithTimestamp = (ts: string) => {
-  localStorage.setItem(MIGRATION_COMPLETE_FLAG, ts || "0")
-  window.location.href = window.location.origin
-}
 
 export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
   const { t } = useTranslation()
   const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
+  const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
+
+  const reloadAppWithTimestamp = useCallback(
+    (date: string) => {
+      setMigrationCompleted(date)
+      window.location.href = window.location.origin
+    },
+    [setMigrationCompleted],
+  )
 
   useEffect(() => {
-    const migrationStatus = localStorage.getItem(MIGRATION_COMPLETE_FLAG)
     const migrationCompletedOn =
-      migrationStatus && migrationStatus !== "0"
-        ? new Date(migrationStatus)
+      migrationCompleted && migrationCompleted !== "0"
+        ? new Date(migrationCompleted)
         : null
 
     if (migrationCompletedOn && !!data) {
@@ -34,7 +37,7 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
     }
 
     reloadAppWithTimestamp(data ? new Date().toISOString() : "0")
-  }, [data])
+  }, [data, migrationCompleted, reloadAppWithTimestamp])
 
   if (!lastImportDate) {
     return null

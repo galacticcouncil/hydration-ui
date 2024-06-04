@@ -1,4 +1,6 @@
 import { Buffer } from "buffer"
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
 export const MIGRATION_LS_KEYS = [
   "external-tokens",
@@ -10,7 +12,6 @@ export const MIGRATION_LS_KEYS = [
   "dca.settings",
   "trade.settings",
 ]
-export const MIGRATION_COMPLETE_FLAG = "__migration-completed"
 export const MIGRATION_QUERY_PARAM = "migration"
 export const MIGRATION_TRIGGER_DOMAIN = import.meta.env
   .VITE_MIGRATION_TRIGGER_DOMAIN as string
@@ -43,3 +44,23 @@ export const importToLocalStorage = (data: string) => {
     localStorage.setItem(key, JSON.stringify(value))
   })
 }
+
+type MigrationStore = {
+  migrationCompleted: string
+  setMigrationCompleted: (date: string) => void
+}
+
+export const useMigrationStore = create<MigrationStore>()(
+  persist(
+    (set) => ({
+      migrationCompleted: "",
+      setMigrationCompleted: (date: string) => {
+        set({ migrationCompleted: date })
+      },
+    }),
+    {
+      name: "hdx-migration",
+      version: 0,
+    },
+  ),
+)
