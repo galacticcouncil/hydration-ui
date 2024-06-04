@@ -2,7 +2,6 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u128, u32 } from "@polkadot/types-codec"
-import { ITuple } from "@polkadot/types-codec/types"
 import { undefinedNoop } from "utils/helpers"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -103,19 +102,15 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
   }
 }
 
-export type OmnipoolPosition = {
-  id: string
-  assetId: u32
-  amount: u128
-  shares: u128
-  price: ITuple<[u128, u128]>
-}
+export type OmnipoolPosition = Awaited<
+  ReturnType<ReturnType<typeof getOmnipoolPosition>>
+>
 
 export const getOmnipoolPosition =
   (api: ApiPromise, itemId: string) => async () => {
     const res = await api.query.omnipool.positions(itemId)
     const data = res.unwrap()
-    const position: OmnipoolPosition = {
+    const position = {
       id: itemId,
       assetId: data.assetId,
       amount: data.amount,

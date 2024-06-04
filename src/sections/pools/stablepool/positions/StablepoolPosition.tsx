@@ -68,7 +68,7 @@ export const StablepoolPosition = ({
                 <MultipleIcons
                   size={26}
                   icons={meta.assets.map((assetId) => ({
-                    icon: <AssetLogo id={assetId} />,
+                    icon: <AssetLogo key={assetId} id={assetId} />,
                   }))}
                 />
               )}

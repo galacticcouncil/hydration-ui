@@ -56,7 +56,7 @@ export const useSetAsFeePayment = () => {
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transferKeepAlive("", "0"),
+    api.tx.balances.transfer("", "0"),
   )
 
   return async (tokenId?: string, toast?: ToastMessage) => {
@@ -103,14 +103,14 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
 }
 
 export const useAccountFeePaymentAssets = () => {
-  const { assets } = useRpcProvider()
+  const { assets, featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const accountAssets = useAcountAssets(account?.address)
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
   const allowedFeePaymentAssetsIds = useMemo(() => {
-    if (isEvmAccount(account?.address)) {
+    if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
       const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
       return uniqBy(
         identity,
@@ -120,7 +120,7 @@ export const useAccountFeePaymentAssets = () => {
 
     const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
-  }, [assets, account?.address, accountAssets, feePaymentAssetId])
+  }, [featureFlags, account?.address, accountAssets, assets, feePaymentAssetId])
 
   const acceptedFeePaymentAssets = useAcceptedCurrencies(
     allowedFeePaymentAssetsIds,

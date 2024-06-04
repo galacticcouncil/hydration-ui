@@ -4,7 +4,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
-import { SubstrateApis } from "@galacticcouncil/xcm-sdk"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 export const PROVIDERS = [
   {
@@ -13,6 +13,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Dwellir",
@@ -20,6 +21,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Helikon",
@@ -27,6 +29,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Dotters",
@@ -34,6 +37,7 @@ export const PROVIDERS = [
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",
+    dataEnv: "mainnet",
   },
   {
     name: "Rococo via GC",
@@ -42,6 +46,7 @@ export const PROVIDERS = [
     squidUrl:
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
+    dataEnv: "testnet",
   },
   {
     name: "Testnet",
@@ -49,6 +54,7 @@ export const PROVIDERS = [
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
     squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
     env: ["development"],
+    dataEnv: "testnet",
   },
   /*{
     name: "Testnet",
@@ -58,17 +64,29 @@ export const PROVIDERS = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
   },*/
-]
+] as const
+
+export type TEnv = "testnet" | "mainnet"
 
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl?: string
     setRpcUrl: (rpcUrl: string | undefined) => void
+    getDataEnv: () => "testnet" | "mainnet"
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
-    (set) => ({
+    (set, get) => ({
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      getDataEnv: () => {
+        return (
+          PROVIDERS.find(
+            (provider) =>
+              provider.url === get().rpcUrl ??
+              import.meta.env.VITE_PROVIDER_URL,
+          )?.dataEnv ?? "mainnet"
+        )
+      },
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
@@ -101,6 +119,19 @@ export const useProviderData = (rpcUrl: string) => {
     async ({ queryKey: [_, url] }) => {
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(url)
+
+      api.registry.register({
+        XykLMDeposit: {
+          shares: "u128",
+          ammPoolId: "AccountId",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+        OmnipoolLMDeposit: {
+          shares: "u128",
+          ammPoolId: "u32",
+          yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
+        },
+      })
 
       const {
         isStableCoin,
@@ -139,6 +170,7 @@ export const useProviderData = (rpcUrl: string) => {
         assets: assets.assets,
         tradeRouter: assets.tradeRouter,
         featureFlags: assets.featureFlags,
+        poolService: assets.poolService,
       }
     },
     { refetchOnWindowFocus: false },

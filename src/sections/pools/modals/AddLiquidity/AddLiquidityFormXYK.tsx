@@ -13,13 +13,12 @@ import {
   getFixedPointAmount,
   getFloatingPointAmount,
   scale,
-  scaleHuman,
 } from "utils/balance"
 import { useStore } from "state/store"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
-import { TXYKPool, useRefetchPositions } from "sections/pools/PoolsPage.utils"
+import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
 import * as xyk from "@galacticcouncil/math-xyk"
@@ -28,6 +27,9 @@ import { TShareToken } from "api/assetDetails"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert } from "components/Alert/Alert"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   assetId: string
@@ -47,12 +49,12 @@ type FromValues = {
 }
 
 export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
-  const { assets } = useRpcProvider()
+  const { assets, api } = useRpcProvider()
   const { data: xykConsts } = useXYKConsts()
   const { t } = useTranslation()
-  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const refetch = useRefetchPositions()
+  const queryClient = useQueryClient()
+  const { account } = useAccount()
 
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
   const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
@@ -97,13 +99,6 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     [assetValueA, assetValueB],
   )
 
-  const minAddLiquidityValidation = useMemo(() => {
-    const { decimals } = formAssets[lastUpdated]
-    const mainAsset = assetValues[lastUpdated]
-
-    return scaleHuman(xykConsts?.minPoolLiquidity ?? 0, decimals).gt(mainAsset)
-  }, [assetValues, formAssets, lastUpdated, xykConsts?.minPoolLiquidity])
-
   const { calculatedShares, calculatedRatio } = useMemo(() => {
     const { totalShare } = pool.shareTokenIssuance ?? {}
 
@@ -122,6 +117,30 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
 
     return {}
   }, [pool, reserves.assetA, assetValues.assetA, formAssets.assetA.decimals])
+
+  const minAddLiquidityValidation = useMemo(() => {
+    const minTradingLimit = BigNumber(xykConsts?.minTradingLimit ?? 0)
+    const minPoolLiquidity = BigNumber(xykConsts?.minPoolLiquidity ?? 0)
+
+    if (!assetValues.assetA || !assetValues.assetB || !calculatedShares)
+      return false
+
+    const minAssetATradingLimit = scale(
+      assetValues.assetA,
+      formAssets.assetA.decimals,
+    ).gt(minTradingLimit)
+    const minAssetBTradingLimit = scale(
+      assetValues.assetB,
+      formAssets.assetB.decimals,
+    ).gt(minTradingLimit)
+
+    const isMinPoolLiquidity = calculatedShares.gt(minPoolLiquidity)
+
+    const isMinAddLiqudity =
+      !minAssetATradingLimit || !minAssetBTradingLimit || !isMinPoolLiquidity
+
+    return isMinAddLiqudity
+  }, [assetValues, formAssets, xykConsts, calculatedShares])
 
   const onSubmit = async () => {
     const inputData = {
@@ -151,8 +170,18 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         ),
       },
       {
-        onSuccess: () => refetch(),
-        onSubmitted: () => onClose(),
+        onSuccess: () => {
+          queryClient.refetchQueries(
+            QUERY_KEYS.accountOmnipoolPositions(account?.address),
+          )
+          queryClient.refetchQueries(
+            QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+          )
+        },
+        onSubmitted: () => {
+          onClose()
+          form.reset()
+        },
         onClose,
         onBack: () => {},
         toast: {

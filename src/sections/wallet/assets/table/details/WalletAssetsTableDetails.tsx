@@ -13,6 +13,12 @@ import {
   AssetsTableData,
   useLockedValues,
 } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
+import { AssetTableName } from "components/AssetTableName/AssetTableName"
+import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 const chains = Array.from(chainsMap.values())
 
@@ -30,8 +36,10 @@ export const WalletAssetsTableDetails = ({
     const assetDetails = assets.getAsset(id)
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails.parachainId),
+    ) as AnyParachain
 
     return {
       chain: chain?.key,
@@ -133,5 +141,28 @@ export const WalletAssetsTableDetails = ({
         </div>
       )}
     </SContainer>
+  )
+}
+
+export const ExternalAssetRow = ({ row }: { row: AssetsTableData }) => {
+  const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  return (
+    <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <AssetTableName {...row} />
+      {isDesktop && (
+        <>
+          <Text fs={13} color="whiteish500">
+            {t("wallet.assets.table.addToken.desc")}
+          </Text>
+          <WalletAssetsTableActions
+            toggleExpanded={() => null}
+            isExpanded={false}
+            onTransferClick={() => null}
+            asset={row}
+          />
+        </>
+      )}
+    </div>
   )
 }

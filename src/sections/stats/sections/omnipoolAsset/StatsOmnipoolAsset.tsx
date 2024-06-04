@@ -74,7 +74,7 @@ const OmnipoolAssetHeader = ({
               <MultipleIcons
                 size={[30, 38]}
                 icons={iconIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
+                  icon: <AssetLogo key={id} id={id} />,
                 }))}
               />
             )}
