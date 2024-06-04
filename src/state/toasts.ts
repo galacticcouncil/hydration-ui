@@ -92,11 +92,11 @@ const useToastsStore = create<ToastStore>()(
           const storeToasts = window.localStorage.getItem(name)
           const storeAccount = window.localStorage.getItem("web3-connect")
 
-          if (storeAccount == null) return storeToasts
+          if (!storeAccount) return storeToasts
 
           const { state: account } = JSON.parse(storeAccount)
 
-          const accountAddress = account?.account.address
+          const accountAddress = account?.account?.address
 
           if (accountAddress) {
             if (storeToasts != null) {
@@ -267,10 +267,11 @@ export const useToast = () => {
   }
 
   const setSidebar = (isOpen: boolean) => {
-    if (isOpen)
+    if (isOpen) {
       store.update(account?.address, (toasts) =>
         toasts.map((toast) => ({ ...toast, hidden: true })),
       )
+    }
 
     store.setSidebar(isOpen)
   }

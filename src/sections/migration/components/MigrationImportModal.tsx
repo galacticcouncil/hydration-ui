@@ -11,8 +11,8 @@ import {
 import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 
 const reloadAppWithTimestamp = (ts: string) => {
-  window.location.href = window.location.origin
   localStorage.setItem(MIGRATION_COMPLETE_FLAG, ts || "0")
+  window.location.href = window.location.origin
 }
 
 export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
