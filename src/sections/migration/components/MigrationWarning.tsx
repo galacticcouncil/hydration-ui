@@ -4,7 +4,10 @@ import {
   SWarningMessageContainer,
   SWarningMessageContent,
 } from "components/WarningMessage/WarningMessage.styled"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
+import Star from "assets/icons/Star.svg?react"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
+import { Separator } from "components/Separator/Separator"
 
 export type MigrationWarningProps = {
   onClick: () => void
@@ -17,12 +20,40 @@ export const MigrationWarning: React.FC<MigrationWarningProps> = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <SWarningMessageContainer onClick={onClick}>
+    <SWarningMessageContainer onClick={onClick} variant="pink">
       <SSecondaryItem />
-      <SWarningMessageContent>
-        <Trans t={t} i18nKey="migration.warning.text">
-          <span css={{ textDecoration: "underline", whiteSpace: "nowrap" }} />
-        </Trans>
+      <SWarningMessageContent sx={{ fontWeight: 600 }}>
+        <Star width={12} height={12} sx={{ flexShrink: 0 }} />
+        <div
+          sx={{
+            flex: ["column", "row"],
+            align: ["start", "center"],
+            gap: [6, 0],
+          }}
+        >
+          {t("migration.warning.text")}
+          <Separator
+            orientation="vertical"
+            color="black"
+            size={1}
+            sx={{
+              display: ["none", "block"],
+              height: 12,
+              mx: 12,
+              opacity: 0.25,
+            }}
+          />
+          <span
+            css={{
+              whiteSpace: "nowrap",
+              opacity: 0.7,
+              "&:hover": { opacity: 1 },
+            }}
+          >
+            {t("stats.tiles.link")}
+            <LinkIcon sx={{ ml: 10, mb: -2 }} css={{ rotate: "45deg" }} />
+          </span>
+        </div>
       </SWarningMessageContent>
       <SSecondaryItem
         css={{
