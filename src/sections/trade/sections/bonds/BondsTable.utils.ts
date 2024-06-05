@@ -108,7 +108,7 @@ export const useBondsTableData = ({
             amount: amountOut.toString(),
           }
 
-          const link = `https://hydradx.subscan.io/extrinsic/${event.extrinsic.hash}`
+          const link = `https://hydration.subscan.io/extrinsic/${event.extrinsic.hash}`
 
           accumulatedAssetId = assets.isBond(metaIn) ? metaOut.id : metaIn.id
 

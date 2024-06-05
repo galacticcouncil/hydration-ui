@@ -222,7 +222,6 @@ export const getAssets = async (api: ApiPromise) => {
         if (id === NATIVE_ASSET_ID) {
           const asset: TToken = {
             ...assetCommon,
-            name: "HydraDX",
             symbol: system.tokenSymbol.unwrap()[0].toString(),
             decimals: system.tokenDecimals.unwrap()[0].toNumber(),
             isNative: true,

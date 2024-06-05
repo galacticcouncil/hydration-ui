@@ -59,7 +59,7 @@ export const useCirculatingSupply = () => {
 }
 
 const getCirculatingSupply = () => async () => {
-  const res = await fetch("https://hydradx.api.subscan.io/api/scan/token")
+  const res = await fetch("https://hydration.api.subscan.io/api/scan/token")
 
   const data: Promise<ISubscanData> = res.json()
 
