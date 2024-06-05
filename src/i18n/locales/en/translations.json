@@ -896,5 +896,13 @@
   "banner.newFarms.link": "Go to Liquidity \u2192",
   "searchFilter.empty.title": "No results found",
   "searchFilter.empty.desc": "Didn't find what you're looking for?",
-  "searchFilter.empty.link": "Join the Telegram"
+  "searchFilter.empty.link": "Join the Telegram",
+  "migration.export.title": "HydraDX is now Hydration",
+  "migration.export.description": "As part of the rebranding, this app has moved to app.hydration.net.",
+  "migration.export.question": "Would you like to migrate all past app settings to the new app?",
+  "migration.export.button": "Migrate Settings",
+  "migration.import.title": "Do you wish to overwrite your settings?",
+  "migration.import.description": "You already transferred your settings on {{ date, dd/MM/yyyy hh:mm:ss }}. Do you wish to overwrite your current settings?",
+  "migration.import.button": "Overwrite Settings",
+  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration"
 }
