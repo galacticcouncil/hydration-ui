@@ -13,6 +13,7 @@ import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
   const { t } = useTranslation()
   const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
+  const [isAutoImporting, setIsAutoImporting] = useState(false)
   const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
 
   const reloadAppWithTimestamp = useCallback(
@@ -33,13 +34,14 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
       setLastImportDate(new Date(migrationCompletedOn))
       return
     } else if (!!data) {
+      setIsAutoImporting(true)
       importToLocalStorage(data)
     }
 
     reloadAppWithTimestamp(data ? new Date().toISOString() : "0")
   }, [data, migrationCompleted, reloadAppWithTimestamp])
 
-  if (!lastImportDate) {
+  if (!lastImportDate || isAutoImporting) {
     return null
   }
 
