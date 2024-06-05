@@ -109,7 +109,7 @@ const gradients = {
   lightBlue: "linear-gradient(90deg, #57B3EB 0%, #15161C 100%)",
   darkBlue: "linear-gradient(90deg, #0A1FA7 0%, #15161C 100%)",
   darkBlueLight: "linear-gradient(90deg, #0A1FA7 0%, #57B3EB 100%)",
-  pinkLightBlue: "linear-gradient(90deg, #FC408C 0%, #57B3EB 100%)",
+  pinkLightBlue: "linear-gradient(90deg, #FC408C 0%, #AAEEFC 100%)",
   pinkLightPink: "linear-gradient(90deg, #FC408C 30%, #EFB0FF 100%)",
   spinner:
     "conic-gradient(from -60.84deg at 50% 50%, rgba(10, 13, 26, 0) 0deg, rgba(10, 13, 26, 0) 134.49deg, #00C2FF 185.07deg, #004DE2 243.24deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 360deg)",
