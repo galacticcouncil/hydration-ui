@@ -7,6 +7,7 @@ import { FeatureBox } from "components/FeatureBox/FeatureBox"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
+import { DOC_LINK } from "utils/constants"
 
 const FAQ_STEPS = [
   {
@@ -49,11 +50,7 @@ export const FaqAccordion = () => {
             },
           }}
         >
-          <a
-            href="https://docs.hydradx.io/referrals"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={`${DOC_LINK}referrals`} target="_blank" rel="noreferrer">
             {t("referrals.faq.docs.learnMore")}
             <LinkIcon height={10} sx={{ ml: 6 }} />
           </a>

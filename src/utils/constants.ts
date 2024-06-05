@@ -45,3 +45,5 @@ export const SLIPPAGE_LIMIT = new BN(3)
 //decimals
 export const TRILL = 12
 export const QUINTILL = 18
+
+export const DOC_LINK = "https://docs.hydration.net/"
