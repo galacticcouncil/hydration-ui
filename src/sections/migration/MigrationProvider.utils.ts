@@ -5,7 +5,6 @@ import { persist } from "zustand/middleware"
 export const MIGRATION_LS_KEYS = [
   "external-tokens",
   "address-book",
-  "toasts",
   "rpcUrl",
   "hydradx-rpc-list",
   "referral-codes",
