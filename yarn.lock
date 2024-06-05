@@ -2586,10 +2586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.9.0":
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.9.0.tgz#87ec48a6dfc46a068e1d4eabf1e7cf0c4959d12b"
-  integrity sha512-KtdccozlLbtpQyMA7CwH3chFh5gK6/iR7rzCkUAALtfuhjJDSfZitWMiG++Kli5W+n7s0xxleqy3iDO+dhMgcg==
+"@galacticcouncil/apps@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.9.1.tgz#3cafd864a8eddb8eac82bb52397d3789a1499f4e"
+  integrity sha512-t69sW8dWexThPkITIAzTJdvwGMO16UuIYCuWISFzieIUnCgBbD0Q8pnDyh2Av7ZNKK5d8NPDbjDiW29CTCpCVQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -14301,9 +14301,9 @@ victory-vendor@^36.6.8:
     d3-timer "^3.0.1"
 
 viem@^2.12.0:
-  version "2.13.5"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.5.tgz#8bff8f982f40871867d4729794f503e4d4452bf9"
-  integrity sha512-jXkFh52GwBLJJE/OWkPZdXwiO3zpgTL7ebhpMcQkaa7F7xEhYeGBjqs26zn6rjlUYP43JjoAf/VnpmbYTQvR6Q==
+  version "2.13.6"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.6.tgz#32d1dc3215627044972bb905db4adfcf674655f1"
+  integrity sha512-BhvYhLrExC9P4AH9Gu/2A3VPUFkJT/ayH+A9anco2Ja/D0h3NStq+2uF4htcly1e68/U7IOrlCyX3Jz9zqeEJA==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
