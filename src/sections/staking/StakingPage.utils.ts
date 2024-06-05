@@ -3,9 +3,9 @@ import BN, { BigNumber } from "bignumber.js"
 import * as wasm from "@galacticcouncil/math-staking"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
+  CIRCULATING_SUPPLY,
   TAccumulatedRpsUpdated,
   TStakingPosition,
-  useCirculatingSupply,
   useStake,
   useStakingConsts,
   useStakingEvents,
@@ -73,7 +73,6 @@ export const useStakeData = () => {
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
-  const circulatingSupply = useCirculatingSupply()
   const balance = useTokenBalance(native.id, account?.address)
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
@@ -101,7 +100,6 @@ export const useStakeData = () => {
 
   const queries = [
     stake,
-    circulatingSupply,
     balance,
     locks,
     spotPrice,
@@ -121,7 +119,7 @@ export const useStakeData = () => {
     const totalStake = stake.data?.totalStake ?? 0
 
     const supplyStaked = BN(totalStake)
-      .div(Number(circulatingSupply.data ?? 1))
+      .div(Number(CIRCULATING_SUPPLY))
       .decimalPlaces(4)
       .multipliedBy(100)
 
@@ -129,7 +127,7 @@ export const useStakeData = () => {
       .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       .shiftedBy(-native.decimals)
 
-    const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
+    const circulatingSupplyData = BN(CIRCULATING_SUPPLY).shiftedBy(
       -native.decimals,
     )
 
@@ -209,7 +207,6 @@ export const useStakeData = () => {
     }
   }, [
     availableBalance,
-    circulatingSupply.data,
     isLoading,
     positionBalances.data?.events,
     referendas.data,

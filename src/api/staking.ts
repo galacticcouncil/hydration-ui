@@ -9,62 +9,62 @@ import request, { gql } from "graphql-request"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 
-interface ISubscanData {
-  code: number
-  message: string
-  generated_at: number
-  data: {
-    token: Array<string>
-    detail: {
-      [key: string]: {
-        symbol: string
-        unique_id: string
-        display_name: string
-        asset_type: string
-        token_decimals: number
-        price: string
-        price_change: string
-        total_issuance: string
-        free_balance: string
-        available_balance: string
-        locked_balance: string
-        reserved_balance: string
-        validator_bonded: string
-        nominator_bonded: string
-        bonded_locked_balance: string
-        unbonded_locked_balance: string
-        democracy_locked_balance: string
-        election_locked_balance: string
-        vesting_balance: string
-        inflation: string
-      }
-    }
-  }
-}
+// interface ISubscanData {
+//   code: number
+//   message: string
+//   generated_at: number
+//   data: {
+//     token: Array<string>
+//     detail: {
+//       [key: string]: {
+//         symbol: string
+//         unique_id: string
+//         display_name: string
+//         asset_type: string
+//         token_decimals: number
+//         price: string
+//         price_change: string
+//         total_issuance: string
+//         free_balance: string
+//         available_balance: string
+//         locked_balance: string
+//         reserved_balance: string
+//         validator_bonded: string
+//         nominator_bonded: string
+//         bonded_locked_balance: string
+//         unbonded_locked_balance: string
+//         democracy_locked_balance: string
+//         election_locked_balance: string
+//         vesting_balance: string
+//         inflation: string
+//       }
+//     }
+//   }
+// }
 
 export type TStakingPosition = Awaited<
   ReturnType<ReturnType<typeof getStakingPosition>>
 >
 
-export const useCirculatingSupply = () => {
-  return useQuery(
-    QUERY_KEYS.circulatingSupply,
-    async () => {
-      const res = await getCirculatingSupply()()
+export const CIRCULATING_SUPPLY = "2647657455182207541914"
 
-      return res.data.detail["HDX"].available_balance
-    },
-    { retry: 0 },
-  )
-}
+// export const useCirculatingSupply = () => {
+//   return useQuery(
+//     QUERY_KEYS.circulatingSupply,
+//     async () => {
+//       return
+//     },
+//     { retry: 0 },
+//   )
+// }
 
-const getCirculatingSupply = () => async () => {
-  const res = await fetch("https://hydradx.api.subscan.io/api/scan/token")
+// const getCirculatingSupply = () => async () => {
+//   const res = await fetch("https://hydradx.api.subscan.io/api/scan/token")
 
-  const data: Promise<ISubscanData> = res.json()
+//   const data: Promise<ISubscanData> = res.json()
 
-  return data
-}
+//   return data
+// }
 
 export const useStake = (address: string | undefined) => {
   const { api } = useRpcProvider()
