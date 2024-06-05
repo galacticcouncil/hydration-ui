@@ -21,20 +21,30 @@ type Props = Omit<ComponentProps<typeof PieChartComponent>, "label"> & {
 export const PieChart = (props: Props) => {
   const { t } = useTranslation()
 
+  const isInvalid = !props.loading && props.circulatigSupply === 0
+
   const label = (
     <>
       <Text fs={12}>{t("staking.dashboard.stats.chart.label")}</Text>
       <Text fs={30} font="GeistMono">
-        {props.percentage}%
+        {isInvalid ? "N/a" : `${props.percentage}%`}
       </Text>
-      <Text fs={11} sx={{ width: 100 }} color="darkBlue300">{`of ${t(
-        "value.token",
-        {
-          value: props.circulatigSupply,
-        },
-      )} circulating supply`}</Text>
+      {!isInvalid && (
+        <Text fs={11} sx={{ width: 100 }} color="darkBlue300">{`of ${t(
+          "value.token",
+          {
+            value: props.circulatigSupply,
+          },
+        )} circulating supply`}</Text>
+      )}
     </>
   )
 
-  return <SPieChart {...props} label={label} />
+  return (
+    <SPieChart
+      {...props}
+      percentage={isInvalid ? 0 : props.percentage}
+      label={label}
+    />
+  )
 }
