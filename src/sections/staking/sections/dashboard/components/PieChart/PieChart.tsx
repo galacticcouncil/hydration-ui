@@ -24,7 +24,7 @@ export const PieChart = (props: Props) => {
   const label = (
     <>
       <Text fs={12}>{t("staking.dashboard.stats.chart.label")}</Text>
-      <Text fs={30} font="FontOver">
+      <Text fs={30} font="GeistMono">
         {props.percentage}%
       </Text>
       <Text fs={11} sx={{ width: 100 }} color="darkBlue300">{`of ${t(

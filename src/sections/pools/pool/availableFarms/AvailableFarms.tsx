@@ -37,7 +37,9 @@ export const AvailableFarms = ({ pool }: { pool: TPool | TXYKPool }) => {
       <div
         sx={{ flex: "column", gap: 10, p: ["0px 12px 12px", 30], bg: "gray" }}
       >
-        <Text fs={18}>{t("farms.modal.joinedFarms.available.label")}</Text>
+        <Text fs={18} font="GeistMonoSemiBold">
+          {t("farms.modal.joinedFarms.available.label")}
+        </Text>
         <div sx={{ flex: "column", gap: 20 }}>
           {farms.data.map((farm, i) => {
             return (

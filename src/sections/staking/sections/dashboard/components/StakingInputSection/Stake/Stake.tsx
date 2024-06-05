@@ -89,7 +89,7 @@ export const Stake = ({
   }
 
   return (
-    <div sx={{ flex: "column" }}>
+    <div sx={{ flex: "column", gap: 4 }}>
       <GradientText
         gradient="pinkLightBlue"
         fs={19}

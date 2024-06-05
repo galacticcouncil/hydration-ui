@@ -44,7 +44,7 @@ export const Web3ConnectEvmAccount: FC<
             mb: 12,
           }}
         >
-          <Text font="ChakraPetchBold">{account.name}</Text>
+          <Text font="GeistMedium">{account.name}</Text>
           <div sx={{ flex: "row", align: "end", gap: 2, height: 20 }}>
             <Text color="basic200" fw={400}>
               <DisplayValue value={balance} />

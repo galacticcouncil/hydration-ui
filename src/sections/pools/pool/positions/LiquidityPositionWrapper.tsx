@@ -33,7 +33,7 @@ export const LiquidityPositionWrapper = ({
         >
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
             <Icon size={13} sx={{ color: "pink600" }} icon={<ChartIcon />} />
-            <Text fs={[16, 16]} color="pink600">
+            <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
               {t("liquidity.asset.omnipoolPositions.title")}
             </Text>
           </div>

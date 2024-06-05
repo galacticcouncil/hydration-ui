@@ -35,7 +35,7 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
 
   return (
     <SContainer sx={{ p: [24, "25px 20px 20px"], gap: 21 }}>
-      <Text font="FontOver" fs={19} tTransform="uppercase">
+      <Text font="GeistMono" fs={19}>
         {t("stats.overview.referenda.title")}
       </Text>
       {loading ? (

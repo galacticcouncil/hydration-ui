@@ -66,7 +66,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
 
       {isAssetFound && (
         <div sx={{ flex: "column", justify: "space-between" }}>
-          <Text fw={700} font="ChakraPetchBold" lh={16} color="white">
+          <Text fw={700} font="GeistMedium" lh={16} color="white">
             {symbol}
           </Text>
           <Text
@@ -84,7 +84,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
       )}
 
       {!isAssetFound && isSelectable && (
-        <Text fw={700} font="ChakraPetchBold" lh={16} color="white">
+        <Text fw={700} font="GeistMedium" lh={16} color="white">
           {t("wallet.assets.transfer.asset.label_mob")}
         </Text>
       )}

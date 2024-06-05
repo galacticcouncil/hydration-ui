@@ -30,8 +30,8 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
       switch (variant) {
         case "simple":
           return <Text>{title}</Text>
-        case "FontOver":
-          return <Text font="FontOver">{title}</Text>
+        case "GeistMono":
+          return <Text font="GeistMono">{title}</Text>
         case "gradient":
         default:
           return <STitleGradient>{title}</STitleGradient>
@@ -114,4 +114,4 @@ const motionProps = {
   variants,
 }
 
-export type ModalHeaderVariant = "gradient" | "FontOver" | "simple"
+export type ModalHeaderVariant = "gradient" | "GeistMono" | "simple"

@@ -28,7 +28,7 @@ export const TotalValue = ({
         <Skeleton width={200} height={isDesktop ? 42 : 20} />
       ) : (
         <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
-          <Text fs={[20, 42]} font="FontOver">
+          <Text fs={[20, 42]} font="GeistMono">
             {t(compact ? "value.compact" : "value", { value: data })}
           </Text>
         </div>

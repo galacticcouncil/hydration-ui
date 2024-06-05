@@ -69,7 +69,7 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
 
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="FontOver">
+      <Text fs={15} font="GeistMonoSemiBold">
         {t("liquidity.pool.positions.title")}
       </Text>
 
@@ -136,7 +136,7 @@ export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
 
   return (
     <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="FontOver">
+      <Text fs={15} font="GeistMono">
         {t("liquidity.pool.positions.title")}
       </Text>
       {!totalFarms.isZero() && (

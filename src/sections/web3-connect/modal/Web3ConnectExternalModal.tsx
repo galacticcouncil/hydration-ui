@@ -189,7 +189,7 @@ export const Web3ConnectExternalModal = ({
           error ? (
             <>
               <Spacer size={15} />
-              <Text color="red400" font="ChakraPetchBold" fs={12}>
+              <Text color="red400" font="GeistMedium" fs={12}>
                 {t("walletConnect.accountSelect.proxyAccount.error")}
               </Text>
               <Spacer size={6} />
