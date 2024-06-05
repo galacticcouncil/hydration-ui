@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next"
 import Star from "assets/icons/Star.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
+import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type MigrationWarningProps = {
   onClick: () => void
@@ -19,6 +21,14 @@ export const MigrationWarning: React.FC<MigrationWarningProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation()
+
+  const { account } = useAccount()
+  const { balanceTotal, isLoading } = useWalletAssetsTotals({
+    address: account?.address,
+  })
+
+  if (isLoading || balanceTotal?.isZero()) return null
+
   return (
     <SWarningMessageContainer onClick={onClick} variant="pink">
       <SSecondaryItem />
