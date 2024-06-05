@@ -17,7 +17,7 @@ export const MIGRATION_TRIGGER_DOMAIN = import.meta.env
   .VITE_MIGRATION_TRIGGER_DOMAIN as string
 
 export const MIGRATION_TARGET_DOMAIN = import.meta.env
-  .VITE_MIGRATION_TARGET_DOMAIN
+  .VITE_MIGRATION_TARGET_DOMAIN as string
 
 export const serializeLocalStorage = (keys: string[]): string => {
   const data: { [key: string]: any } = {}

@@ -44,9 +44,9 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
   }
 
   return (
-    <Modal open headerVariant="FontOver">
+    <Modal open headerVariant="GeistMono">
       <MigrationLogo sx={{ mx: "auto" }} />
-      <Text tAlign="center" font="FontOver" fs={19} sx={{ mt: 12 }}>
+      <Text tAlign="center" font="GeistMono" fs={19} sx={{ mt: 12 }}>
         {t("migration.import.title")}
       </Text>
       <Text

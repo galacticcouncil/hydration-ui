@@ -17,9 +17,9 @@ export const MigrationExportModal: FC<{
   const { t } = useTranslation()
 
   return (
-    <Modal open headerVariant="FontOver">
+    <Modal open headerVariant="GeistMono">
       <MigrationLogo sx={{ mx: "auto" }} />
-      <Text tAlign="center" font="FontOver" fs={19} sx={{ mt: 12 }}>
+      <Text tAlign="center" font="GeistMono" fs={19} sx={{ mt: 12 }}>
         {t("migration.export.title")}
       </Text>
       <Text
