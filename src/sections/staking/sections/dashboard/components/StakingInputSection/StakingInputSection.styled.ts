@@ -67,6 +67,7 @@ export const SStakeTab = styled.div<{ active: boolean }>`
 
 export const SSectionContainer = styled(SContainer)`
   background: ${theme.colors.darkBlue700};
+  gap: 0px;
 
   :before {
     background: linear-gradient(

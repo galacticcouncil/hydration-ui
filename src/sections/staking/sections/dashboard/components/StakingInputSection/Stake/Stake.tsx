@@ -89,11 +89,11 @@ export const Stake = ({
   }
 
   return (
-    <div sx={{ flex: "column", gap: 4 }}>
+    <div sx={{ flex: "column" }}>
       <GradientText
         gradient="pinkLightBlue"
         fs={19}
-        sx={{ width: "fit-content" }}
+        sx={{ width: "fit-content", py: 16 }}
       >
         {t("staking.dashboard.form.stake.title")}
       </GradientText>
