@@ -37,7 +37,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
       <StatsTableTitle>
         <div sx={{ flex: "row", align: "end", gap: 12 }}>
           <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
-          <Text fs={[14, 19]} lh={20} color="white" font="FontOver">
+          <Text fs={[14, 19]} lh={20} color="white" font="GeistMono">
             {t("stats.omnipool.table.providers.title")}
           </Text>
         </div>

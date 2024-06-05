@@ -60,7 +60,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
         onClose={onClose}
         contents={assetsToAddRef.current.map((asset, index) => ({
           title: t("wallet.assets.table.addToken"),
-          headerVariant: "FontOver",
+          headerVariant: "GeistMono",
           content: (
             <AddTokenFormModal
               asset={asset}

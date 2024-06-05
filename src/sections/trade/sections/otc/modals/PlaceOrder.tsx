@@ -325,7 +325,7 @@ export const PlaceOrder = ({
           {
             title: t("selectAsset.title"),
             noPadding: true,
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
             content: (
               <AssetsModalContent
                 allAssets
@@ -341,7 +341,7 @@ export const PlaceOrder = ({
           {
             title: t("selectAsset.title"),
             noPadding: true,
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
             content: (
               <AssetsModalContent
                 withBonds

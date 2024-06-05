@@ -154,7 +154,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "Geist";
 
   text-transform: uppercase;
   text-align: start;
@@ -170,8 +170,8 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
 
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 11px;
+    line-height: 14px;
     font-weight: 600;
   }
 `
@@ -196,7 +196,7 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    height: 68px;
+    height: 82px;
 
     ${({ isExpanded }) =>
       isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};

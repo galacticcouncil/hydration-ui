@@ -10,17 +10,17 @@ const colors = {
   pink400: "#FF8BBA",
   pink500: "#FF67A4",
   pink600: "#FC408C",
-  pink700: "#F6297C",
+  pink700: "#E53E76",
   pink400Alpha: "#FF0369",
   paleBlue: "#DDE5FF",
   brightBlue100: "#A6DDFF",
   brightBlue200: "#9CDDFF",
   brightBlue200Alpha: "#01A8FF",
-  brightBlue300: "#85D1FF",
+  brightBlue300: "#AAEEFC",
   brightBlue400: "#3192CD",
   brightBlue500: "#1A7AB4",
   brightBlue600: "#57B3EB",
-  brightBlue700: "#009FFF",
+  brightBlue700: "#53A4F3",
   vibrantBlue100: "#7889FF",
   vibrantBlue200: "#5F73FE",
   vibrantBlue300: "#485EF8",
@@ -89,7 +89,7 @@ const colors = {
 
 const gradients = {
   background:
-    "radial-gradient(73.65% 123% at 57% -38.76%, rgba(93, 177, 255, 0.59) 0%, rgba(0, 194, 255, 0) 100%), linear-gradient(180deg, #00579F 0%, #023B6A 25%, #060917 100%)",
+    "linear-gradient(180deg, #004596 0%, rgba(4, 56, 117, 0.00) 100%)",
   backgroundStats: `
     radial-gradient(
       59.04% 80.58% at 114.9% 36.2%,
