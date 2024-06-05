@@ -11,6 +11,9 @@ import { Link, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { NewFarmsBanner } from "sections/pools/components/NewFarmsBanner"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import HydraLogo from "assets/icons/HydraLogo.svg?react"
 
 export const Header = () => {
   const { t } = useTranslation()
@@ -18,6 +21,8 @@ export const Header = () => {
 
   const warnings = useWarningsStore()
   const search = useSearch()
+
+  const isMediumMedia = useMedia(theme.viewport.lt.md)
 
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
@@ -34,7 +39,10 @@ export const Header = () => {
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>
             <Link to={LINKS.swap} search={resetSearchParams(search)}>
-              <Icon sx={{ color: "white" }} icon={<HydraLogoFull />} />
+              <Icon
+                sx={{ color: "white" }}
+                icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
+              />
             </Link>
             <HeaderMenu ref={observe} />
           </div>

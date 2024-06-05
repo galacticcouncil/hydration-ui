@@ -9,13 +9,10 @@ import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
-import { PageHeading } from "components/Layout/PageHeading"
 import { Spacer } from "components/Spacer/Spacer"
 import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
-import { useTranslation } from "react-i18next"
 
 export const StatsPOL = () => {
-  const { t } = useTranslation()
   const assetDetails = useOmnipoolAssetDetails("pol")
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -59,7 +56,6 @@ export const StatsPOL = () => {
 
   return (
     <>
-      <PageHeading>{t("stats.title")}</PageHeading>
       <Spacer size={[20, 30]} />
       <StatsTabs />
       <Spacer size={30} />
