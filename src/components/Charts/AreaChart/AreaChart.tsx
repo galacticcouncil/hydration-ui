@@ -79,7 +79,7 @@ const Label = ({ value }: { value: number }) => {
         zIndex: 1,
       }}
     >
-      <Text fs={24} font="GeistMono">
+      <Text fs={24}>
         <DisplayValue value={value} isUSD />
       </Text>
     </div>
