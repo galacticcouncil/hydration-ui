@@ -6,15 +6,12 @@ import {
   MIGRATION_TARGET_DOMAIN,
   MIGRATION_TRIGGER_DOMAIN,
   serializeLocalStorage,
-  useMigrationStore,
 } from "sections/migration/MigrationProvider.utils"
-import { MigrationWarning } from "sections/migration/components/MigrationWarning"
 import { MigrationExportModal } from "./components/MigrationExportModal"
 import { MigrationImportModal } from "./components/MigrationImportModal"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { search, host } = useLocation()
-  const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
 
   const [migrationCanceled, setMigrationCanceled] = useState(false)
 
@@ -47,24 +44,5 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
     )
   }
 
-  const shouldShowWarning =
-    MIGRATION_TARGET_DOMAIN === host &&
-    !migrationCompleted &&
-    !migrationCanceled
-
-  return (
-    <>
-      {shouldShowWarning && (
-        <MigrationWarning
-          onClick={() =>
-            (window.location.href = `https://${MIGRATION_TRIGGER_DOMAIN}?from=${MIGRATION_TARGET_DOMAIN}`)
-          }
-          onClose={() => {
-            setMigrationCompleted(new Date().toISOString())
-          }}
-        />
-      )}
-      {children}
-    </>
-  )
+  return <>{children}</>
 }
