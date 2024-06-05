@@ -74,6 +74,7 @@ export const SInput = styled.input<{ error?: string; unit?: string }>`
   transition: ${theme.transitions.slow};
 
   ::placeholder {
+    font-family: Geist;
     color: rgba(114, 131, 165, 0.6);
   }
 

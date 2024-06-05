@@ -8,6 +8,7 @@ import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
+import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 
 const EVM_ENABLED = Boolean(
   import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
@@ -32,6 +33,10 @@ export type WalletProvider = {
   wallet: Wallet
 }
 
+const wallets = getWallets().filter(
+  ({ extensionName }) => extensionName !== WalletProviderType.SubwalletJS,
+)
+
 const onMetaMaskLikeAccountChange =
   (type: WalletProviderType): SubscriptionFn =>
   (accounts) => {
@@ -52,12 +57,13 @@ const onMetaMaskLikeAccountChange =
   }
 
 const novaWallet: Wallet = new NovaWallet()
-const talisman: Wallet = new TalismanEvm({
+const talismanEvm: Wallet = new TalismanEvm({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.TalismanEvm,
   ),
 })
-const subwallet: Wallet = new SubWalletEvm({
+const subwallet: Wallet = new SubWallet()
+const subwalletEvm: Wallet = new SubWalletEvm({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.SubwalletEvm,
   ),
@@ -72,7 +78,9 @@ const walletConnect: Wallet = new WalletConnect({
     if (!session) {
       const state = useWeb3ConnectStore.getState()
       state.disconnect()
-      state.toggle()
+      if (state.open) {
+        state.toggle()
+      }
     }
   },
   onSesssionDelete: () => {
@@ -84,8 +92,9 @@ const walletConnect: Wallet = new WalletConnect({
 const externalWallet: Wallet = new ExternalWallet()
 
 export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
-  ...(EVM_ENABLED ? [metaMask, talisman, subwallet] : []),
-  ...getWallets(),
+  ...(EVM_ENABLED ? [metaMask, talismanEvm, subwalletEvm] : []),
+  ...wallets,
+  subwallet,
   novaWallet,
   walletConnect,
   externalWallet,

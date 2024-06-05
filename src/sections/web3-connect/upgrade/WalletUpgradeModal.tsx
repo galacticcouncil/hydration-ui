@@ -33,7 +33,7 @@ export function WalletUpgradeModal() {
           fs={19}
           lh={24}
           fw={500}
-          font="FontOver"
+          font="GeistMono"
           tAlign="center"
           tTransform="uppercase"
         >

@@ -14,7 +14,10 @@ import { Text } from "components/Typography/Text/Text"
 import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
+import {
+  ExternalAssetRow,
+  WalletAssetsTableDetails,
+} from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
@@ -70,7 +73,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           <Text
             fs={[16, 20]}
             lh={[20, 26]}
-            css={{ fontFamily: "FontOver" }}
+            font="GeistMono"
             fw={500}
             color="white"
           >
@@ -117,35 +120,51 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           </TableHeaderContent>
           <TableBodyContent>
             {table.options.data.length ? (
-              table.getRowModel().rows.map((row, i) => (
-                <Fragment key={row.original.id}>
-                  <TableRow
-                    onClick={() => {
-                      isDesktop && row.toggleSelected()
-                      !isDesktop && setRow(row.original)
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableData key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableData>
-                    ))}
-                  </TableRow>
-                  {row.getIsSelected() && (
-                    <TableRow>
+              table.getRowModel().rows.map((row, i) => {
+                if (!row.original.symbol && row.original.isExternal)
+                  return (
+                    <TableRow
+                      onClick={() => {
+                        !isDesktop && setRow(row.original)
+                      }}
+                    >
                       <TableData
-                        colSpan={table.getAllColumns().length}
-                        isExpanded
+                        colSpan={isDesktop ? table.getAllColumns().length : 2}
                       >
-                        <WalletAssetsTableDetails {...row.original} />
+                        <ExternalAssetRow row={row.original} />
                       </TableData>
                     </TableRow>
-                  )}
-                </Fragment>
-              ))
+                  )
+                return (
+                  <Fragment key={row.original.id}>
+                    <TableRow
+                      onClick={() => {
+                        isDesktop && row.toggleSelected()
+                        !isDesktop && setRow(row.original)
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableData key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableData>
+                      ))}
+                    </TableRow>
+                    {row.getIsSelected() && (
+                      <TableRow>
+                        <TableData
+                          colSpan={table.getAllColumns().length}
+                          isExpanded
+                        >
+                          <WalletAssetsTableDetails {...row.original} />
+                        </TableData>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                )
+              })
             ) : (
               <EmptyState
                 desc={

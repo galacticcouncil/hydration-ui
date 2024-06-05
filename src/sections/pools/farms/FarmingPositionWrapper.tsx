@@ -41,7 +41,7 @@ export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
       <div sx={{ flex: "row", mb: 20, mt: 12, justify: "space-between" }}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Icon size={13} sx={{ color: "brightBlue300" }} icon={<FPIcon />} />
-          <Text fs={[16, 16]} color="brightBlue300">
+          <Text fs={[16, 16]} color="brightBlue300" font="GeistMonoSemiBold">
             {t("farms.positions.header.title")}
           </Text>
         </div>

@@ -10,7 +10,7 @@ export class SubWalletEvm extends MetaMask {
     "https://chromewebstore.google.com/detail/subwallet-polkadot-wallet/onhogfjeacnfoofkfgppdlbmlmnplgbn"
   logo = {
     src: SubWalletLogo,
-    alt: "Subwallet Logo",
+    alt: "SubWallet Logo",
   }
 
   get installed() {

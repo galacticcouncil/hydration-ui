@@ -91,7 +91,7 @@ export const CreateXYKPool = ({ isOpen, onClose }: CreateXYKPoolProps) => {
               />
             ),
             noPadding: true,
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
           },
           {
             title: t("selectAsset.title"),
@@ -109,7 +109,7 @@ export const CreateXYKPool = ({ isOpen, onClose }: CreateXYKPoolProps) => {
               />
             ),
             noPadding: true,
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
           },
         ]}
       />
