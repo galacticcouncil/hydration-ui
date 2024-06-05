@@ -2632,10 +2632,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-3.0.0.tgz#947001ad629414b40e031d8af0d146adb9227e06"
-  integrity sha512-vm6mqQ5u3HyX5+0oLP0an6BkmuKi06dNWOcHFKIgaBMXYwrwL5RbqiN5hG+baSefla0yWl1PB+o4VB5pfvhpFA==
+"@galacticcouncil/sdk@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-3.0.1.tgz#d634f2804dd09c98b8ea3b7ef90691368e38c320"
+  integrity sha512-zw3p4XL2NcZ1RerSmzpMesrpHUY8oY7v/hm3YG9oXGnhEqsDOVoyUnyDJZB7S7Q0Hf29yjdepSv1qNrUDA3Zog==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2646,10 +2646,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.2.2":
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.2.tgz#8fb87fd668c862e944baa72af6a9c1693c84b17f"
-  integrity sha512-H0dbDVxmklRYhERtVRU2AJxdUFcrzzS1d460RIeZQ6RAns1zHn7+h1Qk9xQUUb01U4fUlXYLrRgR+D4rRNpv4Q==
+"@galacticcouncil/ui@^3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.3.tgz#847da6005d09d4a1910544f6b233157f30565382"
+  integrity sha512-SLCrwNwalVwV9PCmfXgFZ8wVTDEBRsZp40G1nLXzuDNwnkjx7UhXY1L6M9N7KLi92cnswoM4baRKXHgyNVzkAQ==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"

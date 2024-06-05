@@ -78,7 +78,7 @@ export function getEvmTxLink(
   } else if (key === "moonbeam") {
     return `https://moonbeam.subscan.io/tx/${txHash}`
   } else {
-    return `https://hydradx.subscan.io/tx/${txHash}`
+    return `https://hydration.subscan.io/tx/${txHash}`
   }
 }
 
