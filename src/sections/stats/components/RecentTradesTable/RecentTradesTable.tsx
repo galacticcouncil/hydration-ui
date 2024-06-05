@@ -33,7 +33,7 @@ export const RecentTradesTable = ({ data }: Props) => {
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+        <Text fs={[15, 19]} lh={20} color="white" font="GeistMono">
           {t("stats.overview.table.trades.header.title")}
         </Text>
       </StatsTableTitle>

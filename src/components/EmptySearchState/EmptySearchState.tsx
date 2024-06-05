@@ -18,7 +18,7 @@ export const EmptySearchState = ({ className }: { className?: string }) => {
       className={className}
     >
       <Icon icon={<EmptyStateIcon />} />
-      <Text font="FontOver" color="white" css={{ opacity: 0.6 }}>
+      <Text font="GeistMono" color="white" css={{ opacity: 0.6 }}>
         {t("searchFilter.empty.title")}
       </Text>
       <div sx={{ flex: "row", gap: 2, flexWrap: "wrap", justify: "center" }}>

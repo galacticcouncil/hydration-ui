@@ -42,12 +42,7 @@ export const ProviderSelectButton = () => {
           }}
           transition={{ duration: 0.15, ease: "easeInOut" }}
         >
-          <Text
-            font="ChakraPetch"
-            fs={11}
-            fw={500}
-            css={{ whiteSpace: "nowrap" }}
-          >
+          <Text fs={11} fw={500} css={{ whiteSpace: "nowrap" }}>
             {selectedProvider?.name}
           </Text>
           <ChevronRightIcon />

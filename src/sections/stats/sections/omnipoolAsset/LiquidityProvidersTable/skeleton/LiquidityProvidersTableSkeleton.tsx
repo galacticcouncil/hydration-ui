@@ -15,7 +15,7 @@ export const LiquidityProvidersTableSkeleton = () => {
       title={
         <div sx={{ flex: "row", align: "center", gap: 12 }}>
           <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
-          <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+          <Text fs={[15, 19]} lh={20} color="white" font="GeistMono">
             {t("stats.omnipool.table.providers.title")}
           </Text>
         </div>

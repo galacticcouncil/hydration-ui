@@ -122,7 +122,7 @@ const WalletVestingHeaderContent = () => {
             <Text
               color="white"
               fs={[15, 19]}
-              font="FontOver"
+              font="GeistMono"
               tTransform="uppercase"
             >
               {t("wallet.vesting.vesting_days_left_value", {
@@ -142,7 +142,7 @@ const WalletVestingHeaderContent = () => {
             <Text
               color="white"
               fs={[15, 19]}
-              font="FontOver"
+              font="GeistMono"
               tTransform="uppercase"
             >
               {t("wallet.vesting.vesting_schedule_end_value", {

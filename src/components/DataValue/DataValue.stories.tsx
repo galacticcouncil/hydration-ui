@@ -51,7 +51,7 @@ export const ExtraLarge: Story = {
 export const RegularFont: Story = {
   render: Template,
   args: {
-    font: "ChakraPetch",
+    font: "Geist",
   },
 }
 

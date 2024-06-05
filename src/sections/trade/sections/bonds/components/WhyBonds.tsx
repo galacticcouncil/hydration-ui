@@ -55,13 +55,7 @@ export const WhyBonds = () => {
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
           <Icon icon={<WhyBondsIcon />} />
-          <Text
-            color="white"
-            fs={[15, 19]}
-            fw={600}
-            font="FontOver"
-            tTransform="uppercase"
-          >
+          <Text color="white" fs={[15, 19]} fw={600} font="GeistMono">
             {t("bonds.whyBonds.title")}
           </Text>
         </div>
