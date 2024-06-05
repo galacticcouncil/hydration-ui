@@ -17,7 +17,7 @@ export const Web3ConnectAccountPlaceholder: FC<
     <>
       <SAccountItem css={{ pointerEvents: "none", padding: "14px 18px" }}>
         <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-          <Text font="ChakraPetchBold">
+          <Text font="GeistMedium">
             <Skeleton width={100} height={16} />
           </Text>
           <div sx={{ flex: "row", align: "end", gap: 2 }}>

@@ -95,7 +95,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
       <div sx={{ flex: "column", gap: 18 }}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Icon size={15} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
-          <Text fs={[16, 16]} color="pink600">
+          <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
             {t("liquidity.xyk.asset.positions.title")}
           </Text>
         </div>

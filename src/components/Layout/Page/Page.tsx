@@ -14,6 +14,12 @@ import { Interpolation, Theme } from "@emotion/react"
 import { Web3Connect } from "sections/web3-connect/Web3Connect"
 import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
 import { useRpcProvider } from "providers/rpcProvider"
+import { MigrationWarning } from "sections/migration/components/MigrationWarning"
+import {
+  MIGRATION_TARGET_DOMAIN,
+  MIGRATION_TRIGGER_DOMAIN,
+  useMigrationStore,
+} from "sections/migration/MigrationProvider.utils"
 
 type Props = {
   className?: string
@@ -28,9 +34,10 @@ export const Page = ({
   subHeader,
   subHeaderStyle,
 }: Props) => {
-  const { featureFlags } = useRpcProvider()
+  const { featureFlags, isLoaded } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
+  const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
 
   useEffect(() => {
     ref.current?.scrollTo({
@@ -39,8 +46,21 @@ export const Page = ({
     })
   }, [location.pathname])
 
+  const shouldShowMigrationWarning =
+    isLoaded && MIGRATION_TARGET_DOMAIN === location.host && !migrationCompleted
+
   return (
     <>
+      {shouldShowMigrationWarning && (
+        <MigrationWarning
+          onClick={() =>
+            (window.location.href = `https://${MIGRATION_TRIGGER_DOMAIN}?from=${MIGRATION_TARGET_DOMAIN}`)
+          }
+          onClose={() => {
+            setMigrationCompleted(new Date().toISOString())
+          }}
+        />
+      )}
       <SPage ref={ref}>
         <div
           sx={{ flex: "column", height: "100%" }}

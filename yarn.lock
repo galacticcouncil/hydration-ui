@@ -27,11 +27,6 @@
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.0.tgz#d2a39395c587e092d77cbbc80acf956a54f38bf7"
   integrity sha512-nA9XHtlAkYfJxY7bce8DcN7eKxWWCWkU+1GR9d+U6MbNpfwQp8TI7vqOsBsMcHoT4mBu2kypKoSKnghEzOOq5Q==
 
-"@adraffy/ens-normalize@1.10.1":
-  version "1.10.1"
-  resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz#63430d04bd8c5e74f8d7d049338f1cd9d4f02069"
-  integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
-
 "@ampproject/remapping@^2.2.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.3.0.tgz#ed441b6fa600072520ce18b43d2c8cc8caecc7f4"
@@ -1400,10 +1395,17 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.20.6", "@babel/runtime@^7.23.2", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.23.2", "@babel/runtime@^7.8.4":
   version "7.24.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.5.tgz#230946857c053a36ccc66e1dd03b17dd0c4ed02c"
   integrity sha512-Nms86NXrsaeU9vbBJKni6gXiEXZ4CVpYVzEjDH9Sb8vmZ3UljyA1GSOJl/6LGPO8EHLuSF9H+IxNXHPX8QHJ4g==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
+"@babel/runtime@^7.20.6":
+  version "7.24.6"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.6.tgz#5b76eb89ad45e2e4a0a8db54c456251469a3358e"
+  integrity sha512-Ja18XcETdEl5mzzACGd+DKgaGJzPTCow7EglgwTmHdwokzDFYh/MHua6lU6DV/hjF2IaOJ4oX2nqnjG7RElKOw==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -2584,10 +2586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.8.2":
-  version "3.8.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.8.2.tgz#5606a256fe33b07c49507a23f9b4e6e633e7e7b2"
-  integrity sha512-Dc586OenoZJdvjq/j1cffmKYkkfqGK7HlLYLpYrl5t6IajCFoaOfS64VhDh6vcDQAUHj7+Ac85iytCRhrMNvZw==
+"@galacticcouncil/apps@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.9.1.tgz#3cafd864a8eddb8eac82bb52397d3789a1499f4e"
+  integrity sha512-t69sW8dWexThPkITIAzTJdvwGMO16UuIYCuWISFzieIUnCgBbD0Q8pnDyh2Av7ZNKK5d8NPDbjDiW29CTCpCVQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2598,7 +2600,7 @@
     i18next "^22.4.8"
     lightweight-charts "^4.1.3"
     short-uuid "^4.2.0"
-    viem "^2.7.19"
+    viem "^2.12.0"
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -2644,44 +2646,42 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.1.18":
-  version "3.1.18"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.1.18.tgz#b80b05328c1c94c1998c18917450bba1adfe0c0d"
-  integrity sha512-kd82Ph7Kc6XjvSKQ1hlKOBtnAZVosUickhBqBOh51C9tzKtJ79oAF7YNW49L6QpbjVLD/vsPMcznjBBGsHN4DA==
+"@galacticcouncil/ui@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.2.tgz#8fb87fd668c862e944baa72af6a9c1693c84b17f"
+  integrity sha512-H0dbDVxmklRYhERtVRU2AJxdUFcrzzS1d460RIeZQ6RAns1zHn7+h1Qk9xQUUb01U4fUlXYLrRgR+D4rRNpv4Q==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
     imask "^6.4.3"
-    lit "^2.5.0"
+    lit "^2.8.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.1.1.tgz#0f6142b4ab6ea5b55f7a9edfac29db22f9c2c4c3"
-  integrity sha512-mFabCN8NuK4dffXbb30Dr1wU1breblT+BpXI4L1UcJ73QG1QI/dvdupSvBcFg8DuLIPK86CsXCJP0ud3MGTvdQ==
+"@galacticcouncil/xcm-cfg@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.5.0.tgz#6024467079e077bec437253b21405337dd47945e"
+  integrity sha512-Jbx8eoI4CH2Wlej7g1F5alAMccAEy3saT5KRsZAU37WTDptcl0uS+uDUKVhM1P08AJHT6jlnsmi9r6KgIpgH7A==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.0.0"
+    "@galacticcouncil/xcm-core" "^1.4.0"
 
-"@galacticcouncil/xcm-core@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.0.0.tgz#fa94a03f522ac94094efabe136eee32a364a59eb"
-  integrity sha512-zozk6trS3BV+kdd7oKAFhMFQc1yUZU2QNOav1r5tzhT/Cbdz2at17j+to8M9FxOe2kmRtfOwGRRAFnqS5qcysQ==
+"@galacticcouncil/xcm-core@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.4.0.tgz#613b4ac506a83b38f4ef6d1d40d937d3f19a1da2"
+  integrity sha512-Sj/CKNR7tbja3RtrdfYFhmmc41nTYaWfGQPhMeLzzR5mHklLGrTVv1RqkNfapPMeS9gAzX5PkK4URS7aSIv6cQ==
   dependencies:
     "@moonbeam-network/xcm-utils" "1.0.4"
     "@thi.ng/cache" "^2.1.35"
     "@wormhole-foundation/sdk-base" "^0.5.2"
     "@wormhole-foundation/sdk-connect" "^0.5.2"
     "@wormhole-foundation/sdk-definitions" "^0.5.2"
-    "@wormhole-foundation/sdk-evm" "^0.5.2"
-    "@wormhole-foundation/sdk-evm-tokenbridge" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.0.4.tgz#fa51f11c2a7bbaca53f9f85d8dfb749fdb1fd008"
-  integrity sha512-Sz8zSdvxgsVMwHdN2NTdiGKHdf5n5H5kqxaw7Qdcr97ALRMoo/ndzlksppzkgiQ0VGHPJ3CluYrP5VLI/S+BBg==
+"@galacticcouncil/xcm-sdk@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.3.0.tgz#6a1707675556181c0fd5a71c9893dae11ab190ef"
+  integrity sha512-Yy31smecf6XSgX/6WWAryQGimGMTwQaPBgn8adr1vwRClP/rO770JT+WEYeAPZ9QORuKaLw2JSSy6UcsWaOuTA==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.0.0"
+    "@galacticcouncil/xcm-core" "^1.4.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"
@@ -6088,11 +6088,6 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.0.tgz#4668bc392bb6938637b47e98b1f2ed5426f33316"
   integrity sha512-BsAaKhB+7X+H4GnSjGhJG9Qi8Tw+inU9nJDwmD5CgOmBLEI6ArdhikpLX7DjbjDRDTbqZzU2LSQNZg8WGPiSZQ==
 
-"@types/node@18.15.13":
-  version "18.15.13"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.15.13.tgz#f64277c341150c979e42b00e4ac289290c9df469"
-  integrity sha512-N+0kuo9KgrUQ1Sn/ifDXsvg0TTleP7rIy4zOBGECxAljqvqfqpTfzx0Q1NUedOixRMBfe2Whhb056a42cWs26Q==
-
 "@types/node@^16.0.0":
   version "16.18.39"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.39.tgz#aa39a1a87a40ef6098ee69689a1acb0c1b034832"
@@ -6720,7 +6715,7 @@
   dependencies:
     "@scure/base" "^1.1.3"
 
-"@wormhole-foundation/sdk-connect@0.5.3", "@wormhole-foundation/sdk-connect@^0.5.2":
+"@wormhole-foundation/sdk-connect@^0.5.2":
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-connect/-/sdk-connect-0.5.3.tgz#b2ce26076e0203583c10f07ee57f4dbce0da28bb"
   integrity sha512-+AVJY5WTCusWQ+vvRUfABrq7cboF0nZdBLCsPIRpffUAfJrDCxIrcJqA5ApAho8sgRDb3tjUsPeLzBlcCd2vUQ==
@@ -6737,33 +6732,6 @@
     "@noble/curves" "^1.4.0"
     "@noble/hashes" "^1.3.1"
     "@wormhole-foundation/sdk-base" "0.5.3"
-
-"@wormhole-foundation/sdk-evm-core@0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-evm-core/-/sdk-evm-core-0.5.3.tgz#f2eff35d6fe4e479fbf93ae5368591f21017ff59"
-  integrity sha512-CgwJY0PqXKsb/VEwNYopF1C/4zl8phDzU62GGoSrgDxilrxKGU16J9nSa5pj8dh6WQc0/kvbmuYflWZTHGAmmw==
-  dependencies:
-    "@wormhole-foundation/sdk-connect" "0.5.3"
-    "@wormhole-foundation/sdk-evm" "0.5.3"
-    ethers "^6.5.1"
-
-"@wormhole-foundation/sdk-evm-tokenbridge@^0.5.2":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-evm-tokenbridge/-/sdk-evm-tokenbridge-0.5.3.tgz#82ad992c40d43a844c8e278a0e99093a56199390"
-  integrity sha512-Uwl4DP8DQjYc0OCyRDgxQ4AWZMaFE6GRdcnY8nBsoaIpTWTGW5S0JOILACkyaSU2Tegrn4PxQPCn8gEepJfg4g==
-  dependencies:
-    "@wormhole-foundation/sdk-connect" "0.5.3"
-    "@wormhole-foundation/sdk-evm" "0.5.3"
-    "@wormhole-foundation/sdk-evm-core" "0.5.3"
-    ethers "^6.5.1"
-
-"@wormhole-foundation/sdk-evm@0.5.3", "@wormhole-foundation/sdk-evm@^0.5.2":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-evm/-/sdk-evm-0.5.3.tgz#49a9f5de92cee4e34266fb1423ff55bd364e750e"
-  integrity sha512-rtb2iu4qss3KgaQfMfvj7Zw47LvLP4t8zT2mxIcYHyqKR3Lmo4xNGUytodl71XQrs+kulazwkYaXXn/YS/0HIA==
-  dependencies:
-    "@wormhole-foundation/sdk-connect" "0.5.3"
-    ethers "^6.5.1"
 
 "@xobotyi/scrollbar-width@^1.9.5":
   version "1.9.5"
@@ -6878,11 +6846,6 @@ aes-js@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/aes-js/-/aes-js-3.0.0.tgz#e21df10ad6c2053295bcbb8dab40b09dbea87e4d"
   integrity sha512-H7wUZRn8WpTq9jocdxQ2c8x2sKo9ZVmzfRE13GiNJXfp7NcKYEdvl3vspKjXox6RIG2VtaRe4JFvxG4rqp2Zuw==
-
-aes-js@4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/aes-js/-/aes-js-4.0.0-beta.5.tgz#8d2452c52adedebc3a3e28465d858c11ca315873"
-  integrity sha512-G965FqalsNyrPqgEGON7nIx1e/OVENSgiEIzyC63haUMuvNnwIgIjMs52hlTCKhkBny7A2ORNlfY9Zu+jmGk1Q==
 
 agent-base@6:
   version "6.0.2"
@@ -9110,19 +9073,6 @@ ethers@5.7.0:
     "@ethersproject/web" "5.7.0"
     "@ethersproject/wordlists" "5.7.0"
 
-ethers@^6.5.1:
-  version "6.12.1"
-  resolved "https://registry.yarnpkg.com/ethers/-/ethers-6.12.1.tgz#517ff6d66d4fd5433e38e903051da3e57c87ff37"
-  integrity sha512-j6wcVoZf06nqEcBbDWkKg8Fp895SS96dSnTCjiXT+8vt2o02raTn4Lo9ERUuIVU5bAjoPYeA+7ytQFexFmLuVw==
-  dependencies:
-    "@adraffy/ens-normalize" "1.10.1"
-    "@noble/curves" "1.2.0"
-    "@noble/hashes" "1.3.2"
-    "@types/node" "18.15.13"
-    aes-js "4.0.0-beta.5"
-    tslib "2.4.0"
-    ws "8.5.0"
-
 eventemitter3@^4.0.1, eventemitter3@^4.0.7:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
@@ -9256,7 +9206,7 @@ fast-equals@^4.0.3:
   resolved "https://registry.yarnpkg.com/fast-equals/-/fast-equals-4.0.3.tgz#72884cc805ec3c6679b99875f6b7654f39f0e8c7"
   integrity sha512-G3BSX9cfKttjr+2o1O22tYMLq0DPluZnYtq1rXumE1SpL/F/SLIfHx08WYQoWSIpeMYf8sRbJ8++71+v6Pnxfg==
 
-fast-glob@^3.2.9, fast-glob@^3.3.2:
+fast-glob@^3.2.12, fast-glob@^3.2.9, fast-glob@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/fast-glob/-/fast-glob-3.3.2.tgz#a904501e57cfdd2ffcded45e99a54fef55e46129"
   integrity sha512-oX2ruAFQwf/Orj8m737Y5adxDQO0LAB7/S5MnxCdTNDd4p6BsyIVsv9JQsATbTSq8KHRpLwIHbVlUNatxd+1Ow==
@@ -10868,7 +10818,7 @@ lit-html@^2.8.0:
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-lit@2.8.0, lit@^2.5.0:
+lit@2.8.0, lit@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/lit/-/lit-2.8.0.tgz#4d838ae03059bf9cafa06e5c61d8acc0081e974e"
   integrity sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==
@@ -13895,11 +13845,6 @@ tslib@1.14.1, tslib@^1.13.0, tslib@^1.8.1:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
-  integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
-
 tslib@^2.0.0, tslib@^2.0.1, tslib@^2.1.0, tslib@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.5.0.tgz#42bfed86f5787aeb41d031866c8f402429e0fddf"
@@ -14158,6 +14103,14 @@ unpipe@1.0.0, unpipe@~1.0.0:
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
   integrity sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==
 
+unplugin-fonts@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/unplugin-fonts/-/unplugin-fonts-1.1.1.tgz#cd6600d2a048d8237a010b53c9c4dfb1ea73d80f"
+  integrity sha512-/Aw/rL9D2aslGGM0vi+2R2aG508RSwawLnnBuo+JDSqYc4cHJO1R1phllhN6GysEhBp/6a4B6+vSFPVapWyAAw==
+  dependencies:
+    fast-glob "^3.2.12"
+    unplugin "^1.3.1"
+
 unplugin@^1.3.1:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/unplugin/-/unplugin-1.4.0.tgz#b771373aa1bc664f50a044ee8009bd3a7aa04d85"
@@ -14347,10 +14300,10 @@ victory-vendor@^36.6.8:
     d3-time "^3.0.0"
     d3-timer "^3.0.1"
 
-viem@^2.7.19:
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.11.1.tgz#03ff205734c21748b7a0df8e5f956db61ebaf1c5"
-  integrity sha512-4iypXhxWkXoWO45XStxQvhj/vYZ5+3AtSEngHiOnuHOSNoiIsYfDvTMoTiAO53PeyYvExyVzJc9BFwejGHh7pg==
+viem@^2.12.0:
+  version "2.13.6"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.6.tgz#32d1dc3215627044972bb905db4adfcf674655f1"
+  integrity sha512-BhvYhLrExC9P4AH9Gu/2A3VPUFkJT/ayH+A9anco2Ja/D0h3NStq+2uF4htcly1e68/U7IOrlCyX3Jz9zqeEJA==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
@@ -14621,11 +14574,6 @@ ws@8.13.0, ws@^8.13.0, ws@^8.2.3, ws@^8.8.1:
   version "8.13.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
   integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
-
-ws@8.5.0:
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.5.0.tgz#bfb4be96600757fe5382de12c670dab984a1ed4f"
-  integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
 ws@^7.5.1:
   version "7.5.9"

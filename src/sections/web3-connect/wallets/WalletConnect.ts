@@ -19,7 +19,12 @@ import {
 import { noop } from "utils/helpers"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 
-const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID as string
+// @TODO: Remove when the old domain is deprecated
+const isOldDomain = window?.location?.hostname === "app.hydradx.io"
+
+const WC_PROJECT_ID = isOldDomain
+  ? "c47a5369367ec2dad6b49c478eb772f9"
+  : (import.meta.env.VITE_WC_PROJECT_ID as string)
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 export const POLKADOT_CAIP_ID_MAP: Record<string, PolkadotNamespaceChainId> = {
@@ -65,6 +70,7 @@ const namespaces = {
       "eth_signTransaction",
       "eth_sign",
       "personal_sign",
+      "eth_signTypedData_v4",
       "eth_signTypedData",
       "wallet_switchEthereumChain",
       "wallet_addEthereumChain",
@@ -103,6 +109,7 @@ export class WalletConnect implements Wallet {
   _signer: PolkadotSigner | EthereumSigner | undefined
   _session: SessionTypes.Struct | undefined
   _namespace: NamespaceConfig | undefined
+  _instance: IUniversalProvider | undefined
 
   onSessionDelete: () => void = noop
 
@@ -122,6 +129,14 @@ export class WalletConnect implements Wallet {
     this.subscribeToModalEvents(onModalOpen, onModalClose)
 
     if (onSesssionDelete) this.onSessionDelete = onSesssionDelete
+  }
+
+  getInstance = async () => {
+    if (!this._instance) {
+      this._instance = await UniversalProvider.init(walletConnectParams)
+    }
+
+    return this._instance
   }
 
   get extension() {
@@ -152,11 +167,7 @@ export class WalletConnect implements Wallet {
     await this._extension?.cleanupPendingPairings()
     await this._extension?.disconnect()
 
-    const provider = await UniversalProvider.init(walletConnectParams).catch(
-      (err) => {
-        console.error(err)
-      },
-    )
+    const provider = await this.getInstance()
 
     if (!provider) {
       throw new Error(
@@ -165,8 +176,11 @@ export class WalletConnect implements Wallet {
     }
 
     this._extension = provider
+    //@ts-ignore WC types are not up to date
     provider.on("display_uri", this.handleDisplayUri)
+    //@ts-ignore WC types are not up to date
     provider.on("session_update", this.handleSessionUpdate)
+    //@ts-ignore WC types are not up to date
     provider.on("session_delete", this.handleSessionDelete)
 
     return provider
@@ -297,8 +311,13 @@ export class WalletConnect implements Wallet {
   subscribeAccounts = async () => {}
 
   disconnect = () => {
-    this._extension?.cleanupPendingPairings()
-    this._extension?.disconnect()
+    const provider = this._extension
+    provider?.off("display_uri", this.handleDisplayUri)
+    provider?.off("session_update", this.handleSessionUpdate)
+    provider?.off("session_delete", this.handleSessionDelete)
+
+    provider?.cleanupPendingPairings()
+    provider?.disconnect()
 
     this._signer = undefined
     this._session = undefined

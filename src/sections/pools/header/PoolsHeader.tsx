@@ -69,7 +69,7 @@ export const HeaderValues = ({
               gap: 8,
             }}
           >
-            <Text color="brightBlue300" fs={fontSizeLabel}>
+            <Text color="brightBlue300" fs={fontSizeLabel} font="GeistMono">
               {item.label}
             </Text>
             {content}
