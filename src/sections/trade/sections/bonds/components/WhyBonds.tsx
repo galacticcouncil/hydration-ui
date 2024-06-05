@@ -108,7 +108,7 @@ export const WhyBonds = () => {
                 },
               }}
             >
-              <a href={`${DOC_LINK}bonds`} target="_blank" rel="noreferrer">
+              <a href={`${DOC_LINK}/bonds`} target="_blank" rel="noreferrer">
                 {t("bonds.whyBonds.link")}
                 <LinkIcon height={10} sx={{ ml: 6 }} />
               </a>
