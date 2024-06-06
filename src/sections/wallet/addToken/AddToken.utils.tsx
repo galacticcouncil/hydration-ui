@@ -366,6 +366,7 @@ export const useExternalTokenMeta = (id: string | undefined) => {
             return {
               ...meta,
               ...externalMeta,
+              externalId: externalAsset.id,
             }
           }
 
