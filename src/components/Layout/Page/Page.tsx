@@ -1,6 +1,18 @@
+import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
-import { Suspense, lazy, useEffect, useRef } from "react"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
+import { Suspense, lazy, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useMedia } from "react-use"
+import {
+  PoolNavigation,
+  Navigation as PoolsNavigation,
+} from "sections/pools/navigation/Navigation"
+import { Navigation as TradeNavigation } from "sections/trade/navigation/Navigation"
+import { Navigation as WalletNavigation } from "sections/wallet/navigation/Navigation"
+import { theme } from "theme"
+import { LINKS } from "utils/navigation"
 import {
   SGradientBg,
   SPage,
@@ -8,18 +20,6 @@ import {
   SPageInner,
   SSubHeader,
 } from "./Page.styled"
-import { useLocation, useMedia } from "react-use"
-import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
-import { LINKS } from "utils/navigation"
-import { theme } from "theme"
-import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
-import { Navigation as TradeNavigation } from "sections/trade/navigation/Navigation"
-import {
-  Navigation as PoolsNavigation,
-  PoolNavigation,
-} from "sections/pools/navigation/Navigation"
-import { Navigation as WalletNavigation } from "sections/wallet/navigation/Navigation"
-import { useTranslation } from "react-i18next"
 
 type Props = {
   className?: string
@@ -78,8 +78,8 @@ const useSubheaderComponent = () => {
 }
 
 export const Page = ({ className }: Props) => {
+  const { pathname } = useLocation()
   const ref = useRef<HTMLDivElement>(null)
-  const location = useLocation()
 
   const subHeaderComponent = useSubheaderComponent()
 
@@ -88,7 +88,7 @@ export const Page = ({ className }: Props) => {
       top: 0,
       left: 0,
     })
-  }, [location.pathname])
+  }, [pathname])
 
   return (
     <>

@@ -21,7 +21,7 @@ const MockCard = (props: Partial<ComponentPropsWithoutRef<typeof Card>>) => (
       <Text color="basic300" fs={14}>
         Total
       </Text>
-      <Text fs={20} lh={28} font="ChakraPetchSemiBold">
+      <Text fs={20} lh={28} font="GeistSemiBold">
         $931.23
       </Text>
       <Button

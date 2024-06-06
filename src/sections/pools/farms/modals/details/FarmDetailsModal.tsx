@@ -44,7 +44,7 @@ export const FarmDetailsModal = ({
           <Text
             fs={19}
             sx={{ mb: 30 }}
-            font="FontOver"
+            font="GeistMono"
             color="basic100"
             tTransform="uppercase"
           >

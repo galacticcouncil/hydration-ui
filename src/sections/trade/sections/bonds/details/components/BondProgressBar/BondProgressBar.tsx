@@ -74,10 +74,10 @@ export const BondProgreesBar = ({
                 total: total,
               }}
             >
-              <span sx={{ color: "white" }} css={{ fontFamily: "FontOver" }} />
+              <span sx={{ color: "white" }} css={{ fontFamily: "GeistMono" }} />
               <span
                 sx={{ color: "darkBlue300" }}
-                css={{ fontFamily: "FontOver" }}
+                css={{ fontFamily: "GeistMono" }}
               />
             </Trans>
           </div>

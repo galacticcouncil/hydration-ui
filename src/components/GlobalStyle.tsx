@@ -159,7 +159,7 @@ export const GlobalStyle = `
   body {
     font-size: 1.6rem;
     margin: 0;
-    font-family: 'ChakraPetch', sans-serif;
+    font-family: 'Geist', sans-serif;
     background: ${theme.colors.bg};
   }
 

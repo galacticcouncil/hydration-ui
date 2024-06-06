@@ -7,12 +7,7 @@ export const BondListSkeleton = () => {
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
-      <Text
-        color="brightBlue300"
-        tTransform="uppercase"
-        fs={15}
-        font="FontOver"
-      >
+      <Text color="brightBlue300" fs={15} font="GeistMono">
         {t("bonds.section.activeBonds")}
       </Text>
       <BondSkeleton />

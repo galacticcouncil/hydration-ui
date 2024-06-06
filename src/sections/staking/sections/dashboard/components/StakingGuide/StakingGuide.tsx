@@ -50,7 +50,7 @@ const StakingGuideItem = ({ title, desc, freq }: StakingGuideItemProps) => {
         </Text>
       </SGuideItemCount>
       <div sx={{ flex: "column", gap: 4 }}>
-        <Text color="white" fs={[16, 18]} font="ChakraPetchSemiBold">
+        <Text color="white" fs={[16, 18]} font="GeistSemiBold">
           {title}
         </Text>
         {desc}
@@ -77,12 +77,7 @@ export const StakingGuide = () => {
           display: ["none", "inherit"],
         }}
       >
-        <Text
-          color="brightBlue300"
-          fs={19}
-          font="FontOver"
-          tTransform="uppercase"
-        >
+        <Text color="brightBlue300" fs={19} font="GeistMono">
           {t("staking.dashboard.guide.title")}
         </Text>
         <ul sx={{ pl: 0, flex: "column", gap: 28 }}>

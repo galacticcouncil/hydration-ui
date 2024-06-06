@@ -15,6 +15,8 @@ const AppProviders = lazy(async () => ({
   default: (await import("components/AppProviders/AppProviders")).AppProviders,
 }))
 
+import "unfonts.css"
+
 const history = createBrowserHistory()
 const location = new ReactLocation({ history })
 

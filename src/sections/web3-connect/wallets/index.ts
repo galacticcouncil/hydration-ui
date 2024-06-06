@@ -78,7 +78,9 @@ const walletConnect: Wallet = new WalletConnect({
     if (!session) {
       const state = useWeb3ConnectStore.getState()
       state.disconnect()
-      state.toggle()
+      if (state.open) {
+        state.toggle()
+      }
     }
   },
   onSesssionDelete: () => {

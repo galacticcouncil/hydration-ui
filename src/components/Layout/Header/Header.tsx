@@ -1,4 +1,3 @@
-import HydraLogo from "assets/icons/HydraLogo.svg?react"
 import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { SHeader } from "components/Layout/Header/Header.styled"
@@ -8,6 +7,7 @@ import { theme } from "theme"
 import { Link, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { Suspense, lazy } from "react"
+import HydraLogo from "assets/icons/HydraLogo.svg?react"
 
 const HeaderBanners = lazy(async () => ({
   default: (await import("components/Layout/Header/banners/HeaderBanners"))
@@ -25,9 +25,9 @@ const HeaderToolbar = lazy(async () => ({
 }))
 
 export const Header = () => {
-  const isMediumMedia = useMedia(theme.viewport.lt.md)
-
   const search = useSearch()
+
+  const isMediumMedia = useMedia(theme.viewport.lt.md)
 
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
