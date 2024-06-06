@@ -357,8 +357,8 @@ export const usePositionVotesIds = () => {
 
   return useMutation(async (positionId: number) => {
     const positionVotesRes = await api.query.staking.positionVotes(positionId)
-    const positionVotesIds = positionVotesRes.votes.map((position) =>
-      position[0].toString(),
+    const positionVotesIds = positionVotesRes.votes.map(([position]) =>
+      position.toString(),
     )
 
     return positionVotesIds
