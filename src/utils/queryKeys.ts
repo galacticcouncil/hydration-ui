@@ -29,8 +29,12 @@ export const QUERY_KEYS = {
   ],
   miningPosition: (id: string) => ["miningPosition", id],
   miningPositionXYK: (id: string) => ["miningPositionXYK", id],
-  accountBalances: (id: Maybe<AccountId32 | string>) => [
+  accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
+    "accountBalances",
+    id?.toString(),
+  ],
+  accountBalances: (id: Maybe<AccountId32 | string>) => [
     "accountBalances",
     id?.toString(),
   ],
@@ -302,10 +306,16 @@ export const QUERY_KEYS = {
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
-  referendums: (accountAddress?: string) => [
+  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
     QUERY_KEY_PREFIX,
-    accountAddress,
     "referendums",
+    accountAddress,
+    type,
+  ],
+  referendumVotes: (accountAddress?: string) => [
+    QUERY_KEY_PREFIX,
+    "referendumVotes",
+    accountAddress,
   ],
   referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
   stats: (

@@ -1,4 +1,11 @@
-import { format, Locale } from "date-fns"
+import {
+  addMilliseconds,
+  differenceInDays,
+  format,
+  formatDistanceToNowStrict,
+  isBefore,
+  Locale,
+} from "date-fns"
 import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
@@ -306,6 +313,21 @@ export const customFormatDuration = ({
     }),
     isPositive,
   }
+}
+
+export const durationInDaysAndHoursFromNow = (milliseconds: number) => {
+  const now = new Date()
+  const end = addMilliseconds(now, milliseconds)
+
+  if (isBefore(end, now)) return undefined
+
+  if (differenceInDays(end, now))
+    return formatDistanceToNowStrict(end, {
+      unit: "day",
+      roundingMethod: "floor",
+    })
+
+  return customFormatDuration({ end: milliseconds }).duration
 }
 
 export const qs = (
