@@ -34,12 +34,12 @@ export const HeaderTotalData = ({
         as="h3"
         sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
         css={{ whiteSpace: "nowrap" }}
+        font="GeistMedium"
       >
         {isOnlyDollar ? (
           t("value.usd", { amount: value })
         ) : (
           <DisplayValue
-            withGap
             value={
               <Trans
                 t={t}

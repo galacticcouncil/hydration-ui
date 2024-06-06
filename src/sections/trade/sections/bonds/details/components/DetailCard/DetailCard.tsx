@@ -38,7 +38,7 @@ export const DetailCard = ({
         }}
       >
         {typeof value === "string" ? (
-          <Text fs={[13, 15]} font="FontOver" color="white" lh={[13, 15]}>
+          <Text fs={[13, 15]} font="GeistMono" color="white" lh={[13, 15]}>
             {value}
           </Text>
         ) : (

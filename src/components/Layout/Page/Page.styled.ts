@@ -111,8 +111,8 @@ export const SSubHeader = styled.div`
 
     background: rgba(9, 9, 9, 0.09);
 
-    border-bottom: solid 1px rgba(114, 131, 165, 0.6);
-    border-top: 1px solid rgba(114, 131, 165, 0.6);
+    border-bottom: 0.5px solid rgba(249, 225, 225, 0.25);
+    border-top: 0.5px solid rgba(249, 225, 225, 0.25);
   }
 
   @media (${theme.viewport.gte.sm}) {

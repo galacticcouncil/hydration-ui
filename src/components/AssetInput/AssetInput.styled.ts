@@ -50,7 +50,7 @@ export const SInput = styled.input`
   line-height: 24px;
   text-align: right;
   font-weight: 600;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "GeistSemiBold";
 
   padding: 0;
 

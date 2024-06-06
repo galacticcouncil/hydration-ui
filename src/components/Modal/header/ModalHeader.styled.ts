@@ -59,7 +59,7 @@ export const STitleGradient = styled(GradientText)`
 
   font-size: 17px;
   font-weight: 500;
-  font-family: "FontOver", sans-serif;
+  font-family: "GeistMono", sans-serif;
 
   background: ${theme.gradients.pinkLightBlue};
   background-clip: text;

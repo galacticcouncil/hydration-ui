@@ -42,7 +42,7 @@ export const RewardsCard = () => {
             rewards.isLoading ? (
               <Skeleton height={19} width={60} />
             ) : (
-              <Text font="FontOver" fs={19}>
+              <Text font="GeistMono" fs={19}>
                 {t("value.tokenWithSymbol", {
                   value: rewards.data?.totalRewards,
                   symbol: assets.native.symbol,

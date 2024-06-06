@@ -27,7 +27,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const onRowSelect = (account: string) => {
-    window.open(`https://hydradx.subscan.io/account/${account}`, "_blank")
+    window.open(`https://hydration.subscan.io/account/${account}`, "_blank")
   }
 
   const table = useLiquidityProvidersTable(data)
@@ -37,7 +37,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
       <StatsTableTitle>
         <div sx={{ flex: "row", align: "end", gap: 12 }}>
           <Icon sx={{ color: "white" }} icon={<TitleIcon />} />
-          <Text fs={[14, 19]} lh={20} color="white" font="FontOver">
+          <Text fs={[14, 19]} lh={20} color="white" font="GeistMono">
             {t("stats.omnipool.table.providers.title")}
           </Text>
         </div>

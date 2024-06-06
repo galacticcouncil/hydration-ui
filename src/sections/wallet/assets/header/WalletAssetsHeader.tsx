@@ -19,7 +19,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           disconnected: disconnected,
           content: (
             <WalletAssetsHeaderDisplay
-              fontSize={[19, 38]}
+              fontSize={[19, 30]}
               type="balanceTotal"
             />
           ),
@@ -28,21 +28,21 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           label: t("wallet.assets.header.assetsBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="assetsTotal" />
+            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="assetsTotal" />
           ),
         },
         {
           label: t("wallet.assets.header.liquidityBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="lpTotal" />
+            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="lpTotal" />
           ),
         },
         {
           label: t("wallet.assets.header.farmsBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 24]} type="farmsTotal" />
+            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="farmsTotal" />
           ),
         },
       ]}
