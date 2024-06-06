@@ -79,7 +79,7 @@ export const Unstake = ({
       <GradientText
         gradient="pinkLightBlue"
         fs={19}
-        sx={{ width: "fit-content" }}
+        sx={{ width: "fit-content", py: 16 }}
       >
         {t("staking.dashboard.form.unstake.title")}
       </GradientText>

@@ -46,7 +46,7 @@ export const useAssetsModal = ({
       onClose={() => setIsOpen(false)}
       onBack={() => setIsOpen(false)}
       title={title || t("selectAsset.title")}
-      headerVariant="FontOver"
+      headerVariant="GeistMono"
       noPadding
       disableCloseOutside
     >

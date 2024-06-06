@@ -376,5 +376,5 @@ export const getSubscanLinkByType = (
       ? `/${[params?.blockNumber, params?.txIndex].join("-")}`
       : ""
 
-  return `https://hydradx.subscan.io/${type}${extrinsicPath}`
+  return `https://hydration.subscan.io/${type}${extrinsicPath}`
 }

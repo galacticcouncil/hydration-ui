@@ -38,7 +38,7 @@ export const Accordion: FC<AccordionProps> = ({
             color="white"
             fs={15}
             fw={400}
-            font="FontOver"
+            font="GeistMono"
             tTransform="uppercase"
           >
             {title}

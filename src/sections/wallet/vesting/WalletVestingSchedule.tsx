@@ -103,7 +103,7 @@ export const WalletVestingSchedule = () => {
           <Text color="brightBlue200" fs={[14, 16]} fw={500}>
             {t("wallet.vesting.claimable_now")}
           </Text>
-          <Heading as="h3" font="FontOver" sx={{ fontSize: [28, 34] }}>
+          <Heading as="h3" font="GeistMono" sx={{ fontSize: [28, 34] }}>
             <Trans
               t={t}
               i18nKey="wallet.vesting.claimable_now_value"

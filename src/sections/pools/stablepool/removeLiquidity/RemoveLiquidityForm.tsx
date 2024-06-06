@@ -159,7 +159,7 @@ export const RemoveStablepoolLiquidityForm = ({
             <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
           </div>
           <div>
-            <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+            <Text fs={32} font="GeistMono" sx={{ mt: 24 }}>
               {t("liquidity.remove.modal.value", {
                 value: getFloatingPointAmount(
                   removeSharesValue,
@@ -169,7 +169,7 @@ export const RemoveStablepoolLiquidityForm = ({
             </Text>
             <Text
               fs={18}
-              font="FontOver"
+              font="GeistMono"
               color="pink500"
               sx={{ mb: 20 }}
               tAlign="right"

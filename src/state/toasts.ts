@@ -92,43 +92,18 @@ const useToastsStore = create<ToastStore>()(
           const storeToasts = window.localStorage.getItem(name)
           const storeAccount = window.localStorage.getItem("web3-connect")
 
-          if (storeAccount == null) return storeToasts
+          if (!storeAccount) return storeToasts
 
           const { state: account } = JSON.parse(storeAccount)
 
-          const accountAddress = account?.account.address
+          const accountAddress = account?.account?.address
 
           if (accountAddress) {
-            const accountToastsDeprecated = window.localStorage.getItem(
-              `toasts_${accountAddress}`,
-            )
-
-            const toastsDeprecated = accountToastsDeprecated
-              ? safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
-                  (toast) => ({
-                    ...toast,
-                    hidden: true,
-                  }),
-                )
-              : undefined
-
             if (storeToasts != null) {
               const { state: toastsState } =
                 safelyParse<PersistState<ToastData[]>>(storeToasts) ?? {}
 
               const allToasts = { ...toastsState?.toasts }
-
-              const accountToasts = allToasts[accountAddress]
-
-              if (!accountToasts) {
-                if (toastsDeprecated != null) {
-                  allToasts[accountAddress] = toastsDeprecated
-
-                  window.localStorage.removeItem(`toasts_${accountAddress}`) // remove deprecated storage
-                } else {
-                  allToasts[accountAddress] = []
-                }
-              }
 
               const allAccounts = Object.keys(allToasts)
               if (allAccounts?.length) {
@@ -167,26 +142,14 @@ const useToastsStore = create<ToastStore>()(
                 state: { toasts: allToasts },
               })
             } else {
-              if (toastsDeprecated != null) {
-                window.localStorage.removeItem(`toasts_${accountAddress}`) // remove deprecated storage
-                return JSON.stringify({
-                  version: 0,
-                  state: {
-                    toasts: {
-                      [accountAddress]: toastsDeprecated,
-                    },
+              return JSON.stringify({
+                version: 0,
+                state: {
+                  toasts: {
+                    [accountAddress]: [],
                   },
-                })
-              } else {
-                return JSON.stringify({
-                  version: 0,
-                  state: {
-                    toasts: {
-                      [accountAddress]: [],
-                    },
-                  },
-                })
-              }
+                },
+              })
             }
           }
 
@@ -216,31 +179,7 @@ export const useToast = () => {
 
   const toasts = useMemo(() => {
     if (account?.address) {
-      const toasts = store.toasts[account.address]
-
-      if (!toasts) {
-        // check if there is deprecated toast storage
-        const accountToastsDeprecated = window.localStorage.getItem(
-          `toasts_${account.address}`,
-        )
-
-        if (accountToastsDeprecated) {
-          const toastsDeprecated =
-            safelyParse<Array<ToastData>>(accountToastsDeprecated)?.map(
-              (toast: ToastData) => ({ ...toast, hidden: true }),
-            ) ?? []
-
-          store.update(account.address, () => toastsDeprecated)
-
-          window.localStorage.removeItem(`toasts_${account.address}`) // remove deprecated storage
-
-          return toastsDeprecated
-        } else {
-          return []
-        }
-      }
-
-      return toasts
+      return store.toasts[account.address] ?? []
     }
     return []
   }, [account?.address, store])
@@ -328,10 +267,11 @@ export const useToast = () => {
   }
 
   const setSidebar = (isOpen: boolean) => {
-    if (isOpen)
+    if (isOpen) {
       store.update(account?.address, (toasts) =>
         toasts.map((toast) => ({ ...toast, hidden: true })),
       )
+    }
 
     store.setSidebar(isOpen)
   }

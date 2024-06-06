@@ -38,7 +38,7 @@ export const TierStats = () => {
             referrerInfo.isLoading ? (
               <Skeleton height={19} width={50} />
             ) : (
-              <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
+              <Text font="GeistMono" fs={19} css={{ whiteSpace: "nowrap" }}>
                 {t("referrals.tiers.tier", {
                   tier: referrerInfo.data?.tier?.toString(),
                 })}
@@ -54,7 +54,7 @@ export const TierStats = () => {
             </Text>
           }
           title={
-            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+            <Text font="GeistMono" tAlign={["left", "right"]} fs={16}>
               {currentTierData
                 ? t("value.percentage", {
                     value: currentTierData.referrer,
@@ -71,7 +71,7 @@ export const TierStats = () => {
             </Text>
           }
           title={
-            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+            <Text font="GeistMono" tAlign={["left", "right"]} fs={16}>
               {currentTierData
                 ? t("value.percentage", {
                     value: currentTierData.user,
@@ -94,7 +94,7 @@ export const TierStats = () => {
                   css={{ whiteSpace: "nowrap" }}
                   color="green500"
                   fs={14}
-                  font="FontOver"
+                  font="GeistMono"
                 >
                   {t("referrals.referrer.levelup")}
                 </Text>
