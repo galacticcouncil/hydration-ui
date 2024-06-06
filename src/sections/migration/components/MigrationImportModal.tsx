@@ -68,7 +68,7 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
             window.location.href = window.location.origin
           }}
         >
-          {t("toast.close")}
+          {t("close")}
         </Button>
         {data && (
           <Button

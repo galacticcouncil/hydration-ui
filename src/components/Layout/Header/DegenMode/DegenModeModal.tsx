@@ -51,7 +51,7 @@ export const DegenModeModal: FC<DegenModeModalProps> = ({
           />
         </div>
         <div sx={{ width: ["100%", "75%"], mx: "auto" }}>
-          <Text font="FontOver" tAlign="center" fs={19} sx={{ mt: 20 }}>
+          <Text font="Geist" tAlign="center" fs={19} sx={{ mt: 20 }}>
             {t("header.settings.degenMode.title")}
           </Text>
           <Text color="basic400" tAlign="center" sx={{ mt: 20 }}>
