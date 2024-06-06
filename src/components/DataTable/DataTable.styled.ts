@@ -132,7 +132,7 @@ export const TableTitleContainer = styled.div<{
 `
 
 export const TableTitle = styled.div`
-  font-family: "FontOver";
+  font-family: "GeistMono";
   font-size: 14px;
 
   color: ${theme.colors.white};
@@ -187,7 +187,7 @@ export const TableRow = styled.tr`
 export const TableHead = styled.th<{ canSort?: boolean }>`
   font-size: 11px !important;
   line-height: 14px;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "GeistSemiBold";
 
   text-transform: uppercase;
   text-align: start;

@@ -37,7 +37,7 @@ export const BoxSwitch = ({ options, selected, onSelect, disabled }: Props) => {
             fs={[14, 15]}
             fw={500}
             isActive={activeIndex === i}
-            font="FontOver"
+            font="GeistMono"
           >
             {option.label}
           </SText>

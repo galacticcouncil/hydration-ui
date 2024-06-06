@@ -6,7 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths"
 import fs from "fs/promises"
 import { resolve } from "node:path"
 import { exec } from "child_process"
-
+import Unfonts from "unplugin-fonts/vite"
 import { SEO_METADATA } from "./src/seo.ts"
 
 // https://vitejs.dev/config/
@@ -35,6 +35,40 @@ export default defineConfig(({ mode }) => {
       }),
       wasm(),
       svgr(),
+      Unfonts({
+        custom: {
+          display: "auto",
+          preload: true,
+          injectTo: "head-prepend",
+          families: [
+            {
+              name: "Geist",
+              local: "Geist",
+              src: "./src/assets/fonts/Geist/Geist-Regular.ttf",
+            },
+            {
+              name: "GeistMedium",
+              local: "GeistMedium",
+              src: "./src/assets/fonts/Geist/Geist-Medium.ttf",
+            },
+            {
+              name: "GeistSemiBold",
+              local: "GeistSemiBold",
+              src: "./src/assets/fonts/Geist/Geist-SemiBold.ttf",
+            },
+            {
+              name: "GeistMono",
+              local: "GeistMono",
+              src: "./src/assets/fonts/GeistMono/GeistMono-Regular.otf",
+            },
+            {
+              name: "GeistMonoSemiBold",
+              local: "GeistMonoSemiBold",
+              src: "./src/assets/fonts/GeistMono/GeistMono-SemiBold.otf",
+            },
+          ],
+        },
+      }),
       transformIndexHtml(),
     ],
   }

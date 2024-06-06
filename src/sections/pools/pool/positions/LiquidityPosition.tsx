@@ -97,7 +97,7 @@ export const LiquidityPosition = ({
             ) : (
               <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
             )}
-            <Text fs={[14, 18]} color={["white", "basic100"]}>
+            <Text fs={14} color={["white", "basic100"]}>
               {t("liquidity.asset.positions.position.title", { index })}
             </Text>
           </div>

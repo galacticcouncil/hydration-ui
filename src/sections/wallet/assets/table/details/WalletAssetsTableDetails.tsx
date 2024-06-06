@@ -67,14 +67,14 @@ export const WalletAssetsTableDetails = ({
         </div>
       )}
       {isNativeAsset && (
-        <div sx={{ flex: "column", align: "start", gap: 4 }}>
-          <Text fs={14} lh={14} fw={500} color="basic300">
+        <div sx={{ flex: "column", align: "start" }}>
+          <Text fs={14} lh={14} fw={500} color="basic500" sx={{ mb: 4 }}>
             {t("wallet.assets.table.details.lockedStaking")}
           </Text>
           {lockedValues.isLoading ? (
             <Skeleton height={20} width={50} />
           ) : (
-            <Text fs={16} lh={22} fw={400} color="white">
+            <Text fs={14} lh={14} fw={400} color="white">
               {t("value.token", { value: lockedValues.data?.lockedStaking })}
             </Text>
           )}
@@ -88,14 +88,14 @@ export const WalletAssetsTableDetails = ({
         </div>
       )}
       {isNativeAsset && (
-        <div sx={{ flex: "column", align: "start", gap: 4 }}>
-          <Text fs={14} lh={14} fw={500} color="basic300">
+        <div sx={{ flex: "column", align: "start" }}>
+          <Text fs={14} lh={14} fw={500} color="basic500" sx={{ mb: 4 }}>
             {t("wallet.assets.table.details.lockedDemocracy")}
           </Text>
           {lockedValues.isLoading ? (
             <Skeleton height={22} width={50} />
           ) : (
-            <Text fs={16} lh={22} fw={400} color="white">
+            <Text fs={14} lh={14} fw={400} color="white">
               {t("value.token", { value: lockedValues.data?.lockedDemocracy })}
             </Text>
           )}
@@ -108,11 +108,11 @@ export const WalletAssetsTableDetails = ({
           )}
         </div>
       )}
-      <div sx={{ flex: "column", align: "start", gap: 4 }}>
-        <Text fs={14} lh={14} fw={500} color="basic300">
+      <div sx={{ flex: "column", align: "start" }}>
+        <Text fs={14} lh={14} fw={500} color="basic500" sx={{ mb: 4 }}>
           {t("wallet.assets.table.details.reserved")}
         </Text>
-        <Text fs={16} lh={22} fw={400} color="white">
+        <Text fs={14} lh={14} fw={400} color="white">
           {t("value.token", { value: reserved })}
         </Text>
         <Text fs={11} lh={16} fw={500} color="whiteish500">
@@ -120,14 +120,14 @@ export const WalletAssetsTableDetails = ({
         </Text>
       </div>
       {isNativeAsset && (
-        <div sx={{ flex: "column", align: "start", gap: 4 }}>
-          <Text fs={14} lh={14} fw={500} color="basic300">
+        <div sx={{ flex: "column", align: "start" }}>
+          <Text fs={14} lh={14} fw={500} color="basic500" sx={{ mb: 4 }}>
             {t("wallet.assets.table.details.lockedVesting")}
           </Text>
           {lockedValues.isLoading ? (
             <Skeleton height={22} width={50} />
           ) : (
-            <Text fs={16} lh={22} fw={400} color="white">
+            <Text fs={14} lh={14} fw={400} color="white">
               {t("value.token", { value: lockedValues.data?.lockedVesting })}
             </Text>
           )}

@@ -88,7 +88,7 @@ export const PreviewReferrer = ({
                   css={{ verticalAlign: "middle" }}
                 />
               ) : (
-                <Text font="FontOver" fs={12}>
+                <Text font="GeistMono" fs={12}>
                   {currentTierData
                     ? t("value.percentage", {
                         value: currentTierData.user,
@@ -109,7 +109,7 @@ export const PreviewReferrer = ({
                   css={{ verticalAlign: "middle" }}
                 />
               ) : (
-                <Text font="FontOver" fs={12}>
+                <Text font="GeistMono" fs={12}>
                   {referrerInfo.data?.tier ?? "-"}
                 </Text>
               )}
