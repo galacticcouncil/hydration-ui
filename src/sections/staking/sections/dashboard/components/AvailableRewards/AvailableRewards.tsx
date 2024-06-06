@@ -21,6 +21,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useProcessedVotesIds } from "api/staking"
 
 export const AvailableRewards = () => {
   const { api, assets } = useRpcProvider()
@@ -28,6 +29,8 @@ export const AvailableRewards = () => {
   const { account } = useAccount()
   const reward = useClaimReward()
   const spotPrice = useDisplayPrice(assets.native.id)
+
+  const processedVotes = useProcessedVotesIds()
 
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
@@ -54,9 +57,16 @@ export const AvailableRewards = () => {
       return memo
     }, {} as ToastMessage)
 
+    const processedVoteIds = await processedVotes.mutateAsync()
+
     await createTransaction(
       {
-        tx: api.tx.staking.claim(reward.data?.positionId!),
+        tx: processedVoteIds.length
+          ? api.tx.utility.batchAll([
+              ...processedVoteIds.map((id) => api.tx.democracy.removeVote(id)),
+              api.tx.staking.claim(reward.data?.positionId!),
+            ])
+          : api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )
@@ -199,11 +209,7 @@ export const AvailableRewards = () => {
           size="small"
           variant="primary"
           fullWidth
-          disabled={
-            !reward.data ||
-            reward.data.rewards.isZero() ||
-            account?.isExternalWalletConnected
-          }
+          disabled={!reward.data || reward.data.rewards.isZero()}
           onClick={onClaimRewards}
         >
           {t("staking.dashboard.rewards.button")}
