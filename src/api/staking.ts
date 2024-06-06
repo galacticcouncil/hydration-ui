@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { ApiPromise } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { getUniques } from "./uniques"
@@ -8,6 +8,7 @@ import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 interface ISubscanData {
   code: number
@@ -327,3 +328,39 @@ const getStakingPositionBalances =
       )),
     }
   }
+
+export const useProcessedVotesIds = () => {
+  const { account } = useAccount()
+  const { api } = useRpcProvider()
+
+  return useMutation(async () => {
+    if (!account) {
+      return []
+    }
+
+    const processedVotesRes = await api.query.staking.processedVotes.entries(
+      account.address,
+    )
+
+    const ids = processedVotesRes.map(([processedVote]) => {
+      const [, id] = processedVote.toHuman() as string[]
+
+      return id
+    })
+
+    return ids
+  })
+}
+
+export const usePositionVotesIds = () => {
+  const { api } = useRpcProvider()
+
+  return useMutation(async (positionId: number) => {
+    const positionVotesRes = await api.query.staking.positionVotes(positionId)
+    const positionVotesIds = positionVotesRes.votes.map((position) =>
+      position[0].toString(),
+    )
+
+    return positionVotesIds
+  })
+}
