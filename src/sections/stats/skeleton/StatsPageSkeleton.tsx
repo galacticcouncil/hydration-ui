@@ -7,12 +7,9 @@ import { PieSkeleton } from "sections/stats/components/PieChart/components/Skele
 export const StatsPageSkeleton = () => {
   return (
     <>
-      <div>
-        <Skeleton width={200} height={24} sx={{ mb: 30 }} />
-        <div sx={{ flex: "row", gap: 20, mb: 30 }}>
-          <Skeleton width={100} height={36} />
-          <Skeleton width={100} height={36} />
-        </div>
+      <div sx={{ flex: "row", gap: 20, my: 30 }}>
+        <Skeleton width={100} height={36} />
+        <Skeleton width={100} height={36} />
       </div>
       <div sx={{ flex: "column", gap: [24, 50] }}>
         <div sx={{ flex: ["column", "row"], gap: 20, height: ["auto", 690] }}>

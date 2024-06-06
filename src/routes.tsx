@@ -316,9 +316,7 @@ export const routes: Route[] = [
     path: "cross-chain",
     element: (
       <Suspense
-        fallback={
-          <SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto", mt: 50 }} />
-        }
+        fallback={<SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto" }} />}
       >
         <XcmPage />
       </Suspense>
