@@ -27,7 +27,7 @@ export const LiquidityProvidersTable = ({ data }: Props) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const onRowSelect = (account: string) => {
-    window.open(`https://hydradx.subscan.io/account/${account}`, "_blank")
+    window.open(`https://hydration.subscan.io/account/${account}`, "_blank")
   }
 
   const table = useLiquidityProvidersTable(data)

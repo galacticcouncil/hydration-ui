@@ -9,6 +9,7 @@ import { SQuestionmark } from "components/Layout/Header/Header.styled"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
+import { DOC_LINK } from "utils/constants"
 
 const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
 
@@ -43,7 +44,7 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
               </>
             )}
             <a
-              href="https://docs.hydradx.io/"
+              href={DOC_LINK}
               target="blank"
               rel="noreferrer"
               sx={{ flex: "row", align: "center", gap: 10, py: 10 }}

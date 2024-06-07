@@ -15,6 +15,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTokensBalances } from "api/balances"
 import { pluck } from "utils/rx"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { DOC_LINK } from "utils/constants"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
@@ -107,11 +108,7 @@ export const WhyBonds = () => {
                 },
               }}
             >
-              <a
-                href="https://docs.hydradx.io/bonds"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={`${DOC_LINK}/bonds`} target="_blank" rel="noreferrer">
                 {t("bonds.whyBonds.link")}
                 <LinkIcon height={10} sx={{ ml: 6 }} />
               </a>

@@ -2586,10 +2586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^3.9.0":
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.9.0.tgz#87ec48a6dfc46a068e1d4eabf1e7cf0c4959d12b"
-  integrity sha512-KtdccozlLbtpQyMA7CwH3chFh5gK6/iR7rzCkUAALtfuhjJDSfZitWMiG++Kli5W+n7s0xxleqy3iDO+dhMgcg==
+"@galacticcouncil/apps@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-3.9.1.tgz#3cafd864a8eddb8eac82bb52397d3789a1499f4e"
+  integrity sha512-t69sW8dWexThPkITIAzTJdvwGMO16UuIYCuWISFzieIUnCgBbD0Q8pnDyh2Av7ZNKK5d8NPDbjDiW29CTCpCVQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2632,10 +2632,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-3.0.0.tgz#947001ad629414b40e031d8af0d146adb9227e06"
-  integrity sha512-vm6mqQ5u3HyX5+0oLP0an6BkmuKi06dNWOcHFKIgaBMXYwrwL5RbqiN5hG+baSefla0yWl1PB+o4VB5pfvhpFA==
+"@galacticcouncil/sdk@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-3.0.1.tgz#d634f2804dd09c98b8ea3b7ef90691368e38c320"
+  integrity sha512-zw3p4XL2NcZ1RerSmzpMesrpHUY8oY7v/hm3YG9oXGnhEqsDOVoyUnyDJZB7S7Q0Hf29yjdepSv1qNrUDA3Zog==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2646,10 +2646,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/ui@^3.2.2":
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.2.tgz#8fb87fd668c862e944baa72af6a9c1693c84b17f"
-  integrity sha512-H0dbDVxmklRYhERtVRU2AJxdUFcrzzS1d460RIeZQ6RAns1zHn7+h1Qk9xQUUb01U4fUlXYLrRgR+D4rRNpv4Q==
+"@galacticcouncil/ui@^3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-3.2.3.tgz#847da6005d09d4a1910544f6b233157f30565382"
+  integrity sha512-SLCrwNwalVwV9PCmfXgFZ8wVTDEBRsZp40G1nLXzuDNwnkjx7UhXY1L6M9N7KLi92cnswoM4baRKXHgyNVzkAQ==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit/reactive-element" "^1.0.0"
@@ -14301,9 +14301,9 @@ victory-vendor@^36.6.8:
     d3-timer "^3.0.1"
 
 viem@^2.12.0:
-  version "2.13.5"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.5.tgz#8bff8f982f40871867d4729794f503e4d4452bf9"
-  integrity sha512-jXkFh52GwBLJJE/OWkPZdXwiO3zpgTL7ebhpMcQkaa7F7xEhYeGBjqs26zn6rjlUYP43JjoAf/VnpmbYTQvR6Q==
+  version "2.13.6"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.6.tgz#32d1dc3215627044972bb905db4adfcf674655f1"
+  integrity sha512-BhvYhLrExC9P4AH9Gu/2A3VPUFkJT/ayH+A9anco2Ja/D0h3NStq+2uF4htcly1e68/U7IOrlCyX3Jz9zqeEJA==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
