@@ -30,6 +30,18 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
     [setMigrationCompleted],
   )
 
+  const importAndReload = useCallback(
+    (data: string) => {
+      try {
+        importToLocalStorage(data)
+        reloadAppWithTimestamp(new Date().toISOString())
+      } catch (err) {
+        reloadAppWithTimestamp()
+      }
+    },
+    [reloadAppWithTimestamp],
+  )
+
   return (
     <Modal open headerVariant="GeistMono">
       <MigrationLogo sx={{ mx: "auto" }} />
@@ -65,8 +77,7 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
           <Button
             variant={lastImportDate ? "mutedError" : "primary"}
             onClick={() => {
-              importToLocalStorage(data)
-              reloadAppWithTimestamp(new Date().toISOString())
+              importAndReload(data)
             }}
           >
             {lastImportDate
