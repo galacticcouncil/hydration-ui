@@ -10,10 +10,15 @@ import BN from "bn.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculateFreeBalance } from "./balances"
 
-export const useAccountBalances = (id: Maybe<AccountId32 | string>) => {
+export const useAccountBalances = (
+  id: Maybe<AccountId32 | string>,
+  noRefresh?: boolean,
+) => {
   const { api } = useRpcProvider()
   return useQuery(
-    QUERY_KEYS.accountBalances(id),
+    noRefresh
+      ? QUERY_KEYS.accountBalances(id)
+      : QUERY_KEYS.accountBalancesLive(id),
     !!id ? getAccountBalances(api, id) : undefinedNoop,
     { enabled: id != null },
   )
