@@ -124,7 +124,7 @@ export const FarmDetailsCard = ({
                   apr.data.distributedRewards,
                   asset.decimals,
                 ),
-                max: scaleHuman(apr.data.maxRewards, asset.decimals),
+                max: scaleHuman(apr.data.potMaxRewards, asset.decimals),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
