@@ -13,19 +13,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
+import { MetadataStore } from "@galacticcouncil/ui"
 
-const EXTERNAL_ASSETS_WHITELIST = [
-  // PINK
-  { id: "23", origin: 1000 },
-  // STINK
-  { id: "42069", origin: 1000 },
-  // WUD
-  { id: "31337", origin: 1000 },
-  // WIFD
-  { id: "17", origin: 1000 },
-  // BNDT
-  { id: "8889", origin: 1000 },
-]
+const EXTERNAL_ASSETS_WHITELIST =
+  MetadataStore.getInstance().externalWhitelist()
 
 const chains = Array.from(chainsMap.values())
 
@@ -66,11 +57,9 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         chain.parachainId === Number(assetDetails?.parachainId),
     ) as AnyParachain
 
-    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
-      (item) =>
-        item.id === assetDetails?.externalId &&
-        item.origin === chain?.parachainId,
-    )
+    const isWhitelisted = assetDetails
+      ? EXTERNAL_ASSETS_WHITELIST.includes(assetDetails.id)
+      : false
 
     const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
       ? isWhitelisted
