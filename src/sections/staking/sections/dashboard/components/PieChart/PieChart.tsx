@@ -26,9 +26,7 @@ export const PieChart = (props: Props) => {
   const label = (
     <>
       <Text fs={12}>{t("staking.dashboard.stats.chart.label")}</Text>
-      <Text fs={30} font="GeistMono">
-        {isInvalid ? "N/a" : `${props.percentage}%`}
-      </Text>
+      <Text fs={30}>{isInvalid ? "N/a" : `${props.percentage}%`}</Text>
       {!isInvalid && (
         <Text fs={11} sx={{ width: 100 }} color="darkBlue300">{`of ${t(
           "value.token",
