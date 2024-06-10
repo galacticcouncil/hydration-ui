@@ -205,12 +205,12 @@ export const usePools = () => {
       )?.spotPrice
 
       const tvlDisplay = BN(
-        tvls.data?.find((tvl) => tvl.asset_id === Number(assetId))?.tvl_usd ??
+        tvls?.data?.find((tvl) => tvl.asset_id === Number(assetId))?.tvl_usd ??
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
       const volume = BN(
-        volumes.data?.find((volume) => volume.asset_id.toString() === assetId)
+        volumes?.data?.find((volume) => volume.asset_id.toString() === assetId)
           ?.volume_usd ?? BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
@@ -218,7 +218,7 @@ export const usePools = () => {
         assets.native.id === assetId
           ? BN_0
           : BN(
-              fees.data?.find((fee) => fee.asset_id.toString() === assetId)
+              fees?.data?.find((fee) => fee.asset_id.toString() === assetId)
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
@@ -240,9 +240,9 @@ export const usePools = () => {
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
         volume,
-        isVolumeLoading: volumes.isLoading,
+        isVolumeLoading: volumes?.isLoading,
         fee,
-        isFeeLoading: fees.isLoading,
+        isFeeLoading: fees?.isLoading,
         omnipoolPositions: filteredOmnipoolPositions,
         miningPositions: filteredMiningPositions,
         isPositions,
