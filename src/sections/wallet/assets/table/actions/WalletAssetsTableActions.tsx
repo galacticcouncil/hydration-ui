@@ -26,6 +26,7 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { useRefetchProviderData } from "api/provider"
 import { useToast } from "state/toasts"
+import { useQueryClient } from "@tanstack/react-query"
 
 type Props = {
   toggleExpanded: () => void
@@ -234,6 +235,7 @@ export const AddTokenAction = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { addToken } = useUserExternalTokenStore()
+  const queryClient = useQueryClient()
 
   const externalAsset = useExternalTokenMeta(id)
 
@@ -243,7 +245,7 @@ export const AddTokenAction = ({
   const addExternalAsset = externalAsset
     ? () => {
         addToken({
-          id: externalAsset.id,
+          id: externalAsset.externalId,
           name: externalAsset.name,
           symbol: externalAsset.symbol,
           decimals: externalAsset.decimals,
@@ -251,6 +253,17 @@ export const AddTokenAction = ({
           internalId: id,
         })
         refetchProvider()
+        setTimeout(() => {
+          queryClient.removeQueries({
+            predicate: (query) => {
+              return (
+                query.queryKey.includes("spotPrice") &&
+                query.queryKey.includes(id.toString())
+              )
+            },
+          })
+        }, 1000)
+
         add("success", {
           title: (
             <Trans

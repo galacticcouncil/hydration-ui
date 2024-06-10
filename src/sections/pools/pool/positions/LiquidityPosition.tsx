@@ -107,13 +107,11 @@ export const LiquidityPosition = ({
               gap: 12,
             }}
           >
-            {!meta.isStableSwap && (
-              <JoinFarmsButton
-                poolId={pool.id}
-                position={position}
-                onSuccess={onSuccess}
-              />
-            )}
+            <JoinFarmsButton
+              poolId={pool.id}
+              position={position}
+              onSuccess={onSuccess}
+            />
             <LiquidityPositionRemoveLiquidity
               position={position}
               onSuccess={onSuccess}
