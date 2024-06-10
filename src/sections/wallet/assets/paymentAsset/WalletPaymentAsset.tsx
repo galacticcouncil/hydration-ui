@@ -50,7 +50,7 @@ export const WalletPaymentAsset = () => {
             icon: <AssetLogo key={asset} id={asset} />,
           }))}
         />
-        <Text fs={14} lh={14} font="ChakraPetchSemiBold">
+        <Text fs={14} lh={14} font="GeistSemiBold">
           {accountCurrencyMeta?.symbol}
         </Text>
       </div>

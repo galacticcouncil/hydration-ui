@@ -316,7 +316,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         />
 
         <Spacer size={24} />
-        <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
+        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
         <SummaryRow

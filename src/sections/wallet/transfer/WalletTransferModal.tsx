@@ -64,7 +64,7 @@ export function WalletTransferModal(props: {
           },
           {
             title: t("selectAsset.title"),
-            headerVariant: "FontOver",
+            headerVariant: "GeistMono",
             noPadding: true,
             content: (
               <AssetsModalContent

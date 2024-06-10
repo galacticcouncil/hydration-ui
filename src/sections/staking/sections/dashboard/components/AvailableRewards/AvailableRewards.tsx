@@ -76,7 +76,7 @@ export const AvailableRewards = () => {
           lh={15}
           sx={{ pt: 5 }}
           color="white"
-          font="FontOver"
+          font="GeistMono"
           tTransform="uppercase"
         >
           {t("staking.dashboard.rewards.title")}
@@ -95,7 +95,7 @@ export const AvailableRewards = () => {
                 <Text
                   fs={19}
                   color="white"
-                  font="FontOver"
+                  font="GeistMono"
                   tTransform="uppercase"
                   css={{ whiteSpace: "nowrap" }}
                 >
@@ -138,7 +138,7 @@ export const AvailableRewards = () => {
               <Text
                 fs={19}
                 color="white"
-                font="FontOver"
+                font="GeistMono"
                 tTransform="uppercase"
                 css={{ whiteSpace: "nowrap" }}
               >
@@ -174,7 +174,7 @@ export const AvailableRewards = () => {
               <Text
                 fs={19}
                 color="white"
-                font="FontOver"
+                font="GeistMono"
                 tTransform="uppercase"
                 css={{ whiteSpace: "nowrap" }}
               >

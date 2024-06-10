@@ -154,7 +154,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "Geist";
 
   text-transform: uppercase;
   text-align: start;
@@ -170,8 +170,8 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
 
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 11px;
+    line-height: 14px;
     font-weight: 600;
   }
 `
@@ -179,16 +179,17 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 export const TableData = styled.td<{
   isExpanded?: boolean
   isSkeleton?: boolean
+  sub?: boolean
 }>`
   height: 56px;
 
-  ${({ isExpanded }) => (isExpanded ? `padding: 16px` : "padding: 0 16px")};
+  padding: 0 16px;
 
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
   ${({ isExpanded }) =>
-    isExpanded && `background: rgba(${theme.rgbColors.white}, 0.06);`}
+    isExpanded && `background: rgba(${theme.rgbColors.white}, 0.03);`}
 
   &:last-of-type {
     width: 1px;
@@ -196,10 +197,9 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    height: 68px;
+    height: 82px;
 
-    ${({ isExpanded }) =>
-      isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};
+    ${({ sub }) => (sub ? `padding: 24px 32px` : "padding: 0 32px")};
 
     &:last-of-type {
       padding-right: 10px;

@@ -91,6 +91,7 @@ const AssetTableName = ({ id }: { id: string }) => {
             lh={16}
             fw={700}
             color="white"
+            font="GeistMedium"
             css={{ whiteSpace: "nowrap" }}
           >
             {asset.symbol}

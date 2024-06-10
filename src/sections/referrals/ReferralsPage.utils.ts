@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { LINKS } from "utils/navigation"
 
-export const REFERRAL_PROD_HOST = "hydradx.io"
+export const REFERRAL_PROD_HOST = "hydration.net"
 export const REFERRAL_PARAM_NAME = "referral"
 export const REFERRAL_CODE_MAX_LENGTH = 7
 export const REFERRAL_CODE_REGEX = /^[a-zA-Z0-9]+$/

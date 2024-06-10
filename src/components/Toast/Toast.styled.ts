@@ -65,7 +65,7 @@ export const STitle = styled(Title)`
   }
   & .referralTitle {
     color: ${theme.colors.white};
-    font-family: "FontOver";
+    font-family: "GeistMono";
   }
   & .referralDesc {
     color: ${theme.colors.white};

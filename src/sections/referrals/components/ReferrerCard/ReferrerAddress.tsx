@@ -27,7 +27,7 @@ export const ReferrerAddress = ({
 
   return (
     <div sx={{ flex: "column", gap: 2 }}>
-      <Text font="FontOver" fs={fs}>
+      <Text font="GeistMono" fs={fs}>
         {identity.isInitialLoading ? (
           <Skeleton sx={{ height: fs }} width={180} />
         ) : identity.data?.identity ? (

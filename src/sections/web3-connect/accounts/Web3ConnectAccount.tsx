@@ -47,7 +47,7 @@ export const Web3ConnectAccount: FC<Props> = ({
       onClick={() => onClick?.(account)}
     >
       <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
-        <Text font="ChakraPetchBold">{name}</Text>
+        <Text font="GeistMedium">{name}</Text>
         {balance?.isFinite() && (
           <div sx={{ flex: "row", align: "end", gap: 2 }}>
             <Text color="basic200" fw={400}>
@@ -65,7 +65,7 @@ export const Web3ConnectAccount: FC<Props> = ({
               <Text
                 color="pink500"
                 fs={14}
-                font="ChakraPetchBold"
+                font="GeistMedium"
                 css={{ display: "inline-block" }}
               />
               <Text color="pink500" fs={14} css={{ display: "inline-block" }} />

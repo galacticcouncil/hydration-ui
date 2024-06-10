@@ -15,6 +15,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTokensBalances } from "api/balances"
 import { pluck } from "utils/rx"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { DOC_LINK } from "utils/constants"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
@@ -55,13 +56,7 @@ export const WhyBonds = () => {
       <div sx={{ flex: "row", justify: "space-between", height: 24 }}>
         <div sx={{ flex: "row", gap: 8, align: "center" }}>
           <Icon icon={<WhyBondsIcon />} />
-          <Text
-            color="white"
-            fs={[15, 19]}
-            fw={600}
-            font="FontOver"
-            tTransform="uppercase"
-          >
+          <Text color="white" fs={[15, 19]} fw={600} font="GeistMono">
             {t("bonds.whyBonds.title")}
           </Text>
         </div>
@@ -113,11 +108,7 @@ export const WhyBonds = () => {
                 },
               }}
             >
-              <a
-                href="https://docs.hydradx.io/bonds"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href={`${DOC_LINK}/bonds`} target="_blank" rel="noreferrer">
                 {t("bonds.whyBonds.link")}
                 <LinkIcon height={10} sx={{ ml: 6 }} />
               </a>

@@ -84,9 +84,12 @@ export const getPedulumAssets = async () => {
       const data = dataRaw.unwrap()
       const location = data.location.unwrap()
 
-      if (location.isV2 && location.asV2.interior.toString() !== "Here") {
+      if (location) {
+        const type = location.type.toString()
+        const interior = location[`as${type}`].interior.toString()
+
         const id = getPendulumAssetId(idRaw)
-        if (id)
+        if (interior !== "Here" && id)
           acc.push({
             id,
             // @ts-ignore
@@ -95,7 +98,7 @@ export const getPedulumAssets = async () => {
             symbol: data.symbol.toHuman() as string,
             // @ts-ignore
             name: data.name.toHuman() as string,
-            location: location.asV2 as HydradxRuntimeXcmAssetLocation,
+            location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
             origin: PENDULUM_ID,
           })
       }
@@ -111,11 +114,11 @@ export const getPedulumAssets = async () => {
  */
 export const useExternalAssetRegistry = () => {
   const assetHub = useAssetHubAssetRegistry()
-  //const pendulum = usePendulumAssetRegistry()
+  const pendulum = usePendulumAssetRegistry()
 
   return {
     [ASSET_HUB_ID as number]: assetHub,
-    // [PENDULUM_ID as number]: pendulum,
+    [PENDULUM_ID as number]: pendulum,
   }
 }
 

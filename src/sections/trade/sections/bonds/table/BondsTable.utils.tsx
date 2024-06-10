@@ -71,7 +71,7 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
         css={{ width: "min-content" }}
       />
       <div sx={{ flex: "column" }}>
-        <Text fs={14} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
+        <Text fs={14} sx={{ mt: 3 }} font="GeistSemiBold">
           {bond.symbol}
         </Text>
         <Text fs={13} sx={{ mt: 3 }} color="whiteish500">

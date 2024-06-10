@@ -102,7 +102,7 @@ export const BondInfoCards = ({
           label: t("bonds.details.card.bondPrice"),
           value: (
             <div sx={{ flex: "column", gap: 4 }}>
-              <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
+              <Text fs={[13, 15]} lh={[13, 15]} color="white" font="GeistMono">
                 <DisplayValue value={currentBondPrice} type="token" />
               </Text>
               {spotPriceBondAccumulated.isInitialLoading ? (
@@ -127,7 +127,12 @@ export const BondInfoCards = ({
             }),
             value: (
               <div sx={{ flex: "column", gap: 4 }}>
-                <Text fs={[13, 15]} lh={[13, 15]} color="white" font="FontOver">
+                <Text
+                  fs={[13, 15]}
+                  lh={[13, 15]}
+                  color="white"
+                  font="GeistMono"
+                >
                   <DisplayValue value={currentSpotPrice} type="token" />
                 </Text>
                 {spotPriceAccumulated.isInitialLoading ? (
@@ -154,7 +159,7 @@ export const BondInfoCards = ({
                 fs={[13, 15]}
                 lh={[13, 15]}
                 color={isDiscount ? "white" : "red300"}
-                font="FontOver"
+                font="GeistMono"
                 sx={{ mb: 6 }}
               >
                 {t("value.percentage", { value: discount })}

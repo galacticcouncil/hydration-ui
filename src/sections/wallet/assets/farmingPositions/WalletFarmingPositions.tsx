@@ -41,7 +41,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           <Text
             fs={[16, 20]}
             lh={[20, 26]}
-            css={{ fontFamily: "FontOver" }}
+            font="GeistMono"
             fw={500}
             color="white"
           >
@@ -51,7 +51,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
         <Table>
           <TableHeaderContent>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} header>
                 {hg.headers.map((header) => (
                   <TableSortHeader
                     key={header.id}
