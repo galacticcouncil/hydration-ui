@@ -61,25 +61,6 @@ export const useWalletAssetsTotals = ({
   const shareTokenBalances = useTokensBalances(shareTokenIds, account?.address)
   const spotPrices = useDisplayShareTokenPrice(shareTokenIds)
 
-  const { warnings, setWarnings } = useWarningsStore()
-
-  const isHdxPosition = lpPositions.data.some(
-    (position) => position.assetId === NATIVE_ASSET_ID,
-  )
-
-  useEffect(() => {
-    if (lpPositions.data.length) {
-      if (isHdxPosition && warnings.hdxLiquidity.visible == null) {
-        setWarnings("hdxLiquidity", true)
-      }
-    }
-  }, [
-    warnings.hdxLiquidity.visible,
-    setWarnings,
-    lpPositions.data.length,
-    isHdxPosition,
-  ])
-
   const assetsTotal = useMemo(() => {
     if (!assets.data) return BN_0
 
