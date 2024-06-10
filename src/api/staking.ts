@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -9,6 +8,7 @@ import request, { gql } from "graphql-request"
 import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { undefinedNoop } from "utils/helpers"
 
 interface ISubscanData {
   code: number
@@ -116,7 +116,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const conviction = data.conviction.toString()
 
     const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.unwrapOr(null).isFinished
+    const isFinished = referendaInfo.unwrapOr(null)?.isFinished
 
     if (isFinished) {
       prevAcc.push({
@@ -241,7 +241,7 @@ export const useStakingEvents = () => {
   })
 }
 
-export const useStakingPositionBalances = (positionId: Maybe<string>) => {
+export const useStakingPositionBalances = (positionId?: string) => {
   const preference = useProviderRpcUrlStore()
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
   const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
@@ -251,7 +251,9 @@ export const useStakingPositionBalances = (positionId: Maybe<string>) => {
 
   return useQuery(
     QUERY_KEYS.stakingPositionBalances(positionId),
-    getStakingPositionBalances(indexerUrl, positionId),
+    positionId
+      ? getStakingPositionBalances(indexerUrl, positionId)
+      : undefinedNoop,
     { enabled: !!positionId },
   )
 }
