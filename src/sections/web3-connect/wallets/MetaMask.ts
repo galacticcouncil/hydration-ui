@@ -1,6 +1,7 @@
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { EIP1193Provider } from "sections/web3-connect/types"
 import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
 import {
@@ -12,6 +13,7 @@ import {
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
 
 type MetamaskInit = {
+  provider?: EIP1193Provider
   onAccountsChanged?: SubscriptionFn
   onChainChanged?: ChainSubscriptionFn
 }
@@ -27,18 +29,20 @@ export class MetaMask implements Wallet {
 
   _extension: Required<MetaMaskLikeProvider> | undefined
   _signer: EthereumSigner | undefined
+  _provider: EIP1193Provider | undefined
 
   onAccountsChanged: SubscriptionFn | undefined
   onChainChanged: ChainSubscriptionFn | undefined
 
   constructor(
-    { onAccountsChanged, onChainChanged }: MetamaskInit = {
+    { provider, onAccountsChanged, onChainChanged }: MetamaskInit = {
       onAccountsChanged: noop,
       onChainChanged: noop,
     },
   ) {
     this.onAccountsChanged = onAccountsChanged
     this.onChainChanged = onChainChanged
+    this._provider = provider
   }
 
   get extension() {
@@ -50,11 +54,12 @@ export class MetaMask implements Wallet {
   }
 
   get installed() {
-    return isMetaMask(window.ethereum) && !isMetaMaskLike(window.ethereum)
+    const provider = this._provider || window.ethereum
+    return isMetaMask(provider) && !isMetaMaskLike(provider)
   }
 
   get rawExtension() {
-    return window.ethereum
+    return this._provider || window.ethereum
   }
 
   transformError = (err: Error): Error => {
