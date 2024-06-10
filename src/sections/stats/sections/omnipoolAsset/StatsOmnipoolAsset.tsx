@@ -104,9 +104,7 @@ const OmnipoolAssetHeader = ({
         {isLoading || !tvl ? (
           <Skeleton width={200} height={isDesktop ? 42 : 18} />
         ) : (
-          <Text fs={[18, 42]} font="GeistMono">
-            {t("value.usd", { amount: tvl })}
-          </Text>
+          <Text fs={[18, 42]}>{t("value.usd", { amount: tvl })}</Text>
         )}
 
         <Text fs={[12, 16]} color="brightBlue300">

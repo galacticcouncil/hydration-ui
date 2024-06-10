@@ -101,7 +101,7 @@ export const FarmDetailsCard = ({
             {asset.symbol}
           </Text>
         </div>
-        <Text fs={19} lh={28} fw={400} font="GeistMono">
+        <Text fs={19} lh={28} fw={400}>
           {apr.data.minApr && apr.data?.apr.gt(0)
             ? t("value.APR.range", { from: apr.data.minApr, to: apr.data?.apr })
             : t("value.APR", { apr: apr.data?.apr })}
