@@ -9,12 +9,8 @@ import { Trans, useTranslation } from "react-i18next"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
-import {
-  getFixedPointAmount,
-  getFloatingPointAmount,
-  scale,
-} from "utils/balance"
-import { useStore } from "state/store"
+import { scale, scaleHuman } from "utils/balance"
+import { ToastMessage, useStore } from "state/store"
 import { useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
@@ -30,6 +26,7 @@ import { Alert } from "components/Alert/Alert"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { TOAST_MESSAGES } from "state/toasts"
 
 type Props = {
   assetId: string
@@ -59,12 +56,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
   const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
 
-  const formAssets = {
-    assetA,
-    assetB,
-  }
-
-  const zodSchema = useXYKZodSchema(formAssets.assetA.id, formAssets.assetB.id)
+  const zodSchema = useXYKZodSchema(assetA.id, assetB.id)
 
   const form = useForm<FromValues>({
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
@@ -76,37 +68,42 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     },
   })
 
-  const spotPrice = useSpotPrice(formAssets.assetA.id, formAssets.assetB.id)
+  const spotPrice = useSpotPrice(assetA.id, assetB.id)
 
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
-    [formAssets.assetA.id, formAssets.assetB.id],
+    [assetA.id, assetB.id],
     pool.poolAddress,
-  )
-
-  const reserves = useMemo(
-    () => ({
-      assetA: assetAReserve,
-      assetB: assetBReserve,
-    }),
-    [assetAReserve, assetBReserve],
   )
 
   const lastUpdated = form.watch("lastUpdated")
   const [assetValueA, assetValueB] = form.watch(["assetA", "assetB"])
 
-  const assetValues = useMemo(
-    () => ({ assetA: assetValueA, assetB: assetValueB }),
-    [assetValueA, assetValueB],
-  )
+  const assetValues = useMemo(() => {
+    return {
+      assetA: {
+        value: assetValueA,
+        meta: assetA,
+        reserves: assetAReserve,
+      },
+      assetB: {
+        value: assetValueB,
+        meta: assetB,
+        reserves: assetBReserve,
+      },
+    }
+  }, [assetA, assetAReserve, assetB, assetBReserve, assetValueA, assetValueB])
 
   const { calculatedShares, calculatedRatio } = useMemo(() => {
     const { totalShare } = pool.shareTokenIssuance ?? {}
 
-    if (totalShare && reserves.assetA && assetValues.assetA) {
+    if (totalShare && assetValues.assetA.reserves && assetValues.assetA) {
       const calculatedShares = BigNumber(
         xyk.calculate_shares(
-          reserves.assetA.balance.toString(),
-          scale(assetValues.assetA, formAssets.assetA.decimals).toFixed(),
+          assetValues.assetA.reserves.balance.toString(),
+          scale(
+            assetValues.assetA.value,
+            assetValues.assetA.meta.decimals,
+          ).toFixed(),
           totalShare.toString(),
         ),
       )
@@ -116,7 +113,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     }
 
     return {}
-  }, [pool, reserves.assetA, assetValues.assetA, formAssets.assetA.decimals])
+  }, [pool, assetValues])
 
   const minAddLiquidityValidation = useMemo(() => {
     const minTradingLimit = BigNumber(xykConsts?.minTradingLimit ?? 0)
@@ -126,12 +123,12 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       return false
 
     const minAssetATradingLimit = scale(
-      assetValues.assetA,
-      formAssets.assetA.decimals,
+      assetValues.assetA.value,
+      assetValues.assetA.meta.decimals,
     ).gt(minTradingLimit)
     const minAssetBTradingLimit = scale(
-      assetValues.assetB,
-      formAssets.assetB.decimals,
+      assetValues.assetB.value,
+      assetValues.assetB.meta.decimals,
     ).gt(minTradingLimit)
 
     const isMinPoolLiquidity = calculatedShares.gt(minPoolLiquidity)
@@ -140,25 +137,43 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       !minAssetATradingLimit || !minAssetBTradingLimit || !isMinPoolLiquidity
 
     return isMinAddLiqudity
-  }, [assetValues, formAssets, xykConsts, calculatedShares])
+  }, [assetValues, xykConsts, calculatedShares])
 
   const onSubmit = async () => {
     const inputData = {
       assetA: {
-        id: formAssets[lastUpdated].id,
+        id: assetValues[lastUpdated].meta.id,
         amount: scale(
-          assetValues[lastUpdated],
-          formAssets[lastUpdated].decimals,
+          assetValues[lastUpdated].value,
+          assetValues[lastUpdated].meta.decimals,
         ),
       },
       assetB: {
-        id: formAssets[opposite(lastUpdated)].id,
+        id: assetValues[opposite(lastUpdated)].meta.id,
         amount: scale(
-          assetValues[opposite(lastUpdated)],
-          formAssets[opposite(lastUpdated)].decimals,
+          assetValues[opposite(lastUpdated)].value,
+          assetValues[opposite(lastUpdated)].meta.decimals,
         ).decimalPlaces(0),
       },
     }
+
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`liquidity.add.modal.xyk.toast.${msType}`}
+          tOptions={{
+            shares: calculatedShares,
+            fixedPointScale: shareTokenMeta.decimals,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
 
     return await createTransaction(
       {
@@ -184,70 +199,27 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         },
         onClose,
         onBack: () => {},
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: shareTokenMeta.decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: shareTokenMeta.decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onError: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: shareTokenMeta.decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast,
       },
     )
   }
 
   const handleChange = useCallback(
     (value: string, name: "assetA" | "assetB") => {
-      const assetDecimals = formAssets[name].decimals
-      const pairAssetDecimals = formAssets[opposite(name)].decimals
+      const assetDecimals = assetValues[name].meta.decimals
+      const pairAssetDecimals = assetValues[opposite(name)].meta.decimals
 
-      const currReserves = reserves[name]
-      const nextReserves = reserves[opposite(name)]
+      const currReserves = assetValues[name].reserves
+      const nextReserves = assetValues[opposite(name)].reserves
 
       if (currReserves && nextReserves) {
-        const pairTokenValue = getFloatingPointAmount(
+        const pairTokenValue = scaleHuman(
           xyk.calculate_liquidity_in(
             currReserves.balance.toFixed(),
             nextReserves.balance.toFixed(),
-            getFixedPointAmount(
-              new BigNumber(value),
-              assetDecimals.toString(),
-            ).toFixed(),
+            scale(value, assetDecimals).toFixed(),
           ),
-          pairAssetDecimals.toString(),
+          pairAssetDecimals,
         ).toString()
 
         form.setValue(name, value, { shouldValidate: true, shouldTouch: true })
@@ -258,7 +230,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         form.setValue("lastUpdated", name)
       }
     },
-    [formAssets, reserves, form],
+    [assetValues, form],
   )
 
   return (
@@ -287,10 +259,10 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           )}
         />
         <TokensConversion
-          firstValue={{ amount: BN_1, symbol: formAssets.assetA.symbol }}
+          firstValue={{ amount: BN_1, symbol: assetValues.assetA.meta.symbol }}
           secondValue={{
             amount: spotPrice.data?.spotPrice ?? BN_0,
-            symbol: formAssets.assetB.symbol,
+            symbol: assetValues.assetB.meta.symbol,
           }}
         />
         <Controller
