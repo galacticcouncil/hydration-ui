@@ -38,7 +38,10 @@ export const useZodSchema = (
         .times(oraclePrice.data?.price?.n ?? 1)
         .div(oraclePrice.data?.price?.d ?? 1)
 
-      return valueInHub.gte(minDeposit)
+      return (
+        valueInHub.gte(minDeposit) &&
+        scale(value, meta.decimals).gte(minDeposit)
+      )
     },
     t("farms.modal.join.minDeposit", {
       value: scaleHuman(
