@@ -74,7 +74,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
 
       try {
         const apiPool = SubstrateApis.getInstance()
-        const api = await apiPool.api(value.address)
+        const api = await apiPool.api(value.address, 3)
 
         const relay = await api.query.parachainSystem.validationData()
         const relayParentNumber = relay.unwrap().relayParentNumber
