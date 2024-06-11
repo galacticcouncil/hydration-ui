@@ -66,6 +66,10 @@ const subwalletEvm: Wallet = new SubWalletEvm({
   ),
 })
 
+const metaMask: Wallet = new MetaMask({
+  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
+})
+
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
@@ -84,8 +88,9 @@ const walletConnect: Wallet = new WalletConnect({
 
 const externalWallet: Wallet = new ExternalWallet()
 
-export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
+export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
+  metaMask,
   talismanEvm,
   subwalletEvm,
   subwallet,
@@ -122,9 +127,16 @@ export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
       ),
     })
 
-    SUPPORTED_WALLET_PROVIDERS.push({
-      wallet: metaMask,
-      type: normalizeProviderType(metaMask),
-    })
+    const type = normalizeProviderType(metaMask)
+
+    SUPPORTED_WALLET_PROVIDERS = [
+      ...SUPPORTED_WALLET_PROVIDERS.filter(
+        (provider) => provider.type !== type,
+      ),
+      {
+        wallet: metaMask,
+        type,
+      },
+    ]
   }
 }
