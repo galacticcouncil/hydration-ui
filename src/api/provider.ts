@@ -8,8 +8,7 @@ import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
-import { ApiOptions } from "@polkadot/api/types"
-import { WsProvider } from "@polkadot/api"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -148,6 +147,7 @@ export const useActiveRpcUrlList = () => {
 
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
+  const { setRpcUrl } = useProviderRpcUrlStore()
   const displayAsset = useDisplayAssetStore()
 
   return useQuery(
@@ -213,6 +213,12 @@ export const useProviderData = () => {
     {
       refetchOnWindowFocus: false,
       retry: false,
+      onSettled: (data) => {
+        if (data?.api) {
+          const provider = getProviderInstance(data.api)
+          setRpcUrl(provider.endpoint)
+        }
+      },
     },
   )
 }
@@ -242,10 +248,8 @@ export const useActiveProvider = (): ProviderProps => {
   const activeRpcUrl = useMemo(() => {
     let rpcUrl = import.meta.env.VITE_PROVIDER_URL
     try {
-      // @ts-ignore
-      const options = data?.api?._options as ApiOptions
-      const provider = options?.provider as WsProvider
-      if (provider.endpoint) {
+      const provider = data?.api ? getProviderInstance(data.api) : null
+      if (provider?.endpoint) {
         rpcUrl = provider.endpoint
       }
     } catch (e) {}
@@ -263,4 +267,10 @@ export const useActiveProvider = (): ProviderProps => {
         import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet",
     }
   )
+}
+
+export function getProviderInstance(api: ApiPromise) {
+  // @ts-ignore
+  const options = api?._options
+  return options?.provider as WsProvider
 }

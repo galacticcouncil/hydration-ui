@@ -160,6 +160,7 @@ const ProviderSelectItemExternal = ({
   url: string
   className?: string
 }) => {
+  const [disconnected, setDisconnected] = useState(false)
   const [bestNumberState, setBestNumberState] = useState<
     { parachainBlockNumber: u32; timestamp: u64 } | undefined
   >(undefined)
@@ -172,6 +173,11 @@ const ProviderSelectItemExternal = ({
 
     provider.on("error", () => {
       cancelInactive = () => provider.disconnect()
+    })
+
+    provider.on("disconnected", () => {
+      provider.disconnect()
+      setDisconnected(true)
     })
 
     provider.on("connected", load)
@@ -206,6 +212,15 @@ const ProviderSelectItemExternal = ({
       cancelInactive?.()
     }
   }, [url])
+
+  if (disconnected) {
+    return (
+      <span
+        sx={{ width: 7, height: 7, display: "block" }}
+        css={{ background: "#FF4B4B" }}
+      />
+    )
+  }
 
   return (
     <>

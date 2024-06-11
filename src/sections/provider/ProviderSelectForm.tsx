@@ -50,7 +50,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     if (isLoading) {
       setTimeoutedRpc(rpcUrl)
     }
-  }, 10000)
+  }, 5000)
 
   useEffect(() => {
     return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
