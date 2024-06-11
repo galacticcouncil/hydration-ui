@@ -26,7 +26,7 @@ export function ProviderSelectModal(props: {
         open={props.open}
         onClose={props.onClose}
         title={t("rpc.change.modal.title")}
-        headerVariant="FontOver"
+        headerVariant="GeistMono"
       >
         <SSwitchContainer
           sx={{
