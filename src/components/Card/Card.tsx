@@ -36,7 +36,7 @@ export const Card: FC<Props> = ({
               icon={icon}
             />
           )}
-          <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
+          <Text fs={15} color="white" font="GeistMono" tTransform="uppercase">
             {title}
           </Text>
         </SHeader>

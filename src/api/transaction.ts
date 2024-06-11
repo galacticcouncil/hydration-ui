@@ -39,7 +39,7 @@ export function useNextNonce(account: Maybe<AccountId32 | string>) {
 }
 
 export function getSubscanLink(blockNumber: string, txIndex: string) {
-  return `https://hydradx.subscan.io/extrinsic/${[blockNumber, txIndex].join(
+  return `https://hydration.subscan.io/extrinsic/${[blockNumber, txIndex].join(
     "-",
   )}`
 }

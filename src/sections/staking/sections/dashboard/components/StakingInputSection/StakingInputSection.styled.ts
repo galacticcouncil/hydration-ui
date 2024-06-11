@@ -9,9 +9,9 @@ export const SStakeTab = styled.div<{ active: boolean }>`
   border-radius: ${theme.borderRadius.medium}px ${theme.borderRadius.medium}px 0
     0;
 
-  font-family: FontOver;
+  font-family: GeistMono;
   font-size: 15px;
-  text-transform: uppercase;
+  text-transform: capitalize;
   text-align: center;
 
   cursor: pointer;
@@ -67,6 +67,7 @@ export const SStakeTab = styled.div<{ active: boolean }>`
 
 export const SSectionContainer = styled(SContainer)`
   background: ${theme.colors.darkBlue700};
+  gap: 0px;
 
   :before {
     background: linear-gradient(

@@ -148,7 +148,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
             fs={headingFs}
             lh={headingFs}
             sx={{ mt: 3 }}
-            font="ChakraPetchSemiBold"
+            font="GeistSemiBold"
           >
             {symbol}
           </Text>

@@ -90,7 +90,6 @@ export const ProviderItem = ({
         }}
       >
         <Text
-          font="ChakraPetch"
           fs={14}
           fw={500}
           tAlign="right"

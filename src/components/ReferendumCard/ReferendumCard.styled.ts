@@ -99,7 +99,7 @@ export const SVotedBage = styled.div`
   text-transform: uppercase;
   font-size: 13px;
   line-height: normal;
-  font-family: ChakraPetchSemiBold;
+  font-family: GeistSemiBold;
 
   border-radius: 2px;
 

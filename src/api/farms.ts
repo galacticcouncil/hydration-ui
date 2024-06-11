@@ -20,6 +20,8 @@ import request, { gql } from "graphql-request"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMemo } from "react"
 import { scale } from "utils/balance"
+import { getAccountResolver } from "utils/farms/claiming/accountResolver"
+import { useAccountBalances, useAccountsBalances } from "./accountBalances"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -34,6 +36,7 @@ type FarmAprs = ReturnType<typeof useFarmAprs>
 export interface Farm {
   globalFarm: PalletLiquidityMiningGlobalFarmData
   yieldFarm: PalletLiquidityMiningYieldFarmData
+  globalFarmPotAddress: string
   poolId: string
 }
 
@@ -161,6 +164,7 @@ const getGlobalFarm =
   }
 
 export const useFarms = (poolIds: Array<string>) => {
+  const { api } = useRpcProvider()
   const activeYieldFarmsQuery = useActiveYieldFarms(poolIds)
 
   const farmIds = activeYieldFarmsQuery
@@ -169,6 +173,15 @@ export const useFarms = (poolIds: Array<string>) => {
       return acc
     }, [])
     .flat(2)
+
+  const accountResolver = getAccountResolver(api.registry)
+  const globalFarmPotAddresses = farmIds?.map((farm) => {
+    const potAddresss = accountResolver(Number(farm.globalFarmId)).toString()
+    return {
+      globalFarmId: farm.globalFarmId.toString(),
+      potAddresss,
+    }
+  })
 
   const globalFarms = useGlobalFarms(farmIds)
   const yieldFarms = useYieldFarms(farmIds)
@@ -191,6 +204,10 @@ export const useFarms = (poolIds: Array<string>) => {
           )
         })?.data?.farm
 
+        const globalFarmPotAddress = globalFarmPotAddresses.find(
+          (farm) => farm.globalFarmId === globalFarm?.id.toString(),
+        )?.potAddresss
+
         const yieldFarm = yieldFarms.find((yieldFarm) => {
           const data = yieldFarm.data
 
@@ -202,10 +219,15 @@ export const useFarms = (poolIds: Array<string>) => {
 
         if (!globalFarm || !yieldFarm) return undefined
 
-        return { globalFarm, yieldFarm, poolId: farmId.poolId }
+        return {
+          globalFarm,
+          yieldFarm,
+          globalFarmPotAddress,
+          poolId: farmId.poolId,
+        }
       })
       .filter((x): x is Farm => x != null)
-  }, [farmIds, globalFarms, yieldFarms])
+  }, [farmIds, globalFarms, yieldFarms, globalFarmPotAddresses])
 
   return { data, isLoading }
 }
@@ -247,6 +269,7 @@ function getFarmApr(
   },
   farm: Farm,
   priceAdjustment: BigNumber,
+  potBalance?: BigNumber,
 ) {
   const { globalFarm, yieldFarm } = farm
   const { rewardCurrency, incentivizedAsset } = globalFarm
@@ -330,11 +353,16 @@ function getFarmApr(
 
   const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
 
+  const potMaxRewards = potBalance
+    ? distributedRewards.plus(potBalance)
+    : undefined
+
   return {
     apr,
     minApr,
     distributedRewards,
     maxRewards,
+    potMaxRewards,
     fullness,
     estimatedEndBlock: estimatedEndBlock,
     assetId: globalFarm.rewardCurrency,
@@ -347,43 +375,48 @@ function getFarmApr(
   }
 }
 
-export const useFarmApr = (farm: {
-  globalFarm: PalletLiquidityMiningGlobalFarmData
-  yieldFarm: PalletLiquidityMiningYieldFarmData
-  poolId: string
-}) => {
+export const useFarmApr = (farm: Farm) => {
+  const { assets } = useRpcProvider()
   const bestNumber = useBestNumber()
   const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
   const incentivizedAsset = farm.globalFarm.incentivizedAsset.toString()
 
+  const accountBalance = useAccountBalances(farm.globalFarmPotAddress)
   const oraclePrice = useOraclePrice(rewardCurrency, incentivizedAsset)
 
   return useQueryReduce(
     [bestNumber, oraclePrice] as const,
     (bestNumber, oraclePrice) => {
+      const rewardCurrency = farm.globalFarm.rewardCurrency.toString()
+      const potBalance =
+        rewardCurrency === assets.native.id
+          ? accountBalance.data?.native.freeBalance
+          : accountBalance.data?.balances.find(
+              (balance) => balance.id.toString() === rewardCurrency,
+            )?.freeBalance
+
       return getFarmApr(
         bestNumber,
         farm,
         oraclePrice?.oraclePrice ??
           farm.globalFarm.priceAdjustment.toBigNumber(),
+        potBalance,
       )
     },
   )
 }
 
-export const useFarmAprs = (
-  farms: {
-    globalFarm: PalletLiquidityMiningGlobalFarmData
-    yieldFarm: PalletLiquidityMiningYieldFarmData
-    poolId: string
-  }[],
-) => {
+export const useFarmAprs = (farms: Farm[]) => {
+  const { assets } = useRpcProvider()
   const bestNumber = useBestNumber()
   const ids = farms.map((farm) => ({
     rewardCurrency: farm.globalFarm.rewardCurrency.toString(),
     incentivizedAsset: farm.globalFarm.incentivizedAsset.toString(),
   }))
   const oraclePrices = useOraclePrices(ids)
+  const accountsBalances = useAccountsBalances(
+    farms.map((farm) => farm.globalFarmPotAddress),
+  )
 
   return useQueryReduce([bestNumber] as const, (bestNumber) => {
     return farms.map((farm) => {
@@ -394,11 +427,24 @@ export const useFarmAprs = (
           oraclePrice.data?.id.incentivizedAsset === incentivizedAsset &&
           oraclePrice.data?.id.rewardCurrency === rewardCurrency,
       )
+      const accountBalance = accountsBalances.data?.find(
+        (balance) => balance.accountId.toString() === farm.globalFarmPotAddress,
+      )
+
+      const potBalance = accountBalance
+        ? rewardCurrency === assets.native.id
+          ? accountBalance.native.freeBalance
+          : accountBalance.balances.find(
+              (balance) => balance.id.toString() === rewardCurrency,
+            )?.freeBalance
+        : undefined
+
       return getFarmApr(
         bestNumber,
         farm,
         oraclePrice?.data?.oraclePrice ??
           farm.globalFarm.priceAdjustment.toBigNumber(),
+        potBalance,
       )
     })
   })

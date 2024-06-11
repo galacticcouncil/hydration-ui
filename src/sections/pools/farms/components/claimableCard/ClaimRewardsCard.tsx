@@ -98,7 +98,6 @@ export const ClaimRewardsCard = (props: {
           {claimableAssets.map((claimableAsset) => (
             <Fragment key={claimableAsset.symbol}>
               <Text
-                font="FontOver"
                 sx={{ mb: 4, fontSize: [26, 19] }}
                 css={{ wordBreak: "break-all" }}
               >

@@ -27,13 +27,13 @@ export const RecentTradesTable = ({ data }: Props) => {
   const table = useRecentTradesTable(data)
 
   const onRowSelect = (hash: string) => {
-    window.open(`https://hydradx.subscan.io/extrinsic/${hash}`, "_blank")
+    window.open(`https://hydration.subscan.io/extrinsic/${hash}`, "_blank")
   }
 
   return (
     <StatsTableContainer>
       <StatsTableTitle>
-        <Text fs={[15, 19]} lh={20} color="white" font="FontOver">
+        <Text fs={[15, 19]} lh={20} color="white" font="GeistMono">
           {t("stats.overview.table.trades.header.title")}
         </Text>
       </StatsTableTitle>

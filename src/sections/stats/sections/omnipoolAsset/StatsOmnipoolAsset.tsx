@@ -89,7 +89,7 @@ const OmnipoolAssetHeader = ({
             </>
           ) : (
             <>
-              <Text fs={[15, 28]} font="FontOver" color="white">
+              <Text fs={[15, 28]} font="GeistMono" color="white">
                 {asset.symbol}
               </Text>
               <Text fs={[12, 13]} tTransform="uppercase" color="white">
@@ -104,9 +104,7 @@ const OmnipoolAssetHeader = ({
         {isLoading || !tvl ? (
           <Skeleton width={200} height={isDesktop ? 42 : 18} />
         ) : (
-          <Text fs={[18, 42]} font="FontOver">
-            {t("value.usd", { amount: tvl })}
-          </Text>
+          <Text fs={[18, 42]}>{t("value.usd", { amount: tvl })}</Text>
         )}
 
         <Text fs={[12, 16]} color="brightBlue300">

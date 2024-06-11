@@ -115,7 +115,7 @@ export const useLiquidityProvidersTable = (
         cell: ({ row }) => (
           <div sx={{ pl: [5, 0] }}>
             <a
-              href={`https://hydradx.subscan.io/account/${row.original.account}`}
+              href={`https://hydration.subscan.io/account/${row.original.account}`}
               target="blank"
               rel="noreferrer"
             >

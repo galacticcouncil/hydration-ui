@@ -97,11 +97,11 @@ export const FarmDetailsCard = ({
       >
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
           <Icon size={24} icon={<AssetLogo id={asset.id} />} />
-          <Text fs={[18, 16]} font="ChakraPetchBold">
+          <Text fs={[18, 16]} font="GeistMedium">
             {asset.symbol}
           </Text>
         </div>
-        <Text fs={19} lh={28} fw={400} font="FontOver">
+        <Text fs={19} lh={28} fw={400}>
           {apr.data.minApr && apr.data?.apr.gt(0)
             ? t("value.APR.range", { from: apr.data.minApr, to: apr.data?.apr })
             : t("value.APR", { apr: apr.data?.apr })}
@@ -124,7 +124,7 @@ export const FarmDetailsCard = ({
                   apr.data.distributedRewards,
                   asset.decimals,
                 ),
-                max: scaleHuman(apr.data.maxRewards, asset.decimals),
+                max: scaleHuman(apr.data.potMaxRewards, asset.decimals),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -149,7 +149,7 @@ export const FarmDetailsCard = ({
               <GradientText
                 fs={14}
                 tAlign="right"
-                font="ChakraPetchBold"
+                font="GeistMedium"
                 gradient="pinkLightBlue"
                 sx={{ width: "fit-content" }}
                 css={{ justifySelf: "end" }}
@@ -164,11 +164,7 @@ export const FarmDetailsCard = ({
               <Text fs={14} lh={18}>
                 {t("farms.details.card.currentApr.label")}
               </Text>
-              <GradientText
-                fs={14}
-                font="ChakraPetchBold"
-                gradient="pinkLightBlue"
-              >
+              <GradientText fs={14} font="GeistMedium" gradient="pinkLightBlue">
                 {t("value.APR", { apr: currentApr })}
               </GradientText>
             </div>

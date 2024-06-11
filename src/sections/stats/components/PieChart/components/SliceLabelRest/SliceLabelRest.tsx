@@ -36,7 +36,7 @@ export const SliceLabelRest = ({
           fs={14}
           color="basic100"
           tTransform="uppercase"
-          font="ChakraPetchBold"
+          font="GeistMedium"
         >
           {t("stats.overview.pie.rest.header.assets")}
         </Text>

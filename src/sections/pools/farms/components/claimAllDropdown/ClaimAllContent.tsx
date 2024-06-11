@@ -68,7 +68,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
           {claimable.isLoading && <Skeleton height={25} width={150} />}
           {claimableAssets.map((claimableAsset, index) => (
             <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
-              <Text fs={19} lh={19} font="FontOver" sx={{ mb: 8 }}>
+              <Text fs={19} lh={19} sx={{ mb: 8 }}>
                 {t("value.tokenWithSymbol", {
                   value: claimableAsset.value,
                   fixedPointScale: claimableAsset.decimals.toString(),

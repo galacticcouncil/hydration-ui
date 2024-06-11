@@ -50,7 +50,7 @@ export const ReferrerInfo = ({
           referrerInfo.isLoading ? (
             <Skeleton width={140} height={40} />
           ) : (
-            <Text font="FontOver" fs={19}>
+            <Text font="GeistMono" fs={19}>
               {referrerInfo.data?.tier ?? "-"}
             </Text>
           )
@@ -63,7 +63,7 @@ export const ReferrerInfo = ({
           referrerInfo.isLoading ? (
             <Skeleton width={140} height={40} />
           ) : (
-            <Text font="FontOver" fs={19}>
+            <Text font="GeistMono" fs={19}>
               {referrerInfo.data && referrerInfo.data.tier !== undefined
                 ? t("value.percentage", {
                     value: referralRewards[referrerInfo.data.tier]?.user,

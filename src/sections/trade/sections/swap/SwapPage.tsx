@@ -15,6 +15,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useRemount } from "hooks/useRemount"
+import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
@@ -53,7 +54,7 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
@@ -146,6 +147,7 @@ export function SwapPage() {
         onNewAssetClick={() => setAddToken(true)}
         isTestnet={activeProvider.dataEnv === "testnet"}
       />
+      {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {addToken && (
         <AddTokenModal
           css={{ zIndex: 9999 }}

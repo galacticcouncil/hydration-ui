@@ -8,19 +8,15 @@ import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrap
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
-import { PageHeading } from "components/Layout/PageHeading"
 import { Spacer } from "components/Spacer/Spacer"
 import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
-import { useTranslation } from "react-i18next"
 
 export const StatsOverview = () => {
-  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const omnipoolOverview = useOmnipoolAssetDetails("tvl")
 
   return (
     <>
-      <PageHeading>{t("stats.title")}</PageHeading>
       <Spacer size={[20, 30]} />
       <StatsTabs />
       <Spacer size={30} />

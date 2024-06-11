@@ -172,7 +172,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       cell: ({ row }) => (
         <div sx={{ pl: [5, 0] }}>
           <a
-            href={`https://hydradx.subscan.io/extrinsic/${row.original.extrinsicHash}`}
+            href={`https://hydration.subscan.io/extrinsic/${row.original.extrinsicHash}`}
             target="blank"
             rel="noreferrer"
           >
