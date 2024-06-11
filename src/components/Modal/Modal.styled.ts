@@ -58,7 +58,7 @@ export const SContainer = styled(Content)`
   --modal-header-padding-x: 12px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
-    var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
+    var(--modal-header-btn-size) + var(--modal-header-padding-y) * 1.5
   );
 
   --modal-content-padding: 12px;
