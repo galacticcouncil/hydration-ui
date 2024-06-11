@@ -127,7 +127,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     }
 
     return prevAcc
-  }, Promise.resolve([]))
+  }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
 
   return {
     stake: positionData.stake.toBigNumber() as BN,
