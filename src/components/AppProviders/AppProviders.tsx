@@ -11,9 +11,9 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 
-const AppsPersistenceProvider = createComponent({
-  tagName: "gc-database-provider",
-  elementClass: Apps.DatabaseProvider,
+const AppsContextProvider = createComponent({
+  tagName: "gc-context-provider",
+  elementClass: Apps.ContextProvider,
   react: React,
 })
 
@@ -29,7 +29,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
                 highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
                 borderRadius={4}
               >
-                <AppsPersistenceProvider>{children}</AppsPersistenceProvider>
+                <AppsContextProvider>{children}</AppsContextProvider>
                 <Transactions />
               </SkeletonTheme>
             </ToastProvider>
