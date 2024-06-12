@@ -285,7 +285,7 @@
   "liquidity.reviewTransaction.modal.title": "Review transaction details",
   "liquidity.reviewTransaction.modal.desc": "Please review your transaction",
   "liquidity.reviewTransaction.modal.detail.cost": "Transaction cost:",
-  "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction lifetime:",
+  "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction expiration:",
   "liquidity.reviewTransaction.modal.detail.lifetime.tooltip": "If the transaction is not included by this time, it will be cancelled.",
   "liquidity.reviewTransaction.modal.detail.nonce": "Nonce:",
   "liquidity.reviewTransaction.modal.detail.tip":"Tip the block author:",
