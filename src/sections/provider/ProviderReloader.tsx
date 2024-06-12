@@ -1,13 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
-import { Fragment, useEffect, useState } from "react"
+import { Fragment, PropsWithChildren, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
-export const ProviderReloader: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => {
+export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()
   const rpcVersion = useRemount(rpcUrlList)
   const prevRpcVersion = usePrevious(rpcVersion)
