@@ -2,7 +2,7 @@ import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import {
   importToLocalStorage,
@@ -12,51 +12,54 @@ import MigrationLogo from "assets/icons/migration/MigrationLogo.svg?react"
 
 export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
   const { t } = useTranslation()
-  const [lastImportDate, setLastImportDate] = useState<Date | null>(null)
-  const [isAutoImporting, setIsAutoImporting] = useState(false)
   const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
 
+  const lastImportDateRef = useRef(
+    migrationCompleted && migrationCompleted !== "0"
+      ? new Date(migrationCompleted)
+      : null,
+  )
+
+  const lastImportDate = lastImportDateRef.current
+
   const reloadAppWithTimestamp = useCallback(
-    (date: string) => {
-      setMigrationCompleted(date)
+    (date?: string) => {
+      setMigrationCompleted(date ?? "0")
       window.location.href = window.location.origin
     },
     [setMigrationCompleted],
   )
 
-  useEffect(() => {
-    const migrationCompletedOn =
-      migrationCompleted && migrationCompleted !== "0"
-        ? new Date(migrationCompleted)
-        : null
-
-    if (migrationCompletedOn && !!data) {
-      setLastImportDate(new Date(migrationCompletedOn))
-      return
-    } else if (!!data) {
-      setIsAutoImporting(true)
-      importToLocalStorage(data)
-    }
-
-    reloadAppWithTimestamp(data ? new Date().toISOString() : "0")
-  }, [data, migrationCompleted, reloadAppWithTimestamp])
-
-  if (!lastImportDate || isAutoImporting) {
-    return null
-  }
+  const importAndReload = useCallback(
+    (data: string) => {
+      try {
+        importToLocalStorage(data)
+        reloadAppWithTimestamp(new Date().toISOString())
+      } catch (err) {
+        reloadAppWithTimestamp()
+      }
+    },
+    [reloadAppWithTimestamp],
+  )
 
   return (
     <Modal open headerVariant="GeistMono">
       <MigrationLogo sx={{ mx: "auto" }} />
       <Text tAlign="center" font="GeistMono" fs={19} sx={{ mt: 12 }}>
-        {t("migration.import.title")}
+        {lastImportDate
+          ? t("migration.import.overwrite.title")
+          : t("migration.import.confirm.title")}
       </Text>
       <Text
         tAlign="center"
         sx={{ mt: 12, maxWidth: 500, mx: "auto" }}
         color="basic400"
       >
-        {t("migration.import.description", { date: lastImportDate })}
+        {lastImportDate
+          ? t("migration.import.overwrite.description", {
+              date: lastImportDate,
+            })
+          : t("migration.import.confirm.description")}
       </Text>
       <Separator
         sx={{ mx: [-20, -32], mt: ["auto", 50], mb: [12, 30], width: "auto" }}
@@ -65,20 +68,21 @@ export const MigrationImportModal: FC<{ data?: string }> = ({ data }) => {
       <div sx={{ flex: "row", justify: "space-between" }}>
         <Button
           onClick={() => {
-            window.location.href = window.location.origin
+            reloadAppWithTimestamp()
           }}
         >
           {t("close")}
         </Button>
         {data && (
           <Button
-            variant="mutedError"
+            variant={lastImportDate ? "mutedError" : "primary"}
             onClick={() => {
-              importToLocalStorage(data)
-              reloadAppWithTimestamp(new Date().toISOString())
+              importAndReload(data)
             }}
           >
-            {t("migration.import.button")}
+            {lastImportDate
+              ? t("migration.import.overwrite.button")
+              : t("migration.import.confirm.button")}
           </Button>
         )}
       </div>

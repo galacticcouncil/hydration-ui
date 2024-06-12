@@ -21,6 +21,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BN_0 } from "utils/constants"
 
 export const AvailableRewards = () => {
   const { api, assets } = useRpcProvider()
@@ -95,12 +96,11 @@ export const AvailableRewards = () => {
                 <Text
                   fs={19}
                   color="white"
-                  font="GeistMono"
                   tTransform="uppercase"
                   css={{ whiteSpace: "nowrap" }}
                 >
                   {t("value.tokenWithSymbol", {
-                    value: reward.data.maxRewards,
+                    value: reward.data.maxRewards ?? BN_0,
                     symbol: "HDX",
                     decimalPlaces: 2,
                   })}
@@ -111,9 +111,11 @@ export const AvailableRewards = () => {
                   tAlign="right"
                 >
                   <DisplayValue
-                    value={reward.data.maxRewards?.multipliedBy(
-                      spotPrice.data?.spotPrice ?? 1,
-                    )}
+                    value={
+                      reward.data.maxRewards?.multipliedBy(
+                        spotPrice.data?.spotPrice ?? 1,
+                      ) ?? BN_0
+                    }
                   />
                 </Text>
               </div>
@@ -138,7 +140,6 @@ export const AvailableRewards = () => {
               <Text
                 fs={19}
                 color="white"
-                font="GeistMono"
                 tTransform="uppercase"
                 css={{ whiteSpace: "nowrap" }}
               >
@@ -174,7 +175,6 @@ export const AvailableRewards = () => {
               <Text
                 fs={19}
                 color="white"
-                font="GeistMono"
                 tTransform="uppercase"
                 css={{ whiteSpace: "nowrap" }}
               >

@@ -18,7 +18,6 @@ import { useRemount } from "hooks/useRemount"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
-import { useRegisteredExternalTokens } from "sections/wallet/addToken/AddToken.utils"
 
 const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
@@ -61,9 +60,9 @@ export function SwapPage() {
   const { stableCoinId } = useDisplayAssetStore()
   const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
-  const registeredExternalTokens = useRegisteredExternalTokens()
+
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm, registeredExternalTokens.length])
+  const version = useRemount([isEvm])
 
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 

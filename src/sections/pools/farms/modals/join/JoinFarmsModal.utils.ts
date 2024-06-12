@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next"
 export const useZodSchema = (
   id: string,
   farms: Farm[],
-  isRedeposit: boolean,
+  withoutMaxBalance: boolean,
 ) => {
   const { t } = useTranslation()
   const { account } = useAccount()
@@ -38,15 +38,24 @@ export const useZodSchema = (
         .times(oraclePrice.data?.price?.n ?? 1)
         .div(oraclePrice.data?.price?.d ?? 1)
 
-      return valueInHub.gte(minDeposit)
+      return (
+        valueInHub.gte(minDeposit) &&
+        scale(value, meta.decimals).gte(minDeposit)
+      )
     },
     t("farms.modal.join.minDeposit", {
-      value: scaleHuman(minDeposit, meta.decimals),
+      value: scaleHuman(
+        minDeposit
+          .times(oraclePrice.data?.price?.d ?? 1)
+          .div(oraclePrice.data?.price?.n ?? 1),
+
+        meta.decimals,
+      ),
     }),
   )
 
   return z.object({
-    amount: isRedeposit
+    amount: withoutMaxBalance
       ? rule
       : rule.pipe(maxBalance(balance?.balance ?? BN_0, meta.decimals)),
   })

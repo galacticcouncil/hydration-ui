@@ -53,7 +53,11 @@ export const JoinFarmModal = ({
   const meta = assets.getAsset(poolId.toString())
   const bestNumber = useBestNumber()
 
-  const zodSchema = useZodSchema(meta.id, farms, !!isRedeposit)
+  const zodSchema = useZodSchema(
+    meta.id,
+    farms,
+    !!isRedeposit || !!initialShares,
+  )
 
   const form = useForm<{ amount: string }>({
     mode: "onChange",
