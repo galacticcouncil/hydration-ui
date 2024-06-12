@@ -17,9 +17,18 @@ export default defineConfig(({ mode }) => {
       outDir: "build",
       rollupOptions: {
         output: {
+          experimentalMinChunkSize: 200_000,
           manualChunks(id) {
             if (id.includes("src/assets")) {
               return "assets"
+            }
+
+            if (id.includes("viem")) {
+              return "viem"
+            }
+
+            if (id.includes("@radix")) {
+              return "@radix"
             }
           },
         },
