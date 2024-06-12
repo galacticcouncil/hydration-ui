@@ -12,6 +12,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ReviewTransactionAuthorTip } from "sections/transaction/ReviewTransactionAuthorTip"
 import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 import { Transaction } from "state/store"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -116,13 +118,22 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
           {
             label: t("liquidity.reviewTransaction.modal.detail.lifetime"),
             content: (
-              <Text fs={14}>
+              <Text fs={14} sx={{ flex: "row", gap: 4, align: "center" }}>
                 {era?.isLoading ? (
                   <Skeleton width={100} height={16} />
                 ) : era?.deathDate ? (
-                  t("transaction.mortal.expire", {
-                    date: era.deathDate,
-                  })
+                  <>
+                    {t("transaction.mortal.expire", {
+                      date: era.deathDate,
+                    })}
+                    <InfoTooltip
+                      text={t(
+                        "liquidity.reviewTransaction.modal.detail.lifetime.tooltip",
+                      )}
+                    >
+                      <SInfoIcon />
+                    </InfoTooltip>
+                  </>
                 ) : (
                   t("transaction.immortal.expire")
                 )}
