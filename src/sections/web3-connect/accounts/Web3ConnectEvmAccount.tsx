@@ -9,7 +9,7 @@ import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAc
 import { SAccountItem } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { isMetaMask, isTalisman, requestAccounts } from "utils/metamask"
+import { isMetaMask, isMetaMaskLike, requestAccounts } from "utils/metamask"
 
 export const Web3ConnectEvmAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
@@ -22,9 +22,9 @@ export const Web3ConnectEvmAccount: FC<
   const isActive = currentAccount?.address === account.address
 
   // Allow account changing for MetaMask wallets,
-  // but disable for Talisman as it doesn't provide a way to open the account selection programmatically
+  // but disable for MetaMask-like as it doesn't provide a way to open the account selection programmatically
   const shouldAllowAccountChange =
-    isMetaMask(wallet?.extension) && !isTalisman(wallet?.extension)
+    isMetaMask(wallet?.extension) && !isMetaMaskLike(wallet?.extension)
 
   return (
     <>
@@ -44,7 +44,7 @@ export const Web3ConnectEvmAccount: FC<
             mb: 12,
           }}
         >
-          <Text font="ChakraPetchBold">{account.name}</Text>
+          <Text font="GeistMedium">{account.name}</Text>
           <div sx={{ flex: "row", align: "end", gap: 2, height: 20 }}>
             <Text color="basic200" fw={400}>
               <DisplayValue value={balance} />

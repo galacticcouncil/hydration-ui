@@ -8,19 +8,15 @@ import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrap
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
-import { PageHeading } from "components/Layout/PageHeading"
 import { Spacer } from "components/Spacer/Spacer"
 import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
-import { useTranslation } from "react-i18next"
 
 export const StatsOverview = () => {
-  const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const omnipoolOverview = useOmnipoolAssetDetails("tvl")
 
   return (
     <>
-      <PageHeading>{t("stats.title")}</PageHeading>
       <Spacer size={[20, 30]} />
       <StatsTabs />
       <Spacer size={30} />
@@ -29,13 +25,19 @@ export const StatsOverview = () => {
           <PieWrapper
             data={[...omnipoolOverview.data].reverse()}
             isLoading={omnipoolOverview.isLoading}
+            sx={{
+              p: [20, 40],
+              width: ["100%", 420],
+              minWidth: 0,
+            }}
           />
           {isDesktop && (
             <SContainerVertical
               sx={{
                 p: 24,
                 justify: "space-between",
-                flexGrow: 3,
+                flexGrow: 1,
+                minWidth: 0,
                 gap: 20,
               }}
             >

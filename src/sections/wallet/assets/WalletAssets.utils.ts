@@ -4,7 +4,7 @@ import BN from "bignumber.js"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEffect, useMemo } from "react"
-import { useAllUserDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
@@ -55,30 +55,11 @@ export const useWalletAssetsTotals = ({
   const { account } = useAccount()
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
-  const farmsPositions = useAllUserDepositShare({ address })
+  const farmsTotal = useFarmDepositsTotal(address)
 
   const shareTokenIds = shareTokens.map((shareToken) => shareToken.id)
   const shareTokenBalances = useTokensBalances(shareTokenIds, account?.address)
   const spotPrices = useDisplayShareTokenPrice(shareTokenIds)
-
-  const { warnings, setWarnings } = useWarningsStore()
-
-  const isHdxPosition = lpPositions.data.some(
-    (position) => position.assetId === NATIVE_ASSET_ID,
-  )
-
-  useEffect(() => {
-    if (lpPositions.data.length) {
-      if (isHdxPosition && warnings.hdxLiquidity.visible == null) {
-        setWarnings("hdxLiquidity", true)
-      }
-    }
-  }, [
-    warnings.hdxLiquidity.visible,
-    setWarnings,
-    lpPositions.data.length,
-    isHdxPosition,
-  ])
 
   const assetsTotal = useMemo(() => {
     if (!assets.data) return BN_0
@@ -90,17 +71,6 @@ export const useWalletAssetsTotals = ({
       return acc
     }, BN_0)
   }, [assets])
-
-  const farmsTotal = useMemo(() => {
-    let calculatedShares = BN_0
-    for (const poolId in farmsPositions.data) {
-      const poolTotal = farmsPositions.data[poolId].reduce((memo, share) => {
-        return memo.plus(share.valueDisplay)
-      }, BN_0)
-      calculatedShares = calculatedShares.plus(poolTotal)
-    }
-    return calculatedShares
-  }, [farmsPositions])
 
   const lpTotal = useMemo(() => {
     if (!lpPositions.data) return BN_0
@@ -134,13 +104,16 @@ export const useWalletAssetsTotals = ({
     }, BN_0)
   }, [getAsset, shareTokenBalances, spotPrices.data])
 
-  const balanceTotal = assetsTotal.plus(farmsTotal).plus(lpTotal).plus(xykTotal)
+  const balanceTotal = assetsTotal
+    .plus(farmsTotal.value)
+    .plus(lpTotal)
+    .plus(xykTotal)
   const isLoading =
-    assets.isLoading || lpPositions.isLoading || farmsPositions.isLoading
+    assets.isLoading || lpPositions.isLoading || farmsTotal.isLoading
 
   return {
     assetsTotal,
-    farmsTotal,
+    farmsTotal: farmsTotal.value,
     lpTotal: lpTotal.plus(xykTotal),
     balanceTotal,
     isLoading,

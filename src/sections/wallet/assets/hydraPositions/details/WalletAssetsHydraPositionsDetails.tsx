@@ -9,9 +9,12 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { BN_0, BN_1 } from "utils/constants"
 
+type PairAsset = { amount: BN; symbol: string }
+
 type Props = {
   assetId: string
-  amount: BN
+  amount?: BN
+  amountPair?: PairAsset[]
   lrna?: BN
   amountDisplay?: BN
 }
@@ -20,38 +23,44 @@ export const WalletAssetsHydraPositionsDetails = ({
   amount,
   lrna,
   amountDisplay,
+  amountPair,
   assetId,
 }: Props) => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-
-  const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
-
-  const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, assetId)
-
-  const lrnaPositionPrice =
-    lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+  const meta = assets.getAsset(assetId.toString())
 
   return (
     <div sx={{ flex: "column", align: ["end", "start"] }}>
-      <div sx={{ flex: "row", gap: 4 }}>
+      {amountPair ? (
+        <div sx={{ flex: "row", gap: 4 }}>
+          <Text
+            fs={14}
+            lh={14}
+            fw={500}
+            color="white"
+            tAlign={["right", "left"]}
+          >
+            {amountPair
+              .map((balance) =>
+                t("value.tokenWithSymbol", {
+                  value: balance.amount,
+                  symbol: balance.symbol,
+                }),
+              )
+              .join(" | ")}
+          </Text>
+        </div>
+      ) : lrna && !lrna.isZero() ? (
+        <LrnaValue amount={amount} lrna={lrna} assetId={assetId} />
+      ) : (
         <Text fs={14} lh={14} fw={500} color="white">
           {t("value.tokenWithSymbol", {
-            value: lrnaPositionPrice.plus(amount ?? BN_0),
+            value: amount,
             symbol: meta?.symbol,
           })}
         </Text>
-
-        {isDesktop && (
-          <LrnaPositionTooltip
-            lrnaPosition={lrna}
-            tokenPosition={amount}
-            assetId={assetId}
-          />
-        )}
-      </div>
+      )}
       {amountDisplay && (
         <Text
           fs={13}
@@ -61,6 +70,44 @@ export const WalletAssetsHydraPositionsDetails = ({
         >
           <DisplayValue value={amountDisplay} />
         </Text>
+      )}
+    </div>
+  )
+}
+
+const LrnaValue = ({
+  assetId,
+  lrna,
+  amount,
+}: {
+  assetId: string
+  lrna: BN
+  amount?: BN
+}) => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { t } = useTranslation()
+  const { assets } = useRpcProvider()
+
+  const meta = assetId ? assets.getAsset(assetId.toString()) : undefined
+  const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, assetId)
+
+  const lrnaPositionPrice =
+    lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+  return (
+    <div sx={{ flex: "row", gap: 4 }}>
+      <Text fs={14} lh={14} fw={500} color="white">
+        {t("value.tokenWithSymbol", {
+          value: lrnaPositionPrice.plus(amount ?? BN_0),
+          symbol: meta?.symbol,
+        })}
+      </Text>
+
+      {isDesktop && (
+        <LrnaPositionTooltip
+          lrnaPosition={lrna}
+          tokenPosition={amount}
+          assetId={assetId}
+        />
       )}
     </div>
   )

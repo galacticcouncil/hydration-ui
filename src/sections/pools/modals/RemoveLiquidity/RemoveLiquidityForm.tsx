@@ -49,6 +49,9 @@ export const RemoveLiquidityForm = ({
     meta: { id, symbol, name, decimals },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
+  const tokensToGet =
+    values && BN(values?.tokensToGet).gt(0) ? values.tokensToGet : BN(0)
+
   return (
     <form
       onSubmit={form.handleSubmit(() => mutation.mutate())}
@@ -60,12 +63,12 @@ export const RemoveLiquidityForm = ({
       }}
     >
       <div>
-        <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
+        <Text fs={32} sx={{ mt: 24 }}>
           {t("liquidity.remove.modal.value", {
             value: scaleHuman(removeShares, decimals),
           })}
         </Text>
-        <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+        <Text fs={18} color="pink500" sx={{ mb: 20 }}>
           {t("value.percentage", { value })}
         </Text>
         {!isPositionMultiple && (
@@ -88,18 +91,17 @@ export const RemoveLiquidityForm = ({
           <Text color="brightBlue300">
             {t("liquidity.remove.modal.receive")}
           </Text>
-
           <RemoveLiquidityReward
             id={id}
             name={name}
             symbol={symbol}
             amount={t("value", {
-              value: values?.tokensToGet,
+              value: tokensToGet,
               fixedPointScale: decimals,
               type: "token",
             })}
           />
-          {values && !BN(values.lrnaToGet).isZero() && (
+          {values && BN(values.lrnaToGet).gt(0) && (
             <RemoveLiquidityReward
               id={DEPOSIT_CLASS_ID}
               name={lrnaMeta.name}
@@ -160,7 +162,7 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={removeShares.isZero() || isFeeExceeded}
+          disabled={tokensToGet.decimalPlaces(0).isZero() || isFeeExceeded}
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>

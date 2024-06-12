@@ -11,10 +11,20 @@ import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
+import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { isAnyParachain } from "utils/helpers"
 
 const EXTERNAL_ASSETS_WHITELIST = [
   // PINK
   { id: "23", origin: 1000 },
+  // STINK
+  { id: "42069", origin: 1000 },
+  // WUD
+  { id: "31337", origin: 1000 },
+  // WIFD
+  { id: "17", origin: 1000 },
+  // BNDT
+  { id: "8889", origin: 1000 },
 ]
 
 const chains = Array.from(chainsMap.values())
@@ -43,30 +53,6 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
-export function getAssetName(symbol: string | null | undefined) {
-  const _symbol = symbol?.toUpperCase()
-
-  if (_symbol === "AUSD") return "Acala Dollar"
-  if (_symbol === "BSX") return "Basilisk"
-  if (_symbol === "KAR") return "Karura"
-  if (_symbol === "KSM") return "Kusama"
-  if (_symbol === "PHA") return "Phala"
-  if (_symbol === "TNKR") return "Tinkernet"
-  if (_symbol === "HDX") return "HydraDX"
-  if (_symbol === "LRNA") return "Lerna"
-  if (_symbol === "DAI") return "Dai"
-  if (_symbol === "DOT") return "Polkadot"
-  if (_symbol === "BTC") return "Bitcoin"
-  if (_symbol === "ETH") return "Ethereum"
-  if (_symbol === "USDC") return "USD Coin"
-  if (_symbol === "USDT") return "Tether"
-  if (_symbol === "APE") return "ApeCoin"
-  if (_symbol === "ASTR") return "Astar"
-  if (_symbol === "IBTC") return "interBTC"
-
-  return "N/A"
-}
-
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -75,12 +61,14 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     const assetDetails = id ? assets.getAsset(id) : undefined
 
     const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
-    )
+      (chain) =>
+        isAnyParachain(chain) &&
+        chain.parachainId === Number(assetDetails?.parachainId),
+    ) as AnyParachain
 
     const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
       (item) =>
-        item.id === assetDetails?.generalIndex &&
+        item.id === assetDetails?.externalId &&
         item.origin === chain?.parachainId,
     )
 

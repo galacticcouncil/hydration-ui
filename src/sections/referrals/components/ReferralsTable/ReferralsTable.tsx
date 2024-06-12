@@ -34,7 +34,7 @@ export const ReferralsTable = ({ data }: Props) => {
     <>
       <StatsTableContainer>
         <StatsTableTitle>
-          <Text fs={15} lh={20} color="white" font="FontOver">
+          <Text fs={15} lh={20} color="white" font="GeistMono">
             {t("referrals.table.header.title")}
           </Text>
         </StatsTableTitle>

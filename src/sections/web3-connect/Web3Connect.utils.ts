@@ -9,7 +9,10 @@ import { useShallow } from "hooks/useShallow"
 import { useEffect, useRef } from "react"
 import { usePrevious } from "react-use"
 
-import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
+import {
+  NamespaceType,
+  WalletConnect,
+} from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
 import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -21,12 +24,18 @@ import {
 } from "./store/useWeb3ConnectStore"
 import { WalletProviderType, getSupportedWallets } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
-import { MetaMask } from "./wallets/MetaMask/MetaMask"
-import { isMetaMask, requestNetworkSwitch } from "utils/metamask"
+import { MetaMask } from "./wallets/MetaMask"
+import {
+  isMetaMask,
+  isMetaMaskLike,
+  requestNetworkSwitch,
+} from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
 import { WalletAccount } from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -52,9 +61,10 @@ export const useEvmAccount = () => {
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
-      const chainId = isMetaMask(wallet?.extension)
-        ? await wallet?.extension?.request({ method: "eth_chainId" })
-        : null
+      const chainId =
+        isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
+          ? await wallet?.extension?.request({ method: "eth_chainId" })
+          : null
 
       return {
         chainId: Number(chainId),
@@ -159,8 +169,12 @@ export const useWeb3ConnectEagerEnable = () => {
       // skip if already enabled
       if (isEnabled) return
 
-      // skip WalletConnect eager enable
-      if (wallet instanceof WalletConnect) return
+      // disconnect on missing WalletConnect session
+      if (wallet instanceof WalletConnect && !wallet._session) {
+        wallet.disconnect()
+        state.disconnect()
+        return
+      }
 
       await wallet?.enable(POLKADOT_APP_NAME)
       const accounts = await wallet?.getAccounts()
@@ -190,7 +204,14 @@ export const useWeb3ConnectEagerEnable = () => {
 
     function cleanUp() {
       const metamask = prevWallet instanceof MetaMask ? prevWallet : null
+      const walletConnect =
+        prevWallet instanceof WalletConnect ? prevWallet : null
       const external = prevWallet instanceof ExternalWallet ? prevWallet : null
+
+      if (walletConnect) {
+        // disconnect from WalletConnect
+        walletConnect.disconnect()
+      }
 
       if (metamask) {
         // unsub from metamask events on disconnect
@@ -208,13 +229,27 @@ export const useWeb3ConnectEagerEnable = () => {
 
 export const useEnableWallet = (
   provider: WalletProviderType | null,
-  options?: MutationObserverOptions,
+  options?: MutationObserverOptions<
+    WalletAccount[] | undefined,
+    unknown,
+    NamespaceType | void,
+    unknown
+  >,
 ) => {
   const { wallet } = getWalletProviderByType(provider)
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
-  const { mutate: enable, ...mutation } = useMutation(
-    async () => {
+  const { mutate: enable, ...mutation } = useMutation<
+    WalletAccount[] | undefined,
+    unknown,
+    NamespaceType | void,
+    unknown
+  >(
+    async (namespace) => {
+      if (wallet instanceof WalletConnect && namespace) {
+        wallet.setNamespace(namespace)
+      }
+
       await wallet?.enable(POLKADOT_APP_NAME)
 
       if (wallet instanceof MetaMask) {
@@ -315,7 +350,11 @@ export function getWalletProviderByType(type?: WalletProviderType | null) {
 function getProviderQueryKey(type: WalletProviderType | null) {
   const { wallet } = getWalletProviderByType(type)
 
-  if (wallet instanceof MetaMask) {
+  if (wallet?.signer instanceof PolkadotSigner) {
+    return [type, wallet.signer?.session?.topic].join("-")
+  }
+
+  if (wallet?.signer instanceof EthereumSigner) {
     return [type, wallet.signer?.address].join("-")
   }
 

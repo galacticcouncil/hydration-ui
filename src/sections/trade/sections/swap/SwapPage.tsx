@@ -15,6 +15,10 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useRemount } from "hooks/useRemount"
+import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
+import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
+import { useState } from "react"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
@@ -26,6 +30,7 @@ const SwapApp = createComponent({
     onTxNew: "gc:tx:new" as EventName<CustomEvent<TxInfo>>,
     onDcaSchedule: "gc:tx:scheduleDca" as EventName<CustomEvent<TxInfo>>,
     onDcaTerminate: "gc:tx:terminateDca" as EventName<CustomEvent<TxInfo>>,
+    onNewAssetClick: "gc:external:new" as EventName<CustomEvent<TxInfo>>,
   },
 })
 
@@ -50,14 +55,20 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
+  const preference = useProviderRpcUrlStore()
+  const [addToken, setAddToken] = useState(false)
+  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount(isEvm)
-  const preference = useProviderRpcUrlStore()
+  const version = useRemount([
+    isEvm,
+    externalTokensStored[preference.getDataEnv()].length,
+  ])
+
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -119,6 +130,7 @@ export function SwapPage() {
           if (r) {
             r.setAttribute("chart", "")
             r.setAttribute("twapOn", "")
+            r.setAttribute("newAssetBtn", "")
           }
         }}
         assetIn={assetIn}
@@ -134,7 +146,16 @@ export function SwapPage() {
         onTxNew={(e) => handleSubmit(e)}
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
+        onNewAssetClick={() => setAddToken(true)}
+        isTestnet={preference.getDataEnv() === "testnet"}
       />
+      {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
+      {addToken && (
+        <AddTokenModal
+          css={{ zIndex: 9999 }}
+          onClose={() => setAddToken(false)}
+        />
+      )}
     </SContainer>
   )
 }

@@ -5,7 +5,7 @@ import { Icon } from "components/Icon/Icon"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
 import { Spacer } from "components/Spacer/Spacer"
-import { TPool, TPoolDetails } from "sections/pools/PoolsPage.utils"
+import { TPool, TPoolDetails, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { useFarmExitAllMutation } from "utils/farms/exit"
@@ -14,7 +14,7 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 interface Props {
-  pool: TPool
+  pool: TPool | TXYKPool
   positions: TPoolDetails["miningNftPositions"]
 }
 
@@ -32,7 +32,7 @@ export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
     return memo
   }, {} as ToastMessage)
 
-  const exit = useFarmExitAllMutation(positions, toast)
+  const exit = useFarmExitAllMutation(positions, pool.id, toast)
 
   if (!positions.length) return null
 
@@ -41,7 +41,7 @@ export const FarmingPositionWrapper = ({ pool, positions }: Props) => {
       <div sx={{ flex: "row", mb: 20, mt: 12, justify: "space-between" }}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Icon size={13} sx={{ color: "brightBlue300" }} icon={<FPIcon />} />
-          <Text fs={[16, 16]} color="brightBlue300">
+          <Text fs={[16, 16]} color="brightBlue300" font="GeistMonoSemiBold">
             {t("farms.positions.header.title")}
           </Text>
         </div>

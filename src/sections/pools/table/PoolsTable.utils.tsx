@@ -76,8 +76,9 @@ const AssetTableName = ({ id }: { id: string }) => {
           icons={iconIds.map((asset) => {
             const meta = assets.getAsset(asset)
             const isBond = assets.isBond(meta)
+            const id = isBond ? meta.assetId : asset
             return {
-              icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+              icon: <AssetLogo key={id} id={id} />,
             }
           })}
         />
@@ -90,6 +91,7 @@ const AssetTableName = ({ id }: { id: string }) => {
             lh={16}
             fw={700}
             color="white"
+            font="GeistMedium"
             css={{ whiteSpace: "nowrap" }}
           >
             {asset.symbol}
@@ -147,19 +149,19 @@ const AddLiqduidityButton = ({
     account?.address,
   )
 
-  const isPosition =
-    userStablePoolBalance.data?.freeBalance.gt(0) ||
-    (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
+  let positionsAmount: BN = BN_0
 
-  const positionsAmount = isPosition
-    ? !isXykPool
-      ? BN(pool.omnipoolPositions.length)
-          .plus(pool.miningPositions.length)
-          .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
-      : pool.shareTokenIssuance?.myPoolShare?.gt(0)
-      ? BN_1
-      : undefined
-    : undefined
+  if (isXykPool) {
+    positionsAmount = BN(pool.miningPositions.length).plus(
+      pool.shareTokenIssuance?.myPoolShare?.gt(0) ? 1 : 0,
+    )
+  } else {
+    positionsAmount = BN(pool.omnipoolPositions.length)
+      .plus(pool.miningPositions.length)
+      .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
+  }
+
+  const isPositions = positionsAmount.gt(0)
 
   const onClick = () => onRowSelect(pool.id)
 
@@ -185,10 +187,10 @@ const AddLiqduidityButton = ({
         }}
         onClick={onClick}
       >
-        {isPosition ? <Icon icon={<ManageIcon />} size={12} /> : null}
-        {isPosition ? t("manage") : t("details")}
+        {isPositions ? <Icon icon={<ManageIcon />} size={12} /> : null}
+        {isPositions ? t("manage") : t("details")}
       </Button>
-      {positionsAmount?.gt(0) && (
+      {isPositions && (
         <Text
           fs={9}
           css={{
@@ -258,7 +260,7 @@ const APY = ({
   } = useRpcProvider()
   const farms = useFarms([assetId])
 
-  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
+  if (isLoading || farms.isLoading) return <CellSkeleton />
 
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />

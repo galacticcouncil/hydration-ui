@@ -10,36 +10,39 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
-import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { useBestNumber } from "api/chain"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Alert } from "components/Alert/Alert"
+import { Controller, useForm } from "react-hook-form"
+import { scaleHuman } from "utils/balance"
+import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
+import { useZodSchema } from "./JoinFarmsModal.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Spacer } from "components/Spacer/Spacer"
-import { BN_0 } from "utils/constants"
+import { FormValues } from "utils/helpers"
+import { FarmRedepositMutationType } from "utils/farms/redeposit"
 
 type JoinFarmModalProps = {
-  isOpen: boolean
   onClose: () => void
   poolId: string
-  shares?: BigNumber
+  initialShares?: BigNumber
   farms: Farm[]
   isRedeposit?: boolean
-  mutation?: FarmDepositMutationType | FarmRedepositMutationType
   depositNft?: TMiningNftPosition
+  mutation: FarmDepositMutationType | FarmRedepositMutationType
 }
 
 export const JoinFarmModal = ({
-  isOpen,
   onClose,
   isRedeposit,
   poolId,
-  mutation,
-  shares,
+  initialShares,
   depositNft,
   farms,
+  mutation,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -50,23 +53,26 @@ export const JoinFarmModal = ({
   const meta = assets.getAsset(poolId.toString())
   const bestNumber = useBestNumber()
 
+  const zodSchema = useZodSchema(
+    meta.id,
+    farms,
+    !!isRedeposit || !!initialShares,
+  )
+
+  const form = useForm<{ amount: string }>({
+    mode: "onChange",
+    defaultValues: {
+      amount: initialShares
+        ? scaleHuman(initialShares, meta.decimals).toString()
+        : undefined,
+    },
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
+  })
+
   const selectedFarm = farms.find(
     (farm) =>
       farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
       farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
-  )
-
-  const { isValid, minDeposit } = farms.reduce<{
-    isValid: boolean
-    minDeposit: BigNumber
-  }>(
-    (acc, farm) => {
-      const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
-      const isValid = !!shares?.gte(minDeposit)
-
-      return { isValid, minDeposit: !isValid ? minDeposit : acc.minDeposit }
-    },
-    { isValid: false, minDeposit: BN_0 },
   )
 
   const { page, direction, back, next } = useModalPagination()
@@ -82,8 +88,14 @@ export const JoinFarmModal = ({
       selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
     )
 
+  const onSubmit = (values: FormValues<typeof form>) => {
+    mutation.mutate({ shares: values.amount })
+  }
+
+  const error = form.formState.errors.amount?.message
+
   return (
-    <Modal open={isOpen} onClose={onClose}>
+    <Modal open onClose={onClose} disableCloseOutside>
       <ModalContents
         onClose={onClose}
         page={page}
@@ -124,53 +136,76 @@ export const JoinFarmModal = ({
                     })}
                   </div>
                 </>
-                {mutation && shares && (
+
+                <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
                   <SJoinFarmContainer>
-                    <div
-                      sx={{
-                        flex: ["column", "row"],
-                        justify: "space-between",
-                        p: 30,
-                        gap: [4, 120],
-                      }}
-                    >
-                      <div sx={{ flex: "column", gap: 13 }}>
-                        <Text>{t("farms.modal.footer.title")}</Text>
-                      </div>
-                      <Text
-                        color="pink600"
-                        fs={24}
-                        css={{ whiteSpace: "nowrap" }}
+                    {initialShares ? (
+                      <div
+                        sx={{
+                          flex: ["column", "row"],
+                          justify: "space-between",
+                          p: 30,
+                          gap: [4, 120],
+                        }}
                       >
-                        {t("value.token", {
-                          value: shares,
-                          fixedPointScale: meta.decimals,
-                        })}
-                      </Text>
-                    </div>
-                    {!isValid && (
-                      <>
-                        <Alert variant="error">
-                          {t("farms.modal.join.minDeposit", {
-                            value: minDeposit.shiftedBy(-meta.decimals),
+                        <div sx={{ flex: "column", gap: 13 }}>
+                          <Text>{t("farms.modal.footer.title")}</Text>
+                        </div>
+                        <Text
+                          color="pink600"
+                          fs={24}
+                          css={{ whiteSpace: "nowrap" }}
+                        >
+                          {t("value.token", {
+                            value: initialShares,
+                            fixedPointScale: meta.decimals,
                           })}
-                        </Alert>
+                        </Text>
+                      </div>
+                    ) : (
+                      <>
+                        <Spacer size={20} />
+                        <Controller
+                          name="amount"
+                          control={form.control}
+                          render={({
+                            field: { name, value, onChange },
+                            fieldState: { error },
+                          }) => (
+                            <WalletTransferAssetSelect
+                              title={t(
+                                "wallet.assets.transfer.asset.label_mob",
+                              )}
+                              name={name}
+                              value={value}
+                              onChange={onChange}
+                              asset={poolId}
+                              error={error?.message}
+                            />
+                          )}
+                        />
                         <Spacer size={20} />
                       </>
                     )}
+
+                    {error && initialShares && (
+                      <Alert variant="error" css={{ margin: "20px 0" }}>
+                        {error}
+                      </Alert>
+                    )}
+
                     <Button
                       fullWidth
                       variant="primary"
-                      onClick={() => mutation.mutate()}
                       isLoading={mutation.isLoading}
-                      disabled={!isValid}
+                      disabled={!!error || !zodSchema}
                     >
                       {t("farms.modal.join.button.label", {
                         count: farms.length,
                       })}
                     </Button>
                   </SJoinFarmContainer>
-                )}
+                </form>
               </>
             ),
           },

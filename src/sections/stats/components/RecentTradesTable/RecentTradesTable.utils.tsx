@@ -125,7 +125,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <MultipleIcons
                 size={18}
                 icons={iconInIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
+                  icon: <AssetLogo key={id} id={id} />,
                 }))}
               />
             )}
@@ -147,7 +147,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
               <MultipleIcons
                 size={18}
                 icons={iconOutIds.map((id) => ({
-                  icon: <AssetLogo id={id} />,
+                  icon: <AssetLogo key={id} id={id} />,
                 }))}
               />
             )}
@@ -172,7 +172,7 @@ export const useRecentTradesTable = (data: TRecentTradesTableData) => {
       cell: ({ row }) => (
         <div sx={{ pl: [5, 0] }}>
           <a
-            href={`https://hydradx.subscan.io/extrinsic/${row.original.extrinsicHash}`}
+            href={`https://hydration.subscan.io/extrinsic/${row.original.extrinsicHash}`}
             target="blank"
             rel="noreferrer"
           >

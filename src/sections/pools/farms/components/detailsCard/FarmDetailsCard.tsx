@@ -1,9 +1,9 @@
 import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
-import { SContainer, SIcon, SRow } from "./FarmDetailsCard.styled"
+import { SIcon, SRow, SContainer } from "./FarmDetailsCard.styled"
 import { FillBar } from "components/FillBar/FillBar"
-import { getFloatingPointAmount } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
@@ -82,32 +82,43 @@ export const FarmDetailsCard = ({
       onClick={() => onSelect?.()}
       isJoined={!!depositNft}
     >
-      {depositNft && (
-        <div css={{ gridArea: "tag" }}>
-          <Tag>{t("farms.details.card.tag.label")}</Tag>
-        </div>
-      )}
       <div
         sx={{
-          flex: ["row", "column"],
-          justify: ["space-between", "start"],
-          gap: 32,
+          flex: "column",
+          justify: "space-between",
+          gap: 12,
         }}
-        css={{ gridArea: "apr" }}
       >
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={24} icon={<AssetLogo id={asset.id} />} />
-          <Text fs={[18, 16]} font="ChakraPetchBold">
-            {asset.symbol}
+        {depositNft && (
+          <div>
+            <Tag>{t("farms.details.card.tag.label")}</Tag>
+          </div>
+        )}
+        <div
+          sx={{
+            flex: ["row", "column"],
+            justify: "space-between",
+          }}
+          css={{ flex: 1 }}
+        >
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Icon size={24} icon={<AssetLogo id={asset.id} />} />
+            <Text fs={[18, 16]} font="GeistMedium">
+              {asset.symbol}
+            </Text>
+          </div>
+          <Text fs={19} lh={28} fw={400} css={{ whiteSpace: "nowrap" }}>
+            {apr.data.minApr && apr.data?.apr.gt(0)
+              ? t("value.APR.range", {
+                  from: apr.data.minApr,
+                  to: apr.data?.apr,
+                })
+              : t("value.APR", { apr: apr.data?.apr })}
           </Text>
         </div>
-        <Text fs={19} lh={28} fw={400} font="FontOver">
-          {apr.data.minApr && apr.data?.apr.gt(0)
-            ? t("value.APR.range", { from: apr.data.minApr, to: apr.data?.apr })
-            : t("value.APR", { apr: apr.data?.apr })}
-        </Text>
       </div>
-      <div sx={{ flex: "column" }} css={{ gridArea: "details" }}>
+
+      <div sx={{ flex: "column", flexGrow: 1, width: "100%" }}>
         <SRow>
           <FillBar
             percentage={apr.data.distributedRewards
@@ -120,11 +131,11 @@ export const FarmDetailsCard = ({
               t={t}
               i18nKey="farms.details.card.distribution"
               tOptions={{
-                distributed: getFloatingPointAmount(
+                distributed: scaleHuman(
                   apr.data.distributedRewards,
-                  12,
+                  asset.decimals,
                 ),
-                max: getFloatingPointAmount(apr.data.maxRewards, 12),
+                max: scaleHuman(apr.data.potMaxRewards, asset.decimals),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -149,16 +160,13 @@ export const FarmDetailsCard = ({
               <GradientText
                 fs={14}
                 tAlign="right"
-                font="ChakraPetchBold"
+                font="GeistMedium"
                 gradient="pinkLightBlue"
                 sx={{ width: "fit-content" }}
                 css={{ justifySelf: "end" }}
               >
                 {t("farms.details.card.lockedShares.value", {
-                  value: getFloatingPointAmount(
-                    depositNft.data.shares,
-                    assetMeta.decimals,
-                  ),
+                  value: scaleHuman(depositNft.data.shares, assetMeta.decimals),
                 })}
               </GradientText>
             </SRow>
@@ -167,11 +175,7 @@ export const FarmDetailsCard = ({
               <Text fs={14} lh={18}>
                 {t("farms.details.card.currentApr.label")}
               </Text>
-              <GradientText
-                fs={14}
-                font="ChakraPetchBold"
-                gradient="pinkLightBlue"
-              >
+              <GradientText fs={14} font="GeistMedium" gradient="pinkLightBlue">
                 {t("value.APR", { apr: currentApr })}
               </GradientText>
             </div>
@@ -188,7 +192,6 @@ export const FarmDetailsCard = ({
         <SIcon
           sx={{ color: "iconGray", height: "100%", align: "center" }}
           icon={<ChevronDown />}
-          css={{ gridArea: "icon" }}
         />
       )}
     </SContainer>

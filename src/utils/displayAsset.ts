@@ -12,6 +12,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useShareTokensByIds } from "api/xyk"
 import { isNotNil } from "./helpers"
 import { useShareOfPools } from "api/pools"
+import { TShareToken } from "api/assetDetails"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -78,12 +79,15 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
   const shareTokensTvl = useMemo(() => {
     return shareTokenIds
       .map((shareTokenId) => {
+        const meta = assets.getAsset(shareTokenId) as TShareToken
         const poolAddress = poolsAddress.get(shareTokenId)
         const poolBalance = poolBalances.data?.find(
           (poolBalance) => poolBalance.accountId === poolAddress,
         )
 
-        const assetA = poolBalance?.balances[0]
+        const assetA = poolBalance?.balances.find((balance) =>
+          meta.assets.includes(balance.id),
+        )
 
         if (!assetA) return undefined
 

@@ -9,7 +9,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
-import { getFixedPointAmount, getFloatingPointAmount } from "utils/balance"
+import {
+  getFixedPointAmount,
+  getFloatingPointAmount,
+  scale,
+} from "utils/balance"
 import { useStore } from "state/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -94,19 +98,6 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
     [assetValueA, assetValueB],
   )
 
-  const minAddLiquidityValidation = useMemo(() => {
-    const { decimals } = formAssets[lastUpdated]
-
-    const mainAsset = new BigNumber(assetValues[lastUpdated])
-
-    const minAddLiqudityValue = BigNumber(
-      xykConsts.data?.minPoolLiquidity ?? 0,
-    ).shiftedBy(-decimals)
-    const isMinAddLiqudity = minAddLiqudityValue.gt(mainAsset)
-
-    return isMinAddLiqudity
-  }, [assetValues, formAssets, lastUpdated, xykConsts.data?.minPoolLiquidity])
-
   const calculatedShares = useMemo(() => {
     if (
       pool.shareTokenIssuance?.totalShare &&
@@ -126,6 +117,30 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
 
     return null
   }, [pool, reserves.assetA, assetValues.assetA, formAssets.assetA.decimals])
+
+  const minAddLiquidityValidation = useMemo(() => {
+    const minTradingLimit = BigNumber(xykConsts.data?.minTradingLimit ?? 0)
+    const minPoolLiquidity = BigNumber(xykConsts.data?.minPoolLiquidity ?? 0)
+
+    if (!assetValues.assetA || !assetValues.assetB || !calculatedShares)
+      return false
+
+    const minAssetATradingLimit = scale(
+      assetValues.assetA,
+      formAssets.assetA.decimals,
+    ).gt(minTradingLimit)
+    const minAssetBTradingLimit = scale(
+      assetValues.assetB,
+      formAssets.assetB.decimals,
+    ).gt(minTradingLimit)
+
+    const isMinPoolLiquidity = calculatedShares.gt(minPoolLiquidity)
+
+    const isMinAddLiqudity =
+      !minAssetATradingLimit || !minAssetBTradingLimit || !isMinPoolLiquidity
+
+    return isMinAddLiqudity
+  }, [assetValues, formAssets, xykConsts.data, calculatedShares])
 
   let calculatedRatio =
     pool.shareTokenIssuance?.myPoolShare &&
@@ -168,6 +183,9 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         onSuccess: () => {
           queryClient.refetchQueries(
             QUERY_KEYS.accountOmnipoolPositions(account?.address),
+          )
+          queryClient.refetchQueries(
+            QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
           )
         },
         onSubmitted: () => {
@@ -370,7 +388,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         />
 
         <Spacer size={24} />
-        <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
+        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
         <SummaryRow

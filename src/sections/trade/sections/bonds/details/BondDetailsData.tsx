@@ -89,7 +89,7 @@ export const BondDetailsHeader = ({
       }}
     >
       <div sx={{ flex: "column", align: ["center", "flex-start"] }}>
-        <Text fs={[15, 24]} color="white" font="FontOver">
+        <Text fs={[15, 24]} color="white" font="GeistMono">
           {title}
         </Text>
         {accumulatedAssetId && (
@@ -114,7 +114,7 @@ export const BondDetailsHeader = ({
       <div sx={{ flex: "row", align: "center", gap: 4 }}>
         <Icon sx={{ color: "brightBlue300" }} icon={<ClockIcon />} />
         {endingDuration ? (
-          <Text fs={20} color="white" font="ChakraPetchSemiBold">
+          <Text fs={20} color="white" font="GeistSemiBold">
             <Trans
               t={t}
               i18nKey={`bonds.details.header.${isPast ? "endPast" : "end"}`}

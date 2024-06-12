@@ -68,6 +68,7 @@ export const PoolDetails = ({
         >
           <GradientText
             gradient="pinkLightBlue"
+            font="GeistMonoSemiBold"
             fs={19}
             sx={{ width: "fit-content" }}
           >
@@ -123,14 +124,15 @@ export const PoolDetails = ({
                 icons={asset.iconId.map((asset) => {
                   const meta = assets.getAsset(asset)
                   const isBond = assets.isBond(meta)
+                  const id = isBond ? meta.assetId : asset
                   return {
-                    icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
+                    icon: <AssetLogo key={id} id={id} />,
                   }
                 })}
               />
             )}
             <div sx={{ flex: "column", gap: 0 }}>
-              <Text fs={16} lh={16} color="white" font="ChakraPetchBold">
+              <Text fs={16} lh={16} color="white" font="GeistMedium">
                 {asset.symbol}
               </Text>
               <Text fs={13} lh={16} color="whiteish500">
@@ -169,7 +171,7 @@ export const PoolDetails = ({
                 <Text color="basic400" fs={[12, 13]}>
                   {t("tvl")}
                 </Text>
-                <Text color="white" fs={[14, 16]} fw={600}>
+                <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   <DisplayValue value={pool.tvlDisplay} />
                 </Text>
               </SValue>
@@ -180,7 +182,7 @@ export const PoolDetails = ({
                 <Text color="basic400" fs={[12, 13]}>
                   {t("24Volume")}
                 </Text>
-                <Text color="white" fs={[14, 16]} fw={600}>
+                <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   <DisplayValue value={pool.volume} type="token" />
                 </Text>
               </SValue>
@@ -198,7 +200,12 @@ export const PoolDetails = ({
                     <Text color="basic400" fs={[12, 13]}>
                       {t("price")}
                     </Text>
-                    <Text color="white" fs={[14, 16]} fw={600}>
+                    <Text
+                      color="white"
+                      fs={[14, 16]}
+                      fw={600}
+                      font="GeistMedium"
+                    >
                       <DisplayValue value={pool.spotPrice} type="token" />
                     </Text>
                   </SValue>
@@ -217,7 +224,7 @@ export const PoolDetails = ({
                 <Text color="basic400" fs={[12, 13]}>
                   {t("liquidity.pool.details.fee")}
                 </Text>
-                <Text color="white" fs={[14, 16]} fw={600}>
+                <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
                   ) : pool.stablepoolFee ? (
@@ -302,7 +309,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
             {t("liquidity.pool.details.price", { symbol: "" })}
           </Text>
         </div>
-        <Text color="white" fs={[14, 16]} fw={600}>
+        <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
           {usdPriceA.isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (
@@ -318,7 +325,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
             {t("liquidity.pool.details.price", { symbol: "" })}
           </Text>
         </div>
-        <Text color="white" fs={[14, 16]} fw={600}>
+        <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
           {usdPriceB.isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (

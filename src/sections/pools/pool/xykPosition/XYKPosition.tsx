@@ -18,12 +18,16 @@ import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const queryClient = useQueryClient()
 
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
 
@@ -77,15 +81,21 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   if (!pool.shareTokenIssuance || pool.shareTokenIssuance.myPoolShare?.isZero())
     return null
 
+  const onSuccess = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+    )
+    queryClient.refetchQueries(
+      QUERY_KEYS.accountOmnipoolPositions(account?.address),
+    )
+  }
+
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="FontOver">
-        {t("liquidity.pool.positions.title")}
-      </Text>
+    <div sx={{ flex: "column", gap: 12, bg: "gray" }}>
       <div sx={{ flex: "column", gap: 18 }}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Icon size={15} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
-          <Text fs={[16, 16]} color="pink600">
+          <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
             {t("liquidity.xyk.asset.positions.title")}
           </Text>
         </div>
@@ -94,9 +104,14 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
             <div sx={{ flex: "row", justify: "space-between" }}>
               <div sx={{ flex: "row", gap: 7, align: "center" }}>
                 <MultipleIcons
-                  icons={assetsMeta.map((asset: TAsset) => ({
-                    icon: <AssetLogo id={asset.id} />,
-                  }))}
+                  icons={assetsMeta.map((asset: TAsset) => {
+                    const isBond = assets.isBond(asset)
+                    const id = isBond ? asset.assetId : asset.id
+
+                    return {
+                      icon: <AssetLogo key={id} id={id} />,
+                    }
+                  })}
                 />
 
                 <Text fs={[14, 18]} color={["white", "basic100"]}>
@@ -107,11 +122,13 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   })}
                 </Text>
               </div>
-
-              <LiquidityPositionRemoveLiquidity
-                pool={pool}
-                onSuccess={() => null}
-              />
+              <div sx={{ flex: "row", gap: 8 }}>
+                <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
+                <LiquidityPositionRemoveLiquidity
+                  pool={pool}
+                  onSuccess={onSuccess}
+                />
+              </div>
             </div>
 
             <Separator color="white" opacity={0.06} />

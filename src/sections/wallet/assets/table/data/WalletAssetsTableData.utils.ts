@@ -2,12 +2,17 @@ import { useAccountBalances } from "api/accountBalances"
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_0, BN_1 } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
 import { arraySearch } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
+import { useAccountVotes } from "api/democracy"
+import { durationInDaysAndHoursFromNow } from "utils/formatting"
+import { ToastMessage, useStore } from "state/store"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -22,7 +27,7 @@ export const useAssetsData = ({
   const { account } = useAccount()
   const address = givenAddress ?? account?.address
 
-  const balances = useAccountBalances(address)
+  const balances = useAccountBalances(address, true)
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
@@ -58,6 +63,7 @@ export const useAssetsData = ({
   )
 
   const data = useMemo(() => {
+    if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
       let { decimals, id, name, symbol, isExternal } = assets.getAsset(
         balance.id,
@@ -68,7 +74,7 @@ export const useAssetsData = ({
       )
       const spotPrice =
         spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
-          ?.spotPrice ?? BN_1
+          ?.spotPrice ?? BN_NAN
 
       const reserved = balance.reservedBalance.shiftedBy(-decimals)
       const reservedDisplay = reserved.times(spotPrice)
@@ -163,8 +169,8 @@ export const useAssetsData = ({
       if (a.transferableDisplay.isNaN()) return 1
       if (b.transferableDisplay.isNaN()) return -1
 
-      if (a.isExternal) return 1
-      if (b.isExternal) return -1
+      if (a.isExternal && !a.name) return 1
+      if (b.isExternal && !b.name) return -1
 
       if (!b.transferableDisplay.eq(a.transferableDisplay))
         return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
@@ -184,7 +190,7 @@ export const useAssetsData = ({
     allAssets,
   ])
 
-  return { data, isLoading: balances.isLoading }
+  return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
 }
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]
@@ -236,4 +242,113 @@ export const useLockedValues = (id: string) => {
     data,
     isLoading: locks.isInitialLoading || spotPrice.isInitialLoading,
   }
+}
+
+export const useLockedNativeTokens = () => {
+  const {
+    assets: {
+      native: { id, decimals },
+    },
+  } = useRpcProvider()
+  const locks = useTokenLocks(id)
+  const spotPrice = useDisplayPrice(id)
+
+  const lockVesting =
+    locks.data
+      ?.find((lock) => lock.type === "ormlvest")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockDemocracy =
+    locks.data
+      ?.find((lock) => lock.type === "democrac")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockStaking =
+    locks.data
+      ?.find((lock) => lock.type === "stk_stks")
+      ?.amount.shiftedBy(-decimals) ?? BN_0
+
+  const lockVestingDisplay = lockVesting.times(spotPrice.data?.spotPrice ?? 1)
+  const lockDemocracyDisplay = lockDemocracy.times(
+    spotPrice.data?.spotPrice ?? 1,
+  )
+  const lockStakingDisplay = lockStaking.times(spotPrice.data?.spotPrice ?? 1)
+
+  return {
+    isLoading: locks.isLoading || spotPrice.isLoading,
+    lockVesting,
+    lockDemocracy,
+    lockStaking,
+    lockVestingDisplay,
+    lockDemocracyDisplay,
+    lockStakingDisplay,
+  }
+}
+
+export const useUnlockableTokens = () => {
+  const {
+    assets: { native },
+  } = useRpcProvider()
+  const locks = useTokenLocks(native.id)
+  const votes = useAccountVotes()
+  const spotPrice = useDisplayPrice(native.id)
+
+  const lockDemocracy =
+    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? BN_0
+
+  const value = lockDemocracy.isZero()
+    ? BN_0
+    : lockDemocracy
+        .minus(votes.data?.maxLockedValue ?? 0)
+        .shiftedBy(-native.decimals)
+  const date = votes.data?.maxLockedBlock.times(BLOCK_TIME)
+  const endDate =
+    votes.data && !votes.data.maxLockedBlock.isZero()
+      ? durationInDaysAndHoursFromNow(date?.times(1000).toNumber() ?? 0)
+      : undefined
+
+  return {
+    isLoading: votes.isInitialLoading || spotPrice.isLoading || locks.isLoading,
+    ids: votes.data?.ids ?? [],
+    value,
+    displayValue: value?.times(spotPrice.data?.spotPrice ?? 1),
+    votesUnlocked: votes.data?.ids.length,
+    endDate,
+  }
+}
+
+export const useUnlockTokens = ({
+  ids,
+  toast,
+}: {
+  ids: string[]
+  toast: ToastMessage
+}) => {
+  const { api, assets } = useRpcProvider()
+  const { account } = useAccount()
+  const { createTransaction } = useStore()
+  const queryClient = useQueryClient()
+
+  return useMutation(async () => {
+    const txs = ids.map((id) => api.tx.democracy.removeVote(id))
+
+    if (!txs.length) return null
+
+    return await createTransaction(
+      {
+        tx: api.tx.utility.batchAll([
+          ...txs,
+          ...(account?.address
+            ? [api.tx.democracy.unlock(account.address)]
+            : []),
+        ]),
+      },
+      {
+        toast,
+        onSuccess: () => {
+          queryClient.invalidateQueries(
+            QUERY_KEYS.lock(account?.address, assets.native.id),
+          )
+        },
+      },
+    )
+  })
 }

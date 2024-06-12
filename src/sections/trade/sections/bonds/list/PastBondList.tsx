@@ -47,7 +47,7 @@ export const PastBondList = ({ bonds }: { bonds: BondProps[] }) => {
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
-      <Text color="basic200" tTransform="uppercase" fs={15} font="FontOver">
+      <Text color="basic200" tTransform="uppercase" fs={15} font="GeistMono">
         {t("bonds.section.pastBonds")}
       </Text>
       {bondsWithPool.map((bond) => (

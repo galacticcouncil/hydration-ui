@@ -2,7 +2,7 @@ import { forwardRef } from "react"
 import { ToastMessage } from "state/store"
 import { Trans, useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useClaimableAmount, useClaimAllMutation } from "utils/farms/claiming"
+import { useClaimableAmount, useClaimFarmMutation } from "utils/farms/claiming"
 import { TOAST_MESSAGES } from "state/toasts"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { SClaimButton, SContent } from "./ClaimAllDrowpdown.styled"
@@ -46,7 +46,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
       return memo
     }, {} as ToastMessage)
 
-    const claimAll = useClaimAllMutation(undefined, undefined, toast)
+    const claimAll = useClaimFarmMutation(undefined, undefined, toast)
 
     return (
       <SContent
@@ -68,7 +68,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
           {claimable.isLoading && <Skeleton height={25} width={150} />}
           {claimableAssets.map((claimableAsset, index) => (
             <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
-              <Text fs={19} lh={19} font="FontOver" sx={{ mb: 8 }}>
+              <Text fs={19} lh={19} sx={{ mb: 8 }}>
                 {t("value.tokenWithSymbol", {
                   value: claimableAsset.value,
                   fixedPointScale: claimableAsset.decimals.toString(),

@@ -47,7 +47,7 @@ export const BondTableMobileDrawer = ({
       open={!!data}
       onClose={onClose}
       title={meta.symbol}
-      headerVariant="FontOver"
+      headerVariant="GeistMono"
     >
       <div sx={{ flex: "column", gap: 24, pt: 24 }}>
         <BondCell bondId={data.bondId} />

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { TPool } from "sections/pools/PoolsPage.utils"
+import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useFarms } from "api/farms"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { useState } from "react"
@@ -9,7 +9,7 @@ import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetail
 import { useBestNumber } from "api/chain"
 import { Text } from "components/Typography/Text/Text"
 
-export const AvailableFarms = ({ pool }: { pool: TPool }) => {
+export const AvailableFarms = ({ pool }: { pool: TPool | TXYKPool }) => {
   const { t } = useTranslation()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
@@ -37,7 +37,9 @@ export const AvailableFarms = ({ pool }: { pool: TPool }) => {
       <div
         sx={{ flex: "column", gap: 10, p: ["0px 12px 12px", 30], bg: "gray" }}
       >
-        <Text fs={18}>{t("farms.modal.joinedFarms.available.label")}</Text>
+        <Text fs={18} font="GeistMonoSemiBold">
+          {t("farms.modal.joinedFarms.available.label")}
+        </Text>
         <div sx={{ flex: "column", gap: 20 }}>
           {farms.data.map((farm, i) => {
             return (
