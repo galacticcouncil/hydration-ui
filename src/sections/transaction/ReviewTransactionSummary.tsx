@@ -24,7 +24,6 @@ type ReviewTransactionSummaryProps = {
 }
 
 export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
-  tx,
   transactionValues,
   xcallMeta,
   editFeePaymentAssetEnabled,
@@ -116,11 +115,19 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
         rows={[
           {
             label: t("liquidity.reviewTransaction.modal.detail.lifetime"),
-            content: tx.era.isMortalEra
-              ? t("transaction.mortal.expire", {
-                  date: era?.deathDate,
-                })
-              : t("transaction.immortal.expire"),
+            content: (
+              <Text fs={14}>
+                {era?.isLoading ? (
+                  <Skeleton width={100} height={16} />
+                ) : era?.deathDate ? (
+                  t("transaction.mortal.expire", {
+                    date: era.deathDate,
+                  })
+                ) : (
+                  t("transaction.immortal.expire")
+                )}
+              </Text>
+            ),
           },
           {
             label: t("liquidity.reviewTransaction.modal.detail.nonce"),
