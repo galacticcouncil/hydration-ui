@@ -32,7 +32,7 @@ export const ReferralsPage = () => {
   const myReferralCode = userReferralCode.data?.[0]?.referralCode
 
   return (
-    <div css={{ display: "flex", flex: "column", gap: 30 }}>
+    <div sx={{ flex: "column", gap: 30 }}>
       <div sx={{ flex: "column", gap: [20, 30] }}>
         <HeroBanner>
           <CodeForm />

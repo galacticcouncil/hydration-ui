@@ -1,6 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SContainer = styled.div<{ animating: boolean }>`

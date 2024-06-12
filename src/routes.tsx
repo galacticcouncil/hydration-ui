@@ -7,6 +7,7 @@ import { Suspense, lazy } from "react"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
 import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
+import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
 
@@ -162,14 +163,7 @@ export const routes: Route[] = [
       {
         path: "bonds",
         element: (
-          <Suspense
-            fallback={
-              <div sx={{ flex: "column", gap: 40 }}>
-                <TableSkeleton rowCount={3} />
-                <TableSkeleton />
-              </div>
-            }
-          >
+          <Suspense fallback={<BondsPageSkeleton />}>
             <BondsPageWrapper />
           </Suspense>
         ),
