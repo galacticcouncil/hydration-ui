@@ -153,8 +153,9 @@ export const useProviderData = () => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
     async () => {
+      const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(rpcUrlList)
+      const api = await apiPool.api(rpcUrlList, maxRetries)
 
       api.registry.register({
         XykLMDeposit: {
