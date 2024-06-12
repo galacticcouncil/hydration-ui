@@ -46,9 +46,9 @@ export default defineConfig(({ mode }) => {
       svgr(),
       Unfonts({
         custom: {
-          display: "auto",
-          preload: true,
-          injectTo: "head-prepend",
+          display: "swap",
+          prefetch: true,
+          injectTo: "head",
           families: [
             {
               name: "Geist",

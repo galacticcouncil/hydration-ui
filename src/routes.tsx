@@ -353,12 +353,6 @@ export const routes: Route[] = [
           </Suspense>
         ),
       },
-
-      // TODO: Not ready. Requested in #861n9ffe4
-      // {
-      //   path: "LRNA",
-      //   element: <StatsPage />,
-      // },
     ],
   },
   {
