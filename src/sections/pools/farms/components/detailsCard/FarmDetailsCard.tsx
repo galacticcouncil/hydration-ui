@@ -73,7 +73,7 @@ export const FarmDetailsCard = ({
 
   if (apr.data == null) return null
 
-  const fullness = apr.data.fullness
+  //const fullness = apr.data.fullness
 
   return (
     <SContainer
@@ -143,14 +143,14 @@ export const FarmDetailsCard = ({
             </Trans>
           </Text>
         </SRow>
-        <SRow css={{ border: depositNft ? undefined : "none" }}>
+        {/* <SRow css={{ border: depositNft ? undefined : "none" }}>
           <FillBar percentage={fullness.toNumber()} variant="secondary" />
           <Text fs={14} color="basic100" tAlign="right">
             {t("farms.details.card.capacity", {
               capacity: fullness,
             })}
           </Text>
-        </SRow>
+        </SRow> */}
         {depositNft && (
           <>
             <SRow>
