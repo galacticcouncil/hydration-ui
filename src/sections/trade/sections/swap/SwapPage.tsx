@@ -14,6 +14,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isEvmAccount } from "utils/evm"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { useRemount } from "hooks/useRemount"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
@@ -61,6 +62,8 @@ export function SwapPage() {
   const [addToken, setAddToken] = useState(false)
 
   const isEvm = isEvmAccount(account?.address)
+  const version = useRemount([isEvm])
+
   const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -117,6 +120,7 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
+        key={version}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")
