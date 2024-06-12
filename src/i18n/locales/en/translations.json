@@ -596,7 +596,7 @@
   "farms.modal.join.toast.onLoading": "<0>Joining farm with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>asset shares.</0>",
   "farms.modal.join.toast.onSuccess": "<0>Joined farm with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0>asset shares</0>.",
   "farms.modal.join.step": "Join Farm {{number}} ",
-  "farms.modal.join.minDeposit": "Minimal deposit is not reached",
+  "farms.modal.join.minDeposit": "Minimal value of liquidity position for entering this farm is {{ value, bignumber(type: 'token') }} {{symbol}}",
   "farms.modal.footer.title": "Available asset shares",
   "farms.modal.details.title": "Farm details",
   "farms.modal.details.loyaltyRewards.label": "Loyalty rewards",

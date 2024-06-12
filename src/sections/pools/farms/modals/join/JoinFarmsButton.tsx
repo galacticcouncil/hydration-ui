@@ -44,7 +44,7 @@ export const JoinFarmsButton = (props: {
           farms={farms.data}
           poolId={props.poolId}
           onClose={() => setJoinFarm(false)}
-          initialShares={props.position?.shares}
+          position={props.position}
           mutation={mutation}
         />
       )}

@@ -6,9 +6,13 @@ import { undefinedNoop } from "utils/helpers"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const useOmnipoolAsset = (id: u32 | string) => {
+export const useOmnipoolAsset = (id?: u32 | string) => {
   const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.omnipoolAsset(id), getOmnipoolAsset(api, id))
+  return useQuery(
+    QUERY_KEYS.omnipoolAsset(id),
+    id ? getOmnipoolAsset(api, id) : undefinedNoop,
+    { enabled: !!id },
+  )
 }
 
 export const useOmnipoolAssets = (noRefresh?: boolean) => {

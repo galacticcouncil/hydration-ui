@@ -255,7 +255,7 @@ export const QUERY_KEYS = {
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: ["omnipoolFee"],
-  omnipoolAsset: (id: u32 | string) => [
+  omnipoolAsset: (id?: u32 | string) => [
     QUERY_KEY_PREFIX,
     "omnipoolAsset",
     id?.toString(),

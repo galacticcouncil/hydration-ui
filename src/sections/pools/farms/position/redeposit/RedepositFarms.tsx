@@ -67,7 +67,9 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
         <JoinFarmModal
           farms={availableYieldFarms}
           poolId={poolId}
-          initialShares={depositNft.data.shares.toBigNumber()}
+          position={{
+            shares: depositNft.data.shares.toBigNumber(),
+          }}
           onClose={() => setJoinFarm(false)}
           isRedeposit
           mutation={redeposit}
