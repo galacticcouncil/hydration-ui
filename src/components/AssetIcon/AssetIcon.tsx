@@ -15,9 +15,6 @@ import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
 import { MetadataStore } from "@galacticcouncil/ui"
 
-const EXTERNAL_ASSETS_WHITELIST =
-  MetadataStore.getInstance().externalWhitelist()
-
 const chains = Array.from(chainsMap.values())
 
 export const UigcAssetPlaceholder = createComponent({
@@ -48,6 +45,11 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
+  const externalAssetsWhitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
+
   const asset = useMemo(() => {
     const assetDetails = id ? assets.getAsset(id) : undefined
 
@@ -58,7 +60,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     ) as AnyParachain
 
     const isWhitelisted = assetDetails
-      ? EXTERNAL_ASSETS_WHITELIST.includes(assetDetails.id)
+      ? externalAssetsWhitelist.includes(assetDetails.id)
       : false
 
     const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
@@ -72,7 +74,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [assets, id])
+  }, [assets, externalAssetsWhitelist, id])
 
   if (asset.chain || asset.symbol)
     return (

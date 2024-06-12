@@ -69,7 +69,7 @@ export const Burning = () => {
           <BlockSkeleton />
         ) : (
           <>
-            <Text fs={[20, 30]} lh={[20, 30]} font="GeistMono">
+            <Text fs={[20, 30]} lh={[20, 30]}>
               {t("value.tokenWithSymbol", {
                 value: formatValue(imbalance, meta?.decimals),
                 symbol,
@@ -95,7 +95,7 @@ export const Burning = () => {
           <BlockSkeleton />
         ) : (
           <>
-            <Text fs={[20, 30]} lh={[20, 30]} font="GeistMono">
+            <Text fs={[20, 30]} lh={[20, 30]}>
               {t("value.tokenWithSymbol", {
                 value: formatValue(fees, meta?.decimals),
                 symbol,
