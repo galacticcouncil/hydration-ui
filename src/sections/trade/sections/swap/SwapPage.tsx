@@ -18,7 +18,6 @@ import { useRemount } from "hooks/useRemount"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
@@ -59,15 +58,12 @@ export function SwapPage() {
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
   const [addToken, setAddToken] = useState(false)
-  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
+  const version = useRemount([isEvm])
+
   const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
-  const version = useRemount([
-    isEvm,
-    externalTokensStored[activeProvider.dataEnv].length,
-  ])
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)

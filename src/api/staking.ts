@@ -1,14 +1,14 @@
-//@ts-nocheck
 import { ApiPromise } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { getUniques } from "./uniques"
 import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
-import { PROVIDERS } from "./provider"
+import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useActiveProvider } from "api/provider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { undefinedNoop } from "utils/helpers"
 
 interface ISubscanData {
   code: number
@@ -116,7 +116,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const conviction = data.conviction.toString()
 
     const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.unwrapOr(null).isFinished
+    const isFinished = referendaInfo.unwrapOr(null)?.isFinished
 
     if (isFinished) {
       prevAcc.push({
@@ -127,7 +127,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     }
 
     return prevAcc
-  }, Promise.resolve([]))
+  }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
 
   return {
     stake: positionData.stake.toBigNumber() as BN,
@@ -219,12 +219,7 @@ export type TAccumulatedRpsUpdated = StakeEventBase & {
 }
 
 export const useStakingEvents = () => {
-  const activeProvider = useActiveProvider()
-  const rpcUrl = activeProvider?.url
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(QUERY_KEYS.stakingEvents, async () => {
     const [accumulatedRpsUpdated, stakingInitialized] = await Promise.all([
@@ -241,15 +236,14 @@ export const useStakingEvents = () => {
   })
 }
 
-export const useStakingPositionBalances = (positionId: Maybe<string>) => {
-  const activeProvider = useActiveProvider()
-
-  const indexerUrl =
-    activeProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+export const useStakingPositionBalances = (positionId?: string) => {
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(
     QUERY_KEYS.stakingPositionBalances(positionId),
-    getStakingPositionBalances(indexerUrl, positionId),
+    positionId
+      ? getStakingPositionBalances(indexerUrl, positionId)
+      : undefinedNoop,
     { enabled: !!positionId },
   )
 }
@@ -326,3 +320,39 @@ const getStakingPositionBalances =
       )),
     }
   }
+
+export const useProcessedVotesIds = () => {
+  const { account } = useAccount()
+  const { api } = useRpcProvider()
+
+  return useMutation(async () => {
+    if (!account) {
+      return []
+    }
+
+    const processedVotesRes = await api.query.staking.processedVotes.entries(
+      account.address,
+    )
+
+    const ids = processedVotesRes.map(([processedVote]) => {
+      const [, id] = processedVote.toHuman() as string[]
+
+      return id
+    })
+
+    return ids
+  })
+}
+
+export const usePositionVotesIds = () => {
+  const { api } = useRpcProvider()
+
+  return useMutation(async (positionId: number) => {
+    const positionVotesRes = await api.query.staking.positionVotes(positionId)
+    const positionVotesIds = positionVotesRes.votes.map(([position]) =>
+      position.toString(),
+    )
+
+    return positionVotesIds
+  })
+}
