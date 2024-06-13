@@ -149,7 +149,7 @@
 "@babel/helper-environment-visitor@^7.24.7":
   version "7.24.7"
   resolved "https://registry.yarnpkg.com/@babel/helper-environment-visitor/-/helper-environment-visitor-7.24.7.tgz#4b31ba9551d1f90781ba83491dd59cf9b269f7d9"
-  integrity sha512-DoiN84+4Gnd0ncbBOM9AZENV4a5ZiL39HYMyZJGZ/AZEykHYdJw0wW3kdscsh9/Kn+BRXHLkkklZ51ecPKmI1CQ==
+  integrity sha512-DoiN84+4Gnd0ncbBOM9AZENV4a5ZiL39HYMyZJGZ/AZEykHYdJw0wW3kdcsh9/Kn+BRXHLkkklZ51ecPKmI1CQ==
   dependencies:
     "@babel/types" "^7.24.7"
 
@@ -2393,6 +2393,14 @@
     big.js "^6.2.1"
     lru-cache "^7.17.0"
 
+"@moonbeam-network/xcm-utils@^2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-utils/-/xcm-utils-2.0.8.tgz#8857224094811cd97ece4b75a28bb08065b830c4"
+  integrity sha512-1JSgncsLk5fOnBvDAATKwqq2IZub2jxU8w4sD0HTjnMnH9CFeePd8AKxACyg6EGBVwrlvbymrHZv/yVG6opvKg==
+  dependencies:
+    big.js "^6.2.1"
+    lru-cache "^10.2.2"
+
 "@motionone/animation@^10.15.1", "@motionone/animation@^10.18.0":
   version "10.18.0"
   resolved "https://registry.yarnpkg.com/@motionone/animation/-/animation-10.18.0.tgz#868d00b447191816d5d5cf24b1cafa144017922b"
@@ -2751,30 +2759,7 @@
     rxjs "^7.8.1"
     tslib "^2.5.3"
 
-"@polkadot/api@10.9.1":
-  version "10.9.1"
-  resolved "https://registry.yarnpkg.com/@polkadot/api/-/api-10.9.1.tgz#156b3436f45ef18218960804988c1f552d2c4e46"
-  integrity sha512-ND/2UqZBWvtt4PfV03OStTKg0mxmPk4UpMAgJKutdgsz/wP9CYJ1KbjwFgPNekL9JnzbKQsWyQNPVrcw7kQk8A==
-  dependencies:
-    "@polkadot/api-augment" "10.9.1"
-    "@polkadot/api-base" "10.9.1"
-    "@polkadot/api-derive" "10.9.1"
-    "@polkadot/keyring" "^12.3.1"
-    "@polkadot/rpc-augment" "10.9.1"
-    "@polkadot/rpc-core" "10.9.1"
-    "@polkadot/rpc-provider" "10.9.1"
-    "@polkadot/types" "10.9.1"
-    "@polkadot/types-augment" "10.9.1"
-    "@polkadot/types-codec" "10.9.1"
-    "@polkadot/types-create" "10.9.1"
-    "@polkadot/types-known" "10.9.1"
-    "@polkadot/util" "^12.3.1"
-    "@polkadot/util-crypto" "^12.3.1"
-    eventemitter3 "^5.0.1"
-    rxjs "^7.8.1"
-    tslib "^2.5.3"
-
-"@polkadot/api@^10.11.2", "@polkadot/api@^10.12.4", "@polkadot/api@^10.4.1", "@polkadot/api@^10.7.3", "@polkadot/api@^10.9.1", "@polkadot/api@^7.2.1", "@polkadot/api@^9.13.2", "@polkadot/api@^9.14.1", "@polkadot/api@^9.3.3", "@polkadot/api@latest":
+"@polkadot/api@10.9.1", "@polkadot/api@^10.11.2", "@polkadot/api@^10.12.4", "@polkadot/api@^10.4.1", "@polkadot/api@^10.7.3", "@polkadot/api@^10.9.1", "@polkadot/api@^7.2.1", "@polkadot/api@^9.13.2", "@polkadot/api@^9.14.1", "@polkadot/api@^9.3.3", "@polkadot/api@latest":
   version "10.13.1"
   resolved "https://registry.yarnpkg.com/@polkadot/api/-/api-10.13.1.tgz#47586c070d3fe13a0acc93a8aa9c3a53791284fb"
   integrity sha512-YrKWR4TQR5CDyGkF0mloEUo7OsUA+bdtENpJGOtNavzOQUDEbxFE0PVzokzZfVfHhHX2CojPVmtzmmLxztyJkg==
@@ -10580,7 +10565,7 @@ lower-case@^2.0.2:
   dependencies:
     tslib "^2.0.3"
 
-lru-cache@^10.2.0:
+lru-cache@^10.2.0, lru-cache@^10.2.2:
   version "10.2.2"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.2.2.tgz#48206bc114c1252940c41b25b41af5b545aca878"
   integrity sha512-9hp3Vp2/hFQUiIwKo8XCeFVnrg8Pk3TYNPIR7tJADKi5YfcF7vEaK7avFHTlSy3kOKYaJQaalfEo6YuXdceBOQ==
