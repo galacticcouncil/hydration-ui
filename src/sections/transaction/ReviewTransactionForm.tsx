@@ -83,6 +83,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     isLinkedAccount,
     storedReferralCode,
     tx,
+    era,
   } = transactionValues.data
 
   const isLinking = !isLinkedAccount && storedReferralCode
@@ -121,6 +122,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         }
 
         const signature = await tx.signAsync(address, {
+          era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
           // defer to polkadot/api to handle nonce w/ regard to mempool
