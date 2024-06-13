@@ -81,7 +81,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
       const omnipoolAssetId = omnipoolAsset.id.toString()
-      const shares = omnipoolAsset.data.shares
+      const shares = omnipoolAsset.data.shares.toString()
       const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
 
       const meta = assets.getAsset(omnipoolAssetId)
