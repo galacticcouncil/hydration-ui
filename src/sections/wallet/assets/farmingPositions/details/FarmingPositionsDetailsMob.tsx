@@ -113,12 +113,12 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
                 </Text>
                 <Text fs={14} lh={14} color="white">
                   {t("value.tokenWithSymbol", {
-                    value: position.providedAmount,
+                    value: position.amount,
                     symbol,
                   })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={position.providedAmountDisplay} />
+                  <DisplayValue value={position.amountDisplay} />
                 </Text>
               </div>
 

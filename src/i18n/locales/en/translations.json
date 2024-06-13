@@ -250,7 +250,7 @@
   "liquidity.add.modal.tradeFee": "Trade fee:",
   "liquidity.add.modal.tradeFee.description": "These rewards will be distributed between all liquidity providers.",
   "liquidity.add.modal.shareTokens": "Received amount of share tokens",
-  "liquidity.add.modal.receive": "Received amount of asset shares:",
+  "liquidity.add.modal.shareOfPool": "Share of the pool after providing liquidity:",
   "liquidity.add.modal.warning": "You will receive an NFT representing this liquidity position in your wallet.",
   "liquidity.add.modal.warningLimit.cap": "The amount of liquidity you wish to provide exceeds the maximum allowed capacity for this asset.",
   "liquidity.add.modal.warningLimit.circuitBreaker": "Limit for adding liquidity for this pool is {{amount}} {{symbol}}",

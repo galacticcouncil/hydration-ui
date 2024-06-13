@@ -9,17 +9,16 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
-import { scale, scaleHuman } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { useMinWithdrawalFee } from "api/consts"
 import { useMutation } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
+import { useLiquidityPositionData } from "utils/omnipool"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
@@ -57,6 +56,7 @@ export const useRemoveLiquidity = (
   const spotPrice = useSpotPrice(hubMeta.id, assetId)
   const oracle = useOraclePrice(assetId, hubMeta.id)
   const minlFeeQuery = useMinWithdrawalFee()
+  const { getData } = useLiquidityPositionData([assetId])
   const omnipoolAsset = useOmnipoolAsset(assetId)
   const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
 
@@ -85,7 +85,6 @@ export const useRemoveLiquidity = (
         oracle.data &&
         minlFeeQuery.data
       ) {
-        const positionPrice = scale(position.price, "q")
         const oraclePrice = oracle.data.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery.data
 
@@ -108,54 +107,31 @@ export const useRemoveLiquidity = (
           }
         }
 
-        const paramsWithFee: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.providedAmount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          removeSharesValue.toFixed(0),
-          withdrawalFee,
-        ]
+        const valueWithFee = getData(position, {
+          fee: withdrawalFee,
+          sharesValue: removeSharesValue.toFixed(0),
+        })
 
-        const paramsWithoutFee: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.providedAmount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          removeSharesValue.toFixed(0),
-          "0",
-        ]
+        const valueWithoutFee = getData(position, {
+          sharesValue: removeSharesValue.toFixed(0),
+        })
 
-        const tokensToGet = BN(
-          calculate_liquidity_out.apply(this, paramsWithFee),
-        )
-        const tokensPayWith = BN(
-          calculate_liquidity_out.apply(this, paramsWithoutFee),
-        ).minus(tokensToGet)
-        const lrnaToGet = BN(
-          calculate_liquidity_lrna_out.apply(this, paramsWithFee),
-        )
-        const lrnaPayWith = BN(
-          calculate_liquidity_lrna_out.apply(this, paramsWithoutFee),
-        ).minus(lrnaToGet)
+        if (!valueWithFee || !valueWithoutFee) return undefined
 
         return {
-          tokensToGet,
-          lrnaToGet,
-          lrnaPayWith,
-          tokensPayWith,
+          tokensToGet: valueWithFee.value,
+          lrnaToGet: valueWithFee.lrna,
+          lrnaPayWith: valueWithoutFee.lrna.minus(valueWithFee.lrna),
+          tokensPayWith: valueWithoutFee.value.minus(valueWithFee.value),
           withdrawalFee: scaleHuman(withdrawalFee, "q").multipliedBy(100),
           minWithdrawalFee,
         }
       }
     },
     [
+      getData,
       minlFeeQuery.data,
-      omnipoolAsset?.data,
+      omnipoolAsset.data,
       omnipoolBalance.data,
       oracle.data,
       spotPrice.data,
@@ -181,7 +157,9 @@ export const useRemoveLiquidity = (
         return acc
       }, defaultValues)
     }
-
+    console.log(
+      calculateLiquidityValues(position, removeShares)?.tokensToGet.toString(),
+    )
     return calculateLiquidityValues(position, removeShares)
   }, [calculateLiquidityValues, isPositionMultiple, position, removeShares])
 

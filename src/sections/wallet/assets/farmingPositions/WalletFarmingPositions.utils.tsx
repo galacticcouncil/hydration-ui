@@ -85,22 +85,20 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
               <Text fs={14} fw={500} color="white">
                 {t("value.token", {
                   value: scaleHuman(
-                    row.original.position.providedAmount,
+                    row.original.position.amount,
                     meta.decimals,
                   ),
                 })}
               </Text>
               <DollarAssetValue
-                value={row.original.position.providedAmountDisplay}
+                value={row.original.position.amountDisplay}
                 wrapper={(children) => (
                   <Text fs={[12, 13]} lh={[14, 16]} color="whiteish500">
                     {children}
                   </Text>
                 )}
               >
-                <DisplayValue
-                  value={row.original.position.providedAmountDisplay}
-                />
+                <DisplayValue value={row.original.position.amountDisplay} />
               </DollarAssetValue>
             </>
           )
@@ -291,8 +289,8 @@ type OmnipoolPosition = {
   value: BN
   valueDisplay: BN
   lrna: BN
-  providedAmount: BN
-  providedAmountDisplay: BN
+  amount: BN
+  amountDisplay: BN
 }
 
 export type FarmingTablePosition = {

@@ -1,13 +1,9 @@
-import { useTokensBalances } from "api/balances"
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import BN from "bignumber.js"
+import { useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
 import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
-import { calculatePositionLiquidity } from "utils/omnipool"
+import { useLiquidityPositionData } from "utils/omnipool"
 import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
@@ -31,29 +27,12 @@ export const useOmnipoolPositionsData = ({
       .map((position) => position.data?.assetId.toString())
       .filter(isNotNil) ?? []
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolBalances = useTokensBalances(
-    positionIds,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
-  const spotPrices = useDisplayPrices([assets.hub.id, ...positionIds])
+  const { getData } = useLiquidityPositionData(positionIds)
 
-  const queries = [
-    omnipoolAssets,
-    spotPrices,
-    ...positions,
-    ...omnipoolBalances,
-  ]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isLoading = positions.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (
-      !omnipoolAssets.data ||
-      !spotPrices.data ||
-      positions.some((q) => !q.data) ||
-      omnipoolBalances.some((q) => !q.data)
-    )
-      return []
+    if (positions.some((q) => !q.data)) return []
 
     const rows: HydraPositionsTableData[] = positions
       .map((query) => {
@@ -61,56 +40,22 @@ export const useOmnipoolPositionsData = ({
         if (!position) return null
 
         const assetId = position.assetId.toString()
-        const meta = assets.getAsset(assetId)
-        const lrnaMeta = assets.hub
-        const omnipoolAsset = omnipoolAssets.data.find(
-          (a) => a.id.toString() === assetId,
-        )
-        const omnipoolBalance = omnipoolBalances.find(
-          (b) => b.data?.assetId.toString() === assetId,
-        )
+        const { symbol, name } = assets.getAsset(assetId)
 
-        const symbol = meta.symbol
-        const name = meta.name
+        const data = getData(position)
 
-        const lrnaSp = spotPrices.data?.find(
-          (sp) => sp?.tokenIn === lrnaMeta.id,
-        )
-
-        const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
-
-        const liquidityValues = calculatePositionLiquidity({
-          position,
-          omnipoolBalance: omnipoolBalance?.data?.balance ?? BN(0),
-          omnipoolHubReserve: omnipoolAsset?.data.hubReserve,
-          omnipoolShares: omnipoolAsset?.data.shares,
-          lrnaSpotPrice: lrnaSp?.spotPrice ?? BN(0),
-          valueSpotPrice: valueSp?.spotPrice ?? BN(0),
-          lrnaDecimals: lrnaMeta.decimals,
-          assetDecimals: meta.decimals,
-        })
-
-        const result = {
+        return {
           id: position.id.toString(),
           assetId,
           symbol,
           name,
-          ...liquidityValues,
+          ...data,
         }
-
-        return result
       })
       .filter((x): x is HydraPositionsTableData => x !== null)
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [
-    omnipoolAssets.data,
-    spotPrices.data,
-    positions,
-    omnipoolBalances,
-    search,
-    assets,
-  ])
+  }, [assets, getData, positions, search])
 
   return {
     data,

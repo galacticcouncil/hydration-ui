@@ -13,10 +13,12 @@ import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
+
 import {
   RemoveLiquidityProps,
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const RemoveLiquidityForm = ({
   onClose,
@@ -63,11 +65,11 @@ export const RemoveLiquidityForm = ({
       }}
     >
       <div>
-        <Text fs={32} sx={{ mt: 24 }}>
-          {t("liquidity.remove.modal.value", {
-            value: scaleHuman(removeShares, decimals),
-          })}
-        </Text>
+        <div sx={{ flex: "row", align: "center", gap: 8, mt: 8 }}>
+          <Text fs={32}>{t("value.token", { value: tokensToGet })}</Text>
+          <Icon icon={<AssetLogo id={id} />} size={30} />
+        </div>
+
         <Text fs={18} color="pink500" sx={{ mb: 20 }}>
           {t("value.percentage", { value })}
         </Text>
@@ -95,10 +97,8 @@ export const RemoveLiquidityForm = ({
             id={id}
             name={name}
             symbol={symbol}
-            amount={t("value", {
+            amount={t("value.token", {
               value: tokensToGet,
-              fixedPointScale: decimals,
-              type: "token",
             })}
           />
           {values && BN(values.lrnaToGet).gt(0) && (
@@ -106,10 +106,8 @@ export const RemoveLiquidityForm = ({
               id={DEPOSIT_CLASS_ID}
               name={lrnaMeta.name}
               symbol={lrnaMeta.symbol}
-              amount={t("value", {
+              amount={t("value.token", {
                 value: values.lrnaToGet,
-                fixedPointScale: lrnaMeta.decimals,
-                type: "token",
               })}
             />
           )}
@@ -123,13 +121,11 @@ export const RemoveLiquidityForm = ({
           !BN(values?.lrnaPayWith ?? 0).isZero()
             ? t("value.token", {
                 value: values?.lrnaPayWith,
-                fixedPointScale: lrnaMeta.decimals,
               })
             : undefined
         }
         assetFeeValue={t("value.token", {
           value: values?.tokensPayWith,
-          fixedPointScale: decimals,
         })}
         assetSymbol={symbol}
       />

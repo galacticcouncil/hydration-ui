@@ -142,7 +142,7 @@ export const LiquidityPosition = ({
             <div sx={{ flex: "column", align: ["end", "start"] }}>
               <Text fs={[13, 16]}>
                 {t("value.token", {
-                  value: position.providedAmount,
+                  value: position.amount,
                   fixedPointScale: meta.decimals,
                   numberSuffix: ` ${meta.symbol}`,
                 })}

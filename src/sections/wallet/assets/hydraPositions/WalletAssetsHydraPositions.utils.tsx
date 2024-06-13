@@ -21,6 +21,8 @@ import {
   isXYKPosition,
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
+import { u128 } from "@polkadot/types"
+import { ITuple } from "@polkadot/types-codec/types"
 
 export const useHydraPositionsTable = (
   data: (HydraPositionsTableData | TXYKPosition)[],
@@ -35,7 +37,7 @@ export const useHydraPositionsTable = (
 
   const columnVisibility: VisibilityState = {
     symbol: true,
-    providedAmount: isDesktop,
+    amount: isDesktop,
     valueDisplay: true,
   }
 
@@ -44,12 +46,10 @@ export const useHydraPositionsTable = (
       accessor("symbol", {
         id: "symbol",
         header: t("wallet.assets.hydraPositions.header.name"),
-        cell: ({ row }) => (
-          <AssetTableName {...row.original} id={row.original.assetId} />
-        ),
+        cell: ({ row }) => <AssetTableName id={row.original.assetId} />,
       }),
-      accessor("providedAmount", {
-        id: "providedAmount",
+      accessor("amount", {
+        id: "amount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) =>
@@ -58,7 +58,7 @@ export const useHydraPositionsTable = (
           ) : (
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              amount={row.original.providedAmountShifted}
+              amount={row.original.amountShifted}
             />
           ),
       }),
@@ -126,9 +126,9 @@ export type HydraPositionsTableData = {
   value: BN
   valueDisplay: BN
   valueDisplayWithoutLrna: BN
-  price: BN
-  providedAmount: BN
-  providedAmountDisplay: BN
-  providedAmountShifted: BN
+  price: ITuple<[u128, u128]>
+  amount: BN
+  amountDisplay: BN
+  amountShifted: BN
   shares: BN
 }

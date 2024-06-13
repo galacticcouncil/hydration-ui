@@ -67,7 +67,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
     const lrnaPositionPrice =
       row.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
 
-    const { symbol, lrna, providedAmountShifted: amount, value } = row
+    const { symbol, lrna, amountShifted: amount, value } = row
 
     const tKey = lrna?.gt(0)
       ? "wallet.assets.hydraPositions.data.valueLrna"
