@@ -21,8 +21,6 @@ import {
   isXYKPosition,
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
-import { u128 } from "@polkadot/types"
-import { ITuple } from "@polkadot/types-codec/types"
 
 export const useHydraPositionsTable = (
   data: (HydraPositionsTableData | TXYKPosition)[],
@@ -126,7 +124,7 @@ export type HydraPositionsTableData = {
   value: BN
   valueDisplay: BN
   valueDisplayWithoutLrna: BN
-  price: ITuple<[u128, u128]>
+  price: [string, string]
   amount: BN
   amountDisplay: BN
   amountShifted: BN

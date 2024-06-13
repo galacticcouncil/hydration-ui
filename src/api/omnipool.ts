@@ -129,12 +129,13 @@ export const getOmnipoolPosition =
   (api: ApiPromise, itemId: string) => async () => {
     const res = await api.query.omnipool.positions(itemId)
     const data = res.unwrap()
+
     const position = {
       id: itemId,
       assetId: data.assetId.toString(),
       amount: data.amount.toBigNumber(),
       shares: data.shares.toBigNumber(),
-      price: data.price,
+      price: data.price.map((el) => el.toString()),
     }
 
     return position
@@ -165,7 +166,7 @@ export const getOmnipoolPositions =
       return {
         amount: data.amount.toBigNumber(),
         shares: data.shares.toBigNumber(),
-        price: data.price,
+        price: data.price.map((e) => e.toString()),
         assetId: data.assetId.toString(),
       }
     })

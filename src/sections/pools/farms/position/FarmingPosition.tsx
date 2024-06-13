@@ -203,7 +203,7 @@ const OmnipoolFields = ({
 
   const initialPosValue =
     getFloatingPointAmount(
-      lpPosition.data?.amount.toBigNumber() ?? 0,
+      lpPosition.data?.amount ?? 0,
       meta?.decimals ?? 12,
     ) ?? BN_0
 
