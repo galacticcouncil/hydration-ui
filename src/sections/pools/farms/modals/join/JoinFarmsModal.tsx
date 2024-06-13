@@ -1,6 +1,5 @@
 import { u32 } from "@polkadot/types"
 import { Farm } from "api/farms"
-import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -8,7 +7,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { FarmDepositMutationType } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
@@ -24,14 +22,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
+import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 
 type JoinFarmModalProps = {
   onClose: () => void
   poolId: string
-  initialShares?: BigNumber
+  position?: Partial<HydraPositionsTableData>
   farms: Farm[]
   isRedeposit?: boolean
-  depositNft?: TMiningNftPosition
   mutation: FarmDepositMutationType | FarmRedepositMutationType
 }
 
@@ -39,8 +37,7 @@ export const JoinFarmModal = ({
   onClose,
   isRedeposit,
   poolId,
-  initialShares,
-  depositNft,
+  position,
   farms,
   mutation,
 }: JoinFarmModalProps) => {
@@ -52,18 +49,20 @@ export const JoinFarmModal = ({
   } | null>(null)
   const meta = assets.getAsset(poolId.toString())
   const bestNumber = useBestNumber()
+  const shouldValidate = !!position?.providedAmount
 
-  const zodSchema = useZodSchema(
-    meta.id,
+  const zodSchema = useZodSchema({
+    id: meta.id,
     farms,
-    !!isRedeposit || !!initialShares,
-  )
+    position,
+    enabled: shouldValidate,
+  })
 
   const form = useForm<{ amount: string }>({
     mode: "onChange",
     defaultValues: {
-      amount: initialShares
-        ? scaleHuman(initialShares, meta.decimals).toString()
+      amount: position
+        ? scaleHuman(position.shares, meta.decimals).toString()
         : undefined,
     },
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
@@ -110,20 +109,19 @@ export const JoinFarmModal = ({
               <>
                 <>
                   {isRedeposit && (
-                    <Text color="basic400">
+                    <Text color="basic400" sx={{ mb: 12 }}>
                       {t("farms.modal.join.description", {
                         assets: meta.symbol,
                       })}
                     </Text>
                   )}
-                  <div sx={{ flex: "column", gap: 8, mt: 24 }}>
+                  <div sx={{ flex: "column", gap: 8 }}>
                     {farms.map((farm, i) => {
                       return (
                         <FarmDetailsCard
                           key={i}
                           poolId={poolId}
                           farm={farm}
-                          depositNft={depositNft}
                           onSelect={() => {
                             setSelectedFarmId({
                               globalFarmId: farm.globalFarm.id,
@@ -139,7 +137,7 @@ export const JoinFarmModal = ({
 
                 <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
                   <SJoinFarmContainer>
-                    {initialShares ? (
+                    {position ? (
                       <div
                         sx={{
                           flex: ["column", "row"],
@@ -157,7 +155,7 @@ export const JoinFarmModal = ({
                           css={{ whiteSpace: "nowrap" }}
                         >
                           {t("value.token", {
-                            value: initialShares,
+                            value: position.shares,
                             fixedPointScale: meta.decimals,
                           })}
                         </Text>
@@ -188,7 +186,7 @@ export const JoinFarmModal = ({
                       </>
                     )}
 
-                    {error && initialShares && (
+                    {error && position && (
                       <Alert variant="error" css={{ margin: "20px 0" }}>
                         {error}
                       </Alert>
@@ -198,7 +196,7 @@ export const JoinFarmModal = ({
                       fullWidth
                       variant="primary"
                       isLoading={mutation.isLoading}
-                      disabled={!!error || !zodSchema}
+                      disabled={shouldValidate ? !!error || !zodSchema : false}
                     >
                       {t("farms.modal.join.button.label", {
                         count: farms.length,
@@ -215,7 +213,6 @@ export const JoinFarmModal = ({
               <FarmDetailsModal
                 poolId={poolId}
                 farm={selectedFarm}
-                depositNft={depositNft}
                 currentBlock={currentBlock?.toNumber()}
               />
             ),
