@@ -585,7 +585,7 @@
   "farms.details.card.tag.label": "Joined",
   "farms.details.card.distribution": "<0>{{ distributed, compact }}</0> <1>of</1> <0>{{ max, compact }} distributed</0>",
   "farms.details.card.capacity": "{{ capacity, bignumber(type: 'percentage') }}% Hydrated",
-  "farms.details.card.capacity.desc": "Farming rewards are proportionally decreased after 100% Hydrated",
+  "farms.details.card.capacity.desc": "Farming rewards are proportionally decreased after 100% Hydration",
   "farms.details.card.lockedShares.label": "Asset shares",
   "farms.details.card.currentApr.label": "Current APR (est.)",
   "farms.details.card.lockedShares.value": "{{ value, compact }} shares",
