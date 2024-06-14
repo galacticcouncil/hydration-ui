@@ -59,18 +59,29 @@ export const useRemoveLiquidity = (
     (omnipoolAsset) => omnipoolAsset.id === assetId,
   )
 
-  const { removeShares, totalShares } = useMemo(() => {
+  const { removeShares, totalValue, removeValue } = useMemo(() => {
     if (isPositionMultiple) {
       const totalShares = position.reduce(
         (acc, pos) => acc.plus(pos.shares),
         BN_0,
       )
-      return { removeShares: totalShares, totalShares }
+
+      const totalRemoveValue = position.reduce(
+        (acc, pos) => acc.plus(pos.totalValueShifted),
+        BN_0,
+      )
+      return {
+        removeShares: totalShares,
+        removeValue: totalRemoveValue,
+        totalValue: totalRemoveValue,
+      }
     }
 
     const totalShares = position.shares
+
     return {
-      totalShares,
+      totalValue: position.totalValueShifted,
+      removeValue: position.totalValueShifted.div(100).times(percentage),
       removeShares: totalShares.div(100).times(percentage),
     }
   }, [isPositionMultiple, position, percentage])
@@ -112,10 +123,14 @@ export const useRemoveLiquidity = (
         if (!valueWithFee || !valueWithoutFee) return undefined
 
         return {
-          tokensToGet: valueWithFee.value,
-          lrnaToGet: valueWithFee.lrna,
-          lrnaPayWith: valueWithoutFee.lrna.minus(valueWithFee.lrna),
-          tokensPayWith: valueWithoutFee.value.minus(valueWithFee.value),
+          tokensToGet: valueWithFee.valueShifted,
+          lrnaToGet: valueWithFee.lrnaShifted,
+          lrnaPayWith: valueWithoutFee.lrnaShifted.minus(
+            valueWithFee.lrnaShifted,
+          ),
+          tokensPayWith: valueWithoutFee.valueShifted.minus(
+            valueWithFee.valueShifted,
+          ),
           withdrawalFee: scaleHuman(withdrawalFee, "q").multipliedBy(100),
           minWithdrawalFee,
         }
@@ -188,12 +203,10 @@ export const useRemoveLiquidity = (
 
       const tOptions = {
         amount: values.tokensToGet,
-        fixedPointScale: meta.decimals,
         symbol: meta.symbol,
         withLrna: values.lrnaToGet.isGreaterThan(0)
           ? t("liquidity.remove.modal.toast.withLrna", {
               lrna: values.lrnaToGet,
-              fixedPointScale: hubMeta.decimals,
             })
           : "",
       }
@@ -233,5 +246,12 @@ export const useRemoveLiquidity = (
 
   const isFeeExceeded = values?.withdrawalFee?.gte(1)
 
-  return { values, removeShares, totalShares, isFeeExceeded, meta, mutation }
+  return {
+    values,
+    totalValue,
+    removeValue,
+    isFeeExceeded,
+    meta,
+    mutation,
+  }
 }

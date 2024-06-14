@@ -7,7 +7,6 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { DEPOSIT_CLASS_ID } from "utils/api"
-import { scaleHuman } from "utils/balance"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
@@ -44,11 +43,11 @@ export const RemoveLiquidityForm = ({
 
   const {
     values,
-    removeShares,
-    totalShares,
+    removeValue,
+    totalValue,
     isFeeExceeded,
     mutation,
-    meta: { id, symbol, name, decimals },
+    meta: { id, symbol, name },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
@@ -66,7 +65,7 @@ export const RemoveLiquidityForm = ({
     >
       <div>
         <div sx={{ flex: "row", align: "center", gap: 8, mt: 8 }}>
-          <Text fs={32}>{t("value.token", { value: tokensToGet })}</Text>
+          <Text fs={32}>{t("value.token", { value: removeValue })}</Text>
           <Icon icon={<AssetLogo id={id} />} size={30} />
         </div>
 
@@ -82,7 +81,7 @@ export const RemoveLiquidityForm = ({
                 value={field.value}
                 onChange={field.onChange}
                 balance={t("liquidity.remove.modal.shares", {
-                  shares: scaleHuman(totalShares, decimals),
+                  shares: totalValue,
                 })}
               />
             )}
