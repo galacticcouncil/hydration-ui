@@ -1,9 +1,8 @@
 import { useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useLiquidityPositionData } from "utils/omnipool"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
@@ -16,7 +15,6 @@ export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
-  const { assets } = useRpcProvider()
   const accountPositions = useAccountNFTPositions(address)
   const positions = useOmnipoolPositions(
     accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
@@ -34,28 +32,17 @@ export const useOmnipoolPositionsData = ({
   const data = useMemo(() => {
     if (positions.some((q) => !q.data)) return []
 
-    const rows: HydraPositionsTableData[] = positions
-      .map((query) => {
-        const position = query.data
-        if (!position) return null
+    const rows = positions.reduce<TLPData[]>((acc, query) => {
+      const position = query.data
+      if (!position) return acc
 
-        const assetId = position.assetId.toString()
-        const { symbol, name } = assets.getAsset(assetId)
-
-        const data = getData(position)
-
-        return {
-          id: position.id.toString(),
-          assetId,
-          symbol,
-          name,
-          ...data,
-        }
-      })
-      .filter((x): x is HydraPositionsTableData => x !== null)
+      const data = getData(position)
+      if (data) acc.push(data)
+      return acc
+    }, [])
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [assets, getData, positions, search])
+  }, [getData, positions, search])
 
   return {
     data,
@@ -163,5 +150,5 @@ export type TXYKPosition = NonNullable<
 >[number]
 
 export const isXYKPosition = (
-  position: HydraPositionsTableData | TXYKPosition,
+  position: TLPData | TXYKPosition,
 ): position is TXYKPosition => (position as TXYKPosition).isXykPosition

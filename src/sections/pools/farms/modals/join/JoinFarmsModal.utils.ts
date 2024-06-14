@@ -9,10 +9,7 @@ import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAsset } from "api/omnipool"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 
 export const useZodSchema = ({
   id,
@@ -22,7 +19,7 @@ export const useZodSchema = ({
 }: {
   id: string
   farms: Farm[]
-  position?: Partial<HydraPositionsTableData>
+  position?: TLPData
   enabled: boolean
 }) => {
   const assetId = enabled ? id : undefined
@@ -30,11 +27,9 @@ export const useZodSchema = ({
   const { account } = useAccount()
   const { assets } = useRpcProvider()
   const { data: balance } = useTokenBalance(assetId, account?.address)
+  const { getData } = useLiquidityPositionData(assetId ? [assetId] : undefined)
 
   const meta = assets.getAsset(id)
-
-  const omnipoolAsset = useOmnipoolAsset(assetId)
-  const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
 
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(
@@ -53,27 +48,14 @@ export const useZodSchema = ({
   }, [farms])
 
   const minDepositeValue = useMemo(() => {
-    if (
-      omnipoolAsset.data &&
-      omnipoolBalance.data &&
-      position?.providedAmount &&
-      position?.shares &&
-      position?.price
-    ) {
-      const value = calculate_liquidity_out(
-        omnipoolBalance.data.balance.toString(),
-        omnipoolAsset.data.hubReserve.toString(),
-        omnipoolAsset.data.shares.toString(),
-        position.providedAmount.toString(),
-        position.shares.toString(),
-        position.price.toFixed(0),
-        minDeposit.value.toString(),
-        "0",
-      )
+    if (position) {
+      const data = getData(position, {
+        sharesValue: minDeposit.value.toString(),
+      })
 
-      return value
+      return data?.value
     }
-  }, [minDeposit.value, omnipoolAsset.data, omnipoolBalance.data, position])
+  }, [getData, minDeposit.value, position])
 
   const oraclePrice = useOraclePrice(minDeposit.assetId, assetId)
 
@@ -82,8 +64,8 @@ export const useZodSchema = ({
   const rule = required
     .refine(
       () => {
-        if (position?.providedAmount) {
-          const valueInHub = position.providedAmount
+        if (position?.amount) {
+          const valueInHub = position.amount
             .times(oraclePrice.data?.price?.n ?? 1)
             .div(oraclePrice.data?.price?.d ?? 1)
 

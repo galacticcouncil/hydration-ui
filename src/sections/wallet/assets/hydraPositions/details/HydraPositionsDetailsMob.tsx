@@ -5,17 +5,15 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useSpotPrice } from "api/spotPrice"
-import { BN_0, BN_1 } from "utils/constants"
 import {
   TXYKPosition,
   isXYKPosition,
 } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { TLPData } from "utils/omnipool"
 
 type Props = {
-  row?: HydraPositionsTableData | TXYKPosition
+  row?: TLPData | TXYKPosition
   onClose: () => void
 }
 
@@ -25,8 +23,6 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
   const { assets } = useRpcProvider()
 
   const meta = row?.assetId ? assets.getAsset(row.assetId) : undefined
-
-  const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, row?.assetId)
 
   if (!row) return null
 
@@ -64,12 +60,15 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
       </div>
     )
   } else {
-    const lrnaPositionPrice =
-      row.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+    const {
+      symbol,
+      lrnaShifted,
+      amountShifted,
+      valueShifted,
+      totalValueShifted,
+    } = row
 
-    const { symbol, lrna, amountShifted: amount, value } = row
-
-    const tKey = lrna?.gt(0)
+    const tKey = lrnaShifted?.gt(0)
       ? "wallet.assets.hydraPositions.data.valueLrna"
       : "wallet.assets.hydraPositions.data.value"
 
@@ -77,12 +76,12 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
       <>
         <Text fs={14} lh={14} fw={500} color="white">
           {t("value.tokenWithSymbol", {
-            value: lrnaPositionPrice.plus(value ?? BN_0),
+            value: totalValueShifted,
             symbol: meta?.symbol,
           })}
         </Text>
 
-        {lrnaPositionPrice.gt(0) && (
+        {lrnaShifted.gt(0) && (
           <Text
             fs={14}
             lh={14}
@@ -94,9 +93,9 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
             <Trans
               i18nKey={tKey}
               tOptions={{
-                value,
+                value: valueShifted,
                 symbol,
-                lrna,
+                lrna: lrnaShifted,
                 type: "token",
               }}
             >
@@ -113,7 +112,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           {t("wallet.assets.hydraPositions.header.providedAmount")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.tokenWithSymbol", { value: amount, symbol })}
+          {t("value.tokenWithSymbol", { value: amountShifted, symbol })}
         </Text>
       </div>
     )

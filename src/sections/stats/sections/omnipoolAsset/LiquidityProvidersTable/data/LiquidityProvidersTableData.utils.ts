@@ -60,10 +60,16 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
       // filter positions by assetId
       .filter(({ position }) => position.assetId.toString() === assetId)
       .map(({ position, unique }) => {
-        const data = getData(position)
+        const data = getData({ ...position, id: "" })
 
         if (data) {
-          const { lrna, value, valueDisplay, valueDisplayWithoutLrna } = data
+          const {
+            lrnaShifted,
+            valueShifted,
+            valueDisplay,
+            valueDisplayWithoutLrna,
+            totalValueShifted,
+          } = data
 
           return {
             assetId: meta.id,
@@ -72,9 +78,10 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
             sharePercent: omnipoolTvlPrice.isNaN()
               ? BN_NAN
               : valueDisplayWithoutLrna.div(omnipoolTvlPrice).times(100),
-            lrna,
-            value,
+            lrna: lrnaShifted,
+            value: valueShifted,
             valueDisplay,
+            totalValueShifted,
           }
         }
 
@@ -93,6 +100,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
           const value = prev.value.plus(curr.value)
           const valueDisplay = prev.valueDisplay.plus(curr.valueDisplay)
           const sharePercent = prev.sharePercent.plus(curr.sharePercent)
+          const totalValueShifted = prev.totalValueShifted.plus(
+            curr.totalValueShifted,
+          )
 
           return {
             ...prev,
@@ -101,6 +111,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
             value,
             valueDisplay,
             sharePercent,
+            totalValueShifted,
           }
         },
         {
@@ -111,6 +122,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
           value: BN(0),
           valueDisplay: BN(0),
           sharePercent: BN(0),
+          totalValueShifted: BN(0),
         },
       ),
     )

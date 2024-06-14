@@ -6,7 +6,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
@@ -21,14 +20,11 @@ import {
   isXYKPosition,
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
+import { TLPData } from "utils/omnipool"
 
-export const useHydraPositionsTable = (
-  data: (HydraPositionsTableData | TXYKPosition)[],
-) => {
+export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<
-    HydraPositionsTableData | TXYKPosition
-  >()
+  const { accessor } = createColumnHelper<TLPData | TXYKPosition>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -81,8 +77,16 @@ export const useHydraPositionsTable = (
           >
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              lrna={isXYKPosition(row.original) ? undefined : row.original.lrna}
-              amount={row.original.value}
+              lrna={
+                isXYKPosition(row.original)
+                  ? undefined
+                  : row.original.lrnaShifted
+              }
+              amount={
+                isXYKPosition(row.original)
+                  ? undefined
+                  : row.original.valueShifted
+              }
               amountPair={
                 isXYKPosition(row.original) ? row.original.balances : undefined
               }
@@ -113,20 +117,4 @@ export const useHydraPositionsTable = (
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-}
-
-export type HydraPositionsTableData = {
-  id: string
-  assetId: string
-  symbol: string
-  name: string
-  lrna: BN
-  value: BN
-  valueDisplay: BN
-  valueDisplayWithoutLrna: BN
-  price: [string, string]
-  amount: BN
-  amountDisplay: BN
-  amountShifted: BN
-  shares: BN
 }

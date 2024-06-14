@@ -1,11 +1,8 @@
-import { useTokenBalance } from "api/balances"
 import { useOraclePrice } from "api/farms"
-import { useOmnipoolAsset } from "api/omnipool"
+import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 import {
@@ -18,11 +15,11 @@ import { useMutation } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
-import { useLiquidityPositionData } from "utils/omnipool"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
-  position: HydraPositionsTableData | HydraPositionsTableData[]
+  position: TLPData | TLPData[]
   onSuccess: () => void
   onSubmitted?: (tokensToGet: string) => void
 }
@@ -37,7 +34,7 @@ const defaultValues = {
 }
 
 export const useRemoveLiquidity = (
-  position: HydraPositionsTableData | HydraPositionsTableData[],
+  position: TLPData | TLPData[],
   percentage: number,
   onClose: () => void,
   onSuccess: () => void,
@@ -57,8 +54,10 @@ export const useRemoveLiquidity = (
   const oracle = useOraclePrice(assetId, hubMeta.id)
   const minlFeeQuery = useMinWithdrawalFee()
   const { getData } = useLiquidityPositionData([assetId])
-  const omnipoolAsset = useOmnipoolAsset(assetId)
-  const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
+  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAsset = omnipoolAssets.data?.find(
+    (omnipoolAsset) => omnipoolAsset.id === assetId,
+  )
 
   const { removeShares, totalShares } = useMemo(() => {
     if (isPositionMultiple) {
@@ -77,19 +76,13 @@ export const useRemoveLiquidity = (
   }, [isPositionMultiple, position, percentage])
 
   const calculateLiquidityValues = useCallback(
-    (position: HydraPositionsTableData, removeSharesValue: BN) => {
-      if (
-        omnipoolBalance.data &&
-        omnipoolAsset?.data &&
-        spotPrice.data &&
-        oracle.data &&
-        minlFeeQuery.data
-      ) {
+    (position: TLPData, removeSharesValue: BN) => {
+      if (omnipoolAsset && spotPrice.data && oracle.data && minlFeeQuery.data) {
         const oraclePrice = oracle.data.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery.data
 
         const lrnaSpotPrice = calculate_lrna_spot_price(
-          omnipoolBalance.data.balance.toString(),
+          omnipoolAsset.balance.toString(),
           omnipoolAsset.data.hubReserve.toString(),
         )
 
@@ -128,14 +121,7 @@ export const useRemoveLiquidity = (
         }
       }
     },
-    [
-      getData,
-      minlFeeQuery.data,
-      omnipoolAsset.data,
-      omnipoolBalance.data,
-      oracle.data,
-      spotPrice.data,
-    ],
+    [getData, minlFeeQuery.data, omnipoolAsset, oracle.data, spotPrice.data],
   )
 
   const values = useMemo(() => {

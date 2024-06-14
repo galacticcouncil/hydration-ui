@@ -9,15 +9,6 @@ import { getTokenBalance } from "./balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
 
-export const useOmnipoolAsset = (id?: u32 | string) => {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.omnipoolAsset(id),
-    id ? getOmnipoolAsset(api, id) : undefinedNoop,
-    { enabled: !!id },
-  )
-}
-
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
   const { api, isLoaded, assets } = useRpcProvider()
 
@@ -95,20 +86,6 @@ export const useOmnipoolPositions = (
       enabled: !!id,
     })),
   })
-}
-
-export const useOmnipoolPosition = (
-  itemId: u128 | u32 | string | undefined,
-) => {
-  const { api } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.omnipoolPosition(itemId?.toString()),
-    itemId != null
-      ? getOmnipoolPosition(api, itemId.toString())
-      : undefinedNoop,
-    { enabled: itemId != null },
-  )
 }
 
 export const useOmnipoolFee = () => {

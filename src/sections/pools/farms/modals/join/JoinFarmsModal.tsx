@@ -22,12 +22,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { TLPData } from "utils/omnipool"
 
 type JoinFarmModalProps = {
   onClose: () => void
   poolId: string
-  position?: Partial<HydraPositionsTableData>
+  position?: TLPData
   farms: Farm[]
   isRedeposit?: boolean
   mutation: FarmDepositMutationType | FarmRedepositMutationType
@@ -47,9 +47,9 @@ export const JoinFarmModal = ({
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = assets.getAsset(poolId.toString())
+  const meta = assets.getAsset(poolId)
   const bestNumber = useBestNumber()
-  const shouldValidate = !!position?.providedAmount
+  const shouldValidate = !!position?.amount
 
   const zodSchema = useZodSchema({
     id: meta.id,
@@ -155,8 +155,7 @@ export const JoinFarmModal = ({
                           css={{ whiteSpace: "nowrap" }}
                         >
                           {t("value.token", {
-                            value: position.shares,
-                            fixedPointScale: meta.decimals,
+                            value: position.totalValueShifted,
                           })}
                         </Text>
                       </div>

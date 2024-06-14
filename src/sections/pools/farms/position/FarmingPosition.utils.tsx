@@ -1,16 +1,12 @@
 import { u32 } from "@polkadot/types"
 import { useOmniPositionIds, useUserDeposits } from "api/deposits"
-import { OmnipoolPosition, useOmnipoolPositions } from "api/omnipool"
-import BN from "bignumber.js"
+import { useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
-import { useLiquidityPositionData } from "utils/omnipool"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { BN_0 } from "utils/constants"
 
 export const useOmnipoolDepositValues = (depositIds: string[]) => {
-  const { assets } = useRpcProvider()
-
   const { getData } = useLiquidityPositionData()
 
   const positionIds = useOmniPositionIds(depositIds ?? [])
@@ -23,59 +19,42 @@ export const useOmnipoolDepositValues = (depositIds: string[]) => {
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    const rows = positions.reduce(
-      (memo, position) => {
-        if (position.data) {
-          const positionData = getData(position.data)
-          const meta = assets.getAsset(position.data?.assetId.toString())
-
-          if (positionData) {
-            const { value, valueDisplay, amount, amountDisplay, lrna } =
-              positionData
-            const index = position.data?.assetId.toString()
-
-            memo[index] = [
-              ...(memo[index] ?? []),
-              {
-                ...position.data,
-                depositId: positionIds
-                  .find(
-                    (pos) =>
-                      pos.data?.value.toString() ===
-                      position.data?.id.toString(),
-                  )
-                  ?.data?.depositionId.toString(),
-                value,
-                valueDisplay,
-                amount,
-                amountDisplay,
-                lrna,
-                symbol: meta.symbol,
-              },
-            ]
-          }
-        }
-
-        return memo
-      },
-      {} as Record<
+    const rows = positions.reduce<
+      Record<
         string,
         Array<
-          OmnipoolPosition & {
-            value: BN
-            valueDisplay: BN
-            lrna: BN
-            symbol: string
-            depositId: string | undefined
-            amountDisplay: BN
-            amount: BN
+          TLPData & {
+            depositId?: string
           }
         >
-      >,
-    )
+      >
+    >((memo, position) => {
+      if (position.data) {
+        const positionData = getData(position.data)
+
+        if (positionData) {
+          const index = position.data.assetId
+
+          memo[index] = [
+            ...(memo[index] ?? []),
+            {
+              depositId: positionIds
+                .find(
+                  (pos) =>
+                    pos.data?.value.toString() === position.data?.id.toString(),
+                )
+                ?.data?.depositionId.toString(),
+              ...positionData,
+            },
+          ]
+        }
+      }
+
+      return memo
+    }, {})
 
     return rows
-  }, [assets, getData, positionIds, positions])
+  }, [getData, positionIds, positions])
 
   return { data, isLoading }
 }

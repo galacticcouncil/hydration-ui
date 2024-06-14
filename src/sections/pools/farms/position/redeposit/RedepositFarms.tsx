@@ -8,6 +8,8 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { useState } from "react"
 import { useFarms } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
+import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { omit } from "utils/rx"
 
 type RedepositFarmsProps = {
   depositNft: TMiningNftPosition
@@ -20,6 +22,7 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
   const [joinFarm, setJoinFarm] = useState(false)
 
   const farms = useFarms([poolId])
+  const position = useDepositShare(poolId, depositNft.id.toString())
 
   let availableYieldFarms =
     farms.data?.filter(
@@ -63,13 +66,11 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>
-      {joinFarm && (
+      {joinFarm && position.data && (
         <JoinFarmModal
           farms={availableYieldFarms}
           poolId={poolId}
-          position={{
-            shares: depositNft.data.shares.toBigNumber(),
-          }}
+          position={omit(["depositId"], position.data)}
           onClose={() => setJoinFarm(false)}
           isRedeposit
           mutation={redeposit}

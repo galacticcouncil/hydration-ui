@@ -29,11 +29,10 @@ import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
-import { scaleHuman } from "utils/balance"
+import { TLPData } from "utils/omnipool"
 
 export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { accessor } = createColumnHelper<FarmingTablePosition>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
@@ -75,7 +74,6 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
         header: t("wallet.assets.farmingPositions.header.initial"),
         sortingFn: (a, b) => (a.original.shares.gt(b.original.shares) ? 1 : -1),
         cell: ({ row }) => {
-          const meta = assets.getAsset(row.original.assetId)
           return isXYKPosition(row.original.position) ? (
             <Text fs={14} fw={500} color="white">
               -
@@ -84,10 +82,7 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
             <>
               <Text fs={14} fw={500} color="white">
                 {t("value.token", {
-                  value: scaleHuman(
-                    row.original.position.amount,
-                    meta.decimals,
-                  ),
+                  value: row.original.position.amountShifted,
                 })}
               </Text>
               <DollarAssetValue
@@ -127,8 +122,8 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
             >
               <WalletAssetsHydraPositionsDetails
                 assetId={row.original.assetId}
-                lrna={isXYK ? undefined : position.lrna}
-                amount={isXYK ? undefined : position.value}
+                lrna={isXYK ? undefined : position.lrnaShifted}
+                amount={isXYK ? undefined : position.valueShifted}
                 amountPair={isXYK ? position.balances : undefined}
                 amountDisplay={position.valueDisplay}
               />
@@ -209,7 +204,7 @@ export const useFarmingPositionsData = ({
           decimals,
         )
 
-        let position: XYKPosition | OmnipoolPosition
+        let position: XYKPosition | TLPData
         if (isXyk) {
           const values = xykDepositValues.data.find(
             (value) => value.depositId === deposit.id,
@@ -276,21 +271,12 @@ export const useFarmingPositionsData = ({
 }
 
 export const isXYKPosition = (
-  position: XYKPosition | OmnipoolPosition,
+  position: XYKPosition | TLPData,
 ): position is XYKPosition => !!(position as XYKPosition).balances
 
 type XYKPosition = {
   valueDisplay: BN
   balances: { amount: BN; symbol: string }[]
-}
-
-type OmnipoolPosition = {
-  symbol: string
-  value: BN
-  valueDisplay: BN
-  lrna: BN
-  amount: BN
-  amountDisplay: BN
 }
 
 export type FarmingTablePosition = {
@@ -300,5 +286,5 @@ export type FarmingTablePosition = {
   name: string
   date: Date
   shares: BN
-  position: XYKPosition | OmnipoolPosition
+  position: XYKPosition | TLPData
 }

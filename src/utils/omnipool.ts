@@ -15,6 +15,10 @@ type IOptions = {
   fee?: string
 }
 
+export type TLPData = NonNullable<
+  ReturnType<ReturnType<typeof useLiquidityPositionData>["getData"]>
+>
+
 export const useLiquidityPositionData = (assetsId?: string[]) => {
   const { assets } = useRpcProvider()
 
@@ -25,7 +29,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
   const spotPrices = useDisplayPrices(assetsId ?? omnipoolAssetIds)
 
   const getData = useCallback(
-    (position: Omit<OmnipoolPosition, "id">, options?: IOptions) => {
+    (position: OmnipoolPosition, options?: IOptions) => {
       const omnipoolAsset = omnipoolAssets.data?.find(
         (omnipoolAsset) => omnipoolAsset.id === position.assetId.toString(),
       )
@@ -62,43 +66,60 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
       lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
       liquidityOutResult = calculate_liquidity_out.apply(this, params)
 
-      const lrna =
-        lernaOutResult !== "-1"
-          ? new BN(lernaOutResult).shiftedBy(-assets.hub.decimals)
-          : BN_NAN
+      const lrna = lernaOutResult !== "-1" ? new BN(lernaOutResult) : BN_NAN
+      const lrnaShifted = lrna.shiftedBy(-assets.hub.decimals)
 
       const value =
-        liquidityOutResult !== "-1"
-          ? new BN(liquidityOutResult).shiftedBy(-omnipoolAsset.meta.decimals)
-          : BN_NAN
-
-      const amount = position.amount
+        liquidityOutResult !== "-1" ? new BN(liquidityOutResult) : BN_NAN
+      const valueShifted = value.shiftedBy(-omnipoolAsset.meta.decimals)
 
       let valueDisplay = BN_NAN
       let valueDisplayWithoutLrna = BN_NAN
+      let lrnaDisplay = BN_NAN
+      let totalValue = value
+      let totalValueShifted = valueShifted
 
-      const amountDisplay = amount.times(spotPrice)
+      const amount = position.amount
+      const amountShifted = amount.shiftedBy(-omnipoolAsset.meta.decimals)
+      const amountDisplay = amountShifted.times(spotPrice)
 
       if (liquidityOutResult !== "-1") {
-        valueDisplay = value.times(spotPrice)
+        valueDisplay = valueShifted.times(spotPrice)
 
         valueDisplayWithoutLrna = valueDisplay
 
-        if (lrna.gt(0)) {
-          valueDisplay = valueDisplay.plus(lrna.times(hubSp.data.spotPrice))
+        if (lrnaShifted.gt(0)) {
+          lrnaDisplay = lrnaShifted.times(hubSp.data.spotPrice)
+          valueDisplay = valueDisplay.plus(lrnaDisplay)
+
+          totalValueShifted = valueDisplay.div(spotPrice)
+          totalValue = scale(
+            valueDisplay.div(spotPrice),
+            omnipoolAsset.meta.decimals,
+          )
         }
       }
 
       return {
+        id: position.id,
+        symbol: omnipoolAsset.meta.symbol,
+        name: omnipoolAsset.meta.name,
+        assetId: position.assetId,
         lrna,
+        lrnaShifted,
+        lrnaDisplay,
         value,
+        valueShifted,
         valueDisplay,
         valueDisplayWithoutLrna,
         price: position.price,
         amount,
         amountDisplay,
+        amountShifted,
         shares,
-        amountShifted: amount.shiftedBy(-omnipoolAsset.meta.decimals),
+        totalValue,
+        totalValueShifted,
+        meta: omnipoolAsset.meta,
       }
     },
     [
