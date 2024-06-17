@@ -1,11 +1,10 @@
 import styled from "@emotion/styled"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
-import { CardVariant } from "./FarmDetailsCard"
 import { css } from "@emotion/react"
 
-export const SContainer = styled.button<{
-  variant: CardVariant
+export const SContainer = styled.div<{
+  isClickable: boolean
   isJoined?: boolean
 }>`
   display: flex;
@@ -27,8 +26,8 @@ export const SContainer = styled.button<{
   outline: none;
   border: 1px solid transparent;
 
-  ${({ variant }) => {
-    if (variant === "div") {
+  ${({ isClickable }) => {
+    if (!isClickable) {
       return css`
         @media ${theme.viewport.gte.sm} {
           flex-direction: row;
@@ -66,8 +65,6 @@ export const SRow = styled.div`
 `
 
 export const SIcon = styled(Icon)`
-  transform: rotate(-90deg);
-
   position: absolute;
   top: 0;
   bottom: 0;
