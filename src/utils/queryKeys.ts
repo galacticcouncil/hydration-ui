@@ -16,7 +16,7 @@ export const QUERY_KEYS = {
     provider,
   ],
   walletEnable: (provider: string | null) => ["web3Enable", provider],
-  bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
+  bestNumber: (ws: string) => [QUERY_KEY_PREFIX, "bestNumber", ws],
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "assetsTable",
@@ -375,6 +375,7 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmWalletReadiness: (address: string) => ["evmWalletReadiness", address],
   evmPaymentFee: (txHex: string, address?: string) => [
     "evmPaymentFee",
     txHex,
