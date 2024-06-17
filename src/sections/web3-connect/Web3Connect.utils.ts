@@ -22,7 +22,11 @@ import {
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "./store/useWeb3ConnectStore"
-import { WalletProviderType, getSupportedWallets } from "./wallets"
+import {
+  WalletProviderType,
+  getSupportedWallets,
+  handleAnnounceProvider,
+} from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask"
 import {
@@ -31,7 +35,10 @@ import {
   requestNetworkSwitch,
 } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
-import { WalletAccount } from "sections/web3-connect/types"
+import {
+  EIP6963AnnounceProviderEvent,
+  WalletAccount,
+} from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
@@ -120,7 +127,23 @@ export const useWalletAccounts = (
   )
 }
 
+export const useAnnounceProviders = () => {
+  useEffect(() => {
+    const announceProvider = (e: unknown) =>
+      handleAnnounceProvider(e as EIP6963AnnounceProviderEvent)
+
+    window.addEventListener("eip6963:announceProvider", announceProvider)
+    window.dispatchEvent(new Event("eip6963:requestProvider"))
+
+    return () => {
+      window.removeEventListener("eip6963:announceProvider", announceProvider)
+    }
+  }, [])
+}
+
 export const useWeb3ConnectEagerEnable = () => {
+  useAnnounceProviders()
+
   const navigate = useNavigate()
   const search = useSearch<{
     Search: {
