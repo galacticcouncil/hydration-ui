@@ -6,7 +6,7 @@ import { FillBar } from "components/FillBar/FillBar"
 import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
-import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm, useFarmApr } from "api/farms"
 import { useBestNumber } from "api/chain"
@@ -16,6 +16,8 @@ import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 type FarmDetailsCardProps = {
   poolId: string
@@ -23,8 +25,6 @@ type FarmDetailsCardProps = {
   farm: Farm
   onSelect?: () => void
 }
-
-export type CardVariant = "button" | "div"
 
 export const FarmDetailsCard = ({
   poolId,
@@ -39,7 +39,7 @@ export const FarmDetailsCard = ({
   const apr = useFarmApr(farm)
   const assetMeta = assets.getAsset(poolId.toString())
 
-  const variant = onSelect ? "button" : "div"
+  const isClickable = !!onSelect
 
   const bestNumber = useBestNumber()
   const secondsDurationToEnd =
@@ -74,11 +74,11 @@ export const FarmDetailsCard = ({
   if (apr.data == null) return null
 
   const fullness = apr.data.fullness
+  const isFull = fullness.gte(100)
 
   return (
     <SContainer
-      as={variant}
-      variant={variant}
+      isClickable={isClickable}
       onClick={() => onSelect?.()}
       isJoined={!!depositNft}
     >
@@ -89,11 +89,7 @@ export const FarmDetailsCard = ({
           gap: 12,
         }}
       >
-        {depositNft && (
-          <div>
-            <Tag>{t("farms.details.card.tag.label")}</Tag>
-          </div>
-        )}
+        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
         <div
           sx={{
             flex: ["row", "column"],
@@ -109,9 +105,8 @@ export const FarmDetailsCard = ({
           </div>
           <Text fs={19} lh={28} fw={400} css={{ whiteSpace: "nowrap" }}>
             {apr.data.minApr && apr.data?.apr.gt(0)
-              ? t("value.APR.range", {
-                  from: apr.data.minApr,
-                  to: apr.data?.apr,
+              ? t("value.upToAPR", {
+                  maxApr: apr.data?.apr,
                 })
               : t("value.APR", { apr: apr.data?.apr })}
           </Text>
@@ -144,12 +139,25 @@ export const FarmDetailsCard = ({
           </Text>
         </SRow>
         <SRow css={{ border: depositNft ? undefined : "none" }}>
-          <FillBar percentage={fullness.toNumber()} variant="secondary" />
-          <Text fs={14} color="basic100" tAlign="right">
-            {t("farms.details.card.capacity", {
-              capacity: fullness,
-            })}
-          </Text>
+          <FillBar
+            percentage={fullness.toNumber()}
+            variant={isFull ? "full" : "secondary"}
+          />
+          <div
+            sx={{ flex: "row", gap: 2, align: "center" }}
+            css={{ justifySelf: "end" }}
+          >
+            <Text fs={14} color="basic100">
+              {t("farms.details.card.capacity", {
+                capacity: fullness,
+              })}
+            </Text>
+            {isFull && (
+              <InfoTooltip text={t("farms.details.card.capacity.desc")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
         </SRow>
         {depositNft && (
           <>
@@ -191,7 +199,7 @@ export const FarmDetailsCard = ({
       {onSelect && (
         <SIcon
           sx={{ color: "iconGray", height: "100%", align: "center" }}
-          icon={<ChevronDown />}
+          icon={<ChevronRightIcon />}
         />
       )}
     </SContainer>
