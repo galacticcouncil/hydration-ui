@@ -223,10 +223,12 @@ export const AddTokenAction = ({
   id,
   className,
   onClick,
+  onClose,
 }: {
   id: string
   className?: string
   onClick?: () => void
+  onClose?: () => void
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
@@ -249,7 +251,10 @@ export const AddTokenAction = ({
       {externalAsset && addTokenModalOpen && (
         <ExternalAssetImportModal
           assetIds={[externalAsset.id]}
-          onClose={() => setAddTokenModalOpen(false)}
+          onClose={() => {
+            setAddTokenModalOpen(false)
+            onClose?.()
+          }}
         />
       )}
     </>
