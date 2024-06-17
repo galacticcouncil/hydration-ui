@@ -315,6 +315,54 @@ export const useEnableWallet = (
   }
 }
 
+export const useEvmWalletReadiness = () => {
+  const { wallet } = useWallet()
+  const { account } = useEvmAccount()
+  const address = account?.address ?? ""
+
+  const isEvmExtension =
+    isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
+
+  return useQuery(
+    QUERY_KEYS.evmWalletReadiness(address),
+    async () => {
+      const getIsReady = async () => {
+        const balance = isEvmExtension
+          ? await wallet?.extension?.request({
+              method: "eth_getBalance",
+              params: [address, "latest"],
+            })
+          : null
+
+        return !!balance
+      }
+
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          resolve(false)
+        }, 2500)
+
+        getIsReady()
+          .then((response) => {
+            clearTimeout(timer)
+            resolve(response)
+          })
+          .catch(() => {
+            clearTimeout(timer)
+            resolve(false)
+          })
+      })
+    },
+    {
+      enabled: isEvmExtension && !!address,
+      cacheTime: 0,
+      staleTime: 0,
+      initialData: true,
+      refetchInterval: 5000,
+    },
+  )
+}
+
 export function setExternalWallet(externalAddress = "") {
   const state = useWeb3ConnectStore.getState()
 

@@ -41,7 +41,13 @@ export const Header = () => {
             <Link to={LINKS.swap} search={resetSearchParams(search)}>
               <Icon
                 sx={{ color: "white" }}
-                icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
+                icon={
+                  !isMediumMedia ? (
+                    <HydraLogoFull />
+                  ) : (
+                    <Icon size={24} icon={<HydraLogo />} />
+                  )
+                }
               />
             </Link>
             <HeaderMenu ref={observe} />

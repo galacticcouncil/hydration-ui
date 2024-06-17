@@ -1,19 +1,22 @@
 import styled from "@emotion/styled"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
-import { CardVariant } from "./FarmDetailsCard"
 import { css } from "@emotion/react"
 
-export const SContainer = styled.button<{
-  variant: CardVariant
+export const SContainer = styled.div<{
+  isClickable: boolean
   isJoined?: boolean
 }>`
-  display: grid;
-  grid-row-gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: stretch;
+  flex-direction: column;
 
-  width: 100%;
+  position: relative;
 
   padding: 12px;
+  padding-right: 22px;
 
   border-radius: 4px;
   background-color: rgba(${theme.rgbColors.alpha0}, 0.12);
@@ -23,36 +26,22 @@ export const SContainer = styled.button<{
   outline: none;
   border: 1px solid transparent;
 
-  ${({ variant, isJoined }) => {
-    if (variant === "div") {
+  ${({ isClickable }) => {
+    if (!isClickable) {
       return css`
-        grid-template-columns: 25% 75%;
-        grid-template-areas: "tag tag" "apr apr" "details details";
-
         @media ${theme.viewport.gte.sm} {
+          flex-direction: row;
           padding: 20px 30px;
-
-          grid-column-gap: 10px;
-          grid-template-areas:
-            "${isJoined ? "tag" : "apr"} details"
-            "apr details";
         }
       `
     }
 
     return css`
-      grid-template-columns: 25% 70% auto;
-      grid-template-areas: "tag tag icon" "apr apr icon" "details details icon";
-
       cursor: pointer;
 
       @media ${theme.viewport.gte.sm} {
+        flex-direction: row;
         padding: 20px 30px;
-
-        grid-column-gap: 10px;
-        grid-template-areas:
-          "${isJoined ? "tag" : "apr"} details icon"
-          "apr details icon";
       }
 
       &:hover {
@@ -76,5 +65,9 @@ export const SRow = styled.div`
 `
 
 export const SIcon = styled(Icon)`
-  transform: rotate(-90deg);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto 0;
 `

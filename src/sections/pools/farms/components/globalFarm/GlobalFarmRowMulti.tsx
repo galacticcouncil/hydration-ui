@@ -29,13 +29,13 @@ export const GlobalFarmRowMulti = ({
 
   if (!farmAprs.data) return null
 
-  const { minApr, maxApr } = getMinAndMaxAPR(farmAprs)
+  const { maxApr } = getMinAndMaxAPR(farmAprs)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
       <Text fs={fontSize} color="brightBlue200">
         {maxApr.gt(0)
-          ? t(`value.multiAPR`, { minApr, maxApr })
+          ? t(`value.upToAPR`, { maxApr })
           : t(`value.percentage`, { value: maxApr })}
       </Text>
 
