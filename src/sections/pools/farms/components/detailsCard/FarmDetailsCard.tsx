@@ -89,11 +89,7 @@ export const FarmDetailsCard = ({
           gap: 12,
         }}
       >
-        {depositNft && (
-          <div>
-            <Tag>{t("farms.details.card.tag.label")}</Tag>
-          </div>
-        )}
+        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
         <div
           sx={{
             flex: ["row", "column"],
