@@ -2664,19 +2664,7 @@
   dependencies:
     "@galacticcouncil/xcm-core" "^1.4.0"
 
-"@galacticcouncil/xcm-core@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.4.0.tgz#613b4ac506a83b38f4ef6d1d40d937d3f19a1da2"
-  integrity sha512-Sj/CKNR7tbja3RtrdfYFhmmc41nTYaWfGQPhMeLzzR5mHklLGrTVv1RqkNfapPMeS9gAzX5PkK4URS7aSIv6cQ==
-  dependencies:
-    "@moonbeam-network/xcm-utils" "1.0.4"
-    "@thi.ng/cache" "^2.1.35"
-    "@wormhole-foundation/sdk-base" "^0.5.2"
-    "@wormhole-foundation/sdk-connect" "^0.5.2"
-    "@wormhole-foundation/sdk-definitions" "^0.5.2"
-    buffer "^6.0.3"
-
-"@galacticcouncil/xcm-core@^1.5.0":
+"@galacticcouncil/xcm-core@^1.4.0", "@galacticcouncil/xcm-core@^1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.5.0.tgz#e98ecd4a729691ab3fe8ef3b8e3557540bfb3e7f"
   integrity sha512-oaBQ19+tbWk0w8LRyFjvEMazHN6dVQ5WUcZ+4ojX7E1gmbvyny0lGsubmay5lamkfBXtDvkanpAqnNWvNuwzJQ==
