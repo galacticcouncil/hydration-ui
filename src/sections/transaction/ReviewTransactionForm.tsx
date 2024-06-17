@@ -6,7 +6,11 @@ import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useEvmWalletReadiness,
+  useWallet,
+} from "sections/web3-connect/Web3Connect.utils"
 import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
@@ -83,6 +87,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     isLinkedAccount,
     storedReferralCode,
     tx,
+    era,
   } = transactionValues.data
 
   const isLinking = !isLinkedAccount && storedReferralCode
@@ -121,6 +126,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         }
 
         const signature = await tx.signAsync(address, {
+          era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
           // defer to polkadot/api to handle nonce w/ regard to mempool
@@ -137,6 +143,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         isLinking && account && setReferralCode(undefined, account.address),
     },
   )
+
+  const { data: evmWalletReady } = useEvmWalletReadiness()
+  const isWalletReady =
+    wallet?.signer instanceof EthereumSigner ? evmWalletReady : true
 
   const isLoading =
     transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
@@ -221,6 +231,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   variant="primary"
                   isLoading={isLoading}
                   disabled={
+                    !isWalletReady ||
                     !account ||
                     isLoading ||
                     (!isEnoughPaymentBalance && !hasMultipleFeeAssets)
@@ -238,6 +249,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.warning",
+                    )}
+                  </Text>
+                )}
+                {!isWalletReady && (
+                  <Text fs={12} lh={16} tAlign="center" color="warning300">
+                    {t(
+                      "liquidity.reviewTransaction.modal.walletNotReady.warning",
                     )}
                   </Text>
                 )}

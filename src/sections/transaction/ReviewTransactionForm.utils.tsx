@@ -105,7 +105,6 @@ export const useTransactionValues = ({
   const era = useEra(
     boundedTx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
-    boundedTx.era.isMortalEra,
   )
 
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN

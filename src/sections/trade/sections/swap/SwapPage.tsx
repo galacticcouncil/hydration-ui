@@ -8,7 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -18,7 +18,6 @@ import { useRemount } from "hooks/useRemount"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 
 const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
@@ -49,7 +48,6 @@ type SearchGenerics = MakeGenerics<{
   Search: z.infer<typeof TradeAppSearch>
 }>
 
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
@@ -59,17 +57,13 @@ export function SwapPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
-  const preference = useProviderRpcUrlStore()
   const [addToken, setAddToken] = useState(false)
-  const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
 
   const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([
-    isEvm,
-    externalTokensStored[preference.getDataEnv()].length,
-  ])
+  const version = useRemount([isEvm])
 
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const rpcUrlList = useActiveRpcUrlList()
+  const activeProvider = useActiveProvider()
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
@@ -135,19 +129,19 @@ export function SwapPage() {
         }}
         assetIn={assetIn}
         assetOut={assetOut}
-        apiAddress={rpcUrl}
+        apiAddress={rpcUrlList.join()}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        indexerUrl={indexerUrl}
+        indexerUrl={activeProvider?.indexerUrl}
         grafanaUrl={grafanaUrl}
         grafanaDsn={grafanaDsn}
         onTxNew={(e) => handleSubmit(e)}
         onDcaSchedule={(e) => handleSubmit(e)}
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
-        isTestnet={preference.getDataEnv() === "testnet"}
+        isTestnet={activeProvider.dataEnv === "testnet"}
       />
       {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {addToken && (
