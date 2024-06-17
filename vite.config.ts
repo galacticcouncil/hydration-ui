@@ -23,10 +23,6 @@ export default defineConfig(({ mode }) => {
               return "assets"
             }
 
-            if (id.includes("viem")) {
-              return "viem"
-            }
-
             if (id.includes("@radix")) {
               return "@radix"
             }

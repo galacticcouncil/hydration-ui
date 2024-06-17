@@ -2,6 +2,13 @@ import styled from "@emotion/styled"
 import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
+export const SContainer = styled.div`
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  @media ${theme.viewport.gte.sm} {
+    padding-bottom: 0;
+  }
+`
+
 export const SButton = styled(motion.div)`
   position: relative;
   width: min-content;

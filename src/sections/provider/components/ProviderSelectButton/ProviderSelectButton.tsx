@@ -6,7 +6,7 @@ import { useState } from "react"
 import ChevronRightIcon from "assets/icons/ChevronRightIcon.svg?react"
 import { ProviderSelectModal } from "sections/provider/ProviderSelectModal"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
-import { SButton, SName } from "./ProviderSelectButton.styled"
+import { SButton, SName, SContainer } from "./ProviderSelectButton.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
 
@@ -20,7 +20,7 @@ export const ProviderSelectButton = () => {
   const number = useBestNumber(!isLoaded)
 
   return (
-    <>
+    <SContainer>
       <SButton
         tabIndex={0}
         onClick={() => setOpen(true)}
@@ -49,6 +49,6 @@ export const ProviderSelectButton = () => {
       {open && (
         <ProviderSelectModal open={open} onClose={() => setOpen(false)} />
       )}
-    </>
+    </SContainer>
   )
 }

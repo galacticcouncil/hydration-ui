@@ -38,14 +38,6 @@ const Web3Connect = lazy(async () => ({
   default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
 }))
 
-const ProviderSelectButton = lazy(async () => ({
-  default: (
-    await import(
-      "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
-    )
-  ).ProviderSelectButton,
-}))
-
 const useSubheaderComponent = () => {
   const { t } = useTranslation()
   const matchRoute = useMatchRoute()
@@ -111,7 +103,6 @@ export const Page = ({ className }: Props) => {
         </div>
       </SPage>
       <Suspense>
-        <ProviderSelectButton />
         <Web3Connect />
         <Transactions />
         <ReferralsConnectWrapper />

@@ -11,7 +11,7 @@ export const SPage = styled.div`
   display: flex;
   flex-direction: column;
 
-  height: 100vh;
+  min-height: 100vh;
 
   background: ${theme.colors.bg};
 
@@ -39,8 +39,6 @@ export const SPageContent = styled.main`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-
-  padding-bottom: var(--mobile-nav-height);
 
   ::-webkit-scrollbar {
     width: 0px;
