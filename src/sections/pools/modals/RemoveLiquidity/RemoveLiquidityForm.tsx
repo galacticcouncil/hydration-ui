@@ -52,7 +52,7 @@ export const RemoveLiquidityForm = ({
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
-    values && BN(values?.tokensToGet).gt(0) ? values.tokensToGet : BN(0)
+    values && values?.tokensToGet.gt(0) ? values.tokensToGet : BN(0)
 
   return (
     <form
@@ -99,8 +99,9 @@ export const RemoveLiquidityForm = ({
               <RemoveLiquidityInput
                 value={field.value}
                 onChange={field.onChange}
-                balance={t("liquidity.remove.modal.shares", {
-                  shares: totalValue,
+                balance={t("value.tokenWithSymbol", {
+                  value: totalValue,
+                  symbol,
                 })}
               />
             )}
@@ -176,7 +177,7 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={tokensToGet.decimalPlaces(0).isZero() || isFeeExceeded}
+          disabled={tokensToGet.isZero() || isFeeExceeded}
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>
