@@ -18,6 +18,7 @@ import {
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const RemoveLiquidityForm = ({
   onClose,
@@ -47,7 +48,7 @@ export const RemoveLiquidityForm = ({
     totalValue,
     isFeeExceeded,
     mutation,
-    meta: { id, symbol, name },
+    meta: { id, symbol, name, iconId },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
@@ -66,7 +67,25 @@ export const RemoveLiquidityForm = ({
       <div>
         <div sx={{ flex: "row", align: "center", gap: 8, mt: 8 }}>
           <Text fs={32}>{t("value.token", { value: removeValue })}</Text>
-          <Icon icon={<AssetLogo id={id} />} size={30} />
+          {typeof iconId === "string" ? (
+            <Icon
+              size={30}
+              icon={<AssetLogo id={iconId} />}
+              css={{ flex: "1 0 auto" }}
+            />
+          ) : (
+            <MultipleIcons
+              size={30}
+              icons={iconId.map((asset) => {
+                const meta = assets.getAsset(asset)
+                const isBond = assets.isBond(meta)
+                const id = isBond ? meta.assetId : asset
+                return {
+                  icon: <AssetLogo key={id} id={id} />,
+                }
+              })}
+            />
+          )}
         </div>
 
         <Text fs={18} color="pink500" sx={{ mb: 20 }}>

@@ -165,8 +165,8 @@ export const LiquidityPosition = ({
               </Text>
               <LrnaPositionTooltip
                 assetId={position.assetId}
-                tokenPosition={position.value}
-                lrnaPosition={position.lrna}
+                tokenPosition={position.valueShifted}
+                lrnaPosition={position.lrnaShifted}
               />
             </div>
             <div sx={{ flex: "column", align: ["end", "start"] }}>

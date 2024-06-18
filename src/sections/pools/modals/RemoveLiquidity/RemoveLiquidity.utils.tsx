@@ -158,9 +158,7 @@ export const useRemoveLiquidity = (
         return acc
       }, defaultValues)
     }
-    console.log(
-      calculateLiquidityValues(position, removeShares)?.tokensToGet.toString(),
-    )
+
     return calculateLiquidityValues(position, removeShares)
   }, [calculateLiquidityValues, isPositionMultiple, position, removeShares])
 
