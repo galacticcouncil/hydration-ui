@@ -154,8 +154,9 @@ export const JoinFarmModal = ({
                           fs={24}
                           css={{ whiteSpace: "nowrap" }}
                         >
-                          {t("value.token", {
+                          {t("value.tokenWithSymbol", {
                             value: position.totalValueShifted,
+                            symbol: meta.symbol,
                           })}
                         </Text>
                       </div>
