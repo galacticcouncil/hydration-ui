@@ -43,7 +43,6 @@ export const PoolDetails = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
-  const asset = assets.getAsset(pool.id)
 
   const [addLiquidityPool, setAddLiquidityPool] = useState<
     TPoolFullData | TXYKPoolFullData | undefined
@@ -112,16 +111,16 @@ export const PoolDetails = ({
           }}
         >
           <div sx={{ flex: "row", gap: 4, align: "center" }}>
-            {typeof asset.iconId === "string" ? (
+            {typeof pool.iconId === "string" ? (
               <Icon
                 size={26}
-                icon={<AssetLogo id={asset.iconId} />}
+                icon={<AssetLogo id={pool.iconId} />}
                 css={{ flex: "1 0 auto" }}
               />
             ) : (
               <MultipleIcons
                 size={26}
-                icons={asset.iconId.map((asset) => {
+                icons={pool.iconId.map((asset) => {
                   const meta = assets.getAsset(asset)
                   const isBond = assets.isBond(meta)
                   const id = isBond ? meta.assetId : asset
@@ -133,10 +132,10 @@ export const PoolDetails = ({
             )}
             <div sx={{ flex: "column", gap: 0 }}>
               <Text fs={16} lh={16} color="white" font="GeistMedium">
-                {asset.symbol}
+                {pool.symbol}
               </Text>
               <Text fs={13} lh={16} color="whiteish500">
-                {asset.name}
+                {pool.name}
               </Text>
             </div>
           </div>

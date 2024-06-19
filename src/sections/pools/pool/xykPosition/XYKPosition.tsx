@@ -7,7 +7,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TAsset, TShareToken } from "api/assetDetails"
+import { TAsset } from "api/assetDetails"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
@@ -21,6 +21,7 @@ import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useShareTokensByIds } from "api/xyk"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
@@ -28,12 +29,11 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const queryClient = useQueryClient()
-
-  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
+  const [shareToken] = useShareTokensByIds([pool.id]).data ?? []
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
-  const assetsMeta = assets.getAssets(shareTokenMeta.assets)
+  const assetsMeta = shareToken.assets
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
@@ -83,7 +83,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
 
   const onSuccess = () => {
     queryClient.refetchQueries(
-      QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+      QUERY_KEYS.tokenBalance(pool.id, account?.address),
     )
     queryClient.refetchQueries(
       QUERY_KEYS.accountOmnipoolPositions(account?.address),
@@ -154,7 +154,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: shareTokensBalance.data?.balance,
-                      fixedPointScale: shareTokenMeta.decimals,
+                      fixedPointScale: shareToken.meta.decimals,
                     })}
                   </Text>
                 </div>

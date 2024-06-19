@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SButton = styled(motion.div)`
-  position: relative;
+  position: absolute;
   width: min-content;
 
   margin-left: auto;
@@ -38,7 +38,8 @@ export const SButton = styled(motion.div)`
   @media ${theme.viewport.gte.sm} {
     margin-left: auto;
 
-    bottom: 16px;
+    bottom: 0px;
+    right: 12px;
   }
 `
 
