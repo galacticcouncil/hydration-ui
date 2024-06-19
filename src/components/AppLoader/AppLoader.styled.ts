@@ -12,6 +12,10 @@ export const SContainer = styled.div`
   position: fixed;
   inset: 0;
 
-  transform: scale(2);
   z-index: 1000;
+
+  & > svg {
+    width: 240px;
+    height: auto;
+  }
 `

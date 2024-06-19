@@ -6,7 +6,7 @@ export const AppLoader = () => {
   return (
     <SContainer>
       <HydraLogoFull />
-      <Spinner />
+      <Spinner size={64} />
     </SContainer>
   )
 }
