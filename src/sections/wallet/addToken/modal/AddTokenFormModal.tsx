@@ -1,12 +1,13 @@
+import * as React from "react"
+import { AssetId } from "@galacticcouncil/ui"
 import { Button } from "components/Button/Button"
 import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
-  PARACHAIN_CONFIG,
   TExternalAsset,
-  TExternalAssetInput,
   TRegisteredAsset,
+  getInputData,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
@@ -19,9 +20,17 @@ import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
-import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
-import { getPendulumInputData } from "utils/externalAssets"
 import { omit } from "utils/rx"
+import { createComponent } from "@lit-labs/react"
+import { Separator } from "components/Separator/Separator"
+import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
+import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
 
 type Props = {
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }
@@ -41,6 +50,15 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
 
+  const chainStored = assets.external.find(
+    (chainAsset) =>
+      chainAsset.externalId === asset.id &&
+      chainAsset.parachainId === asset.origin.toString(),
+  )
+
+  const rugCheck = useExternalTokensRugCheck()
+  const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
+
   const mutation = useRegisterToken({
     onSuccess: (id: string) => {
       addToken({ ...omit(["location"], asset), internalId: id })
@@ -48,12 +66,6 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     },
     assetName: asset.name,
   })
-
-  const chainStored = assets.external.find(
-    (chainAsset) =>
-      chainAsset.externalId === asset.id &&
-      chainAsset.parachainId === asset.origin.toString(),
-  )
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -66,38 +78,10 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const onSubmit = async () => {
     if (!asset) throw new Error("Selected asset cannot be added")
-
-    const { parents, palletInstance } = PARACHAIN_CONFIG[ASSET_HUB_ID]
-
-    let input: TExternalAssetInput | undefined = undefined
-
-    if (asset.origin === ASSET_HUB_ID) {
-      input = {
-        parents,
-        interior: {
-          X3: [
-            {
-              Parachain: asset.origin.toString(),
-            },
-            {
-              PalletInstance: palletInstance,
-            },
-            {
-              GeneralIndex: asset.id,
-            },
-          ],
-        },
-      }
-    }
-
-    if (asset.origin === PENDULUM_ID && asset.location) {
-      input = getPendulumInputData(asset.location)
-    }
-
+    const input = getInputData(asset)
     if (input) {
-      await mutation.mutate(input)
+      await mutation.mutateAsync(input)
     }
-
     onClose()
   }
 
@@ -124,79 +108,97 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      autoComplete="off"
-      sx={{ height: "100%" }}
-    >
-      <div sx={{ flex: "column", gap: 8, height: "100%" }}>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.name")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.name")}
-              withLabel
+    <>
+      <TokenInfoHeader asset={asset} internalId={chainStored?.id} />
+      <Separator sx={{ my: 10 }} color="darkBlue401" />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
+        sx={{ height: "100%" }}
+      >
+        <div sx={{ flex: "column", gap: 8, height: "100%" }}>
+          <div hidden>
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.name")}
+                  {...field}
+                  disabled={hasAsset}
+                  label={t("wallet.addToken.form.name")}
+                  withLabel
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="symbol"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.symbol")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.symbol")}
-              withLabel
+            <Controller
+              name="symbol"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.symbol")}
+                  {...field}
+                  disabled={hasAsset}
+                  label={t("wallet.addToken.form.symbol")}
+                  withLabel
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="decimals"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.decimals")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.decimals")}
-              withLabel
+            <Controller
+              name="decimals"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.decimals")}
+                  {...field}
+                  disabled={hasAsset}
+                  label={t("wallet.addToken.form.decimals")}
+                  withLabel
+                />
+              )}
             />
+          </div>
+
+          <Spacer size={0} />
+
+          <TokenInfo externalAsset={asset} chainStoredAsset={chainStored} />
+
+          <Spacer size={8} />
+
+          {chainStored ? (
+            <Button
+              type="button"
+              variant="primary"
+              sx={{ mt: "auto" }}
+              onClick={() => {
+                const token = {
+                  ...omit(["location"], asset),
+                  internalId: chainStored.id,
+                }
+                console.log({ token })
+                onAddTokenToUser({
+                  ...omit(["location"], asset),
+                  internalId: chainStored.id,
+                })
+              }}
+            >
+              {rugCheckData?.warnings.length ? (
+                t("wallet.addToken.form.button.register.update")
+              ) : (
+                <>
+                  <PlusIcon width={18} height={18} />
+                  {t("wallet.addToken.form.button.register.forMe")}
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button variant="primary" sx={{ mt: "auto" }}>
+              <DropletIcon width={18} height={18} />
+              {t("wallet.addToken.form.button.register.hydra")}
+            </Button>
           )}
-        />
-
-        <Spacer size={0} />
-
-        <TokenInfo asset={asset} isChainStored={!!chainStored} />
-
-        <Spacer size={8} />
-
-        {chainStored ? (
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() =>
-              onAddTokenToUser({
-                ...omit(["location"], asset),
-                internalId: chainStored.id,
-              })
-            }
-          >
-            <PlusIcon width={18} height={18} />
-            {t("wallet.addToken.form.button.register.forMe")}
-          </Button>
-        ) : (
-          <Button variant="primary">
-            <DropletIcon width={18} height={18} />
-            {t("wallet.addToken.form.button.register.hydra")}
-          </Button>
-        )}
-      </div>
-    </form>
+        </div>
+      </form>
+    </>
   )
 }

@@ -1,5 +1,7 @@
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import React from "react"
+import { AssetId } from "@galacticcouncil/ui"
+import { createComponent } from "@lit-labs/react"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -17,6 +19,12 @@ import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { theme } from "theme"
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -112,7 +120,10 @@ export const AddTokenListModal: React.FC<Props> = ({
                         fs={14}
                         sx={{ flex: "row", align: "center", gap: 10 }}
                       >
-                        <Icon icon={<AssetLogo />} size={24} />
+                        <Icon
+                          size={24}
+                          icon={<UigcAssetId symbol={asset.symbol} />}
+                        />
                         {asset.name}
                       </Text>
                     </AssetRow>
