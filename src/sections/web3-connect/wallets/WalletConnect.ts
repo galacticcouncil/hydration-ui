@@ -20,7 +20,7 @@ import { noop } from "utils/helpers"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 
 // @TODO: Remove when the old domain is deprecated
-const isOldDomain = window?.location?.hostname === "app.hydradx.io"
+const isOldDomain = window?.location?.hostname.includes("hydradx.io")
 
 const WC_PROJECT_ID = isOldDomain
   ? "c47a5369367ec2dad6b49c478eb772f9"
