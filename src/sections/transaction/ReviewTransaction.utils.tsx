@@ -9,6 +9,7 @@ import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
+import { useEvmPermitStore, useNextEvmPermitNonce } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useRef, useState } from "react"
@@ -468,6 +469,8 @@ export const useSendTx = () => {
 
   const boundReferralToast = useBoundReferralToast()
 
+  const { incrementPermitNonce } = useEvmPermitStore()
+
   const sendTx = useSendTransactionMutation({
     onMutate: ({ tx }) => {
       boundReferralToast.onLoading(tx)
@@ -487,6 +490,7 @@ export const useSendTx = () => {
   const sendPermitTx = useSendDispatchPermit({
     onMutate: () => {
       setTxType("permit")
+      incrementPermitNonce()
     },
   })
 

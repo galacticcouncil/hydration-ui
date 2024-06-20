@@ -23,7 +23,7 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 import {
   EthereumSigner,
@@ -88,6 +88,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     storedReferralCode,
     tx,
     era,
+    shouldUsePermit,
+    permitNonce,
   } = transactionValues.data
 
   const isLinking = !isLinkedAccount && storedReferralCode
@@ -111,10 +113,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
-          const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
 
           if (shouldUsePermit) {
-            const permit = await wallet.signer.getPermit(txData)
+            const permit = await wallet.signer.getPermit(txData, permitNonce)
             return props.onPermitDispatched({
               permit,
               xcallMeta: props.xcallMeta,
