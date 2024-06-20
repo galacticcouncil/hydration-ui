@@ -11,7 +11,7 @@ export const SPage = styled.div`
   display: flex;
   flex-direction: column;
 
-  height: 100vh;
+  min-height: 100vh;
 
   background: ${theme.colors.bg};
 
@@ -19,6 +19,8 @@ export const SPage = styled.div`
     --nav-height: 70px;
 
     overflow-y: auto;
+
+    height: 100vh;
   }
 `
 
@@ -40,8 +42,6 @@ export const SPageContent = styled.main`
   flex-direction: column;
   flex-grow: 1;
 
-  padding-bottom: var(--mobile-nav-height);
-
   ::-webkit-scrollbar {
     width: 0px;
   }
@@ -52,7 +52,6 @@ export const SPageContent = styled.main`
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
-    padding-bottom: var(--mobile-nav-height);
 
     display: block;
 
