@@ -12,19 +12,19 @@ export const SContainer = styled.div`
 
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 
-  @media ${theme.viewport.gte.md} {
-    position: fixed;
-    bottom: 16px;
-    right: 20px;
-
-    margin: 0;
-  }
-
   @media ${theme.viewport.gte.sm} {
     margin-left: auto;
     margin-right: 20px;
     right: 0px;
     bottom: 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  @media ${theme.viewport.gte.md} {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    margin: 0;
     padding-bottom: 0;
   }
 `

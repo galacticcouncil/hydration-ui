@@ -19,7 +19,9 @@ export const SPage = styled.div`
     --nav-height: 70px;
 
     overflow-y: auto;
+  }
 
+  @media ${theme.viewport.gte.md} {
     height: 100vh;
   }
 `
