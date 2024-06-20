@@ -160,6 +160,10 @@ export const QUERY_KEYS = {
     "nonce",
     account,
   ],
+  nextEvmPermitNonce: (account: Maybe<AccountId32 | string>) => [
+    "evmPermitNonce",
+    account,
+  ],
   bestBuy: (params: Record<string, any>) => [
     QUERY_KEY_PREFIX,
     "bestBuy",
