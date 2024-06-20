@@ -19,6 +19,7 @@ import {
   MIGRATION_TRIGGER_DOMAIN,
   useMigrationStore,
 } from "sections/migration/MigrationProvider.utils"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 type Props = {
   className?: string
@@ -72,6 +73,7 @@ export const Page = ({
               <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
             )}
             <SPageInner className={className}>{children}</SPageInner>
+            <ProviderSelectButton />
           </SPageContent>
           <MobileNavBar />
         </div>

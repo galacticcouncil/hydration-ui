@@ -3,7 +3,6 @@ import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
 import { Fragment, PropsWithChildren, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
-import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()
@@ -30,7 +29,6 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   return (
     <>
       <Fragment key={`provider-${version}`}>{children}</Fragment>
-      <ProviderSelectButton />
     </>
   )
 }

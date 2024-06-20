@@ -52,7 +52,6 @@ export const SPageContent = styled.main`
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
-    padding-bottom: var(--mobile-nav-height);
 
     display: block;
 

@@ -30,14 +30,15 @@ export const SButton = styled(motion.div)`
   @media ${theme.viewport.gte.md} {
     position: fixed;
     bottom: 16px;
-    right: 16px;
+    right: 20px;
 
     margin: 0;
   }
 
   @media ${theme.viewport.gte.sm} {
     margin-left: auto;
-
+    margin-right: 20px;
+    right: 0px;
     bottom: 16px;
   }
 `
