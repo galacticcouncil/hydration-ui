@@ -88,7 +88,10 @@ export const JoinFarmModal = ({
     )
 
   const onSubmit = (values: FormValues<typeof form>) => {
-    mutation.mutate({ shares: values.amount })
+    mutation.mutate({
+      shares: values.amount,
+      value: position?.totalValueShifted.toString() ?? "",
+    })
   }
 
   const error = form.formState.errors.amount?.message

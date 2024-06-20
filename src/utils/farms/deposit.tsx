@@ -28,7 +28,7 @@ export const useFarmDepositMutation = (
   const isXYK = assets.isShareToken(meta)
 
   return useMutation(
-    async ({ shares }: { shares: string }) => {
+    async ({ shares, value }: { shares: string; value: string }) => {
       const [firstFarm, ...restFarm] = farms ?? []
       if (firstFarm == null) throw new Error("Missing farm")
 
@@ -39,7 +39,8 @@ export const useFarmDepositMutation = (
             t={t}
             i18nKey={`farms.modal.join.toast.${msType}`}
             tOptions={{
-              amount: shares,
+              amount: value,
+              symbol: meta.symbol,
             }}
           >
             <span />

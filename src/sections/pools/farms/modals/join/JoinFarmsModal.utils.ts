@@ -84,18 +84,16 @@ export const useZodSchema = ({
 
         return {
           message: t("farms.modal.join.minDeposit", {
-            value: scaleHuman(maxValue, meta.decimals),
+            value: scaleHuman(maxValue, meta.decimals).times(1.02),
             symbol: meta.symbol,
           }),
         }
       },
     )
     .refine(
-      (value) => {
-        return scale(value, meta.decimals).gte(minDeposit.value)
-      },
+      (value) => scale(value, meta.decimals).gte(minDeposit.value),
       t("farms.modal.join.minDeposit", {
-        value: scaleHuman(minDepositeValue, meta.decimals),
+        value: scaleHuman(minDepositeValue, meta.decimals).times(1.02),
         symbol: meta.symbol,
       }),
     )
