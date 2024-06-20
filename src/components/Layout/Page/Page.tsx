@@ -39,8 +39,7 @@ export const Page = ({
   const location = useLocation()
   const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
 
-  const alerts = useExternalTokensRugCheck()
-  console.log({ alerts })
+  useExternalTokensRugCheck()
 
   useEffect(() => {
     ref.current?.scrollTo({
