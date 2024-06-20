@@ -29,21 +29,27 @@ export function usePaymentInfo(tx: SubmittableExtrinsic, disabled?: boolean) {
   )
 }
 
-export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
+export function useNextEvmPermitNonce() {
+  const { account } = useAccount()
+  const address = account?.address
   const { wallet } = useWallet()
-  const { permitNonce, setPermitNonce, incrementPermitNonce } =
-    useEvmPermitStore()
+  const {
+    permitNonce,
+    setPermitNonce,
+    incrementPermitNonce,
+    revertPermitNonce,
+  } = useEvmPermitStore()
   useQuery(
-    QUERY_KEYS.nextEvmPermitNonce(account),
+    QUERY_KEYS.nextEvmPermitNonce(address),
     async () => {
-      if (!account) throw new Error("Missing address")
+      if (!address) throw new Error("Missing address")
       if (!wallet?.signer) throw new Error("Missing wallet signer")
       if (wallet.signer instanceof EthereumSigner) {
         return await wallet.signer.getPermitNonce()
       }
     },
     {
-      enabled: isEvmAccount(account?.toString()),
+      enabled: isEvmAccount(address),
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 24,
       onSuccess: (nonce) => {
@@ -57,6 +63,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
   return {
     permitNonce,
     incrementPermitNonce,
+    revertPermitNonce,
   }
 }
 
@@ -122,9 +129,12 @@ export const useEvmPermitStore = create<{
   permitNonce: BigNumber
   incrementPermitNonce: () => void
   setPermitNonce: (nonce: BigNumber) => void
+  revertPermitNonce: () => void
 }>((set) => ({
   permitNonce: BN_0,
   setPermitNonce: (nonce: BigNumber) => set({ permitNonce: nonce }),
+  revertPermitNonce: () =>
+    set((state) => ({ permitNonce: state.permitNonce.minus(1) })),
   incrementPermitNonce: () =>
     set((state) => ({ permitNonce: state.permitNonce.plus(1) })),
 }))
