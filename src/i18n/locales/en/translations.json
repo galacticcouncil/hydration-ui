@@ -526,7 +526,6 @@
   "wallet.assets.farmingPositions.data.date": "{{ date, dd/MM/yyyy }}",
   "wallet.addToken.header.addCustom": "Add custom asset",
   "wallet.addToken.header.availableAssets": "Available assets",
-  "wallet.addToken.link.assetHubCheck": "Check on AssetHub",
   "wallet.addToken.button.customAsset": "Add Custom Asset",
   "wallet.addToken.filter.source": "Source:",
   "wallet.addToken.filter.comingSoon": "More coming soon",

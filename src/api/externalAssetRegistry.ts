@@ -5,12 +5,12 @@ import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import {
   TExternalAsset,
+  TRegisteredAsset,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { isJson, isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { Maybe } from "utils/helpers"
 import { Fragment, useMemo } from "react"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -294,12 +294,10 @@ export const useAssetHubTokenBalance = (
 
 export const useAssetHubTokenBalances = (
   account: AccountId32 | string,
-  ids: Maybe<u32 | string>[],
+  ids: string[],
 ) => {
-  const tokenIds = ids.filter((id): id is u32 => !!id)
-
   return useQueries({
-    queries: tokenIds.map((id) => ({
+    queries: ids.map((id) => ({
       queryKey: QUERY_KEYS.assetHubTokenBalance(
         account.toString(),
         id.toString(),
@@ -325,29 +323,33 @@ export const useExternalTokensRugCheck = () => {
     : []
 
   const internalIds = addedTokens.map(({ id }) => id)
-  const externalIds = addedTokens.map(({ externalId }) => externalId)
+  const assetHubExternalIds = addedTokens
+    .map(({ parachainId, externalId }) =>
+      Number(parachainId) === ASSET_HUB_ID ? externalId : "",
+    )
+    .filter(isNotNil)
 
   const issuanceQueries = useTotalIssuances(internalIds)
 
   const balanceQueries = useAssetHubTokenBalances(
     HYDRADX_PARACHAIN_ACCOUNT,
-    externalIds,
+    assetHubExternalIds,
   )
 
   const tokens = useMemo(() => {
     if (
-      issuanceQueries.some((q) => !q.data) ||
-      balanceQueries.some((q) => !q.data)
+      issuanceQueries.some(({ data }) => !data) ||
+      balanceQueries.some(({ fetchStatus }) => fetchStatus !== "idle")
     ) {
       return []
     }
 
-    const issuanceData = issuanceQueries.map((q) => q.data).filter(isNotNil)
-    const balanceData = balanceQueries.map((q) => q.data).filter(isNotNil)
+    const issuanceData = issuanceQueries.map((q) => q.data)
+    const balanceData = balanceQueries.map((q) => q.data)
 
     return zipArrays(issuanceData, balanceData)
       .map(([issuance, balance]) => {
-        if (!issuance.token) return null
+        if (!issuance?.token) return null
 
         const internalToken = assets.getAsset(issuance.token.toString())
         const storedToken = externalStore.getTokenByInternalId(
@@ -364,40 +366,17 @@ export const useExternalTokensRugCheck = () => {
         if (!externalToken) return null
         if (!storedToken) return null
 
-        const totalSupplyExternal = BN(balance?.balance ?? 0)
-        const totalSupplyInternal = BN(issuance?.total ?? 0)
-
-        const supplyCheck = totalSupplyExternal.lt(totalSupplyInternal)
-        const symbolCheck = externalToken.symbol !== storedToken.symbol
-        const decimalsCheck = externalToken.decimals !== storedToken.decimals
-
-        const supplyWarning: RugWarning | null = supplyCheck
-          ? {
-              type: "supply",
-              severity: "high",
-              diff: [totalSupplyInternal, totalSupplyExternal],
-            }
+        const totalSupplyExternal = balance?.balance
+          ? BN(balance.balance)
           : null
+        const totalSupplyInternal = issuance?.total ? BN(issuance.total) : null
 
-        const symbolWarning: RugWarning | null = symbolCheck
-          ? {
-              type: "symbol",
-              severity: "medium",
-              diff: [storedToken.symbol, externalToken.symbol],
-            }
-          : null
-
-        const decimalsWarning: RugWarning | null = decimalsCheck
-          ? {
-              type: "decimals",
-              severity: "medium",
-              diff: [storedToken.decimals, externalToken.decimals],
-            }
-          : null
-
-        const warnings = [supplyWarning, symbolWarning, decimalsWarning].filter(
-          isNotNil,
-        )
+        const warnings = createRugWarningList({
+          totalSupplyExternal,
+          totalSupplyInternal,
+          storedToken,
+          externalToken,
+        })
 
         const severity = warnings.reduce((acc, { severity }) => {
           return RUG_SEVERITY_LEVELS.indexOf(severity) >
@@ -427,4 +406,48 @@ export const useExternalTokensRugCheck = () => {
     tokens,
     tokensMap,
   }
+}
+
+const createRugWarningList = ({
+  totalSupplyExternal,
+  totalSupplyInternal,
+  storedToken,
+  externalToken,
+}: {
+  totalSupplyExternal: BN | null
+  totalSupplyInternal: BN | null
+  storedToken: TRegisteredAsset
+  externalToken: TExternalAsset
+}) => {
+  const warnings: RugWarning[] = []
+
+  if (
+    totalSupplyExternal &&
+    totalSupplyInternal &&
+    totalSupplyExternal.lt(totalSupplyInternal)
+  ) {
+    warnings.push({
+      type: "supply",
+      severity: "high",
+      diff: [totalSupplyInternal ?? BN_0, totalSupplyExternal ?? BN_0],
+    })
+  }
+
+  if (externalToken.symbol !== storedToken.symbol) {
+    warnings.push({
+      type: "symbol",
+      severity: "medium",
+      diff: [storedToken.symbol, externalToken.symbol],
+    })
+  }
+
+  if (externalToken.decimals !== storedToken.decimals) {
+    warnings.push({
+      type: "decimals",
+      severity: "medium",
+      diff: [storedToken.decimals, externalToken.decimals],
+    })
+  }
+
+  return warnings
 }
