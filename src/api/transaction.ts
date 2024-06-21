@@ -8,7 +8,10 @@ import { ApiPromise } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
 import { BN_0 } from "utils/constants"
-import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import {
+  EthereumSigner,
+  PermitResult,
+} from "sections/web3-connect/signer/EthereumSigner"
 import { create } from "zustand"
 import BigNumber from "bignumber.js"
 
@@ -35,9 +38,11 @@ export function useNextEvmPermitNonce() {
   const { wallet } = useWallet()
   const {
     permitNonce,
+    pendingPermit,
     setPermitNonce,
     incrementPermitNonce,
     revertPermitNonce,
+    setPendingPermit,
   } = useEvmPermitStore()
   useQuery(
     QUERY_KEYS.nextEvmPermitNonce(address),
@@ -62,8 +67,10 @@ export function useNextEvmPermitNonce() {
 
   return {
     permitNonce,
+    pendingPermit,
     incrementPermitNonce,
     revertPermitNonce,
+    setPendingPermit,
   }
 }
 
@@ -126,13 +133,17 @@ export async function getTransactionLinkFromHash(
 }
 
 export const useEvmPermitStore = create<{
+  pendingPermit: PermitResult | null
   permitNonce: BigNumber
-  incrementPermitNonce: () => void
   setPermitNonce: (nonce: BigNumber) => void
+  setPendingPermit: (permit: PermitResult | null) => void
   revertPermitNonce: () => void
+  incrementPermitNonce: () => void
 }>((set) => ({
+  pendingPermit: null,
   permitNonce: BN_0,
   setPermitNonce: (nonce: BigNumber) => set({ permitNonce: nonce }),
+  setPendingPermit: (permit) => set({ pendingPermit: permit }),
   revertPermitNonce: () =>
     set((state) => ({ permitNonce: state.permitNonce.minus(1) })),
   incrementPermitNonce: () =>

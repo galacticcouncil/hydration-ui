@@ -90,7 +90,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     era,
     shouldUsePermit,
     permitNonce,
+    pendingPermit,
   } = transactionValues.data
+
+  const isPermitTxPending = !!pendingPermit
 
   const isLinking = !isLinkedAccount && storedReferralCode
 
@@ -230,8 +233,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 <Button
                   text={btnText}
                   variant="primary"
-                  isLoading={isLoading}
+                  isLoading={isPermitTxPending || isLoading}
                   disabled={
+                    isPermitTxPending ||
                     !isWalletReady ||
                     !account ||
                     isLoading ||
@@ -239,6 +243,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
+
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
                   <Text fs={16} color="pink600">
                     {t(
@@ -257,6 +262,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.walletNotReady.warning",
+                    )}
+                  </Text>
+                )}
+                {isPermitTxPending && (
+                  <Text fs={16} color="warning300">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.pendingPermit.msg",
                     )}
                   </Text>
                 )}
