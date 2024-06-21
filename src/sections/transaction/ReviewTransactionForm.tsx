@@ -245,7 +245,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 />
 
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
-                  <Text fs={12} lh={16} color="pink600">
+                  <Text fs={12} lh={16} tAlign="center" color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
                     )}
@@ -266,7 +266,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   </Text>
                 )}
                 {isPermitTxPending && (
-                  <Text fs={12} lh={16} color="warning300">
+                  <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.pendingPermit.msg",
                     )}
