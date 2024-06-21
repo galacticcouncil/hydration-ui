@@ -43,6 +43,8 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
     isNewReferralLink,
     displayEvmFeePaymentValue,
     displayFeeExtra,
+    permitNonce,
+    shouldUsePermit,
   } = transactionValues.data || {}
 
   return (
@@ -142,7 +144,9 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
           },
           {
             label: t("liquidity.reviewTransaction.modal.detail.nonce"),
-            content: nonce?.toString(),
+            content: shouldUsePermit
+              ? permitNonce?.toString()
+              : nonce?.toString(),
           },
           ...(!!onTipChange
             ? [
