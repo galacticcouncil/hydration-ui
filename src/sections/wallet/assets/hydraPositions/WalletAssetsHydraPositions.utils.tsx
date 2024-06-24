@@ -6,7 +6,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import BN from "bignumber.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WalletAssetsHydraPositionsDetails } from "./details/WalletAssetsHydraPositionsDetails"
@@ -21,21 +20,18 @@ import {
   isXYKPosition,
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
+import { TLPData } from "utils/omnipool"
 
-export const useHydraPositionsTable = (
-  data: (HydraPositionsTableData | TXYKPosition)[],
-) => {
+export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<
-    HydraPositionsTableData | TXYKPosition
-  >()
+  const { accessor } = createColumnHelper<TLPData | TXYKPosition>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const columnVisibility: VisibilityState = {
     symbol: true,
-    providedAmount: isDesktop,
+    amount: isDesktop,
     valueDisplay: true,
   }
 
@@ -44,12 +40,10 @@ export const useHydraPositionsTable = (
       accessor("symbol", {
         id: "symbol",
         header: t("wallet.assets.hydraPositions.header.name"),
-        cell: ({ row }) => (
-          <AssetTableName {...row.original} id={row.original.assetId} />
-        ),
+        cell: ({ row }) => <AssetTableName id={row.original.assetId} />,
       }),
-      accessor("providedAmount", {
-        id: "providedAmount",
+      accessor("amount", {
+        id: "amount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) =>
@@ -58,7 +52,7 @@ export const useHydraPositionsTable = (
           ) : (
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              amount={row.original.providedAmountShifted}
+              amount={row.original.amountShifted}
             />
           ),
       }),
@@ -83,8 +77,16 @@ export const useHydraPositionsTable = (
           >
             <WalletAssetsHydraPositionsDetails
               assetId={row.original.assetId}
-              lrna={isXYKPosition(row.original) ? undefined : row.original.lrna}
-              amount={row.original.value}
+              lrna={
+                isXYKPosition(row.original)
+                  ? undefined
+                  : row.original.lrnaShifted
+              }
+              amount={
+                isXYKPosition(row.original)
+                  ? undefined
+                  : row.original.valueShifted
+              }
               amountPair={
                 isXYKPosition(row.original) ? row.original.balances : undefined
               }
@@ -115,20 +117,4 @@ export const useHydraPositionsTable = (
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
-}
-
-export type HydraPositionsTableData = {
-  id: string
-  assetId: string
-  symbol: string
-  name: string
-  lrna: BN
-  value: BN
-  valueDisplay: BN
-  valueDisplayWithoutLrna: BN
-  price: BN
-  providedAmount: BN
-  providedAmountDisplay: BN
-  providedAmountShifted: BN
-  shares: BN
 }

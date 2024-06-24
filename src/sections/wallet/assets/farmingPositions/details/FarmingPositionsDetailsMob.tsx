@@ -6,9 +6,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { SActionButtonsContainer } from "sections/wallet/assets/table/actions/WalletAssetsTable.styled"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useSpotPrice } from "api/spotPrice"
-import { BN_0, BN_1 } from "utils/constants"
 import {
   FarmingTablePosition,
   isXYKPosition,
@@ -21,23 +18,13 @@ type Props = {
 
 export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-
-  const meta = assets.getAsset(row.assetId)
-
-  const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, row.assetId)
-
   const position = row.position
   const isXYK = isXYKPosition(position)
-
-  const lrnaPositionPrice = isXYK
-    ? BN_0
-    : position.lrna.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1)
 
   const { symbol, date } = row
 
   const tKey =
-    !isXYK && position.lrna.gt(0)
+    !isXYK && position.lrnaShifted.gt(0)
       ? "wallet.assets.hydraPositions.data.valueLrna"
       : "wallet.assets.hydraPositions.data.value"
 
@@ -67,16 +54,15 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
                     )
                     .join(" | ")
                 : t("value.tokenWithSymbol", {
-                    value: lrnaPositionPrice.plus(position.value),
-                    symbol: meta?.symbol,
+                    value: position.totalValueShifted,
+                    symbol: position.meta.symbol,
                   })}
             </Text>
 
-            {!isXYK && lrnaPositionPrice.gt(0) && (
+            {!isXYK && position.lrnaShifted.gt(0) && (
               <Text
                 fs={14}
                 lh={14}
-                fw={500}
                 color="brightBlue300"
                 sx={{ flex: "row", align: "center", gap: 1 }}
               >
@@ -84,9 +70,9 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
                 <Trans
                   i18nKey={tKey}
                   tOptions={{
-                    value: position.value,
+                    value: position.valueShifted,
                     symbol,
-                    lrna: position.lrna,
+                    lrna: position.lrnaShifted,
                     type: "token",
                   }}
                 >
@@ -97,7 +83,6 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
             <Text
               fs={12}
               lh={14}
-              fw={500}
               css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.6)` }}
             >
               <DisplayValue value={position.valueDisplay} />
@@ -113,12 +98,12 @@ export const FarmingPositionsDetailsMob = ({ row, onClose }: Props) => {
                 </Text>
                 <Text fs={14} lh={14} color="white">
                   {t("value.tokenWithSymbol", {
-                    value: position.providedAmount,
+                    value: position.amountShifted,
                     symbol,
                   })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={position.providedAmountDisplay} />
+                  <DisplayValue value={position.amountDisplay} />
                 </Text>
               </div>
 
