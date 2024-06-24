@@ -100,7 +100,7 @@ export const TableContainer = styled.div<Pick<TableProps, "background">>`
   overflow-x: auto;
   position: relative;
 
-  margin: 0 -15px;
+  margin: 0 -12px;
 
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
