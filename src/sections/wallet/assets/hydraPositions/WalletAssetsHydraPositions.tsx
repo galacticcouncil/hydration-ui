@@ -11,10 +11,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { TableSortHeader } from "components/Table/Table"
 import { flexRender } from "@tanstack/react-table"
-import {
-  HydraPositionsTableData,
-  useHydraPositionsTable,
-} from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
+import { useHydraPositionsTable } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { STableData } from "./WalletHydraPositions.styled"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { useMedia } from "react-use"
@@ -24,15 +21,14 @@ import { TXYKPosition } from "./data/WalletAssetsHydraPositionsData.utils"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
 import { LINKS } from "utils/navigation"
+import { TLPData } from "utils/omnipool"
 
-type Props = { data: (HydraPositionsTableData | TXYKPosition)[] }
+type Props = { data: (TLPData | TXYKPosition)[] }
 
 export const WalletAssetsHydraPositions = ({ data }: Props) => {
   const { t } = useTranslation()
 
-  const [row, setRow] = useState<
-    HydraPositionsTableData | TXYKPosition | undefined
-  >(undefined)
+  const [row, setRow] = useState<TLPData | TXYKPosition | undefined>(undefined)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
