@@ -25,6 +25,8 @@ type Props = {
   index: number
   pool: TPoolFullData
   onSuccess: () => void
+  collapsed: boolean
+  withAnimation?: boolean
 }
 
 export function LiquidityPositionRemoveLiquidity(
@@ -52,6 +54,7 @@ export function LiquidityPositionRemoveLiquidity(
         disabled={
           account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
         }
+        css={{ flex: "1 0 0" }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
@@ -76,6 +79,8 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
+  collapsed,
+  withAnimation,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -83,18 +88,43 @@ export const LiquidityPosition = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <SContainer>
+    <SContainer
+      css={
+        withAnimation
+          ? {
+              position: "absolute",
+              pointerEvents: !collapsed ? "none" : "initial",
+            }
+          : undefined
+      }
+      animate={
+        withAnimation
+          ? {
+              top: collapsed
+                ? (index - 1) * (isDesktop ? 178 : 208)
+                : (index - 1) * (isDesktop ? 20 : 15),
+            }
+          : undefined
+      }
+    >
       <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: [6, 0],
+            justify: "space-between",
+          }}
+        >
           <div sx={{ flex: "row", gap: 7, align: "center" }}>
             {assets.isStableSwap(meta) ? (
               <MultipleIcons
+                size={24}
                 icons={meta.assets.map((asset: string) => ({
                   icon: <AssetLogo key={asset} id={asset} />,
                 }))}
               />
             ) : (
-              <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+              <Icon size={24} icon={<AssetLogo id={position.assetId} />} />
             )}
             <Text fs={14} color={["white", "basic100"]}>
               {t("liquidity.asset.positions.position.title", { index })}

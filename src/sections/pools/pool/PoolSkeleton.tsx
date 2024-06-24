@@ -7,6 +7,7 @@ import Skeleton from "react-loading-skeleton"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import {
+  SPoolDetailsContainer,
   SValue,
   SValuesContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
@@ -17,11 +18,13 @@ export const PoolSkeleton = () => {
 
   return (
     <SPoolContainer>
-      <div sx={{ flex: "column", gap: 20, p: ["30px 12px", 30] }}>
+      <SPoolDetailsContainer>
         <GradientText
           gradient="pinkLightBlue"
+          font="GeistMonoSemiBold"
           fs={19}
           sx={{ width: "fit-content" }}
+          tTransform="uppercase"
         >
           {t("liquidity.pool.details.title")}
         </GradientText>
@@ -104,7 +107,7 @@ export const PoolSkeleton = () => {
             <Skeleton height={16} width={50} />
           </SValue>
         </SValuesContainer>
-      </div>
+      </SPoolDetailsContainer>
     </SPoolContainer>
   )
 }

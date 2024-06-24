@@ -22,23 +22,20 @@ import { TStableSwap } from "api/assetDetails"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
+import { useRefetchAccountNFTPositions } from "api/deposits"
+import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 
 type Props = {
   pool: TPoolFullData
   amount: BN
   amountPrice: BN
-  refetchPositions: () => void
 }
 
-export const StablepoolPosition = ({
-  pool,
-  refetchPositions,
-  amount,
-  amountPrice,
-}: Props) => {
+export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const refetchPositions = useRefetchAccountNFTPositions()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
@@ -47,7 +44,9 @@ export const StablepoolPosition = ({
   if (amount.isZero()) return null
 
   return (
-    <>
+    <SPoolDetailsContainer
+      css={{ background: "transparent", height: ["auto", "auto"] }}
+    >
       <div
         sx={{ flex: "row", align: "center", gap: 8, mb: [5, 20], mt: [5, 0] }}
       >
@@ -176,6 +175,6 @@ export const StablepoolPosition = ({
           onClose={() => setTransferOpen(undefined)}
         />
       )}
-    </>
+    </SPoolDetailsContainer>
   )
 }

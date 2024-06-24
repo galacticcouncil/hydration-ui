@@ -37,7 +37,11 @@ function FarmingPositionDetailsButton(props: {
 
   return (
     <>
-      <Button size="compact" onClick={() => setFarmDetails(true)}>
+      <Button
+        size="compact"
+        onClick={() => setFarmDetails(true)}
+        css={{ flex: "1 0 0 " }}
+      >
         {t("farms.positions.joinedFarms.button.label")}
       </Button>
 
@@ -90,6 +94,7 @@ const ExitFarmsButton = (props: {
       onClick={() => exit.mutate()}
       isLoading={exit.isLoading}
       disabled={exit.isLoading || account?.isExternalWalletConnected}
+      css={{ flex: "1 0 0 " }}
     >
       <Icon icon={<ExitIcon />} />
       {t("farms.positions.exitFarms.button.label")}
@@ -101,10 +106,14 @@ export const FarmingPosition = ({
   index,
   poolId,
   depositNft,
+  collapsed,
+  withAnimation,
 }: {
   index: number
   poolId: string
   depositNft: TMiningNftPosition
+  collapsed: boolean
+  withAnimation: boolean
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -124,8 +133,22 @@ export const FarmingPosition = ({
   )
 
   return (
-    <SContainer>
-      <div sx={{ flex: "row", justify: "space-between" }}>
+    <SContainer
+      animate={{
+        top: collapsed ? (index - 1) * 328 : (index - 1) * 20,
+      }}
+      css={
+        withAnimation
+          ? {
+              position: "absolute",
+              pointerEvents: !collapsed ? "none" : "initial",
+            }
+          : undefined
+      }
+    >
+      <div
+        sx={{ flex: ["column", "row"], gap: [6, 0], justify: "space-between" }}
+      >
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
         </Text>
