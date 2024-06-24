@@ -7,12 +7,12 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { DEPOSIT_CLASS_ID } from "utils/api"
-import { scaleHuman } from "utils/balance"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
+
 import {
   RemoveLiquidityProps,
   useRemoveLiquidity,
@@ -42,15 +42,15 @@ export const RemoveLiquidityForm = ({
 
   const {
     values,
-    removeShares,
-    totalShares,
+    removeValue,
+    totalValue,
     isFeeExceeded,
     mutation,
-    meta: { id, symbol, name, decimals },
+    meta: { id, symbol, name },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
-    values && BN(values?.tokensToGet).gt(0) ? values.tokensToGet : BN(0)
+    values && values?.tokensToGet.gt(0) ? values.tokensToGet : BN(0)
 
   return (
     <form
@@ -63,11 +63,12 @@ export const RemoveLiquidityForm = ({
       }}
     >
       <div>
-        <Text fs={32} sx={{ mt: 24 }}>
-          {t("liquidity.remove.modal.value", {
-            value: scaleHuman(removeShares, decimals),
-          })}
-        </Text>
+        <div sx={{ flex: "row", align: "center", gap: 8, mt: 8 }}>
+          <Text fs={32}>
+            {t("value.tokenWithSymbol", { value: removeValue, symbol })}
+          </Text>
+        </div>
+
         <Text fs={18} color="pink500" sx={{ mb: 20 }}>
           {t("value.percentage", { value })}
         </Text>
@@ -79,8 +80,9 @@ export const RemoveLiquidityForm = ({
               <RemoveLiquidityInput
                 value={field.value}
                 onChange={field.onChange}
-                balance={t("liquidity.remove.modal.shares", {
-                  shares: scaleHuman(totalShares, decimals),
+                balance={t("value.tokenWithSymbol", {
+                  value: totalValue,
+                  symbol,
                 })}
               />
             )}
@@ -95,10 +97,8 @@ export const RemoveLiquidityForm = ({
             id={id}
             name={name}
             symbol={symbol}
-            amount={t("value", {
+            amount={t("value.token", {
               value: tokensToGet,
-              fixedPointScale: decimals,
-              type: "token",
             })}
           />
           {values && BN(values.lrnaToGet).gt(0) && (
@@ -106,10 +106,8 @@ export const RemoveLiquidityForm = ({
               id={DEPOSIT_CLASS_ID}
               name={lrnaMeta.name}
               symbol={lrnaMeta.symbol}
-              amount={t("value", {
+              amount={t("value.token", {
                 value: values.lrnaToGet,
-                fixedPointScale: lrnaMeta.decimals,
-                type: "token",
               })}
             />
           )}
@@ -123,13 +121,11 @@ export const RemoveLiquidityForm = ({
           !BN(values?.lrnaPayWith ?? 0).isZero()
             ? t("value.token", {
                 value: values?.lrnaPayWith,
-                fixedPointScale: lrnaMeta.decimals,
               })
             : undefined
         }
         assetFeeValue={t("value.token", {
           value: values?.tokensPayWith,
-          fixedPointScale: decimals,
         })}
         assetSymbol={symbol}
       />
@@ -162,7 +158,7 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={tokensToGet.decimalPlaces(0).isZero() || isFeeExceeded}
+          disabled={tokensToGet.isZero() || isFeeExceeded}
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>

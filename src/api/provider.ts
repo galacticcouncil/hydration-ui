@@ -5,8 +5,22 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getAssets } from "./assetDetails"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { useMemo } from "react"
+import { useShallow } from "hooks/useShallow"
+import { pick } from "utils/rx"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 
-export const PROVIDERS = [
+export type TEnv = "testnet" | "mainnet"
+export type ProviderProps = {
+  name: string
+  url: string
+  indexerUrl: string
+  squidUrl: string
+  env: string | string[]
+  dataEnv: TEnv
+}
+
+export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
@@ -40,20 +54,20 @@ export const PROVIDERS = [
     dataEnv: "mainnet",
   },
   {
+    name: "Testnet",
+    url: "wss://rpc.nice.hydration.cloud",
+    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
+    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    env: ["development"],
+    dataEnv: "testnet",
+  },
+  {
     name: "Rococo via GC",
     url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
     indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
     squidUrl:
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: ["rococo", "development"],
-    dataEnv: "testnet",
-  },
-  {
-    name: "Testnet",
-    url: "wss://rpc.nice.hydration.cloud",
-    indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
-    env: ["development"],
     dataEnv: "testnet",
   },
   /*{
@@ -64,27 +78,36 @@ export const PROVIDERS = [
       "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
     env: "development",
   },*/
-] as const
+]
 
-export type TEnv = "testnet" | "mainnet"
+export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
+  typeof provider.env === "string"
+    ? provider.env === import.meta.env.VITE_ENV
+    : provider.env.includes(import.meta.env.VITE_ENV),
+)
+
+export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
 export const useProviderRpcUrlStore = create(
   persist<{
-    rpcUrl?: string
+    rpcUrl: string
+    autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
-    getDataEnv: () => "testnet" | "mainnet"
+    getDataEnv: () => TEnv
+    setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
   }>(
     (set, get) => ({
+      rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
+        const { rpcUrl } = get()
         return (
-          PROVIDERS.find(
-            (provider) =>
-              provider.url === get().rpcUrl ??
-              import.meta.env.VITE_PROVIDER_URL,
-          )?.dataEnv ?? "mainnet"
+          PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
+          "mainnet"
         )
       },
       _hasHydrated: false,
@@ -92,7 +115,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2,
+      version: 2.1,
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -111,14 +134,24 @@ export const useProviderRpcUrlStore = create(
   ),
 )
 
-export const useProviderData = (rpcUrl: string) => {
+export const useActiveRpcUrlList = () => {
+  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  )
+  return autoMode ? PROVIDER_URLS : [rpcUrl]
+}
+
+export const useProviderData = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  const { setRpcUrl } = useProviderRpcUrlStore()
   const displayAsset = useDisplayAssetStore()
 
   return useQuery(
-    QUERY_KEYS.provider(rpcUrl),
-    async ({ queryKey: [_, url] }) => {
+    QUERY_KEYS.provider(rpcUrlList.join()),
+    async () => {
+      const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(url)
+      const api = await apiPool.api(rpcUrlList, maxRetries)
 
       api.registry.register({
         XykLMDeposit: {
@@ -140,6 +173,7 @@ export const useProviderData = (rpcUrl: string) => {
       } = displayAsset
 
       const assets = await getAssets(api)
+
       let stableCoinId: string | undefined
 
       // set USDT as a stable token
@@ -173,37 +207,67 @@ export const useProviderData = (rpcUrl: string) => {
         poolService: assets.poolService,
       }
     },
-    { refetchOnWindowFocus: false },
+    {
+      refetchOnWindowFocus: false,
+      retry: false,
+      onSettled: (data) => {
+        if (data?.api) {
+          const provider = getProviderInstance(data.api)
+          setRpcUrl(provider.endpoint)
+        }
+      },
+    },
   )
 }
 
 export const useRefetchProviderData = () => {
   const queryClient = useQueryClient()
-
-  const preference = useProviderRpcUrlStore()
+  const rpcList = useActiveRpcUrlList()
 
   return () => {
-    const url = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-    url && queryClient.invalidateQueries(QUERY_KEYS.provider(url))
+    queryClient.invalidateQueries(QUERY_KEYS.provider(rpcList.join()))
   }
 }
 
 export const useIndexerUrl = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-  return indexerUrl
+  const activeProvider = useActiveProvider()
+  return activeProvider.indexerUrl
 }
 
 export const useSquidUrl = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_SQUID_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const activeProvider = useActiveProvider()
+  return activeProvider.squidUrl
+}
 
-  const indexerUrl =
-    selectedProvider?.squidUrl ?? import.meta.env.VITE_SQUID_URL
-  return indexerUrl
+export const useActiveProvider = (): ProviderProps => {
+  const { data } = useProviderData()
+
+  const activeRpcUrl = useMemo(() => {
+    let rpcUrl = import.meta.env.VITE_PROVIDER_URL
+    try {
+      const provider = data?.api ? getProviderInstance(data.api) : null
+      if (provider?.endpoint) {
+        rpcUrl = provider.endpoint
+      }
+    } catch (e) {}
+    return rpcUrl
+  }, [data?.api])
+
+  return (
+    PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
+      name: "",
+      url: import.meta.env.VITE_PROVIDER_URL,
+      indexerUrl: import.meta.env.VITE_INDEXER_URL,
+      squidUrl: import.meta.env.VITE_SQUID_URL,
+      env: import.meta.env.VITE_ENV,
+      dataEnv:
+        import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet",
+    }
+  )
+}
+
+export function getProviderInstance(api: ApiPromise) {
+  // @ts-ignore
+  const options = api?._options
+  return options?.provider as WsProvider
 }

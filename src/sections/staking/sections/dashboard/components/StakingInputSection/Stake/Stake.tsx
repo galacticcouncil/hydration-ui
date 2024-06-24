@@ -16,6 +16,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { useProcessedVotesIds } from "api/staking"
 
 export const Stake = ({
   loading,
@@ -35,6 +36,8 @@ export const Stake = ({
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const form = useForm<{ amount: string }>()
+
+  const processedVotes = useProcessedVotesIds()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
@@ -62,9 +65,18 @@ export const Stake = ({
     }, {} as ToastMessage)
 
     if (isStakePosition) {
+      const processedVoteIds = await processedVotes.mutateAsync()
+
       transaction = await createTransaction(
         {
-          tx: api.tx.staking.increaseStake(positionId, amount),
+          tx: processedVoteIds.length
+            ? api.tx.utility.batchAll([
+                ...processedVoteIds.map((id) =>
+                  api.tx.democracy.removeVote(id),
+                ),
+                api.tx.staking.increaseStake(positionId, amount),
+              ])
+            : api.tx.staking.increaseStake(positionId, amount),
         },
         { toast },
       )
@@ -168,11 +180,7 @@ export const Stake = ({
         <Spacer size={20} />
 
         {account ? (
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={loading || account?.isExternalWalletConnected}
-          >
+          <Button variant="primary" type="submit" disabled={loading}>
             {positionId == null
               ? t("staking.dashboard.form.stake.button")
               : t("staking.dashboard.form.restake.button")}
