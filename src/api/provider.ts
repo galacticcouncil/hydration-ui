@@ -104,15 +104,11 @@ export const useProviderRpcUrlStore = create(
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
-        const { rpcUrl, autoMode } = get()
-        if (!autoMode) {
-          return (
-            PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
-            "mainnet"
-          )
-        }
-
-        return import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet"
+        const { rpcUrl } = get()
+        return (
+          PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
+          "mainnet"
+        )
       },
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
