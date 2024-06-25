@@ -1,23 +1,15 @@
 import * as React from "react"
 import { AssetId } from "@galacticcouncil/ui"
 import { Button } from "components/Button/Button"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import {
-  TExternalAsset,
-  TRegisteredAsset,
-  getInputData,
-  useRegisterToken,
-  useUserExternalTokenStore,
-} from "sections/wallet/addToken/AddToken.utils"
+import { useTranslation } from "react-i18next"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
-import { useToast } from "state/toasts"
-import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { omit } from "utils/rx"
@@ -25,6 +17,7 @@ import { createComponent } from "@lit-labs/react"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
 import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
@@ -43,12 +36,16 @@ type FormFields = {
   symbol: string
 }
 
+enum TokenState {
+  NotRegistered,
+  Registered,
+  UpdateRequired,
+  RiskConsentRequired,
+}
+
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
-  const { addToken } = useUserExternalTokenStore()
-  const refetchProvider = useRefetchProviderData()
-  const { add } = useToast()
 
   const chainStored = assets.external.find(
     (chainAsset) =>
@@ -59,14 +56,6 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const rugCheck = useExternalTokensRugCheck()
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
 
-  const mutation = useRegisterToken({
-    onSuccess: (id: string) => {
-      addToken({ ...omit(["location"], asset), internalId: id })
-      refetchProvider()
-    },
-    assetName: asset.name,
-  })
-
   const form = useForm<FormFields>({
     mode: "onSubmit",
     defaultValues: {
@@ -76,34 +65,35 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     },
   })
 
-  const onSubmit = async () => {
-    if (!asset) throw new Error("Selected asset cannot be added")
-    const input = getInputData(asset)
-    if (input) {
-      await mutation.mutateAsync(input)
+  const { onAddTokenToUser, onRegisterToken } =
+    useAddTokenFormModalActions(asset)
+
+  const tokenState = useMemo(() => {
+    if (!chainStored) return TokenState.NotRegistered
+
+    const warningTypes =
+      rugCheckData?.warnings.map((warning) => warning.type) ?? []
+
+    if (warningTypes.length) {
+      if (warningTypes.includes("supply")) return TokenState.RiskConsentRequired
+      return TokenState.UpdateRequired
     }
-    onClose()
-  }
 
-  const hasAsset = !!asset
+    return TokenState.Registered
+  }, [chainStored, rugCheckData?.warnings])
 
-  const onAddTokenToUser = async (asset: TRegisteredAsset) => {
-    addToken(asset)
-    refetchProvider()
-    add("success", {
-      title: (
-        <Trans
-          t={t}
-          i18nKey="wallet.addToken.toast.add.onSuccess"
-          tOptions={{
-            name: asset.name,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-    })
+  const onSubmit = async () => {
+    if (chainStored) {
+      //@TODO: implement risk consent
+
+      await onAddTokenToUser({
+        ...omit(["location"], asset),
+        internalId: chainStored.id,
+      })
+    } else {
+      await onRegisterToken()
+    }
+
     onClose()
   }
 
@@ -125,7 +115,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
                 <InputBox
                   placeholder={t("wallet.addToken.form.name")}
                   {...field}
-                  disabled={hasAsset}
+                  disabled
                   label={t("wallet.addToken.form.name")}
                   withLabel
                 />
@@ -138,7 +128,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
                 <InputBox
                   placeholder={t("wallet.addToken.form.symbol")}
                   {...field}
-                  disabled={hasAsset}
+                  disabled
                   label={t("wallet.addToken.form.symbol")}
                   withLabel
                 />
@@ -151,7 +141,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
                 <InputBox
                   placeholder={t("wallet.addToken.form.decimals")}
                   {...field}
-                  disabled={hasAsset}
+                  disabled
                   label={t("wallet.addToken.form.decimals")}
                   withLabel
                 />
@@ -160,43 +150,28 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
           </div>
 
           <Spacer size={0} />
-
           <TokenInfo externalAsset={asset} chainStoredAsset={chainStored} />
-
           <Spacer size={8} />
-
-          {chainStored ? (
-            <Button
-              type="button"
-              variant="primary"
-              sx={{ mt: "auto" }}
-              onClick={() => {
-                const token = {
-                  ...omit(["location"], asset),
-                  internalId: chainStored.id,
-                }
-                console.log({ token })
-                onAddTokenToUser({
-                  ...omit(["location"], asset),
-                  internalId: chainStored.id,
-                })
-              }}
-            >
-              {rugCheckData?.warnings.length ? (
-                t("wallet.addToken.form.button.register.update")
-              ) : (
-                <>
-                  <PlusIcon width={18} height={18} />
-                  {t("wallet.addToken.form.button.register.forMe")}
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button variant="primary" sx={{ mt: "auto" }}>
+          <Button variant="primary" sx={{ mt: "auto" }} type="submit">
+            {tokenState === TokenState.NotRegistered && (
               <DropletIcon width={18} height={18} />
-              {t("wallet.addToken.form.button.register.hydra")}
-            </Button>
-          )}
+            )}
+            {tokenState === TokenState.Registered && (
+              <PlusIcon width={18} height={18} />
+            )}
+
+            {tokenState === TokenState.NotRegistered &&
+              t("wallet.addToken.form.button.register.hydra")}
+
+            {tokenState === TokenState.Registered &&
+              t("wallet.addToken.form.button.register.forMe")}
+
+            {tokenState === TokenState.UpdateRequired &&
+              t("wallet.addToken.form.button.register.update")}
+
+            {tokenState === TokenState.RiskConsentRequired &&
+              t("wallet.addToken.form.button.register.acceptRisk")}
+          </Button>
         </div>
       </form>
     </>

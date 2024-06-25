@@ -77,11 +77,28 @@ export const TokenInfo = ({
       {totalSupplyExternal && (
         <TokenInfoRow
           label={t("wallet.addToken.form.supply")}
-          value={t("value", {
-            value: totalSupplyExternal,
-            fixedPointScale: externalAsset.decimals,
-            decimalPlaces: 0,
-          })}
+          severity="high"
+          value={
+            <Text
+              fs={12}
+              fw={500}
+              font="GeistMedium"
+              color={warningFlags.supply ? "alarmRed400" : undefined}
+            >
+              {t("value", {
+                value: totalSupplyExternal,
+                fixedPointScale: externalAsset.decimals,
+                decimalPlaces: 0,
+              })}
+            </Text>
+          }
+          warning={
+            warningFlags.supply
+              ? t("wallet.addToken.rugCheck.supply", {
+                  name: rugCheckData?.externalToken.name,
+                })
+              : ""
+          }
         />
       )}
 
@@ -90,36 +107,11 @@ export const TokenInfo = ({
           <Separator opacity={0.3} color="darkBlue400" />
           <TokenInfoRow
             label={t("wallet.addToken.form.hydrationSupply")}
-            severity="high"
-            value={
-              warningFlags.supply ? (
-                <TokenInfoValueDiff
-                  before={t("value", {
-                    value: warningFlags.supply.from,
-                    fixedPointScale: externalAsset.decimals,
-                    decimalPlaces: 0,
-                  })}
-                  after={t("value", {
-                    value: warningFlags.supply.to,
-                    fixedPointScale: externalAsset.decimals,
-                    decimalPlaces: 0,
-                  })}
-                />
-              ) : (
-                t("value", {
-                  value: totalSupplyInternal,
-                  fixedPointScale: externalAsset.decimals,
-                  decimalPlaces: 0,
-                })
-              )
-            }
-            warning={
-              warningFlags.supply
-                ? t("wallet.addToken.rugCheck.supply", {
-                    name: rugCheckData?.externalToken.name,
-                  })
-                : ""
-            }
+            value={t("value", {
+              value: totalSupplyInternal,
+              fixedPointScale: externalAsset.decimals,
+              decimalPlaces: 0,
+            })}
           />
         </>
       )}
@@ -232,16 +224,20 @@ export const TokenInfo = ({
               )
             }
           />
-
+          <Separator opacity={0.3} color="darkBlue400" />
           {pools?.length ? (
             <>
-              <Separator opacity={0.3} color="darkBlue400" />
               <TokenInfoRow
                 label={t("wallet.addToken.form.info.volume")}
                 value={<XYKVolume pools={pools} />}
               />
             </>
-          ) : null}
+          ) : (
+            <TokenInfoRow
+              label={t("wallet.addToken.form.info.volume")}
+              value={"-"}
+            />
+          )}
         </>
       )}
     </div>
