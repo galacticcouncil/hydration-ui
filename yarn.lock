@@ -2657,10 +2657,10 @@
     lit "^2.8.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.6.0.tgz#7337c580b06c2521d72a411cc8ebe1b21f077847"
-  integrity sha512-lLijyBL/aK8sq8JYooXnkr3XLj98B9e2yGo3zw+mk2QdqviV1KoaL7hYp7VGkRDl4DKLW1QvJ+Wu/qzzJ1XujQ==
+"@galacticcouncil/xcm-cfg@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.6.1.tgz#8da26df1c3442124018d413009159db65b7a7de9"
+  integrity sha512-sZ6UCIG+heQUzpSCueysM+ho3M4wtUfyHKIHUD2rCmSnjdIYr1EHQ9LerrgIj7hYlMQ0G4KDyEH7l0ykJg1hzw==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.6.0"
 
@@ -12121,6 +12121,7 @@ prelude-ls@^1.2.1:
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
 "prettier-fallback@npm:prettier@^3", prettier@^3.1.1:
+  name prettier-fallback
   version "3.2.5"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.5.tgz#e52bc3090586e824964a8813b09aba6233b28368"
   integrity sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==
