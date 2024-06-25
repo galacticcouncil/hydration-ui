@@ -115,7 +115,11 @@ export function WalletTransferSectionOnchain({
       {
         tx:
           asset.toString() === assets.native.id
-            ? api.tx.balances.transfer(normalizedDest, amount.toFixed())
+            ? api.tx.currencies.transfer(
+                normalizedDest,
+                assets.native.id,
+                amount.toFixed(),
+              )
             : api.tx.tokens.transfer(normalizedDest, asset, amount.toFixed()),
         overrides: insufficientFee
           ? {

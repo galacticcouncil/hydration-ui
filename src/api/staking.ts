@@ -5,7 +5,7 @@ import BN from "bignumber.js"
 import { getUniques } from "./uniques"
 import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { undefinedNoop } from "utils/helpers"
@@ -219,12 +219,7 @@ export type TAccumulatedRpsUpdated = StakeEventBase & {
 }
 
 export const useStakingEvents = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(QUERY_KEYS.stakingEvents, async () => {
     const [accumulatedRpsUpdated, stakingInitialized] = await Promise.all([
@@ -242,12 +237,7 @@ export const useStakingEvents = () => {
 }
 
 export const useStakingPositionBalances = (positionId?: string) => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(
     QUERY_KEYS.stakingPositionBalances(positionId),

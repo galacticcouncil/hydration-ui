@@ -1,17 +1,17 @@
 import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveLiquidityForm } from "./RemoveLiquidityForm"
 import { RemoveLiquidityModal as RemoveStablepoolLiquidityModal } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityModal"
 import { TPoolFullData, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { RemoveXYKLiquidityForm } from "./RemoveXYKLiquidityForm"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TLPData } from "utils/omnipool"
 
 type RemoveLiquidityProps = {
   isOpen: boolean
   onClose: () => void
-  position?: HydraPositionsTableData | HydraPositionsTableData[]
+  position?: TLPData | TLPData[]
   onSuccess: () => void
   pool: TPoolFullData | TXYKPool
 }

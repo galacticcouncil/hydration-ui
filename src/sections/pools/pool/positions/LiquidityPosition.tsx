@@ -5,8 +5,6 @@ import { Text } from "components/Typography/Text/Text"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { useTranslation } from "react-i18next"
 import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
@@ -20,9 +18,10 @@ import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
+import { TLPData } from "utils/omnipool"
 
 type Props = {
-  position: HydraPositionsTableData
+  position: TLPData
   index: number
   pool: TPoolFullData
   onSuccess: () => void
@@ -32,7 +31,7 @@ export function LiquidityPositionRemoveLiquidity(
   props:
     | {
         pool: TPoolFullData
-        position: HydraPositionsTableData
+        position: TLPData
         onSuccess: () => void
       }
     | {
@@ -142,8 +141,7 @@ export const LiquidityPosition = ({
             <div sx={{ flex: "column", align: ["end", "start"] }}>
               <Text fs={[13, 16]}>
                 {t("value.token", {
-                  value: position.providedAmount,
-                  fixedPointScale: meta.decimals,
+                  value: position.amountShifted,
                   numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
@@ -167,17 +165,17 @@ export const LiquidityPosition = ({
               </Text>
               <LrnaPositionTooltip
                 assetId={position.assetId}
-                tokenPosition={position.value}
-                lrnaPosition={position.lrna}
+                tokenPosition={position.valueShifted}
+                lrnaPosition={position.lrnaShifted}
               />
             </div>
             <div sx={{ flex: "column", align: ["end", "start"] }}>
-              <WalletAssetsHydraPositionsData
-                assetId={position.assetId}
-                value={position.value}
-                lrna={position.lrna}
-                fontSize={[13, 16]}
-              />
+              <Text fs={[13, 16]}>
+                {t("value.token", {
+                  value: position.totalValueShifted,
+                  numberSuffix: ` ${meta.symbol}`,
+                })}
+              </Text>
               <DollarAssetValue
                 value={position.valueDisplay}
                 wrapper={(children) => (

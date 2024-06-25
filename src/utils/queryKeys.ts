@@ -16,7 +16,7 @@ export const QUERY_KEYS = {
     provider,
   ],
   walletEnable: (provider: string | null) => ["web3Enable", provider],
-  bestNumber: [QUERY_KEY_PREFIX, "bestNumber"],
+  bestNumber: (ws: string) => [QUERY_KEY_PREFIX, "bestNumber", ws],
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "assetsTable",
@@ -160,6 +160,10 @@ export const QUERY_KEYS = {
     "nonce",
     account,
   ],
+  nextEvmPermitNonce: (account: Maybe<AccountId32 | string>) => [
+    "evmPermitNonce",
+    account,
+  ],
   bestBuy: (params: Record<string, any>) => [
     QUERY_KEY_PREFIX,
     "bestBuy",
@@ -232,14 +236,14 @@ export const QUERY_KEYS = {
     address?.toString(),
     collectionId?.toString(),
   ],
-  uniquesAssets: (collectionId: string | u128) => [
+  uniquesAssets: (collectionId?: string | u128) => [
     "uniquesAssets",
-    collectionId.toString(),
+    collectionId?.toString(),
   ],
-  uniquesAssetsLive: (collectionId: string | u128) => [
+  uniquesAssetsLive: (collectionId?: string | u128) => [
     QUERY_KEY_PREFIX,
     "uniquesAssets",
-    collectionId.toString(),
+    collectionId?.toString(),
   ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
@@ -255,7 +259,7 @@ export const QUERY_KEYS = {
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: ["omnipoolFee"],
-  omnipoolAsset: (id: u32 | string) => [
+  omnipoolAsset: (id?: u32 | string) => [
     QUERY_KEY_PREFIX,
     "omnipoolAsset",
     id?.toString(),
@@ -375,6 +379,7 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmWalletReadiness: (address: string) => ["evmWalletReadiness", address],
   evmPaymentFee: (txHex: string, address?: string) => [
     "evmPaymentFee",
     txHex,

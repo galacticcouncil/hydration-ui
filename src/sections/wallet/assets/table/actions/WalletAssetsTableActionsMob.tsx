@@ -115,7 +115,7 @@ export const WalletAssetsTableActionsMob = ({
             <AddTokenAction
               id={row.id}
               css={{ width: "100%", marginTop: 20 }}
-              onClick={onClose}
+              onClose={onClose}
             />
           ) : (
             <>

@@ -14,10 +14,12 @@ import { isNotNil } from "utils/helpers"
 
 type Props = {
   assetIds: string[]
+  onClose?: () => void
 }
 
 export const ExternalAssetImportModal: React.FC<Props> = ({
   assetIds = [],
+  onClose,
 }) => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -30,7 +32,10 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
   const assetsMeta = assets.getAssets(assetIds)
   const assetsToAddRef = useRef<TExternalAsset[]>([])
 
-  const onClose = () => setIsOpen(false)
+  const onCloseHandler = () => {
+    setIsOpen(false)
+    onClose?.()
+  }
 
   useEffect(() => {
     const assetsToAdd = assetsMeta
@@ -53,11 +58,11 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
   }, [assets.external, assetsMeta, externalAssets, isAdded])
 
   return (
-    <Modal open={isOpen} disableCloseOutside={true} onClose={onClose}>
+    <Modal open={isOpen} disableCloseOutside={true} onClose={onCloseHandler}>
       <ModalContents
         page={page}
         direction={direction}
-        onClose={onClose}
+        onClose={onCloseHandler}
         contents={assetsToAddRef.current.map((asset, index) => ({
           title: t("wallet.assets.table.addToken"),
           headerVariant: "GeistMono",
@@ -66,7 +71,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
               asset={asset}
               onClose={() => {
                 if (index === assetsToAddRef.current.length - 1) {
-                  onClose()
+                  onCloseHandler()
                 } else {
                   paginateTo(index + 1)
                 }
