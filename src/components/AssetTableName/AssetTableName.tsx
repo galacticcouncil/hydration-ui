@@ -8,13 +8,9 @@ import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 
 export const AssetTableName = ({
   large,
-  symbol,
-  name,
   isPaymentFee,
   id,
 }: {
-  symbol: string
-  name: string
   large?: boolean
   isPaymentFee?: boolean
   id: string
@@ -69,7 +65,7 @@ export const AssetTableName = ({
             font="GeistMedium"
             color="white"
           >
-            {externalAsset?.symbol ?? symbol}
+            {externalAsset?.symbol ?? asset.symbol}
           </Text>
           <Text
             fs={large ? 14 : 12}
@@ -77,7 +73,7 @@ export const AssetTableName = ({
             sx={{ display: !large ? ["none", "block"] : undefined }}
             color="whiteish500"
           >
-            {name}
+            {asset.name}
           </Text>
         </div>
       </div>

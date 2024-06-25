@@ -16,6 +16,7 @@ import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
+import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
@@ -37,7 +38,6 @@ export const FarmDetailsCard = ({
 
   const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
-  const assetMeta = assets.getAsset(poolId.toString())
 
   const isClickable = !!onSelect
 
@@ -163,20 +163,9 @@ export const FarmDetailsCard = ({
           <>
             <SRow>
               <Text fs={14} lh={18}>
-                {t("farms.details.card.lockedShares.label")}
+                {t("farms.details.card.locked.label")}
               </Text>
-              <GradientText
-                fs={14}
-                tAlign="right"
-                font="GeistMedium"
-                gradient="pinkLightBlue"
-                sx={{ width: "fit-content" }}
-                css={{ justifySelf: "end" }}
-              >
-                {t("farms.details.card.lockedShares.value", {
-                  value: scaleHuman(depositNft.data.shares, assetMeta.decimals),
-                })}
-              </GradientText>
+              <LockedValue poolId={poolId} depositNft={depositNft} />
             </SRow>
 
             <div sx={{ flex: "row", justify: "space-between", mb: 9 }}>
@@ -203,5 +192,34 @@ export const FarmDetailsCard = ({
         />
       )}
     </SContainer>
+  )
+}
+
+const LockedValue = ({
+  poolId,
+  depositNft,
+}: {
+  poolId: string
+  depositNft: TMiningNftPosition
+}) => {
+  const { t } = useTranslation()
+  const position = useDepositShare(poolId, depositNft.id.toString())
+
+  if (!position.data) return null
+
+  return (
+    <GradientText
+      fs={14}
+      tAlign="right"
+      font="GeistMedium"
+      gradient="pinkLightBlue"
+      sx={{ width: "fit-content" }}
+      css={{ justifySelf: "end" }}
+    >
+      {t("value.tokenWithSymbol", {
+        value: position.data.totalValueShifted,
+        symbol: position.data.meta.symbol,
+      })}
+    </GradientText>
   )
 }

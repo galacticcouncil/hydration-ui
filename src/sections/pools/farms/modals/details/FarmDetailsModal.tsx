@@ -11,7 +11,7 @@ import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
 type FarmDetailsModalProps = {
   poolId: string
   farm: Farm
-  depositNft: TMiningNftPosition | undefined
+  depositNft?: TMiningNftPosition
   currentBlock?: number
 }
 
