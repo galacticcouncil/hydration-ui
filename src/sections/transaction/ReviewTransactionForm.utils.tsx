@@ -105,7 +105,7 @@ export const useTransactionValues = ({
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
   const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-  const { permitNonce } = useNextEvmPermitNonce()
+  const { permitNonce, pendingPermit } = useNextEvmPermitNonce()
 
   const nonce = useNextNonce(account?.address)
 
@@ -151,6 +151,7 @@ export const useTransactionValues = ({
         isNewReferralLink,
         shouldUsePermit,
         permitNonce,
+        pendingPermit,
       },
     }
 
@@ -230,6 +231,7 @@ export const useTransactionValues = ({
       isNewReferralLink,
       shouldUsePermit,
       permitNonce,
+      pendingPermit,
     },
   }
 }
