@@ -25,6 +25,7 @@ type Props = {
   children: ReactNode
   subHeader?: ReactNode
   subHeaderStyle?: Interpolation<Theme>
+  flippedBg?: boolean
 }
 
 export const Page = ({
@@ -32,6 +33,7 @@ export const Page = ({
   children,
   subHeader,
   subHeaderStyle,
+  flippedBg = false,
 }: Props) => {
   const { featureFlags, isLoaded } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
@@ -65,7 +67,7 @@ export const Page = ({
           sx={{ flex: "column", height: "100%" }}
           css={{ position: "relative" }}
         >
-          <SGradientBg />
+          <SGradientBg flipped={flippedBg} />
           <Header />
           <SPageContent>
             {subHeader && (

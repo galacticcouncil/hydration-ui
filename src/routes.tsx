@@ -19,6 +19,7 @@ import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
 import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
 import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
 import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
+import { MemepadPage } from "sections/memepad/MemepadPage"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
 
@@ -151,6 +152,10 @@ export const routes = [
   {
     path: "referrals",
     element: <ReferralsWrapper />,
+  },
+  {
+    path: "memepad",
+    element: <MemepadPage />,
   },
   {
     path: "*",

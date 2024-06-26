@@ -26,7 +26,7 @@ export const SPage = styled.div`
   }
 `
 
-export const SGradientBg = styled.div`
+export const SGradientBg = styled.div<{ flipped?: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -35,6 +35,15 @@ export const SGradientBg = styled.div`
 
   height: 474px;
   background: ${theme.gradients.background};
+
+  ${({ flipped }) =>
+    flipped &&
+    `
+      rotate: 180deg;
+      top: auto;
+      bottom: 0;
+      opacity: 0.4;
+  `}
 `
 
 export const SPageContent = styled.main`
