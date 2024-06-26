@@ -525,7 +525,8 @@ export const useSendTx = () => {
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
 
-  const { incrementPermitNonce, revertPermitNonce } = useNextEvmPermitNonce()
+  const { incrementPermitNonce, revertPermitNonce, setPendingPermit } =
+    useNextEvmPermitNonce()
 
   const sendTx = useSendTransactionMutation({
     onMutate: ({ tx }) => {
@@ -548,11 +549,13 @@ export const useSendTx = () => {
   })
 
   const sendPermitTx = useSendDispatchPermit({
-    onMutate: () => {
+    onMutate: ({ permit }) => {
       setTxType("permit")
       incrementPermitNonce()
+      setPendingPermit(permit)
     },
     onError: () => revertPermitNonce(),
+    onSettled: () => setPendingPermit(null),
   })
 
   const activeMutation =
