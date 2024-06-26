@@ -3,74 +3,42 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
-import { BN_0 } from "utils/constants"
-import { useDisplayPrice } from "utils/displayAsset"
+import { useTranslation } from "react-i18next"
 import { SAssetRow, SCircle } from "./AssetsModalRow.styled"
 import { TAsset } from "api/assetDetails"
 import BN from "bignumber.js"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
-import { useRpcProvider } from "providers/rpcProvider"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { useDisplayShareTokenPrice } from "utils/displayAsset"
 
 type AssetsModalRowProps = {
   asset: TAsset
   balance: BN
-  spotPriceId: string
+  displaValue: BN
   onClick?: (asset: NonNullable<TAsset>) => void
   isActive?: boolean
+  isSelected?: boolean
 }
 
 export const AssetsModalRow = ({
   asset,
-  spotPriceId,
   onClick,
   balance,
+  displaValue,
   isActive,
+  isSelected,
 }: AssetsModalRowProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
 
-  const isShareToken = assets.isShareToken(asset)
-
-  const spotPriceAsset = useDisplayPrice(isShareToken ? undefined : spotPriceId)
-  const spotPriceShareToken = useDisplayShareTokenPrice(
-    isShareToken ? [spotPriceId] : [],
-  )
-  const spotPrice = isShareToken
-    ? spotPriceShareToken.data?.[0]
-    : spotPriceAsset.data
-
-  const totalDisplay = !balance?.isZero()
-    ? balance.multipliedBy(spotPrice?.spotPrice ?? 1).shiftedBy(-asset.decimals)
-    : BN_0
-
-  let iconIds: string | string[]
-
-  if (assets.isStableSwap(asset) || isShareToken) {
-    iconIds = asset.assets
-  } else if (assets.isBond(asset)) {
-    iconIds = asset.assetId
-  } else {
-    iconIds = asset.id
-  }
-
-  if (
-    !asset ||
-    spotPriceAsset.isInitialLoading ||
-    spotPriceShareToken.isInitialLoading
-  )
-    return <AssetsModalRowSkeleton />
+  if (!asset) return <AssetsModalRowSkeleton />
 
   return (
-    <SAssetRow onClick={() => onClick?.(asset)}>
+    <SAssetRow onClick={() => onClick?.(asset)} isSelected={!!isSelected}>
       <div sx={{ display: "flex", align: "center", gap: 10 }}>
-        {typeof iconIds === "string" ? (
-          <Icon icon={<AssetLogo id={iconIds} />} size={30} />
+        {typeof asset.iconId === "string" ? (
+          <Icon icon={<AssetLogo id={asset.iconId} />} size={30} />
         ) : (
           <MultipleIcons
-            icons={iconIds.map((asset) => ({
+            icons={asset.iconId.map((asset) => ({
               icon: <AssetLogo key={asset} id={asset} />,
             }))}
           />
@@ -88,33 +56,27 @@ export const AssetsModalRow = ({
       <div sx={{ flex: "row", align: "center", gap: 20 }}>
         {balance && (
           <div sx={{ display: "flex", flexDirection: "column", align: "end" }}>
-            <Trans
-              t={t}
-              i18nKey="selectAssets.balance"
-              tOptions={{
-                balance: balance,
+            <Text
+              color={isActive ? "brightBlue300" : "white"}
+              fs={14}
+              tAlign="right"
+            >
+              {t("value.tokenWithSymbol", {
+                value: balance,
                 symbol: asset.symbol,
                 fixedPointScale: asset.decimals,
-                type: "token",
-              }}
-            >
-              <Text
-                color={isActive ? "brightBlue300" : "white"}
-                fs={14}
-                lh={18}
-                tAlign="right"
-              />
-            </Trans>
+              })}
+            </Text>
 
             <DollarAssetValue
-              value={totalDisplay}
+              value={displaValue}
               wrapper={(children) => (
                 <Text color="whiteish500" fs={12} lh={16}>
                   {children}
                 </Text>
               )}
             >
-              <DisplayValue value={totalDisplay} />
+              <DisplayValue value={displaValue} />
             </DollarAssetValue>
           </div>
         )}
