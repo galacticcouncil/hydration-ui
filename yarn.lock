@@ -2586,10 +2586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^4.1.1":
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.1.1.tgz#217019619a6b5820ab0a886819416a188a2c2d0e"
-  integrity sha512-Ajp1iII5U10p8jUf86XiUGiq2T57zQUe4C0aoLPaEigfP0Dxk29ynaMmen2cC0N9mW/tWO6BhSHXizMOMTsajw==
+"@galacticcouncil/apps@^4.2.0":
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.2.0.tgz#1d5f1d29c7c97193c4c9b29644d42f7054cab474"
+  integrity sha512-UNZS9VcralOs4HICpH8wZs9WPW66uPsaFaNIGYu6GyemNAYqTwCOp2MUPzjJfj6BVr34zCvoTxLxcPwcEMvE+A==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2657,17 +2657,17 @@
     lit "^2.8.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.5.1":
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.5.1.tgz#ee33b36a5f01a05524420c3a84e82f5bb4827b6e"
-  integrity sha512-kHFQvckWGBHWyKSiJVYIIyzJmS+tfFTb4moc/wYzoNLUDKdGPG08z7g9ijQIkDmCTwXWC58McW4khbkF4odJmA==
+"@galacticcouncil/xcm-cfg@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.6.1.tgz#8da26df1c3442124018d413009159db65b7a7de9"
+  integrity sha512-sZ6UCIG+heQUzpSCueysM+ho3M4wtUfyHKIHUD2rCmSnjdIYr1EHQ9LerrgIj7hYlMQ0G4KDyEH7l0ykJg1hzw==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.4.0"
+    "@galacticcouncil/xcm-core" "^1.6.0"
 
-"@galacticcouncil/xcm-core@^1.4.0", "@galacticcouncil/xcm-core@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.5.0.tgz#e98ecd4a729691ab3fe8ef3b8e3557540bfb3e7f"
-  integrity sha512-oaBQ19+tbWk0w8LRyFjvEMazHN6dVQ5WUcZ+4ojX7E1gmbvyny0lGsubmay5lamkfBXtDvkanpAqnNWvNuwzJQ==
+"@galacticcouncil/xcm-core@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.6.0.tgz#eb25d861e29fc3ed4275e2691c295076e7c3002e"
+  integrity sha512-jS7xdMaCgqqfDeElUc3f2dYfwfXAISVWieh4G/llqDQ2dO6TWvUOekUTt3aW0McNk6agXJirhIZZcCsC4aebnA==
   dependencies:
     "@moonbeam-network/xcm-utils" "1.0.4"
     "@thi.ng/cache" "^2.1.35"
@@ -2676,12 +2676,12 @@
     "@wormhole-foundation/sdk-definitions" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.3.0.tgz#6a1707675556181c0fd5a71c9893dae11ab190ef"
-  integrity sha512-Yy31smecf6XSgX/6WWAryQGimGMTwQaPBgn8adr1vwRClP/rO770JT+WEYeAPZ9QORuKaLw2JSSy6UcsWaOuTA==
+"@galacticcouncil/xcm-sdk@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.4.0.tgz#73b842df9207190d5cf4980a0186f71ac2acb5a0"
+  integrity sha512-YwFwFLA2z9l7anJDonCeAsOFnejNBdpc5pBeqkQ7MKdJMEHIgjm2CRQaLPSorvnMJkTLhKjJ3Yr5jMCqa9YWng==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.4.0"
+    "@galacticcouncil/xcm-core" "^1.6.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"
@@ -12120,7 +12120,8 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-"prettier-fallback@npm:prettier@^3":
+"prettier-fallback@npm:prettier@^3", prettier@^3.1.1:
+  name prettier-fallback
   version "3.2.5"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.5.tgz#e52bc3090586e824964a8813b09aba6233b28368"
   integrity sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==
@@ -12141,11 +12142,6 @@ prettier@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.0.3.tgz#432a51f7ba422d1469096c0fdc28e235db8f9643"
   integrity sha512-L/4pUDMxcNa8R/EthV08Zt42WBO4h1rarVtK0K+QJG0X187OLo7l699jWw0GKuwzkPQ//jMFA/8Xm6Fh3J/DAg==
-
-prettier@^3.1.1:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.5.tgz#e52bc3090586e824964a8813b09aba6233b28368"
-  integrity sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==
 
 pretty-format@^27.0.0, pretty-format@^27.0.2, pretty-format@^27.5.1:
   version "27.5.1"
@@ -13497,14 +13493,7 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
-
-strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -14553,16 +14542,7 @@ wordwrap@^1.0.0:
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
   integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
-  dependencies:
-    ansi-styles "^4.0.0"
-    string-width "^4.1.0"
-    strip-ansi "^6.0.0"
-
-wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^8.1.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^6.2.0, wrap-ansi@^8.1.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
