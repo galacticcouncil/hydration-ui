@@ -38,7 +38,7 @@ export const getUniques =
   }
 
 export const useUniquesAssets = (
-  collectionId: string | u128,
+  collectionId?: string | u128,
   noRefresh?: boolean,
 ) => {
   const { api } = useRpcProvider()

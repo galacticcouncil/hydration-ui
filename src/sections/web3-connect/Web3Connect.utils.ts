@@ -22,7 +22,11 @@ import {
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "./store/useWeb3ConnectStore"
-import { WalletProviderType, getSupportedWallets } from "./wallets"
+import {
+  WalletProviderType,
+  getSupportedWallets,
+  handleAnnounceProvider,
+} from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask"
 import {
@@ -31,7 +35,10 @@ import {
   requestNetworkSwitch,
 } from "utils/metamask"
 import { genesisHashToChain } from "utils/helpers"
-import { WalletAccount } from "sections/web3-connect/types"
+import {
+  EIP6963AnnounceProviderEvent,
+  WalletAccount,
+} from "sections/web3-connect/types"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
@@ -120,7 +127,23 @@ export const useWalletAccounts = (
   )
 }
 
+export const useAnnounceProviders = () => {
+  useEffect(() => {
+    const announceProvider = (e: unknown) =>
+      handleAnnounceProvider(e as EIP6963AnnounceProviderEvent)
+
+    window.addEventListener("eip6963:announceProvider", announceProvider)
+    window.dispatchEvent(new Event("eip6963:requestProvider"))
+
+    return () => {
+      window.removeEventListener("eip6963:announceProvider", announceProvider)
+    }
+  }, [])
+}
+
 export const useWeb3ConnectEagerEnable = () => {
+  useAnnounceProviders()
+
   const navigate = useNavigate()
   const search = useSearch<{
     Search: {
@@ -290,6 +313,54 @@ export const useEnableWallet = (
     enable,
     ...mutation,
   }
+}
+
+export const useEvmWalletReadiness = () => {
+  const { wallet } = useWallet()
+  const { account } = useEvmAccount()
+  const address = account?.address ?? ""
+
+  const isEvmExtension =
+    isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
+
+  return useQuery(
+    QUERY_KEYS.evmWalletReadiness(address),
+    async () => {
+      const getIsReady = async () => {
+        const balance = isEvmExtension
+          ? await wallet?.extension?.request({
+              method: "eth_getBalance",
+              params: [address, "latest"],
+            })
+          : null
+
+        return !!balance
+      }
+
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          resolve(false)
+        }, 2500)
+
+        getIsReady()
+          .then((response) => {
+            clearTimeout(timer)
+            resolve(response)
+          })
+          .catch(() => {
+            clearTimeout(timer)
+            resolve(false)
+          })
+      })
+    },
+    {
+      enabled: isEvmExtension && !!address,
+      cacheTime: 0,
+      staleTime: 0,
+      initialData: true,
+      refetchInterval: 5000,
+    },
+  )
 }
 
 export function setExternalWallet(externalAddress = "") {

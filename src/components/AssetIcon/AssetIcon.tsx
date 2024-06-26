@@ -74,7 +74,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [assets, id])
+  }, [assets, externalAssetsWhitelist, id])
 
   if (asset.chain || asset.symbol)
     return (

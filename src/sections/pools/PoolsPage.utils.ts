@@ -6,7 +6,7 @@ import {
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { NATIVE_ASSET_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { NATIVE_ASSET_ID } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_1, BN_MILL, BN_NAN } from "utils/constants"
 import {
@@ -145,8 +145,6 @@ export const usePools = () => {
     [omnipoolAssets.data],
   )
 
-  const omnipoolBalances = useTokensBalances(assetsId, OMNIPOOL_ACCOUNT_ADDRESS)
-
   const assetsByStablepool = [
     ...new Set(
       stablepools.data
@@ -167,32 +165,20 @@ export const usePools = () => {
   const fees = useFee("all")
   const tvls = useTVL("all")
 
-  const queries = [
-    omnipoolAssets,
-    spotPrices,
-    assetsTradability,
-    ...omnipoolBalances,
-  ]
+  const queries = [omnipoolAssets, spotPrices, assetsTradability]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (
-      !omnipoolAssets.data ||
-      !spotPrices.data ||
-      !assetsTradability.data ||
-      omnipoolBalances.some((q) => !q.data)
-    )
+    if (!omnipoolAssets.data || !spotPrices.data || !assetsTradability.data)
       return undefined
 
-    const rows = assetsId.map((assetId) => {
-      const meta = assets.getAsset(assetId)
-
-      const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
+    const rows = omnipoolAssets.data.map((asset) => {
+      const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === asset.id)
         ?.spotPrice
 
       const tradabilityData = assetsTradability.data?.find(
-        (t) => t.id === assetId,
+        (t) => t.id === asset.id,
       )
 
       const tradability = {
@@ -205,36 +191,36 @@ export const usePools = () => {
       )?.spotPrice
 
       const tvlDisplay = BN(
-        tvls?.data?.find((tvl) => tvl.asset_id === Number(assetId))?.tvl_usd ??
+        tvls.data?.find((tvl) => tvl.asset_id === Number(asset.id))?.tvl_usd ??
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
       const volume = BN(
-        volumes?.data?.find((volume) => volume.asset_id.toString() === assetId)
+        volumes.data?.find((volume) => volume.asset_id.toString() === asset.id)
           ?.volume_usd ?? BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
       const fee =
-        assets.native.id === assetId
+        assets.native.id === asset.id
           ? BN_0
           : BN(
-              fees?.data?.find((fee) => fee.asset_id.toString() === assetId)
+              fees.data?.find((fee) => fee.asset_id.toString() === asset.id)
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
       const filteredOmnipoolPositions = omnipoolPositions.data.filter(
-        (omnipoolPosition) => omnipoolPosition.assetId === assetId,
+        (omnipoolPosition) => omnipoolPosition.assetId === asset.id,
       )
 
-      const filteredMiningPositions = miningPositions.data?.[assetId] ?? []
+      const filteredMiningPositions = miningPositions.data?.[asset.id] ?? []
 
       const isPositions =
         !!filteredOmnipoolPositions.length || !!filteredMiningPositions?.length
 
       return {
-        id: assetId,
-        name: meta.name,
-        symbol: meta.symbol,
+        id: asset.id,
+        name: asset.meta.name,
+        symbol: asset.meta.symbol,
         tvlDisplay,
         spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
@@ -261,18 +247,18 @@ export const usePools = () => {
       return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
     })
   }, [
-    assets,
-    assetsId,
+    assets.native.id,
     assetsTradability.data,
-    omnipoolAssets.data,
-    omnipoolBalances,
-    spotPrices.data,
-    volumes,
-    fees,
-    tvls,
-    stableCoinId,
-    omnipoolPositions.data,
+    fees.data,
+    fees.isLoading,
     miningPositions.data,
+    omnipoolAssets.data,
+    omnipoolPositions.data,
+    spotPrices.data,
+    stableCoinId,
+    tvls.data,
+    volumes.data,
+    volumes.isLoading,
   ])
 
   return { data, isLoading: isInitialLoading }
