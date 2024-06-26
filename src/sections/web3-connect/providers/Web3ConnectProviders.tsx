@@ -18,12 +18,25 @@ import {
   DESKTOP_PROVIDERS,
   EVM_PROVIDERS,
   MOBILE_PROVIDERS,
+  NOVA_WALLET_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnect"
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const context = useMemo(() => {
+    const wallets = getSupportedWallets()
+    const isNovaWallet = wallets.some(
+      ({ type, wallet }) =>
+        NOVA_WALLET_PROVIDERS.includes(type) && wallet.installed,
+    )
+
+    return {
+      isNovaWallet,
+    }
+  }, [])
 
   return useMemo(() => {
     const wallets = getSupportedWallets()
@@ -35,6 +48,9 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
     const defaultProviders = wallets
       .filter((provider) => {
         if (isEvmMode) return EVM_PROVIDERS.includes(provider.type)
+        if (context.isNovaWallet)
+          return NOVA_WALLET_PROVIDERS.includes(provider.type)
+
         const byScreen = isDesktop
           ? DESKTOP_PROVIDERS.includes(provider.type)
           : MOBILE_PROVIDERS.includes(provider.type)
@@ -68,7 +84,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
       defaultProviders,
       alternativeProviders,
     }
-  }, [isDesktop, mode, chain])
+  }, [mode, context, isDesktop, chain])
 }
 
 export const Web3ConnectProviders = () => {
