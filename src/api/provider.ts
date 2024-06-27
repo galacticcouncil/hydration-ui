@@ -9,6 +9,7 @@ import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -240,18 +241,20 @@ export const useSquidUrl = () => {
 }
 
 export const useActiveProvider = (): ProviderProps => {
-  const { data } = useProviderData()
+  const { api, isLoaded } = useRpcProvider()
 
   const activeRpcUrl = useMemo(() => {
+    if (!isLoaded) return undefined
+
     let rpcUrl = import.meta.env.VITE_PROVIDER_URL
     try {
-      const provider = data?.api ? getProviderInstance(data.api) : null
+      const provider = api ? getProviderInstance(api) : null
       if (provider?.endpoint) {
         rpcUrl = provider.endpoint
       }
     } catch (e) {}
     return rpcUrl
-  }, [data?.api])
+  }, [api, isLoaded])
 
   return (
     PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
