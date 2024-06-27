@@ -122,7 +122,8 @@
     "lint": "run-p -lsc 'lint:*'",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
-    "fix": "eslint --fix src"
+    "fix": "eslint --fix src",
+    "analyze": "npx vite-bundle-visualizer -o ./build/stats.html"
   },
   "browserslist": {
     "production": [

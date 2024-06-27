@@ -1,7 +1,7 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import * as Popover from "@radix-ui/react-popover"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const STriggerButton = styled(Popover.Trigger)`

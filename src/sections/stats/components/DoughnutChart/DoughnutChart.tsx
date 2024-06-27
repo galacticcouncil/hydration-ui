@@ -13,7 +13,7 @@ import {
   SLabelContainer,
   SSliceContainer,
 } from "./DoughnutChart.styled"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, LazyMotion, domAnimation } from "framer-motion"
 import { ScrollablePicker } from "sections/stats/components/ScrollablePicker/ScrollablePicker"
 import { EmotionJSX } from "@emotion/react/types/jsx-namespace"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
@@ -146,7 +146,9 @@ export const DoughnutChart = ({ slices, ...props }: DoughnutChartProps) => {
       <div sx={{ flex: "column", justify: "space-between", align: "center" }}>
         <div css={{ position: "relative" }}>
           <SLabelContainer size={PIE_SIZE - config.shadowInnerRadius}>
-            <AnimatePresence>{label}</AnimatePresence>
+            <LazyMotion features={domAnimation}>
+              <AnimatePresence>{label}</AnimatePresence>
+            </LazyMotion>
           </SLabelContainer>
           <svg width={PIE_SIZE} height={PIE_SIZE}>
             <foreignObject width={PIE_SIZE} height={PIE_SIZE}>

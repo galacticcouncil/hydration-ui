@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { ButtonTransparent } from "components/Button/Button"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SHeader = styled.div`
