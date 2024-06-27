@@ -15,7 +15,7 @@ export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
       <Button
         disabled={disabled}
         variant="primary"
-        sx={{ minWidth: [0, 150] }}
+        sx={{ minWidth: ["100%", 150] }}
         onClick={onNext}
       >
         Next

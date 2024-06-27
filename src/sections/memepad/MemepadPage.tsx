@@ -1,4 +1,3 @@
-import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Stepper } from "components/Stepper/Stepper"
 import { useRouteBlock } from "hooks/useRouteBlock"
@@ -9,16 +8,17 @@ import { MemepadVisual } from "./components/MemepadVisual"
 import { MemepadHeader } from "./components/MemepadHeader"
 import { useMemepadForms } from "./form/MemepadForm.utils"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
+import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
 
 export const MemepadPage = () => {
   const {
     step,
     currentForm,
-    summary,
     submitNext,
     isFinalStep,
-    reset,
     isDirty,
+    summary,
+    reset,
   } = useMemepadForms()
 
   const { isBlocking, accept, cancel } = useRouteBlock(isDirty)
@@ -39,6 +39,10 @@ export const MemepadPage = () => {
     )
   }, [step])
 
+  if (isFinalStep) {
+    return <MemepadSummary values={summary} onReset={reset} />
+  }
+
   return (
     <>
       <MemepadHeader />
@@ -48,25 +52,15 @@ export const MemepadPage = () => {
           <Stepper fullWidth steps={steps} />
           <Spacer size={60} />
           {currentForm}
-          {isFinalStep && (
-            <>
-              <pre sx={{ color: "white" }}>
-                {JSON.stringify(summary, null, 2)}
-              </pre>
-              <Button onClick={reset}>Create another asset</Button>
-            </>
-          )}
         </div>
         <div>
           <MemepadVisual />
         </div>
       </SContent>
-      {!isFinalStep && (
-        <MemepadActionBar
-          disabled={step >= steps.length - 1}
-          onNext={submitNext}
-        />
-      )}
+      <MemepadActionBar
+        disabled={step >= steps.length - 1}
+        onNext={submitNext}
+      />
       <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
     </>
   )

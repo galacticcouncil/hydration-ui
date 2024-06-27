@@ -88,6 +88,12 @@ export const useMemepadForms = () => {
   const formStep2 = useMemepadStep2Form()
   const formStep3 = useMemepadStep3Form()
 
+  const reset = () => {
+    setStep(0)
+    setSummary(null)
+    formInstances.forEach((form) => form.reset())
+  }
+
   const formComponents = [
     <MemepadFormStep1 form={formStep1} />,
     <MemepadFormStep2 form={formStep2} />,
@@ -124,12 +130,6 @@ export const useMemepadForms = () => {
         setNextStep(values)
       })()
     }
-  }
-
-  const reset = () => {
-    setStep(0)
-    setSummary(null)
-    formInstances.forEach((form) => form.reset())
   }
 
   const onBeforeUnload = useCallback(

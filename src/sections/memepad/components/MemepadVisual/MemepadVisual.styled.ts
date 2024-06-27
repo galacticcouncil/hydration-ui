@@ -1,14 +1,15 @@
 import styled from "@emotion/styled"
-
+import { theme } from "theme"
 import memepadImage from "assets/images/memepad.webp"
 import memepadImage2x from "assets/images/memepad@2x.webp"
 import memepadImageMobile from "assets/images/memepad-mobile.webp"
-import { theme } from "theme"
 
 export const SContainer = styled.div`
   position: absolute;
+
   right: 20px;
   top: 0;
+
   pointer-events: none;
 
   @media ${theme.viewport.gte.sm} {
@@ -33,8 +34,11 @@ export const SBottleCaps = styled.div`
   background-image: url(${memepadImageMobile});
 
   @media ${theme.viewport.gte.sm} {
-    width: 350px;
-    height: 500px;
+    width: 100%;
+    height: auto;
+
+    max-width: 350px;
+    aspect-ratio: 350 / 500;
 
     background-image: url(${memepadImage});
 
