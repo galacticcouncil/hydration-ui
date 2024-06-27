@@ -1,8 +1,6 @@
 import { useTokenBalance } from "api/balances"
-import { SSeparator } from "components/Separator/Separator.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
@@ -11,6 +9,16 @@ import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
+import { ReactElement, useState } from "react"
+import { ButtonTransparent } from "components/Button/Button"
+import { theme } from "theme"
+import { Icon } from "components/Icon/Icon"
+import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
+import {
+  SPositionContainer,
+  SShadow,
+  SWrapperContainer,
+} from "./MyPositions.styled"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const { assets } = useRpcProvider()
@@ -32,7 +40,7 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   if (
     !pool.miningNftPositions.length &&
     !pool.omnipoolNftPositions.length &&
-    !stablepoolBalance.data?.freeBalance
+    !stablepoolBalance.data?.freeBalance.gt(0)
   )
     return null
 
@@ -63,33 +71,90 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
 export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
   const { t } = useTranslation()
 
-  const totalFarms = useMemo(() => {
-    return pool.miningPositions.reduce((memo, share) => {
-      return memo.plus(share.amountUSD ?? 0)
-    }, BN_0)
-  }, [pool.miningPositions])
-
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="GeistMono">
+    <div sx={{ flex: "column", gap: 12, bg: "gray" }}>
+      <Text
+        fs={18}
+        font="GeistMono"
+        tTransform="uppercase"
+        sx={{ px: 30, pt: 12 }}
+      >
         {t("liquidity.pool.positions.title")}
       </Text>
-      {!totalFarms.isZero() && (
-        <>
-          <SSeparator color="white" opacity={0.06} orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text color="basic400" fs={[12, 13]}>
-              {t("liquidity.pool.positions.farming")}
-            </Text>
-            <Text color="white" fs={[14, 16]} fw={600}>
-              {t("value.usd", { amount: totalFarms })}
-            </Text>
-          </div>
-          <SSeparator color="darkBlue401" sx={{ my: 16 }} />
-        </>
-      )}
+
       <XYKPosition pool={pool} />
       <FarmingPositionWrapper pool={pool} />
+    </div>
+  )
+}
+
+export const CollapsedPositionsList = ({
+  positions,
+}: {
+  positions: { element: ReactElement; moveTo: number; height: number }[]
+}) => {
+  const { t } = useTranslation()
+  const [collapsed, setCollapsed] = useState(false)
+
+  const positionsNumber = positions.length
+  const isCollapsing = positionsNumber > 1
+
+  return (
+    <div sx={{ flex: "column", gap: 16, pb: collapsed ? [12, 30] : 0 }}>
+      {isCollapsing && (
+        <ButtonTransparent onClick={() => setCollapsed(!collapsed)}>
+          <Text fs={14} font="GeistMono" tTransform="uppercase">
+            {t(`liquidity.pool.positions.${collapsed ? "hide" : "show"}.btn`, {
+              number: positionsNumber,
+            })}
+          </Text>
+          <Icon
+            icon={<ChevronDownIcon />}
+            sx={{ color: "brightBlue300" }}
+            css={{
+              transform: collapsed ? "rotate(180deg)" : undefined,
+              transition: theme.transitions.default,
+            }}
+          />
+        </ButtonTransparent>
+      )}
+      <SWrapperContainer
+        animate={
+          isCollapsing
+            ? {
+                height: collapsed ? "auto" : positionsNumber * 30,
+              }
+            : { height: "auto" }
+        }
+      >
+        {positions.map((position, index) => {
+          return (
+            <SPositionContainer
+              key={index + position.height}
+              animate={{
+                top: collapsed ? "auto" : -position.moveTo,
+              }}
+              css={
+                isCollapsing
+                  ? {
+                      position: "relative",
+                      pointerEvents: !collapsed ? "none" : "initial",
+                    }
+                  : undefined
+              }
+              sx={{ height: position.height }}
+            >
+              {position.element}
+            </SPositionContainer>
+          )
+        })}
+
+        <SShadow
+          css={{
+            display: isCollapsing && !collapsed ? "block" : "none",
+          }}
+        />
+      </SWrapperContainer>
     </div>
   )
 }

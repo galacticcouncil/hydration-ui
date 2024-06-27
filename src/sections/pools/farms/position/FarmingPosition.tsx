@@ -10,11 +10,7 @@ import {
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
-import {
-  SContainer,
-  SSeparator,
-  SValueContainer,
-} from "./FarmingPosition.styled"
+import { SSeparator, SValueContainer } from "./FarmingPosition.styled"
 import { useDepositShare } from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
@@ -27,6 +23,7 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
+import { Farm } from "api/farms"
 
 function FarmingPositionDetailsButton(props: {
   poolId: string
@@ -106,14 +103,12 @@ export const FarmingPosition = ({
   index,
   poolId,
   depositNft,
-  collapsed,
-  withAnimation,
+  availableYieldFarms,
 }: {
   index: number
   poolId: string
   depositNft: TMiningNftPosition
-  collapsed: boolean
-  withAnimation: boolean
+  availableYieldFarms: Farm[]
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -133,19 +128,7 @@ export const FarmingPosition = ({
   )
 
   return (
-    <SContainer
-      animate={{
-        top: collapsed ? (index - 1) * 328 : (index - 1) * 20,
-      }}
-      css={
-        withAnimation
-          ? {
-              position: "absolute",
-              pointerEvents: !collapsed ? "none" : "initial",
-            }
-          : undefined
-      }
-    >
+    <>
       <div
         sx={{ flex: ["column", "row"], gap: [6, 0], justify: "space-between" }}
       >
@@ -198,8 +181,14 @@ export const FarmingPosition = ({
         )}
       </div>
 
-      <RedepositFarms poolId={poolId} depositNft={depositNft} />
-    </SContainer>
+      {availableYieldFarms.length ? (
+        <RedepositFarms
+          poolId={poolId}
+          depositNft={depositNft}
+          availableYieldFarms={availableYieldFarms}
+        />
+      ) : null}
+    </>
   )
 }
 

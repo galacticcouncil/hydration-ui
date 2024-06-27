@@ -60,7 +60,7 @@ export const AvailableFarms = ({ pool }: { pool: TPool | TXYKPool }) => {
           {farms.data.map((farm, i) => {
             return (
               <FarmDetailsCard
-                compact={isMultipleFarms}
+                compact
                 key={i}
                 poolId={pool.id}
                 farm={farm}

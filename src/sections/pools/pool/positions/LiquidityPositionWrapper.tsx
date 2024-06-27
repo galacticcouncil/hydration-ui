@@ -4,19 +4,19 @@ import { LiquidityPosition } from "./LiquidityPosition"
 import LiquidityIcon from "assets/icons/WaterRippleIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
-import { Button, ButtonTransparent } from "components/Button/Button"
+import { Button } from "components/Button/Button"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
-import { useMemo, useState } from "react"
+import { ReactElement, useMemo, useState } from "react"
 import { useRefetchAccountNFTPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 import { Separator } from "components/Separator/Separator"
-import { SShadow, SWrapperContainer } from "./LiquidityPosition.styled"
-import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { theme } from "theme"
 import { useMedia } from "react-use"
+import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
+import BN from "bignumber.js"
 
 export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   const { t } = useTranslation()
@@ -25,7 +25,6 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
   const refetchPositions = useRefetchAccountNFTPositions()
 
   const positions = pool.omnipoolNftPositions
@@ -50,15 +49,44 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
 
   if (!positionsNumber) return null
 
-  const withAnimation = positionsNumber > 1
   const isHubValue = total.hub.gt(0)
 
-  const maxHeight = (isDesktop ? 178 : 208) * positionsNumber
+  const positionsData = positions.reduce<{
+    positions: { element: ReactElement; moveTo: number; height: number }[]
+    height: BN
+  }>(
+    (acc, position, i, array) => {
+      const isLastElement = array.length === i + 1
+
+      const cardHeight = isDesktop ? 162 : 192
+
+      acc.positions.push({
+        element: (
+          <LiquidityPosition
+            key={`${i}-${position.assetId}`}
+            position={position}
+            index={i + 1}
+            onSuccess={refetchPositions}
+            pool={pool}
+          />
+        ),
+        moveTo: !acc.height.isZero()
+          ? acc.height.minus(20).toNumber()
+          : acc.height.toNumber(),
+        height: cardHeight,
+      })
+
+      acc.height = acc.height.plus(cardHeight + (isLastElement ? 0 : 16))
+
+      return acc
+    },
+    { positions: [], height: BN_0 },
+  )
 
   return (
     <SPoolDetailsContainer
-      sx={{ pb: withAnimation ? [0, 0] : "initial" }}
       css={{ background: "transparent" }}
+      sx={{ pb: [0, 0] }}
     >
       <div
         sx={{ flex: "row", justify: "space-between", align: "center", mb: 12 }}
@@ -117,52 +145,8 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
         </div>
       </div>
 
-      {withAnimation && (
-        <ButtonTransparent onClick={() => setCollapsed(!collapsed)}>
-          <Text fs={14} font="GeistMono" tTransform="uppercase">
-            {t(`liquidity.pool.positions.${collapsed ? "hide" : "show"}.btn`, {
-              number: positionsNumber,
-            })}
-          </Text>
-          <Icon
-            icon={<ChevronDownIcon />}
-            sx={{ color: "brightBlue300" }}
-            css={{
-              transform: collapsed ? "rotate(180deg)" : undefined,
-              transition: theme.transitions.default,
-            }}
-          />
-        </ButtonTransparent>
-      )}
+      <CollapsedPositionsList positions={positionsData.positions} />
 
-      <SWrapperContainer
-        animate={
-          withAnimation
-            ? {
-                height: collapsed
-                  ? maxHeight
-                  : positionsNumber * (isDesktop ? 30 : 25),
-              }
-            : { height: "auto" }
-        }
-      >
-        {positions.map((position, i) => (
-          <LiquidityPosition
-            key={`${i}-${position.assetId}`}
-            position={position}
-            index={i + 1}
-            onSuccess={refetchPositions}
-            pool={pool}
-            collapsed={collapsed}
-            withAnimation={withAnimation}
-          />
-        ))}
-        <SShadow
-          css={{
-            display: withAnimation && !collapsed ? "block" : "none",
-          }}
-        />
-      </SWrapperContainer>
       {openRemove && (
         <RemoveLiquidity
           pool={pool}

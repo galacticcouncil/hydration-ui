@@ -4,7 +4,6 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { useTranslation } from "react-i18next"
-import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
@@ -25,8 +24,6 @@ type Props = {
   index: number
   pool: TPoolFullData
   onSuccess: () => void
-  collapsed: boolean
-  withAnimation?: boolean
 }
 
 export function LiquidityPositionRemoveLiquidity(
@@ -79,8 +76,6 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
-  collapsed,
-  withAnimation,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -88,25 +83,7 @@ export const LiquidityPosition = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <SContainer
-      css={
-        withAnimation
-          ? {
-              position: "absolute",
-              pointerEvents: !collapsed ? "none" : "initial",
-            }
-          : undefined
-      }
-      animate={
-        withAnimation
-          ? {
-              top: collapsed
-                ? (index - 1) * (isDesktop ? 178 : 208)
-                : (index - 1) * (isDesktop ? 20 : 15),
-            }
-          : undefined
-      }
-    >
+    <>
       <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
         <div
           sx={{
@@ -220,6 +197,6 @@ export const LiquidityPosition = ({
           </div>
         </div>
       </div>
-    </SContainer>
+    </>
   )
 }

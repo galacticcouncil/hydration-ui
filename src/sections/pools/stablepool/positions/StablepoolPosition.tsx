@@ -45,7 +45,8 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
 
   return (
     <SPoolDetailsContainer
-      css={{ background: "transparent", height: ["auto", "auto"] }}
+      sx={{ height: ["auto", "auto"] }}
+      css={{ background: "transparent" }}
     >
       <div
         sx={{ flex: "row", align: "center", gap: 8, mb: [5, 20], mt: [5, 0] }}
@@ -60,7 +61,7 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
         </Text>
       </div>
       <div sx={{ flex: "column", gap: 16 }}>
-        <SContainer>
+        <SContainer sx={{ height: ["auto", "auto"] }}>
           <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
               {meta.assets && (

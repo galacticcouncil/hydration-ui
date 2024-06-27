@@ -222,7 +222,7 @@
   "liquidity.stablepool.remove.stablepool": "Remove from Stablepool",
   "liquidity.stablepool.remove.shares": "Move to Stablepool shares",
   "liquidity.stablepool.remove.stable": "Remove liquidity",
-  "liquidity.xyk.asset.positions.title": "Your position",
+  "liquidity.xyk.asset.positions.title": "Liquidity position",
   "liquidity.xyk.asset.position.title": "{{symbol}} Liquidity",
   "liquidity.xyk.asset.position.availableShares": "Available Shares",
   "liquidity.xyk.addLiquidity.warning": " Specified amount for adding liquidity is too low",
