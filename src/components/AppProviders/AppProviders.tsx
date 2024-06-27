@@ -4,7 +4,6 @@ import { ToastProvider } from "components/Toast/ToastProvider"
 import { RpcProvider } from "providers/rpcProvider"
 import { FC, PropsWithChildren } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
-import { Transactions } from "sections/transaction/Transactions"
 import { theme } from "theme"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
@@ -32,7 +31,6 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
                   borderRadius={4}
                 >
                   <AppsContextProvider>{children}</AppsContextProvider>
-                  <Transactions />
                 </SkeletonTheme>
               </ToastProvider>
             </InvalidateOnBlock>

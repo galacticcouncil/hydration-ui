@@ -1,4 +1,3 @@
-import { Page } from "components/Layout/Page/Page"
 import { SContainer } from "./XcmPage.styled"
 
 import type { TxInfo } from "@galacticcouncil/apps"
@@ -144,24 +143,22 @@ export function XcmPage() {
       : "darwinia"
 
   return (
-    <Page>
-      <SContainer>
-        <XcmApp
-          ref={ref}
-          srcChain={srcChainDefault}
-          destChain={destChainDefault}
-          asset={assetDefault}
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-          apiAddress={rpcUrlList.join()}
-          stableCoinAssetId={stableCoinAssetId}
-          onXcmNew={handleSubmit}
-          onWalletChange={handleWalletChange}
-          ss58Prefix={ss58Prefix}
-          blacklist={blacklist}
-        />
-      </SContainer>
-    </Page>
+    <SContainer>
+      <XcmApp
+        ref={ref}
+        srcChain={srcChainDefault}
+        destChain={destChainDefault}
+        asset={assetDefault}
+        accountName={account?.name}
+        accountProvider={account?.provider}
+        accountAddress={account?.address}
+        apiAddress={rpcUrlList.join()}
+        stableCoinAssetId={stableCoinAssetId}
+        onXcmNew={handleSubmit}
+        onWalletChange={handleWalletChange}
+        ss58Prefix={ss58Prefix}
+        blacklist={blacklist}
+      />
+    </SContainer>
   )
 }
