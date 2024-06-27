@@ -256,21 +256,42 @@ export const useRegisterToken = ({
 }
 
 type Store = {
+  rugCheckWhitelist: {
+    testnet: string[]
+    mainnet: string[]
+  }
   tokens: {
     testnet: TRegisteredAsset[]
     mainnet: TRegisteredAsset[]
   }
+  addTokenConsent: (id: string) => void
   addToken: (TokensConversion: TRegisteredAsset) => void
   getTokenByInternalId: (interlanlId: string) => TRegisteredAsset | undefined
   isAdded: (id: string | undefined) => boolean
+  isInRugCheckWhitelist: (id: string) => boolean
 }
 
 export const useUserExternalTokenStore = create<Store>()(
   persist(
     (set, get) => ({
+      rugCheckWhitelist: {
+        testnet: [],
+        mainnet: [],
+      },
       tokens: {
         testnet,
         mainnet,
+      },
+      addTokenConsent: (id) => {
+        set((store) => {
+          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+          return {
+            rugCheckWhitelist: {
+              ...store.rugCheckWhitelist,
+              [dataEnv]: [...store.rugCheckWhitelist[dataEnv], id],
+            },
+          }
+        })
       },
       addToken: (token) =>
         set((store) => {
@@ -312,6 +333,11 @@ export const useUserExternalTokenStore = create<Store>()(
           (token) => token.internalId === internalId,
         )
       },
+      isInRugCheckWhitelist: (id: string) => {
+        const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+        return id ? get().rugCheckWhitelist[dataEnv].includes(id) : false
+      },
       isAdded: (id) => {
         const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
@@ -331,6 +357,7 @@ export const useUserExternalTokenStore = create<Store>()(
 
         return {
           ...currentState,
+          ...persistedState,
           tokens: {
             ...storedTokens,
             mainnet: storedTokens.mainnet.map((token) =>

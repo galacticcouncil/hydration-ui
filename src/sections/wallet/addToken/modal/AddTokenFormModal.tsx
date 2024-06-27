@@ -65,7 +65,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     },
   })
 
-  const { onAddTokenToUser, onRegisterToken } =
+  const { addTokenToUser, registerToken, addTokenConsent } =
     useAddTokenFormModalActions(asset)
 
   const tokenState = useMemo(() => {
@@ -84,14 +84,16 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const onSubmit = async () => {
     if (chainStored) {
-      //@TODO: implement risk consent
+      if (tokenState === TokenState.RiskConsentRequired) {
+        addTokenConsent(chainStored.id)
+      }
 
-      await onAddTokenToUser({
+      await addTokenToUser({
         ...omit(["location"], asset),
         internalId: chainStored.id,
       })
     } else {
-      await onRegisterToken()
+      await registerToken()
     }
 
     onClose()

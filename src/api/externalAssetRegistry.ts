@@ -314,7 +314,8 @@ export const useAssetHubTokenBalances = (
 
 export const useExternalTokensRugCheck = () => {
   const { assets, isLoaded } = useRpcProvider()
-  const externalStore = useUserExternalTokenStore()
+  const { getTokenByInternalId, isInRugCheckWhitelist } =
+    useUserExternalTokenStore()
 
   const assetRegistry = useExternalAssetRegistry()
 
@@ -352,9 +353,8 @@ export const useExternalTokensRugCheck = () => {
         if (!issuance?.token) return null
 
         const internalToken = assets.getAsset(issuance.token.toString())
-        const storedToken = externalStore.getTokenByInternalId(
-          issuance.token.toString(),
-        )
+        const storedToken = getTokenByInternalId(issuance.token.toString())
+        const isWhitelisted = isInRugCheckWhitelist(internalToken.id)
 
         const externalAssetRegistry = internalToken.parachainId
           ? assetRegistry[+internalToken.parachainId]
@@ -366,10 +366,10 @@ export const useExternalTokensRugCheck = () => {
         if (!externalToken) return null
         if (!storedToken) return null
 
-        const totalSupplyExternal = balance?.balance
-          ? BN(balance.balance)
-          : null
-        const totalSupplyInternal = issuance?.total ? BN(issuance.total) : null
+        const totalSupplyExternal =
+          !isWhitelisted && balance?.balance ? BN(balance.balance) : null
+        const totalSupplyInternal =
+          !isWhitelisted && issuance?.total ? BN(issuance.total) : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -396,7 +396,14 @@ export const useExternalTokensRugCheck = () => {
         }
       })
       .filter(isNotNil)
-  }, [assetRegistry, assets, balanceQueries, externalStore, issuanceQueries])
+  }, [
+    assetRegistry,
+    assets,
+    balanceQueries,
+    getTokenByInternalId,
+    isInRugCheckWhitelist,
+    issuanceQueries,
+  ])
 
   const tokensMap = useMemo(() => {
     return new Map(tokens.map((token) => [token.internalToken.id, token]))

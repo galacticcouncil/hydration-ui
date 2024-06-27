@@ -15,7 +15,7 @@ export const useAddTokenFormModalActions = (
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation },
 ) => {
   const { t } = useTranslation()
-  const { addToken } = useUserExternalTokenStore()
+  const { addToken, addTokenConsent, isAdded } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
   const mutation = useRegisterToken({
@@ -26,7 +26,7 @@ export const useAddTokenFormModalActions = (
     assetName: asset.name,
   })
 
-  const onRegisterToken = async () => {
+  const registerToken = async () => {
     if (!asset) throw new Error("Selected asset cannot be added")
     const input = getInputData(asset)
     if (input) {
@@ -34,27 +34,33 @@ export const useAddTokenFormModalActions = (
     }
   }
 
-  const onAddTokenToUser = async (asset: TRegisteredAsset) => {
+  const addTokenToUser = async (asset: TRegisteredAsset) => {
+    const isTokenAdded = isAdded(asset.id)
+
     addToken(asset)
     refetchProvider()
-    add("success", {
-      title: (
-        <Trans
-          t={t}
-          i18nKey="wallet.addToken.toast.add.onSuccess"
-          tOptions={{
-            name: asset.name,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-    })
+
+    if (!isTokenAdded) {
+      add("success", {
+        title: (
+          <Trans
+            t={t}
+            i18nKey="wallet.addToken.toast.add.onSuccess"
+            tOptions={{
+              name: asset.name,
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        ),
+      })
+    }
   }
 
   return {
-    onRegisterToken,
-    onAddTokenToUser,
+    registerToken,
+    addTokenToUser,
+    addTokenConsent,
   }
 }
