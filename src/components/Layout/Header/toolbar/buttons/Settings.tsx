@@ -119,7 +119,7 @@ export const SettingsContents = ({
                 tooltip={t("header.settings.degenMode.description")}
                 toggleValue={degenMode}
                 onClick={onDegenModeChange}
-                css={{ background: "transparent " }}
+                css={{ background: "transparent" }}
                 sx={{ py: 16 }}
               />
             </HeaderDropdownItems>

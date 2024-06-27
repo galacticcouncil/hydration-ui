@@ -4,11 +4,11 @@ import { SContainer, SOuter } from "./CheckBox.styled"
 export type CheckboxSize = "small" | "medium" | "large"
 export type CheckboxVariant = "primary" | "secondary"
 export type CheckBoxProps = {
+  checked: boolean
+  onChange: (checked: boolean) => void
   className?: string
   label?: React.ReactNode
-  checked?: boolean
   disabled?: boolean
-  onChange?: (checked: boolean) => void
   size?: CheckboxSize
   variant?: CheckboxVariant
 }
