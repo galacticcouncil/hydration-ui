@@ -1,7 +1,7 @@
 import { Close, Root, Title } from "@radix-ui/react-toast"
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { Maybe } from "utils/helpers"
 import { css, SerializedStyles } from "@emotion/react"
 import { ToastVariant } from "state/toasts"
