@@ -7,7 +7,6 @@ import {
   TMiningNftPosition,
   useXYKDepositValues,
 } from "sections/pools/PoolsPage.utils"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
@@ -20,9 +19,6 @@ import { useDepositShare } from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useOmnipoolPosition } from "api/omnipool"
-import { useDisplayPrice } from "utils/displayAsset"
-import { getFloatingPointAmount } from "utils/balance"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useFarmExitAllMutation } from "utils/farms/exit"
@@ -192,24 +188,10 @@ const OmnipoolFields = ({
   depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const position = useDepositShare(poolId, depositNft.id.toString())
 
-  const lpPosition = useOmnipoolPosition(position.data?.id)
-  const meta = lpPosition.data?.assetId
-    ? assets.getAsset(lpPosition.data.assetId.toString())
-    : undefined
-  const spotPrice = useDisplayPrice(lpPosition.data?.assetId)
-
-  const initialPosValue =
-    getFloatingPointAmount(
-      lpPosition.data?.amount.toBigNumber() ?? 0,
-      meta?.decimals ?? 12,
-    ) ?? BN_0
-
-  const initialPosPrice = initialPosValue.multipliedBy(
-    spotPrice.data?.spotPrice ?? 1,
-  )
+  const { meta, amountShifted, amountDisplay, valueShifted, lrnaShifted } =
+    position.data ?? {}
 
   return (
     <>
@@ -220,12 +202,12 @@ const OmnipoolFields = ({
         <div sx={{ flex: "column", align: "flex-end" }}>
           <Text fs={14}>
             {t("value.tokenWithSymbol", {
-              value: initialPosValue,
+              value: amountShifted,
               symbol: meta?.symbol,
             })}
           </Text>
           <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
-            <DisplayValue value={initialPosPrice} />
+            <DisplayValue value={amountDisplay} />
           </Text>
         </div>
       </SValueContainer>
@@ -236,20 +218,20 @@ const OmnipoolFields = ({
             {t("farms.positions.labels.currentValue")}
           </Text>
           <LrnaPositionTooltip
-            assetId={position.data?.assetId}
-            tokenPosition={position.data?.value}
-            lrnaPosition={position.data?.lrna}
+            assetId={meta?.id}
+            tokenPosition={valueShifted}
+            lrnaPosition={lrnaShifted}
           />
         </div>
 
         {position.data && (
           <div sx={{ flex: "column", align: "flex-end" }}>
-            <WalletAssetsHydraPositionsData
-              assetId={position.data.assetId.toString()}
-              value={position.data.value}
-              lrna={position.data.lrna}
-              fontSize={14}
-            />
+            <Text fs={14}>
+              {t("value.tokenWithSymbol", {
+                value: position.data.totalValueShifted,
+                symbol: meta?.symbol,
+              })}
+            </Text>
             <DollarAssetValue
               value={position.data.valueDisplay}
               wrapper={(children) => (

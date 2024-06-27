@@ -8,7 +8,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { RemoveLiquidityForm } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidityForm"
 import { RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
 import { BN_0 } from "utils/constants"
@@ -19,6 +18,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TStableSwap } from "api/assetDetails"
 import { Spinner } from "components/Spinner/Spinner"
+import { TLPData } from "utils/omnipool"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -33,7 +33,7 @@ type RemoveStableSwapAssetProps = {
   onClose: () => void
   onSuccess: () => void
   pool: TPoolFullData
-  position?: HydraPositionsTableData
+  position?: TLPData
 }
 
 export const RemoveLiquidityModal = ({

@@ -87,13 +87,14 @@ export class EthereumSigner {
       this.signer.provider,
     )
 
-    return callPermit.nonces(this.address)
+    const nonce = await callPermit.nonces(this.address)
+
+    return BigNumber(nonce.toString())
   }
 
-  getPermit = async (data: string): Promise<PermitResult> => {
+  getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
     if (this.provider && this.address) {
       await this.requestNetworkSwitch("hydradx")
-      const nonce = await this.getPermitNonce()
       const tx = {
         from: this.address,
         to: DISPATCH_ADDRESS,

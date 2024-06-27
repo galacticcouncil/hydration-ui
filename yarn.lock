@@ -2586,10 +2586,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.0.6.tgz#fc54c04c3bb953db3f739ea2c5820153088d564d"
   integrity sha512-5Qq+dzRoyuMS6uUXjl1asRrosIQ1n0vD0dzbxK8H8f3hmIzDdpiQVqlqWBLEc7D/PA7VM/7j1scICpdjtJJELw==
 
-"@galacticcouncil/apps@^4.1.0":
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.1.0.tgz#051c81890f3e98591dd1f818535b0caa3feebebd"
-  integrity sha512-xv8BrB2bDIQ+rarPOr7TN4euHYYxy4tVgAwDb/BD8qNDHecPGF71uKrRHCQiM23UYMpYkoPb3YCGSoCkrLvSJQ==
+"@galacticcouncil/apps@^4.2.0":
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.2.0.tgz#1d5f1d29c7c97193c4c9b29644d42f7054cab474"
+  integrity sha512-UNZS9VcralOs4HICpH8wZs9WPW66uPsaFaNIGYu6GyemNAYqTwCOp2MUPzjJfj6BVr34zCvoTxLxcPwcEMvE+A==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2600,7 +2600,7 @@
     i18next "^22.4.8"
     lightweight-charts "^4.1.3"
     short-uuid "^4.2.0"
-    viem "^2.12.0"
+    viem "^2.15.1"
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -2655,17 +2655,17 @@
     lit "^2.8.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.5.1":
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.5.1.tgz#ee33b36a5f01a05524420c3a84e82f5bb4827b6e"
-  integrity sha512-kHFQvckWGBHWyKSiJVYIIyzJmS+tfFTb4moc/wYzoNLUDKdGPG08z7g9ijQIkDmCTwXWC58McW4khbkF4odJmA==
+"@galacticcouncil/xcm-cfg@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.6.1.tgz#8da26df1c3442124018d413009159db65b7a7de9"
+  integrity sha512-sZ6UCIG+heQUzpSCueysM+ho3M4wtUfyHKIHUD2rCmSnjdIYr1EHQ9LerrgIj7hYlMQ0G4KDyEH7l0ykJg1hzw==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.4.0"
+    "@galacticcouncil/xcm-core" "^1.6.0"
 
-"@galacticcouncil/xcm-core@^1.4.0", "@galacticcouncil/xcm-core@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.5.0.tgz#e98ecd4a729691ab3fe8ef3b8e3557540bfb3e7f"
-  integrity sha512-oaBQ19+tbWk0w8LRyFjvEMazHN6dVQ5WUcZ+4ojX7E1gmbvyny0lGsubmay5lamkfBXtDvkanpAqnNWvNuwzJQ==
+"@galacticcouncil/xcm-core@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-1.6.0.tgz#eb25d861e29fc3ed4275e2691c295076e7c3002e"
+  integrity sha512-jS7xdMaCgqqfDeElUc3f2dYfwfXAISVWieh4G/llqDQ2dO6TWvUOekUTt3aW0McNk6agXJirhIZZcCsC4aebnA==
   dependencies:
     "@moonbeam-network/xcm-utils" "1.0.4"
     "@thi.ng/cache" "^2.1.35"
@@ -2674,12 +2674,12 @@
     "@wormhole-foundation/sdk-definitions" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.3.0.tgz#6a1707675556181c0fd5a71c9893dae11ab190ef"
-  integrity sha512-Yy31smecf6XSgX/6WWAryQGimGMTwQaPBgn8adr1vwRClP/rO770JT+WEYeAPZ9QORuKaLw2JSSy6UcsWaOuTA==
+"@galacticcouncil/xcm-sdk@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.4.0.tgz#73b842df9207190d5cf4980a0186f71ac2acb5a0"
+  integrity sha512-YwFwFLA2z9l7anJDonCeAsOFnejNBdpc5pBeqkQ7MKdJMEHIgjm2CRQaLPSorvnMJkTLhKjJ3Yr5jMCqa9YWng==
   dependencies:
-    "@galacticcouncil/xcm-core" "^1.4.0"
+    "@galacticcouncil/xcm-core" "^1.6.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
   version "3.2.0"
@@ -12119,6 +12119,7 @@ prelude-ls@^1.2.1:
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
 "prettier-fallback@npm:prettier@^3", prettier@^3.1.1:
+  name prettier-fallback
   version "3.2.5"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.5.tgz#e52bc3090586e824964a8813b09aba6233b28368"
   integrity sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==
@@ -14297,10 +14298,10 @@ victory-vendor@^36.6.8:
     d3-time "^3.0.0"
     d3-timer "^3.0.1"
 
-viem@^2.12.0:
-  version "2.13.6"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.6.tgz#32d1dc3215627044972bb905db4adfcf674655f1"
-  integrity sha512-BhvYhLrExC9P4AH9Gu/2A3VPUFkJT/ayH+A9anco2Ja/D0h3NStq+2uF4htcly1e68/U7IOrlCyX3Jz9zqeEJA==
+viem@^2.15.1:
+  version "2.15.1"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.15.1.tgz#05a9ef5fd74661bd77d865c334477a900e59b436"
+  integrity sha512-Vrveen3vDOJyPf8Q8TDyWePG2pTdK6IpSi4P6qlvAP+rXkAeqRvwYBy9AmGm+BeYpCETAyTT0SrCP6458XSt+w==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
@@ -14309,7 +14310,7 @@ viem@^2.12.0:
     "@scure/bip39" "1.2.1"
     abitype "1.0.0"
     isows "1.0.4"
-    ws "8.13.0"
+    ws "8.17.1"
 
 vite-node@1.6.0:
   version "1.6.0"
@@ -14567,15 +14568,20 @@ ws@7.4.6:
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
-ws@8.13.0, ws@^8.13.0, ws@^8.2.3, ws@^8.8.1:
-  version "8.13.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
-  integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
+ws@8.17.1:
+  version "8.17.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
+  integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
 ws@^7.5.1:
   version "7.5.9"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.9.tgz#54fa7db29f4c7cec68b1ddd3a89de099942bb591"
   integrity sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==
+
+ws@^8.13.0, ws@^8.2.3, ws@^8.8.1:
+  version "8.13.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
+  integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
 
 ws@^8.14.2:
   version "8.15.1"
