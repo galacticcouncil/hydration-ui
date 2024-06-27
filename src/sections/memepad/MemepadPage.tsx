@@ -1,5 +1,4 @@
 import { Button } from "components/Button/Button"
-import { Page } from "components/Layout/Page/Page"
 import { Spacer } from "components/Spacer/Spacer"
 import { Stepper } from "components/Stepper/Stepper"
 import { useRouteBlock } from "hooks/useRouteBlock"
@@ -41,7 +40,7 @@ export const MemepadPage = () => {
   }, [step])
 
   return (
-    <Page flippedBg>
+    <>
       <MemepadHeader />
       <Spacer size={35} />
       <SContent>
@@ -69,6 +68,6 @@ export const MemepadPage = () => {
         />
       )}
       <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
-    </Page>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, LazyMotion, domAnimation } from "framer-motion"
 import { ReactNode, useState } from "react"
 import { useMeasure } from "react-use"
 import {
@@ -118,13 +118,15 @@ const Wrapper = ({
   return disableAnimation ? (
     <>{children}</>
   ) : (
-    <AnimatePresence
-      mode="popLayout"
-      initial={false}
-      custom={{ direction, height }}
-    >
-      {children}
-    </AnimatePresence>
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence
+        mode="popLayout"
+        initial={false}
+        custom={{ direction, height }}
+      >
+        {children}
+      </AnimatePresence>
+    </LazyMotion>
   )
 }
 

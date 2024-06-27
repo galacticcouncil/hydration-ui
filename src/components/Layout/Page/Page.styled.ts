@@ -19,6 +19,8 @@ export const SPage = styled.div`
     --nav-height: 70px;
 
     overflow-y: auto;
+
+    height: 100vh;
   }
 
   @media ${theme.viewport.gte.md} {
