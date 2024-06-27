@@ -5,17 +5,43 @@ import { u128, u32 } from "@polkadot/types-codec"
 import { undefinedNoop } from "utils/helpers"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-
-export const useOmnipoolAsset = (id: u32 | string) => {
-  const { api } = useRpcProvider()
-  return useQuery(QUERY_KEYS.omnipoolAsset(id), getOmnipoolAsset(api, id))
-}
+import { getTokenBalance } from "./balances"
+import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import BigNumber from "bignumber.js"
 
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api, isLoaded, assets } = useRpcProvider()
+
   return useQuery(
     noRefresh ? QUERY_KEYS.omnipoolAssets : QUERY_KEYS.omnipoolAssetsLive,
-    getOmnipoolAssets(api),
+    async () => {
+      const omnipoolAssets = await getOmnipoolAssets(api)()
+      const assetsId = omnipoolAssets.map((asset) => asset.id.toString())
+      const balances = await Promise.all(
+        assetsId.map(
+          async (assetId) =>
+            await getTokenBalance(api, OMNIPOOL_ACCOUNT_ADDRESS, assetId)(),
+        ),
+      )
+
+      return omnipoolAssets
+        .map((asset) => {
+          const id = asset.id.toString()
+          const balance = balances.find(
+            (balance) => balance.assetId.toString() === asset.id.toString(),
+          )?.balance as BigNumber
+
+          const meta = assets.getAsset(id)
+
+          return {
+            id,
+            data: asset.data,
+            meta,
+            balance,
+          }
+        })
+        .filter((asset) => asset.balance)
+    },
     { enabled: isLoaded },
   )
 }
@@ -41,7 +67,6 @@ export const getOmnipoolAssets = (api: ApiPromise) => async () => {
     const data = codec.unwrap()
     return { id, data }
   })
-
   return data
 }
 
@@ -61,20 +86,6 @@ export const useOmnipoolPositions = (
       enabled: !!id,
     })),
   })
-}
-
-export const useOmnipoolPosition = (
-  itemId: u128 | u32 | string | undefined,
-) => {
-  const { api } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.omnipoolPosition(itemId?.toString()),
-    itemId != null
-      ? getOmnipoolPosition(api, itemId.toString())
-      : undefinedNoop,
-    { enabled: itemId != null },
-  )
 }
 
 export const useOmnipoolFee = () => {
@@ -99,12 +110,13 @@ export const getOmnipoolPosition =
   (api: ApiPromise, itemId: string) => async () => {
     const res = await api.query.omnipool.positions(itemId)
     const data = res.unwrap()
+
     const position = {
       id: itemId,
-      assetId: data.assetId,
-      amount: data.amount,
-      shares: data.shares,
-      price: data.price,
+      assetId: data.assetId.toString(),
+      amount: data.amount.toBigNumber(),
+      shares: data.shares.toBigNumber(),
+      price: data.price.map((el) => el.toString()),
     }
 
     return position
@@ -130,7 +142,15 @@ export const useOmnipoolPositionsMulti = (
 export const getOmnipoolPositions =
   (api: ApiPromise, itemIds: Array<u128 | u32 | undefined>) => async () => {
     const res = await api.query.omnipool.positions.multi(itemIds)
-    const data = res.map((entry) => entry.unwrap())
+    const data = res.map((entry) => {
+      const data = entry.unwrap()
+      return {
+        amount: data.amount.toBigNumber(),
+        shares: data.shares.toBigNumber(),
+        price: data.price.map((e) => e.toString()),
+        assetId: data.assetId.toString(),
+      }
+    })
 
     return data
   }

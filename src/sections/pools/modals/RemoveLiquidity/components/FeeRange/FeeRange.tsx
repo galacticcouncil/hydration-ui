@@ -19,6 +19,7 @@ import { useMemo, useState } from "react"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import Skeleton from "react-loading-skeleton"
 import { AccordionAnimation } from "components/AccordionAnimation/AccordionAnimation"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const FEE_RANGE_COLOR_CONFIG: Record<number, keyof typeof theme.colors> = {
   0: "green600",
@@ -41,6 +42,7 @@ export const FeeRange = ({
   assetFeeValue,
   assetSymbol,
 }: FeeRangeProps) => {
+  const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -120,10 +122,7 @@ export const FeeRange = ({
           {lrnaFeeValue && (
             <div sx={{ flex: "row", justify: "end" }}>
               <Text color="green500" fs={13}>
-                {t("value.tokenWithSymbol", {
-                  value: lrnaFeeValue,
-                  symbol: "LRNA",
-                })}
+                {lrnaFeeValue + " " + assets.hub.symbol}
               </Text>
             </div>
           )}

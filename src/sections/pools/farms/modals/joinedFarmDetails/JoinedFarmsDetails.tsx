@@ -19,6 +19,7 @@ import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
+import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 
 function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
   return depositNft.data.yieldFarmEntries.find(
@@ -39,6 +40,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   const { account } = useAccount()
   const farms = useFarms([props.poolId])
   const meta = assets.getAsset(props.poolId)
+  const position = useDepositShare(props.poolId, props.depositNft.id.toString())
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -82,6 +84,7 @@ function JoinedFarmsDetailsRedeposit(props: {
                 props.depositNft.data.shares.toString(),
                 meta.decimals,
               ).toString(),
+              value: position.data?.totalValueShifted.toString() ?? "",
             })
           }
           disabled={account?.isExternalWalletConnected}
