@@ -9,7 +9,7 @@ import {
 } from "./AssetsModal.styled"
 import { AssetsModalRow } from "./AssetsModalRow"
 import { Input } from "components/Input/Input"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import IconSearch from "assets/icons/IconSearch.svg?react"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -51,18 +51,6 @@ export const AssetsModalContent = ({
     allowedAssets,
   })
 
-  if (isLoading)
-    return (
-      <>
-        <ListHeader
-          titles={[t("selectAssets.asset"), t("selectAssets.your_balance")]}
-        />
-        {[1, 2, 3, 4, 5, 6].map((n) => (
-          <AssetsModalRowSkeleton key={n} />
-        ))}
-      </>
-    )
-
   const onSelectHandler = (assetData: TAsset) => {
     if (confirmRequired) {
       setSelectedAssetId(assetData.id)
@@ -86,39 +74,58 @@ export const AssetsModalContent = ({
     }
   }
 
-  const sortedTokens = tokens.allowed.sort((a, b) => {
-    const tickerOrder = [
-      "HDX",
-      "DOT",
-      "USDC",
-      "USDT",
-      "IBTC",
-      "VDOT",
-      "WETH",
-      "WBTC",
-    ]
+  const sortedTokens = useMemo(
+    () =>
+      [...tokens.allowed].sort((a, b) => {
+        const tickerOrder = [
+          "HDX",
+          "DOT",
+          "USDC",
+          "USDT",
+          "IBTC",
+          "VDOT",
+          "WETH",
+          "WBTC",
+        ]
 
-    const getTickerIndex = (ticker: string) => {
-      const index = tickerOrder.indexOf(ticker.toUpperCase())
-      return index === -1 ? Infinity : index
-    }
+        const getTickerIndex = (ticker: string) => {
+          const index = tickerOrder.indexOf(ticker.toUpperCase())
+          return index === -1 ? Infinity : index
+        }
 
-    if (a.asset.id === selectedAssetId) return -1
-    if (b.asset.id === selectedAssetId) return 1
+        if (a.asset.id === selectedAssetId) return -1
+        if (b.asset.id === selectedAssetId) return 1
 
-    if (b.displayValue.isZero() && a.displayValue.isZero()) {
-      if (a.asset.isExternal) return 1
-      if (b.asset.isExternal) return -1
+        if (b.displayValue.isZero() && a.displayValue.isZero()) {
+          if (a.asset.isExternal) return 1
+          if (b.asset.isExternal) return -1
 
-      return getTickerIndex(a.asset.symbol) - getTickerIndex(b.asset.symbol)
-    }
+          return getTickerIndex(a.asset.symbol) - getTickerIndex(b.asset.symbol)
+        }
 
-    return b.displayValue.minus(a.displayValue).toNumber()
-  })
+        return b.displayValue.minus(a.displayValue).toNumber()
+      }),
+    [selectedAssetId, tokens.allowed],
+  )
+  const sortedBonds = useMemo(
+    () =>
+      [...bonds.allowed].sort((a, b) => {
+        return b.displayValue.minus(a.displayValue).toNumber()
+      }),
+    [bonds.allowed],
+  )
 
-  const sortedBonds = bonds.allowed.sort((a, b) => {
-    return b.displayValue.minus(a.displayValue).toNumber()
-  })
+  if (isLoading)
+    return (
+      <>
+        <ListHeader
+          titles={[t("selectAssets.asset"), t("selectAssets.your_balance")]}
+        />
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <AssetsModalRowSkeleton key={n} />
+        ))}
+      </>
+    )
 
   return (
     <>
