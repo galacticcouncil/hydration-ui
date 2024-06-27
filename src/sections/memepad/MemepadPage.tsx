@@ -6,6 +6,7 @@ import { useRouteBlock } from "hooks/useRouteBlock"
 import { useMemo } from "react"
 import { SContent } from "./MemepadPage.styled"
 import { MemepadActionBar } from "./components/MemepadActionBar"
+import { MemepadVisual } from "./components/MemepadVisual"
 import { MemepadHeader } from "./components/MemepadHeader"
 import { useMemepadForms } from "./form/MemepadForm.utils"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
@@ -56,6 +57,9 @@ export const MemepadPage = () => {
               <Button onClick={reset}>Create another asset</Button>
             </>
           )}
+        </div>
+        <div>
+          <MemepadVisual />
         </div>
       </SContent>
       {!isFinalStep && (

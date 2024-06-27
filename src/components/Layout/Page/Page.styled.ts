@@ -39,7 +39,9 @@ export const SGradientBg = styled.div<{ flipped?: boolean }>`
   ${({ flipped }) =>
     flipped &&
     `
+      position: fixed;
       rotate: 180deg;
+      height: 237px;
       top: auto;
       bottom: 0;
       opacity: 0.4;
