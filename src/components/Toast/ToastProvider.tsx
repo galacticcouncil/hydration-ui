@@ -3,7 +3,7 @@ import { ToastViewport } from "components/Toast/ToastViewport"
 import { Provider } from "@radix-ui/react-toast"
 import { useToast } from "state/toasts"
 import { Toast } from "components/Toast/Toast"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, domAnimation, LazyMotion } from "framer-motion"
 
 import { ToastSidebar } from "./sidebar/ToastSidebar"
 import { useBridgeToast } from "./Toast.utils"
@@ -46,24 +46,26 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
     <>
       <Provider duration={0}>
         <ToastViewport />
-        <AnimatePresence>
-          {!sidebar && toast && (
-            <Toast
-              index={1 + toastSeenInGroupCount}
-              link={toast.link}
-              count={activeToasts.length + toastSeenInGroupCount}
-              key={toast.id}
-              variant={toast.variant}
-              title={toast.title}
-              actions={toast.actions}
-              onClick={() => setSidebar(true)}
-              onClose={() => hide(toast.id)}
-              persist={toast.persist}
-              dateCreated={new Date(toast.dateCreated)}
-              hideTime={toast.hideTime}
-            />
-          )}
-        </AnimatePresence>
+        <LazyMotion features={domAnimation}>
+          <AnimatePresence>
+            {!sidebar && toast && (
+              <Toast
+                index={1 + toastSeenInGroupCount}
+                link={toast.link}
+                count={activeToasts.length + toastSeenInGroupCount}
+                key={toast.id}
+                variant={toast.variant}
+                title={toast.title}
+                actions={toast.actions}
+                onClick={() => setSidebar(true)}
+                onClose={() => hide(toast.id)}
+                persist={toast.persist}
+                dateCreated={new Date(toast.dateCreated)}
+                hideTime={toast.hideTime}
+              />
+            )}
+          </AnimatePresence>
+        </LazyMotion>
       </Provider>
       {children}
       <ToastSidebar />

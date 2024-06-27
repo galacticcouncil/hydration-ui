@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Link } from "@tanstack/react-location"
 import { ButtonTransparent } from "components/Button/Button"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SContent = styled(motion.div)`

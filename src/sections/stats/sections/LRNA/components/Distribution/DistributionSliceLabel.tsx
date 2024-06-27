@@ -1,7 +1,7 @@
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { useTranslation } from "react-i18next"
 import { DEPOSIT_CLASS_ID } from "utils/api"
 

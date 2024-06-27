@@ -1,6 +1,6 @@
 import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { ReactNode, useState } from "react"
+import React, { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { HeaderSettingsMobile } from "components/Layout/Header/settings/mobile/HeaderSettingsMobile"
 import { STabButton } from "./MobileNavBar.styled"
@@ -66,7 +66,9 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
               </Text>
             </a>
           </div>
-          {tabs}
+          {React.Children.map(tabs, (child) => (
+            <div onClick={() => setOpenModal(false)}>{child}</div>
+          ))}
         </div>
       </TabMenuModal>
     </>

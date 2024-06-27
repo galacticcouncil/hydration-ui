@@ -11,7 +11,7 @@ import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { TOAST_CLOSE_TIME } from "utils/constants"
 import { ToastContent } from "./ToastContent"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { ToastVariant } from "state/toasts"
 
 type Props = {

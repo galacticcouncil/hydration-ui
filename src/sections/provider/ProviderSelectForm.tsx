@@ -1,7 +1,6 @@
 import {
   PROVIDER_LIST,
   PROVIDER_URLS,
-  useProviderData,
   useProviderRpcUrlStore,
 } from "api/provider"
 import { Button } from "components/Button/Button"
@@ -20,6 +19,7 @@ import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTimeoutFn } from "react-use"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type ProviderSelectFormProps = {
   onSave: (rpcUrl: string) => void
@@ -32,7 +32,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   onSave,
   onClose,
 }) => {
-  const { isLoading } = useProviderData()
+  const { isLoaded } = useRpcProvider()
   const { rpcUrl } = useProviderRpcUrlStore()
   const { t } = useTranslation()
   const { rpcList, addRpc } = useRpcStore()
@@ -47,7 +47,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   })
 
   useTimeoutFn(async () => {
-    if (isLoading) {
+    if (!isLoaded) {
       setTimeoutedRpc(rpcUrl)
     }
   }, 5000)
@@ -125,7 +125,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         />
       </form>
 
-      <SContainer isLoading={isLoading && !timeoutedRpc}>
+      <SContainer isLoading={!isLoaded && !timeoutedRpc}>
         <SHeader>
           <div css={{ gridArea: "name" }}>
             {t("rpc.change.modal.column.name")}
