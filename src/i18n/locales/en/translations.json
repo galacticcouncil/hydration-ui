@@ -925,5 +925,8 @@
   "migration.import.confirm.title": "You have opened a migration link",
   "migration.import.confirm.description": "Do you want to import new app settings?",
   "migration.import.confirm.button": "Yes, import settings",
-  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration"
+  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration",
+  "memepad.modal.routeBlock.title": "Cancel Transaction",
+  "memepad.modal.routeBlock.description": "Are you sure you want to cancel? All of the progress will be lost.",
+  "memepad.modal.routeBlock.accept": "Yes, close."
 }

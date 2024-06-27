@@ -1,14 +1,14 @@
 import { Button } from "components/Button/Button"
 import { Page } from "components/Layout/Page/Page"
-import { Modal } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Stepper } from "components/Stepper/Stepper"
-import { useMemo } from "react"
-import { MemepadActionBar } from "sections/memepad/components/MemepadActionBar"
-import { MemepadHeader } from "sections/memepad/components/MemepadHeader"
-import { useMemepadForms } from "sections/memepad/form/MemepadForm.utils"
-import { SContent } from "./MemepadPage.styled"
 import { useRouteBlock } from "hooks/useRouteBlock"
+import { useMemo } from "react"
+import { SContent } from "./MemepadPage.styled"
+import { MemepadActionBar } from "./components/MemepadActionBar"
+import { MemepadHeader } from "./components/MemepadHeader"
+import { useMemepadForms } from "./form/MemepadForm.utils"
+import { RouteBlockModal } from "./modal/RouteBlockModal"
 
 export const MemepadPage = () => {
   const {
@@ -64,12 +64,7 @@ export const MemepadPage = () => {
           onNext={submitNext}
         />
       )}
-      <Modal open={isBlocking}>
-        <Button variant="primary" onClick={accept}>
-          accept
-        </Button>
-        <Button onClick={cancel}>cancel</Button>
-      </Modal>
+      <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
     </Page>
   )
 }
