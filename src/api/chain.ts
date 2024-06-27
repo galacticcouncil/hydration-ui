@@ -9,14 +9,12 @@ export const useBestNumber = (disable?: boolean) => {
   return useQuery(
     QUERY_KEYS.bestNumber(activeProvider?.url ?? ""),
     async () => {
-      const [validationData, parachainBlockNumber, timestamp] =
-        await Promise.all([
-          api.query.parachainSystem.validationData(),
-          api.derive.chain.bestNumber(),
-          api.query.timestamp.now(),
-        ])
+      const [validationData, parachainBlockNumber] = await Promise.all([
+        api.query.parachainSystem.validationData(),
+        api.derive.chain.bestNumber(),
+      ])
       const relaychainBlockNumber = validationData.unwrap().relayParentNumber
-      return { parachainBlockNumber, relaychainBlockNumber, timestamp }
+      return { parachainBlockNumber, relaychainBlockNumber }
     },
     {
       enabled: "query" in api && !!activeProvider?.url && !disable,
