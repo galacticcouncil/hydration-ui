@@ -19,7 +19,6 @@ import {
 } from "utils/formatting"
 import AccountIcon from "assets/icons/StakingAccountIcon.svg?react"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { TLiquidityProvidersTableData } from "./data/LiquidityProvidersTableData.utils"
 import { useAccountIdentity } from "api/stats"
 
@@ -76,14 +75,12 @@ export const useLiquidityProvidersTable = (
         header: t("position"),
         sortingFn: (a, b) => (a.original.value.gt(b.original.value) ? 1 : -1),
         cell: ({ row }) => (
-          <div sx={{ flex: "row", justify: ["right", "left"] }}>
-            <WalletAssetsHydraPositionsData
-              assetId={row.original.assetId}
-              value={row.original.value}
-              lrna={row.original.lrna}
-              fontSize={14}
-            />
-          </div>
+          <Text fs={14} color="white">
+            {t("value.tokenWithSymbol", {
+              value: row.original.totalValueShifted,
+              symbol: row.original.symbol,
+            })}
+          </Text>
         ),
       }),
       accessor("valueDisplay", {

@@ -1,15 +1,8 @@
 import styled from "@emotion/styled"
-import { m as motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  padding-bottom: calc(60px + env(safe-area-inset-bottom));
-  @media ${theme.viewport.gte.sm} {
-    padding-bottom: 0;
-  }
-`
-
-export const SButton = styled(motion.div)`
   position: relative;
   width: min-content;
 
@@ -17,6 +10,26 @@ export const SButton = styled(motion.div)`
   margin-right: 12px;
   margin-bottom: 16px;
 
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+
+  @media ${theme.viewport.gte.sm} {
+    margin-left: auto;
+    margin-right: 20px;
+    right: 0px;
+    bottom: 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  @media ${theme.viewport.gte.md} {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    margin: 0;
+    padding-bottom: 0;
+  }
+`
+
+export const SButton = styled(motion.div)`
   display: flex;
   align-items: center;
 
@@ -33,20 +46,6 @@ export const SButton = styled(motion.div)`
   backdrop-filter: blur(20px);
 
   cursor: pointer;
-
-  @media ${theme.viewport.gte.md} {
-    position: fixed;
-    bottom: 16px;
-    right: 16px;
-
-    margin: 0;
-  }
-
-  @media ${theme.viewport.gte.sm} {
-    margin-left: auto;
-
-    bottom: 16px;
-  }
 `
 
 export const SName = styled(motion.div)`

@@ -22,6 +22,10 @@ export const SPage = styled.div`
 
     height: 100vh;
   }
+
+  @media ${theme.viewport.gte.md} {
+    height: 100vh;
+  }
 `
 
 export const SGradientBg = styled.div`
@@ -52,7 +56,6 @@ export const SPageContent = styled.main`
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
-    padding-bottom: var(--mobile-nav-height);
 
     display: block;
 

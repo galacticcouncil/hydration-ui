@@ -23,7 +23,7 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 import {
   EthereumSigner,
@@ -73,6 +73,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     transactions?.some(({ tx }) => isSetCurrencyExtrinsic(tx?.toHuman()))
 
   const [tipAmount, setTipAmount] = useState<BN | undefined>(undefined)
+  const [customNonce, setCustomNonce] = useState<string | undefined>(undefined)
 
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
@@ -88,7 +89,12 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     storedReferralCode,
     tx,
     era,
+    shouldUsePermit,
+    permitNonce,
+    pendingPermit,
   } = transactionValues.data
+
+  const isPermitTxPending = !!pendingPermit
 
   const isLinking = !isLinkedAccount && storedReferralCode
 
@@ -111,10 +117,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
-          const shouldUsePermit = feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
 
           if (shouldUsePermit) {
-            const permit = await wallet.signer.getPermit(txData)
+            const nonce = customNonce ? BN(customNonce) : permitNonce
+            const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,
               xcallMeta: props.xcallMeta,
@@ -130,7 +136,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
           // defer to polkadot/api to handle nonce w/ regard to mempool
-          nonce: -1,
+          nonce: customNonce ? parseInt(customNonce) : -1,
         })
 
         return props.onSigned(signature, props.xcallMeta)
@@ -181,9 +187,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     btnText = t("liquidity.reviewTransaction.modal.confirmButton.loading")
   }
 
+  const isEvm = isEvmAccount(account?.address)
+
   const isTippingEnabled = props.xcallMeta
-    ? props.xcallMeta?.srcChain === "hydradx" && !isEvmAccount(account?.address)
-    : !isEvmAccount(account?.address)
+    ? props.xcallMeta?.srcChain === "hydradx" && !isEvm
+    : !isEvm
+
+  const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
   return (
     <>
@@ -210,6 +220,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 xcallMeta={props.xcallMeta}
                 openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
                 onTipChange={isTippingEnabled ? setTipAmount : undefined}
+                onNonceChange={
+                  isCustomNonceEnabled ? setCustomNonce : undefined
+                }
                 referralCode={isLinking ? storedReferralCode : undefined}
               />
             </div>
@@ -229,8 +242,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 <Button
                   text={btnText}
                   variant="primary"
-                  isLoading={isLoading}
+                  isLoading={isPermitTxPending || isLoading}
                   disabled={
+                    isPermitTxPending ||
                     !isWalletReady ||
                     !account ||
                     isLoading ||
@@ -238,8 +252,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   }
                   onClick={onConfirmClick}
                 />
+
                 {!isEnoughPaymentBalance && !transactionValues.isLoading && (
-                  <Text fs={16} color="pink600">
+                  <Text fs={12} lh={16} tAlign="center" color="pink600">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg",
                     )}
@@ -256,6 +271,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.walletNotReady.warning",
+                    )}
+                  </Text>
+                )}
+                {isPermitTxPending && (
+                  <Text fs={12} lh={16} tAlign="center" color="warning300">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.pendingPermit.msg",
                     )}
                   </Text>
                 )}
