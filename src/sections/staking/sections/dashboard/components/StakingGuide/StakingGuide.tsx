@@ -4,7 +4,7 @@ import { SGuideItemCount } from "./StakingGuide.styled"
 import { Link } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { Trans, useTranslation } from "react-i18next"
-import { motion } from "framer-motion"
+import { LazyMotion, domAnimation, m as motion } from "framer-motion"
 
 type StakingGuideItemProps = {
   title: string
@@ -63,56 +63,58 @@ export const StakingGuide = () => {
   const { t } = useTranslation()
 
   return (
-    <motion.div
-      initial={{ height: 0 }}
-      animate={{ height: "auto" }}
-      exit={{ height: 0 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-      css={{ overflow: "hidden" }}
-    >
-      <SContainer
-        sx={{
-          p: "36px 46px",
-          minWidth: ["100%"],
-          display: ["none", "inherit"],
-        }}
+    <LazyMotion features={domAnimation}>
+      <motion.div
+        initial={{ height: 0 }}
+        animate={{ height: "auto" }}
+        exit={{ height: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        css={{ overflow: "hidden" }}
       >
-        <Text color="brightBlue300" fs={19} font="GeistMono">
-          {t("staking.dashboard.guide.title")}
-        </Text>
-        <ul sx={{ pl: 0, flex: "column", gap: 28 }}>
-          {GUIDE_CONFIG.map((item, index) => {
-            const desc = (
-              <div sx={{ display: "inline" }}>
-                <Text color="darkBlue200" fs={[14, 15]}>
-                  <Trans t={t} i18nKey={item.desc}>
-                    {item.withLink && (
-                      <Link
-                        to={LINKS.trade}
-                        sx={{ color: "brightBlue100" }}
-                        css={{
-                          textDecoration: "underline",
-                          "&:hover": {
-                            opacity: 0.7,
-                          },
-                        }}
-                      />
-                    )}
-                  </Trans>
-                </Text>
-              </div>
-            )
-            return (
-              <StakingGuideItem
-                key={`${index}_guide_item`}
-                freq={index + 1}
-                title={t(item.title)}
-                desc={desc}
-              />
-            )
-          })}
-        </ul>
-      </SContainer>
-    </motion.div>
+        <SContainer
+          sx={{
+            p: "36px 46px",
+            minWidth: ["100%"],
+            display: ["none", "inherit"],
+          }}
+        >
+          <Text color="brightBlue300" fs={19} font="GeistMono">
+            {t("staking.dashboard.guide.title")}
+          </Text>
+          <ul sx={{ pl: 0, flex: "column", gap: 28 }}>
+            {GUIDE_CONFIG.map((item, index) => {
+              const desc = (
+                <div sx={{ display: "inline" }}>
+                  <Text color="darkBlue200" fs={[14, 15]}>
+                    <Trans t={t} i18nKey={item.desc}>
+                      {item.withLink && (
+                        <Link
+                          to={LINKS.trade}
+                          sx={{ color: "brightBlue100" }}
+                          css={{
+                            textDecoration: "underline",
+                            "&:hover": {
+                              opacity: 0.7,
+                            },
+                          }}
+                        />
+                      )}
+                    </Trans>
+                  </Text>
+                </div>
+              )
+              return (
+                <StakingGuideItem
+                  key={`${index}_guide_item`}
+                  freq={index + 1}
+                  title={t(item.title)}
+                  desc={desc}
+                />
+              )
+            })}
+          </ul>
+        </SContainer>
+      </motion.div>
+    </LazyMotion>
   )
 }

@@ -2,7 +2,12 @@ import IconLink from "assets/icons/LinkIcon.svg?react"
 import IconMinus from "assets/icons/MinusIcon.svg?react"
 import IconPlus from "assets/icons/PlusIcon.svg?react"
 import { Spacer } from "components/Spacer/Spacer"
-import { AnimatePresence, motion } from "framer-motion"
+import {
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  m as motion,
+} from "framer-motion"
 import { Trans, useTranslation } from "react-i18next"
 import { useToggle } from "react-use"
 import { STATS_TILES } from "sections/stats/components/StatsTiles/StatsTiles.util"
@@ -30,28 +35,32 @@ export const StatsTilesTile = ({ id, link, variant }: Props) => {
       <SIcon>{expanded ? <IconMinus /> : <IconPlus />}</SIcon>
       <STitle>{t(`stats.tiles.${id}.title`)}</STitle>
       <div sx={{ width: "95%" }}>
-        <AnimatePresence initial={false}>
-          {!expanded && (
-            <motion.div {...propsDesc}>
-              <SDescription>{t(`stats.tiles.${id}.description`)}</SDescription>
-            </motion.div>
-          )}
-          {expanded && (
-            <motion.div {...propsContent}>
-              <Spacer axis="vertical" size={132} />
-              <SDescription>
-                <Trans t={t} i18nKey={`stats.tiles.${id}.content`}>
-                  <br />
-                </Trans>
-              </SDescription>
-              <Spacer axis="vertical" size={20} />
-              <SLink to={link}>
-                {t("stats.tiles.link")}
-                <IconLink />
-              </SLink>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <LazyMotion features={domAnimation}>
+          <AnimatePresence initial={false}>
+            {!expanded && (
+              <motion.div {...propsDesc}>
+                <SDescription>
+                  {t(`stats.tiles.${id}.description`)}
+                </SDescription>
+              </motion.div>
+            )}
+            {expanded && (
+              <motion.div {...propsContent}>
+                <Spacer axis="vertical" size={132} />
+                <SDescription>
+                  <Trans t={t} i18nKey={`stats.tiles.${id}.content`}>
+                    <br />
+                  </Trans>
+                </SDescription>
+                <Spacer axis="vertical" size={20} />
+                <SLink to={link}>
+                  {t("stats.tiles.link")}
+                  <IconLink />
+                </SLink>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </LazyMotion>
       </div>
     </SContainer>
   )
