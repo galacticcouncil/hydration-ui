@@ -72,7 +72,7 @@ export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
   const { t } = useTranslation()
 
   return (
-    <div sx={{ flex: "column", gap: 12, bg: "gray" }}>
+    <>
       <Text
         fs={18}
         font="GeistMono"
@@ -84,7 +84,7 @@ export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
 
       <XYKPosition pool={pool} />
       <FarmingPositionWrapper pool={pool} />
-    </div>
+    </>
   )
 }
 
@@ -100,7 +100,13 @@ export const CollapsedPositionsList = ({
   const isCollapsing = positionsNumber > 1
 
   return (
-    <div sx={{ flex: "column", gap: 16, pb: collapsed ? [12, 30] : 0 }}>
+    <div
+      sx={{
+        flex: "column",
+        gap: 16,
+        pb: collapsed || !isCollapsing ? [12, 30] : 0,
+      }}
+    >
       {isCollapsing && (
         <ButtonTransparent onClick={() => setCollapsed(!collapsed)}>
           <Text fs={14} font="GeistMono" tTransform="uppercase">
@@ -122,7 +128,7 @@ export const CollapsedPositionsList = ({
         animate={
           isCollapsing
             ? {
-                height: collapsed ? "auto" : positionsNumber * 30,
+                height: collapsed ? "auto" : positionsNumber * 25,
               }
             : { height: "auto" }
         }

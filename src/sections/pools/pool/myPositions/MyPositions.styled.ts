@@ -7,6 +7,8 @@ export const SPositionContainer = styled(motion.div)`
   flex-direction: column;
   gap: 14px;
 
+  z-index: 1;
+
   width: 100%;
 
   padding: 20px 16px;
