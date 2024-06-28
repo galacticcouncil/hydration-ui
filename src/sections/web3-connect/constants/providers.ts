@@ -43,11 +43,6 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.WalletConnect,
 ]
 
-export const NOVA_WALLET_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.NovaWallet,
-  WalletProviderType.NovaWalletEvm,
-]
-
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.ExternalWallet,
 ]
