@@ -14,6 +14,8 @@ export const useRouteBlock = (when: boolean) => {
     if (!when) return
 
     let unblock = location.history.block((transition) => {
+      if (transition.action !== "PUSH") return transition.retry()
+
       setTransition(transition)
       setIsBlocking(true)
       if (hasAccepted.current) {
