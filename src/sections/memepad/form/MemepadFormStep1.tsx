@@ -55,7 +55,6 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           control={form.control}
           render={({ field }) => (
             <InputBox
-              disabled
               label={t("wallet.addToken.form.creatorAccount")}
               withLabel
               error={form.formState.errors.creatorAccount?.message}

@@ -18,6 +18,33 @@ export const SContainer = styled.div`
     margin-top: -200px;
     margin-left: 80px;
   }
+
+  @media ${theme.viewport.gte.md} {
+    width: 100%;
+    height: auto;
+
+    max-width: 350px;
+    aspect-ratio: 350 / 500;
+  }
+
+  & > div img {
+    position: absolute;
+  }
+
+  & > div:nth-of-type(3) img {
+    top: 0;
+    left: 0;
+  }
+
+  & > div:nth-of-type(2) img {
+    top: 220px;
+    right: 0;
+  }
+
+  & > div:nth-of-type(1) img {
+    top: 360px;
+    left: 50px;
+  }
 `
 
 export const SBottleCaps = styled.div`
