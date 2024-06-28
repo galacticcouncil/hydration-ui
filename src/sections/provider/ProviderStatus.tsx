@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
-import { motion, useAnimationControls } from "framer-motion"
+import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function useElapsedTimeStatus(time: Maybe<u64>) {
