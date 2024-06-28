@@ -17,11 +17,12 @@ export const MemepadPage = () => {
     submitNext,
     isFinalStep,
     isDirty,
+    isSubmitted,
     summary,
     reset,
   } = useMemepadForms()
 
-  const { isBlocking, accept, cancel } = useRouteBlock(isDirty)
+  const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
 
   const steps = useMemo(() => {
     const stepLabels = [
@@ -39,28 +40,30 @@ export const MemepadPage = () => {
     )
   }, [step])
 
-  if (isFinalStep) {
-    return <MemepadSummary values={summary} onReset={reset} />
-  }
-
   return (
     <>
-      <MemepadHeader />
-      <Spacer size={35} />
-      <SContent>
-        <div>
-          <Stepper fullWidth steps={steps} />
-          <Spacer size={60} />
-          {currentForm}
-        </div>
-        <div>
-          <MemepadVisual />
-        </div>
-      </SContent>
-      <MemepadActionBar
-        disabled={step >= steps.length - 1}
-        onNext={submitNext}
-      />
+      {isFinalStep ? (
+        <MemepadSummary values={summary} onReset={reset} />
+      ) : (
+        <>
+          <MemepadHeader />
+          <Spacer size={35} />
+          <SContent>
+            <div>
+              <Stepper fullWidth steps={steps} />
+              <Spacer size={60} />
+              {currentForm}
+            </div>
+            <div>
+              <MemepadVisual />
+            </div>
+          </SContent>
+          <MemepadActionBar
+            disabled={step >= steps.length - 1}
+            onNext={submitNext}
+          />
+        </>
+      )}
       <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
     </>
   )

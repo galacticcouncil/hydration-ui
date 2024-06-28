@@ -103,6 +103,7 @@ export const useMemepadForms = () => {
   const formInstances = [formStep1, formStep2, formStep3]
 
   const isDirty = formInstances.some((form) => form.formState.isDirty)
+  const isSubmitted = formInstances.every((form) => form.formState.isSubmitted)
 
   const setNextStep = (values: MemepadSummaryValues) => {
     setStep((prev) => prev + 1)
@@ -156,6 +157,7 @@ export const useMemepadForms = () => {
     currentForm,
     isFinalStep: step === summaryStep,
     isDirty,
+    isSubmitted,
     summary,
     submitNext,
     reset,
