@@ -25,7 +25,7 @@ export const EmptySearchState = ({ className }: { className?: string }) => {
         <Text color="darkBlue100" fs={14}>
           {t("searchFilter.empty.desc")}
         </Text>
-        <a href="https://t.me/hydradx" target="blank" rel="noreferrer">
+        <a href="https://t.me/hydration_net" target="blank" rel="noreferrer">
           <Text
             fs={14}
             color="brightBlue100"
