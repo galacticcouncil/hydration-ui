@@ -56,7 +56,7 @@ export const AddLiquidityForm = ({
     }
   }, [cancel])
 
-  const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
+  const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
   const {
@@ -250,12 +250,15 @@ export const AddLiquidityForm = ({
               ),
             },
             {
-              label: t("liquidity.add.modal.receive"),
-              content: t("value", {
-                value: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
-                type: "token",
-              }),
+              label: t("liquidity.add.modal.shareOfPool"),
+              content: poolShare?.gte(0.01)
+                ? t("value.percentage", {
+                    value: poolShare,
+                  })
+                : t("value.percentage", {
+                    numberPrefix: "<",
+                    value: BigNumber(0.01),
+                  }),
             },
           ]}
         />

@@ -13,19 +13,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
-
-const EXTERNAL_ASSETS_WHITELIST = [
-  // PINK
-  { id: "23", origin: 1000 },
-  // STINK
-  { id: "42069", origin: 1000 },
-  // WUD
-  { id: "31337", origin: 1000 },
-  // WIFD
-  { id: "17", origin: 1000 },
-  // BNDT
-  { id: "8889", origin: 1000 },
-]
+import { MetadataStore } from "@galacticcouncil/ui"
 
 const chains = Array.from(chainsMap.values())
 
@@ -57,6 +45,11 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
+  const externalAssetsWhitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
+
   const asset = useMemo(() => {
     const assetDetails = id ? assets.getAsset(id) : undefined
 
@@ -66,11 +59,9 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         chain.parachainId === Number(assetDetails?.parachainId),
     ) as AnyParachain
 
-    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
-      (item) =>
-        item.id === assetDetails?.externalId &&
-        item.origin === chain?.parachainId,
-    )
+    const isWhitelisted = assetDetails
+      ? externalAssetsWhitelist.includes(assetDetails.id)
+      : false
 
     const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
       ? isWhitelisted
@@ -83,7 +74,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [assets, id])
+  }, [assets, externalAssetsWhitelist, id])
 
   if (asset.chain || asset.symbol)
     return (

@@ -20,13 +20,9 @@ import { LINKS } from "utils/navigation"
 import { useNavigate } from "@tanstack/react-location"
 import { AssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import {
-  useExternalTokenMeta,
-  useUserExternalTokenStore,
-} from "sections/wallet/addToken/AddToken.utils"
-import { useRefetchProviderData } from "api/provider"
-import { useToast } from "state/toasts"
-import { useQueryClient } from "@tanstack/react-query"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
+import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
+import { useState } from "react"
 
 type Props = {
   toggleExpanded: () => void
@@ -227,71 +223,40 @@ export const AddTokenAction = ({
   id,
   className,
   onClick,
+  onClose,
 }: {
   id: string
   className?: string
   onClick?: () => void
+  onClose?: () => void
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { addToken } = useUserExternalTokenStore()
-  const queryClient = useQueryClient()
-
+  const [addTokenModalOpen, setAddTokenModalOpen] = useState(false)
   const externalAsset = useExternalTokenMeta(id)
 
-  const refetchProvider = useRefetchProviderData()
-  const { add } = useToast()
-
-  const addExternalAsset = externalAsset
-    ? () => {
-        addToken({
-          id: externalAsset.externalId,
-          name: externalAsset.name,
-          symbol: externalAsset.symbol,
-          decimals: externalAsset.decimals,
-          origin: externalAsset.origin,
-          internalId: id,
-        })
-        refetchProvider()
-        setTimeout(() => {
-          queryClient.removeQueries({
-            predicate: (query) => {
-              return (
-                query.queryKey.includes("spotPrice") &&
-                query.queryKey.includes(id.toString())
-              )
-            },
-          })
-        }, 1000)
-
-        add("success", {
-          title: (
-            <Trans
-              t={t}
-              i18nKey="wallet.addToken.toast.add.onSuccess"
-              tOptions={{
-                name: externalAsset.name,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        })
-      }
-    : undefined
-
   return (
-    <TableAction
-      icon={<PlusIcon />}
-      onClick={() => {
-        addExternalAsset?.()
-        onClick?.()
-      }}
-      disabled={account?.isExternalWalletConnected || !externalAsset}
-      className={className}
-    >
-      {t("wallet.assets.table.actions.add")}
-    </TableAction>
+    <>
+      <TableAction
+        icon={<PlusIcon />}
+        onClick={() => {
+          setAddTokenModalOpen(true)
+          onClick?.()
+        }}
+        disabled={account?.isExternalWalletConnected || !externalAsset}
+        className={className}
+      >
+        {t("wallet.assets.table.actions.add")}
+      </TableAction>
+      {externalAsset && addTokenModalOpen && (
+        <ExternalAssetImportModal
+          assetIds={[externalAsset.id]}
+          onClose={() => {
+            setAddTokenModalOpen(false)
+            onClose?.()
+          }}
+        />
+      )}
+    </>
   )
 }

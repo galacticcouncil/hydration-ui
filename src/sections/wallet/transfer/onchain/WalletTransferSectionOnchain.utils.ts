@@ -20,7 +20,7 @@ export function usePaymentFees({
 
   const { data: currentData } = usePaymentInfo(
     asset.toString() === assets.native.id
-      ? api.tx.balances.transfer("", formattedCurrentAmount)
+      ? api.tx.currencies.transfer("", assets.native.id, formattedCurrentAmount)
       : api.tx.tokens.transfer("", asset, formattedCurrentAmount),
   )
 
@@ -28,7 +28,7 @@ export function usePaymentFees({
 
   const { data: maxData } = usePaymentInfo(
     asset.toString() === assets.native.id
-      ? api.tx.balances.transfer("", formattedMaxAmount)
+      ? api.tx.currencies.transfer("", assets.native.id, formattedMaxAmount)
       : api.tx.tokens.transfer("", asset, formattedMaxAmount),
   )
 

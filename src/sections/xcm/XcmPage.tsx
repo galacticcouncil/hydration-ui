@@ -1,4 +1,3 @@
-import { Page } from "components/Layout/Page/Page"
 import { SContainer } from "./XcmPage.styled"
 
 import type { TxInfo } from "@galacticcouncil/apps"
@@ -10,7 +9,7 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
 import {
   useWeb3ConnectStore,
@@ -67,8 +66,8 @@ export function XcmPage() {
   const search = XcmAppSearch.safeParse(rawSearch)
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+
+  const rpcUrlList = useActiveRpcUrlList()
 
   const ref = React.useRef<Apps.XcmApp>(null)
 
@@ -138,27 +137,28 @@ export function XcmPage() {
       : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+  const blacklist =
+    import.meta.env.VITE_ENV === "production"
+      ? "acala-evm,darwinia"
+      : "darwinia"
 
   return (
-    <Page>
-      <SContainer>
-        <XcmApp
-          ref={ref}
-          srcChain={srcChainDefault}
-          destChain={destChainDefault}
-          asset={assetDefault}
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-          apiAddress={rpcUrl}
-          stableCoinAssetId={stableCoinAssetId}
-          onXcmNew={handleSubmit}
-          onWalletChange={handleWalletChange}
-          ss58Prefix={ss58Prefix}
-          blacklist={blacklist}
-        />
-      </SContainer>
-    </Page>
+    <SContainer>
+      <XcmApp
+        ref={ref}
+        srcChain={srcChainDefault}
+        destChain={destChainDefault}
+        asset={assetDefault}
+        accountName={account?.name}
+        accountProvider={account?.provider}
+        accountAddress={account?.address}
+        apiAddress={rpcUrlList.join()}
+        stableCoinAssetId={stableCoinAssetId}
+        onXcmNew={handleSubmit}
+        onWalletChange={handleWalletChange}
+        ss58Prefix={ss58Prefix}
+        blacklist={blacklist}
+      />
+    </SContainer>
   )
 }

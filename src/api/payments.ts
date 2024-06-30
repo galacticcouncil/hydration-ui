@@ -51,12 +51,12 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 }
 
 export const useSetAsFeePayment = () => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
   const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transfer("", "0"),
+    api.tx.currencies.transfer("", assets.native.id, "0"),
   )
 
   return async (tokenId?: string, toast?: ToastMessage) => {

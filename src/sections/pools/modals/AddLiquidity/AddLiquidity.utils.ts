@@ -5,8 +5,8 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { u32 } from "@polkadot/types"
 import { useTokenBalance } from "api/balances"
-import { useApiIds, useMaxAddLiquidityLimit } from "api/consts"
-import { useOmnipoolAsset, useOmnipoolFee } from "api/omnipool"
+import { useMaxAddLiquidityLimit } from "api/consts"
+import { useOmnipoolAssets, useOmnipoolFee } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -18,8 +18,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const { assets } = useRpcProvider()
-  const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
-  const ommipoolAsset = useOmnipoolAsset(assetId)
+  const omnipoolAssets = useOmnipoolAssets()
+  const ommipoolAsset = omnipoolAssets.data?.find(
+    (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
+  )
   const assetMeta = assets.getAsset(assetId.toString())
 
   const { data: spotPrice } = useDisplayPrice(assetId)
@@ -29,28 +31,36 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const { account } = useAccount()
   const { data: assetBalance } = useTokenBalance(assetId, account?.address)
 
-  const calculatedShares = useMemo(() => {
-    if (ommipoolAsset.data && assetValue && assetMeta) {
-      const { hubReserve, shares } = ommipoolAsset.data
+  const poolShare = useMemo(() => {
+    if (ommipoolAsset && assetValue && assetMeta) {
+      const {
+        data: { hubReserve, shares },
+        balance,
+      } = ommipoolAsset
 
-      const assetReserve = omnipoolBalance.data?.balance.toString()
+      const assetReserve = balance.toString()
       const amount = BigNumber(assetValue)
         .multipliedBy(BN_10.pow(assetMeta.decimals))
         .toString()
 
       if (assetReserve && hubReserve && shares && amount) {
-        return calculate_shares(
+        const calculatedShares = calculate_shares(
           assetReserve,
           hubReserve.toString(),
           shares.toString(),
           amount,
         )
+
+        const totalShares = shares.toBigNumber().plus(calculatedShares)
+        const diff = BigNumber(calculatedShares).div(totalShares).times(100)
+
+        return diff
       }
     }
     return null
-  }, [omnipoolBalance, assetValue, ommipoolAsset, assetMeta])
+  }, [assetValue, ommipoolAsset, assetMeta])
 
-  return { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance }
+  return { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance }
 }
 
 export const useVerifyLimits = ({
@@ -63,31 +73,23 @@ export const useVerifyLimits = ({
   decimals: number
 }) => {
   const { assets } = useRpcProvider()
-  const apiIds = useApiIds()
-  const asset = useOmnipoolAsset(assetId)
-  const assetMeta = assets.getAsset(assetId)
-  const hubBalance = useTokenBalance(
-    apiIds.data?.hubId,
-    OMNIPOOL_ACCOUNT_ADDRESS,
+  const omnipoolAssets = useOmnipoolAssets()
+  const asset = omnipoolAssets.data?.find(
+    (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
   )
-  const poolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
+  const assetMeta = assets.getAsset(assetId)
+  const hubBalance = useTokenBalance(assets.hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
+
   const maxAddLiquidityLimit = useMaxAddLiquidityLimit()
 
-  const queries = [apiIds, hubBalance, maxAddLiquidityLimit]
+  const queries = [hubBalance, maxAddLiquidityLimit]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (
-      !apiIds.data ||
-      !asset.data ||
-      !hubBalance.data ||
-      !poolBalance.data ||
-      !amount ||
-      !maxAddLiquidityLimit.data
-    )
+    if (!asset || !hubBalance.data || !amount || !maxAddLiquidityLimit.data)
       return undefined
 
-    const assetReserve = poolBalance.data.balance.toString()
+    const assetReserve = asset.balance.toString()
     const assetHubReserve = asset.data.hubReserve.toString()
     const assetShares = asset.data.shares.toString()
     const assetCap = asset.data.cap.toString()
@@ -122,10 +124,8 @@ export const useVerifyLimits = ({
       },
     }
   }, [
-    apiIds.data,
-    asset.data,
+    asset,
     hubBalance.data,
-    poolBalance.data,
     amount,
     decimals,
     maxAddLiquidityLimit.data,

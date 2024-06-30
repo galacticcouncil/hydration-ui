@@ -2,90 +2,133 @@ import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { u128 } from "@polkadot/types-codec"
-import { OmnipoolPosition } from "api/omnipool"
+import { OmnipoolPosition, useOmnipoolAssets } from "api/omnipool"
 import BN from "bignumber.js"
-import { BN_10, BN_NAN } from "utils/constants"
+import { BN_NAN } from "utils/constants"
+import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
+import { useRpcProvider } from "providers/rpcProvider"
+import { scale } from "./balance"
+import { useCallback } from "react"
 
-export const calculatePositionLiquidity = ({
-  position,
-  omnipoolBalance,
-  omnipoolHubReserve,
-  omnipoolShares,
-  lrnaSpotPrice,
-  valueSpotPrice,
-  lrnaDecimals,
-  assetDecimals,
-}: {
-  position: Omit<OmnipoolPosition, "id">
-  omnipoolBalance?: BN
-  omnipoolHubReserve?: u128
-  omnipoolShares?: u128
-  lrnaSpotPrice: BN
-  valueSpotPrice: BN
-  lrnaDecimals: number
-  assetDecimals: number
-}) => {
-  const [nom, denom] = position.price.map((n) => new BN(n.toString()))
-  const price = nom.div(denom)
-  const positionPrice = price.times(BN_10.pow(18))
+type IOptions = {
+  sharesValue?: string
+  fee?: string
+}
 
-  let lernaOutResult = "-1"
-  let liquidityOutResult = "-1"
+export type TLPData = NonNullable<
+  ReturnType<ReturnType<typeof useLiquidityPositionData>["getData"]>
+>
 
-  if (omnipoolBalance && omnipoolHubReserve && omnipoolShares) {
-    const params: Parameters<typeof calculate_liquidity_out> = [
-      omnipoolBalance.toString(),
-      omnipoolHubReserve.toString(),
-      omnipoolShares.toString(),
-      position.amount.toString(),
-      position.shares.toString(),
-      positionPrice.toFixed(0),
-      position.shares.toString(),
-      "0", // fee zero
-    ]
-    lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
-    liquidityOutResult = calculate_liquidity_out.apply(this, params)
-  }
+export const useLiquidityPositionData = (assetsId?: string[]) => {
+  const { assets } = useRpcProvider()
 
-  const lrnaDp = BN_10.pow(lrnaDecimals)
-  const lrna =
-    lernaOutResult !== "-1" ? new BN(lernaOutResult).div(lrnaDp) : BN_NAN
+  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAssetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
 
-  const valueDp = BN_10.pow(assetDecimals)
-  const value =
-    liquidityOutResult !== "-1"
-      ? new BN(liquidityOutResult).div(valueDp)
-      : BN_NAN
-  let valueDisplay = BN_NAN
-  let valueDisplayWithoutLrna = BN_NAN
+  const hubSp = useDisplayPrice(assets.hub.id)
+  const spotPrices = useDisplayPrices(assetsId ?? omnipoolAssetIds)
 
-  const providedAmount = position.amount.toBigNumber().div(valueDp)
-  let providedAmountDisplay = providedAmount.times(valueSpotPrice)
+  const getData = useCallback(
+    (position: OmnipoolPosition, options?: IOptions) => {
+      const omnipoolAsset = omnipoolAssets.data?.find(
+        (omnipoolAsset) => omnipoolAsset.id === position.assetId.toString(),
+      )
 
-  const shares = position.shares.toBigNumber()
+      if (!omnipoolAsset) return undefined
 
-  if (liquidityOutResult !== "-1" && valueSpotPrice) {
-    valueDisplay = value.times(valueSpotPrice)
+      const spotPrice = spotPrices.data?.find(
+        (sp) => sp?.tokenIn === omnipoolAsset.id,
+      )?.spotPrice
 
-    valueDisplayWithoutLrna = valueDisplay
+      if (!spotPrice || !hubSp.data?.spotPrice) return undefined
 
-    if (lrna.gt(0)) {
-      valueDisplay = !lrnaSpotPrice
-        ? BN_NAN
-        : valueDisplay.plus(lrna.times(lrnaSpotPrice))
-    }
-  }
+      const [nom, denom] = position.price.map((n) => new BN(n.toString()))
+      const price = nom.div(denom)
 
-  return {
-    lrna,
-    value,
-    valueDisplay,
-    valueDisplayWithoutLrna,
-    price,
-    providedAmountShifted: providedAmount,
-    providedAmount: position.amount.toBigNumber(),
-    providedAmountDisplay,
-    shares,
-  }
+      const shares = position.shares
+
+      const positionPrice = scale(price, "q")
+
+      let lernaOutResult = "-1"
+      let liquidityOutResult = "-1"
+
+      const params: Parameters<typeof calculate_liquidity_out> = [
+        omnipoolAsset.balance.toString(),
+        omnipoolAsset.data.hubReserve.toString(),
+        omnipoolAsset.data.shares.toString(),
+        position.amount.toString(),
+        position.shares.toString(),
+        positionPrice.toFixed(0),
+        options?.sharesValue ?? position.shares.toString(),
+        options?.fee ?? "0",
+      ]
+
+      lernaOutResult = calculate_liquidity_lrna_out.apply(this, params)
+      liquidityOutResult = calculate_liquidity_out.apply(this, params)
+
+      const lrna = lernaOutResult !== "-1" ? new BN(lernaOutResult) : BN_NAN
+      const lrnaShifted = lrna.shiftedBy(-assets.hub.decimals)
+
+      const value =
+        liquidityOutResult !== "-1" ? new BN(liquidityOutResult) : BN_NAN
+      const valueShifted = value.shiftedBy(-omnipoolAsset.meta.decimals)
+
+      let valueDisplay = BN_NAN
+      let valueDisplayWithoutLrna = BN_NAN
+      let lrnaDisplay = BN_NAN
+      let totalValue = value
+      let totalValueShifted = valueShifted
+
+      const amount = position.amount
+      const amountShifted = amount.shiftedBy(-omnipoolAsset.meta.decimals)
+      const amountDisplay = amountShifted.times(spotPrice)
+
+      if (liquidityOutResult !== "-1") {
+        valueDisplay = valueShifted.times(spotPrice)
+
+        valueDisplayWithoutLrna = valueDisplay
+
+        if (lrnaShifted.gt(0)) {
+          lrnaDisplay = lrnaShifted.times(hubSp.data.spotPrice)
+          valueDisplay = valueDisplay.plus(lrnaDisplay)
+
+          totalValueShifted = valueDisplay.div(spotPrice)
+          totalValue = scale(
+            valueDisplay.div(spotPrice),
+            omnipoolAsset.meta.decimals,
+          )
+        }
+      }
+
+      return {
+        id: position.id,
+        symbol: omnipoolAsset.meta.symbol,
+        name: omnipoolAsset.meta.name,
+        assetId: position.assetId,
+        lrna,
+        lrnaShifted,
+        lrnaDisplay,
+        value,
+        valueShifted,
+        valueDisplay,
+        valueDisplayWithoutLrna,
+        price: position.price,
+        amount,
+        amountDisplay,
+        amountShifted,
+        shares,
+        totalValue,
+        totalValueShifted,
+        meta: omnipoolAsset.meta,
+      }
+    },
+    [
+      assets.hub.decimals,
+      hubSp.data?.spotPrice,
+      omnipoolAssets.data,
+      spotPrices.data,
+    ],
+  )
+
+  return { getData }
 }

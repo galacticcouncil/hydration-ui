@@ -4,7 +4,11 @@ import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import { useNextNonce, usePaymentInfo } from "api/transaction"
+import {
+  useNextEvmPermitNonce,
+  useNextNonce,
+  usePaymentInfo,
+} from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
@@ -43,11 +47,11 @@ export const useTransactionValues = ({
 
   const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
-  const shouldUseEvmPermit = feePaymentId !== NATIVE_EVM_ASSET_ID
-  const isEvm = !shouldUseEvmPermit && isEvmAccount(account?.address)
+  const isEvm = isEvmAccount(account?.address)
+  const shouldFetchEvmFee = isEvm && feePaymentId === NATIVE_EVM_ASSET_ID
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
-    isEvm ? account?.address : "",
+    shouldFetchEvmFee ? account?.address : "",
   )
 
   /* REFERRALS */
@@ -100,12 +104,14 @@ export const useTransactionValues = ({
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
+  const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+  const { permitNonce, pendingPermit } = useNextEvmPermitNonce()
+
   const nonce = useNextNonce(account?.address)
 
   const era = useEra(
     boundedTx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
-    boundedTx.era.isMortalEra,
   )
 
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
@@ -143,6 +149,9 @@ export const useTransactionValues = ({
         storedReferralCode,
         tx: boundedTx,
         isNewReferralLink,
+        shouldUsePermit,
+        permitNonce,
+        pendingPermit,
       },
     }
 
@@ -220,6 +229,9 @@ export const useTransactionValues = ({
       storedReferralCode,
       tx: boundedTx,
       isNewReferralLink,
+      shouldUsePermit,
+      permitNonce,
+      pendingPermit,
     },
   }
 }

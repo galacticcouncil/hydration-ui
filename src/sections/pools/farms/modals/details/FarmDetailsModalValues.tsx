@@ -4,7 +4,6 @@ import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useEnteredDate } from "utils/block"
 import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
 import { Summary } from "components/Summary/Summary"
 import { useRpcProvider } from "providers/rpcProvider"
 
@@ -24,6 +23,7 @@ export const FarmDetailsModalValues = ({
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
   const claimable = useClaimableAmount(poolId, depositNft)
+
   const depositReward = claimable.data?.depositRewards.find(
     (reward) => reward.yieldFarmId === yieldFarmId,
   )
@@ -49,14 +49,10 @@ export const FarmDetailsModalValues = ({
           },
           {
             label: t("farms.modal.details.value.label"),
-            content: (
-              <WalletAssetsHydraPositionsData
-                fontSize={14}
-                assetId={position.data.assetId.toString()}
-                value={position.data.value}
-                lrna={position.data.lrna}
-              />
-            ),
+            content: t("value.tokenWithSymbol", {
+              value: position.data.totalValueShifted,
+              symbol: meta?.symbol,
+            }),
           },
           {
             label: t("farms.modal.details.mined.label"),

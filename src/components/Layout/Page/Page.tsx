@@ -1,6 +1,18 @@
+import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
+import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
-import { ReactNode, useEffect, useRef } from "react"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
+import { Suspense, lazy, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useMedia } from "react-use"
+import {
+  PoolNavigation,
+  Navigation as PoolsNavigation,
+} from "sections/pools/navigation/Navigation"
+import { Navigation as TradeNavigation } from "sections/trade/navigation/Navigation"
+import { Navigation as WalletNavigation } from "sections/wallet/navigation/Navigation"
+import { theme } from "theme"
+import { LINKS } from "utils/navigation"
 import {
   SGradientBg,
   SPage,
@@ -8,59 +20,70 @@ import {
   SPageInner,
   SSubHeader,
 } from "./Page.styled"
-import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
-import { useLocation } from "react-use"
-import { Interpolation, Theme } from "@emotion/react"
-import { Web3Connect } from "sections/web3-connect/Web3Connect"
-import { ReferralsConnect } from "sections/referrals/ReferralsConnect"
-import { useRpcProvider } from "providers/rpcProvider"
-import { MigrationWarning } from "sections/migration/components/MigrationWarning"
-import {
-  MIGRATION_TARGET_DOMAIN,
-  MIGRATION_TRIGGER_DOMAIN,
-  useMigrationStore,
-} from "sections/migration/MigrationProvider.utils"
 
 type Props = {
   className?: string
-  children: ReactNode
-  subHeader?: ReactNode
-  subHeaderStyle?: Interpolation<Theme>
 }
 
-export const Page = ({
-  className,
-  children,
-  subHeader,
-  subHeaderStyle,
-}: Props) => {
-  const { featureFlags, isLoaded } = useRpcProvider()
+const ReferralsConnectWrapper = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnectWrapper"))
+    .ReferralsConnectWrapper,
+}))
+
+const Transactions = lazy(async () => ({
+  default: (await import("sections/transaction/Transactions")).Transactions,
+}))
+
+const Web3Connect = lazy(async () => ({
+  default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
+}))
+
+const useSubheaderComponent = () => {
+  const { t } = useTranslation()
+  const matchRoute = useMatchRoute()
+  const search = useSearch()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  if (matchRoute({ to: LINKS.trade, fuzzy: true })) {
+    const isBondPage = matchRoute({ to: LINKS.bond })
+    return isBondPage ? (
+      <BackSubHeader
+        label={isDesktop ? t("bonds.details.navigation.label") : ""}
+        to={LINKS.bonds}
+      />
+    ) : isDesktop ? (
+      <TradeNavigation />
+    ) : null
+  }
+
+  if (matchRoute({ to: LINKS.liquidity, fuzzy: true })) {
+    return "id" in search ? <PoolNavigation /> : <PoolsNavigation />
+  }
+
+  if (matchRoute({ to: LINKS.wallet, fuzzy: true })) {
+    return <WalletNavigation />
+  }
+
+  if (matchRoute({ to: LINKS.statsOmnipool })) {
+    return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
+  }
+}
+
+export const Page = ({ className }: Props) => {
+  const { pathname } = useLocation()
   const ref = useRef<HTMLDivElement>(null)
-  const location = useLocation()
-  const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
+
+  const subHeaderComponent = useSubheaderComponent()
 
   useEffect(() => {
     ref.current?.scrollTo({
       top: 0,
       left: 0,
     })
-  }, [location.pathname])
-
-  const shouldShowMigrationWarning =
-    isLoaded && MIGRATION_TARGET_DOMAIN === location.host && !migrationCompleted
+  }, [pathname])
 
   return (
     <>
-      {shouldShowMigrationWarning && (
-        <MigrationWarning
-          onClick={() =>
-            (window.location.href = `https://${MIGRATION_TRIGGER_DOMAIN}?from=${MIGRATION_TARGET_DOMAIN}`)
-          }
-          onClose={() => {
-            setMigrationCompleted(new Date().toISOString())
-          }}
-        />
-      )}
       <SPage ref={ref}>
         <div
           sx={{ flex: "column", height: "100%" }}
@@ -69,17 +92,21 @@ export const Page = ({
           <SGradientBg />
           <Header />
           <SPageContent>
-            {subHeader && (
-              <SSubHeader css={subHeaderStyle}>{subHeader}</SSubHeader>
+            {subHeaderComponent && (
+              <SSubHeader>{subHeaderComponent}</SSubHeader>
             )}
-            <SPageInner className={className}>{children}</SPageInner>
-            <ProviderSelectButton />
+            <SPageInner className={className}>
+              <Outlet />
+            </SPageInner>
           </SPageContent>
           <MobileNavBar />
         </div>
       </SPage>
-      <Web3Connect />
-      {featureFlags.referrals && <ReferralsConnect />}
+      <Suspense>
+        <Web3Connect />
+        <Transactions />
+        <ReferralsConnectWrapper />
+      </Suspense>
     </>
   )
 }

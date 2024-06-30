@@ -10,10 +10,7 @@ import { H160, isEvmAddress } from "utils/evm"
 import { Plutonication } from "./Plutonication/Plutonication"
 import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
-
-const EVM_ENABLED = Boolean(
-  import.meta.env.VITE_EVM_CHAIN_ID && import.meta.env.VITE_EVM_PROVIDER_URL,
-)
+import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 
 export enum WalletProviderType {
   MetaMask = "metamask",
@@ -95,9 +92,11 @@ const externalWallet: Wallet = new ExternalWallet()
 
 const plutonication: Wallet = new Plutonication()
 
-export const SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
-  ...(EVM_ENABLED ? [metaMask, talismanEvm, subwalletEvm] : []),
+export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
+  metaMask,
+  talismanEvm,
+  subwalletEvm,
   subwallet,
   novaWallet,
   walletConnect,
@@ -118,4 +117,31 @@ function normalizeProviderType(wallet: Wallet): WalletProviderType {
 
 export function getSupportedWallets() {
   return SUPPORTED_WALLET_PROVIDERS
+}
+
+/**
+ * Handles the event of EIP-6963 standard to announce injected Wallet Providers
+ * For more information, refer to https://eips.ethereum.org/EIPS/eip-6963
+ */
+export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
+  if (event.detail.info.rdns === "io.metamask") {
+    const metaMask: Wallet = new MetaMask({
+      provider: event.detail.provider,
+      onAccountsChanged: onMetaMaskLikeAccountChange(
+        WalletProviderType.MetaMask,
+      ),
+    })
+
+    const type = normalizeProviderType(metaMask)
+
+    SUPPORTED_WALLET_PROVIDERS = [
+      ...SUPPORTED_WALLET_PROVIDERS.filter(
+        (provider) => provider.type !== type,
+      ),
+      {
+        wallet: metaMask,
+        type,
+      },
+    ]
+  }
 }

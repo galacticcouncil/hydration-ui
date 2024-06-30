@@ -7,7 +7,7 @@ import { Trans, useTranslation } from "react-i18next"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -22,7 +22,6 @@ export const DcaYieldApp = createComponent({
   },
 })
 
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
@@ -34,8 +33,8 @@ export function YieldDcaPage() {
   const { t } = useTranslation()
   const { stableCoinId } = useDisplayAssetStore()
 
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const rpcUrlList = useActiveRpcUrlList()
+  const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, meta } = e.detail
@@ -86,12 +85,12 @@ export function YieldDcaPage() {
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={rpcUrl}
+        apiAddress={rpcUrlList.join()}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        indexerUrl={indexerUrl}
+        indexerUrl={activeProvider?.indexerUrl}
         grafanaUrl={grafanaUrl}
         grafanaDsn={grafanaDsn}
         onDcaSchedule={(e) => handleSubmit(e)}
