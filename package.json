@@ -46,7 +46,7 @@
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
     "@moonbeam-network/xcm-utils": "^2.0.8",
-    "@plutonication/plutonication": "^1.0.101",
+    "@plutonication/plutonication": "^1.0.125",
     "@polkadot/api": "10.9.1",
     "@polkadot/apps-config": "^0.132.1",
     "@polkadot/extension-inject": "^0.44.5",
