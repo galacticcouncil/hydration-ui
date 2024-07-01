@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "resolutions": {
-    "@polkadot/api": "^11.2.1",
+    "@polkadot/api": "11.2.1",
     "@polkadot/api-augment": "11.2.1",
     "@polkadot/api-derive": "11.2.1",
     "@polkadot/api-base": "11.2.1",
