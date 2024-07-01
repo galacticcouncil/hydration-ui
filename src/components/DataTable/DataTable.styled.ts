@@ -149,7 +149,7 @@ export const TableAddons = styled.div<{
 
   ${({ spacing = "medium" }) => TITLE_SPACING[spacing]}
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     padding-top: 0;
   }
 `
@@ -159,7 +159,7 @@ export const Table = styled.table<TableProps>`
   border-spacing: 0;
   border-collapse: collapse;
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     border-top: 1px solid rgba(${theme.rgbColors.white}, 0.06);
   }
 

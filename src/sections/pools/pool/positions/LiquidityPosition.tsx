@@ -4,7 +4,6 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { useTranslation } from "react-i18next"
-import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { useState } from "react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
@@ -52,6 +51,7 @@ export function LiquidityPositionRemoveLiquidity(
         disabled={
           account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
         }
+        css={{ flex: "1 0 0" }}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
@@ -83,18 +83,25 @@ export const LiquidityPosition = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <SContainer>
+    <>
       <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: [6, 0],
+            justify: "space-between",
+          }}
+        >
           <div sx={{ flex: "row", gap: 7, align: "center" }}>
             {assets.isStableSwap(meta) ? (
               <MultipleIcons
+                size={24}
                 icons={meta.assets.map((asset: string) => ({
                   icon: <AssetLogo key={asset} id={asset} />,
                 }))}
               />
             ) : (
-              <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
+              <Icon size={24} icon={<AssetLogo id={position.assetId} />} />
             )}
             <Text fs={14} color={["white", "basic100"]}>
               {t("liquidity.asset.positions.position.title", { index })}
@@ -190,6 +197,6 @@ export const LiquidityPosition = ({
           </div>
         </div>
       </div>
-    </SContainer>
+    </>
   )
 }

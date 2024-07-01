@@ -1,6 +1,21 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
+export const SPoolDetailsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px;
+
+  border: 1px solid rgba(152, 176, 214, 0.27);
+  border-radius: ${theme.borderRadius.medium}px;
+  background-color: ${theme.colors.darkBlue700};
+
+  @media${theme.viewport.gte.sm} {
+    padding: 18px 30px 30px;
+  }
+`
+
 export const SValuesContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr auto 1fr;

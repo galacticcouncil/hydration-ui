@@ -3,10 +3,11 @@ import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SPoolContainer = styled.div`
-  width: calc(100% + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
-  border: 1px solid rgba(152, 176, 214, 0.27);
-  background-color: ${theme.colors.darkBlue700};
+  width: calc(100% + 24px);
 
   overflow: hidden;
 

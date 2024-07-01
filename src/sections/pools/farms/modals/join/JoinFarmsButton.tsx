@@ -34,6 +34,7 @@ export const JoinFarmsButton = (props: {
         size="compact"
         disabled={!farms.data?.length || account?.isExternalWalletConnected}
         onClick={() => setJoinFarm(true)}
+        css={{ flex: "1 0 0" }}
       >
         <Icon size={12} icon={<FPIcon />} />
         {t("liquidity.asset.actions.joinFarms")}
