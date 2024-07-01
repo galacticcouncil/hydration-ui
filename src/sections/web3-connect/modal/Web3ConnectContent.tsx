@@ -68,10 +68,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
                   chain: chain.name,
                 })
               : chain && mode === "substrate"
-              ? t(`walletConnect.provider.description.substrateChain`, {
-                  chain: chain.name,
-                })
-              : t(`walletConnect.provider.description.${mode || "all"}`),
+                ? t(`walletConnect.provider.description.substrateChain`, {
+                    chain: chain.name,
+                  })
+                : t(`walletConnect.provider.description.${mode || "all"}`),
         },
         {
           title: t("walletConnect.provider.title"),
