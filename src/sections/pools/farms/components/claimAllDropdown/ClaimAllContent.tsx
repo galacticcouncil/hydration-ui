@@ -12,6 +12,7 @@ import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { LazyMotion, domAnimation } from "framer-motion"
 
 type Props = { onClose: () => void }
 
@@ -49,64 +50,66 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
     const claimAll = useClaimFarmMutation(undefined, undefined, toast)
 
     return (
-      <SContent
-        ref={ref}
-        initial={{ height: 0 }}
-        animate={{ height: "auto" }}
-        transition={{
-          type: "spring",
-          mass: 1,
-          stiffness: 300,
-          damping: 20,
-          duration: 0.3,
-        }}
-        css={{ overflow: "hidden" }}
-      >
-        <div sx={{ p: 40, flex: "column" }}>
-          <Text>{t("farms.claimCard.title")}</Text>
-          <Spacer size={16} />
-          {claimable.isLoading && <Skeleton height={25} width={150} />}
-          {claimableAssets.map((claimableAsset, index) => (
-            <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
-              <Text fs={19} lh={19} sx={{ mb: 8 }}>
-                {t("value.tokenWithSymbol", {
-                  value: claimableAsset.value,
-                  fixedPointScale: claimableAsset.decimals.toString(),
-                  symbol: claimableAsset.symbol,
-                })}
-              </Text>
-              {index < claimableAssets.length - 1 && (
-                <Separator
-                  css={{
-                    background: `rgba(${theme.rgbColors.white}, 0.06)`,
-                  }}
-                />
-              )}
-            </div>
-          ))}
-          <Text fs={14} sx={{ mt: 6 }}>
-            <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-              <DisplayValue value={claimable.data?.displayValue} />
-            </Trans>
-          </Text>
-          <Spacer size={18} />
-          <SClaimButton
-            disabled={
-              !claimable.data ||
-              claimable.data.displayValue.isZero() ||
-              account?.isExternalWalletConnected
-            }
-            onClick={() => {
-              claimAll.mutate()
-              onClose()
-            }}
-          >
-            <Text fs={13} tTransform="uppercase" tAlign="center">
-              {t("farms.claimCard.button.label")}
+      <LazyMotion features={domAnimation}>
+        <SContent
+          ref={ref}
+          initial={{ height: 0 }}
+          animate={{ height: "auto" }}
+          transition={{
+            type: "spring",
+            mass: 1,
+            stiffness: 300,
+            damping: 20,
+            duration: 0.3,
+          }}
+          css={{ overflow: "hidden" }}
+        >
+          <div sx={{ p: 40, flex: "column" }}>
+            <Text>{t("farms.claimCard.title")}</Text>
+            <Spacer size={16} />
+            {claimable.isLoading && <Skeleton height={25} width={150} />}
+            {claimableAssets.map((claimableAsset, index) => (
+              <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
+                <Text fs={19} lh={19} sx={{ mb: 8 }}>
+                  {t("value.tokenWithSymbol", {
+                    value: claimableAsset.value,
+                    fixedPointScale: claimableAsset.decimals.toString(),
+                    symbol: claimableAsset.symbol,
+                  })}
+                </Text>
+                {index < claimableAssets.length - 1 && (
+                  <Separator
+                    css={{
+                      background: `rgba(${theme.rgbColors.white}, 0.06)`,
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+            <Text fs={14} sx={{ mt: 6 }}>
+              <Trans t={t} i18nKey="farms.claimCard.claim.usd">
+                <DisplayValue value={claimable.data?.displayValue} />
+              </Trans>
             </Text>
-          </SClaimButton>
-        </div>
-      </SContent>
+            <Spacer size={18} />
+            <SClaimButton
+              disabled={
+                !claimable.data ||
+                claimable.data.displayValue.isZero() ||
+                account?.isExternalWalletConnected
+              }
+              onClick={() => {
+                claimAll.mutate()
+                onClose()
+              }}
+            >
+              <Text fs={13} tTransform="uppercase" tAlign="center">
+                {t("farms.claimCard.button.label")}
+              </Text>
+            </SClaimButton>
+          </div>
+        </SContent>
+      </LazyMotion>
     )
   },
 )
