@@ -24,6 +24,7 @@ import {
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import {
+  SPoolDetailsContainer,
   SValue,
   SValuesContainer,
   SXYKRateContainer,
@@ -34,6 +35,7 @@ import Skeleton from "react-loading-skeleton"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
+import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 
 export const PoolDetails = ({
   pool,
@@ -56,25 +58,66 @@ export const PoolDetails = ({
 
   return (
     <>
-      <div sx={{ flex: "column", gap: 20, p: ["30px 12px", "30px 30px 20px"] }}>
+      <SPoolDetailsContainer>
+        <GradientText
+          gradient="pinkLightBlue"
+          font="GeistMonoSemiBold"
+          fs={19}
+          sx={{ width: "fit-content" }}
+          tTransform="uppercase"
+        >
+          {ixXYKPool
+            ? t("liquidity.pool.xyk.details.title")
+            : t("liquidity.pool.details.title")}
+        </GradientText>
         <div
           sx={{
             flex: ["column", "row"],
             justify: "space-between",
-            align: "center",
             gap: 20,
           }}
         >
-          <GradientText
-            gradient="pinkLightBlue"
-            font="GeistMonoSemiBold"
-            fs={19}
-            sx={{ width: "fit-content" }}
+          <div
+            sx={{
+              flex: ["column", "row"],
+              justify: "space-between",
+              align: ["start", "center"],
+              gap: 12,
+            }}
           >
-            {ixXYKPool
-              ? t("liquidity.pool.xyk.details.title")
-              : t("liquidity.pool.details.title")}
-          </GradientText>
+            <div sx={{ flex: "row", gap: 4, align: "center" }}>
+              {typeof asset.iconId === "string" ? (
+                <Icon
+                  size={26}
+                  icon={<AssetLogo id={asset.iconId} />}
+                  css={{ flex: "1 0 auto" }}
+                />
+              ) : (
+                <MultipleIcons
+                  size={26}
+                  icons={asset.iconId.map((asset) => {
+                    const meta = assets.getAsset(asset)
+                    const isBond = assets.isBond(meta)
+                    const id = isBond ? meta.assetId : asset
+                    return {
+                      icon: <AssetLogo key={id} id={id} />,
+                    }
+                  })}
+                />
+              )}
+              <div sx={{ flex: "column", gap: 0 }}>
+                <Text fs={16} lh={16} color="white" font="GeistMedium">
+                  {asset.symbol}
+                </Text>
+                <Text fs={13} lh={16} color="whiteish500">
+                  {asset.name}
+                </Text>
+              </div>
+            </div>
+
+            {ixXYKPool && <XYKRateWrapper shareTokenId={pool.id} />}
+          </div>
+
           <Button
             size="small"
             variant="primary"
@@ -102,46 +145,6 @@ export const PoolDetails = ({
           </Button>
         </div>
 
-        <div
-          sx={{
-            flex: ["column", "row"],
-            justify: "space-between",
-            align: ["start", "center"],
-            gap: 12,
-          }}
-        >
-          <div sx={{ flex: "row", gap: 4, align: "center" }}>
-            {typeof pool.iconId === "string" ? (
-              <Icon
-                size={26}
-                icon={<AssetLogo id={pool.iconId} />}
-                css={{ flex: "1 0 auto" }}
-              />
-            ) : (
-              <MultipleIcons
-                size={26}
-                icons={pool.iconId.map((asset) => {
-                  const meta = assets.getAsset(asset)
-                  const isBond = assets.isBond(meta)
-                  const id = isBond ? meta.assetId : asset
-                  return {
-                    icon: <AssetLogo key={id} id={id} />,
-                  }
-                })}
-              />
-            )}
-            <div sx={{ flex: "column", gap: 0 }}>
-              <Text fs={16} lh={16} color="white" font="GeistMedium">
-                {pool.symbol}
-              </Text>
-              <Text fs={13} lh={16} color="whiteish500">
-                {pool.name}
-              </Text>
-            </div>
-          </div>
-
-          {ixXYKPool && <XYKRateWrapper shareTokenId={pool.id} />}
-        </div>
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
           {!ixXYKPool && (
             <>
@@ -261,12 +264,13 @@ export const PoolDetails = ({
               opacity={0.06}
               sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
             />
-            <div>
-              <CurrencyReserves reserves={pool.reserves} />
-            </div>
+
+            <CurrencyReserves reserves={pool.reserves} />
           </>
         ) : null}
-      </div>
+
+        <AvailableFarms pool={pool} />
+      </SPoolDetailsContainer>
       {addLiquidityPool && (
         <AddLiquidity
           isOpen
