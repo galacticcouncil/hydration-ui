@@ -25,8 +25,8 @@ export const SFill = styled.div<{
     variant === "primary"
       ? theme.colors.brightBlue500
       : variant === "full"
-      ? "linear-gradient(90deg, #532051 0%, #AE2569 55.72%, #F6297C 100%)"
-      : theme.gradients.lightGreenOrange};
+        ? "linear-gradient(90deg, #532051 0%, #AE2569 55.72%, #F6297C 100%)"
+        : theme.gradients.lightGreenOrange};
 
   animation: stretch 0.75s ease-in-out;
   transform-origin: left center;

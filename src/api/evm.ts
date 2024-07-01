@@ -30,8 +30,8 @@ export const useEvmPaymentFee = (txHex: string, address?: string) => {
     address && isEvmAccount(address)
       ? H160.fromAccount(address)
       : address && isEvmAddress(address)
-      ? address
-      : undefined
+        ? address
+        : undefined
 
   const enabled = !!evmAddress && !!txHex
 
