@@ -19,6 +19,11 @@ import {
   MIGRATION_TRIGGER_DOMAIN,
   useMigrationStore,
 } from "sections/migration/MigrationProvider.utils"
+import { HeaderWarning } from "components/Layout/Header/warning/HeaderWarning"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
+import { useMatchRoute } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
 
 type Props = {
   className?: string
@@ -33,10 +38,13 @@ export const Page = ({
   subHeader,
   subHeaderStyle,
 }: Props) => {
+  const { t } = useTranslation()
   const { featureFlags, isLoaded } = useRpcProvider()
   const ref = useRef<HTMLDivElement>(null)
   const location = useLocation()
   const { migrationCompleted, setMigrationCompleted } = useMigrationStore()
+  const matchRoute = useMatchRoute()
+  const isXcmPage = matchRoute({ to: LINKS.cross_chain })
 
   useEffect(() => {
     ref.current?.scrollTo({
@@ -50,6 +58,11 @@ export const Page = ({
 
   return (
     <>
+      {isXcmPage && (
+        <HeaderWarning>
+          <Text fs={[13, 16]}>{t("header.warning.xcmDisabled")}</Text>
+        </HeaderWarning>
+      )}
       {shouldShowMigrationWarning && (
         <MigrationWarning
           onClick={() =>
