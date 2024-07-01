@@ -238,8 +238,9 @@ export const useAssetsData = ({
       ({ asset, balance: { balance } }) => {
         const meta = asset as TBond
         const id = !meta.isTradable ? meta.assetId : meta.id
-        const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === id)
-          ?.spotPrice
+        const spotPrice = spotPrices.data?.find(
+          (sp) => sp?.tokenIn === id,
+        )?.spotPrice
 
         const displayValue = balance
           .shiftedBy(-asset.decimals)
