@@ -3,7 +3,6 @@ import BN from "bignumber.js"
 import { useAccountRewards } from "./components/RewardsCard/Rewards.utils"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { LINKS } from "utils/navigation"
 
 export const REFERRAL_PROD_HOST = "hydration.net"
 export const REFERRAL_PARAM_NAME = "referral"
@@ -55,12 +54,4 @@ export const useReferrerTierData = (referrerAddress?: string) => {
   const isLevelUp = tierProgress?.gte(100) && referrerInfo.data?.tier !== 4
 
   return { referrerInfo, currentTierData, tierProgress, isLevelUp }
-}
-
-export function getShareUrl(code: string, origin?: string) {
-  if (origin && import.meta.env.VITE_ENV !== "production") {
-    return new URL(`${origin}${LINKS.swap}?${REFERRAL_PARAM_NAME}=${code}`)
-  }
-
-  return new URL(`https://${REFERRAL_PROD_HOST}/${code}`)
 }

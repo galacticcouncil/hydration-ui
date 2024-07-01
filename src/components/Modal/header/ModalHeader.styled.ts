@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { IconButton } from "components/IconButton/IconButton"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 import { ModalHeaderVariant } from "./ModalHeader"
 

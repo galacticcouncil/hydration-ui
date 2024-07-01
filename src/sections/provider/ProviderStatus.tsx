@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
-import { motion, useAnimationControls } from "framer-motion"
+import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function useElapsedTimeStatus(time: Maybe<u64>) {
@@ -102,10 +102,10 @@ export function ProviderStatus(props: {
     status === "online"
       ? "#00FFA0"
       : status === "offline"
-      ? "#FF4B4B"
-      : status === "slow"
-      ? "#F5A855"
-      : undefined
+        ? "#FF4B4B"
+        : status === "slow"
+          ? "#F5A855"
+          : undefined
 
   const statusText = status != null ? t(`rpc.status.${status}`) : ""
 

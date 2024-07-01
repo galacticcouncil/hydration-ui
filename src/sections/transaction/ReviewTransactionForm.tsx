@@ -168,10 +168,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     shouldOpenPolkaJSUrl
       ? window.open(polkadotJSUrl, "_blank")
       : isEnoughPaymentBalance
-      ? signTx.mutate()
-      : hasMultipleFeeAssets
-      ? openEditFeePaymentAssetModal()
-      : undefined
+        ? signTx.mutate()
+        : hasMultipleFeeAssets
+          ? openEditFeePaymentAssetModal()
+          : undefined
 
   let btnText = t("liquidity.reviewTransaction.modal.confirmButton")
 
