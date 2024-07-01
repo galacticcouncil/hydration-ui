@@ -19,6 +19,7 @@ import {
   SShadow,
   SWrapperContainer,
 } from "./MyPositions.styled"
+import { LazyMotion, domAnimation } from "framer-motion"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const { assets } = useRpcProvider()
@@ -124,43 +125,45 @@ export const CollapsedPositionsList = ({
           />
         </ButtonTransparent>
       )}
-      <SWrapperContainer
-        animate={
-          isCollapsing
-            ? {
-                height: collapsed ? "auto" : positionsNumber * 25,
-              }
-            : { height: "auto" }
-        }
-      >
-        {positions.map((position, index) => {
-          return (
-            <SPositionContainer
-              key={index + position.height}
-              animate={{
-                top: collapsed ? "auto" : -position.moveTo,
-              }}
-              css={
-                isCollapsing
-                  ? {
-                      position: "relative",
-                      pointerEvents: !collapsed ? "none" : "initial",
-                    }
-                  : undefined
-              }
-              sx={{ height: position.height }}
-            >
-              {position.element}
-            </SPositionContainer>
-          )
-        })}
+      <LazyMotion features={domAnimation}>
+        <SWrapperContainer
+          animate={
+            isCollapsing
+              ? {
+                  height: collapsed ? "auto" : positionsNumber * 25,
+                }
+              : { height: "auto" }
+          }
+        >
+          {positions.map((position, index) => {
+            return (
+              <SPositionContainer
+                key={index + position.height}
+                animate={{
+                  top: collapsed ? "auto" : -position.moveTo,
+                }}
+                css={
+                  isCollapsing
+                    ? {
+                        position: "relative",
+                        pointerEvents: !collapsed ? "none" : "initial",
+                      }
+                    : undefined
+                }
+                sx={{ height: position.height }}
+              >
+                {position.element}
+              </SPositionContainer>
+            )
+          })}
 
-        <SShadow
-          css={{
-            display: isCollapsing && !collapsed ? "block" : "none",
-          }}
-        />
-      </SWrapperContainer>
+          <SShadow
+            css={{
+              display: isCollapsing && !collapsed ? "block" : "none",
+            }}
+          />
+        </SWrapperContainer>
+      </LazyMotion>
     </div>
   )
 }
