@@ -119,8 +119,8 @@ export const FarmingPositionWrapper = ({
           ? 346
           : 392
         : isXYK
-        ? 270
-        : 312
+          ? 270
+          : 312
 
       acc.positions.push({
         element: (
