@@ -76,16 +76,16 @@ export const SBar = styled.div<{
           );
         `
       : variant === "nay"
-      ? css`
-          background: linear-gradient(
-            90deg,
-            ${theme.colors.pink700} 50%,
-            transparent 100%
-          );
-        `
-      : css`
-          background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
-        `}
+        ? css`
+            background: linear-gradient(
+              90deg,
+              ${theme.colors.pink700} 50%,
+              transparent 100%
+            );
+          `
+        : css`
+            background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
+          `}
 `
 
 export const SVotedBage = styled.div`
