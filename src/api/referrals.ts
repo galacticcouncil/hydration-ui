@@ -97,8 +97,7 @@ const getReferrerInfo =
       }
     }
 
-    //@ts-ignore
-    const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
+    const [tier, paidRewards] = rawData.unwrap()
 
     return {
       tier: Number(tier.type.slice(-1)),

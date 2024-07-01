@@ -1,6 +1,5 @@
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
-import BN from "bn.js"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 
@@ -13,7 +12,7 @@ export class MultiCurrencyContainer {
 
   constructor(
     keys: [AccountId32, u32][],
-    values: { free: BN; reserved: BN; frozen: BN }[],
+    values: { free: BigNumber; reserved: BigNumber; frozen: BigNumber }[],
   ) {
     for (let i = 0; i < keys.length; ++i) {
       const [accountId, asset] = keys[i]

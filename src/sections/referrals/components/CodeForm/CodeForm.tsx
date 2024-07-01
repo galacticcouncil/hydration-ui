@@ -163,10 +163,10 @@ export const CodeForm = () => {
                   state === UserState.FUNDED
                     ? t("referrals.input.placeholder.referralCode")
                     : state === UserState.NOT_FUNDED
-                    ? t("referrals.input.placeholder.deposit")
-                    : state === UserState.DISCONECTED
-                    ? t("referrals.input.placeholder.connect")
-                    : ""
+                      ? t("referrals.input.placeholder.deposit")
+                      : state === UserState.DISCONECTED
+                        ? t("referrals.input.placeholder.connect")
+                        : ""
                 }
               />
             )}
