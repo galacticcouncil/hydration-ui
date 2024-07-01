@@ -269,8 +269,8 @@ const getDataFromXcmEvmTx = (api: ApiPromise, tx: EIP1559Transaction) => {
     dest = accountId32
       ? getAddressVariants(accountId32).hydraAddress
       : accountKey20 && isEvmAddress(accountKey20)
-      ? new H160(accountKey20).toAccount()
-      : ""
+        ? new H160(accountKey20).toAccount()
+        : ""
     amount = BN(data.method.args.amount)
   } catch {}
 

@@ -24,9 +24,8 @@ export const safelyParse = <T>(input: string): T | undefined => {
 }
 
 export type Maybe<T> = T | null | undefined
-export type FormValues<T> = T extends UseFormReturn<infer Values>
-  ? Values
-  : never
+export type FormValues<T> =
+  T extends UseFormReturn<infer Values> ? Values : never
 
 export function isRecord<Key extends string, Value>(
   x: unknown,
