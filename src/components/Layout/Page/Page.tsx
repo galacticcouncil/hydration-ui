@@ -20,6 +20,7 @@ import {
   useMigrationStore,
 } from "sections/migration/MigrationProvider.utils"
 import { HeaderWarning } from "components/Layout/Header/warning/HeaderWarning"
+import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useMatchRoute } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
@@ -58,7 +59,9 @@ export const Page = ({
   return (
     <>
       {isXcmPage && (
-        <HeaderWarning>{t("header.warning.xcmDisabled")}</HeaderWarning>
+        <HeaderWarning>
+          <Text fs={[13, 16]}>{t("header.warning.xcmDisabled")}</Text>
+        </HeaderWarning>
       )}
       {shouldShowMigrationWarning && (
         <MigrationWarning
