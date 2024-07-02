@@ -85,7 +85,6 @@
   "error.required": "This field is required.",
   "error.maxBalance": "Insufficient balance on your account.",
   "modal.closeButton.name": "Close modal button",
-  "selectAssets.balance": "<0>{{ balance, bignumber }} {{symbol}}</0>",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
   "selectAssets.asset_without_pair": "Assets without subpool",
