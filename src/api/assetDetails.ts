@@ -409,7 +409,7 @@ export const getAssets = async (api: ApiPromise) => {
               ? getTokenParachainId(location)
               : undefined,
           externalId,
-          iconId: "",
+          iconId: assetCommon.id,
           ...(externalTokenStored
             ? omit(["id", "internalId", "origin"], {
                 ...externalTokenStored,
