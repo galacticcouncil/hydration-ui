@@ -64,9 +64,7 @@ export const TransferModal = ({
   )
 
   const refetchPositions = () => {
-    queryClient.refetchQueries(
-      QUERY_KEYS.accountOmnipoolPositions(account?.address),
-    )
+    queryClient.refetchQueries(QUERY_KEYS.accountNFTPositions(account?.address))
   }
 
   const isStablepool = selectedOption === "STABLEPOOL"
