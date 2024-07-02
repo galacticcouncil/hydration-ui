@@ -1,14 +1,12 @@
 import "interfaces/augment-bignumber"
 
 import { expect, test } from "vitest"
-import { TypeRegistry, U128, U32 } from "@polkadot/types"
-import { OrmlTokensAccountData } from "@polkadot/types/lookup"
+import { TypeRegistry, U32 } from "@polkadot/types"
 
 import BN from "bignumber.js"
-
+import BigNumber from "bignumber.js"
 import { getAccountResolver } from "./accountResolver"
 import { MultiCurrencyContainer } from "./multiCurrency"
-import { createStruct } from "utils/test/createTestApi"
 
 const registry = new TypeRegistry()
 
@@ -22,11 +20,11 @@ test("read multi currency container", () => {
   const multiCurrency = new MultiCurrencyContainer(
     [[walletA, asset]],
     [
-      createStruct<OrmlTokensAccountData>(registry, {
-        free: [U128, new U128(registry, 128)],
-        reserved: [U128, new U128(registry, 256)],
-        frozen: [U128, new U128(registry, 512)],
-      }),
+      {
+        free: new BigNumber(0),
+        reserved: new BigNumber(0),
+        frozen: new BigNumber(0),
+      },
     ],
   )
 
@@ -40,16 +38,16 @@ test("transfer multi currency container", () => {
       [walletB, asset],
     ],
     [
-      createStruct<OrmlTokensAccountData>(registry, {
-        free: [U128, new U128(registry, "128")],
-        reserved: [U128, new U128(registry, "256")],
-        frozen: [U128, new U128(registry, "512")],
-      }),
-      createStruct<OrmlTokensAccountData>(registry, {
-        free: [U128, new U128(registry, 128)],
-        reserved: [U128, new U128(registry, 256)],
-        frozen: [U128, new U128(registry, 512)],
-      }),
+      {
+        free: new BigNumber(0),
+        reserved: new BigNumber(0),
+        frozen: new BigNumber(0),
+      },
+      {
+        free: new BigNumber(0),
+        reserved: new BigNumber(0),
+        frozen: new BigNumber(0),
+      },
     ],
   )
 

@@ -1,28 +1,31 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useTokenBalance } from "api/balances"
-import { SSeparator } from "components/Separator/Separator.styled"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
-import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
-import { QUERY_KEYS } from "utils/queryKeys"
+import { ReactElement, useState } from "react"
+import { ButtonTransparent } from "components/Button/Button"
+import { theme } from "theme"
+import { Icon } from "components/Icon/Icon"
+import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
+import {
+  SPositionContainer,
+  SShadow,
+  SWrapperContainer,
+} from "./MyPositions.styled"
+import { LazyMotion, domAnimation } from "framer-motion"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const { assets } = useRpcProvider()
   const { account } = useAccount()
   const { t } = useTranslation()
   const meta = assets.getAsset(pool.id)
-  const queryClient = useQueryClient()
-
-  const miningPositions = useAllOmnipoolDeposits()
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
@@ -32,129 +35,135 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const spotPrice = pool.spotPrice
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
   const stablepoolAmountPrice = spotPrice
-    ? stablepoolAmount.multipliedBy(spotPrice).shiftedBy(-meta.decimals)
+    ? stablepoolAmount.shiftedBy(-meta.decimals).multipliedBy(spotPrice)
     : BN_0
-
-  const totalOmnipool = useMemo(() => {
-    if (pool.omnipoolNftPositions) {
-      return pool.omnipoolNftPositions.reduce(
-        (acc, position) => acc.plus(position.valueDisplay),
-        BN_0,
-      )
-    }
-    return BN_0
-  }, [pool.omnipoolNftPositions])
-
-  const totalFarms = useMemo(() => {
-    if (!miningPositions.data[pool.id]) return BN_0
-    return miningPositions.data[pool.id].reduce((memo, share) => {
-      return memo.plus(share.valueDisplay)
-    }, BN_0)
-  }, [miningPositions.data, pool.id])
 
   if (
     !pool.miningNftPositions.length &&
     !pool.omnipoolNftPositions.length &&
-    !stablepoolBalance.data?.freeBalance
+    !stablepoolBalance.data?.freeBalance.gt(0)
   )
     return null
 
-  const refetchPositions = () => {
-    queryClient.refetchQueries(
-      QUERY_KEYS.accountOmnipoolPositions(account?.address),
-    )
-  }
-
-  const totalStableAndOmni = totalOmnipool.plus(stablepoolAmountPrice)
-
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="GeistMonoSemiBold">
+    <>
+      <Text
+        fs={18}
+        font="GeistMono"
+        tTransform="uppercase"
+        sx={{ px: 30, pt: 12 }}
+      >
         {t("liquidity.pool.positions.title")}
       </Text>
-
-      <div
-        sx={{
-          flex: "row",
-          gap: [24, 104],
-          py: 16,
-          justify: ["space-between", "initial"],
-        }}
-      >
-        <div sx={{ flex: "column", gap: 6 }}>
-          <Text color="basic400" fs={[12, 13]}>
-            {t("liquidity.pool.positions.omnipool")}
-          </Text>
-          <Text color="white" fs={[14, 16]} fw={600}>
-            {t("value.usd", { amount: totalStableAndOmni })}
-          </Text>
-        </div>
-        {!totalFarms.isZero() && (
-          <>
-            <SSeparator color="white" opacity={0.06} orientation="vertical" />
-            <div sx={{ flex: "column", gap: 6 }}>
-              <Text color="basic400" fs={[12, 13]}>
-                {t("liquidity.pool.positions.farming")}
-              </Text>
-              <Text color="white" fs={[14, 16]} fw={600}>
-                {t("value.usd", { amount: totalFarms })}
-              </Text>
-            </div>
-          </>
-        )}
-      </div>
-
-      <SSeparator color="darkBlue401" />
 
       {pool.isStablePool && (
         <StablepoolPosition
           pool={pool}
           amount={stablepoolAmount}
           amountPrice={stablepoolAmountPrice}
-          refetchPositions={refetchPositions}
         />
       )}
-
-      <LiquidityPositionWrapper
-        pool={pool}
-        positions={pool.omnipoolNftPositions}
-        refetchPositions={refetchPositions}
-      />
-      <FarmingPositionWrapper pool={pool} positions={pool.miningNftPositions} />
-    </div>
+      <LiquidityPositionWrapper pool={pool} />
+      <FarmingPositionWrapper pool={pool} />
+    </>
   )
 }
 
 export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
   const { t } = useTranslation()
 
-  const totalFarms = useMemo(() => {
-    return pool.miningPositions.reduce((memo, share) => {
-      return memo.plus(share.amountUSD ?? 0)
-    }, BN_0)
-  }, [pool.miningPositions])
-
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="GeistMono">
+    <>
+      <Text
+        fs={18}
+        font="GeistMono"
+        tTransform="uppercase"
+        sx={{ px: 30, pt: 12 }}
+      >
         {t("liquidity.pool.positions.title")}
       </Text>
-      {!totalFarms.isZero() && (
-        <>
-          <SSeparator color="white" opacity={0.06} orientation="vertical" />
-          <div sx={{ flex: "column", gap: 6 }}>
-            <Text color="basic400" fs={[12, 13]}>
-              {t("liquidity.pool.positions.farming")}
-            </Text>
-            <Text color="white" fs={[14, 16]} fw={600}>
-              {t("value.usd", { amount: totalFarms })}
-            </Text>
-          </div>
-          <SSeparator color="darkBlue401" sx={{ my: 16 }} />
-        </>
-      )}
+
       <XYKPosition pool={pool} />
-      <FarmingPositionWrapper pool={pool} positions={pool.miningNftPositions} />
+      <FarmingPositionWrapper pool={pool} />
+    </>
+  )
+}
+
+export const CollapsedPositionsList = ({
+  positions,
+}: {
+  positions: { element: ReactElement; moveTo: number; height: number }[]
+}) => {
+  const { t } = useTranslation()
+  const [collapsed, setCollapsed] = useState(false)
+
+  const positionsNumber = positions.length
+  const isCollapsing = positionsNumber > 1
+
+  return (
+    <div
+      sx={{
+        flex: "column",
+        gap: 16,
+        pb: collapsed || !isCollapsing ? [12, 30] : 0,
+      }}
+    >
+      {isCollapsing && (
+        <ButtonTransparent onClick={() => setCollapsed(!collapsed)}>
+          <Text fs={14} font="GeistMono" tTransform="uppercase">
+            {t(`liquidity.pool.positions.${collapsed ? "hide" : "show"}.btn`, {
+              number: positionsNumber,
+            })}
+          </Text>
+          <Icon
+            icon={<ChevronDownIcon />}
+            sx={{ color: "brightBlue300" }}
+            css={{
+              transform: collapsed ? "rotate(180deg)" : undefined,
+              transition: theme.transitions.default,
+            }}
+          />
+        </ButtonTransparent>
+      )}
+      <LazyMotion features={domAnimation}>
+        <SWrapperContainer
+          animate={
+            isCollapsing
+              ? {
+                  height: collapsed ? "auto" : positionsNumber * 25,
+                }
+              : { height: "auto" }
+          }
+        >
+          {positions.map((position, index) => {
+            return (
+              <SPositionContainer
+                key={index + position.height}
+                animate={{
+                  top: collapsed ? "auto" : -position.moveTo,
+                }}
+                css={
+                  isCollapsing
+                    ? {
+                        position: "relative",
+                        pointerEvents: !collapsed ? "none" : "initial",
+                      }
+                    : undefined
+                }
+                sx={{ height: position.height }}
+              >
+                {position.element}
+              </SPositionContainer>
+            )
+          })}
+
+          <SShadow
+            css={{
+              display: isCollapsing && !collapsed ? "block" : "none",
+            }}
+          />
+        </SWrapperContainer>
+      </LazyMotion>
     </div>
   )
 }

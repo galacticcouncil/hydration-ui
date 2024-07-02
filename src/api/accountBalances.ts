@@ -6,7 +6,6 @@ import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
-import BN from "bn.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculateFreeBalance } from "./balances"
 
@@ -59,21 +58,11 @@ export const getAccountBalances =
     })
 
     const freeBalance = new BigNumber(nativeData.data.free.toHex())
-    const miscFrozenBalance = new BigNumber(
-      nativeData.data.miscFrozen?.toHex() ?? 0,
-    )
-    const feeFrozenBalance = new BigNumber(
-      //@ts-ignore
-      nativeData.data.feeFrozen?.toHex() ?? nativeData.data.frozen.toHex(),
-    )
+
+    const frozenBalance = new BigNumber(nativeData.data.frozen.toHex())
     const reservedBalance = new BigNumber(nativeData.data.reserved.toHex())
 
-    const balance = new BigNumber(
-      calculateFreeBalance(
-        freeBalance,
-        BigNumber.max(feeFrozenBalance, miscFrozenBalance),
-      ),
-    )
+    const balance = freeBalance.minus(frozenBalance)
 
     const native = {
       accountId: accountId.toString(),
@@ -116,9 +105,9 @@ const getAccountAssetBalances =
     ])
 
     const values: Array<{
-      free: BN
-      reserved: BN
-      frozen: BN
+      free: BigNumber
+      reserved: BigNumber
+      frozen: BigNumber
       assetId: string
     }> = []
     for (
@@ -132,23 +121,18 @@ const getAccountAssetBalances =
       if (assetId.toString() === NATIVE_ASSET_ID) {
         values.push({
           assetId: assetId.toString(),
-          free: natives[nativeIdx].data.free,
-          reserved: natives[nativeIdx].data.reserved,
-          frozen: natives[nativeIdx].data.feeFrozen
-            ? natives[nativeIdx].data.feeFrozen.add(
-                natives[nativeIdx].data.miscFrozen,
-              )
-            : //@ts-ignore
-              natives[nativeIdx].data.frozen,
+          free: natives[nativeIdx].data.free.toBigNumber(),
+          reserved: natives[nativeIdx].data.reserved.toBigNumber(),
+          frozen: natives[nativeIdx].data.frozen.toBigNumber(),
         })
 
         nativeIdx += 1
       } else {
         values.push({
           assetId: assetId.toString(),
-          free: tokens[tokenIdx].free,
-          reserved: tokens[tokenIdx].reserved,
-          frozen: tokens[tokenIdx].frozen,
+          free: tokens[tokenIdx].free.toBigNumber(),
+          reserved: tokens[tokenIdx].reserved.toBigNumber(),
+          frozen: tokens[tokenIdx].frozen.toBigNumber(),
         })
 
         tokenIdx += 1
