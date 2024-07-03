@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
@@ -32,9 +32,21 @@ export const getAssetHubAssets = async () => {
       }
     })
 
-    console.log({ data })
     return { data, id: assethub.parachainId }
   } catch (e) {}
+}
+
+export const getAssetHubAssetsIds = async () => {
+  try {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(assethub.ws)
+    const dataRaw = await api.query.assets.asset.entries()
+    return dataRaw
+      .map(([meta]) => Number(meta.args[0].toString()))
+      .sort((a, b) => a - b)
+  } catch (e) {
+    return []
+  }
 }
 
 /**
@@ -59,4 +71,26 @@ export const useAssetHubAssetRegistry = (enabled?: boolean) => {
       select: (data) => arrayToMap("id", data),
     },
   )
+}
+
+export const useGetNextAssetHubId = () => {
+  const mutation = useMutation(async () => {
+    const ids = await getAssetHubAssetsIds()
+
+    let smallestId = 1
+
+    for (let i = 0; i < ids.length; i++) {
+      if (ids[i] === smallestId) {
+        smallestId++
+      } else if (Number(ids[i]) > smallestId) {
+        break
+      }
+    }
+
+    return smallestId
+  })
+
+  return {
+    getNextAssetHubId: mutation.mutateAsync,
+  }
 }

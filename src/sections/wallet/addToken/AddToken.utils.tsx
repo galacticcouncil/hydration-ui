@@ -21,6 +21,7 @@ import { u32 } from "@polkadot/types"
 import { useMemo } from "react"
 import { omit } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
+import { getPendulumInputData } from "utils/externalAssets"
 
 const pink = {
   decimals: 10,
@@ -209,18 +210,20 @@ export type TExternalAssetInput = {
   interior: InteriorTypes | string
 }
 
+export type TExternalAssetWithLocation = TExternalAsset & {
+  location?: HydradxRuntimeXcmAssetLocation
+}
+
 export const useRegisterToken = ({
   onSuccess,
-  assetName,
 }: {
-  onSuccess: (assetId: string) => void
-  assetName: string
+  onSuccess: (assetId: string, asset: TExternalAssetWithLocation) => void
 }) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
 
-  return useMutation(async (assetInput: TExternalAssetInput) => {
+  return useMutation(async (asset: TExternalAssetWithLocation) => {
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
@@ -228,7 +231,7 @@ export const useRegisterToken = ({
           t={t}
           i18nKey={`wallet.addToken.toast.register.${msType}`}
           tOptions={{
-            name: assetName,
+            name: asset.name,
           }}
         >
           <span />
@@ -237,6 +240,10 @@ export const useRegisterToken = ({
       )
       return memo
     }, {} as ToastMessage)
+
+    const assetInput = getInputData(asset)
+
+    if (!assetInput) throw new Error("Invalid asset input data")
 
     return await createTransaction(
       {
@@ -251,7 +258,7 @@ export const useRegisterToken = ({
 
           const assetId = data?.assetId?.toString()
 
-          if (assetId) onSuccess(assetId)
+          if (assetId) onSuccess(assetId, asset)
         },
       },
     )
@@ -383,6 +390,34 @@ export const useExternalTokenMeta = (id: string | undefined) => {
   }, [asset, externalRegistry, assets.external])
 
   return externalAsset
+}
+
+export const getInputData = (
+  asset: TExternalAssetWithLocation,
+): TExternalAssetInput | undefined => {
+  if (asset.origin === assethub.parachainId) {
+    const { parents, palletInstance } = PARACHAIN_CONFIG[assethub.parachainId]
+    return {
+      parents,
+      interior: {
+        X3: [
+          {
+            Parachain: asset.origin.toString(),
+          },
+          {
+            PalletInstance: palletInstance,
+          },
+          {
+            GeneralIndex: asset.id,
+          },
+        ],
+      },
+    }
+  }
+
+  if (asset.origin === pendulum.parachainId && asset.location) {
+    return getPendulumInputData(asset.location)
+  }
 }
 
 export const updateExternalAssetsCursor = (

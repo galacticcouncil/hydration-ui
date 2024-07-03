@@ -1,26 +1,36 @@
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCallback, useMemo, useState } from "react"
+import { ISubmittableResult } from "@polkadot/types/types"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  assethub,
+  useGetNextAssetHubId,
+} from "api/externalAssetRegistry/assethub"
+import { useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useEvent } from "react-use"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
+import {
+  useRegisterToken,
+  useUserExternalTokenStore,
+} from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useStore } from "state/store"
 import { required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import {
-  assethub,
-  useAssetHubAssetRegistry,
-} from "api/externalAssetRegistry/assethub"
-import { useStore } from "state/store"
-import { useMutation } from "@tanstack/react-query"
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { useRefetchProviderData } from "api/provider"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { omit } from "utils/rx"
 
 export type MemepadStep1Values = {
   id: string
   name: string
   symbol: string
   supply: string
+  decimals: number
+  origin: number
   creatorAccount: string
 }
 
@@ -41,22 +51,23 @@ export type MemepadSummaryValues = Partial<
 export const useMemepadStep1Form = () => {
   const { account } = useAccount()
 
-  const id = useCreateAssetId()
-
   return useForm<MemepadStep1Values>({
     defaultValues: {
-      id: id?.toString() ?? "",
+      id: "",
       name: "",
       symbol: "",
       supply: "",
+      decimals: 12,
+      origin: assethub.parachainId,
       creatorAccount: account?.address ?? "",
     },
     resolver: zodResolver(
       z.object({
-        id: required,
         name: required,
         symbol: required,
         supply: required,
+        decimals: z.number().min(0).max(18),
+        origin: z.number().min(0),
         creatorAccount: required,
       }),
     ),
@@ -97,11 +108,21 @@ export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
 
+  const { addToken } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
+
   const formStep1 = useMemepadStep1Form()
   const formStep2 = useMemepadStep2Form()
   const formStep3 = useMemepadStep3Form()
 
   const createToken = useCreateToken()
+  const registerToken = useRegisterToken({
+    onSuccess: (internalId, asset) => {
+      addToken({ ...omit(["location"], asset), internalId })
+      refetchProvider()
+    },
+  })
+  const { getNextAssetHubId } = useGetNextAssetHubId()
 
   const reset = () => {
     setStep(0)
@@ -128,9 +149,17 @@ export const useMemepadForms = () => {
   const submitNext = () => {
     if (step === 0) {
       return formStep1.handleSubmit(async (values) => {
-        console.log(values)
-        await createToken.mutateAsync(values)
-        setNextStep(values)
+        const nextId = await getNextAssetHubId()
+        const id = nextId.toString()
+        const token = {
+          ...values,
+          id,
+        }
+
+        await createToken.mutateAsync(token)
+        await registerToken.mutateAsync(token)
+
+        setNextStep(token)
       })()
     }
 
@@ -183,35 +212,11 @@ export const useMemepadForms = () => {
   }
 }
 
-export const useCreateAssetId = () => {
-  const { data } = useAssetHubAssetRegistry()
-
-  console.log({ data })
-
-  const id = useMemo(() => {
-    if (!data) return undefined
-
-    const assets = [...data.values()]
-
-    let smallestId = 1
-
-    assets.sort((a, b) => Number(a.id) - Number(b.id))
-
-    for (let i = 0; i < assets.length; i++) {
-      if (Number(assets[i].id) === smallestId) {
-        smallestId++
-      } else if (Number(assets[i].id) > smallestId) {
-        break
-      }
-    }
-
-    return smallestId
-  }, [data])
-
-  return id
-}
-
-export const useCreateToken = () => {
+export const useCreateToken = ({
+  onSuccess,
+}: {
+  onSuccess?: () => ISubmittableResult
+} = {}) => {
   const { account } = useAccount()
   const { createTransaction } = useStore()
 
@@ -222,11 +227,21 @@ export const useCreateToken = () => {
     if (!api) throw new Error("Asset Hub is not connected")
     if (!account) throw new Error("Account is not connected")
 
-    return await createTransaction({
-      tx: api.tx.utility.batchAll([
-        api.tx.assets.create(values.id, values.creatorAccount, values.supply),
-        api.tx.assets.setMetadata(values.id, values.name, values.symbol, 12),
-      ]),
-    })
+    return await createTransaction(
+      {
+        tx: api.tx.utility.batchAll([
+          api.tx.assets.create(values.id, values.creatorAccount, values.supply),
+          api.tx.assets.setMetadata(
+            values.id,
+            values.name,
+            values.symbol,
+            values.decimals,
+          ),
+        ]),
+      },
+      {
+        onSuccess,
+      },
+    )
   })
 }

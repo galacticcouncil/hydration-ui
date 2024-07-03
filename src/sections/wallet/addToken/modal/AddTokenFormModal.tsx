@@ -3,14 +3,11 @@ import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
-  PARACHAIN_CONFIG,
-  TExternalAsset,
-  TExternalAssetInput,
+  TExternalAssetWithLocation,
   TRegisteredAsset,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
-import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -19,12 +16,11 @@ import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
-import { assethub, pendulum } from "api/externalAssetRegistry"
-import { getPendulumInputData } from "utils/externalAssets"
+
 import { omit } from "utils/rx"
 
 type Props = {
-  asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }
+  asset: TExternalAssetWithLocation
   onClose: () => void
 }
 
@@ -42,11 +38,10 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { add } = useToast()
 
   const mutation = useRegisterToken({
-    onSuccess: (id: string) => {
-      addToken({ ...omit(["location"], asset), internalId: id })
+    onSuccess: (internalId, asset) => {
+      addToken({ ...omit(["location"], asset), internalId })
       refetchProvider()
     },
-    assetName: asset.name,
   })
 
   const chainStored = assets.external.find(
@@ -66,38 +61,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const onSubmit = async () => {
     if (!asset) throw new Error("Selected asset cannot be added")
-
-    const { parents, palletInstance } = PARACHAIN_CONFIG[assethub.parachainId]
-
-    let input: TExternalAssetInput | undefined = undefined
-
-    if (asset.origin === assethub.parachainId) {
-      input = {
-        parents,
-        interior: {
-          X3: [
-            {
-              Parachain: asset.origin.toString(),
-            },
-            {
-              PalletInstance: palletInstance,
-            },
-            {
-              GeneralIndex: asset.id,
-            },
-          ],
-        },
-      }
-    }
-
-    if (asset.origin === pendulum.parachainId && asset.location) {
-      input = getPendulumInputData(asset.location)
-    }
-
-    if (input) {
-      await mutation.mutate(input)
-    }
-
+    await mutation.mutateAsync(asset)
     onClose()
   }
 

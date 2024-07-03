@@ -14,16 +14,13 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
   return (
     <form autoComplete="off">
       <div sx={{ flex: "column", gap: 8 }}>
-        <Controller
-          name="id"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              label="Asset ID"
-              error={form.formState.errors.id?.message}
-              {...field}
-            />
-          )}
+        <input
+          type="hidden"
+          {...form.register("origin", { valueAsNumber: true })}
+        />
+        <input
+          type="hidden"
+          {...(form.register("decimals"), { valueAsNumber: true })}
         />
         <Controller
           name="name"
