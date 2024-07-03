@@ -23,23 +23,23 @@ export const SClipPath = styled.div<{
           background: radial-gradient(circle, transparent 50%, ${p.color} 90%);
         `
       : p.hoverClipPath
-      ? css`
-          background: conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            ${p.color} ${p.length / 2}deg ${p.length}deg,
-            transparent 0deg
-          );
-        `
-      : css`
-          mask-image: linear-gradient(
-            340deg,
-            white 0%,
-            rgba(217, 217, 217, 0) 100%
-          );
+        ? css`
+            background: conic-gradient(
+              from 0deg,
+              transparent 0deg,
+              ${p.color} ${p.length / 2}deg ${p.length}deg,
+              transparent 0deg
+            );
+          `
+        : css`
+            mask-image: linear-gradient(
+              340deg,
+              white 0%,
+              rgba(217, 217, 217, 0) 100%
+            );
 
-          background: ${p.color};
-        `}
+            background: ${p.color};
+          `}
 
   clip-path: path("${(p) => p.clipPath}");
 

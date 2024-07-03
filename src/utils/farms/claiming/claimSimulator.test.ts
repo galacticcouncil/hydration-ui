@@ -28,7 +28,6 @@ import {
 } from "@polkadot/types/lookup"
 import { decodeAddress } from "@polkadot/util-crypto"
 import BigNumber from "bignumber.js"
-import BN from "bn.js"
 
 const registry = new TypeRegistry()
 
@@ -54,14 +53,14 @@ test("create mock type registry", () => {
     ],
     [
       {
-        free: new BN("100059809463094"),
-        reserved: new BN("0"),
-        frozen: new BN("0"),
+        free: new BigNumber("100059809463094"),
+        reserved: new BigNumber("0"),
+        frozen: new BigNumber("0"),
       },
       {
-        free: new BN("999999940184820114"),
-        reserved: new BN("0"),
-        frozen: new BN("0"),
+        free: new BigNumber("999999940184820114"),
+        reserved: new BigNumber("0"),
+        frozen: new BigNumber("0"),
       },
     ],
   )

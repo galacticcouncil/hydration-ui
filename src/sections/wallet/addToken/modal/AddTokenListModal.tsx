@@ -57,6 +57,11 @@ export const AddTokenListModal: React.FC<Props> = ({
       (asset) => asset.parachainId === parachainId.toString(),
     ) ?? []
 
+  const registeredAssets =
+    assets?.external?.filter(
+      (asset) => asset.parachainId === parachainId.toString(),
+    ) ?? []
+
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
     if (isDOT) return false
@@ -64,9 +69,18 @@ export const AddTokenListModal: React.FC<Props> = ({
     const isChainStored = internalAssets.some(
       (internalAsset) => internalAsset.externalId === asset.id,
     )
+
     if (isChainStored) return false
 
-    const isUserStored = degenMode || isAdded(asset.id)
+    const isRegistered = registeredAssets.some(
+      (registeredAsset) => registeredAsset.externalId === asset.id,
+    )
+
+    if (degenMode && isRegistered) {
+      return false
+    }
+
+    const isUserStored = isAdded(asset.id)
     if (isUserStored) return false
 
     const isSearched = search.length

@@ -31,8 +31,6 @@ import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { LINKS } from "utils/navigation"
-import { useSettingsStore } from "state/store"
-import { useShallow } from "hooks/useShallow"
 
 type Props = {
   data: AssetsTableData[]
@@ -47,7 +45,6 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
   const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
-  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -85,7 +82,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
               : t("wallet.header.assets")}
           </Text>
           <div sx={{ flex: "row", gap: 32 }}>
-            {!degenMode && addTokenEnabled && isDesktop && button}
+            {addTokenEnabled && isDesktop && button}
             <Switch
               value={showAll}
               onCheckedChange={(value) => setShowAll(value)}

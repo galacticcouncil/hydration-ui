@@ -108,8 +108,8 @@ export function SwapPage() {
     search.success && search.data.assetIn
       ? search.data.assetIn
       : isEvm
-      ? defaultEvmTokenId
-      : stableCoinId ?? stableCoinAssetId
+        ? defaultEvmTokenId
+        : stableCoinId ?? stableCoinAssetId
 
   const assetOut =
     search.success && search.data.assetOut

@@ -1,7 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SAssetRow = styled.div`
+export const SAssetRow = styled.div<{ isSelected: boolean }>`
   display: flex;
   justify-content: space-between;
 
@@ -23,6 +23,9 @@ export const SAssetRow = styled.div`
   &:active {
     background: rgba(${theme.rgbColors.white}, 0.07);
   }
+
+  ${({ isSelected }) =>
+    isSelected && `background: rgba(${theme.rgbColors.white}, 0.06)`}
 `
 
 export const SCircle = styled.div<{ isActive: boolean }>`
