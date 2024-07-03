@@ -15,6 +15,8 @@ import { omit } from "utils/rx"
 import { useProviderRpcUrlStore } from "./provider"
 import { PENDULUM_ID } from "./externalAssetRegistry"
 import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { useSettingsStore } from "state/store"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -157,9 +159,12 @@ export const getAssets = async (api: ApiPromise) => {
     api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
+  const degenMode = useSettingsStore.getState().degenMode
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
-  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
+  const { tokens: externalTokens } = degenMode
+    ? ExternalAssetCursor.deref().state
+    : useUserExternalTokenStore.getState()
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
