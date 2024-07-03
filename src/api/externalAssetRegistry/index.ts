@@ -14,9 +14,9 @@ export {
 /**
  * Used for fetching tokens from supported parachains
  */
-export const useExternalAssetRegistry = () => {
-  const assethubRegistry = useAssetHubAssetRegistry()
-  const pendulumRegistry = usePendulumAssetRegistry()
+export const useExternalAssetRegistry = (enabled?: boolean) => {
+  const assethubRegistry = useAssetHubAssetRegistry(enabled)
+  const pendulumRegistry = usePendulumAssetRegistry(enabled)
 
   return {
     [assethub.parachainId]: assethubRegistry,

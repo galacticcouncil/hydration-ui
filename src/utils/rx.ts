@@ -95,3 +95,11 @@ export function mergeArrays<TArr, TKey extends keyof TArr>(
 
   return mergedArray
 }
+
+export const arrayToMap = <T extends object>(prop: keyof T, arr?: T[]) => {
+  return new Map(
+    (arr || []).map((item) => {
+      return [item[prop], item]
+    }),
+  )
+}

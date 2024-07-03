@@ -5,6 +5,7 @@ import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { isJson } from "utils/helpers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { arrayToMap } from "utils/rx"
 
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
@@ -72,7 +73,7 @@ export const getPedulumAssets = async () => {
 /**
  * Used for fetching tokens only from Pendulum parachain
  */
-export const usePendulumAssetRegistry = () => {
+export const usePendulumAssetRegistry = (enabled?: boolean) => {
   return useQuery(
     QUERY_KEYS.pendulumAssetRegistry,
     async () => {
@@ -82,10 +83,12 @@ export const usePendulumAssetRegistry = () => {
       }
     },
     {
+      enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: (data) => arrayToMap("id", data),
     },
   )
 }

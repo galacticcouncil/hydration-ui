@@ -3,6 +3,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { arrayToMap } from "utils/rx"
 
 export const assethub = chainsMap.get("assethub") as Parachain
 
@@ -39,7 +40,7 @@ export const getAssetHubAssets = async () => {
 /**
  * Used for fetching tokens only from Asset Hub parachain
  */
-export const useAssetHubAssetRegistry = () => {
+export const useAssetHubAssetRegistry = (enabled?: boolean) => {
   return useQuery(
     QUERY_KEYS.assetHubAssetRegistry,
     async () => {
@@ -50,10 +51,12 @@ export const useAssetHubAssetRegistry = () => {
       }
     },
     {
+      enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: (data) => arrayToMap("id", data),
     },
   )
 }

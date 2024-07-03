@@ -191,7 +191,7 @@ export const useCreateAssetId = () => {
   const id = useMemo(() => {
     if (!data) return undefined
 
-    const assets = [...data]
+    const assets = [...data.values()]
 
     let smallestId = 1
 
