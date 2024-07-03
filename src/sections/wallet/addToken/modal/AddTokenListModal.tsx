@@ -128,13 +128,8 @@ export const AddTokenListModal: React.FC<Props> = ({
                         onAssetSelect?.({ ...asset, origin: parachainId })
                       }
                     >
-                      <Text
-                        fs={14}
-                        sx={{ flex: "row", align: "center", gap: 10 }}
-                      >
-                        <Icon icon={<AssetLogo />} size={24} />
-                        {asset.name}
-                      </Text>
+                      <Icon icon={<AssetLogo />} size={24} />
+                      <Text fs={14}>{asset.name}</Text>
                     </AssetRow>
                   ))}
                 </>
