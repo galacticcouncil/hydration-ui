@@ -114,8 +114,8 @@ export function SwapPage() {
     search.success && search.data.assetIn
       ? search.data.assetIn
       : isEvm
-      ? defaultEvmTokenId
-      : stableCoinId ?? stableCoinAssetId
+        ? defaultEvmTokenId
+        : stableCoinId ?? stableCoinAssetId
 
   const assetOut =
     search.success && search.data.assetOut
@@ -125,7 +125,7 @@ export function SwapPage() {
   return (
     <SContainer>
       <SwapApp
-        key={version}
+        key={`swap-app-${version}`}
         ref={(r) => {
           if (r) {
             r.setAttribute("chart", "")

@@ -28,8 +28,8 @@ export const AccountAvatar: FC<Props> = (props) => {
   const theme = props.provider?.startsWith("talisman")
     ? "talisman"
     : isEvm
-    ? "evm"
-    : chainIcon
+      ? "evm"
+      : chainIcon
 
   if (theme === "evm") {
     return (

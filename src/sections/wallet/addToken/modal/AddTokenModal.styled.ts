@@ -3,7 +3,8 @@ import { theme } from "theme"
 
 export const AssetRow = styled.div`
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 
   color: ${theme.colors.white};
 
@@ -13,6 +14,13 @@ export const AssetRow = styled.div`
 
   transition: ${theme.transitions.slow};
   cursor: pointer;
+  min-width: 0;
+
+  p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   @media ${theme.viewport.gte.sm} {
     padding: 17px 20px;

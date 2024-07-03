@@ -8,6 +8,7 @@ import { Modal } from "components/Modal/Modal"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { useBestNumber } from "api/chain"
 import { Text } from "components/Typography/Text/Text"
+import { Separator } from "components/Separator/Separator"
 
 export const AvailableFarms = ({ pool }: { pool: TPool | TXYKPool }) => {
   const { t } = useTranslation()
@@ -32,18 +33,34 @@ export const AvailableFarms = ({ pool }: { pool: TPool | TXYKPool }) => {
       selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
     )
 
+  const isMultipleFarms = farms.data.length > 1
+
   return (
     <>
-      <div
-        sx={{ flex: "column", gap: 10, p: ["0px 12px 12px", 30], bg: "gray" }}
-      >
-        <Text fs={18} font="GeistMonoSemiBold">
+      <Separator
+        color="white"
+        opacity={0.06}
+        sx={{
+          mt: 4,
+          mx: "-30px",
+          width: "calc(100% + 60px)",
+        }}
+      />
+      <div sx={{ flex: "column", gap: 10 }}>
+        <Text fs={18} font="GeistMono" tTransform="uppercase">
           {t("farms.modal.joinedFarms.available.label")}
         </Text>
-        <div sx={{ flex: "column", gap: 20 }}>
+        <div
+          sx={{
+            flex: ["column", isMultipleFarms ? "row" : "column"],
+            flexWrap: "wrap",
+            gap: 20,
+          }}
+        >
           {farms.data.map((farm, i) => {
             return (
               <FarmDetailsCard
+                compact
                 key={i}
                 poolId={pool.id}
                 farm={farm}

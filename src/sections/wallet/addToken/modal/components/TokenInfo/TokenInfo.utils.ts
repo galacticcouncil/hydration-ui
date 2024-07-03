@@ -28,9 +28,9 @@ const useMissingExternalAssets = (ids: string[]) => {
             (external) => external.id === tokenId,
           )?.externalId
 
-          const meta = externalAssets.data?.find(
-            (externalAsset) => externalAsset.id === externalId,
-          )
+          const meta = externalId
+            ? externalAssets.data?.get(externalId)
+            : undefined
           return meta
             ? {
                 ...meta,

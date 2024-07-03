@@ -31,6 +31,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
+import { LazyMotion, domAnimation } from "framer-motion"
 
 const NonClickableContainer = ({
   children,
@@ -98,21 +99,23 @@ const AssetTableName = ({ id }: { id: string }) => {
           </Text>
           {asset.isStableSwap && (
             <div css={{ position: "relative" }}>
-              <SStablepoolBadge
-                whileHover={{ width: "unset" }}
-                css={{
-                  width: 14,
-                  overflow: "hidden",
-                  position: "absolute",
-                }}
-                transition={{
-                  type: "spring",
-                  mass: 1,
-                  stiffness: 300,
-                  damping: 20,
-                  duration: 0.2,
-                }}
-              />
+              <LazyMotion features={domAnimation}>
+                <SStablepoolBadge
+                  whileHover={{ width: "unset" }}
+                  css={{
+                    width: 14,
+                    overflow: "hidden",
+                    position: "absolute",
+                  }}
+                  transition={{
+                    type: "spring",
+                    mass: 1,
+                    stiffness: 300,
+                    damping: 20,
+                    duration: 0.2,
+                  }}
+                />
+              </LazyMotion>
             </div>
           )}
         </div>

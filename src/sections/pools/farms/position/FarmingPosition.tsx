@@ -10,11 +10,7 @@ import {
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
-import {
-  SContainer,
-  SSeparator,
-  SValueContainer,
-} from "./FarmingPosition.styled"
+import { SSeparator, SValueContainer } from "./FarmingPosition.styled"
 import { useDepositShare } from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
@@ -27,6 +23,7 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
+import { Farm } from "api/farms"
 
 function FarmingPositionDetailsButton(props: {
   poolId: string
@@ -37,7 +34,11 @@ function FarmingPositionDetailsButton(props: {
 
   return (
     <>
-      <Button size="compact" onClick={() => setFarmDetails(true)}>
+      <Button
+        size="compact"
+        onClick={() => setFarmDetails(true)}
+        css={{ flex: "1 0 0 " }}
+      >
         {t("farms.positions.joinedFarms.button.label")}
       </Button>
 
@@ -90,6 +91,7 @@ const ExitFarmsButton = (props: {
       onClick={() => exit.mutate()}
       isLoading={exit.isLoading}
       disabled={exit.isLoading || account?.isExternalWalletConnected}
+      css={{ flex: "1 0 0 " }}
     >
       <Icon icon={<ExitIcon />} />
       {t("farms.positions.exitFarms.button.label")}
@@ -101,10 +103,12 @@ export const FarmingPosition = ({
   index,
   poolId,
   depositNft,
+  availableYieldFarms,
 }: {
   index: number
   poolId: string
   depositNft: TMiningNftPosition
+  availableYieldFarms: Farm[]
 }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -124,8 +128,10 @@ export const FarmingPosition = ({
   )
 
   return (
-    <SContainer>
-      <div sx={{ flex: "row", justify: "space-between" }}>
+    <>
+      <div
+        sx={{ flex: ["column", "row"], gap: [6, 0], justify: "space-between" }}
+      >
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
         </Text>
@@ -175,8 +181,14 @@ export const FarmingPosition = ({
         )}
       </div>
 
-      <RedepositFarms poolId={poolId} depositNft={depositNft} />
-    </SContainer>
+      {availableYieldFarms.length ? (
+        <RedepositFarms
+          poolId={poolId}
+          depositNft={depositNft}
+          availableYieldFarms={availableYieldFarms}
+        />
+      ) : null}
+    </>
   )
 }
 

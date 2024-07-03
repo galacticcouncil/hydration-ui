@@ -6,7 +6,12 @@ import { SContainer, SContent } from "./Accordion.styled"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { FC, ReactNode, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import {
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  m as motion,
+} from "framer-motion"
 
 type AccordionProps = {
   title: string
@@ -61,19 +66,21 @@ export const Accordion: FC<AccordionProps> = ({
         </div>
       </div>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: "auto" }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            css={{ overflow: "hidden" }}
-          >
-            <SContent columns={columns}>{children}</SContent>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <LazyMotion features={domAnimation}>
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: "auto" }}
+              exit={{ height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              css={{ overflow: "hidden" }}
+            >
+              <SContent columns={columns}>{children}</SContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </LazyMotion>
     </SContainer>
   )
 }

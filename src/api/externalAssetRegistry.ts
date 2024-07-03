@@ -29,6 +29,8 @@ type TRegistryChain = {
   data: (TExternalAsset & { currencyID: string })[]
 }
 
+export type TExternalAssetRegistry = ReturnType<typeof useExternalAssetRegistry>
+
 const HYDRA_PARACHAIN_ID = 2034
 export const ASSET_HUB_ID = 1000
 export const PENDULUM_ID = 2094
@@ -59,6 +61,14 @@ export type RugWarning = {
   type: "supply" | "symbol" | "decimals"
   severity: RugSeverityLevel
   diff: [number | string | BN, number | string | BN]
+}
+
+const createMapFromAssetData = (data?: TExternalAsset[]) => {
+  return new Map(
+    (data || []).map((asset) => {
+      return [asset.id, asset]
+    }),
+  )
 }
 
 const getPendulumAssetId = (assetId: string) => {
@@ -155,9 +165,9 @@ export const getPedulumAssets = async () => {
 /**
  * Used for fetching tokens from supported parachains
  */
-export const useExternalAssetRegistry = () => {
-  const assetHub = useAssetHubAssetRegistry()
-  const pendulum = usePendulumAssetRegistry()
+export const useExternalAssetRegistry = (enabled?: boolean) => {
+  const assetHub = useAssetHubAssetRegistry(enabled)
+  const pendulum = usePendulumAssetRegistry(enabled)
 
   return {
     [ASSET_HUB_ID as number]: assetHub,
@@ -168,7 +178,7 @@ export const useExternalAssetRegistry = () => {
 /**
  * Used for fetching tokens only from Asset Hub parachain
  */
-export const useAssetHubAssetRegistry = () => {
+export const useAssetHubAssetRegistry = (enabled?: boolean) => {
   return useQuery(
     QUERY_KEYS.assetHubAssetRegistry,
     async () => {
@@ -179,10 +189,12 @@ export const useAssetHubAssetRegistry = () => {
       }
     },
     {
+      enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: createMapFromAssetData,
     },
   )
 }
@@ -190,7 +202,7 @@ export const useAssetHubAssetRegistry = () => {
 /**
  * Used for fetching tokens only from Pendulum parachain
  */
-export const usePendulumAssetRegistry = () => {
+export const usePendulumAssetRegistry = (enabled?: boolean) => {
   return useQuery(
     QUERY_KEYS.pendulumAssetRegistry,
     async () => {
@@ -200,10 +212,12 @@ export const usePendulumAssetRegistry = () => {
       }
     },
     {
+      enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      select: createMapFromAssetData,
     },
   )
 }
@@ -359,8 +373,8 @@ export const useExternalTokensRugCheck = () => {
         const externalAssetRegistry = internalToken.parachainId
           ? assetRegistry[+internalToken.parachainId]
           : null
-        const externalToken = externalAssetRegistry?.data?.find(
-          ({ id }) => internalToken.externalId === id,
+        const externalToken = externalAssetRegistry?.data?.get(
+          internalToken.externalId ?? "",
         )
 
         if (!externalToken) return null

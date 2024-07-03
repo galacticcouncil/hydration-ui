@@ -5,7 +5,6 @@ import {
   useXYKPoolDetails,
 } from "sections/pools/PoolsPage.utils"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
-import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import {
   MyPositions,
   MyXYKPositions,
@@ -26,10 +25,9 @@ const Pool = ({ pool }: { pool: TPool }) => {
   if (poolDetails.isInitialLoading) return <PoolSkeleton />
 
   return (
-    <SPoolContainer>
+    <SPoolContainer sx={{ mt: [-22, "inherit"] }}>
       <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
       <MyPositions pool={{ ...pool, ...poolDetails.data }} />
-      <AvailableFarms pool={pool} />
     </SPoolContainer>
   )
 }
@@ -40,10 +38,9 @@ const XYKPool = ({ pool }: { pool: TXYKPool }) => {
   if (poolDetails.isInitialLoading) return <PoolSkeleton />
 
   return (
-    <SPoolContainer>
+    <SPoolContainer sx={{ mt: [-22, "inherit"] }}>
       <PoolDetails pool={{ ...pool, ...poolDetails.data }} />
       <MyXYKPositions pool={{ ...pool, ...poolDetails.data }} />
-      <AvailableFarms pool={pool} />
     </SPoolContainer>
   )
 }

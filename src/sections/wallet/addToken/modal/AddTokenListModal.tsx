@@ -4,6 +4,7 @@ import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Search } from "components/Search/Search"
 import { Text } from "components/Typography/Text/Text"
+import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
@@ -15,6 +16,7 @@ import {
 import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
+import { useSettingsStore } from "state/store"
 import { theme } from "theme"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
@@ -37,6 +39,7 @@ export const AddTokenListModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { assets, isLoaded } = useRpcProvider()
+  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -45,9 +48,17 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const selectedParachain = assetRegistry?.[parachainId]
 
-  const externalAssets = selectedParachain.data ?? []
+  const externalAssets = selectedParachain.data
+    ? Array.from(selectedParachain.data.values())
+    : []
+
   const internalAssets =
     assets?.tokens?.filter(
+      (asset) => asset.parachainId === parachainId.toString(),
+    ) ?? []
+
+  const registeredAssets =
+    assets?.external?.filter(
       (asset) => asset.parachainId === parachainId.toString(),
     ) ?? []
 
@@ -58,7 +69,16 @@ export const AddTokenListModal: React.FC<Props> = ({
     const isChainStored = internalAssets.some(
       (internalAsset) => internalAsset.externalId === asset.id,
     )
+
     if (isChainStored) return false
+
+    const isRegistered = registeredAssets.some(
+      (registeredAsset) => registeredAsset.externalId === asset.id,
+    )
+
+    if (degenMode && isRegistered) {
+      return false
+    }
 
     const isUserStored = isAdded(asset.id)
     if (isUserStored) return false
@@ -108,13 +128,8 @@ export const AddTokenListModal: React.FC<Props> = ({
                         onAssetSelect?.({ ...asset, origin: parachainId })
                       }
                     >
-                      <Text
-                        fs={14}
-                        sx={{ flex: "row", align: "center", gap: 10 }}
-                      >
-                        <Icon icon={<AssetLogo />} size={24} />
-                        {asset.name}
-                      </Text>
+                      <Icon icon={<AssetLogo />} size={24} />
+                      <Text fs={14}>{asset.name}</Text>
                     </AssetRow>
                   ))}
                 </>

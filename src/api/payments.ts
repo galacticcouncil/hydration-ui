@@ -43,8 +43,8 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         return response
           ? response
           : id === native.id
-          ? { id, accepted: true, data: undefined }
-          : { id, accepted: false, data: undefined }
+            ? { id, accepted: true, data: undefined }
+            : { id, accepted: false, data: undefined }
       })
     },
   })

@@ -15,6 +15,8 @@ import { omit } from "utils/rx"
 import { useProviderRpcUrlStore } from "./provider"
 import { PENDULUM_ID } from "./externalAssetRegistry"
 import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { useSettingsStore } from "state/store"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -157,9 +159,12 @@ export const getAssets = async (api: ApiPromise) => {
     api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
+  const degenMode = useSettingsStore.getState().degenMode
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
-  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
+  const { tokens: externalTokens } = degenMode
+    ? ExternalAssetCursor.deref().state
+    : useUserExternalTokenStore.getState()
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
@@ -188,6 +193,7 @@ export const getAssets = async (api: ApiPromise) => {
       if (rawAssetsMeta) {
         const assetsMeta = rawAssetsMeta
           .find((meta) => meta[0].args[0].toString() === id)?.[1]
+          //@ts-ignore
           .unwrap()
 
         meta = {
@@ -266,6 +272,7 @@ export const getAssets = async (api: ApiPromise) => {
               (meta) => meta[0].args[0].toString() === assetId,
             )
             if (meta) {
+              //@ts-ignore
               const underlyingAssetMeta = meta[1].unwrap()
               underlyingAsset = {
                 decimals: Number(
@@ -329,6 +336,7 @@ export const getAssets = async (api: ApiPromise) => {
 
               const meta = (rawAssetsMeta ?? rawAssetsData)
                 .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
+                //@ts-ignore
                 .unwrap()
 
               if (meta) {
@@ -400,13 +408,13 @@ export const getAssets = async (api: ApiPromise) => {
 
         const asset: TToken = {
           ...assetCommon,
-          assetType,
+          assetType: assetType as "Token",
           parachainId:
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
           externalId,
-          iconId: "",
+          iconId: assetCommon.id,
           ...(externalTokenStored
             ? omit(["id", "internalId", "origin"], {
                 ...externalTokenStored,

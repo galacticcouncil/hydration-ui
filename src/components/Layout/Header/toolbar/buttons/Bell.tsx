@@ -7,7 +7,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { useReferendums } from "api/democracy"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import {
   SToolbarButton,
   SToolbarIcon,
