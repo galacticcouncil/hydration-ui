@@ -47,3 +47,5 @@ export const TRILL = 12
 export const QUINTILL = 18
 
 export const DOC_LINK = "https://docs.hydration.net"
+
+export const HYDRA_PARACHAIN_ID = 2034

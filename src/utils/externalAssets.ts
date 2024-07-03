@@ -1,5 +1,5 @@
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { PENDULUM_ID } from "api/externalAssetRegistry"
+import { pendulum } from "api/externalAssetRegistry"
 import { Buffer } from "buffer"
 import {
   InteriorProp,
@@ -22,7 +22,10 @@ export const getPendulumInputData = (
     return {
       parents: "1",
       interior: {
-        [newInteriorType]: [{ Parachain: PENDULUM_ID.toString() }, ...interior],
+        [newInteriorType]: [
+          { Parachain: pendulum.parachainId.toString() },
+          ...interior,
+        ],
       },
     }
   } else {

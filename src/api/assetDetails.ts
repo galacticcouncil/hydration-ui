@@ -13,7 +13,7 @@ import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { omit } from "utils/rx"
 import { useProviderRpcUrlStore } from "./provider"
-import { PENDULUM_ID } from "./externalAssetRegistry"
+import { pendulum } from "./externalAssetRegistry"
 import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
@@ -396,7 +396,7 @@ export const getAssets = async (api: ApiPromise) => {
 
         const externalId =
           location && !location.isNone
-            ? parachainId === PENDULUM_ID.toString()
+            ? parachainId === pendulum.parachainId.toString()
               ? getGeneralKey(location)
               : getGeneralIndex(location)
             : undefined

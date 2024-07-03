@@ -9,6 +9,7 @@ import { MemepadHeader } from "./components/MemepadHeader"
 import { useMemepadForms } from "./form/MemepadForm.utils"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
+import { Spinner } from "components/Spinner/Spinner"
 
 export const MemepadPage = () => {
   const {
@@ -20,6 +21,7 @@ export const MemepadPage = () => {
     isSubmitted,
     summary,
     reset,
+    isLoading,
   } = useMemepadForms()
 
   const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
@@ -52,7 +54,14 @@ export const MemepadPage = () => {
             <div>
               <Stepper fullWidth steps={steps} />
               <Spacer size={60} />
-              {currentForm}
+              {isLoading ? (
+                <Spinner size={120} sx={{ mx: "auto", my: 50 }} />
+              ) : (
+                currentForm
+              )}
+              <pre sx={{ color: "white" }}>
+                {JSON.stringify(summary, null, 2)}
+              </pre>
             </div>
             <div>
               <MemepadVisual />

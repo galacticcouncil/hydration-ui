@@ -15,6 +15,17 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
     <form autoComplete="off">
       <div sx={{ flex: "column", gap: 8 }}>
         <Controller
+          name="id"
+          control={form.control}
+          render={({ field }) => (
+            <InputBox
+              label="Asset ID"
+              error={form.formState.errors.id?.message}
+              {...field}
+            />
+          )}
+        />
+        <Controller
           name="name"
           control={form.control}
           render={({ field }) => (

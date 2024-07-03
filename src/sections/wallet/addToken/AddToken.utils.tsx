@@ -11,8 +11,8 @@ import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import {
-  ASSET_HUB_ID,
-  PENDULUM_ID,
+  assethub,
+  pendulum,
   useExternalAssetRegistry,
 } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore } from "api/provider"
@@ -158,7 +158,10 @@ const internalIds = new Map([
   ["2230", "1000073"],
 ])
 
-export const SELECTABLE_PARACHAINS_IDS = [ASSET_HUB_ID, PENDULUM_ID]
+export const SELECTABLE_PARACHAINS_IDS = [
+  assethub.parachainId,
+  pendulum.parachainId,
+]
 
 export const PARACHAIN_CONFIG: {
   [x: number]: {
@@ -168,7 +171,7 @@ export const PARACHAIN_CONFIG: {
     interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
   }
 } = {
-  [ASSET_HUB_ID]: {
+  [assethub.parachainId]: {
     palletInstance: "50",
     network: "polkadot",
     parents: "1",

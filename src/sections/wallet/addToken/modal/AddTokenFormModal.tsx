@@ -19,7 +19,7 @@ import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
-import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
+import { assethub, pendulum } from "api/externalAssetRegistry"
 import { getPendulumInputData } from "utils/externalAssets"
 import { omit } from "utils/rx"
 
@@ -67,11 +67,11 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const onSubmit = async () => {
     if (!asset) throw new Error("Selected asset cannot be added")
 
-    const { parents, palletInstance } = PARACHAIN_CONFIG[ASSET_HUB_ID]
+    const { parents, palletInstance } = PARACHAIN_CONFIG[assethub.parachainId]
 
     let input: TExternalAssetInput | undefined = undefined
 
-    if (asset.origin === ASSET_HUB_ID) {
+    if (asset.origin === assethub.parachainId) {
       input = {
         parents,
         interior: {
@@ -90,7 +90,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       }
     }
 
-    if (asset.origin === PENDULUM_ID && asset.location) {
+    if (asset.origin === pendulum.parachainId && asset.location) {
       input = getPendulumInputData(asset.location)
     }
 

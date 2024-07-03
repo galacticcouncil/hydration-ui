@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useEvent } from "react-use"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
@@ -8,8 +8,16 @@ import { required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
+import {
+  assethub,
+  useAssetHubAssetRegistry,
+} from "api/externalAssetRegistry/assethub"
+import { useStore } from "state/store"
+import { useMutation } from "@tanstack/react-query"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 export type MemepadStep1Values = {
+  id: string
   name: string
   symbol: string
   supply: string
@@ -32,8 +40,12 @@ export type MemepadSummaryValues = Partial<
 
 export const useMemepadStep1Form = () => {
   const { account } = useAccount()
+
+  const id = useCreateAssetId()
+
   return useForm<MemepadStep1Values>({
     defaultValues: {
+      id: id?.toString() ?? "",
       name: "",
       symbol: "",
       supply: "",
@@ -41,6 +53,7 @@ export const useMemepadStep1Form = () => {
     },
     resolver: zodResolver(
       z.object({
+        id: required,
         name: required,
         symbol: required,
         supply: required,
@@ -88,6 +101,8 @@ export const useMemepadForms = () => {
   const formStep2 = useMemepadStep2Form()
   const formStep3 = useMemepadStep3Form()
 
+  const createToken = useCreateToken()
+
   const reset = () => {
     setStep(0)
     setSummary(null)
@@ -112,8 +127,9 @@ export const useMemepadForms = () => {
 
   const submitNext = () => {
     if (step === 0) {
-      return formStep1.handleSubmit((values) => {
+      return formStep1.handleSubmit(async (values) => {
         console.log(values)
+        await createToken.mutateAsync(values)
         setNextStep(values)
       })()
     }
@@ -149,6 +165,8 @@ export const useMemepadForms = () => {
   const currentForm = formComponents[step]
   const summaryStep = formComponents.length
 
+  const isLoading = createToken.isLoading
+
   return {
     step,
     formStep1,
@@ -161,5 +179,54 @@ export const useMemepadForms = () => {
     summary,
     submitNext,
     reset,
+    isLoading,
   }
+}
+
+export const useCreateAssetId = () => {
+  const { data } = useAssetHubAssetRegistry()
+
+  console.log({ data })
+
+  const id = useMemo(() => {
+    if (!data) return undefined
+
+    const assets = [...data]
+
+    let smallestId = 1
+
+    assets.sort((a, b) => Number(a.id) - Number(b.id))
+
+    for (let i = 0; i < assets.length; i++) {
+      if (Number(assets[i].id) === smallestId) {
+        smallestId++
+      } else if (Number(assets[i].id) > smallestId) {
+        break
+      }
+    }
+
+    return smallestId
+  }, [data])
+
+  return id
+}
+
+export const useCreateToken = () => {
+  const { account } = useAccount()
+  const { createTransaction } = useStore()
+
+  return useMutation(async (values: MemepadStep1Values) => {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(assethub.ws)
+
+    if (!api) throw new Error("Asset Hub is not connected")
+    if (!account) throw new Error("Account is not connected")
+
+    return await createTransaction({
+      tx: api.tx.utility.batchAll([
+        api.tx.assets.create(values.id, values.creatorAccount, values.supply),
+        api.tx.assets.setMetadata(values.id, values.name, values.symbol, 12),
+      ]),
+    })
+  })
 }
