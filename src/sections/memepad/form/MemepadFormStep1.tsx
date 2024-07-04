@@ -59,13 +59,13 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           )}
         />
         <Controller
-          name="creatorAccount"
+          name="account"
           control={form.control}
           render={({ field }) => (
             <InputBox
-              label={t("wallet.addToken.form.creatorAccount")}
+              label={t("wallet.addToken.form.account")}
               withLabel
-              error={form.formState.errors.creatorAccount?.message}
+              error={form.formState.errors.account?.message}
               {...field}
             />
           )}

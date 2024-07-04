@@ -1,11 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useAcountAssets } from "api/assetDetails"
+import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
+import { useForm } from "react-hook-form"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useSettingsStore } from "state/store"
+import { BN_0 } from "utils/constants"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
 
@@ -78,4 +82,32 @@ export const useAllowedXYKPoolAssets = () => {
       return shouldBeVisible
     })
   }, [degenMode, accountAssets, assets.all, assets.tradeAssets, isAdded])
+}
+
+export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
+  const { isLoaded, assets } = useRpcProvider()
+
+  const { account } = useAccount()
+
+  const assetAMeta = isLoaded ? assets.getAsset(assetA ?? "") : null
+  const assetBMeta = isLoaded ? assets.getAsset(assetB ?? "") : null
+
+  const { data: balanceA } = useTokenBalance(assetA, account?.address)
+  const { data: balanceB } = useTokenBalance(assetB, account?.address)
+
+  return useForm<CreateXYKPoolFormData>({
+    mode: "onChange",
+    resolver: zodResolver(
+      createXYKPoolFormSchema(
+        balanceA?.balance ?? BN_0,
+        assetAMeta?.decimals ?? 0,
+        balanceB?.balance ?? BN_0,
+        assetBMeta?.decimals ?? 0,
+      ),
+    ),
+    defaultValues: {
+      assetA: "",
+      assetB: "",
+    },
+  })
 }

@@ -542,7 +542,7 @@
   "wallet.addToken.form.symbol": "Symbol",
   "wallet.addToken.form.decimals": "Amount of decimals",
   "wallet.addToken.form.supply": "Supply",
-  "wallet.addToken.form.creatorAccount": "Creator account",
+  "wallet.addToken.form.account": "Creator account",
   "wallet.addToken.form.assetToTransfer": "Asset to transfer",
   "wallet.addToken.form.hydrationAddress": "To Hydration address",
   "wallet.addToken.form.multilocation.placeholder": "Paste multillocation here",

@@ -22,6 +22,8 @@ import { useMemo } from "react"
 import { omit } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
 import { getPendulumInputData } from "utils/externalAssets"
+import { ISubmittableResult } from "@polkadot/types/types"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 
 const pink = {
   decimals: 10,
@@ -252,10 +254,7 @@ export const useRegisterToken = ({
       {
         toast,
         onSuccess: async (res) => {
-          const data = res.events.find(
-            (event) => event.event.method === "Registered",
-          )?.event.data as { assetId?: u32 }
-
+          const data = getInternalIdFromResult(res)
           const assetId = data?.assetId?.toString()
 
           if (assetId) onSuccess(assetId, asset)
@@ -477,4 +476,56 @@ export const useRegisteredExternalTokens = () => {
       return tokens[dataEnv]
     }
   }, [assets.external, dataEnv, isLoaded, degenMode, externalAssets, tokens])
+}
+
+export type CreateTokenValues = {
+  id: string
+  name: string
+  symbol: string
+  supply: string
+  decimals: number
+  account: string
+}
+
+export const useCreateToken = ({
+  onSuccess,
+}: {
+  onSuccess?: () => ISubmittableResult
+} = {}) => {
+  const { createTransaction } = useStore()
+
+  return useMutation(async (values: CreateTokenValues) => {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(assethub.ws)
+
+    if (!api) throw new Error("Asset Hub is not connected")
+
+    return await createTransaction(
+      {
+        tx: api.tx.utility.batchAll([
+          api.tx.assets.create(values.id, values.account, values.supply),
+          api.tx.assets.setMetadata(
+            values.id,
+            values.name,
+            values.symbol,
+            values.decimals,
+          ),
+        ]),
+      },
+      {
+        onSuccess,
+      },
+    )
+  })
+}
+
+export const getInternalIdFromResult = (res: ISubmittableResult) => {
+  const data = res.events.find((event) => event.event.method === "Registered")
+    ?.event.data
+
+  if (!data) {
+    return { assetId: undefined }
+  }
+
+  return data as { assetId?: u32 }
 }

@@ -1,37 +1,32 @@
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ISubmittableResult } from "@polkadot/types/types"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   assethub,
   useGetNextAssetHubId,
 } from "api/externalAssetRegistry/assethub"
-import { useCallback, useState } from "react"
+import { useRefetchProviderData } from "api/provider"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useEvent } from "react-use"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
 import {
+  CreateTokenValues,
+  getInternalIdFromResult,
+  useCreateToken,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useStore } from "state/store"
+import { pick } from "utils/rx"
 import { required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import { useRefetchProviderData } from "api/provider"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { omit } from "utils/rx"
+import {
+  CreateXYKPoolFormData,
+  useCreateXYKPoolForm,
+} from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
 
-export type MemepadStep1Values = {
-  id: string
-  name: string
-  symbol: string
-  supply: string
-  decimals: number
+export type MemepadStep1Values = CreateTokenValues & {
   origin: number
-  creatorAccount: string
 }
 
 export type MemepadStep2Values = {
@@ -39,14 +34,11 @@ export type MemepadStep2Values = {
   address: string
 }
 
-export type MemepadStep3Values = {
-  assetA: string
-  assetB: string
-}
+export type MemepadStep3Values = CreateXYKPoolFormData
 
 export type MemepadSummaryValues = Partial<
   MemepadStep1Values & MemepadStep2Values & MemepadStep3Values
->
+> & { internalId?: string; xykPoolAssetId?: string }
 
 export const useMemepadStep1Form = () => {
   const { account } = useAccount()
@@ -59,7 +51,7 @@ export const useMemepadStep1Form = () => {
       supply: "",
       decimals: 12,
       origin: assethub.parachainId,
-      creatorAccount: account?.address ?? "",
+      account: account?.address ?? "",
     },
     resolver: zodResolver(
       z.object({
@@ -68,7 +60,7 @@ export const useMemepadStep1Form = () => {
         supply: required,
         decimals: z.number().min(0).max(18),
         origin: z.number().min(0),
-        creatorAccount: required,
+        account: required,
       }),
     ),
   })
@@ -89,21 +81,6 @@ export const useMemepadStep2Form = () => {
   })
 }
 
-export const useMemepadStep3Form = () => {
-  return useForm<MemepadStep3Values>({
-    defaultValues: {
-      assetA: "",
-      assetB: "",
-    },
-    resolver: zodResolver(
-      z.object({
-        assetA: required,
-        assetB: required,
-      }),
-    ),
-  })
-}
-
 export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
@@ -113,12 +90,18 @@ export const useMemepadForms = () => {
 
   const formStep1 = useMemepadStep1Form()
   const formStep2 = useMemepadStep2Form()
-  const formStep3 = useMemepadStep3Form()
+  const formStep3 = useCreateXYKPoolForm(
+    summary?.internalId,
+    summary?.xykPoolAssetId,
+  )
 
   const createToken = useCreateToken()
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
-      addToken({ ...omit(["location"], asset), internalId })
+      addToken({
+        ...pick(asset, ["name", "symbol", "decimals", "origin", "id"]),
+        internalId,
+      })
       refetchProvider()
     },
   })
@@ -133,7 +116,13 @@ export const useMemepadForms = () => {
   const formComponents = [
     <MemepadFormStep1 form={formStep1} />,
     <MemepadFormStep2 form={formStep2} />,
-    <MemepadFormStep3 form={formStep3} />,
+    <MemepadFormStep3
+      form={formStep3}
+      assetA={summary?.internalId}
+      onAssetBSelect={(asset) =>
+        setSummary((prev) => ({ ...prev, xykPoolAssetId: asset.id }))
+      }
+    />,
   ]
 
   const formInstances = [formStep1, formStep2, formStep3]
@@ -157,9 +146,14 @@ export const useMemepadForms = () => {
         }
 
         await createToken.mutateAsync(token)
-        await registerToken.mutateAsync(token)
 
-        setNextStep(token)
+        const regTokenResult = await registerToken.mutateAsync(token)
+        const { assetId } = getInternalIdFromResult(regTokenResult)
+
+        setNextStep({
+          ...token,
+          internalId: assetId?.toString() ?? "",
+        })
       })()
     }
 
@@ -178,23 +172,10 @@ export const useMemepadForms = () => {
     }
   }
 
-  const onBeforeUnload = useCallback(
-    (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault()
-        e.returnValue =
-          "Are you sure you want to cancel? All of the progress will be lost."
-      }
-    },
-    [isDirty],
-  )
-
-  useEvent("beforeunload", onBeforeUnload)
-
   const currentForm = formComponents[step]
   const summaryStep = formComponents.length
 
-  const isLoading = createToken.isLoading
+  const isLoading = createToken.isLoading || registerToken.isLoading
 
   return {
     step,
@@ -210,38 +191,4 @@ export const useMemepadForms = () => {
     reset,
     isLoading,
   }
-}
-
-export const useCreateToken = ({
-  onSuccess,
-}: {
-  onSuccess?: () => ISubmittableResult
-} = {}) => {
-  const { account } = useAccount()
-  const { createTransaction } = useStore()
-
-  return useMutation(async (values: MemepadStep1Values) => {
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(assethub.ws)
-
-    if (!api) throw new Error("Asset Hub is not connected")
-    if (!account) throw new Error("Account is not connected")
-
-    return await createTransaction(
-      {
-        tx: api.tx.utility.batchAll([
-          api.tx.assets.create(values.id, values.creatorAccount, values.supply),
-          api.tx.assets.setMetadata(
-            values.id,
-            values.name,
-            values.symbol,
-            values.decimals,
-          ),
-        ]),
-      },
-      {
-        onSuccess,
-      },
-    )
-  })
 }

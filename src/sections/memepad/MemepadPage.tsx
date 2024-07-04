@@ -10,8 +10,10 @@ import { useMemepadForms } from "./form/MemepadForm.utils"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
 import { Spinner } from "components/Spinner/Spinner"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const MemepadPage = () => {
+  const { isLoaded } = useRpcProvider()
   const {
     step,
     currentForm,
@@ -54,7 +56,7 @@ export const MemepadPage = () => {
             <div>
               <Stepper fullWidth steps={steps} />
               <Spacer size={60} />
-              {isLoading ? (
+              {!isLoaded || isLoading ? (
                 <Spinner size={120} sx={{ mx: "auto", my: 50 }} />
               ) : (
                 currentForm

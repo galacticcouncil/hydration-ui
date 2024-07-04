@@ -1,6 +1,7 @@
 import { useLocation } from "@tanstack/react-location"
 import { Transition } from "history"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useEvent } from "react-use"
 
 export const useRouteBlock = (when: boolean) => {
   const location = useLocation()
@@ -28,6 +29,18 @@ export const useRouteBlock = (when: boolean) => {
 
     return unblock
   }, [location, when])
+
+  const onBeforeUnload = useCallback(
+    (e: BeforeUnloadEvent) => {
+      if (when) {
+        e.preventDefault()
+        e.returnValue = ""
+      }
+    },
+    [when],
+  )
+
+  useEvent("beforeunload", onBeforeUnload)
 
   function cancel() {
     hasAccepted.current = false

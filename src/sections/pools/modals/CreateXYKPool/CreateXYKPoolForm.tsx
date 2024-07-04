@@ -1,19 +1,13 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { useRpcProvider } from "providers/rpcProvider"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, UseFormReturn } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { ToastMessage, useStore } from "state/store"
-import { BN_0, BN_1 } from "utils/constants"
-import {
-  CreateXYKPoolFormData,
-  createXYKPoolFormSchema,
-} from "./CreateXYKPoolForm.utils"
+import { BN_1 } from "utils/constants"
+import { CreateXYKPoolFormData } from "./CreateXYKPoolForm.utils"
 import BigNumber from "bignumber.js"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useQueryClient } from "@tanstack/react-query"
@@ -21,14 +15,16 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useState } from "react"
 
 type CreateXYKPoolFormProps = {
+  form: UseFormReturn<CreateXYKPoolFormData>
   assetA: string
   assetB: string
-  onAssetAOpen: () => void
-  onAssetBOpen: () => void
-  onClose: () => void
+  onAssetAOpen?: () => void
+  onAssetBOpen?: () => void
+  onClose?: () => void
 }
 
 export const CreateXYKPoolForm = ({
+  form,
   assetA,
   assetB,
   onClose,
@@ -42,27 +38,6 @@ export const CreateXYKPoolForm = ({
 
   const assetAMeta = assets.getAsset(assetA ?? "")
   const assetBMeta = assets.getAsset(assetB ?? "")
-
-  const { account } = useAccount()
-
-  const { data: balanceA } = useTokenBalance(assetA, account?.address)
-  const { data: balanceB } = useTokenBalance(assetB, account?.address)
-
-  const form = useForm<CreateXYKPoolFormData>({
-    mode: "onChange",
-    resolver: zodResolver(
-      createXYKPoolFormSchema(
-        balanceA?.balance ?? BN_0,
-        assetAMeta.decimals,
-        balanceB?.balance ?? BN_0,
-        assetBMeta.decimals,
-      ),
-    ),
-    defaultValues: {
-      assetA: "",
-      assetB: "",
-    },
-  })
 
   const assetAValue = BigNumber(form.watch("assetA"))
   const assetBValue = BigNumber(form.watch("assetB"))
@@ -116,7 +91,7 @@ export const CreateXYKPoolForm = ({
         onClose,
         onBack: () => {},
         onSubmitted: () => {
-          onClose()
+          onClose?.()
           form.reset()
         },
         onSuccess: () => {
@@ -159,7 +134,6 @@ export const CreateXYKPoolForm = ({
       sx={{
         flex: "column",
         justify: "space-between",
-        minHeight: "100%",
       }}
     >
       <Controller
