@@ -75,8 +75,9 @@ const NativeAssetDetails = ({
     memo[type] = (
       <Trans
         t={t}
-        i18nKey={`wallet.assets.table.details.unlock.${msType}`}
+        i18nKey={`wallet.assets.table.details.${unlocable.value.isZero() ? "clear" : "unlock"}.${msType}`}
         tOptions={{
+          amount: unlocable.ids.length,
           value: unlocable.value,
         }}
       >
@@ -86,7 +87,10 @@ const NativeAssetDetails = ({
     return memo
   }, {} as ToastMessage)
 
-  const unlock = useUnlockTokens({ ids: unlocable.ids, toast })
+  const unlock = useUnlockTokens({
+    ids: unlocable.ids,
+    toast,
+  })
 
   return (
     <SContainer hasChain={false} isNativeAsset>
