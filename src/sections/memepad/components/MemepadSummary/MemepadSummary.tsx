@@ -58,7 +58,9 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
                   {t(`wallet.addToken.form.${key}` as any)}
                 </Text>
                 <Text fs={14} color="brightBlue300">
-                  {value.length > 10 ? value.slice(0, 10) : value}
+                  {typeof value === "string" && value.length > 10
+                    ? value.slice(0, 10)
+                    : value}
                 </Text>
               </SRowItem>
             ))}
