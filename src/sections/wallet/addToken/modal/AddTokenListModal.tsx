@@ -1,5 +1,8 @@
+import * as React from "react"
+import { AssetId } from "@galacticcouncil/ui"
+import { createComponent } from "@lit-labs/react"
+import { useMemo } from "react"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -19,6 +22,12 @@ import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { useSettingsStore } from "state/store"
 import { theme } from "theme"
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -52,30 +61,39 @@ export const AddTokenListModal: React.FC<Props> = ({
     ? Array.from(selectedParachain.data.values())
     : []
 
-  const internalAssets =
-    assets?.tokens?.filter(
-      (asset) => asset.parachainId === parachainId.toString(),
-    ) ?? []
+  const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
+    const internalAssets =
+      assets?.tokens?.filter(
+        (asset) => asset.parachainId === parachainId.toString(),
+      ) ?? []
 
-  const registeredAssets =
-    assets?.external?.filter(
-      (asset) => asset.parachainId === parachainId.toString(),
-    ) ?? []
+    const internalAssetsMap = new Map(
+      internalAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    const registeredAssets =
+      assets?.external?.filter(
+        (asset) => asset.parachainId === parachainId.toString(),
+      ) ?? []
+
+    const registeredAssetsMap = new Map(
+      registeredAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    return {
+      registeredAssetsMap,
+      internalAssetsMap,
+    }
+  }, [assets, parachainId])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
     if (isDOT) return false
 
-    const isChainStored = internalAssets.some(
-      (internalAsset) => internalAsset.externalId === asset.id,
-    )
-
+    const isChainStored = !!internalAssetsMap.get(asset.id)
     if (isChainStored) return false
 
-    const isRegistered = registeredAssets.some(
-      (registeredAsset) => registeredAsset.externalId === asset.id,
-    )
-
+    const isRegistered = !!registeredAssetsMap.get(asset.id)
     if (degenMode && isRegistered) {
       return false
     }
@@ -128,7 +146,18 @@ export const AddTokenListModal: React.FC<Props> = ({
                         onAssetSelect?.({ ...asset, origin: parachainId })
                       }
                     >
-                      <Icon icon={<AssetLogo />} size={24} />
+                      <Icon
+                        icon={
+                          <UigcAssetId
+                            symbol={
+                              registeredAssetsMap.get(asset.id)
+                                ? asset.symbol
+                                : ""
+                            }
+                          />
+                        }
+                        size={24}
+                      />
                       <Text fs={14}>{asset.name}</Text>
                     </AssetRow>
                   ))}
