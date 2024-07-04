@@ -352,7 +352,6 @@ const NativeLocks = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            unlocable.value.isZero() ||
             !unlocable.ids.length ||
             unlock.isLoading
           }
