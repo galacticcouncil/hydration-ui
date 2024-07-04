@@ -9,15 +9,15 @@ import { getFloatingPointAmount } from "utils/balance"
 import { BN_0, BN_NAN, BN_QUINTILL } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useFee, useTVL } from "api/stats"
 import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
+import { useAssets } from "api/assetDetails"
 
 const withoutRefresh = true
 
 export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
-  const { assets } = useRpcProvider()
+  const { native, getAsset } = useAssets()
   const apiIds = useApiIds()
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const { getData } = useLiquidityPositionData()
@@ -84,7 +84,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       const shares = omnipoolAsset.data.shares.toString()
       const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
 
-      const meta = assets.getAsset(omnipoolAssetId)
+      const meta = getAsset(omnipoolAssetId)
 
       const spotPrice = spotPrices.find(
         (sp) => sp?.data?.tokenIn === omnipoolAssetId,
@@ -120,15 +120,13 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       )
 
       const fee =
-        assets.native.id === omnipoolAssetId
+        native.id === omnipoolAssetId
           ? BN_0
           : BN(
               fees?.data?.find(
                 (fee) => fee.asset_id === Number(omnipoolAssetId),
               )?.projected_apr_perc ?? BN_NAN,
             )
-
-      const iconIds = assets.isStableSwap(meta) ? meta.assets : meta.id
 
       return {
         id: omnipoolAssetId,
@@ -137,7 +135,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         tvl,
         volume,
         pol,
-        iconIds,
+        iconIds: meta.iconId,
         cap: omnipoolAssetCap,
         volumePol: BN(0),
         price: spotPrice,
@@ -148,24 +146,25 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     })
     return rows
   }, [
-    assets,
-    fees.data,
-    fees.isInitialLoading,
+    fees?.data,
+    fees?.isInitialLoading,
+    getAsset,
     getData,
+    native.id,
     omnipoolAssets.data,
     positions,
     spotPrices,
     tvls.data,
-    volumes.data,
+    volumes?.data,
     volumes.isInitialLoading,
   ])
     .filter(isNotNil)
     .sort((assetA, assetB) => {
-      if (assetA.id === assets.native.id) {
+      if (assetA.id === native.id) {
         return -1
       }
 
-      if (assetB.id === assets.native.id) {
+      if (assetB.id === native.id) {
         return 1
       }
 

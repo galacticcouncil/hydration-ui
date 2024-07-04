@@ -13,7 +13,6 @@ import {
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { useToast } from "state/toasts"
 import { useRefetchProviderData } from "api/provider"
@@ -22,6 +21,7 @@ import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
 import { getPendulumInputData } from "utils/externalAssets"
 import { omit } from "utils/rx"
+import { useAssets } from "api/assetDetails"
 
 type Props = {
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }
@@ -36,7 +36,7 @@ type FormFields = {
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { external } = useAssets()
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
   const { add } = useToast()
@@ -49,7 +49,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     assetName: asset.name,
   })
 
-  const chainStored = assets.external.find(
+  const chainStored = external.find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),

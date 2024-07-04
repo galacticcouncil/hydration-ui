@@ -338,3 +338,38 @@ export const isJson = (item: string) => {
 
   return typeof value === "object" && value !== null
 }
+
+const deepEqual = (obj1: any, obj2: any): boolean => {
+  if (obj1 === obj2) return true // If they are the same reference or both are null
+  if (obj1 == null || obj2 == null) return false // If either is null (and not both)
+  if (typeof obj1 !== "object" || typeof obj2 !== "object") {
+    console.log("here", obj1, obj2)
+    return false // If either is not an object
+  }
+
+  let keys1 = Object.keys(obj1)
+  let keys2 = Object.keys(obj2)
+  if (keys1.length !== keys2.length) {
+    console.log("here")
+    return false // Different number of properties
+  }
+
+  for (let key of keys1) {
+    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false // If values differ
+  }
+
+  return true
+}
+
+export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
+  if (arr1.length !== arr2.length) return false
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (!deepEqual(arr1[i], arr2[i])) {
+      console.log(arr1[i], arr2[i])
+      return false
+    }
+  }
+
+  return true
+}

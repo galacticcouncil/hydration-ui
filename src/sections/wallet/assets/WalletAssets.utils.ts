@@ -7,8 +7,8 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
-import { useShareTokens } from "api/xyk"
 import { useAccountBalances } from "api/accountBalances"
+import { useAssets } from "api/assetDetails"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -48,13 +48,13 @@ export const useWalletAssetsTotals = ({
   address?: string
 } = {}) => {
   const { account } = useAccount()
+  const { shareTokens } = useAssets()
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
   const balances = useAccountBalances(address ?? account?.address, true)
-  const shareTokens = useShareTokens()
-  const shareTokenIds =
-    shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
+
+  const shareTokenIds = shareTokens.map((shareToken) => shareToken.id) ?? []
 
   const shareTokenBalances = balances.data?.balances.filter((token) =>
     shareTokenIds.find((shareTokenId) => shareTokenId === token.accountId),
@@ -87,15 +87,15 @@ export const useWalletAssetsTotals = ({
   const xykTotal = useMemo(() => {
     if (!shareTokenBalances || !spotPrices.data) return BN_0
     return shareTokenBalances.reduce<BN>((acc, shareTokenBalance) => {
-      const shareToken = shareTokens.data?.find(
-        (shareToken) => shareToken.shareTokenId === shareTokenBalance.accountId,
+      const shareToken = shareTokens.find(
+        (shareToken) => shareToken.id === shareTokenBalance.accountId,
       )
       if (
         shareTokenBalance &&
         shareToken &&
         shareTokenBalance.freeBalance.gt(0)
       ) {
-        const meta = shareToken.meta
+        const meta = shareToken
         const spotPrice = spotPrices.data.find(
           (spotPrice) => spotPrice.tokenIn === meta.id,
         )
@@ -108,7 +108,7 @@ export const useWalletAssetsTotals = ({
       }
       return acc
     }, BN_0)
-  }, [shareTokenBalances, shareTokens.data, spotPrices.data])
+  }, [shareTokenBalances, shareTokens, spotPrices.data])
 
   const balanceTotal = assetsTotal
     .plus(farmsTotal.value)

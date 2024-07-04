@@ -13,6 +13,7 @@ import {
   safeConvertAddressH160,
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
+import { useAssets } from "./assetDetails"
 
 export const useApiIds = () => {
   const { api } = useRpcProvider()
@@ -69,8 +70,9 @@ const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
 }
 
 export const useInsufficientFee = (assetId: string, address: string) => {
-  const { api, assets } = useRpcProvider()
-  const { isSufficient } = assets.getAsset(assetId)
+  const { api } = useRpcProvider()
+  const { native, getAssetWithFallback } = useAssets()
+  const { isSufficient } = getAssetWithFallback(assetId)
 
   const isValidAddress =
     safeConvertAddressSS58(address, 0) != null ||
@@ -108,8 +110,8 @@ export const useInsufficientFee = (assetId: string, address: string) => {
   return fee
     ? {
         value: fee,
-        displayValue: scaleHuman(fee, assets.native.decimals),
-        symbol: assets.native.symbol,
+        displayValue: scaleHuman(fee, native.decimals),
+        symbol: native.symbol,
       }
     : undefined
 }

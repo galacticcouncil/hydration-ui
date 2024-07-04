@@ -13,6 +13,7 @@ import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useAssets } from "api/assetDetails"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -23,8 +24,16 @@ export const useAssetsData = ({
   search?: string
   address?: string
 } = {}) => {
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
+  const {
+    tradable,
+    stableswap,
+    external,
+    getAsset,
+    tokens,
+    native,
+    getAssetWithFallback,
+  } = useAssets()
   const address = givenAddress ?? account?.address
 
   const balances = useAccountBalances(address, true)
@@ -32,12 +41,11 @@ export const useAssetsData = ({
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
       const filteredTokens = balances.data.balances.filter((balance) => {
-        const meta = assets.getAsset(balance.id)
+        if (balance.id === native.id) return false
 
-        return (
-          (meta.isToken || meta.isStableSwap || meta.isExternal) &&
-          !meta.isNative
-        )
+        const meta = getAsset(balance.id)
+
+        return meta?.isToken || meta?.isStableSwap || meta?.isExternal
       })
 
       return nativeTokenWithBalance.total.gt(0)
@@ -46,7 +54,7 @@ export const useAssetsData = ({
     }
 
     return []
-  }, [assets, balances.data, nativeTokenWithBalance])
+  }, [balances.data, getAsset, nativeTokenWithBalance, native])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
     (tokenWithBalance) => tokenWithBalance.id,
@@ -58,20 +66,18 @@ export const useAssetsData = ({
   const spotPrices = useDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
-    () => [...assets.tokens, ...assets.stableswap, ...assets.external],
-    [assets.external, assets.stableswap, assets.tokens],
+    () => [...tokens, ...stableswap, ...external],
+    [external, stableswap, tokens],
   )
 
   const data = useMemo(() => {
     if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      let { decimals, id, name, symbol, isExternal } = assets.getAsset(
+      let { decimals, id, name, symbol, isExternal } = getAssetWithFallback(
         balance.id,
       )
 
-      const inTradeRouter = assets.tradeAssets.some(
-        (tradeAsset) => tradeAsset.id === id,
-      )
+      const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
       const spotPrice =
         spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
           ?.spotPrice ?? BN_NAN
@@ -126,7 +132,7 @@ export const useAssetsData = ({
             if (tokenWithBalance) {
               acc.push(tokenWithBalance)
             } else {
-              const inTradeRouter = assets.tradeAssets.some(
+              const inTradeRouter = tradable.some(
                 (tradeAsset) => tradeAsset.id === id,
               )
 
@@ -180,14 +186,15 @@ export const useAssetsData = ({
 
     return search ? arraySearch(result, search, ["symbol", "name"]) : result
   }, [
-    acceptedCurrencies.data,
-    assets,
-    currencyId,
-    spotPrices.data,
     tokensWithBalance,
-    search,
+    spotPrices.data,
     isAllAssets,
     allAssets,
+    search,
+    tradable,
+    acceptedCurrencies.data,
+    currencyId,
+    getAssetWithFallback,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
@@ -196,17 +203,15 @@ export const useAssetsData = ({
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]
 
 export const useLockedValues = (id: string) => {
-  const { assets } = useRpcProvider()
-  const isNativeToken = id === assets.native.id
+  const { native } = useAssets()
+  const isNativeToken = id === native.id
 
-  const locks = useTokenLocks(isNativeToken ? assets.native.id : undefined)
-  const spotPrice = useDisplayPrice(
-    isNativeToken ? assets.native.id : undefined,
-  )
+  const locks = useTokenLocks(isNativeToken ? native.id : undefined)
+  const spotPrice = useDisplayPrice(isNativeToken ? native.id : undefined)
 
   const data = useMemo(() => {
     if (locks.data && spotPrice.data) {
-      const { decimals } = assets.native
+      const { decimals } = native
       const spotPriceData = spotPrice.data.spotPrice
 
       const lockVesting = locks.data.find(
@@ -236,7 +241,7 @@ export const useLockedValues = (id: string) => {
         lockedStakingDisplay,
       }
     }
-  }, [assets.native, id, locks.data, spotPrice.data])
+  }, [native, id, locks.data, spotPrice.data])
 
   return {
     data,
@@ -246,10 +251,8 @@ export const useLockedValues = (id: string) => {
 
 export const useLockedNativeTokens = () => {
   const {
-    assets: {
-      native: { id, decimals },
-    },
-  } = useRpcProvider()
+    native: { decimals, id },
+  } = useAssets()
   const locks = useTokenLocks(id)
   const spotPrice = useDisplayPrice(id)
 
@@ -284,9 +287,7 @@ export const useLockedNativeTokens = () => {
 }
 
 export const useUnlockableTokens = () => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const locks = useTokenLocks(native.id)
   const votes = useAccountVotes()
   const spotPrice = useDisplayPrice(native.id)
@@ -322,8 +323,9 @@ export const useUnlockTokens = ({
   ids: string[]
   toast: ToastMessage
 }) => {
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { account } = useAccount()
+  const { native } = useAssets()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
@@ -345,7 +347,7 @@ export const useUnlockTokens = ({
         toast,
         onSuccess: () => {
           queryClient.invalidateQueries(
-            QUERY_KEYS.lock(account?.address, assets.native.id),
+            QUERY_KEYS.lock(account?.address, native.id),
           )
         },
       },

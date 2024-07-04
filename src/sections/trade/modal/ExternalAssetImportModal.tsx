@@ -1,8 +1,8 @@
+import { TExternal, useAssets } from "api/assetDetails"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -23,13 +23,13 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
-  const { assets } = useRpcProvider()
+  const { external, getAssets } = useAssets()
   const { isAdded } = useUserExternalTokenStore()
   const { page, direction, paginateTo } = useModalPagination()
 
   const externalAssets = useExternalAssetRegistry()
 
-  const assetsMeta = assets.getAssets(assetIds)
+  const assetsMeta = getAssets(assetIds) as TExternal[]
   const assetsToAddRef = useRef<TExternalAsset[]>([])
 
   const onCloseHandler = () => {
@@ -39,8 +39,10 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
 
   useEffect(() => {
     const assetsToAdd = assetsMeta
-      .filter(({ id, externalId }) => {
-        const isChainStored = assets.external.some((asset) => asset.id === id)
+      .filter((meta) => {
+        if (!meta) return false
+        const { id, externalId } = meta
+        const isChainStored = external.some((asset) => asset.id === id)
         const isUserStored = isAdded(externalId)
         return isChainStored && !isUserStored
       })
@@ -55,7 +57,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
       assetsToAddRef.current = assetsToAdd
       setIsOpen(true)
     }
-  }, [assets.external, assetsMeta, externalAssets, isAdded])
+  }, [external, assetsMeta, externalAssets, isAdded])
 
   return (
     <Modal open={isOpen} disableCloseOutside={true} onClose={onCloseHandler}>

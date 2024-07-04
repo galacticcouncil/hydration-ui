@@ -19,17 +19,11 @@ import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useAccountBalances } from "api/accountBalances"
-import { useRpcProvider } from "providers/rpcProvider"
 import { isNotNil } from "utils/helpers"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useVolume } from "api/volume"
 import BN from "bignumber.js"
-import {
-  useGetXYKPools,
-  useShareTokens,
-  useShareTokensByIds,
-  useXYKConsts,
-} from "api/xyk"
+import { useGetXYKPools, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import {
@@ -46,13 +40,12 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { useUserDeposits } from "api/deposits"
+import { TAsset, useAssets } from "api/assetDetails"
 
 export const XYK_TVL_VISIBILITY = 5000
 
 export const useAssetsTradability = () => {
-  const {
-    assets: { hub },
-  } = useRpcProvider()
+  const { hub } = useAssets()
   const assets = useOmnipoolAssets()
   const hubTradability = useHubAssetTradability()
 
@@ -128,7 +121,7 @@ const getTradeFee = (fee: string[]) => {
 }
 
 export const usePools = () => {
-  const { assets } = useRpcProvider()
+  const { native } = useAssets()
   const { stableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolAssets()
@@ -201,7 +194,7 @@ export const usePools = () => {
       ).multipliedBy(apiSpotPrice ?? 1)
 
       const fee =
-        assets.native.id === asset.id
+        native.id === asset.id
           ? BN_0
           : BN(
               fees.data?.find((fee) => fee.asset_id.toString() === asset.id)
@@ -222,6 +215,7 @@ export const usePools = () => {
         name: asset.meta.name,
         symbol: asset.meta.symbol,
         iconId: asset.meta.iconId,
+        meta: asset.meta,
         tvlDisplay,
         spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
@@ -248,7 +242,7 @@ export const usePools = () => {
       return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
     })
   }, [
-    assets.native.id,
+    native.id,
     assetsTradability.data,
     fees.data,
     fees.isLoading,
@@ -266,9 +260,9 @@ export const usePools = () => {
 }
 
 export const usePoolDetails = (assetId: string) => {
-  const { assets } = useRpcProvider()
-  const meta = assets.getAsset(assetId)
-  const isStablePool = assets.isStableSwap(meta)
+  const { getAsset } = useAssets()
+  const meta = getAsset(assetId)
+  const isStablePool = meta?.isStableSwap
 
   const { omnipoolDeposits } = useUserDeposits()
   const omnipoolPositions = useOmnipoolPositionsData()
@@ -313,7 +307,7 @@ export const usePoolDetails = (assetId: string) => {
     const reserves = isStablePool
       ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
           const id = balance.id.toString()
-          const meta = assets.getAsset(id)
+          const meta = getAsset(id) as TAsset
 
           return {
             asset_id: Number(id),
@@ -333,8 +327,8 @@ export const usePoolDetails = (assetId: string) => {
       isStablePool,
     }
   }, [
+    getAsset,
     assetId,
-    assets,
     isStablePool,
     omnipoolDeposits,
     omnipoolPositions.data,
@@ -347,14 +341,13 @@ export const usePoolDetails = (assetId: string) => {
 
 export const useMyPools = () => {
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
-
+  const { stableswap } = useAssets()
   const pools = usePools()
 
   const omnipoolPositions = useOmnipoolPositionsData()
   const miningPositions = useAllOmnipoolDeposits()
 
-  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+  const stableswapsId = stableswap.map((shareToken) => shareToken.id)
 
   const userPositions = useTokensBalances(stableswapsId, account?.address)
 
@@ -393,11 +386,9 @@ export const useMyPools = () => {
 export const useXYKPools = (withPositions?: boolean) => {
   const pools = useGetXYKPools()
   const xykConsts = useXYKConsts()
+  const { getShareTokenByAddress, shareTokens } = useAssets()
 
-  const shareTokens = useShareTokens()
-
-  const shareTokensId =
-    shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
+  const shareTokensId = shareTokens.map((shareToken) => shareToken.id) ?? []
 
   const totalIssuances = useShareOfPools(shareTokensId)
   const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
@@ -405,27 +396,21 @@ export const useXYKPools = (withPositions?: boolean) => {
   const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : BN_NAN
 
   const volumes = useXYKPoolTradeVolumes(
-    shareTokens.data
-      ? shareTokens.data.map((shareToken) => shareToken.poolAddress)
+    shareTokens.length
+      ? shareTokens.map((shareToken) => shareToken.poolAddress)
       : [],
   )
 
   const deposits = useAllXYKDeposits()
 
-  const queries = [
-    pools,
-    shareTokens,
-    xykConsts,
-    shareTokeSpotPrices,
-    totalIssuances,
-  ]
+  const queries = [pools, xykConsts, shareTokeSpotPrices, totalIssuances]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (
       !pools.data ||
-      !shareTokens.data ||
+      !shareTokens.length ||
       !shareTokeSpotPrices.data ||
       !totalIssuances.data
     )
@@ -433,13 +418,11 @@ export const useXYKPools = (withPositions?: boolean) => {
 
     return pools.data
       .map((pool) => {
-        const shareToken = shareTokens.data?.find(
-          (shareToken) => shareToken.poolAddress === pool.poolAddress,
-        )
+        const shareToken = getShareTokenByAddress(pool.poolAddress)
 
         if (!shareToken) return undefined
 
-        const shareTokenId = shareToken.shareTokenId
+        const shareTokenId = shareToken.id
 
         const shareTokenIssuance = totalIssuances.data?.find(
           (issuance) => issuance.asset === shareTokenId,
@@ -451,7 +434,7 @@ export const useXYKPools = (withPositions?: boolean) => {
 
         const tvlDisplay =
           shareTokenIssuance?.totalShare
-            ?.shiftedBy(-shareToken.meta.decimals)
+            ?.shiftedBy(-shareToken.decimals)
             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? 1) ?? BN_0
 
         const volume =
@@ -464,10 +447,11 @@ export const useXYKPools = (withPositions?: boolean) => {
         )
 
         return {
-          id: shareToken.meta.id,
-          symbol: shareToken.meta.symbol,
-          name: shareToken.meta.name,
-          iconId: shareToken.meta.iconId,
+          id: shareToken.id,
+          symbol: shareToken.symbol,
+          name: shareToken.name,
+          iconId: shareToken.iconId,
+          meta: shareToken,
           tvlDisplay,
           spotPrice: shareTokenSpotPrice?.spotPrice,
           fee,
@@ -490,14 +474,16 @@ export const useXYKPools = (withPositions?: boolean) => {
       )
       .sort((a, b) => b.tvlDisplay.minus(a.tvlDisplay).toNumber())
   }, [
-    fee,
     pools.data,
+    shareTokens.length,
     shareTokeSpotPrices.data,
-    shareTokens.data,
     totalIssuances.data,
+    getShareTokenByAddress,
+    volumes.data,
+    volumes.isLoading,
+    deposits.data,
+    fee,
     withPositions,
-    volumes,
-    deposits,
   ])
 
   return { data, isInitialLoading }
@@ -543,16 +529,17 @@ export const useXYKPoolDetails = (pool: TXYKPool) => {
 }
 
 export const useXYKSpotPrice = (shareTokenId: string) => {
-  const [pool] = useShareTokensByIds([shareTokenId]).data ?? []
+  const { getShareToken } = useAssets()
+  const shareToken = getShareToken(shareTokenId)
 
-  const poolAddress = pool.poolAddress
-
-  const [metaA, metaB] = pool.assets
+  const poolAddress = shareToken?.poolAddress
+  const [metaA, metaB] = shareToken?.assets ?? []
 
   const assetABalance = useTokenBalance(metaA.id, poolAddress)
   const assetBBalance = useTokenBalance(metaB.id, poolAddress)
 
-  if (!assetABalance.data || !assetBBalance.data) return undefined
+  if (!shareToken || !assetABalance.data || !assetBBalance.data)
+    return undefined
 
   const priceA = scaleHuman(
     XykMath.getSpotPrice(
@@ -576,11 +563,11 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
 }
 
 export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
-  const { assets } = useRpcProvider()
+  const { getShareTokenByAddress, getShareToken } = useAssets()
   const depositNftsData = depositNfts.reduce<
     { assetId: string; depositNft: TMiningNftPosition }[]
   >((acc, depositNft) => {
-    const assetId = assets.getShareTokenByAddress(
+    const assetId = getShareTokenByAddress(
       depositNft.data.ammPoolId.toString(),
     )?.id
 
@@ -597,12 +584,10 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
   ]
   const totalIssuances = useShareOfPools(uniqAssetIds)
   const balances = useShareTokenBalances(uniqAssetIds)
-  const shareTokens = useShareTokensByIds(uniqAssetIds)
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
 
   const isLoading =
     totalIssuances.isInitialLoading ||
-    shareTokens.isInitialLoading ||
     balances.some((q) => q.isInitialLoading) ||
     shareTokeSpotPrices.isInitialLoading
 
@@ -618,9 +603,7 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
         (totalIssuance) => totalIssuance.asset === deposit.assetId,
       )?.totalShare
 
-      const shareToken = shareTokens.data?.find(
-        (shareToken) => shareToken.shareTokenId === deposit.assetId,
-      )
+      const shareToken = getShareToken(deposit.assetId)
 
       if (!shareTokenIssuance || !shareToken) {
         return { ...defaultValue, assetId: deposit.assetId }
@@ -628,7 +611,7 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
 
       const shares = deposit.depositNft.data.shares.toBigNumber()
       const ratio = shares.div(shareTokenIssuance)
-      const amountUSD = scaleHuman(shareTokenIssuance, shareToken.meta.decimals)
+      const amountUSD = scaleHuman(shareTokenIssuance, shareToken.decimals)
         .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
         .times(ratio)
 
@@ -659,8 +642,8 @@ export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
   }, [
     balances,
     depositNftsData,
+    getShareToken,
     shareTokeSpotPrices.data,
-    shareTokens.data,
     totalIssuances.data,
   ])
 

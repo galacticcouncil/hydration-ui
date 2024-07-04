@@ -10,19 +10,17 @@ import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiq
 import { ReactElement, useMemo, useState } from "react"
 import { useRefetchAccountNFTPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
 import { useMedia } from "react-use"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import BN from "bignumber.js"
+import { useAssets } from "api/assetDetails"
 
 export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   const { t } = useTranslation()
-  const {
-    assets: { hub },
-  } = useRpcProvider()
+  const { hub } = useAssets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
   const refetchPositions = useRefetchAccountNFTPositions()

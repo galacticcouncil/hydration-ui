@@ -25,7 +25,7 @@ import { TokensConversion } from "./components/TokensConvertion/TokensConversion
 import { useTokensBalances } from "api/balances"
 import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { useShareTokensByIds, useXYKConsts } from "api/xyk"
+import { useXYKConsts } from "api/xyk"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
@@ -45,8 +45,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
   const xykConsts = useXYKConsts()
   const { t } = useTranslation()
 
-  const [shareToken] = useShareTokensByIds([pool.id]).data ?? []
-  const [assetA, assetB] = shareToken.assets
+  const { assets, decimals } = pool.meta
+  const [assetA, assetB] = assets
 
   const [formAssets] = useState({
     assetA,
@@ -199,7 +199,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: shareToken.meta.decimals,
+                fixedPointScale: decimals,
               }}
             >
               <span />
@@ -212,7 +212,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: shareToken.meta.decimals,
+                fixedPointScale: decimals,
               }}
             >
               <span />
@@ -225,7 +225,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               i18nKey="liquidity.add.modal.xyk.toast.onLoading"
               tOptions={{
                 shares: calculatedShares,
-                fixedPointScale: shareToken.meta.decimals,
+                fixedPointScale: decimals,
               }}
             >
               <span />
@@ -401,7 +401,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           label="Received amount of Pool Shares:"
           content={t("value.token", {
             value: calculatedShares,
-            fixedPointScale: shareToken.meta.decimals,
+            fixedPointScale: decimals,
           })}
         />
 

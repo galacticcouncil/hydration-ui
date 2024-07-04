@@ -4,6 +4,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useAssets } from "api/assetDetails"
 
 export const useFarmExitAllMutation = (
   depositNfts: TMiningNftPosition[],
@@ -11,13 +12,14 @@ export const useFarmExitAllMutation = (
   toast: ToastMessage,
   onClose?: () => void,
 ) => {
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
+  const { getAssetWithFallback, isShareToken } = useAssets()
   const queryClient = useQueryClient()
 
-  const meta = assets.getAsset(poolId)
-  const isXYK = assets.isShareToken(meta)
+  const meta = getAssetWithFallback(poolId)
+  const isXYK = isShareToken(meta)
 
   return useMutation(
     async () => {

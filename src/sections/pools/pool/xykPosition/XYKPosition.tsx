@@ -5,7 +5,6 @@ import LiquidityIcon from "assets/icons/WaterRippleIcon.svg?react"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TAsset } from "api/assetDetails"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -20,21 +19,18 @@ import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useShareTokensByIds } from "api/xyk"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const queryClient = useQueryClient()
-  const [shareToken] = useShareTokensByIds([pool.id]).data ?? []
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
-  const assetsMeta = shareToken.assets
+  const assetsMeta = pool.meta.assets
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
@@ -105,14 +101,14 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
               <MultipleIcons
-                icons={assetsMeta.map((asset: TAsset) => {
-                  const isBond = assets.isBond(asset)
-                  const id = isBond ? asset.assetId : asset.id
-
-                  return {
-                    icon: <AssetLogo key={id} id={id} />,
-                  }
-                })}
+                icons={assetsMeta.map((asset: TAsset) => ({
+                  icon: (
+                    <AssetLogo
+                      key={asset.iconId as string}
+                      id={asset.iconId as string}
+                    />
+                  ),
+                }))}
               />
 
               <Text fs={[14, 18]} color={["white", "basic100"]}>
@@ -155,7 +151,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 <Text fs={[13, 16]}>
                   {t("value.token", {
                     value: shareTokensBalance.data?.balance,
-                    fixedPointScale: shareToken.meta.decimals,
+                    fixedPointScale: pool.meta.decimals,
                   })}
                 </Text>
               </div>

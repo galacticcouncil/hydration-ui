@@ -1,4 +1,5 @@
 import { useAccountBalances } from "api/accountBalances"
+import { useAssets } from "api/assetDetails"
 import { useAccountNFTPositions } from "api/deposits"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import { SubNavigationTabLink } from "components/Layout/SubNavigation/SubNavigation"
@@ -12,15 +13,15 @@ import { LINKS } from "utils/navigation"
 export const MyLiquidity = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
   const accountPositions = useAccountNFTPositions()
 
   const balances = useAccountBalances(account?.address)
 
   const isPoolBalances = balances.data?.balances.some((balance) => {
     if (balance.freeBalance.gt(0)) {
-      const meta = assets.getAsset(balance.id)
-      return meta.isStableSwap || meta.isShareToken
+      const meta = getAsset(balance.id)
+      return meta?.isStableSwap || meta?.isShareToken
     }
     return false
   })

@@ -20,6 +20,7 @@ import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { useMemo } from "react"
 import { omit } from "utils/rx"
+import { TExternal, useAssets } from "api/assetDetails"
 
 const pink = {
   decimals: 10,
@@ -344,8 +345,8 @@ export const useUserExternalTokenStore = create<Store>()(
 )
 
 export const useExternalTokenMeta = (id: string | undefined) => {
-  const { assets } = useRpcProvider()
-  const asset = id ? assets.getAsset(id) : undefined
+  const { getExternalByExternalId, getAsset } = useAssets()
+  const asset = id ? getAsset(id) : undefined
 
   const externalRegistry = useExternalAssetRegistry()
 
@@ -353,13 +354,12 @@ export const useExternalTokenMeta = (id: string | undefined) => {
     if (asset?.isExternal && !asset?.symbol) {
       for (const parachain in externalRegistry) {
         const externalAsset = externalRegistry[Number(parachain)].data?.find(
-          (externalAsset) => externalAsset.id === asset.externalId,
+          (externalAsset) =>
+            externalAsset.id === (asset as TExternal).externalId,
         )
 
         if (externalAsset) {
-          const meta = assets.external.find(
-            (asset) => asset.externalId === externalAsset.id,
-          )
+          const meta = getExternalByExternalId(externalAsset.id)
 
           if (meta) {
             const externalMeta = omit(["id"], externalAsset)
@@ -377,7 +377,7 @@ export const useExternalTokenMeta = (id: string | undefined) => {
     }
 
     return undefined
-  }, [asset, externalRegistry, assets.external])
+  }, [asset, externalRegistry, getExternalByExternalId])
 
   return externalAsset
 }

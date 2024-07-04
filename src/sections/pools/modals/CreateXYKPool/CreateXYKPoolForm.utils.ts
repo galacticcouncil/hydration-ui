@@ -1,6 +1,5 @@
-import { useAcountAssets } from "api/assetDetails"
+import { useAcountAssets, useAssets } from "api/assetDetails"
 import BigNumber from "bignumber.js"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -49,30 +48,29 @@ export const filterIdsByExclusivity = (
 
 export const useAllowedXYKPoolAssets = () => {
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+  const { all, isExternal } = useAssets()
 
   const { isAdded } = useUserExternalTokenStore()
 
   const accountAssets = useAcountAssets(account?.address)
 
   return useMemo(() => {
-    const tradableAssetIds = assets.tradeAssets.map((asset) => asset.id)
     const accountAssetIds = accountAssets
       .filter(({ balance }) => balance.freeBalance.gt(0))
       .map(({ asset }) => asset.id)
 
-    return assets.all.filter((asset) => {
-      const isTradable = tradableAssetIds.includes(asset.id)
+    return [...all.values()].filter((asset) => {
+      const isTradable = asset.isTradable
       const hasBalance = accountAssetIds.includes(asset.id)
       const isNotTradableWithBalance = !isTradable && hasBalance
 
       const shouldBeVisible = isTradable || isNotTradableWithBalance
 
-      if (asset.isExternal) {
+      if (isExternal(asset)) {
         return shouldBeVisible && isAdded(asset.externalId)
       }
 
       return shouldBeVisible
     })
-  }, [accountAssets, assets.all, assets.tradeAssets, isAdded])
+  }, [accountAssets, all, isAdded, isExternal])
 }

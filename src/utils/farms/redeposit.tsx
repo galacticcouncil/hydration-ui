@@ -5,6 +5,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
+import { useAssets } from "api/assetDetails"
 
 export type FarmRedepositMutationType = ReturnType<
   typeof useFarmRedepositMutation
@@ -17,14 +18,15 @@ export const useFarmRedepositMutation = (
   onClose?: () => void,
 ) => {
   const { t } = useTranslation()
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { getAssetWithFallback, isShareToken } = useAssets()
   const { createTransaction } = useStore()
 
   return useMutation(
     async ({ shares, value }: { shares: string; value: string }) => {
       if (!availableYieldFarms?.length)
         throw new Error("No available farms to redeposit into")
-      const meta = assets.getAsset(poolId)
+      const meta = getAssetWithFallback(poolId)
 
       const toast = TOAST_MESSAGES.reduce((memo, type) => {
         const msType = type === "onError" ? "onLoading" : type
@@ -44,7 +46,7 @@ export const useFarmRedepositMutation = (
         return memo
       }, {} as ToastMessage)
 
-      const isXYK = assets.isShareToken(meta)
+      const isXYK = isShareToken(meta)
 
       const txs = availableYieldFarms
         .map((farm) => {

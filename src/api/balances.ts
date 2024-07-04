@@ -9,6 +9,7 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "./assetDetails"
 
 export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
   return free.minus(frozen)
@@ -153,26 +154,27 @@ export const getTokenLock =
   }
 
 export const useShareTokenBalances = (shareTokenIds: string[]) => {
-  const { api, assets } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+  const { getShareTokens } = useAssets()
 
-  const shareTokens = assets
-    .getAssets(shareTokenIds)
-    .reduce<{ id: string; address: string }[]>((acc, asset) => {
-      if (assets.isShareToken(asset)) {
-        asset.assets.forEach((id) =>
-          acc.push({ id, address: asset.poolAddress }),
-        )
-      }
+  const shareTokens = getShareTokens(shareTokenIds).reduce<
+    { id: string; address: string }[]
+  >((acc, asset) => {
+    if (asset) {
+      asset.assets.forEach((e) =>
+        acc.push({ id: e.id, address: asset.poolAddress }),
+      )
+    }
 
-      return acc
-    }, [])
+    return acc
+  }, [])
 
   return useQueries({
     queries: shareTokens.map(({ id, address }) => ({
       queryKey: QUERY_KEYS.tokenBalanceLive(id, address),
       queryFn:
         address != null ? getTokenBalance(api, address, id) : undefinedNoop,
-      enabled: !!id && !!address,
+      enabled: !!id && !!address && isLoaded,
     })),
   })
 }

@@ -4,21 +4,18 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
 import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import {
   Page,
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { useState } from "react"
-import { TStableSwap } from "api/assetDetails"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
@@ -33,13 +30,13 @@ type Props = {
 
 export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const refetchPositions = useRefetchAccountNFTPositions()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
-  const meta = assets.getAsset(pool.id) as TStableSwap
+  const meta = pool.meta
+  const assets = Object.keys(meta.meta ?? {})
 
   if (amount.isZero()) return null
 
@@ -64,14 +61,7 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
         <SContainer sx={{ height: ["auto", "auto"] }}>
           <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
             <div sx={{ flex: "row", gap: 7, align: "center" }}>
-              {meta.assets && (
-                <MultipleIcons
-                  size={26}
-                  icons={meta.assets.map((assetId) => ({
-                    icon: <AssetLogo key={assetId} id={assetId} />,
-                  }))}
-                />
-              )}
+              <MultipleAssetLogo iconId={assets} size={26} />
             </div>
             <div
               sx={{

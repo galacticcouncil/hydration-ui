@@ -11,9 +11,7 @@ import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
+import { AssetLogo, MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { useState } from "react"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
@@ -36,6 +34,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
+import { useAssets } from "api/assetDetails"
 
 export const PoolDetails = ({
   pool,
@@ -44,7 +43,8 @@ export const PoolDetails = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+
+  const asset = pool.meta
 
   const [addLiquidityPool, setAddLiquidityPool] = useState<
     TPoolFullData | TXYKPoolFullData | undefined
@@ -86,25 +86,7 @@ export const PoolDetails = ({
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              {typeof asset.iconId === "string" ? (
-                <Icon
-                  size={26}
-                  icon={<AssetLogo id={asset.iconId} />}
-                  css={{ flex: "1 0 auto" }}
-                />
-              ) : (
-                <MultipleIcons
-                  size={26}
-                  icons={asset.iconId.map((asset) => {
-                    const meta = assets.getAsset(asset)
-                    const isBond = assets.isBond(meta)
-                    const id = isBond ? meta.assetId : asset
-                    return {
-                      icon: <AssetLogo key={id} id={id} />,
-                    }
-                  })}
-                />
-              )}
+              <MultipleAssetLogo iconId={asset.iconId} size={26} />
               <div sx={{ flex: "column", gap: 0 }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
                   {asset.symbol}
@@ -115,7 +97,7 @@ export const PoolDetails = ({
               </div>
             </div>
 
-            {ixXYKPool && <XYKRateWrapper shareTokenId={pool.id} />}
+            {ixXYKPool && <XYKRateWrapper pool={pool} />}
           </div>
 
           <Button
@@ -340,8 +322,8 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
   )
 }
 
-export const XYKRateWrapper = ({ shareTokenId }: { shareTokenId: string }) => {
-  const prices = useXYKSpotPrice(shareTokenId)
+export const XYKRateWrapper = ({ pool }: { pool: TXYKPoolFullData }) => {
+  const prices = useXYKSpotPrice(pool.id)
 
   if (!prices) return null
 
@@ -363,10 +345,10 @@ export const XYKRate = ({
   price: BN
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
-  const assetAMeta = assets.getAsset(assetA)
-  const assetBMeta = assets.getAsset(assetB)
+  const assetAMeta = getAssetWithFallback(assetA)
+  const assetBMeta = getAssetWithFallback(assetB)
 
   return (
     <SXYKRateContainer>

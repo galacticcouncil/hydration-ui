@@ -2,10 +2,9 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Icon } from "components/Icon/Icon"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-import { useShareTokenById } from "api/xyk"
+import { useAssets } from "api/assetDetails"
 
 export const AssetTableName = ({
   large,
@@ -17,14 +16,14 @@ export const AssetTableName = ({
   id: string
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
-  const asset = assets.getAsset(id)
-
+  const asset = getAsset(id)
   const externalAsset = useExternalTokenMeta(id)
-  const shareToken = useShareTokenById(id).data
 
-  const iconIds = externalAsset?.id ?? shareToken?.meta.iconId ?? asset.iconId
+  if (!asset) return null
+
+  const iconIds = externalAsset?.id ?? asset?.iconId ?? ""
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -42,10 +41,7 @@ export const AssetTableName = ({
           />
         ) : (
           <MultipleIcons
-            icons={iconIds.map((asset) => {
-              const meta = assets.getAsset(asset)
-              const isBond = assets.isBond(meta)
-              const id = isBond ? meta.assetId : asset
+            icons={iconIds.map((id) => {
               return {
                 icon: (
                   <Icon

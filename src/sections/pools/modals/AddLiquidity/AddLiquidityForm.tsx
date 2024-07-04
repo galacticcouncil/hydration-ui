@@ -22,6 +22,7 @@ import { useDebounce } from "react-use"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssets } from "api/assetDetails"
 
 type Props = {
   assetId: string
@@ -59,10 +60,8 @@ export const AddLiquidityForm = ({
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { native } = useAssets()
   const { createTransaction } = useStore()
 
   const { data: limits } = useVerifyLimits({

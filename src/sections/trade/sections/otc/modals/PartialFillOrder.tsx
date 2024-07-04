@@ -17,6 +17,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { usePartialFillFormSchema } from "sections/trade/sections/otc/modals/PartialFillOrder.utils"
+import { useAssets } from "api/assetDetails"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -37,11 +38,11 @@ export const PartialFillOrder = ({
 }: FillOrderProps) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-
-  const { api, assets } = useRpcProvider()
-  const assetInMeta = assets.getAsset(accepting.asset)
+  const { getAssetWithFallback } = useAssets()
+  const { api } = useRpcProvider()
+  const assetInMeta = getAssetWithFallback(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
-  const assetOutMeta = assets.getAsset(offering.asset)
+  const assetOutMeta = getAssetWithFallback(offering.asset)
 
   const formSchema = usePartialFillFormSchema({
     offeringAmount: offering.amount,

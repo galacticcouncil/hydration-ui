@@ -1,3 +1,4 @@
+import { useAssets } from "api/assetDetails"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
@@ -36,7 +37,8 @@ export const AddTokenListModal: React.FC<Props> = ({
   setParachainId,
 }) => {
   const { t } = useTranslation()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { tokens } = useAssets()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -47,18 +49,16 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const externalAssets = selectedParachain.data ?? []
   const internalAssets =
-    assets?.tokens?.filter(
-      (asset) => asset.parachainId === parachainId.toString(),
-    ) ?? []
+    tokens.filter((asset) => asset.parachainId === parachainId.toString()) ?? []
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
     if (isDOT) return false
 
-    const isChainStored = internalAssets.some(
+    const isStoredOnChain = internalAssets.some(
       (internalAsset) => internalAsset.externalId === asset.id,
     )
-    if (isChainStored) return false
+    if (isStoredOnChain) return false
 
     const isUserStored = isAdded(asset.id)
     if (isUserStored) return false

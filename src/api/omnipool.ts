@@ -8,9 +8,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { getTokenBalance } from "./balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
+import { TAsset, useAssets } from "./assetDetails"
 
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
-  const { api, isLoaded, assets } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   return useQuery(
     noRefresh ? QUERY_KEYS.omnipoolAssets : QUERY_KEYS.omnipoolAssetsLive,
@@ -31,7 +33,7 @@ export const useOmnipoolAssets = (noRefresh?: boolean) => {
             (balance) => balance.assetId.toString() === asset.id.toString(),
           )?.balance as BigNumber
 
-          const meta = assets.getAsset(id)
+          const meta = getAsset(id) as TAsset
 
           return {
             id,
@@ -40,7 +42,7 @@ export const useOmnipoolAssets = (noRefresh?: boolean) => {
             balance,
           }
         })
-        .filter((asset) => asset.balance)
+        .filter((asset) => asset.balance && asset.meta)
     },
     { enabled: isLoaded },
   )

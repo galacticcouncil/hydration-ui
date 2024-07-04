@@ -5,7 +5,6 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useRpcProvider } from "providers/rpcProvider"
 import { SContainer, SLocksContainer } from "./WalletAssetsTableDetails.styled"
 import {
   AssetsTableData,
@@ -27,6 +26,7 @@ import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useAssets } from "api/assetDetails"
 
 const chains = Array.from(chainsMap.values())
 
@@ -37,9 +37,7 @@ export const WalletAssetsTableDetails = ({
   reservedDisplay,
   id,
 }: AssetsTableData) => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
 
   const isNativeAsset = id === native.id
 
@@ -240,10 +238,12 @@ const AssetDetails = ({
   id: string
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const origin = useMemo(() => {
-    const assetDetails = assets.getAsset(id)
+    const assetDetails = getAsset(id)
+
+    if (!assetDetails) return undefined
 
     const chain = chains.find(
       (chain) =>
@@ -258,7 +258,7 @@ const AssetDetails = ({
       name: chain.name,
       symbol: assetDetails.symbol,
     }
-  }, [assets, id])
+  }, [getAsset, id])
 
   return (
     <SContainer hasChain={!!origin} isNativeAsset={false}>

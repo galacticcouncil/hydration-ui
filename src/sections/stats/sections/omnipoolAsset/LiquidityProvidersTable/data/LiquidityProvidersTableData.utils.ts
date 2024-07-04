@@ -1,9 +1,9 @@
+import { useAssets } from "api/assetDetails"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositionsMulti } from "api/omnipool"
 import { useTVL } from "api/stats"
 import { useUniquesAssets } from "api/uniques"
 import BN from "bignumber.js"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { BN_NAN } from "utils/constants"
 import { isNotNil } from "utils/helpers"
@@ -15,7 +15,7 @@ const withoutRefresh = true
 const rowLimit = 10
 
 export const useLiquidityProvidersTableData = (assetId: string) => {
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const apiIds = useApiIds()
   const uniques = useUniquesAssets(
@@ -39,11 +39,11 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!positions.data || !omnipoolAsset) {
+    const meta = getAsset(assetId)
+
+    if (!positions.data || !omnipoolAsset || !meta) {
       return []
     }
-
-    const meta = assets.getAsset(assetId)
 
     const omnipoolTvlPrice = BN(tvl.data?.[0]?.tvl_usd ?? BN_NAN)
 
@@ -135,7 +135,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     return sortedData.slice(0, rowLimit)
   }, [
     assetId,
-    assets,
+    getAsset,
     getData,
     omnipoolAsset,
     positions.data,

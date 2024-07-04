@@ -6,9 +6,9 @@ import { OmnipoolPosition, useOmnipoolAssets } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
 import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
-import { useRpcProvider } from "providers/rpcProvider"
 import { scale } from "./balance"
 import { useCallback } from "react"
+import { useAssets } from "api/assetDetails"
 
 type IOptions = {
   sharesValue?: string
@@ -20,12 +20,12 @@ export type TLPData = NonNullable<
 >
 
 export const useLiquidityPositionData = (assetsId?: string[]) => {
-  const { assets } = useRpcProvider()
+  const { hub } = useAssets()
 
   const omnipoolAssets = useOmnipoolAssets()
   const omnipoolAssetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
 
-  const hubSp = useDisplayPrice(assets.hub.id)
+  const hubSp = useDisplayPrice(hub.id)
   const spotPrices = useDisplayPrices(assetsId ?? omnipoolAssetIds)
 
   const getData = useCallback(
@@ -67,7 +67,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
       liquidityOutResult = calculate_liquidity_out.apply(this, params)
 
       const lrna = lernaOutResult !== "-1" ? new BN(lernaOutResult) : BN_NAN
-      const lrnaShifted = lrna.shiftedBy(-assets.hub.decimals)
+      const lrnaShifted = lrna.shiftedBy(-hub.decimals)
 
       const value =
         liquidityOutResult !== "-1" ? new BN(liquidityOutResult) : BN_NAN
@@ -122,12 +122,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
         meta: omnipoolAsset.meta,
       }
     },
-    [
-      assets.hub.decimals,
-      hubSp.data?.spotPrice,
-      omnipoolAssets.data,
-      spotPrices.data,
-    ],
+    [hub.decimals, hubSp.data?.spotPrice, omnipoolAssets.data, spotPrices.data],
   )
 
   return { getData }

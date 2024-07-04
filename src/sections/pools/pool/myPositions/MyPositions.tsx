@@ -1,6 +1,5 @@
 import { useTokenBalance } from "api/balances"
 import { Text } from "components/Typography/Text/Text"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
@@ -22,10 +21,9 @@ import {
 import { LazyMotion, domAnimation } from "framer-motion"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const { t } = useTranslation()
-  const meta = assets.getAsset(pool.id)
+  const meta = pool.meta
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,

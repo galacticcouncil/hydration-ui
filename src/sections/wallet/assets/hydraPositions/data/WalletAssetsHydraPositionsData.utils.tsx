@@ -1,16 +1,14 @@
 import { useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
 import { arraySearch, isNotNil } from "utils/helpers"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
-import { useAcountAssets } from "api/assetDetails"
+import { useAcountAssets, useAssets } from "api/assetDetails"
 import { useAccountNFTPositions } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useShareTokens } from "api/xyk"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -53,15 +51,14 @@ export const useOmnipoolPositionsData = ({
 }
 
 export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
-  const { assets } = useRpcProvider()
+  const { native, shareTokens } = useAssets()
   const { account } = useAccount()
-  const shareTokens = useShareTokens()
   const accountBalances = useAcountAssets(account?.address)
 
   const accountShareTokens = accountBalances
     .map((accountBalance) => {
-      const shareToken = shareTokens.data?.find(
-        (shareToken) => shareToken.shareTokenId === accountBalance.asset.id,
+      const shareToken = shareTokens.find(
+        (shareToken) => shareToken.id === accountBalance.asset.id,
       )
 
       if (shareToken) return { ...accountBalance, shareToken }
@@ -81,8 +78,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
   const isLoading =
     totalIssuances.some((totalIssuance) => totalIssuance.isInitialLoading) ||
     poolBalances.isInitialLoading ||
-    spotPrices.isInitialLoading ||
-    shareTokens.isInitialLoading
+    spotPrices.isInitialLoading
 
   const data = useMemo(() => {
     if (!accountShareTokens.length || !totalIssuances || !poolBalances.data)
@@ -90,8 +86,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
     const rows = accountShareTokens.map((myPool) => {
       const totalIssuance = totalIssuances.find(
-        (totalIssuance) =>
-          totalIssuance.data?.token === myPool.shareToken.shareTokenId,
+        (totalIssuance) => totalIssuance.data?.token === myPool.shareToken.id,
       )?.data?.total
 
       const poolBalance = poolBalances.data?.find(
@@ -100,7 +95,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
       )
       const balances = myPool.shareToken.assets.map((asset) => {
         const balance =
-          asset.id === assets.native.id
+          asset.id === native.id
             ? poolBalance?.native.freeBalance
             : poolBalance?.balances.find((balance) => balance.id === asset.id)
                 ?.freeBalance
@@ -114,13 +109,13 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
       })
 
       const spotPrice = spotPrices.data.find(
-        (spotPrice) => spotPrice.tokenIn === myPool.shareToken.shareTokenId,
+        (spotPrice) => spotPrice.tokenIn === myPool.shareToken.id,
       )
 
       const amount =
         totalIssuance
           ?.times(myPool.balance.total.div(totalIssuance ?? 1))
-          .shiftedBy(-myPool.shareToken.meta.decimals) ?? BN_NAN
+          .shiftedBy(-myPool.shareToken.decimals) ?? BN_NAN
 
       const valueDisplay = amount.multipliedBy(spotPrice?.spotPrice ?? 1)
 
@@ -128,10 +123,10 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
         amount,
         valueDisplay,
         value: BN_NAN,
-        id: myPool.shareToken.meta.id,
-        assetId: myPool.shareToken.meta.id,
-        name: myPool.shareToken.meta.name,
-        symbol: myPool.shareToken.meta.symbol,
+        id: myPool.shareToken.id,
+        assetId: myPool.shareToken.id,
+        name: myPool.shareToken.name,
+        symbol: myPool.shareToken.symbol,
         balances,
         isXykPosition: true,
       }
@@ -140,7 +135,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
     accountShareTokens,
-    assets,
+    native.id,
     poolBalances.data,
     search,
     spotPrices.data,

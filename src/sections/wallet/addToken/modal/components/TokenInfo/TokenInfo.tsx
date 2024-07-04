@@ -4,7 +4,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { STokenInfoRow } from "./TokenInfo.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useGetXYKPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -16,6 +15,7 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
+import { useAssets } from "api/assetDetails"
 
 const MASTER_KEY_WHITELIST = ["23", "31337", "42069", "17", "8889"]
 
@@ -26,7 +26,7 @@ export const TokenInfo = ({
   asset: TExternalAsset
   isChainStored: boolean
 }) => {
-  const { assets } = useRpcProvider()
+  const { getExternalByExternalId } = useAssets()
   const { t } = useTranslation()
   const parachains = useParachainAmount(asset.id)
   const xykPools = useGetXYKPools()
@@ -35,9 +35,7 @@ export const TokenInfo = ({
     if (!isChainStored || !xykPools.data)
       return { isXYKPool: false, pools: undefined }
 
-    const storedAsset = assets.external.find(
-      (external) => external.externalId === asset.id,
-    )
+    const storedAsset = getExternalByExternalId(asset.id)
 
     if (storedAsset) {
       const filteredXykPools = xykPools.data.filter((shareToken) =>
@@ -51,7 +49,7 @@ export const TokenInfo = ({
     }
 
     return { isXYKPool: false, pools: undefined }
-  }, [asset.id, assets.external, isChainStored, xykPools])
+  }, [asset.id, getExternalByExternalId, isChainStored, xykPools.data])
 
   return (
     <div sx={{ flex: "column" }}>

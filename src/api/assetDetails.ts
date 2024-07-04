@@ -1,56 +1,234 @@
-import { ApiPromise } from "@polkadot/api"
 import { Option } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { NATIVE_ASSET_ID } from "utils/api"
+import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { Maybe } from "utils/helpers"
 import { useAccountBalances } from "./accountBalances"
 import BN from "bignumber.js"
-import { format } from "date-fns"
-import { useRpcProvider } from "providers/rpcProvider"
-import {
-  Asset,
-  AssetClient,
-  PoolService,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
+import { Bond } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
-import {
-  useExternalTokenMeta,
-  useUserExternalTokenStore,
-} from "sections/wallet/addToken/AddToken.utils"
-import { omit } from "utils/rx"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useProviderRpcUrlStore } from "./provider"
-import { PENDULUM_ID } from "./externalAssetRegistry"
-import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
-import { useShareTokens, useShareTokenById, useShareToken } from "./xyk"
+// import { PENDULUM_ID } from "./externalAssetRegistry"
+// import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
+import { TAssetStored, useAssetRegistry } from "state/store"
+import { useCallback, useMemo } from "react"
 
-const useAssetMeta = (id: string) => {
-  const { assets } = useRpcProvider()
-  const shareToken = useShareTokenById(id).data
+const getFullAsset = (asset: TAssetStored) => {
+  const isToken = asset.type === "Token"
+  const isBond = asset.type === "Bond"
+  const isStableSwap = asset.type === "StableSwap"
+  const isExternal = asset.type === "External"
+  const isShareToken = false
 
-  //const getAsset = (id) => {}
+  return {
+    ...asset,
+    parachainId: asset.origin?.toString(),
+    existentialDeposit: BN(asset.existentialDeposit),
+    isToken,
+    isBond,
+    isStableSwap,
+    isExternal,
+    isShareToken,
+  }
+}
 
-  const getShareToken = (shareTokenId: string) => undefined
+export type TAsset = ReturnType<typeof getFullAsset> & {
+  iconId: string | string[] | undefined
+}
+
+export type TBond = TAsset & Bond
+
+export type TExternal = TAsset & { externalId: string }
+
+export type TShareToken = TAsset & {
+  poolAddress: string
+  assets: TAsset[]
+}
+
+export const useAssets = () => {
+  const { assets, shareTokens: shareTokensRaw } = useAssetRegistry.getState()
+  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
+
+  const { all, stableswap, bonds, external, tradable, native, hub, tokens } =
+    useMemo(() => {
+      return assets.reduce<{
+        all: Map<string, TAsset>
+        tradable: TAsset[]
+        tokens: TAsset[]
+        stableswap: TAsset[]
+        bonds: TBond[]
+        external: TExternal[]
+        native: TAsset
+        hub: TAsset
+      }>(
+        (acc, assetRaw) => {
+          const asset = {
+            ...getFullAsset(assetRaw),
+            iconId:
+              assetRaw.type === "Bond"
+                ? (assetRaw as TBond).underlyingAssetId
+                : assetRaw.meta
+                  ? Object.keys(assetRaw.meta)
+                  : assetRaw.id,
+          }
+
+          acc.all.set(asset.id, asset)
+
+          if (asset.isTradable) {
+            acc.tradable.push(asset)
+          }
+
+          if (asset.id === NATIVE_ASSET_ID) {
+            acc.native = asset
+          }
+
+          if (asset.id === HUB_ID) {
+            acc.hub = asset
+          }
+
+          if (asset.isToken) {
+            acc.tokens.push(asset)
+          } else if (asset.isStableSwap) {
+            acc.stableswap.push(asset)
+          } else if (asset.isBond) {
+            acc.bonds.push(asset as TBond)
+          } else if (asset.isExternal) {
+            const externalId = externalTokens[dataEnv].find(
+              (token) => token.internalId === asset.id,
+            )?.id
+
+            if (externalId) acc.external.push({ ...asset, externalId })
+          }
+
+          return acc
+        },
+        {
+          all: new Map([]),
+          tradable: [],
+          tokens: [],
+          stableswap: [],
+          bonds: [],
+          external: [],
+          native: {} as TAsset,
+          hub: {} as TAsset,
+        },
+      )
+    }, [assets, dataEnv, externalTokens])
+
+  const { shareTokens, shareTokensMap } = shareTokensRaw.reduce<{
+    shareTokens: TShareToken[]
+    shareTokensMap: Map<string, TShareToken>
+  }>(
+    (acc, token) => {
+      const assetA = all.get(token.assets[0])
+      const assetB = all.get(token.assets[1])
+
+      if (assetA && assetB) {
+        const assetDecimal =
+          Number(assetA.id) > Number(assetB.id) ? assetB : assetA
+        const decimals = assetDecimal.decimals
+        const symbol = `${assetA.symbol}/${assetB.symbol}`
+        const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+        const iconId = [assetA.id, assetB.id]
+
+        const tokenFull = {
+          ...fallbackAsset,
+          id: token.shareTokenId,
+          poolAddress: token.poolAddress,
+          assets: [assetA, assetB],
+          isShareToken: true,
+          decimals,
+          symbol,
+          name,
+          iconId,
+        }
+        acc.shareTokens.push(tokenFull)
+        acc.shareTokensMap.set(tokenFull.id, tokenFull)
+      }
+
+      return acc
+    },
+    { shareTokens: [], shareTokensMap: new Map([]) },
+  )
+
+  const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
+  const isStableSwap = (asset: TAsset) => asset.isStableSwap
+  const isShareToken = (asset: TAsset | undefined): asset is TShareToken => {
+    if (!asset) return false
+    return asset.isShareToken
+  }
+
+  const getAsset = useCallback(
+    (id: string) =>
+      new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap]).get(
+        id,
+      ),
+    [all, shareTokensMap],
+  )
+  const getAssetWithFallback = useCallback(
+    (id: string) => getAsset(id) ?? fallbackAsset,
+    [getAsset],
+  )
+  const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
+  const getShareToken = useCallback(
+    (id: string) => shareTokensMap.get(id),
+    [shareTokensMap],
+  )
+  const getShareTokens = (ids: string[]) => ids.map((id) => getShareToken(id))
+
+  const getShareTokenByAddress = useCallback(
+    (poolAddress: string) =>
+      shareTokens.find((shareToken) => shareToken.poolAddress === poolAddress),
+    [shareTokens],
+  )
+
+  const getExternalByExternalId = useCallback(
+    (externalId: string) =>
+      external.find((token) => token.externalId === externalId),
+    [external],
+  )
+  const getBond = useCallback(
+    (id: string) => bonds.find((token) => token.id === id),
+    [bonds],
+  )
+
+  return {
+    all,
+    tokens,
+    stableswap,
+    bonds,
+    external,
+    tradable,
+    shareTokens,
+    native,
+    hub,
+    getAsset,
+    getShareToken,
+    getShareTokens,
+    getAssets,
+    getBond,
+    getAssetWithFallback,
+    getExternalByExternalId,
+    getShareTokenByAddress,
+    isExternal,
+    isBond,
+    isStableSwap,
+    isShareToken,
+  }
 }
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback, native } = useAssets()
   const accountBalances = useAccountBalances(address, true)
-  const shareTokens = useShareToken()
 
   if (!accountBalances.data) return []
 
   const tokenBalances = accountBalances.data?.balances
     ? accountBalances.data.balances.map((balance) => {
-        const asset = assets.getAsset(balance.id)
-
-        if (!asset.id) {
-          const meta = shareTokens.getShareToken(balance.id)?.meta
-
-          return { asset: meta ?? asset, balance }
-        }
+        const asset = getAssetWithFallback(balance.id)
 
         return { asset, balance }
       })
@@ -58,7 +236,7 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   if (accountBalances.data?.native)
     tokenBalances.unshift({
       balance: accountBalances.data.native,
-      asset: assets.native,
+      asset: native,
     })
 
   return tokenBalances
@@ -102,12 +280,12 @@ type TAssetCommon = {
   isSufficient: boolean
 }
 
-export type TBond = TAssetCommon & {
-  assetType: "Bond"
-  assetId: string
-  maturity: number
-  isTradable: boolean
-}
+// export type TBond = TAssetCommon & {
+//   assetType: "Bond"
+//   assetId: string
+//   maturity: number
+//   isTradable: boolean
+// }
 
 export type TToken = TAssetCommon & {
   assetType: "Token"
@@ -119,442 +297,29 @@ export type TStableSwap = TAssetCommon & {
   assets: string[]
 }
 
-export type TShareToken = TAssetCommon & {
-  assetType: "ShareToken"
-  assets: string[]
-  poolAddress: string
-}
+// export type TShareToken = TAssetCommon & {
+//   assetType: "ShareToken"
+//   assets: string[]
+//   poolAddress: string
+// }
 
-export type TAsset = TToken | TBond | TStableSwap | TShareToken
+//export type TAsset = TToken | TBond | TStableSwap | TShareToken
 
-export const fallbackAsset: TToken = {
+export const fallbackAsset: TAsset = {
   id: "",
   name: "N/A",
   symbol: "N/a",
   decimals: 12,
-  assetType: "Token",
   existentialDeposit: BN_0,
   parachainId: undefined,
   isToken: false,
   isBond: false,
   isStableSwap: false,
-  isShareToken: false,
   isExternal: false,
-  isNative: false,
+  isShareToken: false,
   iconId: "",
   isSufficient: false,
-}
-
-export const getAssets = async (api: ApiPromise) => {
-  const poolService = new PoolService(api)
-  const traderRoutes = [
-    PoolType.Omni,
-    PoolType.Stable,
-    PoolType.XYK,
-    PoolType.LBP,
-  ]
-
-  const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: traderRoutes,
-  })
-
-  let rawTradeAssets: Asset[] = []
-
-  //TODO: remove after migrating to new asset registry
-  const rawAssetsMeta = api.query.assetRegistry.assetMetadataMap
-    ? await api.query.assetRegistry.assetMetadataMap.entries()
-    : undefined
-
-  const assetClient = new AssetClient(api)
-
-  const [
-    system,
-    rawAssetsData,
-    rawAssetsLocations,
-    hubAssetId,
-    poolAddresses,
-    xykPoolAssets,
-    isReferralsEnabled,
-    isDispatchPermitEnabled,
-  ] = await Promise.all([
-    api.rpc.system.properties(),
-    api.query.assetRegistry.assets.entries(),
-    api.query.assetRegistry.assetLocations.entries(),
-    api.consts.omnipool.hubAssetId,
-    api.query.xyk.shareToken.entries(),
-    api.query.xyk.poolAssets.entries(),
-    api.query.referrals,
-    api.tx.multiTransactionPayment.dispatchPermit,
-  ])
-
-  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
-
-  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
-
-  const tokens: TToken[] = []
-  const bonds: TBond[] = []
-  const stableswap: TStableSwap[] = []
-  const shareTokensRaw = []
-  const external: TToken[] = []
-
-  for (const [key, dataRaw] of rawAssetsData) {
-    if (!dataRaw.isNone) {
-      const data = dataRaw.unwrap()
-      const id = key.args[0].toString()
-
-      const assetType = data.assetType.type
-
-      const isToken = assetType === "Token"
-      const isBond = assetType === "Bond"
-      const isStableSwap = assetType === "StableSwap"
-      //@ts-ignore
-      const isShareToken = assetType === (!!rawAssetsMeta ? "PoolShare" : "XYK")
-      //@ts-ignore
-      const isExternal = assetType === "External"
-      //@ts-ignore
-      const isSufficient = data.isSufficient?.toPrimitive() ?? false
-
-      let meta
-      if (rawAssetsMeta) {
-        const assetsMeta = rawAssetsMeta
-          .find((meta) => meta[0].args[0].toString() === id)?.[1]
-          //@ts-ignore
-          .unwrap()
-
-        meta = {
-          decimals: assetsMeta?.decimals.toNumber() ?? 12,
-          symbol: assetsMeta?.symbol.toUtf8() ?? "N/a",
-        }
-      } else {
-        meta = {
-          //@ts-ignore
-          decimals: Number(data.decimals.toString()) as number,
-          //@ts-ignore
-          symbol: data.symbol.toHuman() as string,
-        }
-      }
-
-      const assetCommon = {
-        id,
-        isToken,
-        isBond,
-        isStableSwap,
-        isShareToken,
-        isExternal,
-        isNative: false,
-        existentialDeposit: data.existentialDeposit.toBigNumber(),
-        parachainId: undefined,
-        name: data.name.toHuman() as string,
-        isSufficient,
-        ...meta,
-      }
-
-      if (isToken) {
-        if (id === NATIVE_ASSET_ID) {
-          const asset: TToken = {
-            ...assetCommon,
-            symbol: system.tokenSymbol.unwrap()[0].toString(),
-            decimals: system.tokenDecimals.unwrap()[0].toNumber(),
-            isNative: true,
-            assetType,
-            iconId: assetCommon.id,
-          }
-          tokens.push(asset)
-        } else {
-          const location = rawAssetsLocations.find(
-            (location) => location[0].args[0].toString() === id,
-          )?.[1]
-          //@ts-ignore
-          const asset: TToken = {
-            ...assetCommon,
-            parachainId:
-              location && !location.isNone
-                ? getTokenParachainId(location)
-                : undefined,
-            externalId: undefined,
-            iconId: assetCommon.id,
-          }
-
-          tokens.push(asset)
-        }
-      } else if (isBond) {
-        const detailsRaw = await api.query.bonds.bonds(id)
-
-        if (!detailsRaw.isNone) {
-          const details = detailsRaw.unwrap()
-          const [assetIdRaw, maturity] = details ?? []
-          const assetId = assetIdRaw.toString()
-
-          let underlyingAsset: { symbol: string; decimals: number } | undefined
-
-          if (assetId === NATIVE_ASSET_ID) {
-            underlyingAsset = {
-              symbol: system.tokenSymbol.unwrap()[0].toString(),
-              decimals: system.tokenDecimals.unwrap()[0].toNumber(),
-            }
-          } else {
-            const meta = (rawAssetsMeta ?? rawAssetsData).find(
-              (meta) => meta[0].args[0].toString() === assetId,
-            )
-            if (meta) {
-              //@ts-ignore
-              const underlyingAssetMeta = meta[1].unwrap()
-              underlyingAsset = {
-                decimals: Number(
-                  //@ts-ignore
-                  underlyingAssetMeta.decimals.toString(),
-                ) as number,
-                //@ts-ignore
-                symbol: underlyingAssetMeta.symbol.toHuman() as string,
-              }
-            }
-          }
-
-          if (underlyingAsset) {
-            const symbol = `${underlyingAsset.symbol}b`
-            const name = `${underlyingAsset.symbol} Bond ${format(
-              new Date(maturity.toNumber()),
-              "dd/MM/yyyy",
-            )}`
-            const decimals = underlyingAsset.decimals
-
-            const location = rawAssetsLocations.find(
-              (location) => location[0].args[0].toString() === assetId,
-            )?.[1]
-
-            const isTradable = false
-
-            const asset: TBond = {
-              ...assetCommon,
-              assetId: assetId,
-              name,
-              assetType: "Bond",
-              parachainId:
-                location && !location.isNone
-                  ? getTokenParachainId(location)
-                  : undefined,
-              decimals,
-              symbol,
-              maturity: maturity.toNumber(),
-              isTradable,
-              iconId: assetId,
-            }
-
-            bonds.push(asset)
-          }
-        }
-      } else if (isStableSwap) {
-        const decimals = 18
-
-        const detailsRaw = await api.query.stableswap.pools(id)
-
-        if (detailsRaw && !detailsRaw.isNone) {
-          const details = detailsRaw.unwrap()
-          const assets = details.assets.map((asset: any) => asset.toString())
-          const symbol = `${assets.length}-Pool`
-
-          const name = assets
-            .map((assetId) => {
-              if (assetId === NATIVE_ASSET_ID) {
-                return system.tokenSymbol.unwrap()[0].toString()
-              }
-
-              const meta = (rawAssetsMeta ?? rawAssetsData)
-                .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
-                //@ts-ignore
-                .unwrap()
-
-              if (meta) {
-                // @ts-ignore
-                return meta.symbol.toHuman() as string
-              }
-
-              return "N/A"
-            })
-            .join("/")
-
-          const iconId = assets.map((asset) => asset)
-
-          const asset: TStableSwap = {
-            ...assetCommon,
-            assetType: "StableSwap",
-            decimals,
-            assets,
-            name,
-            symbol,
-            iconId,
-          }
-          stableswap.push(asset)
-        }
-      } else if (isShareToken) {
-        const poolAddress = poolAddresses
-          .find(
-            (poolAddress) => poolAddress[1].toString() === assetCommon.id,
-          )?.[0]
-          .args[0].toString()
-
-        if (poolAddress) {
-          const poolAssets = xykPoolAssets.find(
-            (xykPool) => xykPool[0].args[0].toString() === poolAddress,
-          )?.[1]
-
-          if (poolAssets) {
-            const assets = poolAssets
-              .unwrap()
-              .map((poolAsset) => poolAsset.toString())
-
-            shareTokensRaw.push({
-              ...assetCommon,
-              assets,
-              poolAddress,
-            })
-          }
-        }
-      } else if (isExternal) {
-        const location = rawAssetsLocations.find(
-          (location) => location[0].args[0].toString() === id,
-        )?.[1]
-        const parachainId =
-          location && !location.isNone
-            ? getTokenParachainId(location)
-            : undefined
-        const externalTokenStored = externalTokens[dataEnv].find(
-          (token) =>
-            token.origin.toString() === parachainId &&
-            token.internalId === assetCommon.id,
-        )
-
-        const externalId =
-          location && !location.isNone
-            ? parachainId === PENDULUM_ID.toString()
-              ? getGeneralKey(location)
-              : getGeneralIndex(location)
-            : undefined
-
-        const asset: TToken = {
-          ...assetCommon,
-          assetType: assetType as "Token",
-          parachainId:
-            location && !location.isNone
-              ? getTokenParachainId(location)
-              : undefined,
-          externalId,
-          iconId: assetCommon.id,
-          ...(externalTokenStored
-            ? omit(["id", "internalId", "origin"], {
-                ...externalTokenStored,
-                externalId: externalTokenStored.id,
-              })
-            : {}),
-        }
-
-        external.push(asset)
-      }
-    }
-  }
-
-  const native = tokens.find((token) => token.id === NATIVE_ASSET_ID) as TToken
-  const hub = tokens.find(
-    (token) => token.id === hubAssetId.toString(),
-  ) as TToken
-  console.log(shareTokensRaw, "shareTokensRaw")
-  const shareTokens = shareTokensRaw.reduce<Array<TShareToken>>(
-    (acc, shareToken) => {
-      if (!shareToken.assets) return acc
-
-      const [assetAId, assetBId] = shareToken.assets
-
-      const assetA = [...tokens, ...bonds, ...external].find(
-        (token) => token.id === assetAId,
-      ) as TToken
-      const assetB = [...tokens, ...bonds, ...external].find(
-        (token) => token.id === assetBId,
-      ) as TToken
-
-      const isValidTokens = assetA?.name && assetB?.name
-
-      if (isValidTokens) {
-        const assetDecimal =
-          Number(assetA.id) > Number(assetB.id) ? assetB : assetA
-
-        const decimals = assetDecimal.decimals
-        const symbol = `${assetA.symbol}/${assetB.symbol}`
-        const name = `${assetA.name.split(" (")[0]}/${
-          assetB.name.split(" (")[0]
-        }`
-        const iconId = [assetA.id, assetB.id]
-
-        acc.push({
-          ...shareToken,
-          decimals,
-          symbol,
-          name,
-          assetType: "ShareToken",
-          iconId,
-        })
-      }
-      return acc
-    },
-    [],
-  )
-
-  // pass external tokens to trade router
-  await poolService.syncRegistry(externalTokens[dataEnv])
-
-  const sdk = await assetClient.getOnChainAssets(externalTokens[dataEnv])
-  //const pools = await tradeRouter.getPools()
-
-  const adjustedSdk = sdk.map((asset) => {
-    const { type, meta } = asset
-
-    const isToken = type === "Token"
-    const isBond = type === "Bond"
-    const isStableSwap = type === "StableSwap"
-    const isExternal = type === "External"
-
-    return {
-      ...asset,
-      iconId: meta ? Object.keys(meta) : asset.id,
-      isToken,
-      isBond,
-      isStableSwap,
-      isExternal,
-      parachainId: asset.origin?.toString(),
-      existentialDeposit: BN(asset.existentialDeposit),
-    }
-  })
-
-  console.log(sdk, "sdk")
-  console.log(adjustedSdk, "adjustedSdk")
-
-  try {
-    rawTradeAssets = await tradeRouter.getAllAssets()
-  } catch (e) {}
-
-  const tradableBonds = bonds.map((bond) => {
-    const isTradable = rawTradeAssets.some(
-      (tradeAsset) => tradeAsset.id === bond.id,
-    )
-
-    return { ...bond, isTradable }
-  })
-
-  return {
-    assets: {
-      tokens: adjustedSdk,
-      bonds: tradableBonds,
-      stableswap,
-      shareTokens,
-      external,
-      native,
-      hub,
-      rawTradeAssets,
-    },
-    poolService,
-    tradeRouter,
-    featureFlags: {
-      referrals: !!isReferralsEnabled,
-      dispatchPermit: !!isDispatchPermitEnabled,
-    },
-  }
+  isTradable: false,
+  type: "Token",
+  icon: "",
 }

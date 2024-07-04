@@ -22,7 +22,6 @@ import { getEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { useRpcProvider } from "providers/rpcProvider"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 import { ButtonTransparent } from "components/Button/Button"
@@ -30,6 +29,7 @@ import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
 import { TLPData } from "utils/omnipool"
+import { useAssets } from "api/assetDetails"
 
 export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
   const { t } = useTranslation()
@@ -160,7 +160,7 @@ export const useFarmingPositionsData = ({
 }: {
   search?: string
 } = {}) => {
-  const { assets } = useRpcProvider()
+  const { getShareTokenByAddress, getAsset } = useAssets()
   const { omnipoolDeposits, xykDeposits } = useUserDeposits()
   const xykDepositValues = useXYKDepositValues(xykDeposits)
   const accountDepositsShare = useAllOmnipoolDeposits()
@@ -181,8 +181,8 @@ export const useFarmingPositionsData = ({
         const poolId = deposit.data.ammPoolId.toString()
 
         const meta = isXyk
-          ? assets.getShareTokenByAddress(poolId)
-          : assets.getAsset(poolId)
+          ? getShareTokenByAddress(poolId)?.meta
+          : getAsset(poolId)
 
         if (!meta) return undefined
 
@@ -263,8 +263,9 @@ export const useFarmingPositionsData = ({
     bestNumber.data,
     xykDeposits,
     search,
-    assets,
-    xykDepositValues,
+    getShareTokenByAddress,
+    getAsset,
+    xykDepositValues.data,
   ])
 
   return { data, isLoading }

@@ -24,6 +24,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm } from "api/farms"
+import { useAssets } from "api/assetDetails"
 
 function FarmingPositionDetailsButton(props: {
   poolId: string
@@ -111,10 +112,10 @@ export const FarmingPosition = ({
   availableYieldFarms: Farm[]
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset, isShareToken } = useAssets()
 
-  const meta = assets.getAsset(poolId)
-  const isXYK = assets.isShareToken(meta)
+  const meta = getAsset(poolId)
+  const isXYK = isShareToken(meta)
 
   // use latest entry date
   const enteredDate = useEnteredDate(

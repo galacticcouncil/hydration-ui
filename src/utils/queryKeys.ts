@@ -11,6 +11,8 @@ import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
+  assets: (rpc: string) => ["assets", rpc],
+  bondsAssets: ["bondsAssets"],
   providerAccounts: (provider: string | undefined) => [
     "web3Accounts",
     provider,
@@ -160,16 +162,6 @@ export const QUERY_KEYS = {
   nextEvmPermitNonce: (account: Maybe<AccountId32 | string>) => [
     "evmPermitNonce",
     account,
-  ],
-  bestBuy: (params: Record<string, any>) => [
-    QUERY_KEY_PREFIX,
-    "bestBuy",
-    params,
-  ],
-  bestSell: (params: Record<string, any>) => [
-    QUERY_KEY_PREFIX,
-    "bestSell",
-    params,
   ],
   mathLoyaltyRates: (
     plannedYieldingPeriods: u32,
@@ -363,7 +355,7 @@ export const QUERY_KEYS = {
   ],
   xykPools: ["xykPools"], //TODO: refresh each block??
   xykConsts: ["xykConsts"],
-  shareTokens: ["shareTokens"],
+  shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
     QUERY_KEY_PREFIX,
     "totalXYKLiquidity",

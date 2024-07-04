@@ -18,7 +18,7 @@ import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "api/assetDetails"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()
@@ -64,9 +64,7 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isLoading) return <CellSkeleton />

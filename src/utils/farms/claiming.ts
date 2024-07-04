@@ -17,18 +17,26 @@ import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
 import { MultiCurrencyContainer } from "./claiming/multiCurrency"
 import { createMutableFarmEntry } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
+import { TAsset, useAssets } from "api/assetDetails"
 
 export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   const bestNumberQuery = useBestNumber()
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { omnipoolDeposits, xykDeposits } = useUserDeposits()
+  const {
+    getShareTokenByAddress,
+    shareTokens,
+    getAsset,
+    isShareToken,
+    getAssets,
+  } = useAssets()
 
-  const meta = poolId ? assets.getAsset(poolId) : undefined
-  const isXYK = assets.isShareToken(meta)
+  const meta = poolId ? getAsset(poolId) : undefined
+  const isXYK = isShareToken(meta)
 
   const filteredDeposits = useMemo(
     () =>
-      poolId
+      poolId && meta
         ? [...omnipoolDeposits, ...xykDeposits].filter((deposit) => {
             return (
               deposit.data.ammPoolId.toString() ===
@@ -45,7 +53,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
     ? [poolId]
     : [
         ...(omnipoolAssets.data?.map((asset) => asset.id.toString()) ?? []),
-        ...assets.shareTokens.map((asset) => asset.id),
+        ...shareTokens.map((asset) => asset.id),
       ]
 
   const farms = useFarms(poolIds)
@@ -63,7 +71,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
     ...new Set(allFarms.map((i) => i.globalFarm.rewardCurrency.toString())),
   ]
 
-  const metas = assets.getAssets(assetIds)
+  const metas = getAssets(assetIds) as TAsset[]
   const spotPrices = useDisplayPrices(assetIds)
 
   const accountAddresses = useMemo(
@@ -123,8 +131,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
       ?.map((record) =>
         record.data.yieldFarmEntries.map((farmEntry) => {
           const poolId = record.isXyk
-            ? assets.getShareTokenByAddress(record.data.ammPoolId.toString())
-                ?.id
+            ? getShareTokenByAddress(record.data.ammPoolId.toString())?.id
             : record.data.ammPoolId.toString()
 
           const aprEntry = allFarms.find(
@@ -161,9 +168,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
             (spot) => spot?.tokenIn === reward?.assetId,
           )
 
-          const meta = reward?.assetId
-            ? assets.getAsset(reward.assetId)
-            : undefined
+          const meta = reward?.assetId ? getAsset(reward.assetId) : undefined
 
           if (!reward || !spotPrice) return null
 
@@ -206,17 +211,18 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
         { displayValue: BN_0, assets: {}, depositRewards: [] },
       )
   }, [
-    accountAddresses,
-    accountBalances.data,
-    api.registry,
-    assets,
     bestNumberQuery,
-    depositNft,
-    allFarms,
     filteredDeposits,
-    metas,
-    oraclePrices,
+    accountBalances.data,
     spotPrices.data,
+    depositNft,
+    accountAddresses,
+    api.registry,
+    metas,
+    getShareTokenByAddress,
+    allFarms,
+    oraclePrices,
+    getAsset,
   ])
 
   return { data, isLoading }
@@ -229,10 +235,11 @@ export const useClaimFarmMutation = (
   onClose?: () => void,
   onBack?: () => void,
 ) => {
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { getAsset, isShareToken } = useAssets()
   const { createTransaction } = useStore()
-  const meta = poolId ? assets.getAsset(poolId) : undefined
-  const isXYK = assets.isShareToken(meta)
+  const meta = poolId ? getAsset(poolId) : undefined
+  const isXYK = isShareToken(meta)
 
   const { omnipoolDeposits, xykDeposits } = useUserDeposits()
 

@@ -31,6 +31,7 @@ import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { enableUnlockTokens } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
+import { useAssets } from "api/assetDetails"
 
 type Props = {
   row?: AssetsTableData
@@ -44,9 +45,7 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
   const { featureFlags } = useRpcProvider()

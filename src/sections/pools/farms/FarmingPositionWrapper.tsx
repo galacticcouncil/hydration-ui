@@ -16,10 +16,10 @@ import { ReactElement, useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { useAllOmnipoolDeposits } from "./position/FarmingPosition.utils"
 import { Separator } from "components/Separator/Separator"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useFarms } from "api/farms"
 import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
+import { useAssets } from "api/assetDetails"
 
 export const FarmingPositionWrapper = ({
   pool,
@@ -27,13 +27,13 @@ export const FarmingPositionWrapper = ({
   pool: TPoolFullData | TXYKPoolFullData
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
+  const { hub } = useAssets()
 
   const farms = useFarms([pool.id])
 
   const omnipoolMiningPositions = useAllOmnipoolDeposits()
-  const isXYK = assets.getAsset(pool.id).isShareToken
+  const isXYK = pool.meta.isShareToken
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -193,7 +193,7 @@ export const FarmingPositionWrapper = ({
                 value: total.value,
                 symbol: pool.symbol,
                 hub: total.hub,
-                hubSymbol: assets.hub.symbol,
+                hubSymbol: hub.symbol,
               })}
             </Text>
           )}

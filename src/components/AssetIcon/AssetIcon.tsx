@@ -9,11 +9,14 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
 import { MetadataStore } from "@galacticcouncil/ui"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { Icon } from "components/Icon/Icon"
+import { ResponsiveValue } from "utils/responsive"
+import { useAssets } from "api/assetDetails"
 
 const chains = Array.from(chainsMap.values())
 
@@ -41,9 +44,30 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
+export const MultipleAssetLogo = ({
+  iconId,
+  size = 26,
+}: {
+  iconId: string | string[] | undefined
+  size?: ResponsiveValue<number>
+}) => {
+  if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
+
+  return typeof iconId === "string" ? (
+    <Icon size={size} icon={<AssetLogo id={iconId} />} />
+  ) : (
+    <MultipleIcons
+      size={size}
+      icons={iconId.map((id) => ({
+        icon: <AssetLogo key={id} id={id} />,
+      }))}
+    />
+  )
+}
+
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const externalAssetsWhitelist = useMemo(
     () => MetadataStore.getInstance().externalWhitelist(),
@@ -51,7 +75,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   )
 
   const asset = useMemo(() => {
-    const assetDetails = id ? assets.getAsset(id) : undefined
+    const assetDetails = id ? getAsset(id) : undefined
 
     const chain = chains.find(
       (chain) =>
@@ -74,7 +98,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [assets, externalAssetsWhitelist, id])
+  }, [getAsset, externalAssetsWhitelist, id])
 
   if (asset.chain || asset.symbol)
     return (
