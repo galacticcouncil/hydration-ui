@@ -22,7 +22,6 @@ import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { useSettingsStore } from "state/store"
 import { theme } from "theme"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",

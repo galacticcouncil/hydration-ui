@@ -40,7 +40,7 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
           size={46}
           icon={
             <UigcAssetId
-              symbol={asset.symbol}
+              symbol={internalId ? asset.symbol : ""}
               ref={(e) =>
                 e?.shadowRoot
                   ?.querySelector("uigc-logo-asset")
