@@ -2,7 +2,6 @@ import PlutonicationIcon from "assets/icons/plutonication-icon.png"
 import { Wallet, WalletAccount } from "@talismn/connect-wallets"
 import {
   WalletProviderType,
-  getWalletProviderByType,
 } from "sections/web3-connect/Web3Connect.utils"
 
 import {
@@ -53,9 +52,10 @@ export class Plutonication implements Wallet {
 
     try {
       const accessCredentials = new AccessCredentials(
-        "wss://plutonication-acnha.ondigitalocean.app/",
+        "wss://plutonication.com/",
         dappName,
-        "https://plutonication-acnha.ondigitalocean.app/dapp/hydradx-icon",
+        "https://plutonication.com/dapp/hydration-icon",
+        "Hydration"
       )
 
       let pubkey = ""
@@ -78,8 +78,6 @@ export class Plutonication implements Wallet {
       console.log("Something failed ")
       console.log(exception)
     }
-
-    console.log("done")
   }
 
   enableProxy = async (dappName: string) => {
