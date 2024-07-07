@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { Icon } from "components/Icon/Icon"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "api/assetDetails"
 
@@ -34,25 +32,7 @@ export const AssetTableName = ({
           e.stopPropagation()
         }}
       >
-        {typeof iconIds === "string" ? (
-          <Icon
-            size={[large ? 28 : 26, 26]}
-            icon={<AssetLogo id={iconIds} />}
-          />
-        ) : (
-          <MultipleIcons
-            icons={iconIds.map((id) => {
-              return {
-                icon: (
-                  <Icon
-                    size={[large ? 28 : 26, 26]}
-                    icon={<AssetLogo key={id} id={id} />}
-                  />
-                ),
-              }
-            })}
-          />
-        )}
+        <MultipleAssetLogo size={[large ? 28 : 26, 26]} iconId={iconIds} />
 
         <div sx={{ flex: "column", width: "100%", gap: [0, 2] }}>
           <Text
