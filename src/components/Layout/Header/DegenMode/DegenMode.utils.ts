@@ -1,3 +1,4 @@
+import { useAssets } from "api/assetDetails"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore, useRefetchProviderData } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -13,7 +14,8 @@ export const useDegenModeSubscription = () => {
   const externalAssets = useExternalAssetRegistry(degenMode)
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { external } = useAssets()
 
   const hasInitializedDegenMode = useRef(false)
 
@@ -29,7 +31,7 @@ export const useDegenModeSubscription = () => {
       }
     }
 
-    const data = assets.external.reduce((acc, asset) => {
+    const data = external.reduce((acc, asset) => {
       const externalAsset = externalAssets[
         Number(asset.parachainId)
       ]?.data?.get(asset.externalId ?? "")
@@ -48,7 +50,7 @@ export const useDegenModeSubscription = () => {
       data,
       isSuccess,
     }
-  }, [assets, externalAssets, isLoaded])
+  }, [external, externalAssets, isLoaded])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {
