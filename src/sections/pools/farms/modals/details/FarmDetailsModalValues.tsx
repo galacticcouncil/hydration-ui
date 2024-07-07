@@ -5,7 +5,7 @@ import { useEnteredDate } from "utils/block"
 import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { Summary } from "components/Summary/Summary"
-import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "api/assetDetails"
 
 type FarmDetailsModalValuesProps = {
   poolId: string
@@ -21,7 +21,7 @@ export const FarmDetailsModalValues = ({
   yieldFarmId,
 }: FarmDetailsModalValuesProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const claimable = useClaimableAmount(poolId, depositNft)
 
   const depositReward = claimable.data?.depositRewards.find(
@@ -29,7 +29,7 @@ export const FarmDetailsModalValues = ({
   )
 
   const meta = depositReward?.assetId
-    ? assets.getAsset(depositReward.assetId)
+    ? getAssetWithFallback(depositReward.assetId)
     : undefined
   const entered = useEnteredDate(enteredBlock)
 

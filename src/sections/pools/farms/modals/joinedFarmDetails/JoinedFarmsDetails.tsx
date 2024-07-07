@@ -16,10 +16,10 @@ import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAssets } from "api/assetDetails"
 
 function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
   return depositNft.data.yieldFarmEntries.find(
@@ -35,11 +35,11 @@ function JoinedFarmsDetailsRedeposit(props: {
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
   const { account } = useAccount()
   const farms = useFarms([props.poolId])
-  const meta = assets.getAsset(props.poolId)
+  const meta = getAssetWithFallback(props.poolId)
   const position = useDepositShare(props.poolId, props.depositNft.id.toString())
 
   const availableFarms = farms.data?.filter(
@@ -108,10 +108,10 @@ function JoinedFarmsDetailsPositions(props: {
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
   const farms = useFarms([props.poolId])
-  const meta = assets.getAsset(props.poolId.toString())
+  const meta = getAssetWithFallback(props.poolId.toString())
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
@@ -191,7 +191,7 @@ export const JoinedFarmsDetails = (props: {
   depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
@@ -199,7 +199,7 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
-  const meta = assets.getAsset(props.poolId.toString())
+  const meta = getAssetWithFallback(props.poolId.toString())
 
   const farms = useFarms([props.poolId])
   const selectedFarm =

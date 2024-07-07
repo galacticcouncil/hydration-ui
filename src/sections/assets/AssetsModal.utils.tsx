@@ -7,7 +7,6 @@ import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAcountAssets, useAssets } from "api/assetDetails"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayPrices } from "utils/displayAsset"
-import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 
@@ -143,8 +142,13 @@ export const useAssetsData = ({
   allAssets?: boolean
   allowedAssets?: Maybe<u32 | string>[]
 }) => {
-  const { assets } = useRpcProvider()
-  const { external, stableswap, bonds: bondAssets, isBond } = useAssets()
+  const {
+    external,
+    stableswap,
+    bonds: bondAssets,
+    isBond,
+    tokens: tokenAssets,
+  } = useAssets()
   const { account } = useAccount()
   const accountAssets = useAcountAssets(account?.address)
 
@@ -211,7 +215,7 @@ export const useAssetsData = ({
 
     const tokens = allAssets
       ? getAssetBalances(
-          [...assets.tokens, ...stableswap, ...(withExternal ? external : [])],
+          [...tokenAssets, ...stableswap, ...(withExternal ? external : [])],
           tokensData,
         )
       : tokensData
@@ -222,7 +226,7 @@ export const useAssetsData = ({
   }, [
     allAssets,
     allowedAssets,
-    assets.tokens,
+    tokenAssets,
     external,
     search,
     spotPrices.data,

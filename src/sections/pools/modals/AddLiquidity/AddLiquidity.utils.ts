@@ -14,16 +14,15 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "api/assetDetails"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const omnipoolAssets = useOmnipoolAssets()
   const ommipoolAsset = omnipoolAssets.data?.find(
     (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
   )
-  const assetMeta = assets.getAsset(assetId.toString())
+  const assetMeta = getAssetWithFallback(assetId.toString())
 
   const { data: spotPrice } = useDisplayPrice(assetId)
 
@@ -73,13 +72,12 @@ export const useVerifyLimits = ({
   amount: string
   decimals: number
 }) => {
-  const { assets } = useRpcProvider()
-  const { hub } = useAssets()
+  const { hub, getAssetWithFallback } = useAssets()
   const omnipoolAssets = useOmnipoolAssets()
   const asset = omnipoolAssets.data?.find(
     (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
   )
-  const assetMeta = assets.getAsset(assetId)
+  const assetMeta = getAssetWithFallback(assetId)
   const hubBalance = useTokenBalance(hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
 
   const maxAddLiquidityLimit = useMaxAddLiquidityLimit()

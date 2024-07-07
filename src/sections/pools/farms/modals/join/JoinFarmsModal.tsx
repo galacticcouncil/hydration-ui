@@ -12,7 +12,6 @@ import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/Far
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { useBestNumber } from "api/chain"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Alert } from "components/Alert/Alert"
 import { Controller, useForm } from "react-hook-form"
 import { scaleHuman } from "utils/balance"
@@ -23,6 +22,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { TLPData } from "utils/omnipool"
+import { useAssets } from "api/assetDetails"
 
 type JoinFarmModalProps = {
   onClose: () => void
@@ -42,12 +42,12 @@ export const JoinFarmModal = ({
   mutation,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = assets.getAsset(poolId)
+  const meta = getAssetWithFallback(poolId)
   const bestNumber = useBestNumber()
   const shouldValidate = !!position?.amount
 

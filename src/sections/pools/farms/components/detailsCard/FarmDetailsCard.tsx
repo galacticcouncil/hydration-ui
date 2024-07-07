@@ -16,11 +16,11 @@ import { BLOCK_TIME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssets } from "api/assetDetails"
 
 type FarmDetailsCardProps = {
   poolId: string
@@ -38,9 +38,9 @@ export const FarmDetailsCard = ({
   compact,
 }: FarmDetailsCardProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
-  const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
+  const asset = getAssetWithFallback(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
 
   const isClickable = !!onSelect

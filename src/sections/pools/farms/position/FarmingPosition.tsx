@@ -16,7 +16,6 @@ import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
@@ -60,10 +59,10 @@ const ExitFarmsButton = (props: {
   depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
 
-  const meta = assets.getAsset(props.poolId.toString())
+  const meta = getAssetWithFallback(props.poolId.toString())
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
