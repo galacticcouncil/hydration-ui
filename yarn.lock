@@ -2477,7 +2477,7 @@
   dependencies:
     lodash.merge "^4.6.2"
 
-"@moonbeam-network/xcm-utils@2.1.1", "@moonbeam-network/xcm-utils@^2.0.8":
+"@moonbeam-network/xcm-utils@2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@moonbeam-network/xcm-utils/-/xcm-utils-2.1.1.tgz#9b3b73af2a08166e98890913a8cc165ce18bfe5e"
   integrity sha512-KZpa806nuijneacyScOPKL51+SNEMRrcSFAP8bLOWmDPvgMtn/lLwzGsMNqwTlhi5hDwtoDJPizK0Y4DMCRoUg==
