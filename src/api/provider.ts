@@ -229,6 +229,7 @@ export const useProviderData = () => {
       const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
         api.query.referrals,
         api.tx.multiTransactionPayment.dispatchPermit,
+        tradeRouter.getPools(),
       ])
 
       return {

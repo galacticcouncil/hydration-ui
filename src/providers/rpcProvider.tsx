@@ -79,6 +79,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         isLoaded: true,
       }
     }
+
     return {
       isLoaded: false,
       api: {} as TProviderContext["api"],
@@ -86,7 +87,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       featureFlags: {} as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
-  }, [assets, displayAsset, isAssets, providerData.data])
+  }, [displayAsset, isAssets, providerData.data])
 
   return (
     <ProviderContext.Provider value={value}>
