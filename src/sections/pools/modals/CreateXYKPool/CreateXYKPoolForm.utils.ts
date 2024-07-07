@@ -1,8 +1,10 @@
 import { useAcountAssets, useAssets } from "api/assetDetails"
 import BigNumber from "bignumber.js"
+import { useShallow } from "hooks/useShallow"
 import { useMemo } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useSettingsStore } from "state/store"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
 
@@ -49,7 +51,7 @@ export const filterIdsByExclusivity = (
 export const useAllowedXYKPoolAssets = () => {
   const { account } = useAccount()
   const { all, isExternal } = useAssets()
-
+  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
   const { isAdded } = useUserExternalTokenStore()
 
   const accountAssets = useAcountAssets(account?.address)
@@ -67,10 +69,10 @@ export const useAllowedXYKPoolAssets = () => {
       const shouldBeVisible = isTradable || isNotTradableWithBalance
 
       if (isExternal(asset)) {
-        return shouldBeVisible && isAdded(asset.externalId)
+        return shouldBeVisible && (degenMode || isAdded(asset.externalId))
       }
 
       return shouldBeVisible
     })
-  }, [accountAssets, all, isAdded, isExternal])
+  }, [accountAssets, all, degenMode, isAdded, isExternal])
 }

@@ -1,11 +1,14 @@
-import { useAssets } from "api/assetDetails"
+import * as React from "react"
+import { AssetId } from "@galacticcouncil/ui"
+import { createComponent } from "@lit-labs/react"
+import { useMemo } from "react"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Search } from "components/Search/Search"
 import { Text } from "components/Typography/Text/Text"
+import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
@@ -17,7 +20,15 @@ import {
 import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
+import { useSettingsStore } from "state/store"
 import { theme } from "theme"
+import { useAssets } from "api/assetDetails"
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -38,7 +49,8 @@ export const AddTokenListModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
-  const { tokens } = useAssets()
+  const { tokens, external } = useAssets()
+  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -47,18 +59,45 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const selectedParachain = assetRegistry?.[parachainId]
 
-  const externalAssets = selectedParachain.data ?? []
-  const internalAssets =
-    tokens.filter((asset) => asset.parachainId === parachainId.toString()) ?? []
+  const externalAssets = selectedParachain.data
+    ? Array.from(selectedParachain.data.values())
+    : []
+
+  const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
+    const internalAssets =
+      tokens.filter((asset) => asset.parachainId === parachainId.toString()) ??
+      []
+
+    const internalAssetsMap = new Map(
+      internalAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    const registeredAssets =
+      external.filter(
+        (asset) => asset.parachainId === parachainId.toString(),
+      ) ?? []
+
+    const registeredAssetsMap = new Map(
+      registeredAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    return {
+      registeredAssetsMap,
+      internalAssetsMap,
+    }
+  }, [external, parachainId, tokens])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
     if (isDOT) return false
 
-    const isStoredOnChain = internalAssets.some(
-      (internalAsset) => internalAsset.externalId === asset.id,
-    )
-    if (isStoredOnChain) return false
+    const isChainStored = !!internalAssetsMap.get(asset.id)
+    if (isChainStored) return false
+
+    const isRegistered = !!registeredAssetsMap.get(asset.id)
+    if (degenMode && isRegistered) {
+      return false
+    }
 
     const isUserStored = isAdded(asset.id)
     if (isUserStored) return false
@@ -108,13 +147,19 @@ export const AddTokenListModal: React.FC<Props> = ({
                         onAssetSelect?.({ ...asset, origin: parachainId })
                       }
                     >
-                      <Text
-                        fs={14}
-                        sx={{ flex: "row", align: "center", gap: 10 }}
-                      >
-                        <Icon icon={<AssetLogo />} size={24} />
-                        {asset.name}
-                      </Text>
+                      <Icon
+                        icon={
+                          <UigcAssetId
+                            symbol={
+                              registeredAssetsMap.get(asset.id)
+                                ? asset.symbol
+                                : ""
+                            }
+                          />
+                        }
+                        size={24}
+                      />
+                      <Text fs={14}>{asset.name}</Text>
                     </AssetRow>
                   ))}
                 </>

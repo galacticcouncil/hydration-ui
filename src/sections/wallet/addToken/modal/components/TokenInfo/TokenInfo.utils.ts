@@ -24,9 +24,9 @@ const useMissingExternalAssets = (ids: string[]) => {
         .map((tokenId) => {
           const externalId = getExternalByExternalId(tokenId)?.externalId
 
-          const meta = externalAssets.data?.find(
-            (externalAsset) => externalAsset.id === externalId,
-          )
+          const meta = externalId
+            ? externalAssets.data?.get(externalId)
+            : undefined
           return meta
             ? {
                 ...meta,

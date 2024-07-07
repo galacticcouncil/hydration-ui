@@ -127,6 +127,7 @@ export const AssetSelect = (props: {
           <AssetSelectButton
             assetId={props.id}
             onClick={props.onSelectAssetClick}
+            sx={{ maxWidth: 280 }}
             css={{ pointerEvents: !props.onSelectAssetClick ? "none" : "auto" }}
           />
           <AssetInput

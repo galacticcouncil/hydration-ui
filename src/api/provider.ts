@@ -15,8 +15,9 @@ import {
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useAssetRegistry } from "state/store"
+import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -150,8 +151,10 @@ export const useProviderAssets = () => {
     provider
       ? async () => {
           const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
-          const { tokens: externalTokens } =
-            useUserExternalTokenStore.getState()
+          const degenMode = useSettingsStore.getState().degenMode
+          const { tokens: externalTokens } = degenMode
+            ? ExternalAssetCursor.deref().state
+            : useUserExternalTokenStore.getState()
           const { sync } = useAssetRegistry.getState()
 
           const assetClient = new AssetClient(provider.api)
