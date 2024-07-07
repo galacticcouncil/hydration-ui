@@ -4,6 +4,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { undefinedNoop } from "utils/helpers"
+import { PalletDemocracyVoteAccountVote } from "@polkadot/types/lookup"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 
@@ -17,6 +18,26 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   locked4x: 403200,
   locked5x: 806400,
   locked6x: 1612800,
+}
+
+const voteConviction = (vote?: PalletDemocracyVoteAccountVote): String => {
+  if (vote?.isSplit) {
+    return 'None'
+  } else if (vote?.isStandard) {
+    return vote.asStandard?.vote.conviction.toString()
+  } else {
+    return 'None'
+  }
+}
+
+const voteAmount = (vote?: PalletDemocracyVoteAccountVote): BN => {
+  if (vote?.isSplit) {
+    return vote.asSplit.toBigNumber() + vote.asSplit.nay.toBigNumber()
+  } else if (vote?.isStandard) {
+    return vote.asStandard.balance.toBigNumber()
+  } else {
+    return BN_0
+  }
 }
 
 export const useReferendums = (type?: "ongoing" | "finished") => {
@@ -66,8 +87,8 @@ export const getReferendums =
         id: key.args[0].toString(),
         referendum: codec.unwrap(),
         voted: !!vote,
-        amount: vote?.[1].asStandard?.balance.toBigNumber(),
-        conviction: vote?.[1].asStandard?.vote.conviction.toString(),
+        amount: voteAmount(vote?.[1]),
+        conviction: voteConviction(vote?.[1]),
         isDelegating,
       }
     })
@@ -131,12 +152,10 @@ export const getAccountUnlockedVotes =
     if (!votesRaw || votesRaw.isDelegating) return undefined
 
     const votes = votesRaw.asDirect.votes.map(([id, dataRaw]) => {
-      const test = dataRaw.asStandard
-
       return {
         id: id.toString(),
-        balance: test.balance.toBigNumber(),
-        conviction: test.vote.conviction.toString(),
+        balance: voteAmount(dataRaw),
+        conviction: voteConviction(dataRaw)
       }
     })
 
