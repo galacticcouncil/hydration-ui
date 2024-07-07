@@ -52,6 +52,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose }: Props) => {
             title: t("selectAsset.title"),
             content: (
               <AssetsModalContent
+                defaultSelectedAsssetId={pool.id}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   back()

@@ -174,8 +174,9 @@ export const usePools = () => {
       return undefined
 
     const rows = omnipoolAssets.data.map((asset) => {
-      const spotPrice = spotPrices.data?.find((sp) => sp?.tokenIn === asset.id)
-        ?.spotPrice
+      const spotPrice = spotPrices.data?.find(
+        (sp) => sp?.tokenIn === asset.id,
+      )?.spotPrice
 
       const tradabilityData = assetsTradability.data?.find(
         (t) => t.id === asset.id,
@@ -226,9 +227,9 @@ export const usePools = () => {
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
         volume,
-        isVolumeLoading: volumes.isLoading,
+        isVolumeLoading: volumes?.isLoading,
         fee,
-        isFeeLoading: fees.isLoading,
+        isFeeLoading: fees?.isLoading,
         omnipoolPositions: filteredOmnipoolPositions,
         miningPositions: filteredMiningPositions,
         isPositions,

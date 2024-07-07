@@ -112,8 +112,8 @@ export function XcmPage() {
     const walletMode = isHydra
       ? WalletMode.Default
       : isEvm
-      ? WalletMode.EVM
-      : WalletMode.Substrate
+        ? WalletMode.EVM
+        : WalletMode.Substrate
 
     setIncomingSrcChain(srcChain)
     toggleWeb3Modal(walletMode, {
@@ -133,8 +133,8 @@ export function XcmPage() {
     search.success && search.data.asset
       ? search.data.asset
       : srcChain === "ethereum"
-      ? "eth"
-      : undefined
+        ? "eth"
+        : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist =
