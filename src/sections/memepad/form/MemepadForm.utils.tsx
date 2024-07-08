@@ -190,7 +190,7 @@ export const useMemepadForms = () => {
   }
 
   const currentForm = formComponents[step]
-  const summaryStep = formComponents.length
+  const isFinalStep = step === formComponents.length
 
   const isLoading =
     createToken.isLoading || registerToken.isLoading || xcmTx.isLoading
@@ -201,7 +201,7 @@ export const useMemepadForms = () => {
     formStep2,
     formStep3,
     currentForm,
-    isFinalStep: step === summaryStep,
+    isFinalStep,
     isDirty,
     isSubmitted,
     summary,

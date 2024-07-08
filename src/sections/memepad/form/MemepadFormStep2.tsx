@@ -1,5 +1,5 @@
 import { useCrossChainTransfer } from "api/xcm"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
@@ -12,6 +12,8 @@ import {
 import BN from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
 import { BN_NAN } from "utils/constants"
+import { AddressBook } from "components/AddressBook/AddressBook"
+import { Modal } from "components/Modal/Modal"
 
 type MemepadFormStep2Props = {
   srcAddress: string
@@ -23,6 +25,10 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   srcAddress,
 }) => {
   const { t } = useTranslation()
+  const [addressBookOpen, setAddressBookOpen] = useState(false)
+
+  const openAddressBook = () => setAddressBookOpen(true)
+  const closeAddressBook = () => setAddressBookOpen(false)
 
   const destAddress = form.watch("account")
 
@@ -33,7 +39,6 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
     dstAddr: destAddress,
     dstChain: MEMEPAD_XCM_DST_CHAIN,
   })
-  console.log({ transfer })
 
   const balance = BN(transfer?.balance?.amount?.toString() ?? "0")
 
@@ -46,33 +51,36 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   )
 
   return (
-    <form autoComplete="off">
-      <div sx={{ flex: "column", gap: 8 }}>
-        <Controller
-          name="amount"
-          control={form.control}
-          render={({ field, fieldState: { error } }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.addToken.form.amount")}
-              asset="10"
-              error={error?.message}
-              balance={balance}
-              {...field}
-            />
-          )}
-        />
-        <Controller
-          name="account"
-          control={form.control}
-          render={({ field, fieldState: { error } }) => (
-            <WalletTransferAccountInput
-              label={t("wallet.addToken.form.xcmAccount")}
-              error={error?.message}
-              {...field}
-            />
-          )}
-        />
-      </div>
+    <>
+      <form autoComplete="off">
+        <div sx={{ flex: "column", gap: 8 }}>
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({ field, fieldState: { error } }) => (
+              <WalletTransferAssetSelect
+                title={t("wallet.addToken.form.amount")}
+                asset="10"
+                error={error?.message}
+                balance={balance}
+                {...field}
+              />
+            )}
+          />
+          <Controller
+            name="account"
+            control={form.control}
+            render={({ field, fieldState: { error } }) => (
+              <WalletTransferAccountInput
+                label={t("wallet.addToken.form.xcmAccount")}
+                error={error?.message}
+                openAddressBook={openAddressBook}
+                {...field}
+              />
+            )}
+          />
+        </div>
+      </form>
       <Text fs={14} sx={{ flex: "row", justify: "space-between", mt: 10 }}>
         <span sx={{ color: "basic400" }}>Source fee:</span>
         <span>
@@ -91,6 +99,18 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
           })}
         </span>
       </Text>
-    </form>
+      <Modal
+        open={addressBookOpen}
+        onClose={closeAddressBook}
+        title={t("addressbook.title")}
+      >
+        <AddressBook
+          onSelect={(address) => {
+            form.setValue("account", address)
+            closeAddressBook()
+          }}
+        />
+      </Modal>
+    </>
   )
 }

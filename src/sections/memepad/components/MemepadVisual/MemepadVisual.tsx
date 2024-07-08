@@ -44,13 +44,12 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
         animation1.start({
           x: (moveX / offseFactor1) * -1,
           y: (moveY / offseFactor1) * -1,
-          rotate: (moveX + moveY) * 0.0025,
           rotateY: (moveX + moveY) * 0.0025,
           rotateX: (moveX + moveY) * 0.0025,
         })
         animation2.start({
-          x: (moveX / offseFactor2) * -1,
-          y: (moveY / offseFactor2) * -1,
+          x: moveX / offseFactor2,
+          y: moveY / offseFactor2,
           rotate: (moveX + moveY) * 0.005,
         })
         animation3.start({
