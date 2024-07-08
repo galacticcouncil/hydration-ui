@@ -30,7 +30,6 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { enableUnlockTokens } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 
 type Props = {
   row?: AssetsTableData
@@ -222,8 +221,9 @@ const NativeLocks = ({
     memo[type] = (
       <Trans
         t={t}
-        i18nKey={`wallet.assets.table.details.unlock.${msType}`}
+        i18nKey={`wallet.assets.table.details.${unlocable.value.isZero() ? "clear" : "unlock"}.${msType}`}
         tOptions={{
+          amount: unlocable.ids.length,
           value: unlocable.value,
         }}
       >
@@ -233,7 +233,10 @@ const NativeLocks = ({
     return memo
   }, {} as ToastMessage)
 
-  const unlock = useUnlockTokens({ ids: unlocable.ids, toast })
+  const unlock = useUnlockTokens({
+    ids: unlocable.ids,
+    toast,
+  })
 
   return (
     <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
@@ -309,66 +312,59 @@ const NativeLocks = ({
         </div>
       </div>
 
-      {enableUnlockTokens && (
-        <>
-          <div
-            sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%", mb: 20 }}
-          >
-            <Text fs={14} lh={16} color="whiteish500">
-              {t("wallet.assets.table.details.unlockable")}
-            </Text>
+      <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%", mb: 20 }}>
+        <Text fs={14} lh={16} color="whiteish500">
+          {t("wallet.assets.table.details.unlockable")}
+        </Text>
 
-            <Text fs={14} lh={14} color="white">
-              {unlocable.isLoading ? (
-                <Skeleton height={14} width={30} />
-              ) : (
-                t("value.token", { value: unlocable.value ?? BN_0 })
-              )}
+        <Text fs={14} lh={14} color="white">
+          {unlocable.isLoading ? (
+            <Skeleton height={14} width={30} />
+          ) : (
+            t("value.token", { value: unlocable.value ?? BN_0 })
+          )}
+        </Text>
+        <Text fs={12} lh={12} color="whiteish500">
+          {unlocable.isLoading ? (
+            <Skeleton height={10} width={20} />
+          ) : (
+            <DisplayValue value={unlocable.displayValue ?? BN_0} />
+          )}
+        </Text>
+        {unlocable.votesUnlocked ? (
+          <SLocksContainer>
+            <Text fs={11} lh={15} color="darkBlue200">
+              {t("wallet.assets.table.details.expired", {
+                count: unlocable.votesUnlocked,
+              })}
             </Text>
-            <Text fs={12} lh={12} color="whiteish500">
-              {unlocable.isLoading ? (
-                <Skeleton height={10} width={20} />
-              ) : (
-                <DisplayValue value={unlocable.displayValue ?? BN_0} />
-              )}
-            </Text>
-            {unlocable.votesUnlocked ? (
-              <SLocksContainer>
-                <Text fs={11} lh={15} color="darkBlue200">
-                  {t("wallet.assets.table.details.expired", {
-                    count: unlocable.votesUnlocked,
-                  })}
-                </Text>
-              </SLocksContainer>
-            ) : null}
-          </div>
+          </SLocksContainer>
+        ) : null}
+      </div>
 
-          <div
-            sx={{
-              flex: "row",
-              align: "center",
-              justify: "end",
-              flexBasis: "50%",
-              mb: 20,
-            }}
-          >
-            <Button
-              variant="primary"
-              size="compact"
-              disabled={
-                account?.isExternalWalletConnected ||
-                unlocable.value.isZero() ||
-                !unlocable.ids.length ||
-                unlock.isLoading
-              }
-              onClick={() => unlock.mutate()}
-              isLoading={unlock.isLoading}
-            >
-              {t("wallet.assets.table.details.btn")}
-            </Button>
-          </div>
-        </>
-      )}
+      <div
+        sx={{
+          flex: "row",
+          align: "center",
+          justify: "end",
+          flexBasis: "50%",
+          mb: 20,
+        }}
+      >
+        <Button
+          variant="primary"
+          size="compact"
+          disabled={
+            account?.isExternalWalletConnected ||
+            !unlocable.ids.length ||
+            unlock.isLoading
+          }
+          onClick={() => unlock.mutate()}
+          isLoading={unlock.isLoading}
+        >
+          {t("wallet.assets.table.details.btn")}
+        </Button>
+      </div>
 
       <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
         <Text fs={14} lh={16} color="whiteish500">
