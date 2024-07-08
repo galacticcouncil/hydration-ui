@@ -7,6 +7,7 @@ import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
+import { Plutonication } from "./Plutonication/Plutonication"
 import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
@@ -23,6 +24,7 @@ export enum WalletProviderType {
   Enkrypt = "enkrypt",
   WalletConnect = "walletconnect",
   ExternalWallet = "external",
+  Plutonication = "plutonication",
 }
 
 export type WalletProvider = {
@@ -88,6 +90,8 @@ const walletConnect: Wallet = new WalletConnect({
 
 const externalWallet: Wallet = new ExternalWallet()
 
+const plutonication: Wallet = new Plutonication()
+
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
   metaMask,
@@ -97,6 +101,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   novaWallet,
   walletConnect,
   externalWallet,
+  plutonication,
 ].map((wallet) => ({
   wallet,
   type: normalizeProviderType(wallet),
