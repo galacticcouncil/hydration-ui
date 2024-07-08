@@ -27,21 +27,21 @@ export const SContainer = styled.div`
     aspect-ratio: 350 / 500;
   }
 
-  & > div img {
+  & > div {
     position: absolute;
   }
 
-  & > div:nth-of-type(3) img {
+  & > div:nth-of-type(3) {
     top: 0;
     left: 0;
   }
 
-  & > div:nth-of-type(2) img {
+  & > div:nth-of-type(2) {
     top: 220px;
     right: 0;
   }
 
-  & > div:nth-of-type(1) img {
+  & > div:nth-of-type(1) {
     top: 360px;
     left: 50px;
   }
