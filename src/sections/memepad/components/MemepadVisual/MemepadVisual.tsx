@@ -37,25 +37,26 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
       const moveX = clientX - window.innerWidth / 2
       const moveY = clientY - window.innerHeight / 2
       const offseFactor1 = 100
-      const offseFactor2 = 200
-      const offseFactor3 = 400
+      const offseFactor2 = 150
+      const offseFactor3 = 600
 
       animationRef.current = window.requestAnimationFrame(() => {
         animation1.start({
           x: (moveX / offseFactor1) * -1,
           y: (moveY / offseFactor1) * -1,
-          rotateY: (moveX + moveY) * 0.0025,
-          rotateX: (moveX + moveY) * 0.0025,
+          rotateY: moveY * 0.0025,
+          rotateX: moveX * 0.0025,
+          rotateZ: (moveX + moveY) * 0.0025,
         })
         animation2.start({
           x: moveX / offseFactor2,
           y: moveY / offseFactor2,
-          rotate: (moveX + moveY) * 0.005,
+          rotateZ: (moveX + moveY) * 0.005,
         })
         animation3.start({
           x: (moveX / offseFactor3) * -1,
           y: (moveY / offseFactor3) * -1,
-          rotate: (moveX + moveY) * -0.0025,
+          rotateZ: (moveX + moveY) * -0.005,
         })
       })
     }

@@ -12,7 +12,7 @@ export const SContainer = styled.div`
 
   pointer-events: none;
 
-  perspective: 240px;
+  perspective: 300px;
 
   @media ${theme.viewport.gte.sm} {
     position: relative;
