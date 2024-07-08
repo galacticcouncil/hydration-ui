@@ -418,4 +418,11 @@ export const QUERY_KEYS = {
   pendulumAssetRegistry: ["pendulumAssetRegistry"],
   polkadotRegistry: ["polkadotRegistry"],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
+  xcmTransfer: (
+    asset: string,
+    srcAddr: string,
+    srcChain: string,
+    dstAddr: string,
+    dstChain: string,
+  ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
 } as const

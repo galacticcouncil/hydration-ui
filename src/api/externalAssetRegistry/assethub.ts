@@ -8,7 +8,7 @@ import { arrayToMap } from "utils/rx"
 export const assethub = chainsMap.get("assethub") as Parachain
 
 //@ts-ignore
-assethub.ws = "ws://172.26.1.70:8000"
+assethub.ws = "ws://172.25.126.217:8000"
 
 export const getAssetHubAssets = async () => {
   try {

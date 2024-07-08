@@ -8,6 +8,10 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
 import {
+  CreateXYKPoolFormData,
+  useCreateXYKPoolForm,
+} from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
+import {
   CreateTokenValues,
   getInternalIdFromResult,
   useCreateToken,
@@ -20,18 +24,19 @@ import { required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import {
-  CreateXYKPoolFormData,
-  useCreateXYKPoolForm,
-} from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
+import { useCrossChainTransaction } from "api/xcm"
+
+export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
+export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
+export const DEFAULT_TOKEN_DECIMALS = 12
 
 export type MemepadStep1Values = CreateTokenValues & {
   origin: number
 }
 
 export type MemepadStep2Values = {
-  asset: string
-  address: string
+  amount: string
+  account: string
 }
 
 export type MemepadStep3Values = CreateXYKPoolFormData
@@ -49,7 +54,7 @@ export const useMemepadStep1Form = () => {
       name: "",
       symbol: "",
       supply: "",
-      decimals: 12,
+      decimals: DEFAULT_TOKEN_DECIMALS,
       origin: assethub.parachainId,
       account: account?.address ?? "",
     },
@@ -67,15 +72,17 @@ export const useMemepadStep1Form = () => {
 }
 
 export const useMemepadStep2Form = () => {
+  const { account } = useAccount()
+
   return useForm<MemepadStep2Values>({
     defaultValues: {
-      asset: "",
-      address: "",
+      amount: "",
+      account: account?.address ?? "",
     },
     resolver: zodResolver(
       z.object({
-        asset: required,
-        address: required,
+        amount: required,
+        account: required,
       }),
     ),
   })
@@ -84,6 +91,7 @@ export const useMemepadStep2Form = () => {
 export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
+  const { account } = useAccount()
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
@@ -95,6 +103,7 @@ export const useMemepadForms = () => {
     summary?.xykPoolAssetId,
   )
 
+  const xcmTx = useCrossChainTransaction()
   const createToken = useCreateToken()
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
@@ -115,7 +124,7 @@ export const useMemepadForms = () => {
 
   const formComponents = [
     <MemepadFormStep1 form={formStep1} />,
-    <MemepadFormStep2 form={formStep2} />,
+    <MemepadFormStep2 form={formStep2} srcAddress={account?.address ?? ""} />,
     <MemepadFormStep3
       form={formStep3}
       assetA={summary?.internalId}
@@ -158,8 +167,16 @@ export const useMemepadForms = () => {
     }
 
     if (step === 1) {
-      return formStep2.handleSubmit((values) => {
-        console.log(values)
+      return formStep2.handleSubmit(async (values) => {
+        await xcmTx.mutateAsync({
+          amount: parseFloat(values.amount),
+          asset: "usdt",
+          srcAddr: summary?.account ?? values.account,
+          srcChain: MEMEPAD_XCM_SRC_CHAIN,
+          dstAddr: values.account,
+          dstChain: MEMEPAD_XCM_DST_CHAIN,
+        })
+
         setNextStep(values)
       })()
     }
@@ -175,7 +192,8 @@ export const useMemepadForms = () => {
   const currentForm = formComponents[step]
   const summaryStep = formComponents.length
 
-  const isLoading = createToken.isLoading || registerToken.isLoading
+  const isLoading =
+    createToken.isLoading || registerToken.isLoading || xcmTx.isLoading
 
   return {
     step,
