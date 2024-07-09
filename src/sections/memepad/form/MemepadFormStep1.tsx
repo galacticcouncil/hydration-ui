@@ -61,6 +61,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
         <Controller
           name="account"
           control={form.control}
+          disabled
           render={({ field }) => (
             <InputBox
               label={t("wallet.addToken.form.account")}

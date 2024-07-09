@@ -543,7 +543,6 @@
   "wallet.addToken.form.decimals": "Amount of decimals",
   "wallet.addToken.form.supply": "Supply",
   "wallet.addToken.form.account": "Creator account",
-  "wallet.addToken.form.xcmAccount": "To Hydration address",
   "wallet.addToken.form.amount": "Asset to transfer",
   "wallet.addToken.form.hydrationAddress": "To Hydration address",
   "wallet.addToken.form.multilocation.placeholder": "Paste multillocation here",

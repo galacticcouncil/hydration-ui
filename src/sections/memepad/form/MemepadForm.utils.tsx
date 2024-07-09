@@ -36,7 +36,7 @@ export type MemepadStep1Values = CreateTokenValues & {
 
 export type MemepadStep2Values = {
   amount: string
-  account: string
+  hydrationAddress: string
 }
 
 export type MemepadStep3Values = CreateXYKPoolFormData
@@ -77,7 +77,7 @@ export const useMemepadStep2Form = () => {
   return useForm<MemepadStep2Values>({
     defaultValues: {
       amount: "",
-      account: account?.address ?? "",
+      hydrationAddress: account?.address ?? "",
     },
     resolver: zodResolver(
       z.object({
@@ -171,9 +171,9 @@ export const useMemepadForms = () => {
         await xcmTx.mutateAsync({
           amount: parseFloat(values.amount),
           asset: "usdt",
-          srcAddr: summary?.account ?? values.account,
+          srcAddr: summary?.account ?? values.hydrationAddress,
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
-          dstAddr: values.account,
+          dstAddr: values.hydrationAddress,
           dstChain: MEMEPAD_XCM_DST_CHAIN,
         })
 

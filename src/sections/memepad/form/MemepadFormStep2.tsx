@@ -30,7 +30,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   const openAddressBook = () => setAddressBookOpen(true)
   const closeAddressBook = () => setAddressBookOpen(false)
 
-  const destAddress = form.watch("account")
+  const destAddress = form.watch("hydrationAddress")
 
   const { data: transfer } = useCrossChainTransfer({
     asset: "usdt", //@TODO: get dynamic asset
@@ -68,11 +68,11 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             )}
           />
           <Controller
-            name="account"
+            name="hydrationAddress"
             control={form.control}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAccountInput
-                label={t("wallet.addToken.form.xcmAccount")}
+                label={t("wallet.addToken.form.hydrationAddress")}
                 error={error?.message}
                 openAddressBook={openAddressBook}
                 {...field}
@@ -106,7 +106,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
       >
         <AddressBook
           onSelect={(address) => {
-            form.setValue("account", address)
+            form.setValue("hydrationAddress", address)
             closeAddressBook()
           }}
         />
