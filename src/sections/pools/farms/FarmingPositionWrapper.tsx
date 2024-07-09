@@ -133,7 +133,7 @@ export const FarmingPositionWrapper = ({
           />
         ),
         moveTo: !acc.height.isZero()
-          ? acc.height.minus(20).toNumber()
+          ? acc.height.minus(20 * i).toNumber()
           : acc.height.toNumber(),
         height: cardHeight,
       })

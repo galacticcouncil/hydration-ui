@@ -130,7 +130,7 @@ export const CollapsedPositionsList = ({
           animate={
             isCollapsing
               ? {
-                  height: collapsed ? "auto" : positionsNumber * 25,
+                  height: collapsed ? "auto" : positionsNumber * 20,
                 }
               : { height: "auto" }
           }
