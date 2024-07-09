@@ -72,6 +72,12 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
 export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
   const { t } = useTranslation()
 
+  if (
+    !pool.shareTokenIssuance?.myPoolShare?.gt(0) &&
+    !pool.miningPositions.length
+  )
+    return null
+
   return (
     <>
       <Text
@@ -127,6 +133,7 @@ export const CollapsedPositionsList = ({
       )}
       <LazyMotion features={domAnimation}>
         <SWrapperContainer
+          initial={{ height: positionsNumber * 20 }}
           animate={
             isCollapsing
               ? {
@@ -139,6 +146,7 @@ export const CollapsedPositionsList = ({
             return (
               <SPositionContainer
                 key={index + position.height}
+                initial={{ top: -position.moveTo }}
                 animate={{
                   top: collapsed ? "auto" : -position.moveTo,
                 }}
