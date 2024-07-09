@@ -58,7 +58,7 @@ export const WalletAssetsTableActionsMob = ({
     ? featureFlags.dispatchPermit
     : true
 
-  const isUnknownExternalAsset = row.isExternal && !row.name
+  const isUnknownExternalAsset = row.meta.isExternal && !row.name
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
