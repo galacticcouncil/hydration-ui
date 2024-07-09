@@ -20,7 +20,7 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   locked6x: 1612800,
 }
 
-const voteConviction = (vote?: PalletDemocracyVoteAccountVote): String => {
+const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
   if (vote?.isSplit) {
     return 'None'
   } else if (vote?.isStandard) {
@@ -30,9 +30,9 @@ const voteConviction = (vote?: PalletDemocracyVoteAccountVote): String => {
   }
 }
 
-const voteAmount = (vote?: PalletDemocracyVoteAccountVote): BN => {
+const voteAmount = (vote?: PalletDemocracyVoteAccountVote) => {
   if (vote?.isSplit) {
-    return vote.asSplit.toBigNumber() + vote.asSplit.nay.toBigNumber()
+    return vote.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
   } else if (vote?.isStandard) {
     return vote.asStandard.balance.toBigNumber()
   } else {
