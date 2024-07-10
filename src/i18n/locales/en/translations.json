@@ -937,10 +937,10 @@
   "migration.import.confirm.button": "Yes, import settings",
   "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration",
   "submitTransaction":{
-    "title": "Decode Transaction",
+    "title": "Submit Transaction",
     "validation": "Invalid hex",
     "warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
-    "label": "hex-encoded call",
+    "label": "Encoded call data",
     "toasts": {
       "onSuccess": "Extrinsic successful",
       "onLoading": "Extrinsic submitted"
