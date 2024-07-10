@@ -2,11 +2,7 @@ import { NATIVE_ASSET_ID } from "utils/api"
 
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import {
-  QueryObserverOptions,
-  useQueries,
-  useQuery,
-} from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"

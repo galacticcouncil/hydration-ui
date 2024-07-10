@@ -1,1 +1,1 @@
-export * from './MemepadSpinner';
+export * from "./MemepadSpinner"
