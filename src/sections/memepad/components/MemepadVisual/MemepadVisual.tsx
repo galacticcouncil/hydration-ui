@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { SBottleCaps, SContainer } from "./MemepadVisual.styled"
+import { SContainer } from "./MemepadVisual.styled"
 import {
   useAnimation,
   useReducedMotion,
@@ -74,7 +74,7 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
   return (
     <LazyMotion features={domAnimation}>
       <SContainer className={className} as={motion.div}>
-        {isDesktop ? (
+        {isDesktop && (
           <>
             <motion.div animate={animation3}>
               <img src={bottlecap3} alt="" width={150} height={150} />
@@ -86,8 +86,6 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
               <img src={bottlecap1} alt="" width={250} height={250} />
             </motion.div>
           </>
-        ) : (
-          <SBottleCaps />
         )}
       </SContainer>
     </LazyMotion>

@@ -2,10 +2,10 @@ import { Button } from "components/Button/Button"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { MemepadSummaryValues } from "sections/memepad/form/MemepadForm.utils"
 import { SContainer, SHeading, SRowItem } from "./MemepadSummary.styled"
-import { SBottleCaps } from "sections/memepad/components/MemepadVisual"
 import { Text } from "components/Typography/Text/Text"
 import DecorativeStarIcon from "assets/icons/DecorativeStarIcon.svg?react"
 import { useTranslation } from "react-i18next"
+import { shortenAccountAddress } from "utils/formatting"
 
 type MemepadSummaryProps = {
   values: MemepadSummaryValues | null
@@ -19,10 +19,6 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   const { t } = useTranslation()
   return (
     <SContainer>
-      <SBottleCaps
-        sx={{ display: ["none", "block"] }}
-        css={{ position: "absolute", left: "100%", top: 0 }}
-      />
       <div>
         <SHeading>
           <DecorativeStarIcon />
@@ -52,7 +48,60 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             <Text sx={{ mb: 12 }} color="brightBlue300">
               Here is your summary:
             </Text>
-            {Object.entries(values).map(([key, value]) => (
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.name")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {values.name}
+              </Text>
+            </SRowItem>
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.symbol")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {values.symbol}
+              </Text>
+            </SRowItem>
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.decimals")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {values.decimals}
+              </Text>
+            </SRowItem>
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.deposit")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {t("value.token", {
+                  value: values.deposit,
+                })}
+              </Text>
+            </SRowItem>
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.supply")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {t("value.token", {
+                  value: values.supply,
+                })}
+              </Text>
+            </SRowItem>
+
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("wallet.addToken.form.account")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {values.account ? shortenAccountAddress(values.account) : ""}
+              </Text>
+            </SRowItem>
+            {/* {Object.entries(values).map(([key, value]) => (
               <SRowItem>
                 <Text fs={14} color="basic400">
                   {t(`wallet.addToken.form.${key}` as any)}
@@ -63,7 +112,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
                     : value}
                 </Text>
               </SRowItem>
-            ))}
+            ))} */}
           </div>
         )}
         <div
@@ -77,10 +126,6 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           </Button>
         </div>
       </div>
-      <SBottleCaps
-        sx={{ display: ["none", "block"] }}
-        css={{ position: "absolute", right: "100%", top: 0 }}
-      />
     </SContainer>
   )
 }

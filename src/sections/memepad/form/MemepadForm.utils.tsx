@@ -95,7 +95,7 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(2)
+  const [step, setStep] = useState(3)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>({
     name: "TEST",
     symbol: "TEST",
