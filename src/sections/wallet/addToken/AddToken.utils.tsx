@@ -496,6 +496,8 @@ export type CreateTokenValues = {
   account: string
 }
 
+export const AH_ASSET_CREATION_DOT_COST = 10
+
 export const useCreateToken = ({
   onSuccess,
 }: {
@@ -557,7 +559,7 @@ export const useCreateToken = ({
         ]),
         xcallMeta: {
           srcChain: assethub.key,
-          srcChainFee: fee.toString(),
+          srcChainFee: fee.plus(AH_ASSET_CREATION_DOT_COST).toString(),
           srcChainFeeBalance: feeBalance.toString(),
           srcChainFeeSymbol: assetHubNativeToken.asset.originSymbol,
         },

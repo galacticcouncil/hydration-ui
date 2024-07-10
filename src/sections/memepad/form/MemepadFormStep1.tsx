@@ -7,6 +7,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetHubNativeBalance } from "api/externalAssetRegistry/assethub"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { undefinedNoop } from "utils/helpers"
+import { AH_ASSET_CREATION_DOT_COST } from "sections/wallet/addToken/AddToken.utils"
 
 type MemepadFormStep1Props = {
   form: UseFormReturn<MemepadStep1Values>
@@ -96,7 +97,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           title="Asset creation cost"
           withoutMaxBtn
           name="dotBalance"
-          value="10"
+          value={AH_ASSET_CREATION_DOT_COST.toString()}
           balance={data?.balance}
           balanceLabel={t("balance")}
           onChange={undefinedNoop}

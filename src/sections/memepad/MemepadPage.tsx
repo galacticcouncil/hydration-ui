@@ -9,8 +9,11 @@ import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MemepadForm } from "./form/MemepadForm"
+import { MemepadSpinner } from "./components/MemepadSpinner"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
-export const MemepadPage = () => {
+const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
   const context = useMemepadForms()
@@ -28,13 +31,30 @@ export const MemepadPage = () => {
           <MemepadHeader />
           <Spacer size={35} />
           <SContent>
-            {isLoaded ? <MemepadForm {...context} /> : <div />}
+            {isLoaded ? <MemepadForm {...context} /> : <MemepadSpinner />}
             <MemepadVisual />
           </SContent>
           <MemepadActionBar onNext={submitNext} />
         </>
       )}
       <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
+    </>
+  )
+}
+
+export const MemepadPage = () => {
+  const { account } = useAccount()
+
+  return account ? (
+    <MemepadPageContent key={account?.address} />
+  ) : (
+    <>
+      <MemepadHeader />
+      <Spacer size={35} />
+      <SContent>
+        <Web3ConnectModalButton />
+        <MemepadVisual />
+      </SContent>
     </>
   )
 }
