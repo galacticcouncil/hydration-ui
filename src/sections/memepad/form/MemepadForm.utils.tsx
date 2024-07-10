@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
 import {
   CreateXYKPoolFormData,
+  useCreateXYKPool,
   useCreateXYKPoolForm,
 } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
 import {
@@ -94,8 +95,20 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(0)
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
+  const [step, setStep] = useState(2)
+  const [summary, setSummary] = useState<MemepadSummaryValues | null>({
+    name: "TEST",
+    symbol: "TEST",
+    deposit: "2",
+    supply: "1000000",
+    decimals: 12,
+    origin: 1000,
+    account: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    id: "41",
+    internalId: "1000204",
+    amount: "999998",
+    hydrationAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  })
   const { account } = useAccount()
 
   const { addToken } = useUserExternalTokenStore()
@@ -119,6 +132,12 @@ export const useMemepadForms = () => {
       refetchProvider()
     },
   })
+
+  const createXykPool = useCreateXYKPool(
+    summary?.internalId ?? "",
+    summary?.xykPoolAssetId ?? "",
+  )
+
   const { getNextAssetHubId } = useGetNextAssetHubId()
 
   const reset = () => {
@@ -134,7 +153,6 @@ export const useMemepadForms = () => {
       assetId={summary?.internalId ?? ""}
       assetKey={buildExternalAssetKey(summary)}
       srcAddress={account?.address ?? ""}
-      deposit={summary?.deposit ?? ""}
     />,
     <MemepadFormStep3
       form={formStep3}
@@ -205,9 +223,12 @@ export const useMemepadForms = () => {
     }
 
     if (step === 2) {
-      setNextStep({})
-      return formStep3.handleSubmit((values) => {
+      return formStep3.handleSubmit(async (values) => {
         console.log(values)
+        await createXykPool.mutateAsync({
+          assetA: values.assetA,
+          assetB: values.assetB,
+        })
         setNextStep(values)
       })()
     }

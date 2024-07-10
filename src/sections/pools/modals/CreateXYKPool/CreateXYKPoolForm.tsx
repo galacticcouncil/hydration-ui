@@ -2,25 +2,21 @@ import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Controller, UseFormReturn } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { ToastMessage, useStore } from "state/store"
 import { BN_1 } from "utils/constants"
 import { CreateXYKPoolFormData } from "./CreateXYKPoolForm.utils"
 import BigNumber from "bignumber.js"
-import { TOAST_MESSAGES } from "state/toasts"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { useState } from "react"
 
 type CreateXYKPoolFormProps = {
   form: UseFormReturn<CreateXYKPoolFormData>
   assetA: string
   assetB: string
+  onSubmit: (values: CreateXYKPoolFormData) => void
   onAssetAOpen?: () => void
   onAssetBOpen?: () => void
-  onClose?: () => void
   submitHidden?: boolean
 }
 
@@ -28,81 +24,20 @@ export const CreateXYKPoolForm = ({
   form,
   assetA,
   assetB,
-  onClose,
+  onSubmit,
   onAssetAOpen,
   onAssetBOpen,
   submitHidden = false,
 }: CreateXYKPoolFormProps) => {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
 
-  const { api, assets } = useRpcProvider()
+  const { assets } = useRpcProvider()
 
   const assetAMeta = assets.getAsset(assetA ?? "")
   const assetBMeta = assets.getAsset(assetB ?? "")
 
   const assetAValue = BigNumber(form.watch("assetA"))
   const assetBValue = BigNumber(form.watch("assetB"))
-
-  const { createTransaction } = useStore()
-
-  const handleSubmit = async (values: CreateXYKPoolFormData) => {
-    const data = {
-      assetA: {
-        id: assetAMeta.id,
-        amount: new BigNumber(values.assetA)
-          .shiftedBy(assetAMeta.decimals)
-          .toFixed(),
-      },
-      assetB: {
-        id: assetBMeta.id,
-        amount: new BigNumber(values.assetB)
-          .shiftedBy(assetBMeta.decimals)
-          .toFixed(),
-      },
-    }
-
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`liquidity.pool.xyk.create.toast.${msType}`}
-          tOptions={{
-            symbolA: assetAMeta.symbol,
-            symbolB: assetBMeta.symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
-
-    await createTransaction(
-      {
-        tx: api.tx.xyk.createPool(
-          data.assetA.id,
-          data.assetA.amount,
-          data.assetB.id,
-          data.assetB.amount,
-        ),
-      },
-      {
-        onClose,
-        onBack: () => {},
-        onSubmitted: () => {
-          onClose?.()
-          form.reset()
-        },
-        onSuccess: () => {
-          queryClient.refetchQueries(QUERY_KEYS.xykPools)
-        },
-        toast,
-      },
-    )
-  }
 
   const [rateReversed, setRateReversed] = useState(false)
 
@@ -131,7 +66,7 @@ export const CreateXYKPoolForm = ({
 
   return (
     <form
-      onSubmit={form.handleSubmit(handleSubmit)}
+      onSubmit={form.handleSubmit(onSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",

@@ -7,6 +7,7 @@ import {
   createPoolExclusivityMap,
   filterIdsByExclusivity,
   useAllowedXYKPoolAssets,
+  useCreateXYKPool,
   useCreateXYKPoolForm,
 } from "./CreateXYKPoolForm.utils"
 import { UseFormReturn } from "react-hook-form"
@@ -67,11 +68,20 @@ export const CreateXYKPool = ({
   )
 
   const defaultForm = useCreateXYKPoolForm(assetA, assetB)
+  const formInstance = controlledForm || defaultForm
+
+  const createXykPool = useCreateXYKPool(assetA, assetB, {
+    onClose: onTxClose,
+    onSubmitted: () => {
+      onTxClose?.()
+      formInstance.reset()
+    },
+  })
 
   const form = (
     <CreateXYKPoolForm
-      form={controlledForm || defaultForm}
-      onClose={onTxClose}
+      form={formInstance}
+      onSubmit={createXykPool.mutateAsync}
       onAssetAOpen={onAssetAOpen}
       onAssetBOpen={onAssetBOpen}
       assetA={assetA}
