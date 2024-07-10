@@ -10,9 +10,9 @@ import {
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
-import bottlecap1 from "assets/images/bottlecap1.png"
-import bottlecap2 from "assets/images/bottlecap2.png"
-import bottlecap3 from "assets/images/bottlecap3.png"
+import bottlecap1 from "assets/images/bottlecap1.webp"
+import bottlecap2 from "assets/images/bottlecap2.webp"
+import bottlecap3 from "assets/images/bottlecap3.webp"
 
 export type MemepadVisualProps = {
   className?: string
