@@ -44,8 +44,6 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
     dstChain: MEMEPAD_XCM_DST_CHAIN,
   })
 
-  console.log({ transfer })
-
   const balance = BN(transfer?.balance?.amount?.toString() ?? "0")
   const balanceMax = BN(transfer?.max?.amount?.toString() ?? "0")
 
@@ -64,6 +62,20 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
           <Controller
             name="amount"
             control={form.control}
+            rules={{
+              required: t("error.required"),
+              validate: {
+                maxBalance: (value) =>
+                  BN(value)
+                    .shiftedBy(transfer?.max?.decimals ?? 0)
+                    .lte(balanceMax) ||
+                  t("wallet.addToken.form.error.maxTransferable", {
+                    value: balanceMax,
+                    fixedPointScale: transfer?.max?.decimals,
+                    symbol: transfer?.balance?.symbol,
+                  }),
+              },
+            }}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAssetSelect
                 title={t("wallet.addToken.form.amount")}
@@ -78,6 +90,9 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
           <Controller
             name="hydrationAddress"
             control={form.control}
+            rules={{
+              required: t("error.required"),
+            }}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAccountInput
                 label={t("wallet.addToken.form.hydrationAddress")}

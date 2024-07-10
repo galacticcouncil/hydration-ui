@@ -92,7 +92,6 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
                 })}
               </Text>
             </SRowItem>
-
             <SRowItem>
               <Text fs={14} color="basic400">
                 {t("wallet.addToken.form.account")}
@@ -101,18 +100,6 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
                 {values.account ? shortenAccountAddress(values.account) : ""}
               </Text>
             </SRowItem>
-            {/* {Object.entries(values).map(([key, value]) => (
-              <SRowItem>
-                <Text fs={14} color="basic400">
-                  {t(`wallet.addToken.form.${key}` as any)}
-                </Text>
-                <Text fs={14} color="brightBlue300">
-                  {typeof value === "string" && value.length > 10
-                    ? value.slice(0, 10)
-                    : value}
-                </Text>
-              </SRowItem>
-            ))} */}
           </div>
         )}
         <div
@@ -121,9 +108,9 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           <Button size="small" onClick={onReset}>
             Create another asset
           </Button>
-          <Button size="small" onClick={onReset}>
+          {/* <Button size="small" onClick={onReset}>
             Add logo through GitHub
-          </Button>
+          </Button> */}
         </div>
       </div>
     </SContainer>

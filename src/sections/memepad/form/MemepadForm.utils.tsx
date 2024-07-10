@@ -49,6 +49,11 @@ export type MemepadSummaryValues = Partial<
   MemepadStep1Values & MemepadStep2Values & MemepadStep3Values
 > & { internalId?: string; xykPoolAssetId?: string }
 
+function buildExternalAssetKey(summary: MemepadSummaryValues | null) {
+  if (!summary) return ""
+  return `${summary.symbol?.toLowerCase()}${ASSETHUB_EXTERNAL_ASSET_SUFFIX}${summary.id}`
+}
+
 export const useMemepadStep1Form = () => {
   const { account } = useAccount()
 
@@ -85,18 +90,13 @@ export const useMemepadStep2Form = () => {
       amount: "",
       hydrationAddress: account?.address ?? "",
     },
-    resolver: zodResolver(
-      z.object({
-        amount: required,
-        hydrationAddress: required,
-      }),
-    ),
   })
 }
 
 export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
+
   const { account } = useAccount()
 
   const { addToken } = useUserExternalTokenStore()
@@ -155,6 +155,7 @@ export const useMemepadForms = () => {
 
   const isDirty = formInstances.some((form) => form.formState.isDirty)
   const isSubmitted = formInstances.every((form) => form.formState.isSubmitted)
+  const isSubmitting = formInstances.some((form) => form.formState.isSubmitting)
 
   const setNextStep = (values: MemepadSummaryValues) => {
     setStep((prev) => prev + 1)
@@ -206,13 +207,17 @@ export const useMemepadForms = () => {
           dstChain: MEMEPAD_XCM_DST_CHAIN,
         })
 
+        // @TODO check when the transaction is actually done
+        const sleep = (ms: number) =>
+          new Promise((resolve) => setTimeout(resolve, ms))
+        await sleep(5000)
+
         setNextStep(values)
       })()
     }
 
     if (step === 2) {
       return formStep3.handleSubmit(async (values) => {
-        console.log(values)
         await createXykPool.mutateAsync({
           assetA: values.assetA,
           assetB: values.assetB,
@@ -226,7 +231,10 @@ export const useMemepadForms = () => {
   const isFinalStep = step === formComponents.length
 
   const isLoading =
-    createToken.isLoading || registerToken.isLoading || xcmTx.isLoading
+    isSubmitting ||
+    createToken.isLoading ||
+    registerToken.isLoading ||
+    xcmTx.isLoading
 
   return {
     step,
@@ -242,9 +250,4 @@ export const useMemepadForms = () => {
     reset,
     isLoading,
   }
-}
-
-function buildExternalAssetKey(summary: MemepadSummaryValues | null) {
-  if (!summary) return ""
-  return `${summary.symbol?.toLowerCase()}${ASSETHUB_EXTERNAL_ASSET_SUFFIX}${summary.id}`
 }

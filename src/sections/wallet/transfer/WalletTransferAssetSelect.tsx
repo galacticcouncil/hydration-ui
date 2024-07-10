@@ -29,6 +29,10 @@ export const WalletTransferAssetSelect = (props: {
   const { account } = useAccount()
   const balance = useTokenBalance(props.asset, account?.address)
 
+  console.log({ balance, asset: props.asset })
+
+  console.log("err", props.asset, balance.isLoading, balance.error)
+
   return (
     <AssetSelect
       name={props.name}

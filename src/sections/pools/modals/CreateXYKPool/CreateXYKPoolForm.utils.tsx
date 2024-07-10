@@ -117,8 +117,8 @@ export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
 }
 
 export const useCreateXYKPool = (
-  assetA: string,
-  assetB: string,
+  assetA?: string,
+  assetB?: string,
   {
     onClose,
     onSubmitted,

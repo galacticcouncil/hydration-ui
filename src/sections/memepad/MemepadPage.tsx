@@ -1,7 +1,5 @@
 import { Spacer } from "components/Spacer/Spacer"
-import { Stepper } from "components/Stepper/Stepper"
 import { useRouteBlock } from "hooks/useRouteBlock"
-import { useMemo } from "react"
 import { SContent } from "./MemepadPage.styled"
 import { MemepadActionBar } from "./components/MemepadActionBar"
 import { MemepadVisual } from "./components/MemepadVisual"
@@ -9,40 +7,17 @@ import { MemepadHeader } from "./components/MemepadHeader"
 import { useMemepadForms } from "./form/MemepadForm.utils"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
-import { Spinner } from "components/Spinner/Spinner"
 import { useRpcProvider } from "providers/rpcProvider"
+import { MemepadForm } from "./form/MemepadForm"
 
 export const MemepadPage = () => {
   const { isLoaded } = useRpcProvider()
-  const {
-    step,
-    currentForm,
-    submitNext,
-    isFinalStep,
-    isDirty,
-    isSubmitted,
-    summary,
-    reset,
-    isLoading,
-  } = useMemepadForms()
+
+  const context = useMemepadForms()
+  const { submitNext, isFinalStep, isDirty, isSubmitted, summary, reset } =
+    context
 
   const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
-
-  const steps = useMemo(() => {
-    const stepLabels = [
-      "Create & Register",
-      "Transfer Liquidity",
-      "Create Isolated Pool",
-      "Summary",
-    ]
-    return stepLabels.map(
-      (label, index) =>
-        ({
-          label,
-          state: step === index ? "active" : step > index ? "done" : "todo",
-        }) as const,
-    )
-  }, [step])
 
   return (
     <>
@@ -53,23 +28,10 @@ export const MemepadPage = () => {
           <MemepadHeader />
           <Spacer size={35} />
           <SContent>
-            <div>
-              <Stepper fullWidth steps={steps} />
-              <Spacer size={60} />
-              {!isLoaded || isLoading ? (
-                <Spinner size={120} sx={{ mx: "auto", my: 50 }} />
-              ) : (
-                currentForm
-              )}
-            </div>
-            <div>
-              <MemepadVisual />
-            </div>
+            {isLoaded ? <MemepadForm {...context} /> : <div />}
+            <MemepadVisual />
           </SContent>
-          <MemepadActionBar
-            disabled={step >= steps.length - 1}
-            onNext={submitNext}
-          />
+          <MemepadActionBar onNext={submitNext} />
         </>
       )}
       <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
