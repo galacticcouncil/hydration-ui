@@ -14,10 +14,10 @@ export const assethub = chainsMap.get("assethub") as Parachain
 
 // TEMP CHOPSTICKS SETUP
 //@ts-ignore
-assethub.ws = "ws://172.25.126.217:8000"
-const hydradx = chainsMap.get("hydradx") as Parachain
+// assethub.ws = "ws://172.25.126.217:8000"
+// const hydradx = chainsMap.get("hydradx") as Parachain
 //@ts-ignore
-hydradx.ws = "ws://172.25.126.217:8001"
+// hydradx.ws = "ws://172.25.126.217:8001"
 
 export const getAssetHubAssets = async () => {
   try {
