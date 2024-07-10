@@ -96,7 +96,7 @@ export const useMemepadStep2Form = () => {
 
 export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>()
+  const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
   const { account } = useAccount()
 
   const { addToken } = useUserExternalTokenStore()
