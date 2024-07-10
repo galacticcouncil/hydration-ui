@@ -1,7 +1,6 @@
 import { assetsMap, chainsConfigMap, chainsMap } from "@galacticcouncil/xcm-cfg"
 import { ConfigService, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
-// import { external } from "@galacticcouncil/apps"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
@@ -20,9 +19,6 @@ export const xcmConfigService = new ConfigService({
   chains: chainsMap,
   chainsConfig: chainsConfigMap,
 })
-
-/* const assetData = external.buildAssetData(ext, "_ah_")
-external.buildAssethubConfig(assetData, xcmConfigService) */
 
 export const wallet = new Wallet({
   config: xcmConfigService,
