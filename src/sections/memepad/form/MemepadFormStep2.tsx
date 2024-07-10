@@ -15,6 +15,8 @@ import { BN_NAN } from "utils/constants"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 
+const ALLOW_ADDRESSBOOK = false
+
 type MemepadFormStep2Props = {
   form: UseFormReturn<MemepadStep2Values>
   assetId: string
@@ -97,8 +99,11 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
               <WalletTransferAccountInput
                 label={t("wallet.addToken.form.hydrationAddress")}
                 error={error?.message}
-                openAddressBook={openAddressBook}
+                openAddressBook={
+                  ALLOW_ADDRESSBOOK ? openAddressBook : undefined
+                }
                 {...field}
+                css={!ALLOW_ADDRESSBOOK && { pointerEvents: "none" }}
               />
             )}
           />

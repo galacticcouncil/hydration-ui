@@ -554,7 +554,8 @@
   "wallet.addToken.form.multilocation.label": "Multilocation",
   "wallet.addToken.form.button.register.hydra": "Register on Hydration",
   "wallet.addToken.form.button.register.forMe": "Add to my UI",
-  "wallet.addToken.reviewTransaction.modal.title": "Create asset on Assethub",
+  "wallet.addToken.reviewTransaction.modal.create.title": "Create asset on Assethub",
+  "wallet.addToken.reviewTransaction.modal.register.title": "Register asset on Hydration",
   "wallet.addToken.form.info": {
     "title":"Additional data",
     "registered": "Asset registered on Hydration",

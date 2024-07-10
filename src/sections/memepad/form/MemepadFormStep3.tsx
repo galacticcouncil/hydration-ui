@@ -1,10 +1,13 @@
+import { TAsset } from "api/assetDetails"
+import { useTokenBalance } from "api/balances"
+import { Modal } from "components/Modal/Modal"
 import { FC, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
-import { CreateXYKPool } from "sections/pools/modals/CreateXYKPool/CreateXYKPool"
-import { MemepadStep3Values } from "./MemepadForm.utils"
-import { Modal } from "components/Modal/Modal"
 import { useTranslation } from "react-i18next"
-import { TAsset } from "api/assetDetails"
+import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
+import { CreateXYKPool } from "sections/pools/modals/CreateXYKPool/CreateXYKPool"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { MemepadStep3Values } from "./MemepadForm.utils"
 
 type MemepadFormStep3Props = {
   form: UseFormReturn<MemepadStep3Values>
@@ -18,11 +21,27 @@ export const MemepadFormStep3: FC<MemepadFormStep3Props> = ({
   onAssetBSelect,
 }) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
 
   const [assetsBOpen, setAssetsBOpen] = useState(false)
 
   const onClose = () => {
     setAssetsBOpen(false)
+  }
+
+  const { data: balance } = useTokenBalance(assetA, account?.address, {
+    refetchInterval: 2500,
+  })
+
+  const isReady = !!balance?.freeBalance.gt(0)
+
+  if (!isReady) {
+    return (
+      <MemepadSpinner
+        title="Waiting for funds"
+        description="Your funds are arriving to Hydration. This can take a while. Don't close your browser or tab."
+      />
+    )
   }
 
   return (

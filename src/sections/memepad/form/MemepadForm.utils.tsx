@@ -94,7 +94,7 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(1)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
 
   const { account } = useAccount()
@@ -109,7 +109,6 @@ export const useMemepadForms = () => {
     summary?.xykPoolAssetId,
   )
 
-  const xcmTx = useCrossChainTransaction()
   const createToken = useCreateToken()
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
@@ -120,10 +119,13 @@ export const useMemepadForms = () => {
       refetchProvider()
     },
   })
-
+  const xcmTx = useCrossChainTransaction()
   const createXykPool = useCreateXYKPool(
     summary?.internalId ?? "",
     summary?.xykPoolAssetId ?? "",
+    {
+      onSuccess: refetchProvider,
+    },
   )
 
   const { getNextAssetHubId } = useGetNextAssetHubId()
@@ -206,11 +208,6 @@ export const useMemepadForms = () => {
           dstAddr: values.hydrationAddress,
           dstChain: MEMEPAD_XCM_DST_CHAIN,
         })
-
-        // @TODO check when the transaction is actually done
-        const sleep = (ms: number) =>
-          new Promise((resolve) => setTimeout(resolve, ms))
-        await sleep(5000)
 
         setNextStep(values)
       })()

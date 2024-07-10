@@ -25,6 +25,7 @@ interface Props {
   placeholder?: string
   rightIcon?: ReactNode
   openAddressBook?: () => void
+  className?: string
 }
 
 export const WalletTransferAccountInput = (props: Props) => {
@@ -43,6 +44,7 @@ export const WalletTransferAccountInput = (props: Props) => {
         disabled={isDisabled}
         htmlFor={props.name}
         error={!!props.error}
+        className={props.className}
       >
         <Text fs={12} color="basic500" tTransform={"uppercase"} sx={{ mb: 8 }}>
           {props.label}

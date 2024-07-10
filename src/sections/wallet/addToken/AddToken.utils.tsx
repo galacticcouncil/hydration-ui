@@ -256,6 +256,7 @@ export const useRegisterToken = ({
 
     return await createTransaction(
       {
+        title: t("wallet.addToken.reviewTransaction.modal.register.title"),
         tx: api.tx.assetRegistry.registerExternal(assetInput),
       },
       {
@@ -543,7 +544,7 @@ export const useCreateToken = ({
 
     return await createTransaction(
       {
-        title: t("wallet.addToken.reviewTransaction.modal.title"),
+        title: t("wallet.addToken.reviewTransaction.modal.create.title"),
         tx: api.tx.utility.batchAll([
           api.tx.assets.create(values.id, values.account, deposit),
           api.tx.assets.setMetadata(

@@ -1,8 +1,8 @@
 import { Spacer } from "components/Spacer/Spacer"
-import { Spinner } from "components/Spinner/Spinner"
 import { Stepper } from "components/Stepper/Stepper"
 import { useMemo } from "react"
 import { useMemepadForms } from "./MemepadForm.utils"
+import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
 
 type MemepadFormProps = ReturnType<typeof useMemepadForms>
 
@@ -32,11 +32,7 @@ export const MemepadForm: React.FC<MemepadFormProps> = ({
     <div>
       <Stepper fullWidth steps={steps} />
       <Spacer size={60} />
-      {isLoading ? (
-        <Spinner size={120} sx={{ mx: "auto", my: 50 }} />
-      ) : (
-        currentForm
-      )}
+      {isLoading ? <MemepadSpinner /> : currentForm}
       {/* <pre sx={{ color: "white" }}>{JSON.stringify(summary, null, 2)}</pre> */}
     </div>
   )

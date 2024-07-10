@@ -2,7 +2,11 @@ import { NATIVE_ASSET_ID } from "utils/api"
 
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import {
+  QueryObserverOptions,
+  useQueries,
+  useQuery,
+} from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
@@ -56,6 +60,7 @@ export const getTokenBalance =
 export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
+  options: { refetchInterval?: number } = {},
 ) => {
   const { api, isLoaded } = useRpcProvider()
 
@@ -64,7 +69,7 @@ export const useTokenBalance = (
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
     enabled ? getTokenBalance(api, address, id) : undefinedNoop,
-    { enabled },
+    { enabled, ...options },
   )
 }
 

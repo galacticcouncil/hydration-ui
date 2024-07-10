@@ -122,7 +122,12 @@ export const useCreateXYKPool = (
   {
     onClose,
     onSubmitted,
-  }: { onClose?: () => void; onSubmitted?: () => void } = {},
+    onSuccess,
+  }: {
+    onClose?: () => void
+    onSubmitted?: () => void
+    onSuccess?: () => void
+  } = {},
 ) => {
   const { t } = useTranslation()
   const { api, assets, isLoaded } = useRpcProvider()
@@ -183,6 +188,7 @@ export const useCreateXYKPool = (
         onSubmitted,
         onSuccess: () => {
           queryClient.refetchQueries(QUERY_KEYS.xykPools)
+          onSuccess?.()
         },
         toast,
       },
