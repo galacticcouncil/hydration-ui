@@ -14,14 +14,14 @@ type TransferProps = {
   dstChain: string
 }
 
-const config = new ConfigService({
+export const xcmConfigService = new ConfigService({
   assets: assetsMap,
   chains: chainsMap,
   chainsConfig: chainsConfigMap,
 })
 
 export const wallet = new Wallet({
-  config,
+  config: xcmConfigService,
 })
 
 export const useCrossChainTransfer = ({

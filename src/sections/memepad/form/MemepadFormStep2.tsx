@@ -16,12 +16,16 @@ import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 
 type MemepadFormStep2Props = {
-  srcAddress: string
   form: UseFormReturn<MemepadStep2Values>
+  assetId: string
+  assetKey: string
+  srcAddress: string
 }
 
 export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   form,
+  assetId,
+  assetKey,
   srcAddress,
 }) => {
   const { t } = useTranslation()
@@ -33,14 +37,17 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   const destAddress = form.watch("hydrationAddress")
 
   const { data: transfer } = useCrossChainTransfer({
-    asset: "usdt", //@TODO: get dynamic asset
+    asset: assetKey,
     srcAddr: srcAddress,
     srcChain: MEMEPAD_XCM_SRC_CHAIN,
     dstAddr: destAddress,
     dstChain: MEMEPAD_XCM_DST_CHAIN,
   })
 
+  console.log({ transfer })
+
   const balance = BN(transfer?.balance?.amount?.toString() ?? "0")
+  const balanceMax = BN(transfer?.max?.amount?.toString() ?? "0")
 
   const srcFee = BN(transfer?.srcFee?.amount?.toString() ?? BN_NAN).shiftedBy(
     -(transfer?.srcFee?.decimals ?? 0),
@@ -60,9 +67,10 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAssetSelect
                 title={t("wallet.addToken.form.amount")}
-                asset="10"
+                asset={assetId}
                 error={error?.message}
                 balance={balance}
+                balanceMax={balanceMax}
                 {...field}
               />
             )}

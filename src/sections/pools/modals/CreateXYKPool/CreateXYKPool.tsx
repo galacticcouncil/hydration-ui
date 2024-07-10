@@ -16,6 +16,7 @@ type CreateXYKPoolProps = {
   controlledForm?: UseFormReturn<CreateXYKPoolFormData>
   defaultAssetA?: string
   defaultAssetB?: string
+  submitHidden?: boolean
   onTxClose?: () => void
   onAssetAOpen?: () => void
   onAssetBOpen?: () => void
@@ -33,6 +34,7 @@ export const CreateXYKPool = ({
   controlledForm,
   defaultAssetA = "",
   defaultAssetB = "",
+  submitHidden,
   onTxClose,
   onAssetAOpen,
   onAssetBOpen,
@@ -74,6 +76,7 @@ export const CreateXYKPool = ({
       onAssetBOpen={onAssetBOpen}
       assetA={assetA}
       assetB={assetB}
+      submitHidden={submitHidden}
     />
   )
 

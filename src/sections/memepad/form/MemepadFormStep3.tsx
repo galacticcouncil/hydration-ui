@@ -34,6 +34,7 @@ export const MemepadFormStep3: FC<MemepadFormStep3Props> = ({
         onAssetBOpen={() => setAssetsBOpen(true)}
         onAssetBSelect={onAssetBSelect}
         onAssetSelectClose={onClose}
+        submitHidden
       >
         {({ form, assetsB }) => (
           <>

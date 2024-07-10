@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
+  ASSETHUB_EXTERNAL_ASSET_SUFFIX,
   useGetNextAssetHubId,
 } from "api/externalAssetRegistry/assethub"
 import { useRefetchProviderData } from "api/provider"
@@ -14,17 +15,19 @@ import {
 import {
   CreateTokenValues,
   getInternalIdFromResult,
+  TRegisteredAsset,
   useCreateToken,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { pick } from "utils/rx"
-import { required } from "utils/validators"
+import { positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import { useCrossChainTransaction } from "api/xcm"
+import { useCrossChainTransaction, xcmConfigService } from "api/xcm"
+import { external } from "@galacticcouncil/apps"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
@@ -53,6 +56,7 @@ export const useMemepadStep1Form = () => {
       id: "",
       name: "",
       symbol: "",
+      deposit: "",
       supply: "",
       decimals: DEFAULT_TOKEN_DECIMALS,
       origin: assethub.parachainId,
@@ -62,7 +66,8 @@ export const useMemepadStep1Form = () => {
       z.object({
         name: required,
         symbol: required,
-        supply: required,
+        deposit: positive,
+        supply: positive,
         decimals: z.number().min(0).max(18),
         origin: z.number().min(0),
         account: required,
@@ -82,7 +87,7 @@ export const useMemepadStep2Form = () => {
     resolver: zodResolver(
       z.object({
         amount: required,
-        account: required,
+        hydrationAddress: required,
       }),
     ),
   })
@@ -124,7 +129,13 @@ export const useMemepadForms = () => {
 
   const formComponents = [
     <MemepadFormStep1 form={formStep1} />,
-    <MemepadFormStep2 form={formStep2} srcAddress={account?.address ?? ""} />,
+    <MemepadFormStep2
+      form={formStep2}
+      assetId={summary?.internalId ?? ""}
+      assetKey={buildExternalAssetKey(summary)}
+      srcAddress={account?.address ?? ""}
+      deposit={summary?.deposit ?? ""}
+    />,
     <MemepadFormStep3
       form={formStep3}
       assetA={summary?.internalId}
@@ -156,12 +167,24 @@ export const useMemepadForms = () => {
 
         await createToken.mutateAsync(token)
 
-        const regTokenResult = await registerToken.mutateAsync(token)
-        const { assetId } = getInternalIdFromResult(regTokenResult)
+        const result = await registerToken.mutateAsync(token)
+        const { assetId } = getInternalIdFromResult(result)
+        const internalId = assetId?.toString() ?? ""
 
+        const registeredAsset: TRegisteredAsset = {
+          ...pick(token, ["id", "decimals", "symbol", "name", "origin"]),
+          internalId,
+        }
+
+        const assetData = external.buildAssetData(
+          registeredAsset,
+          ASSETHUB_EXTERNAL_ASSET_SUFFIX,
+        )
+
+        external.buildAssethubConfig(assetData, xcmConfigService)
         setNextStep({
-          ...token,
-          internalId: assetId?.toString() ?? "",
+          ...values,
+          ...registeredAsset,
         })
       })()
     }
@@ -170,7 +193,7 @@ export const useMemepadForms = () => {
       return formStep2.handleSubmit(async (values) => {
         await xcmTx.mutateAsync({
           amount: parseFloat(values.amount),
-          asset: "usdt",
+          asset: buildExternalAssetKey(summary),
           srcAddr: summary?.account ?? values.hydrationAddress,
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
           dstAddr: values.hydrationAddress,
@@ -182,6 +205,7 @@ export const useMemepadForms = () => {
     }
 
     if (step === 2) {
+      setNextStep({})
       return formStep3.handleSubmit((values) => {
         console.log(values)
         setNextStep(values)
@@ -209,4 +233,9 @@ export const useMemepadForms = () => {
     reset,
     isLoading,
   }
+}
+
+function buildExternalAssetKey(summary: MemepadSummaryValues | null) {
+  if (!summary) return ""
+  return `${summary.symbol?.toLowerCase()}${ASSETHUB_EXTERNAL_ASSET_SUFFIX}${summary.id}`
 }

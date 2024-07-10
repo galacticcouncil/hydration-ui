@@ -24,6 +24,7 @@ import { useShallow } from "hooks/useShallow"
 import { getPendulumInputData } from "utils/externalAssets"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import BigNumber from "bignumber.js"
 
 const pink = {
   decimals: 10,
@@ -482,6 +483,7 @@ export type CreateTokenValues = {
   id: string
   name: string
   symbol: string
+  deposit: string
   supply: string
   decimals: number
   account: string
@@ -500,16 +502,25 @@ export const useCreateToken = ({
 
     if (!api) throw new Error("Asset Hub is not connected")
 
+    const supply = BigNumber(values.supply)
+      .shiftedBy(values.decimals)
+      .toString()
+
+    const deposit = BigNumber(values.deposit)
+      .shiftedBy(values.decimals)
+      .toString()
+
     return await createTransaction(
       {
         tx: api.tx.utility.batchAll([
-          api.tx.assets.create(values.id, values.account, values.supply),
+          api.tx.assets.create(values.id, values.account, deposit),
           api.tx.assets.setMetadata(
             values.id,
             values.name,
             values.symbol,
             values.decimals,
           ),
+          api.tx.assets.mint(values.id, values.account, supply),
         ]),
       },
       {

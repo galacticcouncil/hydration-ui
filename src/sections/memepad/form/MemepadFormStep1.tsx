@@ -3,6 +3,10 @@ import { FC } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { MemepadStep1Values } from "./MemepadForm.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssetHubNativeBalance } from "api/externalAssetRegistry/assethub"
+import { AssetSelect } from "components/AssetSelect/AssetSelect"
+import { undefinedNoop } from "utils/helpers"
 
 type MemepadFormStep1Props = {
   form: UseFormReturn<MemepadStep1Values>
@@ -10,6 +14,10 @@ type MemepadFormStep1Props = {
 
 export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
   const { t } = useTranslation()
+
+  const { account } = useAccount()
+
+  const { data } = useAssetHubNativeBalance(account?.address)
 
   return (
     <form autoComplete="off">
@@ -47,6 +55,18 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           )}
         />
         <Controller
+          name="deposit"
+          control={form.control}
+          render={({ field }) => (
+            <InputBox
+              label={t("wallet.addToken.form.deposit")}
+              withLabel
+              error={form.formState.errors.deposit?.message}
+              {...field}
+            />
+          )}
+        />
+        <Controller
           name="supply"
           control={form.control}
           render={({ field }) => (
@@ -61,15 +81,26 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
         <Controller
           name="account"
           control={form.control}
-          disabled
           render={({ field }) => (
             <InputBox
               label={t("wallet.addToken.form.account")}
+              disabled
               withLabel
               error={form.formState.errors.account?.message}
               {...field}
             />
           )}
+        />
+        <AssetSelect
+          id="5"
+          title="Asset creation cost"
+          withoutMaxBtn
+          name="dotBalance"
+          value="10"
+          balance={data?.balance}
+          balanceLabel={t("balance")}
+          onChange={undefinedNoop}
+          disabled
         />
       </div>
     </form>

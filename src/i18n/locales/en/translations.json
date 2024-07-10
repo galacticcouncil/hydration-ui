@@ -542,6 +542,7 @@
   "wallet.addToken.form.symbol": "Symbol",
   "wallet.addToken.form.decimals": "Amount of decimals",
   "wallet.addToken.form.supply": "Supply",
+  "wallet.addToken.form.deposit": "Existential deposit",
   "wallet.addToken.form.account": "Creator account",
   "wallet.addToken.form.amount": "Asset to transfer",
   "wallet.addToken.form.hydrationAddress": "To Hydration address",

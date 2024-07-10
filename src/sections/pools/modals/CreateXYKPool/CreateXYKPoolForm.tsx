@@ -21,6 +21,7 @@ type CreateXYKPoolFormProps = {
   onAssetAOpen?: () => void
   onAssetBOpen?: () => void
   onClose?: () => void
+  submitHidden?: boolean
 }
 
 export const CreateXYKPoolForm = ({
@@ -30,6 +31,7 @@ export const CreateXYKPoolForm = ({
   onClose,
   onAssetAOpen,
   onAssetBOpen,
+  submitHidden = false,
 }: CreateXYKPoolFormProps) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -179,14 +181,18 @@ export const CreateXYKPoolForm = ({
           />
         )}
       />
-      <Separator
-        sx={{
-          mx: "calc(-1 * var(--modal-content-padding))",
-          my: 20,
-          width: "auto",
-        }}
-      />
-      <Button variant="primary">{t("liquidity.pool.create")}</Button>
+      {!submitHidden && (
+        <>
+          <Separator
+            sx={{
+              mx: "calc(-1 * var(--modal-content-padding))",
+              my: 20,
+              width: "auto",
+            }}
+          />
+          <Button variant="primary">{t("liquidity.pool.create")}</Button>
+        </>
+      )}
     </form>
   )
 }

@@ -416,6 +416,10 @@ export const QUERY_KEYS = {
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
   pendulumAssetRegistry: ["pendulumAssetRegistry"],
+  assetHubNativeBalance: (address: Maybe<AccountId32 | string>) => [
+    "assetHubNativeBalance",
+    address?.toString(),
+  ],
   polkadotRegistry: ["polkadotRegistry"],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   xcmTransfer: (

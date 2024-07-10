@@ -4,11 +4,19 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { arrayToMap } from "utils/rx"
+import { AccountId32 } from "@open-web3/orml-types/interfaces"
+import BigNumber from "bignumber.js"
+import { Maybe, undefinedNoop } from "utils/helpers"
+
+export const ASSETHUB_EXTERNAL_ASSET_SUFFIX = "_ah_"
 
 export const assethub = chainsMap.get("assethub") as Parachain
+export const hydradx = chainsMap.get("hydradx") as Parachain
 
 //@ts-ignore
 assethub.ws = "ws://172.25.126.217:8000"
+//@ts-ignore
+hydradx.ws = "ws://172.25.126.217:8001"
 
 export const getAssetHubAssets = async () => {
   try {
@@ -69,6 +77,40 @@ export const useAssetHubAssetRegistry = (enabled?: boolean) => {
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
       select: (data) => arrayToMap("id", data),
+    },
+  )
+}
+
+export const getAssetHubNativeBalance =
+  (account: AccountId32 | string) => async () => {
+    try {
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(assethub.ws)
+
+      const res = await api.query.system.account(account)
+      const freeBalance = new BigNumber(res.data.free.toHex())
+      const frozenBalance = new BigNumber(res.data.frozen.toHex())
+      const reservedBalance = new BigNumber(res.data.reserved.toHex())
+      const balance = freeBalance.minus(frozenBalance)
+      const total = freeBalance.plus(reservedBalance)
+
+      return {
+        accountId: account,
+        balance,
+        total,
+        freeBalance,
+      }
+    } catch (e) {}
+  }
+
+export const useAssetHubNativeBalance = (
+  account: Maybe<AccountId32 | string>,
+) => {
+  return useQuery(
+    QUERY_KEYS.assetHubNativeBalance(account),
+    account ? getAssetHubNativeBalance(account) : undefinedNoop,
+    {
+      enabled: !!account,
     },
   )
 }
