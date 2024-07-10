@@ -1,4 +1,3 @@
-import { useRouteBlock } from "hooks/useRouteBlock"
 import { MemepadActionBar } from "./components/MemepadActionBar"
 import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
@@ -16,10 +15,7 @@ import {
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
-  const { submitNext, isFinalStep, isDirty, isSubmitted, summary, reset } =
-    useMemepadFormContext()
-
-  const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
+  const { submitNext, isFinalStep, summary, reset } = useMemepadFormContext()
 
   return (
     <>
@@ -31,7 +27,7 @@ const MemepadPageContent = () => {
           <MemepadActionBar onNext={submitNext} />
         </MemepadLayout>
       )}
-      <RouteBlockModal open={isBlocking} onAccept={accept} onCancel={cancel} />
+      <RouteBlockModal />
     </>
   )
 }
@@ -40,7 +36,7 @@ export const MemepadPage = () => {
   const { account } = useAccount()
 
   return account ? (
-    <MemepadFormProvider key={account?.address}>
+    <MemepadFormProvider key={account.address}>
       <MemepadPageContent />
     </MemepadFormProvider>
   ) : (

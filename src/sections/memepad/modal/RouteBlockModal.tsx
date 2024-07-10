@@ -1,24 +1,19 @@
-import { FC } from "react"
-import { Modal } from "components/Modal/Modal"
 import { Button } from "components/Button/Button"
+import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
+import { useRouteBlock } from "hooks/useRouteBlock"
 import { useTranslation } from "react-i18next"
+import { useMemepadFormContext } from "sections/memepad/form/MemepadFormContext"
 
-type RouteBlockModalProps = {
-  open: boolean
-  onAccept: () => void
-  onCancel: () => void
-}
-
-export const RouteBlockModal: FC<RouteBlockModalProps> = ({
-  open,
-  onAccept,
-  onCancel,
-}) => {
+export const RouteBlockModal = () => {
   const { t } = useTranslation()
 
+  const { isDirty, isSubmitted } = useMemepadFormContext()
+
+  const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
+
   return (
-    <Modal open={open} disableCloseOutside>
+    <Modal open={isBlocking} disableCloseOutside>
       <div
         sx={{
           width: ["100%", "75%"],
@@ -34,10 +29,10 @@ export const RouteBlockModal: FC<RouteBlockModalProps> = ({
           {t("memepad.modal.routeBlock.description")}
         </Text>
         <div sx={{ flex: "row", gap: 20 }}>
-          <Button fullWidth onClick={onCancel}>
+          <Button fullWidth onClick={cancel}>
             {t("back")}
           </Button>
-          <Button fullWidth variant="primary" onClick={onAccept}>
+          <Button fullWidth variant="primary" onClick={accept}>
             {t("memepad.modal.routeBlock.accept")}
           </Button>
         </div>
