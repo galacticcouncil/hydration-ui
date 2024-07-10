@@ -95,20 +95,8 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(3)
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>({
-    name: "TEST",
-    symbol: "TEST",
-    deposit: "2",
-    supply: "1000000",
-    decimals: 12,
-    origin: 1000,
-    account: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-    id: "41",
-    internalId: "1000204",
-    amount: "999998",
-    hydrationAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-  })
+  const [step, setStep] = useState(0)
+  const [summary, setSummary] = useState<MemepadSummaryValues | null>()
   const { account } = useAccount()
 
   const { addToken } = useUserExternalTokenStore()
