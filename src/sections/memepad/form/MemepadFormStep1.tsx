@@ -96,7 +96,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           id="5"
           title="Asset creation cost"
           withoutMaxBtn
-          name="dotBalance"
+          name="creation-cost"
           value={AH_ASSET_CREATION_DOT_COST.toString()}
           balance={data?.balance}
           balanceLabel={t("balance")}
