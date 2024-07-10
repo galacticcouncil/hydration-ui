@@ -25,6 +25,9 @@ import { getPendulumInputData } from "utils/externalAssets"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import BigNumber from "bignumber.js"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssetHubNativeBalance } from "api/externalAssetRegistry/assethub"
+import { BN_NAN } from "utils/constants"
 
 const pink = {
   decimals: 10,
@@ -495,8 +498,12 @@ export const useCreateToken = ({
   onSuccess?: () => ISubmittableResult
 } = {}) => {
   const { createTransaction } = useStore()
+  const { account } = useAccount()
+  const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
 
   return useMutation(async (values: CreateTokenValues) => {
+    if (!account) throw new Error("Missing account")
+
     const apiPool = SubstrateApis.getInstance()
     const api = await apiPool.api(assethub.ws)
 
@@ -510,6 +517,26 @@ export const useCreateToken = ({
       .shiftedBy(values.decimals)
       .toString()
 
+    const tx = api.tx.utility.batchAll([
+      api.tx.assets.create(values.id, values.account, deposit),
+      api.tx.assets.setMetadata(
+        values.id,
+        values.name,
+        values.symbol,
+        values.decimals,
+      ),
+      api.tx.assets.mint(values.id, values.account, supply),
+    ])
+    const paymentInfo = await tx.paymentInfo(account.address)
+
+    const feeAssetSymbol = "DOT"
+    const feeAssetDecimals = 10
+    const feeBalance =
+      nativeBalance?.balance?.shiftedBy(-feeAssetDecimals) ?? BN_NAN
+    const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
+      -feeAssetDecimals,
+    )
+
     return await createTransaction(
       {
         tx: api.tx.utility.batchAll([
@@ -522,6 +549,12 @@ export const useCreateToken = ({
           ),
           api.tx.assets.mint(values.id, values.account, supply),
         ]),
+        xcallMeta: {
+          srcChain: "assethub",
+          srcChainFee: fee.toString(),
+          srcChainFeeBalance: feeBalance.toString(),
+          srcChainFeeSymbol: feeAssetSymbol,
+        },
       },
       {
         onSuccess,
