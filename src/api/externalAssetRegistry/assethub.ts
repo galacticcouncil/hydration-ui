@@ -11,12 +11,13 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 export const ASSETHUB_EXTERNAL_ASSET_SUFFIX = "_ah_"
 
 export const assethub = chainsMap.get("assethub") as Parachain
-export const hydradx = chainsMap.get("hydradx") as Parachain
 
+// TEMP CHOPSTICKS SETUP
 //@ts-ignore
-assethub.ws = "ws://172.25.126.217:8000"
+//assethub.ws = "ws://172.25.126.217:8000"
 //@ts-ignore
-hydradx.ws = "ws://172.25.126.217:8001"
+//const hydradx = chainsMap.get("hydradx") as Parachain
+//hydradx.ws = "ws://172.25.126.217:8001"
 
 export const getAssetHubAssets = async () => {
   try {

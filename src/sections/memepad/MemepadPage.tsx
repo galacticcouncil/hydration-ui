@@ -61,9 +61,6 @@ export const MemepadPage = () => {
               ) : (
                 currentForm
               )}
-              <pre sx={{ color: "white" }}>
-                {JSON.stringify(summary, null, 2)}
-              </pre>
             </div>
             <div>
               <MemepadVisual />
