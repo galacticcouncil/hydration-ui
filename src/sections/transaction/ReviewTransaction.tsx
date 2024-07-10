@@ -48,8 +48,9 @@ export const ReviewTransaction = (props: Transaction) => {
           disableClose: isLoading,
         }
       : {
-          title: t("liquidity.reviewTransaction.modal.title"),
-          description: t("liquidity.reviewTransaction.modal.desc"),
+          title: props.title ?? t("liquidity.reviewTransaction.modal.title"),
+          description:
+            props.description ?? t("liquidity.reviewTransaction.modal.desc"),
         }
 
   const handleTxOnClose = () => {
@@ -123,7 +124,6 @@ export const ReviewTransaction = (props: Transaction) => {
             xcallMeta={props.xcallMeta}
             isProxy={props.isProxy}
             overrides={props.overrides}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()
@@ -143,7 +143,6 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()

@@ -12,6 +12,8 @@ export const ASSETHUB_EXTERNAL_ASSET_SUFFIX = "_ah_"
 
 export const assethub = chainsMap.get("assethub") as Parachain
 
+export const assetHubNativeToken = assethub.assetsData.get("dot")
+
 // TEMP CHOPSTICKS SETUP
 //@ts-ignore
 // assethub.ws = "ws://172.25.126.217:8000"

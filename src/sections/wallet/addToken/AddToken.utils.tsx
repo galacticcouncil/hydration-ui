@@ -26,7 +26,10 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import BigNumber from "bignumber.js"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssetHubNativeBalance } from "api/externalAssetRegistry/assethub"
+import {
+  assetHubNativeToken,
+  useAssetHubNativeBalance,
+} from "api/externalAssetRegistry/assethub"
 import { BN_NAN } from "utils/constants"
 
 const pink = {
@@ -497,12 +500,14 @@ export const useCreateToken = ({
 }: {
   onSuccess?: () => ISubmittableResult
 } = {}) => {
+  const { t } = useTranslation()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
 
   return useMutation(async (values: CreateTokenValues) => {
     if (!account) throw new Error("Missing account")
+    if (!assetHubNativeToken) throw new Error("Missing native token")
 
     const apiPool = SubstrateApis.getInstance()
     const api = await apiPool.api(assethub.ws)
@@ -529,16 +534,16 @@ export const useCreateToken = ({
     ])
     const paymentInfo = await tx.paymentInfo(account.address)
 
-    const feeAssetSymbol = "DOT"
-    const feeAssetDecimals = 10
+    const feeAssetDecimals = assetHubNativeToken.decimals ?? 10
     const feeBalance =
-      nativeBalance?.balance?.shiftedBy(-feeAssetDecimals) ?? BN_NAN
+      nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
     const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
       -feeAssetDecimals,
     )
 
     return await createTransaction(
       {
+        title: t("wallet.addToken.reviewTransaction.modal.title"),
         tx: api.tx.utility.batchAll([
           api.tx.assets.create(values.id, values.account, deposit),
           api.tx.assets.setMetadata(
@@ -550,10 +555,10 @@ export const useCreateToken = ({
           api.tx.assets.mint(values.id, values.account, supply),
         ]),
         xcallMeta: {
-          srcChain: "assethub",
+          srcChain: assethub.key,
           srcChainFee: fee.toString(),
           srcChainFeeBalance: feeBalance.toString(),
-          srcChainFeeSymbol: feeAssetSymbol,
+          srcChainFeeSymbol: assetHubNativeToken.asset.originSymbol,
         },
       },
       {
