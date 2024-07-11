@@ -14,7 +14,7 @@ export const MemepadSpinner: React.FC<MemepadSpinnerProps> = ({
     <div sx={{ maxWidth: 500, mx: "auto", my: 50 }}>
       <Spinner size={120} sx={{ mx: "auto", mb: 30 }} />
       {title && (
-        <Text tAlign="center" fs={19} font="GeistMono" sx={{ mb: 10 }}>
+        <Text tAlign="center" fs={20} font="GeistSemiBold" sx={{ mb: 10 }}>
           {title}
         </Text>
       )}

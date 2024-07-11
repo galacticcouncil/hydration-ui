@@ -1,16 +1,22 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import DecorativeStarIcon from "assets/icons/DecorativeStarIcon.svg?react"
 
 export const SContainer = styled.div`
   position: relative;
 
   width: 100%;
-  max-width: 700px;
 
   margin: 0 auto;
 
-  @media ${theme.viewport.gte.sm} {
-    padding: 0 50px;
+  max-width: 600px;
+
+  @media ${theme.viewport.gte.md} {
+    display: grid;
+    grid-template-columns: 1fr 600px 1fr;
+    gap: 40px;
+
+    max-width: 100%;
   }
 `
 
@@ -39,6 +45,8 @@ export const SHeading = styled.div`
   svg:nth-of-type(2) {
     top: 0;
     right: 0;
+
+    animation-delay: -0.5s;
   }
 `
 export const SRowItem = styled.div`
@@ -49,4 +57,24 @@ export const SRowItem = styled.div`
   padding: 5px 0;
 
   border-bottom: 1px solid rgba(${theme.rgbColors.darkBlue400}, 0.3);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+`
+
+export const SDecorativeStarIcon = styled(DecorativeStarIcon)`
+  animation: pulse 1.5s infinite;
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.3);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 `

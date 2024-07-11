@@ -2,10 +2,11 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContent = styled.div`
-  padding-bottom: 50px;
   @media ${theme.viewport.gte.sm} {
     display: grid;
     grid-template-columns: 2fr 1fr;
+
+    padding-bottom: 50px;
   }
 
   @media ${theme.viewport.gte.md} {

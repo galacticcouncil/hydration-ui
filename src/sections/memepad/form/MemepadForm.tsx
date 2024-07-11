@@ -1,35 +1,48 @@
-import { Spacer } from "components/Spacer/Spacer"
 import { Stepper } from "components/Stepper/Stepper"
 import { useMemo } from "react"
 import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
 import { useMemepadFormContext } from "./MemepadFormContext"
 import { useTranslation } from "react-i18next"
 
-const useSpinnerPropsByStep = (step: number) => {
+const useSpinnerPropsByStep = () => {
+  const { step, summary } = useMemepadFormContext()
   const { t } = useTranslation()
-  switch (step) {
-    case 0:
+
+  if (step === 0) {
+    if (summary?.id) {
       return {
-        title: t("memepad.form.spinner.step1.title"),
-        description: t("memepad.form.spinner.step1.description"),
+        title: t("memepad.form.spinner.register.title"),
+        description: t("memepad.form.spinner.register.description"),
       }
-    case 1:
+    } else {
       return {
-        title: t("memepad.form.spinner.step2.title"),
-        description: t("memepad.form.spinner.step2.description"),
+        title: t("memepad.form.spinner.create.title"),
+        description: t("memepad.form.spinner.create.description"),
       }
-    case 2:
-      return {
-        title: t("memepad.form.spinner.step3.title"),
-        description: t("memepad.form.spinner.step3.description"),
-      }
+    }
   }
+
+  if (step === 1) {
+    return {
+      title: t("memepad.form.spinner.transfer.title"),
+      description: t("memepad.form.spinner.transfer.description"),
+    }
+  }
+
+  if (step === 2) {
+    return {
+      title: t("memepad.form.spinner.xyk.title"),
+      description: t("memepad.form.spinner.xyk.description"),
+    }
+  }
+
+  return {}
 }
 
 export const MemepadForm = () => {
   const { t } = useTranslation()
+  const spinnerProps = useSpinnerPropsByStep()
   const { step, currentForm, isLoading } = useMemepadFormContext()
-  const spinnerProps = useSpinnerPropsByStep(step)
 
   const steps = useMemo(() => {
     const stepLabels = [
@@ -48,10 +61,11 @@ export const MemepadForm = () => {
   }, [step, t])
 
   return (
-    <div>
-      <Stepper fullWidth steps={steps} />
-      <Spacer size={60} />
-      {isLoading ? <MemepadSpinner {...spinnerProps} /> : currentForm}
+    <div sx={{ flex: "column", gap: [20, 60] }}>
+      <Stepper steps={steps} />
+      <div>
+        {isLoading ? <MemepadSpinner {...spinnerProps} /> : currentForm}
+      </div>
     </div>
   )
 }

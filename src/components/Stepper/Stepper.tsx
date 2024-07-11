@@ -18,7 +18,7 @@ type StepState = (typeof STEP_STATES)[number]
 
 type StepperProps = {
   steps: Array<StepProps>
-  fullWidth?: boolean
+  width?: number | string
   className?: string
 }
 
@@ -57,35 +57,42 @@ const Step = ({ label, state }: StepProps) => {
   )
 }
 
-export const Stepper = ({
-  steps,
-  className,
-  fullWidth = false,
-}: StepperProps) => {
+export const Stepper = ({ steps, className, width = "100%" }: StepperProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
 
-  const active = steps.findIndex((step) => step.state === "active")
+  const activeIndex = steps.findIndex((step) => step.state === "active")
+  const activeStep = steps[activeIndex]
 
-  if (isDesktop) {
-    return (
-      <SStepperContainer className={className} fullWidth={fullWidth}>
+  return (
+    <div sx={{ width }} className={className}>
+      <SStepperContainer width={width}>
         {steps.map((step, index) => (
           <Fragment key={index}>
-            <Step {...step} />
+            <Step {...step} label={isDesktop ? step.label : ""} />
             {index < steps.length - 1 && <SStepperLine />}
           </Fragment>
         ))}
       </SStepperContainer>
-    )
-  }
+      <div
+        sx={{
+          display: ["flex", "none"],
+          justify: "space-between",
+          gap: 4,
+          mt: 4,
+        }}
+      >
+        <Text color="brightBlue600" fs={12}>
+          {activeStep.label}
+        </Text>
 
-  return (
-    <Text color="whiteish500">
-      {t("stepper.title", {
-        current: active + 1,
-        total: steps.length,
-      })}
-    </Text>
+        <Text color="whiteish500" fs={12}>
+          {t("stepper.title", {
+            current: activeIndex + 1,
+            total: steps.length,
+          })}
+        </Text>
+      </div>
+    </div>
   )
 }

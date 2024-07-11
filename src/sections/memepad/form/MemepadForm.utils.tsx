@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
-  ASSETHUB_EXTERNAL_ASSET_SUFFIX,
+  ASSETHUB_XCM_ASSET_SUFFIX,
   CreateTokenValues,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
@@ -27,8 +27,7 @@ import { positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import { useCrossChainTransaction, xcmConfigService } from "api/xcm"
-import { external } from "@galacticcouncil/apps"
+import { syncAssethubXcmConfig, useCrossChainTransaction } from "api/xcm"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
@@ -51,7 +50,7 @@ export type MemepadSummaryValues = Partial<
 
 function buildExternalAssetKey(summary: MemepadSummaryValues | null) {
   if (!summary) return ""
-  return `${summary.symbol?.toLowerCase()}${ASSETHUB_EXTERNAL_ASSET_SUFFIX}${summary.id}`
+  return `${summary.symbol?.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${summary.id}`
 }
 
 export const useMemepadStep1Form = () => {
@@ -86,6 +85,7 @@ export const useMemepadStep2Form = () => {
   const { account } = useAccount()
 
   return useForm<MemepadStep2Values>({
+    mode: "onChange",
     defaultValues: {
       amount: "",
       hydrationAddress: account?.address ?? "",
@@ -173,8 +173,11 @@ export const useMemepadForms = () => {
           id,
         }
 
+        // create token on Assethub
         await createToken.mutateAsync(token)
+        setSummary((prev) => ({ ...prev, ...token }))
 
+        // register tokeon on Hydration
         const result = await registerToken.mutateAsync(token)
         const { assetId } = getInternalIdFromResult(result)
         const internalId = assetId?.toString() ?? ""
@@ -184,12 +187,8 @@ export const useMemepadForms = () => {
           internalId,
         }
 
-        const assetData = external.buildAssetData(
-          registeredAsset,
-          ASSETHUB_EXTERNAL_ASSET_SUFFIX,
-        )
+        syncAssethubXcmConfig(registeredAsset)
 
-        external.buildAssethubConfig(assetData, xcmConfigService)
         setNextStep({
           ...values,
           ...registeredAsset,

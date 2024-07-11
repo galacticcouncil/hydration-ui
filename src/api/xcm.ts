@@ -5,6 +5,9 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { external } from "@galacticcouncil/apps"
+import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
+import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
 
 type TransferProps = {
   asset: string
@@ -23,6 +26,11 @@ export const xcmConfigService = new ConfigService({
 export const wallet = new Wallet({
   config: xcmConfigService,
 })
+
+export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
+  const assetData = external.buildAssetData(asset, ASSETHUB_XCM_ASSET_SUFFIX)
+  external.buildAssethubConfig(assetData, xcmConfigService)
+}
 
 export const useCrossChainTransfer = ({
   asset,

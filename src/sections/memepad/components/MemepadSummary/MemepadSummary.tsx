@@ -1,11 +1,21 @@
 import { Button } from "components/Button/Button"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { MemepadSummaryValues } from "sections/memepad/form/MemepadForm.utils"
-import { SContainer, SHeading, SRowItem } from "./MemepadSummary.styled"
+import {
+  SContainer,
+  SDecorativeStarIcon,
+  SHeading,
+  SRowItem,
+} from "./MemepadSummary.styled"
 import { Text } from "components/Typography/Text/Text"
-import DecorativeStarIcon from "assets/icons/DecorativeStarIcon.svg?react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { shortenAccountAddress } from "utils/formatting"
+import { MemepadVisual } from "sections/memepad/components/MemepadVisual"
+import { useRpcProvider } from "providers/rpcProvider"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Icon } from "components/Icon/Icon"
+import { theme } from "theme"
+import { useMedia } from "react-use"
 
 type MemepadSummaryProps = {
   values: MemepadSummaryValues | null
@@ -16,20 +26,45 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   values,
   onReset,
 }) => {
+  const { assets } = useRpcProvider()
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.md)
+
+  if (!values) return null
+
+  const {
+    symbol,
+    name,
+    decimals,
+    account,
+    amount,
+    supply,
+    xykPoolAssetId,
+    internalId,
+  } = values || {}
+
+  const xykAssetAMeta = internalId ? assets.getAsset(internalId) : null
+  const xykAssetBMeta = xykPoolAssetId ? assets.getAsset(xykPoolAssetId) : null
+
   return (
     <SContainer>
+      {isDesktop && (
+        <div sx={{ mt: -50 }}>
+          <MemepadVisual variant="b" />
+        </div>
+      )}
       <div>
         <SHeading>
-          <DecorativeStarIcon />
+          <SDecorativeStarIcon />
           <Text
-            fs={[12, 22]}
-            lh={[20, 26]}
+            fs={[12, 20]}
+            lh={[20, 30]}
             tTransform="uppercase"
             tAlign="center"
             font="GeistMedium"
+            sx={{ mb: 4 }}
           >
-            Congrats!
+            {t("memepad.summary.congrats")}
           </Text>
           <GradientText
             fs={[22, 34]}
@@ -37,82 +72,103 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             tAlign="center"
             sx={{ display: "block" }}
           >
-            You've succesfully
-            <br />
-            created new asset!
+            <Trans t={t} i18nKey="memepad.summary.title" />
           </GradientText>
-          <DecorativeStarIcon />
+          <SDecorativeStarIcon />
         </SHeading>
-        {values && (
-          <div sx={{ mb: 20 }}>
-            <Text sx={{ mb: 12 }} color="brightBlue300">
-              Here is your summary:
+        <div sx={{ mb: 20 }}>
+          <Text sx={{ mb: 12 }} color="brightBlue300">
+            {t("memepad.summary.yourSummary")}:
+          </Text>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.form.symbol")}
             </Text>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.name")}
-              </Text>
+            <Text fs={14} color="brightBlue300">
+              {symbol}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.form.name")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {name}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.form.decimals")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {decimals}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.summary.totalSupply")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {t("value.tokenWithSymbol", {
+                value: supply,
+                symbol: symbol,
+              })}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.form.account")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {account ? shortenAccountAddress(account) : ""}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.summary.liquidityTransfered")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {t("value.tokenWithSymbol", {
+                value: amount,
+                symbol: symbol,
+              })}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.summary.xykPool")}
+            </Text>
+            <div sx={{ flex: "row", align: "center", gap: 4 }}>
+              <div sx={{ flex: "row" }}>
+                <Icon size={20} icon={<AssetLogo id={xykAssetAMeta?.id} />} />
+                <Icon
+                  size={20}
+                  icon={<AssetLogo id={xykAssetBMeta?.id} />}
+                  sx={{ ml: -4 }}
+                />
+              </div>
               <Text fs={14} color="brightBlue300">
-                {values.name}
+                {xykAssetAMeta?.symbol}/{xykAssetBMeta?.symbol}
               </Text>
-            </SRowItem>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.symbol")}
-              </Text>
-              <Text fs={14} color="brightBlue300">
-                {values.symbol}
-              </Text>
-            </SRowItem>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.decimals")}
-              </Text>
-              <Text fs={14} color="brightBlue300">
-                {values.decimals}
-              </Text>
-            </SRowItem>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.deposit")}
-              </Text>
-              <Text fs={14} color="brightBlue300">
-                {t("value.token", {
-                  value: values.deposit,
-                })}
-              </Text>
-            </SRowItem>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.supply")}
-              </Text>
-              <Text fs={14} color="brightBlue300">
-                {t("value.token", {
-                  value: values.supply,
-                })}
-              </Text>
-            </SRowItem>
-            <SRowItem>
-              <Text fs={14} color="basic400">
-                {t("memepad.form.account")}
-              </Text>
-              <Text fs={14} color="brightBlue300">
-                {values.account ? shortenAccountAddress(values.account) : ""}
-              </Text>
-            </SRowItem>
-          </div>
-        )}
+            </div>
+          </SRowItem>
+        </div>
         <div
           sx={{ flex: ["column", "row"], gap: 12, justify: "space-between" }}
         >
           <Button size="small" onClick={onReset}>
-            Create another asset
+            {t("memepad.summary.createNewAsset")}
           </Button>
           {/* <Button size="small" onClick={onReset}>
             Add logo through GitHub
           </Button> */}
         </div>
       </div>
+      {isDesktop && (
+        <div sx={{ mt: -100 }}>
+          <MemepadVisual variant="a" />
+        </div>
+      )}
     </SContainer>
   )
 }

@@ -49,6 +49,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
 
   const balance = BN(transfer?.balance?.amount?.toString() ?? "0")
   const balanceMax = BN(transfer?.max?.amount?.toString() ?? "0")
+  const balanceMin = BN(transfer?.min?.amount?.toString() ?? "0")
 
   const srcFee = BN(transfer?.srcFee?.amount?.toString() ?? BN_NAN).shiftedBy(
     -(transfer?.srcFee?.decimals ?? 0),
@@ -68,6 +69,16 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             rules={{
               required: t("error.required"),
               validate: {
+                positive: (value) => BN(value).gt(0) || t("error.positive"),
+                minBalance: (value) =>
+                  BN(value)
+                    .shiftedBy(transfer?.min?.decimals ?? 0)
+                    .gte(balanceMin) ||
+                  t("memepad.form.error.minTransferable", {
+                    value: balanceMin,
+                    fixedPointScale: transfer?.min?.decimals,
+                    symbol: transfer?.balance?.symbol,
+                  }),
                 maxBalance: (value) =>
                   BN(value)
                     .shiftedBy(transfer?.max?.decimals ?? 0)

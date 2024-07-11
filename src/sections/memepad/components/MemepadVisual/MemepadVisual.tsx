@@ -1,33 +1,42 @@
-import React, { useEffect, useRef } from "react"
-import { SContainer } from "./MemepadVisual.styled"
 import {
-  useAnimation,
-  useReducedMotion,
-  m as motion,
   LazyMotion,
   domAnimation,
+  m as motion,
+  useAnimation,
+  useReducedMotion,
 } from "framer-motion"
-import { useMedia } from "react-use"
-import { theme } from "theme"
+import React, { useEffect, useRef } from "react"
+import { SContainer, SContainerMobile } from "./MemepadVisual.styled"
 
-import bottlecap1 from "assets/images/bottlecap1.webp"
-import bottlecap2 from "assets/images/bottlecap2.webp"
-import bottlecap3 from "assets/images/bottlecap3.webp"
+import bottlecap1a from "assets/images/bottlecap1a.webp"
+import bottlecap2a from "assets/images/bottlecap2a.webp"
+import bottlecap3a from "assets/images/bottlecap3a.webp"
 
-export type MemepadVisualProps = {
+import bottlecap1b from "assets/images/bottlecap1b.webp"
+import bottlecap2b from "assets/images/bottlecap2b.webp"
+import bottlecap3b from "assets/images/bottlecap3b.webp"
+
+import bottlecapsMobile from "assets/images/bottlecaps-mobile.webp"
+
+type MemepadVisualProps = {
+  variant: "a" | "b"
   className?: string
+  animmated?: boolean
 }
 
-export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
+export const MemepadVisual: React.FC<MemepadVisualProps> = ({
+  className,
+  variant,
+  animmated = false,
+}) => {
   const animationRef = useRef<number>()
   const shouldReduceMotion = useReducedMotion()
-  const isDesktop = useMedia(theme.viewport.gte.md)
 
   const animation1 = useAnimation()
   const animation2 = useAnimation()
   const animation3 = useAnimation()
 
-  const shouldAnimate = isDesktop && !shouldReduceMotion
+  const shouldAnimate = animmated && !shouldReduceMotion
 
   useEffect(() => {
     const update = (e: MouseEvent) => {
@@ -73,21 +82,49 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({ className }) => {
 
   return (
     <LazyMotion features={domAnimation}>
-      <SContainer className={className} as={motion.div}>
-        {isDesktop && (
-          <>
-            <motion.div animate={animation3}>
-              <img src={bottlecap3} alt="" width={150} height={150} />
-            </motion.div>
-            <motion.div animate={animation2}>
-              <img src={bottlecap2} alt="" width={175} height={175} />
-            </motion.div>
-            <motion.div animate={animation1}>
-              <img src={bottlecap1} alt="" width={250} height={250} />
-            </motion.div>
-          </>
-        )}
+      <SContainer className={className} as={motion.div} variant={variant}>
+        <motion.div animate={animation3}>
+          <img
+            loading="lazy"
+            src={variant === "a" ? bottlecap3a : bottlecap3b}
+            alt=""
+            width={150}
+            height={150}
+          />
+        </motion.div>
+        <motion.div animate={animation2}>
+          <img
+            loading="lazy"
+            src={variant === "a" ? bottlecap2a : bottlecap2b}
+            alt=""
+            width={175}
+            height={175}
+          />
+        </motion.div>
+        <motion.div animate={animation1}>
+          <img
+            loading="lazy"
+            src={variant === "a" ? bottlecap1a : bottlecap1b}
+            alt=""
+            width={250}
+            height={250}
+          />
+        </motion.div>
       </SContainer>
     </LazyMotion>
+  )
+}
+
+export type MemepadVisualMobileProps = {
+  className?: string
+}
+
+export const MemepadVisualMobile: React.FC<MemepadVisualMobileProps> = ({
+  className,
+}) => {
+  return (
+    <SContainerMobile className={className}>
+      <img loading="lazy" src={bottlecapsMobile} alt="" />
+    </SContainerMobile>
   )
 }

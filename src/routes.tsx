@@ -4,6 +4,7 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
 import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
@@ -372,7 +373,7 @@ export const routes: Route[] = [
   {
     path: "memepad",
     element: (
-      <Suspense>
+      <Suspense fallback={<MemepadPageSkeleton />}>
         <MemepadPage />
       </Suspense>
     ),

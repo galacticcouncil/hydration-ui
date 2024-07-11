@@ -9,6 +9,7 @@ import StatsIcon from "assets/icons/ChartIcon.svg?react"
 import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
+import RocketIcon from "assets/icons/RocketIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
@@ -149,7 +150,7 @@ export const MENU_ITEMS = [
   {
     key: "memepad",
     href: LINKS.memepad,
-    Icon: ChainlinkIcon,
+    Icon: RocketIcon,
     subItems: undefined,
     enabled: true,
     external: false,
