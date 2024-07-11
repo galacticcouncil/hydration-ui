@@ -44,7 +44,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const {
     id,
     symbol,
-    decimals,
+    meta,
     couldBeSetAsPaymentFee,
     tradability: { inTradeRouter, canBuy },
   } = props.asset
@@ -145,7 +145,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           onSelect: () =>
             watchAsset(window?.ethereum, id, {
               symbol: symbol,
-              decimals: decimals,
+              decimals: meta.decimals,
             }),
         }
       : null,
@@ -160,7 +160,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       }}
     >
       <>
-        {props.asset.isExternal && !props.asset.name ? (
+        {meta.isExternal && !props.asset.name ? (
           <AddTokenAction id={props.asset.id} />
         ) : (
           <div
