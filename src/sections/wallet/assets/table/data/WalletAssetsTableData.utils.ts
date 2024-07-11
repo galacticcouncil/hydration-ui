@@ -3,7 +3,7 @@ import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
-import { arraySearch } from "utils/helpers"
+import { arraySearch, sortAssets } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -65,9 +65,9 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      let { decimals, id, name, symbol, isExternal } = assets.getAsset(
-        balance.id,
-      )
+      const meta = assets.getAsset(balance.id)
+
+      const { decimals, id, name, symbol } = meta
 
       const inTradeRouter = assets.tradeAssets.some(
         (tradeAsset) => tradeAsset.id === id,
@@ -102,7 +102,7 @@ export const useAssetsData = ({
         id,
         symbol,
         name,
-        decimals,
+        meta,
         isPaymentFee,
         couldBeSetAsPaymentFee,
         reserved,
@@ -112,73 +112,60 @@ export const useAssetsData = ({
         transferable,
         transferableDisplay,
         tradability,
-        isExternal,
       }
     })
 
-    const result = isAllAssets
-      ? allAssets.reduce<typeof rowsWithBalance>(
-          (acc, { id, symbol, name, decimals, isExternal }) => {
-            const tokenWithBalance = rowsWithBalance.find(
-              (row) => row.id === id,
+    const rows = isAllAssets
+      ? allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
+          const { id, symbol, name } = meta
+          const tokenWithBalance = rowsWithBalance.find((row) => row.id === id)
+
+          if (tokenWithBalance) {
+            acc.push(tokenWithBalance)
+          } else {
+            const inTradeRouter = assets.tradeAssets.some(
+              (tradeAsset) => tradeAsset.id === id,
             )
 
-            if (tokenWithBalance) {
-              acc.push(tokenWithBalance)
-            } else {
-              const inTradeRouter = assets.tradeAssets.some(
-                (tradeAsset) => tradeAsset.id === id,
-              )
-
-              const tradability = {
-                canBuy: inTradeRouter,
-                canSell: inTradeRouter,
-                inTradeRouter,
-              }
-
-              if (symbol) {
-                acc.push({
-                  id,
-                  symbol,
-                  name,
-                  decimals,
-                  isPaymentFee: false,
-                  couldBeSetAsPaymentFee: false,
-                  reserved: BN_0,
-                  reservedDisplay: BN_0,
-                  total: BN_0,
-                  totalDisplay: BN_0,
-                  transferable: BN_0,
-                  transferableDisplay: BN_0,
-                  tradability,
-                  isExternal,
-                })
-              }
+            const tradability = {
+              canBuy: inTradeRouter,
+              canSell: inTradeRouter,
+              inTradeRouter,
             }
-            return acc
-          },
-          [],
-        )
+
+            const asset = {
+              id,
+              symbol,
+              name,
+              meta,
+              isPaymentFee: false,
+              couldBeSetAsPaymentFee: false,
+              reserved: BN_0,
+              reservedDisplay: BN_0,
+              total: BN_0,
+              totalDisplay: BN_0,
+              transferable: BN_0,
+              transferableDisplay: BN_0,
+              tradability,
+            }
+
+            if (asset.symbol) {
+              acc.push(asset)
+            }
+          }
+          return acc
+        }, [])
       : rowsWithBalance
 
-    result.sort((a, b) => {
-      // native asset first
-      if (a.id === NATIVE_ASSET_ID) return -1
-      if (b.id === NATIVE_ASSET_ID) return 1
+    const sortedAssets = sortAssets(
+      rows,
+      "transferableDisplay",
+      NATIVE_ASSET_ID,
+    )
 
-      if (a.isExternal && !a.name) return 1
-      if (b.isExternal && !b.name) return -1
-
-      if (a.transferableDisplay.isNaN()) return 1
-      if (b.transferableDisplay.isNaN()) return -1
-
-      if (!b.transferableDisplay.eq(a.transferableDisplay))
-        return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
-
-      return a.symbol.localeCompare(b.symbol)
-    })
-
-    return search ? arraySearch(result, search, ["symbol", "name"]) : result
+    return search
+      ? arraySearch(sortedAssets, search, ["symbol", "name"])
+      : sortedAssets
   }, [
     acceptedCurrencies.data,
     assets,

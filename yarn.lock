@@ -2198,10 +2198,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.1.0.tgz#c27325cabb8b013d5b0177d4ef80be8d5cce8bd7"
   integrity sha512-RBu2qIvrQR34tbr4PXDSU4e4+nx6DKmuwQ5QPyUE9cHCPkdVJ66qW8GR8nioAQZtsfGu8TqssQdYO8sAhwTWbA==
 
-"@galacticcouncil/apps@^4.3.0":
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.3.0.tgz#34523c5cdaa4a8c2ad18b51f6a59b43b2d8fee58"
-  integrity sha512-FrpFig4z1U0dmWMnZM8B6XUxSzs0mI/5eAm9eDArQPGLUy9lM09NSSpzbElWJd3ekGR6tjuYCxq9T0tBYG1A2A==
+"@galacticcouncil/apps@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-4.4.0.tgz#b59f3b01cc2401a3283f8a8df7686e75a79beb55"
+  integrity sha512-g3fUKnhAxEuw5eSoJffwaqvhKirUXj3zk0fxEesx1YW3TSuxFeZXUQvxrK3IplgxOqOxGzIUvlTk+DV34nyytQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2269,10 +2269,10 @@
     lit "^2.8.0"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^2.8.0":
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.8.0.tgz#ac9fd84be71cec2d9adfb9e705dcc55df98e9c28"
-  integrity sha512-Ih22eLgc8YEbK6PDBgCzAXMQZA2ScImwGZA4L6n1RVP4Z9zF/TGQ2de8MPtNrbG0Y0dF4vL1tRs0diPDRsgj3A==
+"@galacticcouncil/xcm-cfg@^2.8.1":
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-2.8.1.tgz#e099535b7884c42d2a9ff403363f3d870b559317"
+  integrity sha512-zOuAG676yDPWHCXB36vO5VHGDpPop9LwXcW9FNS7pJsL4MfLC5wKErHjngBP2/NOeav4cJOFODeHqq9aJ2IXEA==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.7.0"
 
@@ -2288,10 +2288,10 @@
     "@wormhole-foundation/sdk-definitions" "^0.5.2"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.5.0.tgz#8f0280ce297ffb6321cbb9b34520e85629931560"
-  integrity sha512-ReQffYsY2ZTEScR3O83qXe9YJNFK8ORWIqZGwqHIssEmVVTInJNvp6ln4KQAtwffRkgJ9YKv8SLr3wuDgUAzzQ==
+"@galacticcouncil/xcm-sdk@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-3.5.1.tgz#1899283b25bb999ebcd21ca7585409662ae72672"
+  integrity sha512-aft2Mu2947isOjW5BVx9u97z57frfwRId7Eh3ZbK7WYcOoJRKN/KnXHJy8zbtzQQAv/rgiVCWasmp7IHuFR4Sg==
   dependencies:
     "@galacticcouncil/xcm-core" "^1.7.0"
 
