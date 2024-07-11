@@ -7,7 +7,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   ASSETHUB_ASSET_CREATION_DOT_COST,
   useAssetHubNativeBalance,
-} from "api/externalAssetRegistry/assethub"
+} from "api/external/assethub"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { undefinedNoop } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"

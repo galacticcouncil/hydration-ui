@@ -1,4 +1,4 @@
-import { useParachainAmount } from "api/externalAssetRegistry"
+import { useParachainAmount } from "api/external"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"

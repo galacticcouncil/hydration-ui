@@ -10,11 +10,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  assethub,
-  pendulum,
-  useExternalAssetRegistry,
-} from "api/externalAssetRegistry"
+import { assethub, pendulum, useExternalAssetRegistry } from "api/external"
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"

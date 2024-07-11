@@ -1,5 +1,5 @@
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { pendulum } from "api/externalAssetRegistry"
+import { pendulum } from "api/external"
 import { Buffer } from "buffer"
 import {
   InteriorProp,

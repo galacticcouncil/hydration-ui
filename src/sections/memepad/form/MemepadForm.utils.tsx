@@ -5,7 +5,7 @@ import {
   CreateTokenValues,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
-} from "api/externalAssetRegistry/assethub"
+} from "api/external/assethub"
 import { useRefetchProviderData } from "api/provider"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
