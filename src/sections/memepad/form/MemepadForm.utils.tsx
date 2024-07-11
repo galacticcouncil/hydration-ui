@@ -177,16 +177,16 @@ export const useMemepadForms = () => {
         await createToken.mutateAsync(token)
         setSummary((prev) => ({ ...prev, ...token }))
 
-        // register tokeon on Hydration
+        // register token on Hydration
         const result = await registerToken.mutateAsync(token)
+
+        // sync registered token with assethub XCM config
         const { assetId } = getInternalIdFromResult(result)
         const internalId = assetId?.toString() ?? ""
-
         const registeredAsset: TRegisteredAsset = {
           ...pick(token, ["id", "decimals", "symbol", "name", "origin"]),
           internalId,
         }
-
         syncAssethubXcmConfig(registeredAsset)
 
         setNextStep({

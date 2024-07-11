@@ -2,6 +2,7 @@ import {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
@@ -29,6 +30,7 @@ import {
   isEvmAccount,
 } from "utils/evm"
 import { getSubscanLinkByType } from "utils/formatting"
+import { isAnyParachain } from "utils/helpers"
 
 type TxMethod = AnyJson & {
   method: string
@@ -356,7 +358,17 @@ export const useSendTransactionMutation = (
             clearTimeout(timeout)
           }
 
-          const onComplete = createResultOnCompleteHandler(api, {
+          const externalChain =
+            xcallMeta?.srcChain && xcallMeta.srcChain !== "hydradx"
+              ? chainsMap.get(xcallMeta?.srcChain)
+              : null
+
+          const apiPromise =
+            externalChain && isAnyParachain(externalChain)
+              ? await externalChain.api
+              : api
+
+          const onComplete = createResultOnCompleteHandler(apiPromise, {
             onError: (error) => {
               clearTimeout(timeout)
               reject(error)
