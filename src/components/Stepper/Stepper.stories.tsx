@@ -37,9 +37,9 @@ export const Default: Story = {
   render: Template,
 }
 
-export const fullWidth: Story = {
+export const FixedWidth: Story = {
   render: Template,
   args: {
-    fullWidth: true,
+    width: 400,
   },
 }
