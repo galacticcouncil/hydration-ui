@@ -11,20 +11,27 @@ import {
   MemepadFormProvider,
   useMemepadFormContext,
 } from "./form/MemepadFormContext"
+import { isEvmAccount } from "utils/evm"
+import { Alert } from "components/Alert/Alert"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
-  const { submitNext, isFinalStep, summary, reset } = useMemepadFormContext()
+  const { step, submitNext, isFinalized, summary, reset } =
+    useMemepadFormContext()
 
   return (
     <>
-      {isFinalStep ? (
+      {isFinalized ? (
         <MemepadSummary values={summary} onReset={reset} />
       ) : (
         <MemepadLayout>
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
-          <MemepadActionBar onNext={submitNext} />
+          <MemepadActionBar step={step} onNext={submitNext} />
         </MemepadLayout>
       )}
       <RouteBlockModal />
@@ -33,15 +40,41 @@ const MemepadPageContent = () => {
 }
 
 export const MemepadPage = () => {
+  const { t } = useTranslation()
   const { account } = useAccount()
+  const { disconnect } = useWeb3ConnectStore()
 
-  return account ? (
+  if (!account) {
+    return (
+      <MemepadLayout>
+        <Web3ConnectModalButton sx={{ width: "100%" }} />
+      </MemepadLayout>
+    )
+  }
+
+  if (isEvmAccount(account.address)) {
+    return (
+      <MemepadLayout>
+        <Alert variant="warning">
+          <div sx={{ flex: ["column", "row"], gap: 10 }}>
+            <Text>{t("memepad.alert.evmAccount")}</Text>
+            <Button
+              variant="outline"
+              size="small"
+              onClick={disconnect}
+              css={{ borderColor: "white" }}
+            >
+              {t("walletConnect.logout")}
+            </Button>
+          </div>
+        </Alert>
+      </MemepadLayout>
+    )
+  }
+
+  return (
     <MemepadFormProvider key={account.address}>
       <MemepadPageContent />
     </MemepadFormProvider>
-  ) : (
-    <MemepadLayout>
-      <Web3ConnectModalButton />
-    </MemepadLayout>
   )
 }

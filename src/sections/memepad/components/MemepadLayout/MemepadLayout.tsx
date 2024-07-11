@@ -11,7 +11,7 @@ export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
       <MemepadHeader />
       <Spacer size={35} />
       <SContent>
-        {children}
+        <div>{children}</div>
         <MemepadVisual />
       </SContent>
     </>

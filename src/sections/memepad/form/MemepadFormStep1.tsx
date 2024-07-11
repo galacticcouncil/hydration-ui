@@ -4,10 +4,13 @@ import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { MemepadStep1Values } from "./MemepadForm.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssetHubNativeBalance } from "api/externalAssetRegistry/assethub"
+import {
+  ASSETHUB_ASSET_CREATION_DOT_COST,
+  useAssetHubNativeBalance,
+} from "api/externalAssetRegistry/assethub"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { undefinedNoop } from "utils/helpers"
-import { AH_ASSET_CREATION_DOT_COST } from "sections/wallet/addToken/AddToken.utils"
+import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 
 type MemepadFormStep1Props = {
   form: UseFormReturn<MemepadStep1Values>
@@ -36,7 +39,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           control={form.control}
           render={({ field }) => (
             <InputBox
-              label={t("wallet.addToken.form.name")}
+              label={t("memepad.form.name")}
               withLabel
               error={form.formState.errors.name?.message}
               {...field}
@@ -48,7 +51,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           control={form.control}
           render={({ field }) => (
             <InputBox
-              label={t("wallet.addToken.form.symbol")}
+              label={t("memepad.form.symbol")}
               withLabel
               error={form.formState.errors.symbol?.message}
               {...field}
@@ -60,7 +63,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           control={form.control}
           render={({ field }) => (
             <InputBox
-              label={t("wallet.addToken.form.deposit")}
+              label={t("memepad.form.deposit")}
               withLabel
               error={form.formState.errors.deposit?.message}
               {...field}
@@ -72,7 +75,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           control={form.control}
           render={({ field }) => (
             <InputBox
-              label={t("wallet.addToken.form.supply")}
+              label={t("memepad.form.supply")}
               withLabel
               error={form.formState.errors.supply?.message}
               {...field}
@@ -83,21 +86,21 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           name="account"
           control={form.control}
           render={({ field }) => (
-            <InputBox
-              label={t("wallet.addToken.form.account")}
+            <WalletTransferAccountInput
               disabled
-              withLabel
-              error={form.formState.errors.account?.message}
+              sx={{ p: 12 }}
+              label={t("memepad.form.account")}
+              css={{ pointerEvents: "none" }}
               {...field}
             />
           )}
         />
         <AssetSelect
           id="5"
-          title="Asset creation cost"
+          title={t("memepad.form.assetCreationCost")}
           withoutMaxBtn
           name="creation-cost"
-          value={AH_ASSET_CREATION_DOT_COST.toString()}
+          value={ASSETHUB_ASSET_CREATION_DOT_COST.toString()}
           balance={data?.balance}
           balanceLabel={t("balance")}
           onChange={undefinedNoop}

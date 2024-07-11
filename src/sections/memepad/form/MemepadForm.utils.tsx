@@ -2,6 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
   ASSETHUB_EXTERNAL_ASSET_SUFFIX,
+  CreateTokenValues,
+  useCreateAssetHubToken,
   useGetNextAssetHubId,
 } from "api/externalAssetRegistry/assethub"
 import { useRefetchProviderData } from "api/provider"
@@ -14,10 +16,8 @@ import {
   useCreateXYKPoolForm,
 } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
 import {
-  CreateTokenValues,
   getInternalIdFromResult,
   TRegisteredAsset,
-  useCreateToken,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
@@ -109,7 +109,7 @@ export const useMemepadForms = () => {
     summary?.xykPoolAssetId,
   )
 
-  const createToken = useCreateToken()
+  const createToken = useCreateAssetHubToken()
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
       addToken({
@@ -119,7 +119,7 @@ export const useMemepadForms = () => {
       refetchProvider()
     },
   })
-  const xcmTx = useCrossChainTransaction()
+  const xTransfer = useCrossChainTransaction()
   const createXykPool = useCreateXYKPool(
     summary?.internalId ?? "",
     summary?.xykPoolAssetId ?? "",
@@ -156,7 +156,6 @@ export const useMemepadForms = () => {
   const formInstances = [formStep1, formStep2, formStep3]
 
   const isDirty = formInstances.some((form) => form.formState.isDirty)
-  const isSubmitted = formInstances.every((form) => form.formState.isSubmitted)
   const isSubmitting = formInstances.some((form) => form.formState.isSubmitting)
 
   const setNextStep = (values: MemepadSummaryValues) => {
@@ -200,7 +199,7 @@ export const useMemepadForms = () => {
 
     if (step === 1) {
       return formStep2.handleSubmit(async (values) => {
-        await xcmTx.mutateAsync({
+        await xTransfer.mutateAsync({
           amount: parseFloat(values.amount),
           asset: buildExternalAssetKey(summary),
           srcAddr: summary?.account ?? values.hydrationAddress,
@@ -225,13 +224,13 @@ export const useMemepadForms = () => {
   }
 
   const currentForm = formComponents[step]
-  const isFinalStep = step === formComponents.length
+  const isFinalized = step === formComponents.length
 
   const isLoading =
     isSubmitting ||
     createToken.isLoading ||
     registerToken.isLoading ||
-    xcmTx.isLoading
+    xTransfer.isLoading
 
   return {
     step,
@@ -239,9 +238,8 @@ export const useMemepadForms = () => {
     formStep2,
     formStep3,
     currentForm,
-    isFinalStep,
+    isFinalized,
     isDirty,
-    isSubmitted,
     summary,
     submitNext,
     reset,

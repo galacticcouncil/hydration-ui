@@ -8,9 +8,9 @@ import { useMemepadFormContext } from "sections/memepad/form/MemepadFormContext"
 export const RouteBlockModal = () => {
   const { t } = useTranslation()
 
-  const { isDirty, isSubmitted } = useMemepadFormContext()
+  const { isDirty, isFinalized } = useMemepadFormContext()
 
-  const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isSubmitted)
+  const { isBlocking, accept, cancel } = useRouteBlock(isDirty && !isFinalized)
 
   return (
     <Modal open={isBlocking} disableCloseOutside>

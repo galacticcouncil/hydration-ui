@@ -38,8 +38,8 @@ export const MemepadFormStep3: FC<MemepadFormStep3Props> = ({
   if (!isReady) {
     return (
       <MemepadSpinner
-        title="Waiting for funds"
-        description="Your funds are arriving to Hydration. This can take a while. Don't close your browser or tab."
+        title={t("memepad.form.spinner.fundCheck.title")}
+        description={t("memepad.form.spinner.fundCheck.description")}
       />
     )
   }

@@ -14,6 +14,7 @@ import { Text } from "components/Typography/Text/Text"
 import { BN_NAN } from "utils/constants"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
+import { SRowItem } from "sections/memepad/components/MemepadSummary"
 
 const ALLOW_ADDRESSBOOK = false
 
@@ -71,7 +72,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
                   BN(value)
                     .shiftedBy(transfer?.max?.decimals ?? 0)
                     .lte(balanceMax) ||
-                  t("wallet.addToken.form.error.maxTransferable", {
+                  t("memepad.form.error.maxTransferable", {
                     value: balanceMax,
                     fixedPointScale: transfer?.max?.decimals,
                     symbol: transfer?.balance?.symbol,
@@ -80,7 +81,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             }}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAssetSelect
-                title={t("wallet.addToken.form.amount")}
+                title={t("memepad.form.amount")}
                 asset={assetId}
                 error={error?.message}
                 balance={balance}
@@ -97,7 +98,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             }}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAccountInput
-                label={t("wallet.addToken.form.hydrationAddress")}
+                label={t("memepad.form.hydrationAddress")}
                 error={error?.message}
                 openAddressBook={
                   ALLOW_ADDRESSBOOK ? openAddressBook : undefined
@@ -109,24 +110,30 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
           />
         </div>
       </form>
-      <Text fs={14} sx={{ flex: "row", justify: "space-between", mt: 10 }}>
-        <span sx={{ color: "basic400" }}>Source fee:</span>
-        <span>
+
+      <SRowItem sx={{ mt: 10 }}>
+        <Text fs={14} color="basic400">
+          {t("liquidity.reviewTransaction.modal.detail.srcChainFee")}
+        </Text>
+        <Text fs={14}>
           {t("value.tokenWithSymbol", {
             value: srcFee,
             symbol: transfer?.srcFee?.symbol,
           })}
-        </span>
-      </Text>
-      <Text fs={14} sx={{ flex: "row", justify: "space-between", mt: 10 }}>
-        <span sx={{ color: "basic400" }}>Destination fee:</span>
-        <span>
+        </Text>
+      </SRowItem>
+      <SRowItem css={{ border: "none" }}>
+        <Text fs={14} color="basic400">
+          {t("liquidity.reviewTransaction.modal.detail.dstChainFee")}
+        </Text>
+        <Text fs={14}>
           {t("value.tokenWithSymbol", {
             value: dstFee,
             symbol: transfer?.dstFee?.symbol,
           })}
-        </span>
-      </Text>
+        </Text>
+      </SRowItem>
+
       <Modal
         open={addressBookOpen}
         onClose={closeAddressBook}

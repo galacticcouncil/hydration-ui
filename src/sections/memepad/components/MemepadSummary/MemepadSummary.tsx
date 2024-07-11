@@ -50,7 +50,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </Text>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.name")}
+                {t("memepad.form.name")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {values.name}
@@ -58,7 +58,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </SRowItem>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.symbol")}
+                {t("memepad.form.symbol")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {values.symbol}
@@ -66,7 +66,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </SRowItem>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.decimals")}
+                {t("memepad.form.decimals")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {values.decimals}
@@ -74,7 +74,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </SRowItem>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.deposit")}
+                {t("memepad.form.deposit")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {t("value.token", {
@@ -84,7 +84,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </SRowItem>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.supply")}
+                {t("memepad.form.supply")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {t("value.token", {
@@ -94,7 +94,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </SRowItem>
             <SRowItem>
               <Text fs={14} color="basic400">
-                {t("wallet.addToken.form.account")}
+                {t("memepad.form.account")}
               </Text>
               <Text fs={14} color="brightBlue300">
                 {values.account ? shortenAccountAddress(values.account) : ""}

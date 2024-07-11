@@ -37,7 +37,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <SInputWrapper disabled={props.disabled} className={props.className}>
-        <div sx={{ flex: "column", width: "calc(100% - 34px)" }}>
+        <div sx={{ flex: "column", width: "100%" }}>
           <SInput
             ref={ref}
             onChange={(e) => props.onChange?.(e.target.value)}

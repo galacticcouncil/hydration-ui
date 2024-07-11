@@ -23,14 +23,6 @@ import { omit } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
 import { getPendulumInputData } from "utils/externalAssets"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import BigNumber from "bignumber.js"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import {
-  assetHubNativeToken,
-  useAssetHubNativeBalance,
-} from "api/externalAssetRegistry/assethub"
-import { BN_NAN } from "utils/constants"
 
 const pink = {
   decimals: 10,
@@ -484,91 +476,6 @@ export const useRegisteredExternalTokens = () => {
       return tokens[dataEnv]
     }
   }, [assets.external, dataEnv, isLoaded, degenMode, externalAssets, tokens])
-}
-
-export type CreateTokenValues = {
-  id: string
-  name: string
-  symbol: string
-  deposit: string
-  supply: string
-  decimals: number
-  account: string
-}
-
-export const AH_ASSET_CREATION_DOT_COST = 10
-
-export const useCreateToken = ({
-  onSuccess,
-}: {
-  onSuccess?: () => ISubmittableResult
-} = {}) => {
-  const { t } = useTranslation()
-  const { createTransaction } = useStore()
-  const { account } = useAccount()
-  const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
-
-  return useMutation(async (values: CreateTokenValues) => {
-    if (!account) throw new Error("Missing account")
-    if (!assetHubNativeToken) throw new Error("Missing native token")
-
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(assethub.ws)
-
-    if (!api) throw new Error("Asset Hub is not connected")
-
-    const supply = BigNumber(values.supply)
-      .shiftedBy(values.decimals)
-      .toString()
-
-    const deposit = BigNumber(values.deposit)
-      .shiftedBy(values.decimals)
-      .toString()
-
-    const tx = api.tx.utility.batchAll([
-      api.tx.assets.create(values.id, values.account, deposit),
-      api.tx.assets.setMetadata(
-        values.id,
-        values.name,
-        values.symbol,
-        values.decimals,
-      ),
-      api.tx.assets.mint(values.id, values.account, supply),
-    ])
-    const paymentInfo = await tx.paymentInfo(account.address)
-
-    const feeAssetDecimals = assetHubNativeToken.decimals ?? 10
-    const feeBalance =
-      nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
-    const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
-      -feeAssetDecimals,
-    )
-
-    return await createTransaction(
-      {
-        title: t("wallet.addToken.reviewTransaction.modal.create.title"),
-        tx: api.tx.utility.batchAll([
-          api.tx.assets.create(values.id, values.account, deposit),
-          api.tx.assets.setMetadata(
-            values.id,
-            values.name,
-            values.symbol,
-            values.decimals,
-          ),
-          api.tx.assets.mint(values.id, values.account, supply),
-        ]),
-        xcallMeta: {
-          srcChain: assethub.key,
-          srcChainFee: fee.plus(AH_ASSET_CREATION_DOT_COST).toString(),
-          srcChainFeeBalance: feeBalance.toString(),
-          srcChainFeeSymbol: assetHubNativeToken.asset.originSymbol,
-        },
-      },
-      {
-        onSuccess,
-      },
-    )
-  })
 }
 
 export const getInternalIdFromResult = (res: ISubmittableResult) => {
