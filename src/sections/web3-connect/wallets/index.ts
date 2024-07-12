@@ -23,6 +23,10 @@ export enum WalletProviderType {
   TrustWallet = "trustwallet",
   Phantom = "phantom",
   Enkrypt = "enkrypt",
+  MantaWallet = "manta-wallet-js",
+  FearlessWallet = "fearless-wallet",
+  Polkagate = "polkagate",
+  AlephZero = "aleph-zero",
   WalletConnect = "walletconnect",
   ExternalWallet = "external",
 }

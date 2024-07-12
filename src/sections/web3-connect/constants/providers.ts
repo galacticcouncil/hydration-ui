@@ -10,6 +10,10 @@ export const MOBILE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Enkrypt,
   WalletProviderType.NovaWallet,
+  WalletProviderType.MantaWallet,
+  WalletProviderType.FearlessWallet,
+  WalletProviderType.Polkagate,
+  WalletProviderType.AlephZero,
   WalletProviderType.WalletConnect,
 ]
 
@@ -23,6 +27,10 @@ export const DESKTOP_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Enkrypt,
   WalletProviderType.PolkadotJS,
+  WalletProviderType.MantaWallet,
+  WalletProviderType.FearlessWallet,
+  WalletProviderType.Polkagate,
+  WalletProviderType.AlephZero,
   WalletProviderType.WalletConnect,
 ]
 
@@ -41,6 +49,10 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Enkrypt,
   WalletProviderType.PolkadotJS,
   WalletProviderType.NovaWallet,
+  WalletProviderType.MantaWallet,
+  WalletProviderType.FearlessWallet,
+  WalletProviderType.Polkagate,
+  WalletProviderType.AlephZero,
   WalletProviderType.WalletConnect,
 ]
 
