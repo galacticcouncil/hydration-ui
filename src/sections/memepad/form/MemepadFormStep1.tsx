@@ -48,7 +48,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
         />
         <input
           type="hidden"
-          {...(form.register("decimals"), { valueAsNumber: true })}
+          {...form.register("decimals", { valueAsNumber: true })}
         />
         <Controller
           name="name"

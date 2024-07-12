@@ -46,7 +46,7 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
       const moveX = clientX - window.innerWidth / 2
       const moveY = clientY - window.innerHeight / 2
       const offseFactor1 = 100
-      const offseFactor2 = 150
+      const offseFactor2 = 130
       const offseFactor3 = 600
 
       animationRef.current = window.requestAnimationFrame(() => {

@@ -65,17 +65,23 @@ export const useMemepadStep1Form = () => {
       origin: assethub.parachainId,
       account: account?.address ?? "",
     },
-    resolver: zodResolver(
-      z.object({
-        name: required,
-        symbol: required,
-        deposit: positive,
-        supply: positive,
-        decimals: z.number().min(0).max(18),
-        origin: z.number().min(0),
-        account: required,
-      }),
-    ),
+    resolver: (...args) => {
+      const [values] = args
+      return zodResolver(
+        z.object({
+          name: required,
+          symbol: required,
+          deposit: positive,
+          supply: positive.pipe(
+            // supply must be greater than deposit
+            z.coerce.number().gt(parseFloat(values.deposit) ?? 0),
+          ),
+          decimals: z.number().min(0).max(18),
+          origin: z.number().min(0),
+          account: required,
+        }),
+      )(...args)
+    },
   })
 }
 
