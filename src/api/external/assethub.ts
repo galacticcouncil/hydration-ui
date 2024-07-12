@@ -1,18 +1,20 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
-import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { arrayToMap } from "utils/rx"
+import { Parachain } from "@galacticcouncil/xcm-core"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
-import BigNumber from "bignumber.js"
-import { Maybe, undefinedNoop } from "utils/helpers"
-import { Trans, useTranslation } from "react-i18next"
-import { ToastMessage, useStore } from "state/store"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { useExternalApi } from "api/external"
+import BigNumber from "bignumber.js"
+import { useTranslation } from "react-i18next"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useStore } from "state/store"
+import { createToastMessages } from "state/toasts"
 import { BN_NAN } from "utils/constants"
-import { TOAST_MESSAGES } from "state/toasts"
+import { Maybe, undefinedNoop } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { arrayToMap } from "utils/rx"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_ASSET_CREATION_DOT_COST = 10
@@ -27,10 +29,8 @@ export const assethubNativeToken = assethub.assetsData.get("dot")
 //@ts-ignore
 // hydradx.ws = "ws://172.25.126.217:8001"
 
-export const getAssetHubAssets = async () => {
+export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(assethub.ws)
     const dataRaw = await api.query.assets.metadata.entries()
 
     const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
@@ -53,10 +53,8 @@ export const getAssetHubAssets = async () => {
   } catch (e) {}
 }
 
-export const getAssetHubAssetsIds = async () => {
+export const getAssetHubAssetsIds = async (api: ApiPromise) => {
   try {
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(assethub.ws)
     const dataRaw = await api.query.assets.asset.entries()
     return dataRaw
       .map(([meta]) => Number(meta.args[0].toString()))
@@ -69,18 +67,21 @@ export const getAssetHubAssetsIds = async () => {
 /**
  * Used for fetching tokens only from Asset Hub parachain
  */
-export const useAssetHubAssetRegistry = (enabled?: boolean) => {
+export const useAssetHubAssetRegistry = (enabled = true) => {
+  const { data: api } = useExternalApi("assethub")
+
   return useQuery(
     QUERY_KEYS.assetHubAssetRegistry,
     async () => {
-      const assetHub = await getAssetHubAssets()
+      if (!api) throw new Error("Asset Hub is not connected")
+      const assetHub = await getAssetHubAssets(api)
 
       if (assetHub) {
         return assetHub.data
       }
     },
     {
-      enabled,
+      enabled: enabled && !!api,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
@@ -91,11 +92,8 @@ export const useAssetHubAssetRegistry = (enabled?: boolean) => {
 }
 
 export const getAssetHubNativeBalance =
-  (account: AccountId32 | string) => async () => {
+  (api: ApiPromise, account: AccountId32 | string) => async () => {
     try {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(assethub.ws)
-
       const res = await api.query.system.account(account)
       const freeBalance = new BigNumber(res.data.free.toHex())
       const frozenBalance = new BigNumber(res.data.frozen.toHex())
@@ -115,18 +113,22 @@ export const getAssetHubNativeBalance =
 export const useAssetHubNativeBalance = (
   account: Maybe<AccountId32 | string>,
 ) => {
+  const { data: api } = useExternalApi("assethub")
+  const enabled = !!account && !!api
   return useQuery(
     QUERY_KEYS.assetHubNativeBalance(account),
-    account ? getAssetHubNativeBalance(account) : undefinedNoop,
+    enabled ? getAssetHubNativeBalance(api, account) : undefinedNoop,
     {
-      enabled: !!account,
+      enabled,
     },
   )
 }
 
 export const useGetNextAssetHubId = () => {
+  const { data: api } = useExternalApi("assethub")
   const mutation = useMutation(async () => {
-    const ids = await getAssetHubAssetsIds()
+    if (!api) throw new Error("Asset Hub is not connected")
+    const ids = await getAssetHubAssetsIds(api)
 
     let smallestId = 1
 
@@ -164,15 +166,12 @@ export const useCreateAssetHubToken = ({
   const { t } = useTranslation()
   const { createTransaction } = useStore()
   const { account } = useAccount()
+  const { data: api } = useExternalApi("assethub")
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
 
   return useMutation(async (values: CreateTokenValues) => {
     if (!account) throw new Error("Missing account")
     if (!assethubNativeToken) throw new Error("Missing native token")
-
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(assethub.ws)
-
     if (!api) throw new Error("Asset Hub is not connected")
 
     const supply = BigNumber(values.supply)
@@ -202,24 +201,6 @@ export const useCreateAssetHubToken = ({
       -feeAssetDecimals,
     )
 
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`wallet.addToken.toast.create.${msType}`}
-          tOptions={{
-            name: values.name,
-            chainName: assethub.name,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
-
     return await createTransaction(
       {
         title: t("wallet.addToken.reviewTransaction.modal.create.title"),
@@ -241,7 +222,11 @@ export const useCreateAssetHubToken = ({
         },
       },
       {
-        toast,
+        toast: createToastMessages("wallet.addToken.toast.create", {
+          t,
+          tOptions: { name: values.name, chainName: assethub.name },
+          components: ["span.highlight"],
+        }),
         onSuccess,
       },
     )

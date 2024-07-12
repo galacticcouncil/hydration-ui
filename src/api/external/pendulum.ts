@@ -6,6 +6,8 @@ import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { isJson } from "utils/helpers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { arrayToMap } from "utils/rx"
+import { ApiPromise } from "@polkadot/api"
+import { useExternalApi } from "api/external"
 
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
@@ -30,10 +32,8 @@ const getPendulumAssetId = (assetId: string) => {
   return undefined
 }
 
-export const getPedulumAssets = async () => {
+export const getPedulumAssets = async (api: ApiPromise) => {
   try {
-    const api = await pendulum.api
-
     const dataRaw = await api.query.assetRegistry.metadata.entries()
 
     const data = dataRaw.reduce<
@@ -73,17 +73,20 @@ export const getPedulumAssets = async () => {
 /**
  * Used for fetching tokens only from Pendulum parachain
  */
-export const usePendulumAssetRegistry = (enabled?: boolean) => {
+export const usePendulumAssetRegistry = (enabled = true) => {
+  const { data: api } = useExternalApi("pendulum")
+
   return useQuery(
     QUERY_KEYS.pendulumAssetRegistry,
     async () => {
-      const pendulum = await getPedulumAssets()
+      if (!api) throw new Error("Pendulum is not connected")
+      const pendulum = await getPedulumAssets(api)
       if (pendulum) {
         return pendulum.data
       }
     },
     {
-      enabled,
+      enabled: enabled && !!api,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,

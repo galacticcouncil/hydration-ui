@@ -8,6 +8,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
 import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
+import { useTranslation } from "react-i18next"
+import { createToastMessages } from "state/toasts"
 
 type TransferProps = {
   asset: string
@@ -26,6 +28,14 @@ export const xcmConfigService = new ConfigService({
 export const wallet = new Wallet({
   config: xcmConfigService,
 })
+
+export const createXcmAssetKey = (id: string, symbol: string) => {
+  if (id && symbol) {
+    return `${symbol?.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
+  }
+
+  return ""
+}
 
 export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
   const assetData = external.buildAssetData(asset, ASSETHUB_XCM_ASSET_SUFFIX)
@@ -47,16 +57,20 @@ export const useCrossChainTransfer = ({
 }
 
 export const useCrossChainTransaction = () => {
+  const { t } = useTranslation()
   const { createTransaction } = useStore()
 
   return useMutation(async (values: TransferProps & { amount: number }) => {
-    const chain = chainsMap.get(values.srcChain)
+    const srcChain = chainsMap.get(values.srcChain)
+    const dstChain = chainsMap.get(values.dstChain)
 
-    if (!chain) throw new Error("Invalid chain")
-    if (!isAnyParachain(chain)) throw new Error("Chain is not a parachain")
+    if (!srcChain) throw new Error(`Chain ${values.srcChain} not found`)
+    if (!dstChain) throw new Error(`Chain ${values.dstChain} not found`)
+    if (!isAnyParachain(srcChain))
+      throw new Error(`Chain ${values.srcChain} is not a parachain`)
 
     const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(chain.ws)
+    const api = await apiPool.api(srcChain.ws)
 
     const xTransfer = await wallet.transfer(
       values.asset,
@@ -70,17 +84,31 @@ export const useCrossChainTransaction = () => {
 
     const call = await xTransfer.buildCall(values.amount)
 
-    return await createTransaction({
-      tx: api.tx(call.data),
-      xcallMeta: {
-        srcChain: values.srcChain,
-        srcChainFee: srcFee.toDecimal(dstFee.decimals),
-        srcChainFeeBalance: balance.toDecimal(balance.decimals),
-        srcChainFeeSymbol: srcFee.originSymbol,
-        dstChain: values.dstChain,
-        dstChainFee: dstFee.toDecimal(dstFee.decimals),
-        dstChainFeeSymbol: dstFee.originSymbol,
+    return await createTransaction(
+      {
+        tx: api.tx(call.data),
+        xcallMeta: {
+          srcChain: values.srcChain,
+          srcChainFee: srcFee.toDecimal(dstFee.decimals),
+          srcChainFeeBalance: balance.toDecimal(balance.decimals),
+          srcChainFeeSymbol: srcFee.originSymbol,
+          dstChain: values.dstChain,
+          dstChainFee: dstFee.toDecimal(dstFee.decimals),
+          dstChainFeeSymbol: dstFee.originSymbol,
+        },
       },
-    })
+      {
+        toast: createToastMessages("xcm.transfer.toast", {
+          t,
+          tOptions: {
+            amount: values.amount,
+            symbol: balance.symbol,
+            srcChain: srcChain.name,
+            dstChain: dstChain.name,
+          },
+          components: ["span.highlight"],
+        }),
+      },
+    )
   })
 }

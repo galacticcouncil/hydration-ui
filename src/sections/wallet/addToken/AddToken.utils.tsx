@@ -1,15 +1,15 @@
 import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
-import { ToastMessage, useSettingsStore, useStore } from "state/store"
+import { useSettingsStore, useStore } from "state/store"
 import {
   HydradxRuntimeXcmAssetLocation,
   XcmV3Junction,
 } from "@polkadot/types/lookup"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { TOAST_MESSAGES } from "state/toasts"
-import { Trans, useTranslation } from "react-i18next"
+import { createToastMessages } from "state/toasts"
+import { useTranslation } from "react-i18next"
 import { assethub, pendulum, useExternalAssetRegistry } from "api/external"
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
@@ -221,23 +221,6 @@ export const useRegisterToken = ({
   const { t } = useTranslation()
 
   return useMutation(async (asset: TExternalAssetWithLocation) => {
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`wallet.addToken.toast.register.${msType}`}
-          tOptions={{
-            name: asset.name,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
-
     const assetInput = getInputData(asset)
 
     if (!assetInput) throw new Error("Invalid asset input data")
@@ -248,7 +231,13 @@ export const useRegisterToken = ({
         tx: api.tx.assetRegistry.registerExternal(assetInput),
       },
       {
-        toast,
+        toast: createToastMessages("wallet.addToken.toast.register", {
+          t,
+          tOptions: {
+            name: asset.name,
+          },
+          components: ["span.highlight"],
+        }),
         onSuccess: async (res) => {
           const data = getInternalIdFromResult(res)
           const assetId = data?.assetId?.toString()

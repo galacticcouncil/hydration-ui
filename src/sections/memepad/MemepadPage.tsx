@@ -31,7 +31,11 @@ const MemepadPageContent = () => {
       ) : (
         <MemepadLayout>
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
-          <MemepadActionBar step={step} onNext={submitNext} />
+          <MemepadActionBar
+            step={step}
+            isRegistering={!!summary?.id}
+            onNext={submitNext}
+          />
         </MemepadLayout>
       )}
       <RouteBlockModal />

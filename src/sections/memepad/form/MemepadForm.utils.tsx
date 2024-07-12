@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
-  ASSETHUB_XCM_ASSET_SUFFIX,
   CreateTokenValues,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
@@ -27,7 +26,11 @@ import { positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
 import { MemepadFormStep2 } from "./MemepadFormStep2"
-import { syncAssethubXcmConfig, useCrossChainTransaction } from "api/xcm"
+import {
+  createXcmAssetKey,
+  syncAssethubXcmConfig,
+  useCrossChainTransaction,
+} from "api/xcm"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
@@ -47,11 +50,6 @@ export type MemepadStep3Values = CreateXYKPoolFormData
 export type MemepadSummaryValues = Partial<
   MemepadStep1Values & MemepadStep2Values & MemepadStep3Values
 > & { internalId?: string; xykPoolAssetId?: string }
-
-function buildExternalAssetKey(summary: MemepadSummaryValues | null) {
-  if (!summary) return ""
-  return `${summary.symbol?.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${summary.id}`
-}
 
 export const useMemepadStep1Form = () => {
   const { account } = useAccount()
@@ -97,8 +95,6 @@ export const useMemepadForms = () => {
   const [step, setStep] = useState(0)
   const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
 
-  const { account } = useAccount()
-
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
 
@@ -130,27 +126,10 @@ export const useMemepadForms = () => {
 
   const { getNextAssetHubId } = useGetNextAssetHubId()
 
-  const reset = () => {
-    setStep(0)
-    setSummary(null)
-    formInstances.forEach((form) => form.reset())
-  }
-
   const formComponents = [
     <MemepadFormStep1 form={formStep1} />,
-    <MemepadFormStep2
-      form={formStep2}
-      assetId={summary?.internalId ?? ""}
-      assetKey={buildExternalAssetKey(summary)}
-      srcAddress={account?.address ?? ""}
-    />,
-    <MemepadFormStep3
-      form={formStep3}
-      assetA={summary?.internalId}
-      onAssetBSelect={(asset) =>
-        setSummary((prev) => ({ ...prev, xykPoolAssetId: asset.id }))
-      }
-    />,
+    <MemepadFormStep2 form={formStep2} />,
+    <MemepadFormStep3 form={formStep3} />,
   ]
 
   const formInstances = [formStep1, formStep2, formStep3]
@@ -173,9 +152,13 @@ export const useMemepadForms = () => {
           id,
         }
 
-        // create token on Assethub
-        await createToken.mutateAsync(token)
-        setSummary((prev) => ({ ...prev, ...token }))
+        const isCreated = !!summary?.id
+
+        if (!isCreated) {
+          // create token on Assethub
+          await createToken.mutateAsync(token)
+          setSummary((prev) => ({ ...prev, ...token }))
+        }
 
         // register token on Hydration
         const result = await registerToken.mutateAsync(token)
@@ -198,9 +181,13 @@ export const useMemepadForms = () => {
 
     if (step === 1) {
       return formStep2.handleSubmit(async (values) => {
+        const xcmAssetKey = createXcmAssetKey(
+          summary?.id ?? "",
+          summary?.symbol ?? "",
+        )
         await xTransfer.mutateAsync({
           amount: parseFloat(values.amount),
-          asset: buildExternalAssetKey(summary),
+          asset: xcmAssetKey,
           srcAddr: summary?.account ?? values.hydrationAddress,
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
           dstAddr: values.hydrationAddress,
@@ -222,6 +209,19 @@ export const useMemepadForms = () => {
     }
   }
 
+  function reset() {
+    setStep(0)
+    setSummary(null)
+    formInstances.forEach((form) => form.reset())
+  }
+
+  function setSummaryValue<K extends keyof MemepadSummaryValues>(
+    key: K,
+    value: MemepadSummaryValues[K],
+  ) {
+    setSummary((prev) => ({ ...prev, [key]: value }))
+  }
+
   const currentForm = formComponents[step]
   const isFinalized = step === formComponents.length
 
@@ -240,6 +240,7 @@ export const useMemepadForms = () => {
     isFinalized,
     isDirty,
     summary,
+    setSummaryValue,
     submitNext,
     reset,
     isLoading,

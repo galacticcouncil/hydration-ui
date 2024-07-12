@@ -1,4 +1,4 @@
-import { useCrossChainTransfer } from "api/xcm"
+import { createXcmAssetKey, useCrossChainTransfer } from "api/xcm"
 import { FC, useState } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -15,24 +15,25 @@ import { BN_NAN } from "utils/constants"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 import { SRowItem } from "sections/memepad/components/MemepadSummary"
+import { useMemepadFormContext } from "./MemepadFormContext"
 
 const ALLOW_ADDRESSBOOK = false
 
 type MemepadFormStep2Props = {
   form: UseFormReturn<MemepadStep2Values>
-  assetId: string
-  assetKey: string
-  srcAddress: string
 }
 
-export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
-  form,
-  assetId,
-  assetKey,
-  srcAddress,
-}) => {
+export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({ form }) => {
   const { t } = useTranslation()
   const [addressBookOpen, setAddressBookOpen] = useState(false)
+  const { summary } = useMemepadFormContext()
+
+  const srcAddress = summary?.account ?? ""
+  const internalId = summary?.internalId ?? ""
+  const xcmAssetKey = createXcmAssetKey(
+    summary?.id ?? "",
+    summary?.symbol ?? "",
+  )
 
   const openAddressBook = () => setAddressBookOpen(true)
   const closeAddressBook = () => setAddressBookOpen(false)
@@ -40,7 +41,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
   const destAddress = form.watch("hydrationAddress")
 
   const { data: transfer } = useCrossChainTransfer({
-    asset: assetKey,
+    asset: xcmAssetKey,
     srcAddr: srcAddress,
     srcChain: MEMEPAD_XCM_SRC_CHAIN,
     dstAddr: destAddress,
@@ -93,7 +94,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAssetSelect
                 title={t("memepad.form.amount")}
-                asset={assetId}
+                asset={internalId}
                 error={error?.message}
                 balance={balance}
                 balanceMax={balanceMax}

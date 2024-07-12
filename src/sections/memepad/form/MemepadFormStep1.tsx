@@ -11,6 +11,8 @@ import {
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { undefinedNoop } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
+import { useMemepadFormContext } from "./MemepadFormContext"
+import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
 
 type MemepadFormStep1Props = {
   form: UseFormReturn<MemepadStep1Values>
@@ -22,6 +24,20 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
   const { account } = useAccount()
 
   const { data } = useAssetHubNativeBalance(account?.address)
+
+  const { summary } = useMemepadFormContext()
+
+  const isCreated = !!summary?.id
+
+  if (isCreated) {
+    return (
+      <MemepadSpinner
+        isSuccess
+        title={t("memepad.form.spinner.create.success.title")}
+        description={t("memepad.form.spinner.create.success.description")}
+      />
+    )
+  }
 
   return (
     <form autoComplete="off">
