@@ -185,22 +185,22 @@ export class EthereumSigner {
       const params = [this.address, typedData]
 
       return new Promise((resolve, reject) => {
-        this.provider.sendAsync?.(
-          {
+        if (typeof this.provider.request !== "function") {
+          return reject(new Error("Provider does not support request method"))
+        }
+
+        return this.provider
+          .request({
             method,
             params,
-          },
-          (err, result) => {
-            if (err) {
-              return reject(err)
-            }
-
-            return resolve({
+          })
+          .then((result) =>
+            resolve({
               message,
-              signature: splitSignature(result.result),
-            })
-          },
-        )
+              signature: splitSignature(result),
+            }),
+          )
+          .catch(reject)
       })
     }
 

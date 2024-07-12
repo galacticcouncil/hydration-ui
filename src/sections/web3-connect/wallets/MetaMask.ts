@@ -160,7 +160,7 @@ export class MetaMask implements Wallet {
   }
 
   unsubscribe = () => {
-    this._extension?.removeAllListeners()
+    this._extension?.removeAllListeners?.()
     this._extension = undefined
     this._signer = undefined
   }

@@ -10,6 +10,7 @@ import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
+import { TrustWallet } from "./TrustWallet"
 
 export enum WalletProviderType {
   MetaMask = "metamask",
@@ -19,6 +20,7 @@ export enum WalletProviderType {
   SubwalletEvm = "subwallet-evm",
   PolkadotJS = "polkadot-js",
   NovaWallet = "nova-wallet",
+  TrustWallet = "trustwallet",
   Phantom = "phantom",
   Enkrypt = "enkrypt",
   WalletConnect = "walletconnect",
@@ -70,6 +72,12 @@ const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
+const trustWallet: Wallet = new TrustWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.TrustWallet,
+  ),
+})
+
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
@@ -94,6 +102,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
+  trustWallet,
   novaWallet,
   walletConnect,
   externalWallet,
@@ -114,29 +123,41 @@ export function getSupportedWallets() {
   return SUPPORTED_WALLET_PROVIDERS
 }
 
+function syncSupportedWalletProviders(wallet: Wallet) {
+  const type = normalizeProviderType(wallet)
+  SUPPORTED_WALLET_PROVIDERS = [
+    ...SUPPORTED_WALLET_PROVIDERS.filter((provider) => provider.type !== type),
+    {
+      wallet,
+      type,
+    },
+  ]
+}
+
 /**
  * Handles the event of EIP-6963 standard to announce injected Wallet Providers
  * For more information, refer to https://eips.ethereum.org/EIPS/eip-6963
  */
 export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
   if (event.detail.info.rdns === "io.metamask") {
-    const metaMask: Wallet = new MetaMask({
-      provider: event.detail.provider,
-      onAccountsChanged: onMetaMaskLikeAccountChange(
-        WalletProviderType.MetaMask,
-      ),
-    })
+    syncSupportedWalletProviders(
+      new MetaMask({
+        provider: event.detail.provider,
+        onAccountsChanged: onMetaMaskLikeAccountChange(
+          WalletProviderType.MetaMask,
+        ),
+      }),
+    )
+  }
 
-    const type = normalizeProviderType(metaMask)
-
-    SUPPORTED_WALLET_PROVIDERS = [
-      ...SUPPORTED_WALLET_PROVIDERS.filter(
-        (provider) => provider.type !== type,
-      ),
-      {
-        wallet: metaMask,
-        type,
-      },
-    ]
+  if (event.detail.info.rdns === "com.trustwallet.app") {
+    syncSupportedWalletProviders(
+      new TrustWallet({
+        provider: event.detail.provider,
+        onAccountsChanged: onMetaMaskLikeAccountChange(
+          WalletProviderType.TrustWallet,
+        ),
+      }),
+    )
   }
 }

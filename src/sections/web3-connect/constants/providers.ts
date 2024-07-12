@@ -6,6 +6,7 @@ export const MOBILE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletJS,
   WalletProviderType.SubwalletEvm,
+  WalletProviderType.TrustWallet,
   WalletProviderType.Phantom,
   WalletProviderType.Enkrypt,
   WalletProviderType.NovaWallet,
@@ -18,6 +19,7 @@ export const DESKTOP_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletJS,
   WalletProviderType.SubwalletEvm,
+  WalletProviderType.TrustWallet,
   WalletProviderType.Phantom,
   WalletProviderType.Enkrypt,
   WalletProviderType.PolkadotJS,
@@ -28,6 +30,7 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletEvm,
+  WalletProviderType.TrustWallet,
   WalletProviderType.Phantom,
   WalletProviderType.WalletConnect,
 ]

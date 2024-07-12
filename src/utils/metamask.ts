@@ -6,7 +6,12 @@ import UniversalProvider from "@walletconnect/universal-provider/dist/types/Univ
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 
-const METAMASK_LIKE_CHECKS = ["isTalisman", "isSubWallet", "isPhantom"] as const
+const METAMASK_LIKE_CHECKS = [
+  "isTalisman",
+  "isSubWallet",
+  "isPhantom",
+  "isTrustWallet",
+] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
 type MetaMaskLikeChecks = {
@@ -76,6 +81,10 @@ export function isPhantom(provider: Maybe<ExternalProvider>) {
   return isMetaMaskLike(provider) && !!provider?.isPhantom
 }
 
+export function isTrustWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isTrustWallet
+}
+
 export function isEthereumProvider(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider | UniversalProvider> {
@@ -113,8 +122,10 @@ export async function requestNetworkSwitch(
       error.data?.originalError?.code ||
       error?.code
 
+    const chainNotFoundCode = provider.isTrustWallet ? 4200 : 4902
+
     // missing or unsupported network error
-    if (errorCode === 4902) {
+    if (errorCode === chainNotFoundCode) {
       try {
         await provider
           .request({
