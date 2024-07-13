@@ -32,6 +32,8 @@ export const SWrapperContainer = styled(motion.div)`
 
   position: relative;
   overflow: hidden;
+
+  min-height: 50px;
 `
 
 export const SShadow = styled.div`
