@@ -21,9 +21,7 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
 }
 
 const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
-  if (vote?.isSplit) {
-    return 'None'
-  } else if (vote?.isStandard) {
+ if (vote?.isStandard) {
     return vote.asStandard?.vote.conviction.toString()
   } else {
     return 'None'
