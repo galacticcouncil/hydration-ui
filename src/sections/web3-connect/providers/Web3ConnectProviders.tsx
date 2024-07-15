@@ -196,48 +196,56 @@ export const Web3ConnectProviders = () => {
           <Web3ConnectProviderButton {...provider} key={provider.type} />
         ))}
       </SProviderContainer>
-      <ButtonTransparent
-        onClick={() => setExpanded((state) => !state)}
-        sx={{ flex: "row", justify: "space-between", mt: 20 }}
-      >
-        <Text color="basic400">Other wallets</Text>
-        <div sx={{ flex: "row", align: "center" }}>
-          <Text fs={13} color="darkBlue300">
-            {t(expanded ? "hide" : "show")}
-          </Text>
-          <div
-            css={{
-              color: theme.colors.iconGray,
-              transform: expanded ? "rotate(180deg)" : undefined,
-              transition: theme.transitions.default,
-            }}
+
+      {notInstalled.length > 0 && (
+        <>
+          <ButtonTransparent
+            onClick={() => setExpanded((state) => !state)}
+            sx={{ flex: "row", justify: "space-between", mt: 20 }}
           >
-            <Icon icon={<ChevronDownIcon />} sx={{ color: "darkBlue300" }} />
-          </div>
-        </div>
-      </ButtonTransparent>
-      <LazyMotion features={domAnimation}>
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: "auto" }}
-              exit={{ height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              css={{ overflow: "hidden" }}
-            >
-              <SProviderContainer>
-                {notInstalled.map((provider) => (
-                  <Web3ConnectProviderButton
-                    {...provider}
-                    key={provider.type}
-                  />
-                ))}
-              </SProviderContainer>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </LazyMotion>
+            <Text color="basic400">Other wallets</Text>
+            <div sx={{ flex: "row", align: "center" }}>
+              <Text fs={13} color="darkBlue300">
+                {t(expanded ? "hide" : "show")}
+              </Text>
+              <div
+                css={{
+                  color: theme.colors.iconGray,
+                  transform: expanded ? "rotate(180deg)" : undefined,
+                  transition: theme.transitions.default,
+                }}
+              >
+                <Icon
+                  icon={<ChevronDownIcon />}
+                  sx={{ color: "darkBlue300" }}
+                />
+              </div>
+            </div>
+          </ButtonTransparent>
+          <LazyMotion features={domAnimation}>
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: "auto" }}
+                  exit={{ height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  css={{ overflow: "hidden" }}
+                >
+                  <SProviderContainer>
+                    {notInstalled.map((provider) => (
+                      <Web3ConnectProviderButton
+                        {...provider}
+                        key={provider.type}
+                      />
+                    ))}
+                  </SProviderContainer>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </LazyMotion>
+        </>
+      )}
     </>
   )
 }
