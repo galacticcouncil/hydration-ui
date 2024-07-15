@@ -6,6 +6,7 @@ export const SPositionContainer = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex-shrink: 0;
 
   z-index: 1;
 
