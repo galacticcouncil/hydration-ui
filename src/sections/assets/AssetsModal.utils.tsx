@@ -76,22 +76,22 @@ export const useAssetsModal = ({
 type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
 type TAssetSelector = {
-  asset: TAsset
+  meta: TAsset
   balance: BN
   displayValue: BN
 }
 
 const getAssetBalances = (
   assets: TAsset[],
-  assetsWithBalance: { asset: TAsset; balance: BN; displayValue: BN }[],
+  assetsWithBalance: { meta: TAsset; balance: BN; displayValue: BN }[],
 ) =>
   assets.map((asset) => {
     const tokenWithBalance = assetsWithBalance.find(
-      (token) => token.asset.id === asset.id,
+      (token) => token.meta.id === asset.id,
     )
 
     return {
-      asset,
+      meta: asset,
       balance: tokenWithBalance?.balance ?? BN_0,
       displayValue: tokenWithBalance?.displayValue ?? BN_0,
     }
@@ -109,8 +109,8 @@ const getValidTokens = (
     (acc, token) => {
       if (
         search &&
-        !token.asset.name.toLowerCase().includes(search.toLowerCase()) &&
-        !token.asset.symbol.toLowerCase().includes(search.toLowerCase())
+        !token.meta.name.toLowerCase().includes(search.toLowerCase()) &&
+        !token.meta.symbol.toLowerCase().includes(search.toLowerCase())
       ) {
         return acc
       }
@@ -118,7 +118,7 @@ const getValidTokens = (
       if (!allowedAssets) {
         return acc
       } else {
-        allowedAssets.includes(token.asset.id)
+        allowedAssets.includes(token.meta.id)
           ? acc.allowed.push(token)
           : acc.notAllowed.push(token)
 
@@ -202,7 +202,7 @@ export const useAssetsData = ({
           .shiftedBy(-asset.decimals)
           .times(spotPrice ?? 1)
 
-        return { asset, balance, displayValue }
+        return { meta: asset, balance, displayValue }
       },
     )
 
@@ -245,7 +245,7 @@ export const useAssetsData = ({
         const displayValue = balance
           .shiftedBy(-asset.decimals)
           .times(spotPrice ?? 1)
-        return { asset, balance, displayValue }
+        return { meta: asset, balance, displayValue }
       },
     )
     const bonds = allAssets

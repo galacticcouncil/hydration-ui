@@ -6,10 +6,10 @@ import { Registry } from "@polkadot/types/types"
 
 export const getAccountResolver =
   (registry: Registry) =>
-  (sub: u32 | number): AccountId32 => {
+  (sub: u32 | number, isXyk?: boolean): AccountId32 => {
     // TYPE_ID based on Substrate
     const TYPE_ID = "modl"
-    const PALLET_ID = "0x4f6d6e6957684c4d"
+    const PALLET_ID = isXyk ? "0x78796b4c4d704944" : "0x4f6d6e6957684c4d"
 
     return new GenericAccountId32(
       registry,
