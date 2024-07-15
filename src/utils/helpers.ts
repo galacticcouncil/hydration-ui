@@ -365,8 +365,18 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
       if (a.meta.id === firstAssetId) return -1
       if (b.meta.id === firstAssetId) return 1
     }
+    const balanceA = a[balanceKey] as BN
+    const balanceB = b[balanceKey] as BN
 
-    if (b[balanceKey].isZero() && a[balanceKey].isZero()) {
+    if (balanceA.isNaN() || balanceB.isNaN()) {
+      if (balanceA.isNaN() && !balanceB.isNaN()) return 1
+      if (!balanceA.isNaN() && balanceB.isNaN()) return -1
+
+      if (a.meta.symbol && b.meta.symbol)
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+    }
+
+    if (balanceB.isZero() && balanceA.isZero()) {
       if (a.meta.isExternal && !b.meta.isExternal) return 1
       if (!a.meta.isExternal && b.meta.isExternal) return -1
 
