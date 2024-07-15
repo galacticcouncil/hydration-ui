@@ -984,6 +984,7 @@
   "memepad.summary.title": "You've succesfully<br> created new asset!",
   "memepad.summary.yourSummary": "Here is your summary",
   "memepad.summary.createNewAsset": "Create another asset",
+  "memepad.summary.createGithubIssue": "Add logo through GitHub",
   "memepad.summary.liquidityTransfered": "Liquidity transfered",
   "memepad.summary.totalSupply": "Total supply",
   "memepad.summary.xykPool": "Isolated pool"

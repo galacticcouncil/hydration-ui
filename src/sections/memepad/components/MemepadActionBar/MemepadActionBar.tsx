@@ -4,12 +4,14 @@ import { useTranslation } from "react-i18next"
 
 type MemepadActionBarProps = {
   step: number
+  isLoading?: boolean
   isRegistering?: boolean
   onNext?: () => void
 }
 
 export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
   step,
+  isLoading = false,
   isRegistering = false,
   onNext,
 }) => {
@@ -17,6 +19,8 @@ export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
   return (
     <SContainer>
       <Button
+        disabled={isLoading}
+        isLoading={isLoading}
         variant="primary"
         sx={{ minWidth: ["100%", 200] }}
         onClick={onNext}

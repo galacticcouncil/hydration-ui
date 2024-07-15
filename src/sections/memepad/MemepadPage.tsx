@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next"
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
-  const { step, submitNext, isFinalized, summary, reset } =
+  const { step, submitNext, isFinalized, isLoading, summary, reset } =
     useMemepadFormContext()
 
   return (
@@ -33,6 +33,7 @@ const MemepadPageContent = () => {
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
           <MemepadActionBar
             step={step}
+            isLoading={isLoading}
             isRegistering={!!summary?.id}
             onNext={submitNext}
           />

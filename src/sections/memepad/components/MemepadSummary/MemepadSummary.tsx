@@ -16,11 +16,18 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
 import { useMedia } from "react-use"
+import IconGithub from "assets/icons/IconGithub.svg?react"
+import { qs } from "utils/formatting"
 
 type MemepadSummaryProps = {
   values: MemepadSummaryValues | null
   onReset: () => void
 }
+
+export const GITHUB_ISSUE_URL =
+  "https://github.com/jvonasek/intergalactic-asset-metadata/issues/new"
+
+const GITHUB_ENABLED = import.meta.env.VITE_ENV === "development"
 
 export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   values,
@@ -45,6 +52,17 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
 
   const xykAssetAMeta = internalId ? assets.getAsset(internalId) : null
   const xykAssetBMeta = xykPoolAssetId ? assets.getAsset(xykPoolAssetId) : null
+
+  const onGithubOpen = () => {
+    const url = `${GITHUB_ISSUE_URL}${qs({
+      title: `[MEMEPAD] Add ${name} (${symbol})`,
+      ticker: symbol,
+      template: "ADD-ASSET.yml",
+      labels: "add-token",
+      "token-id": internalId,
+    })}`
+    window.open(url)
+  }
 
   return (
     <SContainer>
@@ -76,8 +94,8 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           </GradientText>
           <SDecorativeStarIcon />
         </SHeading>
-        <div sx={{ mb: 20 }}>
-          <Text sx={{ mb: 12 }} color="brightBlue300">
+        <div sx={{ mb: [16, 28] }}>
+          <Text sx={{ mb: 12 }} color="brightBlue300" font="GeistMono">
             {t("memepad.summary.yourSummary")}:
           </Text>
           <SRowItem>
@@ -156,12 +174,15 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
         <div
           sx={{ flex: ["column", "row"], gap: 12, justify: "space-between" }}
         >
-          <Button size="small" onClick={onReset}>
+          <Button size="small" onClick={onReset} sx={{ height: "auto" }}>
             {t("memepad.summary.createNewAsset")}
           </Button>
-          {/* <Button size="small" onClick={onReset}>
-            Add logo through GitHub
-          </Button> */}
+          {GITHUB_ENABLED && (
+            <Button size="small" onClick={onGithubOpen} sx={{ height: "auto" }}>
+              <IconGithub width={18} height={18} />
+              {t("memepad.summary.createGithubIssue")}
+            </Button>
+          )}
         </div>
       </div>
       {isDesktop && (
