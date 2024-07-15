@@ -41,7 +41,13 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
-export const AssetLogo = ({ id }: { id?: string }) => {
+export const AssetLogo = ({
+  id,
+  chainHidden = false,
+}: {
+  id?: string
+  chainHidden?: boolean
+}) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
 
@@ -70,11 +76,11 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       : ""
 
     return {
-      chain: chain?.key,
+      chain: !chainHidden ? chain?.key : undefined,
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [assets, externalAssetsWhitelist, id])
+  }, [chainHidden, assets, externalAssetsWhitelist, id])
 
   if (asset.chain || asset.symbol)
     return (
