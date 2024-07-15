@@ -4,7 +4,7 @@ import { SHeader } from "components/Layout/Header/Header.styled"
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { Link, useSearch } from "@tanstack/react-location"
+import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { Suspense, lazy } from "react"
 import HydraLogo from "assets/icons/HydraLogo.svg?react"
@@ -26,20 +26,30 @@ const HeaderToolbar = lazy(async () => ({
 
 export const Header = () => {
   const search = useSearch()
+  const matchRoute = useMatchRoute()
 
   const isMediumMedia = useMedia(theme.viewport.lt.md)
 
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
+  const isSubmitTransactionPath = matchRoute({ to: LINKS.submitTransaction })
+
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
-      <Suspense>
-        <HeaderBanners />
-      </Suspense>
+      {!isSubmitTransactionPath && (
+        <Suspense>
+          <HeaderBanners />
+        </Suspense>
+      )}
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>
-            <Link to={LINKS.swap} search={resetSearchParams(search)}>
+            <Link
+              to={
+                isSubmitTransactionPath ? LINKS.submitTransaction : LINKS.swap
+              }
+              search={resetSearchParams(search)}
+            >
               <Icon
                 sx={{ color: "white" }}
                 icon={
@@ -51,9 +61,11 @@ export const Header = () => {
                 }
               />
             </Link>
-            <Suspense>
-              <HeaderMenu ref={observe} />
-            </Suspense>
+            {!isSubmitTransactionPath && (
+              <Suspense>
+                <HeaderMenu ref={observe} />
+              </Suspense>
+            )}
           </div>
           <Suspense>
             <HeaderToolbar menuItems={hiddenElementsKeys} />

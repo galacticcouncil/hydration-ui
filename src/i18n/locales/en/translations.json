@@ -14,6 +14,7 @@
   "details": "Details",
   "manage": "Manage",
   "close": "Close",
+  "submit": "Submit",
   "24Volume": "24h volume",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
@@ -943,6 +944,16 @@
   "migration.import.confirm.description": "Do you want to import new app settings?",
   "migration.import.confirm.button": "Yes, import settings",
   "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration",
+  "submitTransaction":{
+    "title": "Submit Transaction",
+    "validation": "Invalid hex",
+    "warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
+    "label": "Encoded call data",
+    "toasts": {
+      "onSuccess": "Extrinsic successful",
+      "onLoading": "Extrinsic submitted"
+    }
+  },
   "memepad.modal.routeBlock.title": "Cancel Transaction",
   "memepad.modal.routeBlock.description": "Are you sure you want to cancel? All of the progress will be lost.",
   "memepad.modal.routeBlock.accept": "Yes, close.",

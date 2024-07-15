@@ -44,6 +44,7 @@ export const LINKS = {
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
   memepad: "/memepad",
+  submitTransaction: "/submit-transaction",
 }
 
 export const MENU_ITEMS = [
