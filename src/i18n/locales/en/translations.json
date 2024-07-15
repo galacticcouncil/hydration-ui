@@ -127,7 +127,7 @@
   "header.settings.items.degenMode.title": "Enter Degen mode",
   "header.settings.items.degenMode.subtitle": "Danger: Proceed at your own risk",
   "header.settings.degenMode.title": "Degen mode",
-  "header.settings.degenMode.description": "In degen mode you will see all external assets from Asset Hub directly, without the need to manually add them. This can be dangerous because anyone can register an asset and set any name for it. Don't fall for scams - do your own research and make sure that the assets you are trading are legit.",
+  "header.settings.degenMode.description": "In degen mode you will see all external assets from Asset Hub directly, without the need to manually add them. This can be dangerous because anyone can register an asset and set any name for it. If the creators of an asset haven’t revoked their Admin rights, they can mint supply or change the amount of decimals. Don’t fall for scams - do your own research and make sure that the assets you are trading are legit.",
   "header.settings.degenMode.disclaimer": "I am aware that the risk of rug is real, and wish to proceed.",
   "header.settings.degenMode.enable": "Enter Degen mode",
   "header.settings.items.displayAsset.title": "Display Asset",
