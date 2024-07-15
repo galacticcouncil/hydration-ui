@@ -9,8 +9,9 @@ import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
 import { AnyChain, AnyEvmChain, AnyParachain } from "@galacticcouncil/xcm-core"
+import { TAsset } from "api/assetDetails"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -337,6 +338,50 @@ export const isJson = (item: string) => {
   }
 
   return typeof value === "object" && value !== null
+}
+
+export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
+  assets: Array<T>,
+  balanceKey: Extract<KeyOfType<T, BigNumber>, string>,
+  firstAssetId?: string,
+) => {
+  const tickerOrder = [
+    "HDX",
+    "DOT",
+    "USDC",
+    "USDT",
+    "IBTC",
+    "VDOT",
+    "WETH",
+    "WBTC",
+  ]
+  const getTickerIndex = (ticker: string) => {
+    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    return index === -1 ? Infinity : index
+  }
+
+  return [...assets].sort((a, b) => {
+    if (firstAssetId) {
+      if (a.meta.id === firstAssetId) return -1
+      if (b.meta.id === firstAssetId) return 1
+    }
+
+    if (b[balanceKey].isZero() && a[balanceKey].isZero()) {
+      if (a.meta.isExternal && !b.meta.isExternal) return 1
+      if (!a.meta.isExternal && b.meta.isExternal) return -1
+
+      const tickerIndexA = getTickerIndex(a.meta.symbol)
+      const tickerIndexB = getTickerIndex(b.meta.symbol)
+
+      if (tickerIndexA === tickerIndexB) {
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+      }
+
+      return tickerIndexA - tickerIndexB
+    }
+
+    return b[balanceKey].minus(a[balanceKey]).toNumber()
+  })
 }
 
 const deepEqual = (obj1: any, obj2: any): boolean => {

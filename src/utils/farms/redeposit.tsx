@@ -36,7 +36,7 @@ export const useFarmRedepositMutation = (
             i18nKey={`farms.modal.join.toast.${msType}`}
             tOptions={{
               amount: value,
-              symbol: meta.symbol,
+              symbol: meta.isShareToken ? "share tokens" : meta.symbol,
             }}
           >
             <span />

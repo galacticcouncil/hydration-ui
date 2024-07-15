@@ -16,11 +16,10 @@ import { theme } from "theme"
 import { useMedia } from "react-use"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import BN from "bignumber.js"
-import { useAssets } from "api/assetDetails"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   const { t } = useTranslation()
-  const { hub } = useAssets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
   const refetchPositions = useRefetchAccountNFTPositions()
@@ -34,15 +33,16 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
         (acc, position) => {
           const newValues = {
             value: acc.value.plus(position.valueShifted),
+            totalValue: acc.totalValue.plus(position.totalValueShifted),
             hub: acc.hub.plus(position.lrnaShifted),
             display: acc.display.plus(position.valueDisplay),
           }
           return newValues
         },
-        { value: BN_0, hub: BN_0, display: BN_0 },
+        { value: BN_0, totalValue: BN_0, hub: BN_0, display: BN_0 },
       )
     }
-    return { value: BN_0, hub: BN_0, display: BN_0 }
+    return { value: BN_0, hub: BN_0, display: BN_0, totalValue: BN_0 }
   }, [positions, positionsNumber])
 
   if (!positionsNumber) return null
@@ -69,7 +69,7 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
           />
         ),
         moveTo: !acc.height.isZero()
-          ? acc.height.minus(20).toNumber()
+          ? acc.height.minus(20 * i).toNumber()
           : acc.height.toNumber(),
         height: cardHeight,
       })
@@ -113,14 +113,22 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
           <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
             {t("liquidity.pool.positions.liq")}
           </Text>
-          <Text color="white" fs={[14, 16]}>
-            {t(isHubValue ? "value.tokenWithHub" : "value.tokenWithSymbol", {
-              value: total.value,
-              symbol: pool.symbol,
-              hub: total.hub,
-              hubSymbol: hub.symbol,
-            })}
-          </Text>
+          <div sx={{ flex: "row", align: "center", gap: 4 }}>
+            <Text color="white" fs={[14, 16]}>
+              {t("value.tokenWithSymbol", {
+                value: total.totalValue,
+                symbol: pool.symbol,
+              })}
+            </Text>
+            {isHubValue && (
+              <LrnaPositionTooltip
+                assetId={pool.id}
+                tokenPosition={total.value}
+                lrnaPosition={total.hub}
+              />
+            )}
+          </div>
+
           <Text color="basic500" fs={12}>
             {t("value.usd", { amount: total.display })}
           </Text>

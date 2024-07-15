@@ -19,7 +19,7 @@ import { Separator } from "components/Separator/Separator"
 import { useFarms } from "api/farms"
 import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
-import { useAssets } from "api/assetDetails"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 export const FarmingPositionWrapper = ({
   pool,
@@ -28,7 +28,6 @@ export const FarmingPositionWrapper = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { hub } = useAssets()
 
   const farms = useFarms([pool.id])
 
@@ -58,14 +57,15 @@ export const FarmingPositionWrapper = ({
           const newValues = {
             value: acc.value.plus(position.valueShifted),
             hub: acc.hub.plus(position.lrnaShifted),
+            totalValue: acc.totalValue.plus(position.totalValueShifted),
             display: acc.display.plus(position.valueDisplay),
           }
           return newValues
         },
-        { value: BN_0, hub: BN_0, display: BN_0 },
+        { value: BN_0, totalValue: BN_0, hub: BN_0, display: BN_0 },
       )
     }
-    return { value: BN_0, hub: BN_0, display: BN_0 }
+    return { value: BN_0, hub: BN_0, display: BN_0, totalValue: BN_0 }
   }, [omnipoolMiningPositions.data, pool.id])
 
   const totalFarms = useMemo(() => {
@@ -133,7 +133,7 @@ export const FarmingPositionWrapper = ({
           />
         ),
         moveTo: !acc.height.isZero()
-          ? acc.height.minus(20).toNumber()
+          ? acc.height.minus(20 * i).toNumber()
           : acc.height.toNumber(),
         height: cardHeight,
       })
@@ -188,14 +188,21 @@ export const FarmingPositionWrapper = ({
               })}
             </Text>
           ) : (
-            <Text color="white" fs={[14, 16]}>
-              {t(isHubValue ? "value.tokenWithHub" : "value.tokenWithSymbol", {
-                value: total.value,
-                symbol: pool.symbol,
-                hub: total.hub,
-                hubSymbol: hub.symbol,
-              })}
-            </Text>
+            <div sx={{ flex: "row", align: "center", gap: 4 }}>
+              <Text color="white" fs={[14, 16]}>
+                {t("value.tokenWithSymbol", {
+                  value: total.totalValue,
+                  symbol: pool.symbol,
+                })}
+              </Text>
+              {isHubValue && (
+                <LrnaPositionTooltip
+                  assetId={pool.id}
+                  tokenPosition={total.value}
+                  lrnaPosition={total.hub}
+                />
+              )}
+            </div>
           )}
           <Text color="basic500" fs={12}>
             {t("value.usd", {

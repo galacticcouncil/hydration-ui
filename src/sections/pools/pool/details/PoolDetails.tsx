@@ -303,7 +303,8 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
         </Text>
       </SValue>
       <Separator orientation="vertical" color="white" opacity={0.06} />
-      <SValue sx={{ align: "start" }}>
+
+      <SValue>
         <div sx={{ flex: "row", gap: 4, align: "center" }}>
           <Icon size={14} icon={<AssetLogo id={prices.idB} />} />
           <Text color="basic400" fs={[12, 13]}>

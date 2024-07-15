@@ -47,7 +47,7 @@ export const useZodSchema = ({
     )
   }, [farms])
 
-  const minDepositeValue = useMemo(() => {
+  const omnipoolMinDepositeValue = useMemo(() => {
     if (position) {
       const data = getData(position, {
         sharesValue: minDeposit.value.toString(),
@@ -79,7 +79,7 @@ export const useZodSchema = ({
           minDeposit.value
             .times(oraclePrice.data?.price?.d ?? 1)
             .div(oraclePrice.data?.price?.n ?? 1),
-          minDepositeValue ?? BN_0,
+          omnipoolMinDepositeValue ?? BN_0,
         )
 
         return {
@@ -91,9 +91,14 @@ export const useZodSchema = ({
       },
     )
     .refine(
-      (value) => scale(value, meta.decimals).gte(minDeposit.value),
+      (value) => {
+        return scale(value, meta.decimals).gte(minDeposit.value)
+      },
       t("farms.modal.join.minDeposit", {
-        value: scaleHuman(minDepositeValue, meta.decimals).times(1.02),
+        value: scaleHuman(
+          meta.isShareToken ? minDeposit.value : omnipoolMinDepositeValue,
+          meta.decimals,
+        ).times(1.02),
         symbol: meta.symbol,
       }),
     )

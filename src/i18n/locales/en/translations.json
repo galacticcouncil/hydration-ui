@@ -13,6 +13,7 @@
   "details": "Details",
   "manage": "Manage",
   "close": "Close",
+  "submit": "Submit",
   "24Volume": "24h volume",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
@@ -506,14 +507,16 @@
   "wallet.assets.table.details.lockedVesting": "Locked in Vesting",
   "wallet.assets.table.details.lockedDemocracy": "Locked in Democracy",
   "wallet.assets.table.details.unlockable": "Unlockable",
-  "wallet.assets.table.details.btn": "Unlock Assets",
+  "wallet.assets.table.details.btn": "Clear locks",
   "wallet.assets.table.details.lockedStaking": "Total Locked in Staking",
   "wallet.assets.table.details.noprice.tooltip": "Spot price currently not available",
   "wallet.assets.table.details.expired_one": "{{count}} Expired lock",
   "wallet.assets.table.details.expired_other": "{{count}} Expired locks",
   "wallet.assets.table.details.expiring": "100% Expires in {{duration}}",
-  "wallet.assets.table.details.unlock.onLoading": "Unlocking {{value, bignumber(type: token)}} HDX",
-  "wallet.assets.table.details.unlock.onSuccess": "Uncloked {{value, bignumber(type: token)}} HDX",
+  "wallet.assets.table.details.unlock.onLoading": "Clearing {{amount}} locks and unlocking {{value, bignumber(type: token)}} HDX",
+  "wallet.assets.table.details.unlock.onSuccess": "You cleared {{amount}} locks and uncloked {{value, bignumber(type: token)}} HDX",
+  "wallet.assets.table.details.clear.onLoading": "Clearing {{amount}} locks",
+  "wallet.assets.table.details.clear.onSuccess": "You cleared {{amount}} locks",
   "wallet.assets.table.empty.desc": "Looks like you don’t  have any assets on Hydration yet. Click below to add them through cross-chain transfers.",
   "wallet.assets.table.empty.btn": "Transfer to  Hydration",
   "wallet.assets.hydraPositions.empty.desc": "You still don't have any liquidity positions. Add liquidity to the Omnipool and begin your hydrated journey.",
@@ -932,5 +935,16 @@
   "migration.import.confirm.title": "You have opened a migration link",
   "migration.import.confirm.description": "Do you want to import new app settings?",
   "migration.import.confirm.button": "Yes, import settings",
-  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration"
+  "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration",
+  "submitTransaction":{
+    "title": "Submit Transaction",
+    "validation": "Invalid hex",
+    "warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
+    "label": "Encoded call data",
+    "toasts": {
+      "onSuccess": "Extrinsic successful",
+      "onLoading": "Extrinsic submitted"
+    }
+    
+  }
 }

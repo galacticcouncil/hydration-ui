@@ -77,15 +77,15 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   const accountAddresses = useMemo(
     () =>
       allFarms
-        ?.map(
-          ({ globalFarm }) =>
-            [
-              [accountResolver(0), globalFarm.rewardCurrency],
-              [accountResolver(globalFarm.id), globalFarm.rewardCurrency],
-            ] as [AccountId32, u32][],
-        )
+        ?.map(({ globalFarm, poolId }) => {
+          const isXyk = assets.getAsset(poolId).isShareToken
+          return [
+            [accountResolver(0, isXyk), globalFarm.rewardCurrency],
+            [accountResolver(globalFarm.id, isXyk), globalFarm.rewardCurrency],
+          ] as [AccountId32, u32][]
+        })
         .flat(1) ?? [],
-    [accountResolver, allFarms],
+    [accountResolver, allFarms, assets],
   )
 
   const oracleAssetIds = allFarms.map((farm) => ({
