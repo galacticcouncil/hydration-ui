@@ -78,14 +78,14 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
     () =>
       allFarms
         ?.map(({ globalFarm, poolId }) => {
-          const isXyk = assets.getAsset(poolId).isShareToken
+          const isXyk = getAsset(poolId)?.isShareToken
           return [
             [accountResolver(0, isXyk), globalFarm.rewardCurrency],
             [accountResolver(globalFarm.id, isXyk), globalFarm.rewardCurrency],
           ] as [AccountId32, u32][]
         })
         .flat(1) ?? [],
-    [accountResolver, allFarms, assets],
+    [accountResolver, allFarms, getAsset],
   )
 
   const oracleAssetIds = allFarms.map((farm) => ({

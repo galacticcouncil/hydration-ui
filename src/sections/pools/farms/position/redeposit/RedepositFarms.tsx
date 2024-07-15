@@ -10,7 +10,6 @@ import { Farm } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
-import { useRpcProvider } from "providers/rpcProvider"
 
 type RedepositFarmsProps = {
   depositNft: TMiningNftPosition
@@ -24,11 +23,10 @@ export const RedepositFarms = ({
   availableYieldFarms,
 }: RedepositFarmsProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const isXyk = assets.getAsset(poolId).isShareToken
+  const isXyk = depositNft.isXyk
   const position = useDepositShare(poolId, depositNft.id)
 
   const redeposit = useFarmRedepositMutation(

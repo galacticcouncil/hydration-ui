@@ -168,7 +168,8 @@ const getGlobalFarm =
   }
 
 export const useFarms = (poolIds: Array<string>) => {
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const activeYieldFarmsQuery = useActiveYieldFarms(poolIds)
 
   const farmIds = activeYieldFarmsQuery
@@ -180,7 +181,7 @@ export const useFarms = (poolIds: Array<string>) => {
 
   const accountResolver = getAccountResolver(api.registry)
   const globalFarmPotAddresses = farmIds?.map((farm) => {
-    const isXyk = assets.getAsset(farm.poolId).isShareToken
+    const isXyk = getAssetWithFallback(farm.poolId).isShareToken
     const potAddresss = accountResolver(
       Number(farm.globalFarmId),
       isXyk,
