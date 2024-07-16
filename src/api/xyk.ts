@@ -4,7 +4,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { useAssetRegistry } from "state/store"
-import { useActiveRpcUrlList } from "./provider"
+import { useActiveRpcUrlList, useProviderData } from "./provider"
 
 const getXYKPools = (api: ApiPromise) => async () => {
   const res = await api.query.xyk.poolAssets.entries()
@@ -26,46 +26,48 @@ export const useGetXYKPools = () => {
 }
 
 export const useShareTokens = () => {
-  const { api, isLoaded } = useRpcProvider()
+  const { data: provider } = useProviderData()
   const { syncShareTokens } = useAssetRegistry.getState()
   const rpcUrlList = useActiveRpcUrlList()
 
   return useQuery(
     QUERY_KEYS.shareTokens(rpcUrlList.join()),
-    async () => {
-      console.log("FETCH SHARE TOKENS")
-      const [shareToken, poolAssets] = await Promise.all([
-        api.query.xyk.shareToken.entries(),
-        api.query.xyk.poolAssets.entries(),
-      ])
-      const data = shareToken
-        .map(([key, shareTokenIdRaw]) => {
-          const poolAddress = key.args[0].toString()
-          const shareTokenId = shareTokenIdRaw.toString()
+    provider
+      ? async () => {
+          console.log("FETCH SHARE TOKENS")
+          const [shareToken, poolAssets] = await Promise.all([
+            provider.api.query.xyk.shareToken.entries(),
+            provider.api.query.xyk.poolAssets.entries(),
+          ])
+          const data = shareToken
+            .map(([key, shareTokenIdRaw]) => {
+              const poolAddress = key.args[0].toString()
+              const shareTokenId = shareTokenIdRaw.toString()
 
-          const xykAssets = poolAssets.find(
-            (xykPool) => xykPool[0].args[0].toString() === poolAddress,
-          )?.[1]
+              const xykAssets = poolAssets.find(
+                (xykPool) => xykPool[0].args[0].toString() === poolAddress,
+              )?.[1]
 
-          if (xykAssets)
-            return {
-              poolAddress,
-              shareTokenId,
-              assets: xykAssets.unwrap().map((asset) => asset.toString()),
-            }
+              if (xykAssets)
+                return {
+                  poolAddress,
+                  shareTokenId,
+                  assets: xykAssets.unwrap().map((asset) => asset.toString()),
+                }
 
-          return undefined
-        })
-        .filter(isNotNil)
+              return undefined
+            })
+            .filter(isNotNil)
 
-      if (data.length) {
-        syncShareTokens(data)
-      }
+          if (data.length) {
+            syncShareTokens(data)
+          }
 
-      return data
-    },
+          return data
+        }
+      : undefinedNoop,
     {
-      enabled: isLoaded,
+      enabled: !!provider,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
     },
