@@ -181,12 +181,12 @@ export const TokenInfo = ({
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
               {MASTER_KEY_WHITELIST.some((id) => id === externalAsset.id) ? (
                 <Text fs={12} color="green600">
-                  {t("no")}
+                  {t("yes")}
                 </Text>
               ) : (
                 <>
                   <Text fs={12} lh={14} color="red500">
-                    {t("yes")}
+                    {t("no")}
                   </Text>
                   <Icon
                     size={14}
