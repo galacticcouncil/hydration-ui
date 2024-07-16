@@ -13,6 +13,14 @@ export class TrustWallet extends MetaMask {
   }
 
   get installed() {
+    console.log({
+      isMetaMask: window?.ethereum?.isMetaMask,
+      isTrustWallet: window?.ethereum?.isTrustWallet,
+      // @ts-ignore
+      isTrust: window?.ethereum?.isTrust,
+      givenProvider: this._provider,
+      windowProvider: window?.ethereum,
+    })
     const provider = this._provider || window.ethereum
     return isTrustWallet(provider)
   }
