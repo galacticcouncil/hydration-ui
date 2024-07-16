@@ -5,7 +5,10 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
+import {
+  SAccountsContainer,
+  SAccountsScrollableContainer,
+} from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
@@ -132,18 +135,20 @@ export const Web3ConnectAccountList: FC<{
           </Text>
         </div>
       )}
-      {accountList?.map((account) =>
-        isLoaded ? (
-          <AccountComponent
-            key={account.address}
-            {...account}
-            isReady={isReady}
-            setBalanceMap={setBalanceMap}
-          />
-        ) : (
-          <Web3ConnectAccountPlaceholder />
-        ),
-      )}
+      <SAccountsScrollableContainer>
+        {accountList?.map((account) =>
+          isLoaded ? (
+            <AccountComponent
+              key={account.address}
+              {...account}
+              isReady={isReady}
+              setBalanceMap={setBalanceMap}
+            />
+          ) : (
+            <Web3ConnectAccountPlaceholder />
+          ),
+        )}
+      </SAccountsScrollableContainer>
     </SAccountsContainer>
   )
 }

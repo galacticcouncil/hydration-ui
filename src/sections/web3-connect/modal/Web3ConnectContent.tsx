@@ -60,8 +60,9 @@ export const Web3ConnectContent: React.FC<Props> = ({
       {...props}
       contents={[
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.provider.title").toUpperCase(),
           content: <Web3ConnectProviders />,
+          headerVariant: "gradient",
           description:
             chain && mode === "evm"
               ? t(`walletConnect.provider.description.evmChain`, {
@@ -71,10 +72,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
                 ? t(`walletConnect.provider.description.substrateChain`, {
                     chain: chain.name,
                   })
-                : t(`walletConnect.provider.description.${mode || "all"}`),
+                : "",
         },
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.provider.title").toUpperCase(),
           content: (
             <Web3ConnectExternalModal
               form={externalWalletForm}
@@ -85,7 +86,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
           ),
         },
         {
-          title: t("walletConnect.accountSelect.title"),
+          title: t("walletConnect.accountSelect.title").toUpperCase(),
           description: t("walletConnect.accountSelect.description"),
           content:
             activeProvider && isConnecting ? (
@@ -95,7 +96,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
             ),
         },
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.provider.title").toUpperCase(),
           content: (
             <Web3ConnectErrorModal
               message={error}
@@ -107,7 +108,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
           ),
         },
         {
-          title: t("addressbook.title"),
+          title: t("addressbook.title").toUpperCase(),
           content: (
             <AddressBook
               onSelect={(address) => {

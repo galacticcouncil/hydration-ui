@@ -5,7 +5,7 @@ import SubWalletLogo from "assets/icons/SubWalletLogo.svg"
 
 export class SubWalletEvm extends MetaMask {
   extensionName = "subwallet-evm"
-  title = "SubWallet EVM"
+  title = "SubWallet"
   installUrl =
     "https://chromewebstore.google.com/detail/subwallet-polkadot-wallet/onhogfjeacnfoofkfgppdlbmlmnplgbn"
   logo = {

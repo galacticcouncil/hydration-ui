@@ -1,14 +1,17 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { FC, PropsWithChildren } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
   WalletProviderType,
   useEnableWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { SProviderButton } from "./Web3ConnectProviders.styled"
+import {
+  SAltProviderButton,
+  SProviderButton,
+} from "./Web3ConnectProviders.styled"
 import {
   WalletProviderStatus,
   useWeb3ConnectStore,
@@ -55,11 +58,21 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   return (
     <SProviderButton onClick={onClick}>
-      <img src={logo.src} alt={logo.alt} width={40} height={40} />
-      <Text fs={14} sx={{ flexGrow: 1, mt: 8 }}>
+      <img
+        loading="lazy"
+        src={logo.src}
+        alt={logo.alt}
+        width={32}
+        height={32}
+      />
+      <Text fs={[12, 14]} sx={{ mt: 8 }}>
         {title}
       </Text>
-      <Text color="brightBlue300" fs={13} sx={{ flex: "row", align: "center" }}>
+      <Text
+        color="brightBlue300"
+        fs={[12, 13]}
+        sx={{ flex: "row", align: "center" }}
+      >
         {installed ? (
           <>
             {t("walletConnect.provider.continue")}
@@ -73,6 +86,29 @@ export const Web3ConnectProviderButton: FC<Props> = ({
         )}
       </Text>
     </SProviderButton>
+  )
+}
+
+export const Web3ConnectAltProviderButton: FC<
+  PropsWithChildren & WalletProvider
+> = ({ children, ...provider }) => {
+  return (
+    <Web3ConnectProviderButton {...provider} key={provider.type}>
+      {(props) => (
+        <SAltProviderButton {...props}>
+          <img
+            loading="lazy"
+            src={provider.wallet.logo.src}
+            alt={provider.wallet.logo.alt}
+            width={24}
+            height={24}
+            sx={{ mr: 4 }}
+          />
+          {children}
+          <ChevronRight width={18} height={18} />
+        </SAltProviderButton>
+      )}
+    </Web3ConnectProviderButton>
   )
 }
 

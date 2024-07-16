@@ -1,7 +1,5 @@
 import { useNavigate } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Text } from "components/Typography/Text/Text"
 import { ComponentPropsWithoutRef, FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useWallet } from "sections/web3-connect/Web3Connect.utils"
@@ -36,24 +34,11 @@ export const Web3ConnectEvmAccount: FC<
           navigate({ search: { account: undefined } })
         }}
       >
-        <div
-          sx={{
-            flex: "row",
-            align: "center",
-            justify: "space-between",
-            mb: 12,
-          }}
-        >
-          <Text font="GeistMedium">{account.name}</Text>
-          <div sx={{ flex: "row", align: "end", gap: 2, height: 20 }}>
-            <Text color="basic200" fw={400}>
-              <DisplayValue value={balance} />
-            </Text>
-          </div>
-        </div>
         <Web3ConnectAccountSelect
           address={account.displayAddress ?? ""}
-          name=""
+          balance={balance}
+          name={account.name}
+          isActive={isActive}
         />
       </SAccountItem>
       {shouldAllowAccountChange && (
