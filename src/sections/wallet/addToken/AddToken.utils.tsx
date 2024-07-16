@@ -18,7 +18,7 @@ import {
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
 
@@ -355,42 +355,44 @@ export const useUserExternalTokenStore = create<Store>()(
   ),
 )
 
-export const useExternalTokenMeta = (id: string | undefined) => {
+export const useExternalTokenMeta = () => {
   const { assets } = useRpcProvider()
-  const asset = id ? assets.getAsset(id) : undefined
 
   const externalRegistry = useExternalAssetRegistry()
 
-  const externalAsset = useMemo(() => {
-    if (asset?.externalId && asset?.isExternal && !asset?.symbol) {
-      for (const parachain in externalRegistry) {
-        const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
-          asset.externalId,
-        )
-        if (externalAsset) {
-          const meta = assets.external.find(
-            (asset) => asset.externalId === externalAsset.id,
+  const getExtrernalToken = useCallback(
+    (id: string) => {
+      const meta = id ? assets.getAsset(id) : undefined
+
+      if (meta?.isExternal && meta.externalId) {
+        for (const parachain in externalRegistry) {
+          const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
+            meta.externalId,
           )
+          if (externalAsset) {
+            const meta = assets.external.find(
+              (asset) => asset.externalId === externalAsset.id,
+            )
 
-          if (meta) {
-            const externalMeta = omit(["id"], externalAsset)
+            if (meta) {
+              const externalMeta = omit(["id"], externalAsset)
 
-            return {
-              ...meta,
-              ...externalMeta,
-              externalId: externalAsset.id,
+              return {
+                ...meta,
+                ...externalMeta,
+                externalId: externalAsset.id,
+              }
             }
-          }
 
-          return undefined
+            return undefined
+          }
         }
       }
-    }
+    },
+    [assets, externalRegistry],
+  )
 
-    return undefined
-  }, [asset, externalRegistry, assets.external])
-
-  return externalAsset
+  return getExtrernalToken
 }
 
 export const updateExternalAssetsCursor = (
