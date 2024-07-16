@@ -377,17 +377,20 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
     }
 
     if (balanceB.isZero() && balanceA.isZero()) {
-      if (a.meta.isExternal && !b.meta.isExternal) return 1
-      if (!a.meta.isExternal && b.meta.isExternal) return -1
-
       const tickerIndexA = getTickerIndex(a.meta.symbol)
       const tickerIndexB = getTickerIndex(b.meta.symbol)
 
-      if (tickerIndexA === tickerIndexB) {
-        return a.meta.symbol.localeCompare(b.meta.symbol)
-      }
+      if (a.meta.isExternal && !b.meta.isExternal) return 1
+      if (!a.meta.isExternal && b.meta.isExternal) return -1
 
-      return tickerIndexA - tickerIndexB
+      if (
+        tickerIndexA === tickerIndexB ||
+        (a.meta.isExternal && b.meta.isExternal)
+      ) {
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+      } else {
+        return tickerIndexA - tickerIndexB
+      }
     }
 
     return b[balanceKey].minus(a[balanceKey]).toNumber()
