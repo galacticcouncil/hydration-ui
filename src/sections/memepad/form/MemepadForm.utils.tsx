@@ -2,11 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
   CreateTokenValues,
+  useAssetHubAssetRegistry,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
 } from "api/external/assethub"
 import { useRefetchProviderData } from "api/provider"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
 import {
@@ -31,10 +32,16 @@ import {
   syncAssethubXcmConfig,
   useCrossChainTransaction,
 } from "api/xcm"
+import { useTranslation } from "react-i18next"
+import BigNumber from "bignumber.js"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
-export const DEFAULT_TOKEN_DECIMALS = 12
+
+const MAX_NAME_LENGTH = 20
+const MAX_SYMBOL_LENGTH = 6
+const MAX_DECIMALS_COUNT = 20
+const DEFAULT_DECIMALS_COUNT = 12
 
 export type MemepadStep1Values = CreateTokenValues & {
   origin: number
@@ -52,7 +59,18 @@ export type MemepadSummaryValues = Partial<
 > & { internalId?: string; xykPoolAssetId?: string }
 
 export const useMemepadStep1Form = () => {
+  const { t } = useTranslation()
   const { account } = useAccount()
+
+  const { data } = useAssetHubAssetRegistry()
+
+  const { symbols, names } = useMemo(() => {
+    const assets = data?.size ? [...data.values()] : []
+    return {
+      names: assets.map((asset) => asset.name.toLowerCase()) ?? [],
+      symbols: assets.map((asset) => asset.symbol.toLowerCase()) ?? [],
+    }
+  }, [data])
 
   return useForm<MemepadStep1Values>({
     defaultValues: {
@@ -61,7 +79,7 @@ export const useMemepadStep1Form = () => {
       symbol: "",
       deposit: "",
       supply: "",
-      decimals: DEFAULT_TOKEN_DECIMALS,
+      decimals: DEFAULT_DECIMALS_COUNT,
       origin: assethub.parachainId,
       account: account?.address ?? "",
     },
@@ -69,14 +87,32 @@ export const useMemepadStep1Form = () => {
       const [values] = args
       return zodResolver(
         z.object({
-          name: required,
-          symbol: required,
-          deposit: positive,
-          supply: positive.pipe(
-            // supply must be greater than deposit
-            z.coerce.number().gt(parseFloat(values.deposit) ?? 0),
-          ),
-          decimals: z.number().min(0).max(18),
+          name: required
+            .max(
+              MAX_NAME_LENGTH,
+              t("memepad.form.error.maxNameLength", { count: MAX_NAME_LENGTH }),
+            )
+            .refine(
+              (value) => !names.includes(value.toLowerCase()),
+              t("memepad.form.error.nameExists"),
+            ),
+          symbol: required
+            .max(
+              MAX_SYMBOL_LENGTH,
+              t("memepad.form.error.maxSymbolLength", {
+                count: MAX_SYMBOL_LENGTH,
+              }),
+            )
+            .refine(
+              (value) => !symbols.includes(value.toLowerCase()),
+              t("memepad.form.error.symbolExists"),
+            ),
+          deposit: required.pipe(positive),
+          supply: required.refine((value) => {
+            const supply = BigNumber(value)
+            return supply.isFinite() && supply.gt(values.deposit)
+          }, t("memepad.form.error.minSupply")),
+          decimals: z.number().min(0).max(MAX_DECIMALS_COUNT),
           origin: z.number().min(0),
           account: required,
         }),

@@ -25,9 +25,7 @@ type MemepadSummaryProps = {
 }
 
 export const GITHUB_ISSUE_URL =
-  "https://github.com/jvonasek/intergalactic-asset-metadata/issues/new"
-
-const GITHUB_ENABLED = import.meta.env.VITE_ENV === "development"
+  "https://github.com/galacticcouncil/intergalactic-asset-metadata/issues/new"
 
 export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   values,
@@ -177,12 +175,10 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           <Button size="small" onClick={onReset} sx={{ height: "auto" }}>
             {t("memepad.summary.createNewAsset")}
           </Button>
-          {GITHUB_ENABLED && (
-            <Button size="small" onClick={onGithubOpen} sx={{ height: "auto" }}>
-              <IconGithub width={18} height={18} />
-              {t("memepad.summary.createGithubIssue")}
-            </Button>
-          )}
+          <Button size="small" onClick={onGithubOpen} sx={{ height: "auto" }}>
+            <IconGithub width={18} height={18} />
+            {t("memepad.summary.createGithubIssue")}
+          </Button>
         </div>
       </div>
       {isDesktop && (
