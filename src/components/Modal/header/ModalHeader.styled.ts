@@ -57,15 +57,15 @@ export const STitleGradient = styled(GradientText)`
     var(--modal-header-height) - var(--modal-header-padding-y) * 2 + 8px
   );
 
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 500;
-  font-family: "GeistMono", sans-serif;
+  font-family: "GeistMonoSemiBold", sans-serif;
 
   background: ${theme.gradients.pinkLightBlue};
   background-clip: text;
 
   @media ${theme.viewport.gte.sm} {
-    font-size: 19px;
+    font-size: 22px;
   }
 `
 
@@ -74,10 +74,12 @@ export const SButtonContainer = styled(motion.div)<{
   headerVariant?: ModalHeaderVariant
 }>`
   position: absolute;
-  top: var(--modal-header-padding-y);
+  top: calc(var(--modal-header-padding-y) / 2);
   ${({ position }) => {
-    if (position === "left") return "left: var(--modal-header-padding-x);"
-    if (position === "right") return "right: var(--modal-header-padding-x);"
+    if (position === "left")
+      return "left: calc(var(--modal-header-padding-x) / 2);"
+    if (position === "right")
+      return "right: calc(var(--modal-header-padding-x) / 2);"
   }}
 `
 

@@ -9,21 +9,8 @@ export const SContainer = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  background: rgba(${theme.rgbColors.darkBlue900}, 0.6);
-  backdrop-filter: blur(12px);
-
-  height: var(--wallet-footer-height);
-  width: calc(100% - 1px);
-
-  border-radius: 4px;
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
-
-  padding: 0 30px;
-
-  position: absolute;
-  bottom: 0;
-  left: 1px;
+  padding: var(--modal-content-padding);
+  padding-top: 0;
 `
 
 export const SLogoutContainer = styled.div`

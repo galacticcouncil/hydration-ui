@@ -13,12 +13,40 @@ import {
   m as motion,
 } from "framer-motion"
 
+type AccordionAnimationProps = {
+  expanded?: boolean
+  children: ReactNode
+}
+
 type AccordionProps = {
   title: string
   children: ReactNode
   icon?: ReactNode
   columns?: number
   open?: boolean
+}
+
+export const AccordionAnimation: FC<AccordionAnimationProps> = ({
+  expanded,
+  children,
+}) => {
+  return (
+    <LazyMotion features={domAnimation}>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            css={{ overflow: "hidden" }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </LazyMotion>
+  )
 }
 
 export const Accordion: FC<AccordionProps> = ({
@@ -66,21 +94,9 @@ export const Accordion: FC<AccordionProps> = ({
         </div>
       </div>
 
-      <LazyMotion features={domAnimation}>
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: "auto" }}
-              exit={{ height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              css={{ overflow: "hidden" }}
-            >
-              <SContent columns={columns}>{children}</SContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </LazyMotion>
+      <AccordionAnimation expanded={expanded}>
+        <SContent columns={columns}>{children}</SContent>
+      </AccordionAnimation>
     </SContainer>
   )
 }
