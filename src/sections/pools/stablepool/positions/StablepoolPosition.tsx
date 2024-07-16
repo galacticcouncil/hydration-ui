@@ -3,7 +3,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
-import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
@@ -21,16 +21,16 @@ import { theme } from "theme"
 import BN from "bignumber.js"
 import { useRefetchAccountNFTPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type Props = {
-  pool: TPoolFullData
   amount: BN
-  amountPrice: BN
 }
 
-export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
+export const StablepoolPosition = ({ amount }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const pool = usePoolData().pool as TPoolFullData
   const refetchPositions = useRefetchAccountNFTPositions()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
@@ -39,6 +39,10 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
   const assets = Object.keys(meta.meta ?? {})
 
   if (amount.isZero()) return null
+
+  const amountPrice = pool.spotPrice
+    ? amount.shiftedBy(-meta.decimals).multipliedBy(pool.spotPrice)
+    : BN_0
 
   return (
     <SPoolDetailsContainer

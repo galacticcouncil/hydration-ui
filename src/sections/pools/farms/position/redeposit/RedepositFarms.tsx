@@ -10,29 +10,28 @@ import { Farm } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type RedepositFarmsProps = {
   depositNft: TMiningNftPosition
-  poolId: string
   availableYieldFarms: Farm[]
 }
 
 export const RedepositFarms = ({
   depositNft,
-  poolId,
   availableYieldFarms,
 }: RedepositFarmsProps) => {
   const { t } = useTranslation()
+  const { pool, isXYK } = usePoolData()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const isXyk = depositNft.isXyk
-  const position = useDepositShare(poolId, depositNft.id)
+  const position = useDepositShare(pool.id, depositNft.id)
 
   const redeposit = useFarmRedepositMutation(
     availableYieldFarms,
     depositNft,
-    poolId,
+    pool.id,
     () => setJoinFarm(false),
   )
 
@@ -64,9 +63,8 @@ export const RedepositFarms = ({
       {joinFarm && (
         <JoinFarmModal
           farms={availableYieldFarms}
-          poolId={poolId}
           position={
-            !isXyk && position.data
+            !isXYK && position.data
               ? omit(["depositId"], position.data)
               : undefined
           }

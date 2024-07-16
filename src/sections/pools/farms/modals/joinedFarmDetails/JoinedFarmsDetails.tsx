@@ -19,7 +19,7 @@ import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
   return depositNft.data.yieldFarmEntries.find(
@@ -30,17 +30,17 @@ function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
-  poolId: string
   depositNft: TMiningNftPosition
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
-  const { getAssetWithFallback } = useAssets()
+  const { pool } = usePoolData()
+  const { meta, id: poolId } = pool
   const { t } = useTranslation()
   const { account } = useAccount()
-  const farms = useFarms([props.poolId])
-  const meta = getAssetWithFallback(props.poolId)
-  const position = useDepositShare(props.poolId, props.depositNft.id.toString())
+  const farms = useFarms([poolId])
+
+  const position = useDepositShare(poolId, props.depositNft.id.toString())
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -49,7 +49,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   const redeposit = useFarmRedepositMutation(
     availableFarms,
     props.depositNft,
-    props.poolId,
+    poolId,
     props.onTxClose,
   )
 
@@ -64,7 +64,6 @@ function JoinedFarmsDetailsRedeposit(props: {
         {availableFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.poolId}
             farm={farm}
             onSelect={() =>
               props.onSelect({
@@ -98,7 +97,6 @@ function JoinedFarmsDetailsRedeposit(props: {
 }
 
 function JoinedFarmsDetailsPositions(props: {
-  poolId: string
   depositNft: TMiningNftPosition
   onSelect: (value: {
     globalFarm: u32
@@ -108,10 +106,11 @@ function JoinedFarmsDetailsPositions(props: {
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { pool } = usePoolData()
+  const { meta, id: poolId } = pool
   const { account } = useAccount()
-  const farms = useFarms([props.poolId])
-  const meta = getAssetWithFallback(props.poolId.toString())
+  const farms = useFarms([poolId])
+
   const joinedFarms = farms.data?.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
@@ -136,7 +135,7 @@ function JoinedFarmsDetailsPositions(props: {
 
   const exit = useFarmExitAllMutation(
     [props.depositNft],
-    props.poolId,
+    poolId,
     toast,
     props.onTxClose,
   )
@@ -148,7 +147,6 @@ function JoinedFarmsDetailsPositions(props: {
       </Text>
 
       <ClaimRewardsCard
-        poolId={props.poolId}
         depositNft={props.depositNft}
         onTxClose={props.onTxClose}
       />
@@ -157,7 +155,6 @@ function JoinedFarmsDetailsPositions(props: {
         {joinedFarms?.map((farm, i) => (
           <FarmDetailsCard
             key={i}
-            poolId={props.poolId}
             farm={farm}
             depositNft={props.depositNft}
             onSelect={() =>
@@ -187,11 +184,10 @@ function JoinedFarmsDetailsPositions(props: {
 export const JoinedFarmsDetails = (props: {
   isOpen: boolean
   onClose: () => void
-  poolId: string
   depositNft: TMiningNftPosition
 }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { pool } = usePoolData()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
@@ -199,9 +195,9 @@ export const JoinedFarmsDetails = (props: {
   } | null>(null)
 
   const bestNumber = useBestNumber()
-  const meta = getAssetWithFallback(props.poolId.toString())
+  const { meta, id: poolId } = pool
 
-  const farms = useFarms([props.poolId])
+  const farms = useFarms([poolId])
   const selectedFarm =
     selectedFarmIds != null
       ? farms.data?.find(
@@ -238,7 +234,6 @@ export const JoinedFarmsDetails = (props: {
             content: (
               <div sx={{ flex: "column" }}>
                 <JoinedFarmsDetailsPositions
-                  poolId={props.poolId}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -248,7 +243,6 @@ export const JoinedFarmsDetails = (props: {
                 />
 
                 <JoinedFarmsDetailsRedeposit
-                  poolId={props.poolId}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -262,7 +256,6 @@ export const JoinedFarmsDetails = (props: {
           {
             content: selectedFarm && (
               <FarmDetailsModal
-                poolId={props.poolId}
                 farm={selectedFarm}
                 depositNft={selectedFarmIds?.depositNft}
                 currentBlock={currentBlock?.toNumber()}

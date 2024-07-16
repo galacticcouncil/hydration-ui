@@ -4,7 +4,7 @@ import { FarmingPosition } from "./position/FarmingPosition"
 import { Icon } from "components/Icon/Icon"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { ClaimRewardsCard } from "./components/claimableCard/ClaimRewardsCard"
-import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { useFarmExitAllMutation } from "utils/farms/exit"
@@ -20,19 +20,16 @@ import { useFarms } from "api/farms"
 import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { usePoolData } from "sections/pools/pool/Pool"
 
-export const FarmingPositionWrapper = ({
-  pool,
-}: {
-  pool: TPoolFullData | TXYKPoolFullData
-}) => {
+export const FarmingPositionWrapper = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { pool, isXYK } = usePoolData()
 
   const farms = useFarms([pool.id])
 
   const omnipoolMiningPositions = useAllOmnipoolDeposits()
-  const isXYK = pool.meta.isShareToken
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -126,7 +123,6 @@ export const FarmingPositionWrapper = ({
         element: (
           <FarmingPosition
             key={i}
-            poolId={pool.id}
             index={i + 1}
             depositNft={position}
             availableYieldFarms={availableYieldFarms}
@@ -228,7 +224,7 @@ export const FarmingPositionWrapper = ({
         </div>
       </div>
 
-      <ClaimRewardsCard poolId={pool.id} />
+      <ClaimRewardsCard />
 
       <CollapsedPositionsList positions={positionsData.positions} />
     </SPoolDetailsContainer>

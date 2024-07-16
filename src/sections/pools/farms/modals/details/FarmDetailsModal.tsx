@@ -9,7 +9,6 @@ import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
 
 type FarmDetailsModalProps = {
-  poolId: string
   farm: Farm
   depositNft?: TMiningNftPosition
   currentBlock?: number
@@ -18,7 +17,6 @@ type FarmDetailsModalProps = {
 export const FarmDetailsModal = ({
   farm,
   depositNft,
-  poolId,
   currentBlock,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
@@ -37,7 +35,7 @@ export const FarmDetailsModal = ({
 
   return (
     <>
-      <FarmDetailsCard poolId={poolId} depositNft={depositNft} farm={farm} />
+      <FarmDetailsCard depositNft={depositNft} farm={farm} />
 
       {loyaltyCurve && currentBlockRef.current && (
         <SLoyaltyRewardsContainer>
@@ -64,7 +62,6 @@ export const FarmDetailsModal = ({
         <FarmDetailsModalValues
           yieldFarmId={farm.yieldFarm.id.toString()}
           depositNft={depositNft}
-          poolId={poolId}
           enteredBlock={enteredBlock}
         />
       ) : (

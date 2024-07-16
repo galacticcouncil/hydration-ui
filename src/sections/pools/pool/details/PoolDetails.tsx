@@ -35,14 +35,12 @@ import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
-export const PoolDetails = ({
-  pool,
-}: {
-  pool: TPoolFullData | TXYKPoolFullData
-}) => {
+export const PoolDetails = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { pool } = usePoolData()
 
   const asset = pool.meta
 

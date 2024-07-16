@@ -19,27 +19,24 @@ import {
   SWrapperContainer,
 } from "./MyPositions.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
+import { usePoolData } from "sections/pools/pool/Pool"
 
-export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
+export const MyPositions = () => {
   const { account } = useAccount()
   const { t } = useTranslation()
-  const meta = pool.meta
+  const pool = usePoolData().pool as TPoolFullData
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
     account?.address,
   )
 
-  const spotPrice = pool.spotPrice
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
-  const stablepoolAmountPrice = spotPrice
-    ? stablepoolAmount.shiftedBy(-meta.decimals).multipliedBy(spotPrice)
-    : BN_0
 
   if (
     !pool.miningNftPositions.length &&
     !pool.omnipoolNftPositions.length &&
-    !stablepoolBalance.data?.freeBalance.gt(0)
+    !stablepoolAmount.gt(0)
   )
     return null
 
@@ -54,21 +51,16 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
         {t("liquidity.pool.positions.title")}
       </Text>
 
-      {pool.isStablePool && (
-        <StablepoolPosition
-          pool={pool}
-          amount={stablepoolAmount}
-          amountPrice={stablepoolAmountPrice}
-        />
-      )}
-      <LiquidityPositionWrapper pool={pool} />
-      <FarmingPositionWrapper pool={pool} />
+      {pool.isStablePool && <StablepoolPosition amount={stablepoolAmount} />}
+      <LiquidityPositionWrapper />
+      <FarmingPositionWrapper />
     </>
   )
 }
 
-export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
+export const MyXYKPositions = () => {
   const { t } = useTranslation()
+  const pool = usePoolData().pool as TXYKPoolFullData
 
   if (
     !pool.shareTokenIssuance?.myPoolShare?.gt(0) &&
@@ -88,7 +80,7 @@ export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
       </Text>
 
       <XYKPosition pool={pool} />
-      <FarmingPositionWrapper pool={pool} />
+      <FarmingPositionWrapper />
     </>
   )
 }

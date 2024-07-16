@@ -23,11 +23,10 @@ import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { TLPData } from "utils/omnipool"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
-import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type JoinFarmModalProps = {
   onClose: () => void
-  poolId: string
   position?: TLPData
   farms: Farm[]
   mutation: FarmDepositMutationType | FarmRedepositMutationType
@@ -36,19 +35,21 @@ type JoinFarmModalProps = {
 
 export const JoinFarmModal = ({
   onClose,
-  poolId,
   position,
   farms,
   mutation,
   depositNft,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const {
+    pool: { meta, id: poolId },
+  } = usePoolData()
+
   const [selectedFarmId, setSelectedFarmId] = useState<{
     yieldFarmId: u32
     globalFarmId: u32
   } | null>(null)
-  const meta = getAssetWithFallback(poolId)
+
   const bestNumber = useBestNumber()
   const shouldValidate =
     !!position?.amount || (meta.isShareToken && !depositNft)
@@ -127,7 +128,6 @@ export const JoinFarmModal = ({
                     return (
                       <FarmDetailsCard
                         key={i}
-                        poolId={poolId}
                         farm={farm}
                         onSelect={() => {
                           setSelectedFarmId({
@@ -217,7 +217,6 @@ export const JoinFarmModal = ({
             title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
-                poolId={poolId}
                 farm={selectedFarm}
                 currentBlock={currentBlock?.toNumber()}
               />

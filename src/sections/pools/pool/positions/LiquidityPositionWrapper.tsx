@@ -17,12 +17,14 @@ import { useMedia } from "react-use"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import BN from "bignumber.js"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { usePoolData } from "sections/pools/pool/Pool"
 
-export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
+export const LiquidityPositionWrapper = () => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
   const refetchPositions = useRefetchAccountNFTPositions()
+  const pool = usePoolData().pool as TPoolFullData
 
   const positions = pool.omnipoolNftPositions
   const positionsNumber = positions.length

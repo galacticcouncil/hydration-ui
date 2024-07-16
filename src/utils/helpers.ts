@@ -385,22 +385,20 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
 }
 
 const deepEqual = (obj1: any, obj2: any): boolean => {
-  if (obj1 === obj2) return true // If they are the same reference or both are null
-  if (obj1 == null || obj2 == null) return false // If either is null (and not both)
+  if (obj1 === obj2) return true
+  if (obj1 == null || obj2 == null) return false
   if (typeof obj1 !== "object" || typeof obj2 !== "object") {
-    console.log("here", obj1, obj2)
-    return false // If either is not an object
+    return false
   }
 
   let keys1 = Object.keys(obj1)
   let keys2 = Object.keys(obj2)
   if (keys1.length !== keys2.length) {
-    console.log("here")
-    return false // Different number of properties
+    return false
   }
 
   for (let key of keys1) {
-    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false // If values differ
+    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false
   }
 
   return true
@@ -411,7 +409,6 @@ export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
 
   for (let i = 0; i < arr1.length; i++) {
     if (!deepEqual(arr1[i], arr2[i])) {
-      console.log(arr1[i], arr2[i])
       return false
     }
   }

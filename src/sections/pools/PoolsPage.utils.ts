@@ -325,6 +325,7 @@ export const usePoolDetails = (assetId: string) => {
         ? normalizeBigNumber(stablepool.data.fee).div(BN_MILL)
         : undefined,
       isStablePool,
+      stablePoolBalance: stablePoolBalance.data?.balances,
     }
   }, [
     getAsset,

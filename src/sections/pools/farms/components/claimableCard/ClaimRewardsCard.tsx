@@ -14,17 +14,18 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
 import { TDeposit } from "api/deposits"
 import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export const ClaimRewardsCard = (props: {
-  poolId: string
   depositNft?: TDeposit
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
+  const { pool } = usePoolData()
   const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
 
-  const claimable = useClaimableAmount(props.poolId, props.depositNft)
+  const claimable = useClaimableAmount(pool.id, props.depositNft)
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
@@ -68,7 +69,7 @@ export const ClaimRewardsCard = (props: {
   }, {} as ToastMessage)
 
   const claimAll = useClaimFarmMutation(
-    props.poolId,
+    pool.id,
     props.depositNft,
     toast,
     props.onTxClose,

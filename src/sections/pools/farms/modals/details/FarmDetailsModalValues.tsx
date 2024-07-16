@@ -6,23 +6,23 @@ import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { Summary } from "components/Summary/Summary"
 import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type FarmDetailsModalValuesProps = {
-  poolId: string
   depositNft: TMiningNftPosition
   enteredBlock: BigNumber
   yieldFarmId: string
 }
 
 export const FarmDetailsModalValues = ({
-  poolId,
   depositNft,
   enteredBlock,
   yieldFarmId,
 }: FarmDetailsModalValuesProps) => {
   const { t } = useTranslation()
+  const { pool } = usePoolData()
   const { getAssetWithFallback } = useAssets()
-  const claimable = useClaimableAmount(poolId, depositNft)
+  const claimable = useClaimableAmount(pool.id, depositNft)
 
   const depositReward = claimable.data?.depositRewards.find(
     (reward) => reward.yieldFarmId === yieldFarmId,
@@ -33,7 +33,7 @@ export const FarmDetailsModalValues = ({
     : undefined
   const entered = useEnteredDate(enteredBlock)
 
-  const position = useDepositShare(poolId, depositNft.id.toString())
+  const position = useDepositShare(pool.id, depositNft.id.toString())
 
   if (!position.data) return null
 

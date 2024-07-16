@@ -21,9 +21,9 @@ import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.u
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type FarmDetailsCardProps = {
-  poolId: string
   depositNft?: TMiningNftPosition
   farm: Farm
   onSelect?: () => void
@@ -31,7 +31,6 @@ type FarmDetailsCardProps = {
 }
 
 export const FarmDetailsCard = ({
-  poolId,
   depositNft,
   farm,
   onSelect,
@@ -180,7 +179,7 @@ export const FarmDetailsCard = ({
               <Text fs={14} lh={18}>
                 {t("farms.details.card.locked.label")}
               </Text>
-              <LockedValue poolId={poolId} depositNft={depositNft} />
+              <LockedValue depositNft={depositNft} />
             </SRow>
 
             <SRow compact={compact}>
@@ -224,15 +223,10 @@ export const FarmDetailsCard = ({
   )
 }
 
-const LockedValue = ({
-  poolId,
-  depositNft,
-}: {
-  poolId: string
-  depositNft: TMiningNftPosition
-}) => {
+const LockedValue = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
   const { t } = useTranslation()
-  const position = useDepositShare(poolId, depositNft.id.toString())
+  const { pool } = usePoolData()
+  const position = useDepositShare(pool.id, depositNft.id.toString())
 
   if (!position.data) return null
 

@@ -23,10 +23,9 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm } from "api/farms"
-import { useAssets } from "api/assetDetails"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 function FarmingPositionDetailsButton(props: {
-  poolId: string
   depositNft: TMiningNftPosition
 }) {
   const { t } = useTranslation()
@@ -44,7 +43,6 @@ function FarmingPositionDetailsButton(props: {
 
       {farmDetails && (
         <JoinedFarmsDetails
-          poolId={props.poolId}
           depositNft={props.depositNft}
           isOpen={farmDetails}
           onClose={() => setFarmDetails(false)}
@@ -54,15 +52,12 @@ function FarmingPositionDetailsButton(props: {
   )
 }
 
-const ExitFarmsButton = (props: {
-  poolId: string
-  depositNft: TMiningNftPosition
-}) => {
+const ExitFarmsButton = (props: { depositNft: TMiningNftPosition }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { pool } = usePoolData()
   const { account } = useAccount()
 
-  const meta = getAssetWithFallback(props.poolId.toString())
+  const { meta, id: poolId } = pool
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -82,7 +77,7 @@ const ExitFarmsButton = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const exit = useFarmExitAllMutation([props.depositNft], props.poolId, toast)
+  const exit = useFarmExitAllMutation([props.depositNft], poolId, toast)
 
   return (
     <Button
@@ -101,20 +96,15 @@ const ExitFarmsButton = (props: {
 
 export const FarmingPosition = ({
   index,
-  poolId,
   depositNft,
   availableYieldFarms,
 }: {
   index: number
-  poolId: string
   depositNft: TMiningNftPosition
   availableYieldFarms: Farm[]
 }) => {
   const { t } = useTranslation()
-  const { getAsset, isShareToken } = useAssets()
-
-  const meta = getAsset(poolId)
-  const isXYK = isShareToken(meta)
+  const { isXYK } = usePoolData()
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -136,11 +126,8 @@ export const FarmingPosition = ({
           {t("farms.positions.position.title", { index })}
         </Text>
         <div sx={{ flex: "row", gap: 8 }}>
-          <ExitFarmsButton poolId={poolId} depositNft={depositNft} />
-          <FarmingPositionDetailsButton
-            poolId={poolId}
-            depositNft={depositNft}
-          />
+          <ExitFarmsButton depositNft={depositNft} />
+          <FarmingPositionDetailsButton depositNft={depositNft} />
         </div>
       </div>
 
@@ -152,7 +139,7 @@ export const FarmingPosition = ({
           py: [0, 10],
         }}
       >
-        <JoinedFarms poolId={poolId} depositNft={depositNft} />
+        <JoinedFarms depositNft={depositNft} />
       </div>
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
@@ -177,13 +164,12 @@ export const FarmingPosition = ({
         {isXYK ? (
           <XYKFields depositNft={depositNft} />
         ) : (
-          <OmnipoolFields poolId={poolId} depositNft={depositNft} />
+          <OmnipoolFields depositNft={depositNft} />
         )}
       </div>
 
       {availableYieldFarms.length ? (
         <RedepositFarms
-          poolId={poolId}
           depositNft={depositNft}
           availableYieldFarms={availableYieldFarms}
         />
@@ -192,15 +178,12 @@ export const FarmingPosition = ({
   )
 }
 
-const OmnipoolFields = ({
-  poolId,
-  depositNft,
-}: {
-  poolId: string
-  depositNft: TMiningNftPosition
-}) => {
+const OmnipoolFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
   const { t } = useTranslation()
-  const position = useDepositShare(poolId, depositNft.id.toString())
+  const {
+    pool: { id },
+  } = usePoolData()
+  const position = useDepositShare(id, depositNft.id.toString())
 
   const { meta, amountShifted, amountDisplay, valueShifted, lrnaShifted } =
     position.data ?? {}
