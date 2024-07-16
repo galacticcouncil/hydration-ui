@@ -67,8 +67,8 @@ export const useMemepadStep1Form = () => {
   const { symbols, names } = useMemo(() => {
     const assets = data?.size ? [...data.values()] : []
     return {
-      names: assets.map((asset) => asset.name.toLowerCase()) ?? [],
-      symbols: assets.map((asset) => asset.symbol.toLowerCase()) ?? [],
+      names: assets.map((asset) => asset.name.toLowerCase()),
+      symbols: assets.map((asset) => asset.symbol.toLowerCase()),
     }
   }, [data])
 
