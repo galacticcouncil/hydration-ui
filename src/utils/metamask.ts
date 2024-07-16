@@ -10,7 +10,7 @@ const METAMASK_LIKE_CHECKS = [
   "isTalisman",
   "isSubWallet",
   "isPhantom",
-  "isTrustWallet",
+  "isTrust",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -82,7 +82,7 @@ export function isPhantom(provider: Maybe<ExternalProvider>) {
 }
 
 export function isTrustWallet(provider: Maybe<ExternalProvider>) {
-  return isMetaMaskLike(provider) && !!provider?.isTrustWallet
+  return isMetaMaskLike(provider) && !!provider?.isTrust
 }
 
 export function isEthereumProvider(
@@ -122,7 +122,7 @@ export async function requestNetworkSwitch(
       error.data?.originalError?.code ||
       error?.code
 
-    const chainNotFoundCode = provider.isTrustWallet ? 4200 : 4902
+    const chainNotFoundCode = provider.isTrust ? 4200 : 4902
 
     // missing or unsupported network error
     if (errorCode === chainNotFoundCode) {
