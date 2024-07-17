@@ -122,7 +122,9 @@ export async function requestNetworkSwitch(
       error.data?.originalError?.code ||
       error?.code
 
-    const chainNotFoundCode = provider.isTrust ? 4200 : 4902
+    const chainNotFoundCode = 4902 //provider.isTrust ? 4200 : 4902
+
+    console.log({ message, errorCode, error })
 
     // missing or unsupported network error
     if (errorCode === chainNotFoundCode) {
