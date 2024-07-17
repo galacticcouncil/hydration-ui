@@ -17,11 +17,12 @@ export const AssetTableName = ({
   const { getAsset } = useAssets()
 
   const asset = getAsset(id)
-  const externalAsset = useExternalTokenMeta(id)
+  const getExternalMeta = useExternalTokenMeta()
+  const externalMeta = getExternalMeta(id)
 
   if (!asset) return null
 
-  const iconIds = externalAsset?.id ?? asset?.iconId ?? ""
+  const iconIds = externalMeta?.id ?? asset?.iconId ?? ""
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -41,7 +42,7 @@ export const AssetTableName = ({
             font="GeistMedium"
             color="white"
           >
-            {externalAsset?.symbol ?? asset.symbol}
+            {externalMeta?.symbol ?? asset.symbol}
           </Text>
           <Text
             fs={large ? 14 : 12}

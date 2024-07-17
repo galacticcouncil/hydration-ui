@@ -18,7 +18,7 @@ import {
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
 import { TExternal, useAssets } from "api/assetDetails"
 import { useShallow } from "hooks/useShallow"
@@ -345,41 +345,42 @@ export const useUserExternalTokenStore = create<Store>()(
   ),
 )
 
-export const useExternalTokenMeta = (id: string | undefined) => {
+export const useExternalTokenMeta = () => {
   const { getExternalByExternalId, getAsset } = useAssets()
-  const asset = id ? (getAsset(id) as TExternal) : undefined
 
   const externalRegistry = useExternalAssetRegistry()
 
-  const externalAsset = useMemo(() => {
-    if (asset?.externalId && asset?.isExternal && !asset?.symbol) {
-      for (const parachain in externalRegistry) {
-        const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
-          asset.externalId,
-        )
+  const getExtrernalToken = useCallback(
+    (id: string) => {
+      const meta = id ? (getAsset(id) as TExternal) : undefined
 
-        if (externalAsset) {
-          const meta = getExternalByExternalId(externalAsset.id)
+      if (meta?.isExternal && meta.externalId) {
+        for (const parachain in externalRegistry) {
+          const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
+            meta.externalId,
+          )
+          if (externalAsset) {
+            const meta = getExternalByExternalId(externalAsset.id)
 
-          if (meta) {
-            const externalMeta = omit(["id"], externalAsset)
+            if (meta) {
+              const externalMeta = omit(["id"], externalAsset)
 
-            return {
-              ...meta,
-              ...externalMeta,
-              externalId: externalAsset.id,
+              return {
+                ...meta,
+                ...externalMeta,
+                externalId: externalAsset.id,
+              } as TExternal
             }
-          }
 
-          return undefined
+            return undefined
+          }
         }
       }
-    }
+    },
+    [externalRegistry, getAsset, getExternalByExternalId],
+  )
 
-    return undefined
-  }, [asset, externalRegistry, getExternalByExternalId])
-
-  return externalAsset
+  return getExtrernalToken
 }
 
 export const updateExternalAssetsCursor = (

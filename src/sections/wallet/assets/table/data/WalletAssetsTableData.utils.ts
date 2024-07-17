@@ -13,6 +13,7 @@ import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "api/assetDetails"
 
 export const useAssetsData = ({
@@ -37,6 +38,7 @@ export const useAssetsData = ({
   const address = givenAddress ?? account?.address
 
   const balances = useAccountBalances(address, true)
+  const getExternalMeta = useExternalTokenMeta()
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
@@ -73,7 +75,12 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const meta = getAssetWithFallback(balance.id)
+      const asset = getAssetWithFallback(balance.id)
+      const isExternalInvalid = asset.isExternal && !asset.symbol
+      const meta = isExternalInvalid
+        ? getExternalMeta(asset.id) ?? asset
+        : asset
+
       const { decimals, id, name, symbol } = meta
       const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
       const spotPrice =
@@ -116,6 +123,7 @@ export const useAssetsData = ({
         transferable,
         transferableDisplay,
         tradability,
+        isExternalInvalid,
       }
     })
 
@@ -164,6 +172,7 @@ export const useAssetsData = ({
                 transferable: BN_0,
                 transferableDisplay: BN_0,
                 tradability,
+                isExternalInvalid: true,
               }
 
               if (asset.symbol) {
@@ -185,6 +194,7 @@ export const useAssetsData = ({
               transferable: BN_0,
               transferableDisplay: BN_0,
               tradability,
+              isExternalInvalid: false,
             }
 
             if (asset.symbol) {
@@ -210,10 +220,11 @@ export const useAssetsData = ({
     isAllAssets,
     allAssets,
     search,
+    getAssetWithFallback,
+    getExternalMeta,
     tradable,
     acceptedCurrencies.data,
     currencyId,
-    getAssetWithFallback,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
