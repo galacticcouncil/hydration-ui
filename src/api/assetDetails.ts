@@ -99,7 +99,9 @@ export const useAssets = () => {
               (token) => token.internalId === asset.id,
             )?.id
 
-            if (externalId) acc.external.push({ ...asset, externalId })
+            if (externalId) {
+              acc.external.push({ ...asset, externalId })
+            }
           }
 
           return acc
@@ -262,49 +264,6 @@ const getTokenParachainId = (
   }
 }
 
-type TAssetCommon = {
-  id: string
-  existentialDeposit: BN
-  isToken: boolean
-  isBond: boolean
-  isStableSwap: boolean
-  isShareToken: boolean
-  isNative: boolean
-  isExternal: boolean
-  symbol: string
-  decimals: number
-  name: string
-  parachainId: string | undefined
-  iconId: string | string[]
-  externalId?: string
-  isSufficient: boolean
-}
-
-// export type TBond = TAssetCommon & {
-//   assetType: "Bond"
-//   assetId: string
-//   maturity: number
-//   isTradable: boolean
-// }
-
-export type TToken = TAssetCommon & {
-  assetType: "Token"
-  externalId?: string
-}
-
-export type TStableSwap = TAssetCommon & {
-  assetType: "StableSwap"
-  assets: string[]
-}
-
-// export type TShareToken = TAssetCommon & {
-//   assetType: "ShareToken"
-//   assets: string[]
-//   poolAddress: string
-// }
-
-//export type TAsset = TToken | TBond | TStableSwap | TShareToken
-
 export const fallbackAsset: TAsset = {
   id: "",
   name: "N/A",
@@ -322,4 +281,5 @@ export const fallbackAsset: TAsset = {
   isTradable: false,
   type: "Token",
   icon: "",
+  externalId: undefined,
 }

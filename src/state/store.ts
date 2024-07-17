@@ -141,7 +141,10 @@ export const useRpcStore = create<RpcStore>()(
   ),
 )
 
-export type TAssetStored = Asset & { isTradable: boolean }
+export type TAssetStored = Omit<Asset, "externalId"> & {
+  isTradable: boolean
+  externalId: string | undefined
+}
 export type TShareTokenStored = {
   poolAddress: string
   assets: string[]

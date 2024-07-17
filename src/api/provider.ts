@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick } from "utils/rx"
+import { omit, pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -173,7 +173,11 @@ export const useProviderAssets = () => {
                   (tradeAsset) => tradeAsset.id === asset.id,
                 )
 
-                return { ...asset, isTradable }
+                return {
+                  ...omit(["externalId"], asset),
+                  externalId: asset.externalId?.toString(),
+                  isTradable,
+                }
               }),
             )
           }

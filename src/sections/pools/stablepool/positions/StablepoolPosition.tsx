@@ -164,7 +164,6 @@ export const StablepoolPosition = ({ amount }: Props) => {
       </div>
       {transferOpen !== undefined && (
         <TransferModal
-          pool={pool}
           isOpen
           defaultPage={transferOpen}
           onClose={() => setTransferOpen(undefined)}

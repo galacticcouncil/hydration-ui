@@ -3,7 +3,6 @@ import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
 import {
-  TPoolFullData,
   TXYKPoolFullData,
   useXYKSpotPrice,
 } from "sections/pools/PoolsPage.utils"
@@ -41,18 +40,24 @@ export const PoolDetails = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { pool } = usePoolData()
+  const ixXYKPool = isXYKPoolType(pool)
 
-  const asset = pool.meta
+  const [isOpen, setOpen] = useState(false)
 
-  const [addLiquidityPool, setAddLiquidityPool] = useState<
-    TPoolFullData | TXYKPoolFullData | undefined
-  >(undefined)
-
-  const [addLiquidityStablepool, setLiquidityStablepool] = useState<Page>()
-
+  const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const ixXYKPool = isXYKPoolType(pool)
+  const modal = isOpen ? (
+    pool.meta.isStableSwap ? (
+      <TransferModal
+        isOpen
+        defaultPage={Page.OPTIONS}
+        onClose={() => setOpen(false)}
+      />
+    ) : (
+      <AddLiquidity isOpen onClose={() => setOpen(false)} />
+    )
+  ) : null
 
   return (
     <>
@@ -84,13 +89,13 @@ export const PoolDetails = () => {
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              <MultipleAssetLogo iconId={asset.iconId} size={26} />
+              <MultipleAssetLogo iconId={meta.iconId} size={26} />
               <div sx={{ flex: "column", gap: 0 }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
-                  {asset.symbol}
+                  {meta.symbol}
                 </Text>
                 <Text fs={13} lh={16} color="whiteish500">
-                  {asset.name}
+                  {meta.name}
                 </Text>
               </div>
             </div>
@@ -105,11 +110,7 @@ export const PoolDetails = () => {
             disabled={
               !pool.canAddLiquidity || account?.isExternalWalletConnected
             }
-            onClick={() => {
-              !ixXYKPool && pool.isStablePool
-                ? setLiquidityStablepool(Page.OPTIONS)
-                : setAddLiquidityPool(pool)
-            }}
+            onClick={() => setOpen(true)}
           >
             <div
               sx={{
@@ -251,21 +252,7 @@ export const PoolDetails = () => {
 
         <AvailableFarms pool={pool} />
       </SPoolDetailsContainer>
-      {addLiquidityPool && (
-        <AddLiquidity
-          isOpen
-          onClose={() => setAddLiquidityPool(undefined)}
-          pool={addLiquidityPool}
-        />
-      )}
-      {addLiquidityStablepool !== undefined && !ixXYKPool && (
-        <TransferModal
-          pool={pool}
-          isOpen
-          defaultPage={addLiquidityStablepool}
-          onClose={() => setLiquidityStablepool(undefined)}
-        />
-      )}
+      {modal}
     </>
   )
 }

@@ -41,7 +41,7 @@ const Pool = ({ pool }: { pool: TPool }) => {
     <PoolContext.Provider
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: false }}
     >
-      <SPoolContainer sx={{ mt: [-22, "inherit"] }}>
+      <SPoolContainer>
         <PoolDetails />
         <MyPositions />
       </SPoolContainer>
@@ -58,7 +58,7 @@ const XYKPool = ({ pool }: { pool: TXYKPool }) => {
     <PoolContext.Provider
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: true }}
     >
-      <SPoolContainer sx={{ mt: [-22, "inherit"] }}>
+      <SPoolContainer>
         <PoolDetails />
         <MyXYKPositions />
       </SPoolContainer>
