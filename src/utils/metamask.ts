@@ -111,23 +111,9 @@ export async function requestNetworkSwitch(
       })
       .then(options?.onSwitch)
   } catch (error: any) {
-    let message: Record<string, any> = {}
-    try {
-      message =
-        typeof error?.message === "string" ? JSON.parse(error.message) : {}
-    } catch (err) {}
+    const errorType = normalizeChainSwitchError(provider, error)
 
-    const errorCode =
-      message?.data?.originalError?.code ||
-      error.data?.originalError?.code ||
-      error?.code
-
-    const chainNotFoundCode = 4902 //provider.isTrust ? 4200 : 4902
-
-    console.log({ message, errorCode, error })
-
-    // missing or unsupported network error
-    if (errorCode === chainNotFoundCode) {
+    if (errorType === "CHAIN_NOT_FOUND") {
       try {
         await provider
           .request({
@@ -192,6 +178,32 @@ export const requestAccounts = async (
       },
     ],
   })
+}
+
+function normalizeChainSwitchError(
+  provider: Maybe<MetaMaskLikeProvider>,
+  error: any,
+) {
+  if (!provider) return
+  let message: Record<string, any> = {}
+  try {
+    message =
+      typeof error?.message === "string" ? JSON.parse(error.message) : {}
+  } catch (err) {}
+
+  const errorCode =
+    message?.data?.originalError?.code ||
+    error.data?.originalError?.code ||
+    error?.code
+
+  if (provider.isTrust) {
+    const notFound = errorCode === 4200 || error?.message === "No assets found"
+    if (notFound) return "CHAIN_NOT_FOUND"
+  }
+
+  if (errorCode === 4902) {
+    return "CHAIN_NOT_FOUND"
+  }
 }
 
 function numToBuffer(num: number) {
