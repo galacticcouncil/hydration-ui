@@ -10,7 +10,7 @@ import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { AssetLogo, MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { useState } from "react"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
@@ -33,7 +33,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
-import { useAssets } from "api/assetDetails"
+import { TAsset } from "api/assetDetails"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const PoolDetails = () => {
@@ -262,8 +262,8 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
 
   const prices = useXYKSpotPrice(shareTokenId)
 
-  const usdPriceA = useDisplayPrice(prices?.idB)
-  const usdPriceB = useDisplayPrice(prices?.idA)
+  const usdPriceA = useDisplayPrice(prices?.assetA.id)
+  const usdPriceB = useDisplayPrice(prices?.assetB.id)
 
   if (!prices) return null
 
@@ -274,7 +274,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
     <>
       <SValue sx={{ align: "start" }}>
         <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <Icon size={14} icon={<AssetLogo id={prices.idA} />} />
+          <MultipleAssetLogo size={14} iconId={prices.assetA.iconId} />
           <Text color="basic400" fs={[12, 13]}>
             {t("liquidity.pool.details.price", { symbol: "" })}
           </Text>
@@ -291,7 +291,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
 
       <SValue>
         <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <Icon size={14} icon={<AssetLogo id={prices.idB} />} />
+          <MultipleAssetLogo size={14} iconId={prices.assetB.iconId} />
           <Text color="basic400" fs={[12, 13]}>
             {t("liquidity.pool.details.price", { symbol: "" })}
           </Text>
@@ -315,8 +315,16 @@ export const XYKRateWrapper = ({ pool }: { pool: TXYKPoolFullData }) => {
 
   return (
     <div sx={{ flex: "row", gap: 6, flexWrap: "wrap" }}>
-      <XYKRate assetA={prices.idA} assetB={prices.idB} price={prices.priceA} />
-      <XYKRate assetA={prices.idB} assetB={prices.idA} price={prices.priceB} />
+      <XYKRate
+        assetA={prices.assetA}
+        assetB={prices.assetB}
+        price={prices.priceA}
+      />
+      <XYKRate
+        assetA={prices.assetB}
+        assetB={prices.assetA}
+        price={prices.priceB}
+      />
     </div>
   )
 }
@@ -326,23 +334,19 @@ export const XYKRate = ({
   assetB,
   price,
 }: {
-  assetA: string
-  assetB: string
+  assetA: TAsset
+  assetB: TAsset
   price: BN
 }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
-
-  const assetAMeta = getAssetWithFallback(assetA)
-  const assetBMeta = getAssetWithFallback(assetB)
 
   return (
     <SXYKRateContainer>
-      <Icon size={12} icon={<AssetLogo id={assetA} />} />
+      <MultipleAssetLogo size={12} iconId={assetA.iconId} />
       <Text fs={13} lh={13} color="white">
         {t("value.tokenWithSymbol", {
           value: BN_1,
-          symbol: assetAMeta.symbol,
+          symbol: assetA.symbol,
         })}
       </Text>
       <Text fs={13} lh={13} color="white">
@@ -351,7 +355,7 @@ export const XYKRate = ({
       <Text fs={13} lh={13} color="white">
         {t("value.tokenWithSymbol", {
           value: price,
-          symbol: assetBMeta.symbol,
+          symbol: assetB.symbol,
         })}
       </Text>
     </SXYKRateContainer>

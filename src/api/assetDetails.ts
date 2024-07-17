@@ -115,6 +115,14 @@ export const useAssets = () => {
       )
     }, [assets, dataEnv, externalTokens])
 
+  const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
+  const isBond = (asset: TAsset): asset is TBond => asset.isBond
+  const isStableSwap = (asset: TAsset) => asset.isStableSwap
+  const isShareToken = (asset: TAsset | undefined): asset is TShareToken => {
+    if (!asset) return false
+    return asset.isShareToken
+  }
+
   const { shareTokens, shareTokensMap } = shareTokensRaw.reduce<{
     shareTokens: TShareToken[]
     shareTokensMap: Map<string, TShareToken>
@@ -129,7 +137,10 @@ export const useAssets = () => {
         const decimals = assetDecimal.decimals
         const symbol = `${assetA.symbol}/${assetB.symbol}`
         const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
-        const iconId = [assetA.id, assetB.id]
+        const iconId = [
+          isBond(assetA) ? assetA.underlyingAssetId : assetA.id,
+          isBond(assetB) ? assetB.underlyingAssetId : assetB.id,
+        ]
 
         const tokenFull = {
           ...fallbackAsset,
@@ -150,14 +161,6 @@ export const useAssets = () => {
     },
     { shareTokens: [], shareTokensMap: new Map([]) },
   )
-
-  const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
-  const isBond = (asset: TAsset): asset is TBond => asset.isBond
-  const isStableSwap = (asset: TAsset) => asset.isStableSwap
-  const isShareToken = (asset: TAsset | undefined): asset is TShareToken => {
-    if (!asset) return false
-    return asset.isShareToken
-  }
 
   const getAsset = useCallback(
     (id: string) =>

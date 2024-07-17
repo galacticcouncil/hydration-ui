@@ -560,7 +560,7 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
     metaA.decimals,
   )
 
-  return { priceA, priceB, idA: metaA.id, idB: metaB.id }
+  return { priceA, priceB, assetA: metaA, assetB: metaB }
 }
 
 export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {

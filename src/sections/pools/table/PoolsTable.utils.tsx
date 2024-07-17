@@ -55,25 +55,13 @@ const NonClickableContainer = ({
   )
 }
 
-const AssetTableName = ({
-  id,
-  iconId,
-  name,
-  symbol,
-}: {
-  id: string
-  name: string
-  symbol: string
-  iconId: string | string[] | undefined
-}) => {
-  const { getAsset } = useAssets()
-  const asset = getAsset(id)
-
-  const farms = useFarms([id])
+const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
+  const asset = pool.meta
+  const farms = useFarms([asset.id])
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
-      <MultipleAssetLogo size={26} iconId={iconId} />
+      <MultipleAssetLogo size={26} iconId={asset.iconId} />
       <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
         <div sx={{ flex: "row", gap: 4, width: "fit-content" }}>
           <Text
@@ -84,7 +72,7 @@ const AssetTableName = ({
             font="GeistMedium"
             css={{ whiteSpace: "nowrap" }}
           >
-            {symbol}
+            {asset.symbol}
           </Text>
           {asset?.isStableSwap && (
             <div css={{ position: "relative" }}>
@@ -115,7 +103,7 @@ const AssetTableName = ({
             color="white"
             css={{ opacity: 0.61, whiteSpace: "nowrap" }}
           >
-            {name}
+            {asset.name}
           </Text>
         )}
         {farms.data?.length ? <GlobalFarmRowMulti farms={farms.data} /> : null}
@@ -295,7 +283,7 @@ export const usePoolTable = (
         id: "name",
         header: t("liquidity.table.header.poolAsset"),
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-        cell: ({ row }) => <AssetTableName {...row.original} />,
+        cell: ({ row }) => <AssetTableName pool={row.original} />,
       }),
       accessor("tvlDisplay", {
         id: "tvlDisplay",
