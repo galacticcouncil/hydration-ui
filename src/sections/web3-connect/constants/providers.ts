@@ -7,6 +7,7 @@ export enum WalletProviderType {
   PolkadotJS = "polkadot-js",
   NovaWallet = "nova-wallet",
   TrustWallet = "trustwallet",
+  BraveWallet = "bravewallet",
   Phantom = "phantom",
   Enkrypt = "enkrypt",
   MantaWallet = "manta-wallet-js",
@@ -30,6 +31,7 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletEvm,
   WalletProviderType.TrustWallet,
+  WalletProviderType.BraveWallet,
   WalletProviderType.Phantom,
   WalletProviderType.WalletConnect,
 ]

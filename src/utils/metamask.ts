@@ -11,6 +11,7 @@ const METAMASK_LIKE_CHECKS = [
   "isSubWallet",
   "isPhantom",
   "isTrust",
+  "isBraveWallet",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -89,6 +90,10 @@ export function isPhantom(provider: Maybe<ExternalProvider>) {
 
 export function isTrustWallet(provider: Maybe<ExternalProvider>) {
   return isMetaMaskLike(provider) && !!provider?.isTrust
+}
+
+export function isBraveWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isBraveWallet
 }
 
 export function isEthereumProvider(

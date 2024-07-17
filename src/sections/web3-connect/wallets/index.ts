@@ -9,6 +9,7 @@ import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "./SubWalletEvm"
 import { SubWallet } from "./SubWallet"
 import { TrustWallet } from "./TrustWallet"
+import { BraveWallet } from "./BraveWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -120,29 +121,34 @@ function syncSupportedWalletProviders(wallet: Wallet) {
   ]
 }
 
+const eip6963ProvidersByRdns = new Map([
+  ["io.metamask", { Wallet: MetaMask, type: WalletProviderType.MetaMask }],
+  [
+    "com.trustwallet.app",
+    { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
+  ],
+  [
+    "xyz.talisman",
+    { Wallet: TalismanEvm, type: WalletProviderType.TalismanEvm },
+  ],
+  [
+    "com.brave.wallet",
+    { Wallet: BraveWallet, type: WalletProviderType.BraveWallet },
+  ],
+])
+
 /**
  * Handles the event of EIP-6963 standard to announce injected Wallet Providers
  * For more information, refer to https://eips.ethereum.org/EIPS/eip-6963
  */
 export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
-  if (event.detail.info.rdns === "io.metamask") {
-    syncSupportedWalletProviders(
-      new MetaMask({
-        provider: event.detail.provider,
-        onAccountsChanged: onMetaMaskLikeAccountChange(
-          WalletProviderType.MetaMask,
-        ),
-      }),
-    )
-  }
+  const provider = eip6963ProvidersByRdns.get(event.detail.info.rdns)
 
-  if (event.detail.info.rdns === "com.trustwallet.app") {
+  if (provider) {
     syncSupportedWalletProviders(
-      new TrustWallet({
+      new provider.Wallet({
         provider: event.detail.provider,
-        onAccountsChanged: onMetaMaskLikeAccountChange(
-          WalletProviderType.TrustWallet,
-        ),
+        onAccountsChanged: onMetaMaskLikeAccountChange(provider.type),
       }),
     )
   }
