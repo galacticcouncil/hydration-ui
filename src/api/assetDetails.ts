@@ -102,7 +102,7 @@ export type TShareToken = TAssetCommon & {
 export type TExternal = TAssetCommon & {
   assetType: "External"
   externalId?: string
-  isWhiteListed: boolean
+  isWhiteListed?: boolean
 }
 
 export type TAsset = TToken | TBond | TStableSwap | TShareToken | TExternal
