@@ -19,6 +19,7 @@ export type TExternalAssetRegistry = ReturnType<typeof useExternalAssetRegistry>
 const HYDRA_PARACHAIN_ID = 2034
 export const ASSET_HUB_ID = 1000
 export const PENDULUM_ID = 2094
+const AH_TREASURY_ADDRESS = "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 const createMapFromAssetData = (data?: TExternalAsset[]) => {
   return new Map(
@@ -67,9 +68,8 @@ export const getAssetHubAssets = async () => {
 
         const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
         const owner = asset?.[1].unwrap().owner.toString()
-        const isWhiteListed =
-          owner === "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
-
+        const isWhiteListed = owner === AH_TREASURY_ADDRESS
+     
         return {
           id,
           // @ts-ignore
