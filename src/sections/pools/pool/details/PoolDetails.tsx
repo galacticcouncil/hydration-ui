@@ -250,7 +250,7 @@ export const PoolDetails = () => {
           </>
         ) : null}
 
-        <AvailableFarms pool={pool} />
+        <AvailableFarms />
       </SPoolDetailsContainer>
       {modal}
     </>

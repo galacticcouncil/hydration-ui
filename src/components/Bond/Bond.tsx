@@ -96,7 +96,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
   const navigate = useNavigate()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const { id: bondId, assetId, symbol, name, maturity } = bond
+  const { id: bondId, underlyingAssetId, symbol, name, maturity } = bond
   const { start, end, assets } = pool ?? {}
 
   const assetIn = assets?.find((asset: number) => asset !== Number(bondId))
@@ -142,7 +142,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
           mb: view === "card" ? 12 : [12, 0],
         }}
       >
-        <Icon icon={<AssetLogo id={assetId} />} size={30} />
+        <Icon icon={<AssetLogo id={underlyingAssetId} />} size={30} />
         <div sx={{ flex: "column" }}>
           <Text
             fs={headingFs}
@@ -200,7 +200,7 @@ export const Bond = ({ view, bond, pool, state }: BondProps) => {
               orientation={isDesktop ? "vertical" : "horizontal"}
               css={{ background: `rgba(${theme.rgbColors.white}, 0.06)` }}
             />
-            <Discount assetId={assetId} bondId={bondId} view={view} />
+            <Discount assetId={underlyingAssetId} bondId={bondId} view={view} />
           </>
         )}
       </div>

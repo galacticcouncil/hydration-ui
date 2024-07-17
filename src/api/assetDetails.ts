@@ -1,6 +1,4 @@
-import { Option } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { Maybe } from "utils/helpers"
 import { useAccountBalances } from "./accountBalances"
@@ -9,8 +7,6 @@ import { Bond } from "@galacticcouncil/sdk"
 import { BN_0 } from "utils/constants"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useProviderRpcUrlStore } from "./provider"
-// import { PENDULUM_ID } from "./externalAssetRegistry"
-// import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 import { TAssetStored, useAssetRegistry } from "state/store"
 import { useCallback, useMemo } from "react"
 
@@ -34,7 +30,7 @@ const getFullAsset = (asset: TAssetStored) => {
 }
 
 export type TAsset = ReturnType<typeof getFullAsset> & {
-  iconId: string | string[] | undefined
+  iconId: string | string[]
 }
 
 export type TBond = TAsset & Bond
@@ -242,26 +238,6 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
     })
 
   return tokenBalances
-}
-
-const getTokenParachainId = (
-  rawLocation: Option<HydradxRuntimeXcmAssetLocation>,
-) => {
-  const location = rawLocation.unwrap()
-
-  const type = location.interior.type
-  if (location.interior && type !== "Here") {
-    const xcm = location.interior[`as${type}`]
-
-    const parachainId = !Array.isArray(xcm)
-      ? xcm.asParachain.unwrap().toString()
-      : xcm
-          .find((el) => el.isParachain)
-          ?.asParachain.unwrap()
-          .toString()
-
-    return parachainId
-  }
 }
 
 export const fallbackAsset: TAsset = {
