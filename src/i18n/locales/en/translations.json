@@ -418,6 +418,7 @@
   "walletConnect.accountSelect.title": "Select account",
   "walletConnect.accountSelect.change": "Change account",
   "walletConnect.accountSelect.description": "Which account would you like to use?",
+  "walletconnect.accountSelect.list.noAccounts": "No accounts found. Please check your wallet.",
   "walletConnect.accountSelect.asset.network": "Hydration address",
   "walletConnect.accountSelect.substrate.address": "Substrate address",
   "walletconnect.accountSelect.search.placeholder": "Search by name or paste address",

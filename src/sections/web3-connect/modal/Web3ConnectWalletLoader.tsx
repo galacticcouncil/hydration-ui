@@ -34,7 +34,7 @@ export const Web3ConnectWalletLoader: FC<Props> = ({ provider }) => {
       >
         {t("walletConnect.pending.title")}
       </Text>
-      <div sx={{ px: 20, mt: 20 }}>
+      <div sx={{ mt: 8 }}>
         <Text tAlign="center" fs={16} color="basic200" fw={400} lh={22}>
           {t("walletConnect.pending.description", {
             name: wallet?.title,

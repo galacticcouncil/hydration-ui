@@ -5,31 +5,13 @@ import { MetaMask } from "./MetaMask"
 import { TalismanEvm } from "./TalismanEvm"
 import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { H160, isEvmAddress } from "utils/evm"
-import { SubWalletEvm } from "sections/web3-connect/wallets/SubWalletEvm"
-import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
-import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
+import { SubWalletEvm } from "./SubWalletEvm"
+import { SubWallet } from "./SubWallet"
 import { TrustWallet } from "./TrustWallet"
-
-export enum WalletProviderType {
-  MetaMask = "metamask",
-  Talisman = "talisman",
-  TalismanEvm = "talisman-evm",
-  SubwalletJS = "subwallet-js",
-  SubwalletEvm = "subwallet-evm",
-  PolkadotJS = "polkadot-js",
-  NovaWallet = "nova-wallet",
-  TrustWallet = "trustwallet",
-  Phantom = "phantom",
-  Enkrypt = "enkrypt",
-  MantaWallet = "manta-wallet-js",
-  FearlessWallet = "fearless-wallet",
-  Polkagate = "polkagate",
-  AlephZero = "aleph-zero",
-  WalletConnect = "walletconnect",
-  ExternalWallet = "external",
-}
+import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export type WalletProvider = {
   type: WalletProviderType

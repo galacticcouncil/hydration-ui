@@ -22,6 +22,7 @@ import NoActivities from "assets/icons/NoActivities.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
+import { Alert } from "components/Alert/Alert"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   switch (type) {
@@ -108,6 +109,8 @@ export const Web3ConnectAccountList: FC<{
     })
   }, [isReady, accounts, filter, account?.address, balanceMap])
 
+  const noResults = accountList.length === 0
+
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
@@ -115,26 +118,35 @@ export const Web3ConnectAccountList: FC<{
           value={searchVal}
           setValue={setSearchVal}
           placeholder={t("walletconnect.accountSelect.search.placeholder")}
-          css={{ marginBottom: 16 }}
+          sx={{ mb: [4, 8] }}
         />
       )}
-      {filter && !accountList.length && (
-        <div
-          sx={{
-            color: "basic500",
-            flex: "column",
-            justify: "center",
-            align: "center",
-            gap: 12,
-            py: 18,
-          }}
-        >
-          <NoActivities />
-          <Text color="basic500">
-            {t("walletconnect.accountSelect.search.noResults")}
-          </Text>
-        </div>
+      {noResults && (
+        <>
+          {filter ? (
+            <div
+              sx={{
+                color: "basic500",
+                flex: "column",
+                justify: "center",
+                align: "center",
+                gap: 12,
+                py: 18,
+              }}
+            >
+              <NoActivities />
+              <Text color="basic500">
+                {t("walletconnect.accountSelect.search.noResults")}
+              </Text>
+            </div>
+          ) : (
+            <Alert variant="info">
+              <Text>{t("walletconnect.accountSelect.list.noAccounts")}</Text>
+            </Alert>
+          )}
+        </>
       )}
+
       <SAccountsScrollableContainer>
         {accountList?.map((account) =>
           isLoaded ? (

@@ -7,10 +7,11 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMedia } from "react-use"
 import { shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
-import { WalletProviderType } from "sections/web3-connect/wallets"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { ButtonTransparent } from "components/Button/Button"
+import { BN_BILL } from "utils/constants"
 
 type Props = {
   name: string
@@ -51,7 +52,9 @@ export const Web3ConnectAccountSelect = ({
             {name}
           </Text>
           <Text fs={14} color="graySoft">
-            {balance?.isFinite() && <DisplayValue value={balance} />}
+            {balance?.isFinite() && (
+              <DisplayValue value={balance} compact={balance.gt(BN_BILL)} />
+            )}
           </Text>
         </div>
         <div sx={{ flex: "row", justify: "space-between" }}>

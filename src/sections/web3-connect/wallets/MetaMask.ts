@@ -2,6 +2,7 @@ import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import MetaMaskLogo from "assets/icons/MetaMask.svg"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { EIP1193Provider } from "sections/web3-connect/types"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { shortenAccountAddress } from "utils/formatting"
 import { noop } from "utils/helpers"
 import {
@@ -19,7 +20,7 @@ type MetamaskInit = {
 }
 
 export class MetaMask implements Wallet {
-  extensionName = "metamask"
+  extensionName = WalletProviderType.MetaMask
   title = "MetaMask"
   installUrl = "https://metamask.io/download"
   logo = {

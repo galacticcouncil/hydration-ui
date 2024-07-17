@@ -1,10 +1,11 @@
 import { isTrustWallet } from "utils/metamask"
 import { MetaMask } from "./MetaMask"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
 
 import TalismanLogo from "assets/icons/TrustWalletLogo.svg"
 
 export class TrustWallet extends MetaMask {
-  extensionName = "trustwallet"
+  extensionName = WalletProviderType.TrustWallet
   title = "Trust Wallet"
   installUrl = "https://trustwallet.com"
   logo = {

@@ -38,6 +38,8 @@ export const SAccountsScrollableContainer = styled.div`
   flex-direction: column;
   gap: 10px;
 
+  max-height: calc(100vh - 260px);
+
   margin-right: calc((var(--modal-content-padding) / 2) * -1);
   padding-right: calc(var(--modal-content-padding) / 2);
 

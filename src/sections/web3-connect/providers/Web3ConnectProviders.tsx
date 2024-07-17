@@ -10,9 +10,9 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   ALTERNATIVE_PROVIDERS,
-  DESKTOP_PROVIDERS,
+  DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
-  MOBILE_PROVIDERS,
+  MOBILE_ONLY_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import {
@@ -25,18 +25,21 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnect"
 import { theme } from "theme"
-import { SProviderContainer } from "./Web3ConnectProviders.styled"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import {
+  SExpandButton,
+  SProviderContainer,
+} from "./Web3ConnectProviders.styled"
 import { Icon } from "components/Icon/Icon"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
-import { ButtonTransparent } from "components/Button/Button"
 import { Chip } from "components/Chip"
 import { Separator } from "components/Separator/Separator"
 import { AccordionAnimation } from "components/Accordion/Accordion"
+import { MetadataStore } from "@galacticcouncil/ui"
+import { pick } from "utils/rx"
 
 const walletModeIconMap = {
-  [WalletMode.Substrate]: <AssetLogo id="5" chainHidden />,
-  [WalletMode.EVM]: <AssetLogo id="20" chainHidden />,
+  [WalletMode.Substrate]: "dot",
+  [WalletMode.EVM]: "eth",
 }
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
@@ -52,9 +55,10 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
     const filteredProviders = wallets
       .filter((provider) => {
         if (isEvmMode) return EVM_PROVIDERS.includes(provider.type)
+
         const byScreen = isDesktop
-          ? DESKTOP_PROVIDERS.includes(provider.type)
-          : MOBILE_PROVIDERS.includes(provider.type)
+          ? !MOBILE_ONLY_PROVIDERS.includes(provider.type)
+          : !DESKTOP_ONLY_PROVIDERS.includes(provider.type)
 
         const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
         const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
@@ -109,17 +113,26 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
 export const Web3ConnectProviders = () => {
   const { t } = useTranslation()
 
-  const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
-  const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
+  const { mode, meta, recentProvider } = useWeb3ConnectStore(
+    useShallow((state) => pick(state, ["mode", "meta", "recentProvider"])),
+  )
+
+  const isRecentEvmProvider =
+    recentProvider &&
+    EVM_PROVIDERS.includes(recentProvider) &&
+    !SUBSTRATE_PROVIDERS.includes(recentProvider)
 
   const isDefaultMode = mode === "default"
+  const defaultFilter = isRecentEvmProvider
+    ? WalletMode.EVM
+    : WalletMode.Substrate
 
-  const [selectedFilter, setSelectedFilter] = useState<WalletMode>(
-    isDefaultMode ? WalletMode.Substrate : mode,
+  const [selectedMode, setSelectedMode] = useState<WalletMode>(
+    isDefaultMode ? defaultFilter : mode,
   )
 
   const { installedProviders, otherProviders, alternativeProviders } =
-    useWalletProviders(selectedFilter, meta?.chain)
+    useWalletProviders(selectedMode, meta?.chain)
 
   const installedCountWithoutWC = installedProviders.filter(
     ({ type }) => type !== WalletProviderType.WalletConnect,
@@ -141,13 +154,20 @@ export const Web3ConnectProviders = () => {
               {modes.map((mode) => (
                 <Chip
                   key={mode}
-                  active={selectedFilter === mode}
-                  onClick={() => setSelectedFilter(mode)}
+                  active={selectedMode === mode}
+                  onClick={() => setSelectedMode(mode)}
                 >
                   <Icon
                     size={20}
                     sx={{ ml: -4 }}
-                    icon={walletModeIconMap[mode]}
+                    icon={
+                      <img
+                        src={MetadataStore.getInstance().asset(
+                          walletModeIconMap[mode],
+                        )}
+                        alt={t(`walletConnect.provider.mode.${mode}`)}
+                      />
+                    }
                   />
                   {t(`walletConnect.provider.mode.${mode}`)}
                 </Chip>
@@ -177,7 +197,11 @@ export const Web3ConnectProviders = () => {
       </Text>
       <SProviderContainer>
         {installedProviders.map((provider) => (
-          <Web3ConnectProviderButton {...provider} key={provider.type} />
+          <Web3ConnectProviderButton
+            key={provider.type}
+            mode={selectedMode}
+            {...provider}
+          />
         ))}
       </SProviderContainer>
       <div sx={{ display: ["block", "none"], mt: 20 }}>
@@ -190,27 +214,16 @@ export const Web3ConnectProviders = () => {
       {otherProviders.length > 0 && (
         <>
           <Separator sx={{ my: 20 }} color="darkBlue401" />
-          <ButtonTransparent
+          <SExpandButton
+            aria-expanded={expanded}
             onClick={() => setExpanded((state) => !state)}
-            sx={{ flex: "row", justify: "space-between" }}
           >
-            <Text color="basic400">
-              {t("walletConnect.provider.section.other")}
-            </Text>
-            <div sx={{ flex: "row", align: "center" }}>
-              <Text fs={13} color="basic400">
-                {t(expanded ? "hide" : "show")}
-              </Text>
-              <div
-                css={{
-                  transform: expanded ? "rotate(180deg)" : undefined,
-                  transition: theme.transitions.default,
-                }}
-              >
-                <Icon icon={<ChevronDownIcon />} sx={{ color: "basic400" }} />
-              </div>
+            {t("walletConnect.provider.section.other")}
+            <div sx={{ flex: "row", align: "center", fontSize: 13 }}>
+              {t(expanded ? "hide" : "show")}
+              <Icon icon={<ChevronDownIcon />} />
             </div>
-          </ButtonTransparent>
+          </SExpandButton>
           <AccordionAnimation expanded={expanded}>
             <SProviderContainer>
               {otherProviders.map((provider) => (

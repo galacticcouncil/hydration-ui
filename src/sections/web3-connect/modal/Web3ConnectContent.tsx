@@ -13,6 +13,7 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { useForm } from "react-hook-form"
+import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter"
 
 type Props = {
   page: number
@@ -21,6 +22,8 @@ type Props = {
   onBack: () => void
   onSelect: () => void
   onRetry: () => void
+  onSwitch: () => void
+  onLogout: () => void
   onOpenAddressBook: () => void
   onCloseAddressBook: () => void
 }
@@ -28,6 +31,8 @@ type Props = {
 export const Web3ConnectContent: React.FC<Props> = ({
   onSelect,
   onRetry,
+  onSwitch,
+  onLogout,
   onOpenAddressBook,
   onCloseAddressBook,
   ...props
@@ -89,12 +94,16 @@ export const Web3ConnectContent: React.FC<Props> = ({
         {
           title: t("walletConnect.accountSelect.title").toUpperCase(),
           description: t("walletConnect.accountSelect.description"),
-          content:
-            activeProvider && isConnecting ? (
-              <Web3ConnectProviderPending provider={activeProvider} />
-            ) : (
-              <Web3ConnectAccountList accounts={accounts} />
-            ),
+          content: (
+            <>
+              {activeProvider && isConnecting ? (
+                <Web3ConnectProviderPending provider={activeProvider} />
+              ) : (
+                <Web3ConnectAccountList accounts={accounts} />
+              )}
+              <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
+            </>
+          ),
         },
         {
           title: t("walletConnect.provider.title").toUpperCase(),

@@ -63,3 +63,24 @@ export const SAltProviderButton = styled(ButtonTransparent)`
     color: ${theme.colors.brightBlue300};
   }
 `
+
+export const SExpandButton = styled(ButtonTransparent)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  color: ${theme.colors.basic400};
+
+  svg {
+    transition: ${theme.transitions.default};
+  }
+
+  &[aria-expanded="true"] {
+    svg {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:hover {
+    color: ${theme.colors.brightBlue300};
+`

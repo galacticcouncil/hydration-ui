@@ -13,17 +13,20 @@ import {
   SProviderButton,
 } from "./Web3ConnectProviders.styled"
 import {
+  WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 type Props = WalletProvider & {
   children?: (props: { onClick: () => void }) => JSX.Element
+  mode?: WalletMode
 }
 
 export const Web3ConnectProviderButton: FC<Props> = ({
   type,
   wallet,
+  mode,
   children,
 }) => {
   const { t } = useTranslation()
@@ -45,8 +48,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   function onClick() {
     if (type === WalletProviderType.WalletConnect) {
-      // defer WalletConnect enabling until the user clicks chooses a chain to connect to
-      setStatus(type, WalletProviderStatus.Pending)
+      enable(mode === WalletMode.EVM ? "eip155" : "polkadot")
     } else {
       installed ? enable() : openInstallUrl(installUrl)
     }

@@ -1,37 +1,28 @@
-import { WalletProviderType } from "sections/web3-connect/wallets"
+export enum WalletProviderType {
+  MetaMask = "metamask",
+  Talisman = "talisman",
+  TalismanEvm = "talisman-evm",
+  SubwalletJS = "subwallet-js",
+  SubwalletEvm = "subwallet-evm",
+  PolkadotJS = "polkadot-js",
+  NovaWallet = "nova-wallet",
+  TrustWallet = "trustwallet",
+  Phantom = "phantom",
+  Enkrypt = "enkrypt",
+  MantaWallet = "manta-wallet-js",
+  FearlessWallet = "fearless-wallet",
+  Polkagate = "polkagate",
+  AlephZero = "aleph-zero",
+  WalletConnect = "walletconnect",
+  ExternalWallet = "external",
+}
 
-export const MOBILE_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.MetaMask,
-  WalletProviderType.Talisman,
-  WalletProviderType.TalismanEvm,
-  WalletProviderType.SubwalletJS,
-  WalletProviderType.SubwalletEvm,
-  WalletProviderType.TrustWallet,
-  WalletProviderType.Phantom,
-  WalletProviderType.Enkrypt,
+export const MOBILE_ONLY_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.NovaWallet,
-  WalletProviderType.MantaWallet,
-  WalletProviderType.FearlessWallet,
-  WalletProviderType.Polkagate,
-  WalletProviderType.AlephZero,
-  WalletProviderType.WalletConnect,
 ]
 
-export const DESKTOP_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.MetaMask,
-  WalletProviderType.Talisman,
-  WalletProviderType.TalismanEvm,
-  WalletProviderType.SubwalletJS,
-  WalletProviderType.SubwalletEvm,
-  WalletProviderType.TrustWallet,
-  WalletProviderType.Phantom,
-  WalletProviderType.Enkrypt,
+export const DESKTOP_ONLY_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.PolkadotJS,
-  WalletProviderType.MantaWallet,
-  WalletProviderType.FearlessWallet,
-  WalletProviderType.Polkagate,
-  WalletProviderType.AlephZero,
-  WalletProviderType.WalletConnect,
 ]
 
 export const EVM_PROVIDERS: WalletProviderType[] = [

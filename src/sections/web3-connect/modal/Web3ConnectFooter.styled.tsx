@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { ButtonTransparent } from "components/Button/Button"
+import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
@@ -9,37 +9,55 @@ export const SContainer = styled.div`
   align-items: center;
   justify-content: space-between;
 
-  padding: var(--modal-content-padding);
-  padding-top: 0;
-`
+  margin-top: auto;
 
-export const SLogoutContainer = styled.div`
-  display: flex;
-
-  gap: 2px;
-  align-items: center;
-  justify-content: center;
-  color: ${theme.colors.basic500};
-  transition: color ${theme.transitions.default};
-
-  &:hover {
-    color: ${theme.colors.basic400};
+  @media ${theme.viewport.gte.sm} {
+    margin-top: 24px;
   }
 `
 
-export const SSwitchButton = styled(ButtonTransparent)`
-  padding: 12px;
-  border-radius: 4px;
-  border: 1px solid ${theme.colors.basic800};
-  transition: ${theme.transitions.default};
+export const SLogoutButton = styled(Button)`
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+
+  color: ${theme.colors.brightBlue600};
+
+  padding: 8px 12px;
+
+  text-transform: none;
+  font-family: "GeistSemiBold";
+  font-size: 14px;
 
   &:hover {
-    border: 1px solid ${theme.colors.basic700};
+    background-color: rgba(${theme.rgbColors.white}, 0.08);
+    border-color: rgba(${theme.rgbColors.white}, 0.08);
+  }
+`
+
+export const SSwitchButton = styled(Button)`
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+
+  color: ${theme.colors.brightBlue600};
+
+  padding: 8px 12px;
+
+  text-transform: none;
+  font-family: "GeistSemiBold";
+  font-size: 14px;
+
+  &:hover {
+    background-color: rgba(${theme.rgbColors.white}, 0.08);
+    border-color: rgba(${theme.rgbColors.white}, 0.08);
   }
 `
 
 export const SSwitchText = styled(Text)`
-  color: ${theme.colors.brightBlue500};
+  color: ${theme.colors.brightBlue600};
   display: flex;
   align-items: center;
   justify-content: center;
