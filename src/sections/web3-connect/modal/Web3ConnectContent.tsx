@@ -75,7 +75,8 @@ export const Web3ConnectContent: React.FC<Props> = ({
                 : "",
         },
         {
-          title: t("walletConnect.provider.title").toUpperCase(),
+          title: t("walletConnect.externalWallet.modal.title").toUpperCase(),
+          description: t("walletConnect.externalWallet.modal.desc"),
           content: (
             <Web3ConnectExternalModal
               form={externalWalletForm}

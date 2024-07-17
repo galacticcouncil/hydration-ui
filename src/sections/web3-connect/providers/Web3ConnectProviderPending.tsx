@@ -9,10 +9,7 @@ export const Web3ConnectProviderPending: FC<Props> = ({ provider }) => {
   const isWalletConnect = provider === WalletProviderType.WalletConnect
 
   return (
-    <div
-      sx={{ flex: "column", align: "center" }}
-      css={{ paddingBottom: "var(--wallet-footer-height)" }}
-    >
+    <div sx={{ flex: "column", align: "center" }}>
       {isWalletConnect ? (
         <Web3ConnectWCSelector />
       ) : (

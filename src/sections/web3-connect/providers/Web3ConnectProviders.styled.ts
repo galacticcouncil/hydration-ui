@@ -26,7 +26,7 @@ export const SProviderButton = styled(ButtonTransparent)`
   padding: 16px 12px;
 
   border: none;
-  border-radius: 4px;
+  border-radius: ${theme.borderRadius.medium}px;
 
   transition: background ${theme.transitions.default};
   cursor: pointer;
