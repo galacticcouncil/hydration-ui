@@ -26,13 +26,19 @@ export interface MetaMaskLikeProvider
 export interface AddEvmChainParams {
   chainId: string
   chainName: string
+  name: string
   nativeCurrency: {
     name: string
     symbol: string
     decimals: number
   }
+  iconUrls: string[]
   rpcUrls: string[]
   blockExplorerUrls?: string[]
+}
+
+const chainIconMap: { [key: string]: string[] } = {
+  hydradx: ["https://app.hydration.net/favicon.ico"],
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
@@ -41,7 +47,9 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),
     chainName: chainProps.name,
+    name: chainProps.name,
     rpcUrls: chainProps.rpcUrls.default.http as string[],
+    iconUrls: chainIconMap[chain] || [],
     nativeCurrency: chainProps.nativeCurrency,
     blockExplorerUrls: chainProps.blockExplorers?.default
       ? [chainProps.blockExplorers.default.url]
