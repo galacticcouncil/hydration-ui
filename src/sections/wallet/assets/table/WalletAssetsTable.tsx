@@ -121,7 +121,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           <TableBodyContent>
             {table.options.data.length ? (
               table.getRowModel().rows.map((row, i) => {
-                if (!row.original.symbol && row.original.meta.isExternal)
+                if (row.original.isExternalInvalid)
                   return (
                     <TableRow
                       key={row.original.id}

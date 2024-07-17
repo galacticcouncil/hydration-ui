@@ -13,6 +13,7 @@ import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -28,6 +29,7 @@ export const useAssetsData = ({
   const address = givenAddress ?? account?.address
 
   const balances = useAccountBalances(address, true)
+  const getExternalMeta = useExternalTokenMeta()
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
@@ -65,7 +67,11 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const meta = assets.getAsset(balance.id)
+      const asset = assets.getAsset(balance.id)
+      const isExternalInvalid = asset.isExternal && !asset.symbol
+      const meta = isExternalInvalid
+        ? getExternalMeta(asset.id) ?? asset
+        : asset
 
       const { decimals, id, name, symbol } = meta
 
@@ -112,6 +118,7 @@ export const useAssetsData = ({
         transferable,
         transferableDisplay,
         tradability,
+        isExternalInvalid,
       }
     })
 
@@ -147,6 +154,7 @@ export const useAssetsData = ({
               transferable: BN_0,
               transferableDisplay: BN_0,
               tradability,
+              isExternalInvalid: false,
             }
 
             if (asset.symbol) {
@@ -167,14 +175,15 @@ export const useAssetsData = ({
       ? arraySearch(sortedAssets, search, ["symbol", "name"])
       : sortedAssets
   }, [
-    acceptedCurrencies.data,
-    assets,
-    currencyId,
-    spotPrices.data,
     tokensWithBalance,
-    search,
+    spotPrices.data,
     isAllAssets,
     allAssets,
+    search,
+    assets,
+    getExternalMeta,
+    acceptedCurrencies.data,
+    currencyId,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
