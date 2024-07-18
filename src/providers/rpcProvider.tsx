@@ -6,6 +6,7 @@ import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
+import { AssetsProvider } from "./assets"
 
 type TProviderContext = {
   api: ApiPromise
@@ -91,7 +92,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ProviderContext.Provider value={value}>
-      {children}
+      <AssetsProvider>{children}</AssetsProvider>
     </ProviderContext.Provider>
   )
 }

@@ -1,14 +1,23 @@
-import { AccountId32 } from "@polkadot/types/interfaces"
-import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
-import { Maybe } from "utils/helpers"
-import { useAccountBalances } from "./accountBalances"
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+} from "react"
 import BN from "bignumber.js"
-import { Bond } from "@galacticcouncil/sdk"
-import { BN_0 } from "utils/constants"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useProviderRpcUrlStore } from "./provider"
 import { TAssetStored, useAssetRegistry } from "state/store"
-import { useCallback, useMemo } from "react"
+import { Bond } from "@galacticcouncil/sdk"
+import { useProviderRpcUrlStore } from "api/provider"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
+import { BN_0 } from "utils/constants"
+
+type TAssetsContext = {}
+
+const AssetsContext = createContext<TAssetsContext>({})
+
+export const useAssets = () => useContext(AssetsContext)
 
 const getFullAsset = (asset: TAssetStored) => {
   const isToken = asset.type === "Token"
@@ -28,21 +37,40 @@ const getFullAsset = (asset: TAssetStored) => {
     isShareToken,
   }
 }
+const fallbackAsset: TAsset = {
+  id: "",
+  name: "N/A",
+  symbol: "N/a",
+  decimals: 12,
+  existentialDeposit: BN_0,
+  parachainId: undefined,
+  isToken: false,
+  isBond: false,
+  isStableSwap: false,
+  isExternal: false,
+  isShareToken: false,
+  iconId: "",
+  isSufficient: false,
+  isTradable: false,
+  type: "Token",
+  icon: "",
+  externalId: undefined,
+}
 
-type TAsset = ReturnType<typeof getFullAsset> & {
+export type TAsset = ReturnType<typeof getFullAsset> & {
   iconId: string | string[]
 }
 
-type TBond = TAsset & Bond
+export type TBond = TAsset & Bond
 
-type TExternal = TAsset & { externalId: string }
+export type TExternal = TAsset & { externalId: string }
 
-type TShareToken = TAsset & {
+export type TShareToken = TAsset & {
   poolAddress: string
   assets: TAsset[]
 }
 
-const useAssets = () => {
+export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   const { assets, shareTokens: shareTokensRaw } = useAssetRegistry.getState()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
   const { tokens: externalTokens } = useUserExternalTokenStore.getState()
@@ -196,69 +224,33 @@ const useAssets = () => {
     [bonds],
   )
 
-  return {
-    all,
-    tokens,
-    stableswap,
-    bonds,
-    external,
-    tradable,
-    shareTokens,
-    native,
-    hub,
-    getAsset,
-    getShareToken,
-    getShareTokens,
-    getAssets,
-    getBond,
-    getAssetWithFallback,
-    getExternalByExternalId,
-    getShareTokenByAddress,
-    isExternal,
-    isBond,
-    isStableSwap,
-    isShareToken,
-  }
-}
-
-export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
-  const { getAssetWithFallback, native } = useAssets()
-  const accountBalances = useAccountBalances(address, true)
-
-  if (!accountBalances.data) return []
-
-  const tokenBalances = accountBalances.data?.balances
-    ? accountBalances.data.balances.map((balance) => {
-        const asset = getAssetWithFallback(balance.id)
-
-        return { asset, balance }
-      })
-    : []
-  if (accountBalances.data?.native)
-    tokenBalances.unshift({
-      balance: accountBalances.data.native,
-      asset: native,
-    })
-
-  return tokenBalances
-}
-
-export const fallbackAsset: TAsset = {
-  id: "",
-  name: "N/A",
-  symbol: "N/a",
-  decimals: 12,
-  existentialDeposit: BN_0,
-  parachainId: undefined,
-  isToken: false,
-  isBond: false,
-  isStableSwap: false,
-  isExternal: false,
-  isShareToken: false,
-  iconId: "",
-  isSufficient: false,
-  isTradable: false,
-  type: "Token",
-  icon: "",
-  externalId: undefined,
+  return (
+    <AssetsContext.Provider
+      value={{
+        all,
+        tokens,
+        stableswap,
+        bonds,
+        external,
+        tradable,
+        shareTokens,
+        native,
+        hub,
+        getAsset,
+        getShareToken,
+        getShareTokens,
+        getAssets,
+        getBond,
+        getAssetWithFallback,
+        getExternalByExternalId,
+        getShareTokenByAddress,
+        isExternal,
+        isBond,
+        isStableSwap,
+        isShareToken,
+      }}
+    >
+      {children}
+    </AssetsContext.Provider>
+  )
 }

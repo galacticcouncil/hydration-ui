@@ -200,7 +200,6 @@ export const useProviderData = () => {
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
     async () => {
-      console.log("FETCHING PROVIDER DATA")
       const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(rpcUrlList, maxRetries)
