@@ -1,18 +1,23 @@
-import { AssetId } from "@galacticcouncil/ui"
+import { AssetId, AssetBadge } from "@galacticcouncil/ui"
 import { createComponent } from "@lit-labs/react"
-import {
-  getIconByRugSeverity,
-  useExternalTokensRugCheck,
-} from "api/externalAssetRegistry"
+import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import * as React from "react"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { SLogoContainer } from "./TokenInfo.styled"
+import { SBadgeCointainer, SLogoContainer } from "./TokenInfo.styled"
+import { useTranslation } from "react-i18next"
+import SkullIcon from "assets/icons/SkullIcon.svg?react"
 
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
   elementClass: AssetId,
+  react: React,
+})
+
+export const UigcAssetBadge = createComponent({
+  tagName: "uigc-asset-badge",
+  elementClass: AssetBadge,
   react: React,
 })
 
@@ -25,12 +30,12 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   asset,
   internalId,
 }) => {
+  const { t } = useTranslation()
   const rugCheck = useExternalTokensRugCheck()
   const rugCheckData = rugCheck.tokensMap.get(internalId ?? "")
 
-  const SeverityIcon = rugCheckData?.severity
-    ? getIconByRugSeverity(rugCheckData?.severity)
-    : null
+  const isHighSeverity = rugCheckData?.severity === "high"
+  const badgeVariant = rugCheckData?.isWhitelisted ? "warning" : "danger"
 
   return (
     <div sx={{ flex: "row", gap: 10 }}>
@@ -46,10 +51,21 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
                   ?.querySelector("uigc-logo-asset")
                   ?.setAttribute("style", "width:100%;height:100%;")
               }
-            />
+            >
+              {isHighSeverity ? (
+                <SBadgeCointainer slot="badge">
+                  <SkullIcon sx={{ color: "alarmRed400" }} />
+                </SBadgeCointainer>
+              ) : (
+                <UigcAssetBadge
+                  slot="badge"
+                  variant={badgeVariant}
+                  text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+                />
+              )}
+            </UigcAssetId>
           }
         />
-        {SeverityIcon && <SeverityIcon sx={{ color: "alarmRed400" }} />}
       </SLogoContainer>
       <div>
         <Text fs={22} lh={28} font="GeistMono">

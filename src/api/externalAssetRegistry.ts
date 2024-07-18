@@ -20,6 +20,7 @@ import { BN_0 } from "utils/constants"
 import SkullIcon from "assets/icons/SkullIcon.svg?react"
 import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import WarningIconRed from "assets/icons/WarningIconRed.svg?react"
+import { MetadataStore } from "@galacticcouncil/ui"
 
 type TRegistryChain = {
   assetCnt: string
@@ -351,6 +352,11 @@ export const useExternalTokensRugCheck = () => {
     assetHubExternalIds,
   )
 
+  const externalAssetsWhitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
+
   const tokens = useMemo(() => {
     if (
       issuanceQueries.some(({ data }) => !data) ||
@@ -368,7 +374,7 @@ export const useExternalTokensRugCheck = () => {
 
         const internalToken = assets.getAsset(issuance.token.toString())
         const storedToken = getTokenByInternalId(issuance.token.toString())
-        const isWhitelisted = isInRugCheckWhitelist(internalToken.id)
+        const shouldIgnoreRugCheck = isInRugCheckWhitelist(internalToken.id)
 
         const externalAssetRegistry = internalToken.parachainId
           ? assetRegistry[+internalToken.parachainId]
@@ -377,13 +383,17 @@ export const useExternalTokensRugCheck = () => {
           internalToken.externalId ?? "",
         )
 
+        const isWhitelisted = internalToken
+          ? externalAssetsWhitelist.includes(internalToken.id)
+          : false
+
         if (!externalToken) return null
         if (!storedToken) return null
 
         const totalSupplyExternal =
-          !isWhitelisted && balance?.balance ? BN(balance.balance) : null
+          !shouldIgnoreRugCheck && balance?.balance ? BN(balance.balance) : null
         const totalSupplyInternal =
-          !isWhitelisted && issuance?.total ? BN(issuance.total) : null
+          !shouldIgnoreRugCheck && issuance?.total ? BN(issuance.total) : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -407,6 +417,7 @@ export const useExternalTokensRugCheck = () => {
           storedToken,
           warnings,
           severity,
+          isWhitelisted,
         }
       })
       .filter(isNotNil)
@@ -414,6 +425,7 @@ export const useExternalTokensRugCheck = () => {
     assetRegistry,
     assets,
     balanceQueries,
+    externalAssetsWhitelist,
     getTokenByInternalId,
     isInRugCheckWhitelist,
     issuanceQueries,

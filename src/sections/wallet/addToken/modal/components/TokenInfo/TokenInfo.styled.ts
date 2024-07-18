@@ -17,12 +17,16 @@ export const SLogoContainer = styled.div`
   justify-content: center;
 
   position: relative;
+`
 
-  & > svg {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    bottom: 0px;
-    right: 0px;
+export const SBadgeCointainer = styled.div`
+  position: absolute;
+
+  bottom: -8px;
+  right: -4px;
+
+  svg {
+    width: 20px;
+    height: 20px;
   }
 `

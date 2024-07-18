@@ -18,8 +18,8 @@ export const ExternalAssetUpdateModal: React.FC<Props> = ({
   const { t } = useTranslation()
 
   const rugCheck = useExternalTokensRugCheck()
-
-  const asset = rugCheck.tokensMap.get(assetId)?.externalToken
+  const rugCheckData = rugCheck.tokensMap.get(assetId)
+  const asset = rugCheckData?.externalToken
 
   if (!asset) return null
 

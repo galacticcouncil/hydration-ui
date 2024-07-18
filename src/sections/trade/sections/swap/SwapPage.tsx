@@ -131,6 +131,7 @@ export function SwapPage() {
             r.setAttribute("chart", "")
             r.setAttribute("twapOn", "")
             r.setAttribute("newAssetBtn", "")
+            r.setAttribute("assetCheckEnabled", "")
           }
         }}
         assetIn={assetIn}

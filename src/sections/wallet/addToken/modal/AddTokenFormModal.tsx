@@ -41,6 +41,7 @@ enum TokenState {
   Registered,
   UpdateRequired,
   RiskConsentRequired,
+  NoActionRequired,
 }
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
@@ -55,6 +56,8 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   const rugCheck = useExternalTokensRugCheck()
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
+
+  const userStored = !!rugCheckData?.storedToken
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -79,8 +82,8 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       return TokenState.UpdateRequired
     }
 
-    return TokenState.Registered
-  }, [chainStored, rugCheckData?.warnings])
+    return userStored ? TokenState.NoActionRequired : TokenState.Registered
+  }, [userStored, chainStored, rugCheckData?.warnings])
 
   const onSubmit = async () => {
     if (chainStored) {
@@ -173,6 +176,8 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
             {tokenState === TokenState.RiskConsentRequired &&
               t("wallet.addToken.form.button.register.acceptRisk")}
+
+            {tokenState === TokenState.NoActionRequired && t("close")}
           </Button>
         </div>
       </form>
