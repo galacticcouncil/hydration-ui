@@ -1,3 +1,4 @@
+import { Title } from "@radix-ui/react-dialog"
 import ChevronIcon from "assets/icons/ChevronRight.svg?react"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
@@ -39,21 +40,23 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
     }, [title, variant])
 
     return (
-      <SContainer
-        key={`title-${page}`}
-        ref={ref}
-        variant={variant}
-        centered={canBack}
-        custom={{ direction }}
-        {...(!disableAnimation ? motionProps : {})}
-      >
-        {content}
-        {description && (
-          <Text fs={16} lh={22} fw={400} color="basic400">
-            {description}
-          </Text>
-        )}
-      </SContainer>
+      <Title asChild>
+        <SContainer
+          key={`title-${page}`}
+          ref={ref}
+          variant={variant}
+          centered={canBack}
+          custom={{ direction }}
+          {...(!disableAnimation ? motionProps : {})}
+        >
+          {content}
+          {description && (
+            <Text fs={16} lh={22} fw={400} color="basic400">
+              {description}
+            </Text>
+          )}
+        </SContainer>
+      </Title>
     )
   },
 )
