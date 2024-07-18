@@ -328,7 +328,11 @@ function getFarmApr(
     .plus(globalFarm.accumulatedPaidRewards.toBigNumber())
 
   const maxRewards = maxRewardPerPeriod.times(plannedYieldingPeriods)
-  const leftToDistribute = maxRewards.minus(distributedRewards)
+  const potMaxRewards = potBalance
+    ? distributedRewards.plus(potBalance)
+    : maxRewards
+
+  const leftToDistribute = potMaxRewards.minus(distributedRewards)
 
   // estimate, when the farm will most likely distribute all the rewards
   const updatedAtPeriod = globalFarm.updatedAt.toBigNumber()
@@ -357,10 +361,6 @@ function getFarmApr(
   apr = isDistributed ? BN_0 : apr.times(100)
 
   const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
-
-  const potMaxRewards = potBalance
-    ? distributedRewards.plus(potBalance)
-    : undefined
 
   return {
     apr,

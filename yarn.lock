@@ -2205,10 +2205,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.2.0.tgz#c9bc191ccd732adcb7f3b50ecbff6d3a9923d391"
   integrity sha512-6NlzDthJOByf+yARUT+l5PnHASXQRGjXRhFaXofGUhP7tqD8t29eEudzKVXJL1iabpn22ebKPscSw2H+lNQiyQ==
 
-"@galacticcouncil/apps@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-5.1.0.tgz#06288bf58378a7055cb873464661f2345aed41b9"
-  integrity sha512-QdU0R2Mlo3ZIXFI5GzcGKwmuYHXHF261TvnqQ5Ex7FkIJAD4sJzj/qFcPLcgLmhqljZza5OQVLbSyWSwi4SKEA==
+"@galacticcouncil/apps@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-5.1.1.tgz#bf19a6953f0ef7e191c70d592bb78f6ec519a3a2"
+  integrity sha512-t4P3NWtbVaigPeyKPpcIPjhkUBl/FGviaQqRD0DK82B7ESfuQ9juiOtN0ATB0Mejt3AF6P4/ekFLt1CcYkuc9g==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2251,10 +2251,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.0.1.tgz#ec816e968d6a8cea19526ca2949d6fa312aa5798"
-  integrity sha512-jISsdZMWyy6pS4KTo6dQwMzHN1TldPzjXV0nTGQeLZ9vqhnCLPBSRrGRttCACb7wykt8e1QF+egJ2bLRb1woWA==
+"@galacticcouncil/sdk@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.0.2.tgz#52373031a5ddde3c0a375bcbbc938bc121282475"
+  integrity sha512-03q+BNS+okUGlsDq+U0V5GkNXZUZCH/bKSN6/dr2q4WN6nZbZFEr8IwlEnglJheBniOVMveEpBBdtASEhyP6tA==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2275,10 +2275,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-3.0.0.tgz#09e979d8a9de2f41009eb7be4ec48d45ea827d31"
-  integrity sha512-8jObNdlCXcp3oGWkHUgFvh52VCgf5XTXwK6+UkbUK62BkBB3//WXlO5gCc5wGLn6aAAHG6i1EStJUZsftvl+ag==
+"@galacticcouncil/xcm-cfg@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-3.0.1.tgz#3ea5f65ae22c1c27cb761af6d77d5f1888a614e5"
+  integrity sha512-bEVYpHT4goC1kNh1GEaf5qjclznw0BDou/C4/5In/JG/yDrHmEayr8MXr3yp97VkGLLSwy/g9mDMgIQAw4+uTg==
   dependencies:
     "@galacticcouncil/xcm-core" "^2.0.0"
 
