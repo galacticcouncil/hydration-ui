@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next"
 import { MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { Trigger } from "@radix-ui/react-dropdown-menu"
 import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
+import { Root as DialogRoot } from "@radix-ui/react-dialog"
 
 export const MoreMenu = ({ items }: { items?: string[] }) => {
   const [open, setOpen] = useState(false)
@@ -53,30 +54,30 @@ export const MoreMenuContents = ({
   }, [items])
 
   return (
-    <ModalContents
-      disableHeightAnimation
-      onClose={onClose}
-      contents={[
-        {
-          title: "",
-          headerVariant: "simple",
-          noPadding: true,
-          content: (
-            <HeaderDropdownItems>
-              {filteredMenuItems.map((item) => (
-                <HeaderDropdownItem
-                  variant="navigation"
-                  to={item.href}
-                  search={resetSearchParams(search)}
-                  key={item.key}
-                  icon={<item.Icon />}
-                  title={t(`header.${item.key}`)}
-                />
-              ))}
-            </HeaderDropdownItems>
-          ),
-        },
-      ]}
-    />
+    <DialogRoot>
+      <ModalContents
+        disableHeightAnimation
+        onClose={onClose}
+        contents={[
+          {
+            noPadding: true,
+            content: (
+              <HeaderDropdownItems>
+                {filteredMenuItems.map((item) => (
+                  <HeaderDropdownItem
+                    variant="navigation"
+                    to={item.href}
+                    search={resetSearchParams(search)}
+                    key={item.key}
+                    icon={<item.Icon />}
+                    title={t(`header.${item.key}`)}
+                  />
+                ))}
+              </HeaderDropdownItems>
+            ),
+          },
+        ]}
+      />
+    </DialogRoot>
   )
 }
