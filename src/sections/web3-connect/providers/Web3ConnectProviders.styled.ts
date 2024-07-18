@@ -57,10 +57,20 @@ export const SAltProviderButton = styled(ButtonTransparent)`
 
   font-size: 14px;
 
+  padding: 4px 12px;
+
+  width: 100%;
+
   border-radius: 4px;
+  border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.12);
 
   &:hover {
     color: ${theme.colors.brightBlue300};
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    border: 0;
+    padding: 0;
   }
 `
 

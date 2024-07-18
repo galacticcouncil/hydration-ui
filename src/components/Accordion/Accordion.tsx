@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SContainer, SContent } from "./Accordion.styled"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
-import { FC, ReactNode, useState } from "react"
+import { FC, ReactNode, useRef, useState } from "react"
 import {
   AnimatePresence,
   LazyMotion,
@@ -30,20 +30,30 @@ export const AccordionAnimation: FC<AccordionAnimationProps> = ({
   expanded,
   children,
 }) => {
+  const initialRef = useRef(expanded)
+  const initial = initialRef.current ? "open" : "closed"
   return (
     <LazyMotion features={domAnimation}>
       <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: "auto" }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            css={{ overflow: "hidden" }}
-          >
-            {children}
-          </motion.div>
-        )}
+        <motion.div
+          initial={initial}
+          variants={{
+            closed: {
+              height: 0,
+              overflow: "hidden",
+            },
+            open: {
+              height: "auto",
+              transitionEnd: {
+                overflow: "unset",
+              },
+            },
+          }}
+          animate={expanded ? "open" : "closed"}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          {children}
+        </motion.div>
       </AnimatePresence>
     </LazyMotion>
   )
