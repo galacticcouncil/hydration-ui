@@ -558,7 +558,7 @@
   "wallet.addToken.form.info": {
     "title":"Asset details:",
     "registered": "Asset registered on Hydration",
-    "registered.tooltip": "An indication whether the asset is already registered on Hydration.",
+    "registered.tooltip": "This asset is registered on Hydration.",
     "masterAccount": "Admin rights revoked",
     "masterAccount.tooltip": "If the asset creator has not revoked their admin rights, they can still tamper with the supply. Proceed at your own risk.",
     "availability": "Available on other parachains",
@@ -574,7 +574,7 @@
   "wallet.addToken.toast.register.onSuccess": "{{name}} registered on Hydration.",
   "wallet.addToken.toast.add.onSuccess": "{{name}} added to your UI.",
   "wallet.addToken.tooltip.warning": "This is an external asset added by yourself. Always conduct your own research before trading.",
-  "wallet.addToken.tooltip.danger": "If the creator of an asset has not revoked their admin rights, they are still able to manipulate the supply. Proceed at your own risk.",
+  "wallet.addToken.tooltip.danger": "The creator of this asset has not revoked their admin rights. This means they are still able to manipulate the supply. Proceed at your own risk.",
   "wallet.assets.farmingPositions.empty.desc": "You don't have any farming positions yet, add liquidity and start earning with Hydration.",
   "wallet.transactions.table.header.title": "Transaction History",
   "wallet.transactions.table.header.download": "Download CSV",
