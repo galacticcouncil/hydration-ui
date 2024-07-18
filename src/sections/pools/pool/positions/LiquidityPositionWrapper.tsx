@@ -10,19 +10,16 @@ import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiq
 import { ReactElement, useMemo, useState } from "react"
 import { useRefetchAccountNFTPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0 } from "utils/constants"
 import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
 import { useMedia } from "react-use"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import BN from "bignumber.js"
+import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 
 export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   const { t } = useTranslation()
-  const {
-    assets: { hub },
-  } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
   const refetchPositions = useRefetchAccountNFTPositions()
@@ -36,15 +33,16 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
         (acc, position) => {
           const newValues = {
             value: acc.value.plus(position.valueShifted),
+            totalValue: acc.totalValue.plus(position.totalValueShifted),
             hub: acc.hub.plus(position.lrnaShifted),
             display: acc.display.plus(position.valueDisplay),
           }
           return newValues
         },
-        { value: BN_0, hub: BN_0, display: BN_0 },
+        { value: BN_0, totalValue: BN_0, hub: BN_0, display: BN_0 },
       )
     }
-    return { value: BN_0, hub: BN_0, display: BN_0 }
+    return { value: BN_0, hub: BN_0, display: BN_0, totalValue: BN_0 }
   }, [positions, positionsNumber])
 
   if (!positionsNumber) return null
@@ -71,7 +69,7 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
           />
         ),
         moveTo: !acc.height.isZero()
-          ? acc.height.minus(20).toNumber()
+          ? acc.height.minus(20 * i).toNumber()
           : acc.height.toNumber(),
         height: cardHeight,
       })
@@ -115,14 +113,22 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
           <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
             {t("liquidity.pool.positions.liq")}
           </Text>
-          <Text color="white" fs={[14, 16]}>
-            {t(isHubValue ? "value.tokenWithHub" : "value.tokenWithSymbol", {
-              value: total.value,
-              symbol: pool.symbol,
-              hub: total.hub,
-              hubSymbol: hub.symbol,
-            })}
-          </Text>
+          <div sx={{ flex: "row", align: "center", gap: 4 }}>
+            <Text color="white" fs={[14, 16]}>
+              {t("value.tokenWithSymbol", {
+                value: total.totalValue,
+                symbol: pool.symbol,
+              })}
+            </Text>
+            {isHubValue && (
+              <LrnaPositionTooltip
+                assetId={pool.id}
+                tokenPosition={total.value}
+                lrnaPosition={total.hub}
+              />
+            )}
+          </div>
+
           <Text color="basic500" fs={12}>
             {t("value.usd", { amount: total.display })}
           </Text>
