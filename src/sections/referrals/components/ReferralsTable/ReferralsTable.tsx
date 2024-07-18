@@ -15,7 +15,7 @@ import { TReferralsTableData } from "./data/ReferralsTableData.utils"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   data: TReferralsTableData

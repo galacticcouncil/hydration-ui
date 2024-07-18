@@ -12,7 +12,7 @@ import { isNotNil } from "utils/helpers"
 import { useFee, useTVL } from "api/stats"
 import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const withoutRefresh = true
 

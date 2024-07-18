@@ -22,7 +22,7 @@ import { useDebounce } from "react-use"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   assetId: string

@@ -8,7 +8,7 @@ import { useAccountRewards, useClaimsMutation } from "./Rewards.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import Skeleton from "react-loading-skeleton"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const RewardsCard = () => {
   const { t } = useTranslation()

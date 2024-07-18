@@ -11,7 +11,7 @@ import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
 import BN, { BigNumber } from "bignumber.js"
 import { AnyChain, AnyEvmChain, AnyParachain } from "@galacticcouncil/xcm-core"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined

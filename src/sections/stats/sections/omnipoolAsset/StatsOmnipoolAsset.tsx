@@ -24,7 +24,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { LiquidityProvidersTableSkeleton } from "sections/stats/sections/omnipoolAsset/LiquidityProvidersTable/skeleton/LiquidityProvidersTableSkeleton"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { LINKS } from "utils/navigation"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type SearchGenerics = MakeGenerics<{
   Search: { id: number }

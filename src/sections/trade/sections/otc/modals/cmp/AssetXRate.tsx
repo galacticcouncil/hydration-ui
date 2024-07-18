@@ -3,7 +3,7 @@ import * as UI from "@galacticcouncil/ui"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useTranslation } from "react-i18next"
 import { useSpotPrice } from "api/spotPrice"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const UigcAssetXRate = createComponent({
   tagName: "uigc-asset-x-rate",

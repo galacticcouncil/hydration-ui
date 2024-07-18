@@ -29,7 +29,7 @@ import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
 import { TLPData } from "utils/omnipool"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
   const { t } = useTranslation()

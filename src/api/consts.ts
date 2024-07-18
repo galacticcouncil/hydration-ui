@@ -13,7 +13,7 @@ import {
   safeConvertAddressH160,
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
-import { useAssets } from "./assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useApiIds = () => {
   const { api } = useRpcProvider()

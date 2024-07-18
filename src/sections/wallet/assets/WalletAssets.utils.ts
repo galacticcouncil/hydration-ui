@@ -8,7 +8,7 @@ import { BN_0 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountBalances } from "api/accountBalances"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 

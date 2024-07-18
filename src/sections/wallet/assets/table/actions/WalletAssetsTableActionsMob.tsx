@@ -30,7 +30,7 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   row?: AssetsTableData

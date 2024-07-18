@@ -12,7 +12,7 @@ import { useActiveProvider } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const BondsApp = createComponent({
   tagName: "gc-bonds",

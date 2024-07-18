@@ -17,7 +17,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { usePartialFillFormSchema } from "sections/trade/sections/otc/modals/PartialFillOrder.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const FULL_ORDER_PCT_LBOUND = 99
 

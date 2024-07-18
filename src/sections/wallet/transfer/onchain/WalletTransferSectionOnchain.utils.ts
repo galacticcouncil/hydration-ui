@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { usePaymentInfo } from "api/transaction"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"

@@ -3,7 +3,7 @@ import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { usePools } from "sections/pools/PoolsPage.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const AllPoolsVolumeTotal = () => {
   const { getAssets } = useAssets()

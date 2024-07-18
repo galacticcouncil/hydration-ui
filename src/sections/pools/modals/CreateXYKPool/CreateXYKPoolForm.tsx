@@ -19,7 +19,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useState } from "react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type CreateXYKPoolFormProps = {
   assetA: string

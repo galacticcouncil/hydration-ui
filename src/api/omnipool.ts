@@ -8,7 +8,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { getTokenBalance } from "./balances"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
-import { TAsset, useAssets } from "./assetDetails"
+import { TAsset, useAssets } from "providers/assets"
 
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
   const { api, isLoaded } = useRpcProvider()

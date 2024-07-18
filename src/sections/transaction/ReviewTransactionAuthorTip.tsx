@@ -15,7 +15,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTokenBalance } from "api/balances"
 import { useTranslation } from "react-i18next"
 import { Switch } from "components/Switch/Switch"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   onChange?: (amount: BN) => void

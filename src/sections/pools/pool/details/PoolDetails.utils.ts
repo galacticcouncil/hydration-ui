@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useXYKPoolTradeVolumes = (poolsAddress: string[]) => {
   const { getAsset } = useAssets()

@@ -12,7 +12,7 @@ import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { LazyMotion, domAnimation } from "framer-motion"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = { onClose: () => void }
 

@@ -32,7 +32,7 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
 import { Text } from "components/Typography/Text/Text"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export function WalletTransferSectionOnchain({
   asset,

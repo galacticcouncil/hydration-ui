@@ -14,7 +14,7 @@ import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { useAssetsData } from "./AssetsModal.utils"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]

@@ -13,7 +13,7 @@ import { useClaimFarmMutation, useClaimableAmount } from "utils/farms/claiming"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
 import { TDeposit } from "api/deposits"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const ClaimRewardsCard = (props: {

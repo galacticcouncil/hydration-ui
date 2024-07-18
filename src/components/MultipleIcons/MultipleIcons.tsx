@@ -4,7 +4,7 @@ import { ResponsiveValue } from "utils/responsive"
 import { Icon, IconProps } from "components/Icon/Icon"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const chains = Array.from(chainsMap.values())
 

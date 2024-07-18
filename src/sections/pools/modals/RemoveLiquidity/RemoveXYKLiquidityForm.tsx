@@ -15,7 +15,7 @@ import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useXYKTotalLiquidity } from "api/xyk"
 import { useAccountBalances } from "api/accountBalances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type RemoveLiquidityProps = {
   onClose: () => void

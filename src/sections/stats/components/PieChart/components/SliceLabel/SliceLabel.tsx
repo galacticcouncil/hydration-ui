@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import BigNumber from "bignumber.js"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"

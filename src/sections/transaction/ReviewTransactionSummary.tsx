@@ -14,7 +14,7 @@ import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 import { Transaction } from "state/store"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">

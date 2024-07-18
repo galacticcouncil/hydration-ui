@@ -16,7 +16,7 @@ import {
   RemoveLiquidityProps,
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const RemoveLiquidityForm = ({
   onClose,

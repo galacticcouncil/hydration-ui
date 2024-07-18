@@ -14,7 +14,7 @@ import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useAssetsData = ({
   isAllAssets,

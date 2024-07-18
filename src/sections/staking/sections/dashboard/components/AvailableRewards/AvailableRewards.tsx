@@ -23,7 +23,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useProcessedVotesIds } from "api/staking"
 import { BN_0 } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()

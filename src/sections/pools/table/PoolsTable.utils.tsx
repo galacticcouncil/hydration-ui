@@ -30,7 +30,7 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const NonClickableContainer = ({
   children,

@@ -10,7 +10,7 @@ import {
 } from "./HeaderSettingsDisplayAsset.styled"
 import { HeaderSettingsDisplayAssetSkeleton } from "./skeleton/HeaderSettingsDisplayAssetSkeleton"
 import { Icon } from "components/Icon/Icon"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = { onSelect: () => void }
 

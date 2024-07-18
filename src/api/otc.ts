@@ -4,7 +4,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { gql, request } from "graphql-request"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "./assetDetails"
+import { useAssets } from "providers/assets"
 
 export const getOrders = (api: ApiPromise) => async () => {
   const res = await api.query.otc.orders.entries()

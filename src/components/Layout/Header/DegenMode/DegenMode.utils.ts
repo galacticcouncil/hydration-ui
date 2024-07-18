@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore, useRefetchProviderData } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"

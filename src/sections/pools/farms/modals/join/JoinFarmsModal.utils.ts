@@ -9,7 +9,7 @@ import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useZodSchema = ({
   id,

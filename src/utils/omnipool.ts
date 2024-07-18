@@ -8,7 +8,7 @@ import { BN_NAN } from "utils/constants"
 import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
 import { scale } from "./balance"
 import { useCallback } from "react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type IOptions = {
   sharesValue?: string

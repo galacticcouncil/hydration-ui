@@ -5,7 +5,7 @@ import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type InputProps = {
   onBlur?: () => void

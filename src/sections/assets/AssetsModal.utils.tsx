@@ -4,11 +4,12 @@ import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
-import { TAsset, TBond, useAcountAssets, useAssets } from "api/assetDetails"
+import { TAsset, TBond, useAssets } from "providers/assets"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayPrices } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
+import { useAcountAssets } from "api/assetDetails"
 
 interface useAssetsModalProps {
   onSelect?: (asset: NonNullable<TAsset>) => void

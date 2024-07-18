@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useAccountCurrency, useAccountFeePaymentAssets } from "api/payments"
 import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"

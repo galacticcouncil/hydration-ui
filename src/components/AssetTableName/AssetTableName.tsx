@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const AssetTableName = ({
   large,

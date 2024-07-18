@@ -4,7 +4,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useFarmExitAllMutation = (
   depositNfts: TMiningNftPosition[],

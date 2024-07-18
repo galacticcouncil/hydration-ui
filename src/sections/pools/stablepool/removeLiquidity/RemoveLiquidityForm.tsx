@@ -19,7 +19,7 @@ import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/com
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type RemoveLiquidityProps = {
   assetId: string

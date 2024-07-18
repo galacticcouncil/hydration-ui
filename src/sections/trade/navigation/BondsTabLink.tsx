@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useLbpPool } from "api/bonds"
 import { useBestNumber } from "api/chain"
 import IconBonds from "assets/icons/Bonds.svg?react"

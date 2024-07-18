@@ -6,7 +6,7 @@ import { u32 } from "@polkadot/types"
 import { undefinedNoop } from "utils/helpers"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
-import { useAssets } from "./assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useReferralCodes = (accountAddress?: string | "all") => {
   const { api } = useRpcProvider()

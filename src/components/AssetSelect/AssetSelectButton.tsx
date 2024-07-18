@@ -6,7 +6,7 @@ import { SSelectAssetButton } from "./AssetSelect.styled"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { useMedia } from "react-use"
 import { useTranslation } from "react-i18next"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   onClick?: () => void

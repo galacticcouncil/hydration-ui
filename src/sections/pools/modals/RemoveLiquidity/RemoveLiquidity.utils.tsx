@@ -16,7 +16,7 @@ import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export type RemoveLiquidityProps = {
   onClose: () => void

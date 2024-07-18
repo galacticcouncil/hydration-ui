@@ -10,7 +10,7 @@ import { QUERY_KEYS } from "./queryKeys"
 import { useAccountsBalances } from "api/accountBalances"
 import { isNotNil } from "./helpers"
 import { useShareOfPools } from "api/pools"
-import { TShareToken, useAssets } from "api/assetDetails"
+import { TShareToken, useAssets } from "providers/assets"
 
 type Props = { id: string; amount: BigNumber }
 

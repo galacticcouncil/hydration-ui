@@ -1,5 +1,5 @@
 import { useAccountBalances } from "api/accountBalances"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useAccountNFTPositions } from "api/deposits"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import { SubNavigationTabLink } from "components/Layout/SubNavigation/SubNavigation"

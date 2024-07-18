@@ -26,7 +26,7 @@ import { Transaction } from "./transactions/Transactions.utils"
 import { useDisplayPrice } from "utils/displayAsset"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export type BondTableItem = {
   assetId: string

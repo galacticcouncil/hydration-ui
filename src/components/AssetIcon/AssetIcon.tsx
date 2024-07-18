@@ -16,7 +16,7 @@ import { MetadataStore } from "@galacticcouncil/ui"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Icon } from "components/Icon/Icon"
 import { ResponsiveValue } from "utils/responsive"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const chains = Array.from(chainsMap.values())
 

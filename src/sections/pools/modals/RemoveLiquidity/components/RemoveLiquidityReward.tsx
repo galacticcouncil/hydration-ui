@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   name: string

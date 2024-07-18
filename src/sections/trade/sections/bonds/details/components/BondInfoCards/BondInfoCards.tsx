@@ -3,7 +3,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import { useTranslation } from "react-i18next"
-import { TBond, useAssets } from "api/assetDetails"
+import { TBond, useAssets } from "providers/assets"
 import { formatDate } from "utils/formatting"
 import {
   isPoolLiquidityEvent,

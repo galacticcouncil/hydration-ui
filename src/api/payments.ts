@@ -9,10 +9,11 @@ import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAcountAssets, useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { useAcountAssets } from "./assetDetails"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =

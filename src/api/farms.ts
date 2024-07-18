@@ -22,7 +22,7 @@ import { useMemo } from "react"
 import { scale } from "utils/balance"
 import { getAccountResolver } from "utils/farms/claiming/accountResolver"
 import { useAccountBalances, useAccountsBalances } from "./accountBalances"
-import { useAssets } from "./assetDetails"
+import { useAssets } from "providers/assets"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 

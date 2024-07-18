@@ -27,7 +27,7 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useMemo } from "react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useTransactionValues = ({
   xcallMeta,

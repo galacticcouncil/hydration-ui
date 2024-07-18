@@ -21,7 +21,7 @@ import { useTokensBalances } from "api/balances"
 import { pluck } from "utils/rx"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DOC_LINK } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()

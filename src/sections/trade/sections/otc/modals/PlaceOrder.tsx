@@ -19,7 +19,7 @@ import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string

@@ -15,7 +15,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { usePositionVotesIds, useProcessedVotesIds } from "api/staking"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const Unstake = ({
   loading,

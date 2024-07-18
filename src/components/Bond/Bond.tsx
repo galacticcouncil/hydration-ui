@@ -18,7 +18,7 @@ import { useLbpPool } from "api/bonds"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { TBond } from "api/assetDetails"
+import { TBond } from "providers/assets"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export type BondView = "card" | "list"

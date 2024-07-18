@@ -40,7 +40,7 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { useUserDeposits } from "api/deposits"
-import { TAsset, useAssets } from "api/assetDetails"
+import { TAsset, useAssets } from "providers/assets"
 
 export const XYK_TVL_VISIBILITY = 5000
 

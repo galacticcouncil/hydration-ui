@@ -15,7 +15,7 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const MASTER_KEY_WHITELIST = ["23", "31337", "42069", "17", "8889"]
 

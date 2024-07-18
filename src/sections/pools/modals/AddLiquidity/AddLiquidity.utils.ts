@@ -14,7 +14,7 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { getFixedPointAmount } from "utils/balance"
 import { BN_10 } from "utils/constants"
 import { useDisplayPrice } from "utils/displayAsset"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const { getAssetWithFallback } = useAssets()

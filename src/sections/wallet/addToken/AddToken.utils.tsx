@@ -20,7 +20,7 @@ import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
-import { TExternal, useAssets } from "api/assetDetails"
+import { TExternal, useAssets } from "providers/assets"
 import { useShallow } from "hooks/useShallow"
 
 const pink = {

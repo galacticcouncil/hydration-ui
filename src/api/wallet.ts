@@ -22,7 +22,7 @@ import { uniqBy } from "utils/rx"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { Parachain } from "@galacticcouncil/xcm-core"
-import { TAsset, useAssets } from "./assetDetails"
+import { TAsset, useAssets } from "providers/assets"
 
 export type TransactionType = "deposit" | "withdraw"
 

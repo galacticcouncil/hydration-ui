@@ -1,4 +1,4 @@
-import { useAcountAssets, useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import BigNumber from "bignumber.js"
 import { useShallow } from "hooks/useShallow"
 import { useMemo } from "react"
@@ -7,6 +7,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useSettingsStore } from "state/store"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
+import { useAcountAssets } from "api/assetDetails"
 
 export type CreateXYKPoolFormData = {
   assetA: string

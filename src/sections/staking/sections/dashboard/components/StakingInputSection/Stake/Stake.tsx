@@ -17,7 +17,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useProcessedVotesIds } from "api/staking"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const Stake = ({
   loading,

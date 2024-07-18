@@ -21,7 +21,7 @@ import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
 import { getPendulumInputData } from "utils/externalAssets"
 import { omit } from "utils/rx"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }

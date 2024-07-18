@@ -17,7 +17,7 @@ import { OmnipoolLiquidityMiningClaimSim } from "./claiming/claimSimulator"
 import { MultiCurrencyContainer } from "./claiming/multiCurrency"
 import { createMutableFarmEntry } from "./claiming/mutableFarms"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TAsset, useAssets } from "api/assetDetails"
+import { TAsset, useAssets } from "providers/assets"
 
 export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   const bestNumberQuery = useBestNumber()

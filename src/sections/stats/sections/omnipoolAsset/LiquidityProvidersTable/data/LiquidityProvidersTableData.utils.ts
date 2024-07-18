@@ -1,4 +1,4 @@
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useApiIds } from "api/consts"
 import { useOmnipoolAssets, useOmnipoolPositionsMulti } from "api/omnipool"
 import { useTVL } from "api/stats"

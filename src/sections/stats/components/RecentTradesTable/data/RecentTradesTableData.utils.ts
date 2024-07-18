@@ -17,7 +17,7 @@ import {
 import { groupBy } from "utils/rx"
 import { isNotNil } from "utils/helpers"
 import { BN_NAN } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const withoutRefresh = true
 

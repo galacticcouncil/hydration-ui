@@ -5,7 +5,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export type FarmRedepositMutationType = ReturnType<
   typeof useFarmRedepositMutation

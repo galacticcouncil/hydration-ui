@@ -15,7 +15,7 @@ import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const BondTableMobileDrawer = ({
   data,

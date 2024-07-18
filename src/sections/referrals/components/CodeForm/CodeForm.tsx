@@ -28,7 +28,7 @@ import { useTokenBalance } from "api/balances"
 import { useAccountCurrency } from "api/payments"
 import { usePaymentInfo } from "api/transaction"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const CodeForm = () => {
   const { t } = useTranslation()

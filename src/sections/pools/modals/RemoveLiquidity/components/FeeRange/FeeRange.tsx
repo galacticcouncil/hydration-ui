@@ -19,7 +19,7 @@ import { useMemo, useState } from "react"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import Skeleton from "react-loading-skeleton"
 import { AccordionAnimation } from "components/AccordionAnimation/AccordionAnimation"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const FEE_RANGE_COLOR_CONFIG: Record<number, keyof typeof theme.colors> = {
   0: "green600",

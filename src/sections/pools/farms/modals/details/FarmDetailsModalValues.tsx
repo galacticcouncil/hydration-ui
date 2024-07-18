@@ -5,7 +5,7 @@ import { useEnteredDate } from "utils/block"
 import { useClaimableAmount } from "utils/farms/claiming"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { Summary } from "components/Summary/Summary"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 type FarmDetailsModalValuesProps = {

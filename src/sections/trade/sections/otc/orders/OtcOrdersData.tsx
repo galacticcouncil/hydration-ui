@@ -6,7 +6,7 @@ import { OfferingPair } from "./OtcOrdersData.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const OrderPairColumn = (props: {
   offering: OfferingPair

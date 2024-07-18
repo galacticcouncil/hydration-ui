@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { MyActiveBonds } from "./MyActiveBonds"
 import { BondList } from "./list/BondList"
 import { Spacer } from "components/Spacer/Spacer"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const BondsPage = () => {
   const { t } = useTranslation()

@@ -1,4 +1,4 @@
-import { TExternal, useAssets } from "api/assetDetails"
+import { TExternal, useAssets } from "providers/assets"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"

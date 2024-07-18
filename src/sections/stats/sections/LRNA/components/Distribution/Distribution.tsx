@@ -15,7 +15,7 @@ import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { useTotalIssuance } from "api/totalIssuance"
 import { useTokenBalance } from "api/balances"
 import { BN_0 } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const Distribution = () => {
   const { t } = useTranslation()

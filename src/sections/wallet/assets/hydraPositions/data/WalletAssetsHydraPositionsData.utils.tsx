@@ -5,10 +5,11 @@ import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
-import { useAcountAssets, useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useAccountNFTPositions } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useAcountAssets } from "api/assetDetails"
 
 export const useOmnipoolPositionsData = ({
   search,

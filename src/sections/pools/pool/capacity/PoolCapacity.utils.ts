@@ -6,7 +6,7 @@ import { BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { getFloatingPointAmount } from "utils/balance"
 import { OmniMath } from "@galacticcouncil/sdk"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const usePoolCapacity = (id: string) => {
   const { hub } = useAssets()

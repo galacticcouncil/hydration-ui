@@ -17,7 +17,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_0, BN_100, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,

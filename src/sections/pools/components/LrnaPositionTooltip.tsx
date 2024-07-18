@@ -4,7 +4,7 @@ import { Trans } from "react-i18next"
 import BigNumber from "bignumber.js"
 import { u32 } from "@polkadot/types"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   assetId?: string | u32

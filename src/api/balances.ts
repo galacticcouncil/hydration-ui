@@ -9,7 +9,7 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "./assetDetails"
+import { useAssets } from "providers/assets"
 
 export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
   return free.minus(frozen)

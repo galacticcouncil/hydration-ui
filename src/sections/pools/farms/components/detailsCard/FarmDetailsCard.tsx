@@ -20,7 +20,7 @@ import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 type FarmDetailsCardProps = {

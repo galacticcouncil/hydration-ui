@@ -7,7 +7,7 @@ import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionToolt
 import { useMedia } from "react-use"
 import { useSpotPrice } from "api/spotPrice"
 import { BN_0, BN_1 } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type PairAsset = { amount: BN; symbol: string }
 

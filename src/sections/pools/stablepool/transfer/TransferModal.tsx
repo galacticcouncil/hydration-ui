@@ -16,7 +16,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Spinner } from "components/Spinner/Spinner"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export enum Page {

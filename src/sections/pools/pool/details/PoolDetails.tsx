@@ -33,7 +33,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const PoolDetails = () => {

@@ -9,7 +9,7 @@ import { SRow } from "./CurrencyReserves.styled"
 import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
 import { useDisplayPrices } from "utils/displayAsset"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   reserves: { asset_id: number; amount: string }[]

@@ -12,7 +12,7 @@ import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
 import { BlockSkeleton } from "./BlockSkeleton"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const Burning = () => {
   const { t } = useTranslation()

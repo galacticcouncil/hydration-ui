@@ -26,7 +26,7 @@ import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { WalletAssetsTableActions } from "sections/wallet/assets/table/actions/WalletAssetsTableActions"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const chains = Array.from(chainsMap.values())
 

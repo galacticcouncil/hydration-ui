@@ -13,9 +13,31 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
 
-type TAssetsContext = {}
+type TAssetsContext = {
+  all: Map<string, TAsset>
+  tokens: TAsset[]
+  stableswap: TAsset[]
+  bonds: TBond[]
+  external: TExternal[]
+  tradable: TAsset[]
+  shareTokens: TShareToken[]
+  native: TAsset
+  hub: TAsset
+  getAsset: (id: string) => TAsset | TShareToken | undefined
+  getShareToken: (id: string) => TShareToken | undefined
+  getShareTokens: (ids: string[]) => (TShareToken | undefined)[]
+  getAssets: (ids: string[]) => (TAsset | TShareToken | undefined)[]
+  getBond: (id: string) => TBond | undefined
+  getAssetWithFallback: (id: string) => TAsset
+  getExternalByExternalId: (externalId: string) => TExternal | undefined
+  getShareTokenByAddress: (poolAddress: string) => TShareToken | undefined
+  isExternal: (asset: TAsset) => asset is TExternal
+  isBond: (asset: TAsset) => asset is TBond
+  isStableSwap: (asset: TAsset) => boolean
+  isShareToken: (asset: TAsset | undefined) => asset is TShareToken
+}
 
-const AssetsContext = createContext<TAssetsContext>({})
+const AssetsContext = createContext<TAssetsContext>({} as TAssetsContext)
 
 export const useAssets = () => useContext(AssetsContext)
 

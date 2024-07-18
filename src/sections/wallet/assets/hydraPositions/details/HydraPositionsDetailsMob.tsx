@@ -10,7 +10,7 @@ import {
   isXYKPosition,
 } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { TLPData } from "utils/omnipool"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type Props = {
   row?: TLPData | TXYKPosition

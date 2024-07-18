@@ -6,7 +6,7 @@ import { m as motion } from "framer-motion"
 import { TSlice } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const DefaultSliceLabel = ({
   slices,

@@ -9,7 +9,7 @@ import Star from "assets/icons/Star.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const NewFarmsBanner = () => {
   const { getAssetWithFallback } = useAssets()

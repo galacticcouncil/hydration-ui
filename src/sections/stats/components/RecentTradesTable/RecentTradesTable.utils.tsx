@@ -22,7 +22,7 @@ import { TRecentTradesTableData } from "./data/RecentTradesTableData.utils"
 import TradeIcon from "assets/icons/TradeTypeIcon.svg?react"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import LinkIcon from "assets/icons/LinkIcon.svg?react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useRecentTradesTable = (data: TRecentTradesTableData) => {
   const { t } = useTranslation()

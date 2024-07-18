@@ -4,7 +4,7 @@ import BN from "bignumber.js"
 import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()

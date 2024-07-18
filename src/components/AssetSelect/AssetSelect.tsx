@@ -12,7 +12,7 @@ import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { AssetSelectButton } from "./AssetSelectButton"
 import { useMedia } from "react-use"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const AssetSelect = (props: {
   name: string

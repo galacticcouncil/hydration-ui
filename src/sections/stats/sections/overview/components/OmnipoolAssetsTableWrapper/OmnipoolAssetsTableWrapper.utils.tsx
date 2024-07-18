@@ -16,7 +16,7 @@ import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
   const { t } = useTranslation()

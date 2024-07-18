@@ -10,7 +10,7 @@ import { BN_0 } from "utils/constants"
 import { format } from "date-fns"
 import BN from "bignumber.js"
 import { Transaction } from "./table/transactions/Transactions.utils"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const useBondsTableData = ({
   id,

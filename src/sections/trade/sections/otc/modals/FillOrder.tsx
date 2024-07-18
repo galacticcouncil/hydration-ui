@@ -11,7 +11,7 @@ import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type FillOrderProps = {
   orderId: string

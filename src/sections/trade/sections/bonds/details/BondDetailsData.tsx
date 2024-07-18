@@ -17,7 +17,7 @@ import { BondsTrade } from "./components/BondTrade/BondsTradeApp"
 import { addSeconds } from "date-fns"
 import { theme } from "theme"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 type SearchGenerics = MakeGenerics<{
   Search: { assetOut: number; assetIn: number }

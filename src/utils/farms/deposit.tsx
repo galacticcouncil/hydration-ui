@@ -8,7 +8,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { scale } from "utils/balance"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
 

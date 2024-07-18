@@ -8,7 +8,7 @@ import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
-import { TAsset, useAssets } from "./assetDetails"
+import { TAsset, useAssets } from "providers/assets"
 
 export type Bond = {
   assetId: string

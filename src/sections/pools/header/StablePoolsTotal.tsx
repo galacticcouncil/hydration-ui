@@ -7,7 +7,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTokensBalances } from "api/balances"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const StablePoolsTotal = () => {
   const { getAssetWithFallback } = useAssets()

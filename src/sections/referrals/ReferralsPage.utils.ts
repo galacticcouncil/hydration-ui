@@ -2,7 +2,7 @@ import { useReferrerInfo } from "api/referrals"
 import BN from "bignumber.js"
 import { useAccountRewards } from "./components/RewardsCard/Rewards.utils"
 import { useMemo } from "react"
-import { useAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 
 export const REFERRAL_PROD_HOST = "hydration.net"
 export const REFERRAL_PARAM_NAME = "referral"

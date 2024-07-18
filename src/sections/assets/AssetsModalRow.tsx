@@ -4,7 +4,7 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SAssetRow, SCircle } from "./AssetsModalRow.styled"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 import BN from "bignumber.js"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 
