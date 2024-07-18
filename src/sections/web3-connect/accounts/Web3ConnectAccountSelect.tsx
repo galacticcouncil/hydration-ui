@@ -19,7 +19,7 @@ type Props = {
   address: string
   balance?: BigNumber
   onClick?: () => void
-  provider?: WalletProviderType
+  provider?: WalletProviderType | null
   isProxy?: boolean
   isActive?: boolean
 }

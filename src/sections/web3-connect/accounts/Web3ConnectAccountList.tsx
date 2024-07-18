@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react"
+import { FC, Fragment, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useAccount,
@@ -23,19 +23,17 @@ import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
+import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
-  switch (type) {
-    case WalletProviderType.ExternalWallet:
-      return Web3ConnectExternalAccount
-    case WalletProviderType.MetaMask:
-    case WalletProviderType.TalismanEvm:
-    case WalletProviderType.SubwalletEvm:
-    case WalletProviderType.Phantom:
-      return Web3ConnectEvmAccount
-    default:
-      return Web3ConnectSubstrateAccount
-  }
+  if (!type) return Fragment
+
+  if (type === WalletProviderType.ExternalWallet)
+    return Web3ConnectExternalAccount
+
+  if (EVM_PROVIDERS.includes(type)) return Web3ConnectEvmAccount
+
+  return Web3ConnectSubstrateAccount
 }
 
 const AccountComponent: FC<

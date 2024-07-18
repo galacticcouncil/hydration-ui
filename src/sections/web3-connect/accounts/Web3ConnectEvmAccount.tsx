@@ -13,7 +13,12 @@ export const Web3ConnectEvmAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
 > = ({ balance, ...account }) => {
   const { t } = useTranslation()
-  const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
+  const {
+    account: currentAccount,
+    setAccount,
+    toggle,
+    provider,
+  } = useWeb3ConnectStore()
   const { wallet } = useWallet()
   const navigate = useNavigate()
 
@@ -37,6 +42,7 @@ export const Web3ConnectEvmAccount: FC<
         <Web3ConnectAccountSelect
           address={account.displayAddress ?? ""}
           balance={balance}
+          provider={provider}
           name={account.name}
           isActive={isActive}
         />
