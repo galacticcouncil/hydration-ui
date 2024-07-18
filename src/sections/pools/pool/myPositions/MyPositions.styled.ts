@@ -6,6 +6,7 @@ export const SPositionContainer = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex-shrink: 0;
 
   z-index: 1;
 
@@ -32,6 +33,8 @@ export const SWrapperContainer = styled(motion.div)`
 
   position: relative;
   overflow: hidden;
+
+  min-height: 50px;
 `
 
 export const SShadow = styled.div`

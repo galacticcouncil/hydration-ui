@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types"
 import { TAsset } from "api/assetDetails"
 import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/helpers"
+import { Maybe, sortAssets } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import {
   SAssetsModalHeader,
@@ -61,10 +61,10 @@ export const AssetsModalContent = ({
 
   const onSelectConfirm = () => {
     const asset = tokens.allowed.find(
-      (token) => token.asset.id === selectedAssetId,
+      (token) => token.meta.id === selectedAssetId,
     )
     if (asset) {
-      onSelect?.(asset.asset)
+      onSelect?.(asset.meta)
     }
   }
 
@@ -75,37 +75,8 @@ export const AssetsModalContent = ({
   }
 
   const sortedTokens = useMemo(
-    () =>
-      [...tokens.allowed].sort((a, b) => {
-        const tickerOrder = [
-          "HDX",
-          "DOT",
-          "USDC",
-          "USDT",
-          "IBTC",
-          "VDOT",
-          "WETH",
-          "WBTC",
-        ]
-
-        const getTickerIndex = (ticker: string) => {
-          const index = tickerOrder.indexOf(ticker.toUpperCase())
-          return index === -1 ? Infinity : index
-        }
-
-        if (a.asset.id === selectedAssetId) return -1
-        if (b.asset.id === selectedAssetId) return 1
-
-        if (b.displayValue.isZero() && a.displayValue.isZero()) {
-          if (a.asset.isExternal) return 1
-          if (b.asset.isExternal) return -1
-
-          return getTickerIndex(a.asset.symbol) - getTickerIndex(b.asset.symbol)
-        }
-
-        return b.displayValue.minus(a.displayValue).toNumber()
-      }),
-    [selectedAssetId, tokens.allowed],
+    () => sortAssets(tokens.allowed, "displayValue", defaultSelectedAsssetId),
+    [defaultSelectedAsssetId, tokens.allowed],
   )
   const sortedBonds = useMemo(
     () =>
@@ -156,15 +127,15 @@ export const AssetsModalContent = ({
                     t("selectAssets.your_balance"),
                   ]}
                 />
-                {sortedTokens.map(({ balance, asset, displayValue }) => (
+                {sortedTokens.map(({ balance, meta, displayValue }) => (
                   <AssetsModalRow
                     balance={balance}
-                    key={asset.id}
-                    asset={asset}
+                    key={meta.id}
+                    asset={meta}
                     displaValue={displayValue}
                     onClick={onSelectHandler}
-                    isActive={getIsAssetSelected(asset)}
-                    isSelected={asset.id === selectedAssetId}
+                    isActive={getIsAssetSelected(meta)}
+                    isSelected={meta.id === selectedAssetId}
                   />
                 ))}
               </>
@@ -174,15 +145,15 @@ export const AssetsModalContent = ({
                 <ListHeader
                   titles={[t("bonds"), t("selectAssets.your_balance")]}
                 />
-                {sortedBonds.map(({ asset, balance, displayValue }) => (
+                {sortedBonds.map(({ meta, balance, displayValue }) => (
                   <AssetsModalRow
-                    key={asset.id}
-                    asset={asset}
+                    key={meta.id}
+                    asset={meta}
                     balance={balance}
                     displaValue={displayValue}
                     onClick={onSelectHandler}
-                    isActive={getIsAssetSelected(asset)}
-                    isSelected={asset.id === selectedAssetId}
+                    isActive={getIsAssetSelected(meta)}
+                    isSelected={meta.id === selectedAssetId}
                   />
                 ))}
               </>
@@ -193,13 +164,13 @@ export const AssetsModalContent = ({
                   titles={[t("selectAssets.asset_without_pair")]}
                   shadowed
                 />
-                {tokens.notAllowed.map(({ balance, asset, displayValue }) => (
+                {tokens.notAllowed.map(({ balance, meta, displayValue }) => (
                   <AssetsModalRow
                     balance={balance}
-                    key={asset.id}
-                    asset={asset}
+                    key={meta.id}
+                    asset={meta}
                     displaValue={displayValue}
-                    isActive={getIsAssetSelected(asset)}
+                    isActive={getIsAssetSelected(meta)}
                   />
                 ))}
               </>

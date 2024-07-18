@@ -49,7 +49,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const {
     id,
     symbol,
-    decimals,
+    meta,
     couldBeSetAsPaymentFee,
     tradability: { inTradeRouter, canBuy },
   } = props.asset
@@ -152,7 +152,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           onSelect: () =>
             watchAsset(window?.ethereum, id, {
               symbol: symbol,
-              decimals: decimals,
+              decimals: meta.decimals,
             }),
         }
       : null,
@@ -169,7 +169,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       <>
         {hasRugCheckWarnings ? (
           <UpdateTokenDataAction id={props.asset.id} />
-        ) : props.asset.isExternal && !props.asset.name ? (
+        ) : props.asset.isExternalInvalid ? (
           <AddTokenAction id={props.asset.id} />
         ) : (
           <div
@@ -278,7 +278,9 @@ export const AddTokenAction = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const [addTokenModalOpen, setAddTokenModalOpen] = useState(false)
-  const externalAsset = useExternalTokenMeta(id)
+  const getExternalMeta = useExternalTokenMeta()
+
+  const assetMeta = getExternalMeta(id)
 
   return (
     <>
@@ -288,14 +290,14 @@ export const AddTokenAction = ({
           setAddTokenModalOpen(true)
           onClick?.()
         }}
-        disabled={account?.isExternalWalletConnected || !externalAsset}
+        disabled={account?.isExternalWalletConnected || !assetMeta}
         className={className}
       >
         {t("wallet.assets.table.actions.add")}
       </TableAction>
-      {externalAsset && addTokenModalOpen && (
+      {assetMeta && addTokenModalOpen && (
         <ExternalAssetImportModal
-          assetIds={[externalAsset.id]}
+          assetIds={[assetMeta.id]}
           onClose={() => {
             setAddTokenModalOpen(false)
             onClose?.()

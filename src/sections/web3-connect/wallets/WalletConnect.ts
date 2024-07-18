@@ -21,10 +21,12 @@ import { EvmParachain } from "@galacticcouncil/xcm-core"
 
 // @TODO: Remove when the old domain is deprecated
 const isOldDomain = window?.location?.hostname.includes("hydradx.io")
+const isPreviewDomain = window?.location?.hostname.includes("deploy-preview")
 
-const WC_PROJECT_ID = isOldDomain
-  ? "c47a5369367ec2dad6b49c478eb772f9"
-  : (import.meta.env.VITE_WC_PROJECT_ID as string)
+const WC_PROJECT_ID =
+  isOldDomain || isPreviewDomain
+    ? "c47a5369367ec2dad6b49c478eb772f9"
+    : (import.meta.env.VITE_WC_PROJECT_ID as string)
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 export const POLKADOT_CAIP_ID_MAP: Record<string, PolkadotNamespaceChainId> = {

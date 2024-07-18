@@ -164,7 +164,7 @@ const getGlobalFarm =
   }
 
 export const useFarms = (poolIds: Array<string>) => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const activeYieldFarmsQuery = useActiveYieldFarms(poolIds)
 
   const farmIds = activeYieldFarmsQuery
@@ -176,7 +176,12 @@ export const useFarms = (poolIds: Array<string>) => {
 
   const accountResolver = getAccountResolver(api.registry)
   const globalFarmPotAddresses = farmIds?.map((farm) => {
-    const potAddresss = accountResolver(Number(farm.globalFarmId)).toString()
+    const isXyk = assets.getAsset(farm.poolId).isShareToken
+    const potAddresss = accountResolver(
+      Number(farm.globalFarmId),
+      isXyk,
+    ).toString()
+
     return {
       globalFarmId: farm.globalFarmId.toString(),
       potAddresss,
@@ -323,7 +328,11 @@ function getFarmApr(
     .plus(globalFarm.accumulatedPaidRewards.toBigNumber())
 
   const maxRewards = maxRewardPerPeriod.times(plannedYieldingPeriods)
-  const leftToDistribute = maxRewards.minus(distributedRewards)
+  const potMaxRewards = potBalance
+    ? distributedRewards.plus(potBalance)
+    : maxRewards
+
+  const leftToDistribute = potMaxRewards.minus(distributedRewards)
 
   // estimate, when the farm will most likely distribute all the rewards
   const updatedAtPeriod = globalFarm.updatedAt.toBigNumber()
@@ -352,10 +361,6 @@ function getFarmApr(
   apr = isDistributed ? BN_0 : apr.times(100)
 
   const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
-
-  const potMaxRewards = potBalance
-    ? distributedRewards.plus(potBalance)
-    : undefined
 
   return {
     apr,

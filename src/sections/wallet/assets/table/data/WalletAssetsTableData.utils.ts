@@ -3,7 +3,7 @@ import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
-import { arraySearch } from "utils/helpers"
+import { arraySearch, sortAssets } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -13,6 +13,7 @@ import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -28,6 +29,7 @@ export const useAssetsData = ({
   const address = givenAddress ?? account?.address
 
   const balances = useAccountBalances(address, true)
+  const getExternalMeta = useExternalTokenMeta()
   const nativeTokenWithBalance = balances.data?.native
   const tokensWithBalance = useMemo(() => {
     if (nativeTokenWithBalance && balances.data) {
@@ -65,9 +67,13 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (!tokensWithBalance.length || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      let { decimals, id, name, symbol, isExternal } = assets.getAsset(
-        balance.id,
-      )
+      const asset = assets.getAsset(balance.id)
+      const isExternalInvalid = asset.isExternal && !asset.symbol
+      const meta = isExternalInvalid
+        ? getExternalMeta(asset.id) ?? asset
+        : asset
+
+      const { decimals, id, name, symbol } = meta
 
       const inTradeRouter = assets.tradeAssets.some(
         (tradeAsset) => tradeAsset.id === id,
@@ -102,7 +108,7 @@ export const useAssetsData = ({
         id,
         symbol,
         name,
-        decimals,
+        meta,
         isPaymentFee,
         couldBeSetAsPaymentFee,
         reserved,
@@ -112,87 +118,72 @@ export const useAssetsData = ({
         transferable,
         transferableDisplay,
         tradability,
-        isExternal,
+        isExternalInvalid,
       }
     })
 
-    const result = isAllAssets
-      ? allAssets.reduce<typeof rowsWithBalance>(
-          (
-            acc,
-            { id, symbol, name, decimals, isExternal, externalId, parachainId },
-          ) => {
-            const tokenWithBalance = rowsWithBalance.find(
-              (row) => row.id === id,
+    const rows = isAllAssets
+      ? allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
+          const { id, symbol, name } = meta
+          const tokenWithBalance = rowsWithBalance.find((row) => row.id === id)
+
+          if (tokenWithBalance) {
+            acc.push(tokenWithBalance)
+          } else {
+            const inTradeRouter = assets.tradeAssets.some(
+              (tradeAsset) => tradeAsset.id === id,
             )
 
-            if (tokenWithBalance) {
-              acc.push(tokenWithBalance)
-            } else {
-              const inTradeRouter = assets.tradeAssets.some(
-                (tradeAsset) => tradeAsset.id === id,
-              )
-
-              const tradability = {
-                canBuy: inTradeRouter,
-                canSell: inTradeRouter,
-                inTradeRouter,
-              }
-
-              const asset = {
-                id,
-                symbol,
-                name,
-                decimals,
-                isPaymentFee: false,
-                couldBeSetAsPaymentFee: false,
-                reserved: BN_0,
-                reservedDisplay: BN_0,
-                total: BN_0,
-                totalDisplay: BN_0,
-                transferable: BN_0,
-                transferableDisplay: BN_0,
-                tradability,
-                isExternal,
-              }
-
-              if (asset.symbol) {
-                acc.push(asset)
-              }
+            const tradability = {
+              canBuy: inTradeRouter,
+              canSell: inTradeRouter,
+              inTradeRouter,
             }
-            return acc
-          },
-          [],
-        )
+
+            const asset = {
+              id,
+              symbol,
+              name,
+              meta,
+              isPaymentFee: false,
+              couldBeSetAsPaymentFee: false,
+              reserved: BN_0,
+              reservedDisplay: BN_0,
+              total: BN_0,
+              totalDisplay: BN_0,
+              transferable: BN_0,
+              transferableDisplay: BN_0,
+              tradability,
+              isExternalInvalid: false,
+            }
+
+            if (asset.symbol) {
+              acc.push(asset)
+            }
+          }
+          return acc
+        }, [])
       : rowsWithBalance
 
-    result.sort((a, b) => {
-      // native asset first
-      if (a.id === NATIVE_ASSET_ID) return -1
-      if (b.id === NATIVE_ASSET_ID) return 1
+    const sortedAssets = sortAssets(
+      rows,
+      "transferableDisplay",
+      NATIVE_ASSET_ID,
+    )
 
-      if (a.transferableDisplay.isNaN()) return 1
-      if (b.transferableDisplay.isNaN()) return -1
-
-      if (a.isExternal && !a.symbol) return 1
-      if (b.isExternal && !b.symbol) return -1
-
-      if (!b.transferableDisplay.eq(a.transferableDisplay))
-        return b.transferableDisplay.minus(a.transferableDisplay).toNumber()
-
-      return a.symbol.localeCompare(b.symbol)
-    })
-
-    return search ? arraySearch(result, search, ["symbol", "name"]) : result
+    return search
+      ? arraySearch(sortedAssets, search, ["symbol", "name"])
+      : sortedAssets
   }, [
-    acceptedCurrencies.data,
-    assets,
-    currencyId,
-    spotPrices.data,
     tokensWithBalance,
-    search,
+    spotPrices.data,
     isAllAssets,
     allAssets,
+    search,
+    assets,
+    getExternalMeta,
+    acceptedCurrencies.data,
+    currencyId,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
