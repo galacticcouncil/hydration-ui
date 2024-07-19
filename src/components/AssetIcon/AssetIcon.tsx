@@ -87,11 +87,12 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       ? externalAssetsWhitelist.includes(assetDetails.id)
       : false
 
-    const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
-      ? isWhitelisted
-        ? "warning"
-        : "danger"
-      : ""
+    const badgeVariant: "warning" | "danger" | "" =
+      assetDetails && assets.isExternal(assetDetails)
+        ? isWhitelisted || assetDetails.isWhiteListed
+          ? "warning"
+          : "danger"
+        : ""
 
     return {
       chain: chain?.key,

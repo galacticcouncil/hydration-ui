@@ -1,14 +1,12 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
-import { ButtonTransparent } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
-import { theme } from "theme"
 import {
   SContainer,
-  SLogoutContainer,
+  SLogoutButton,
   SSwitchButton,
   SSwitchText,
 } from "./Web3ConnectFooter.styled"
@@ -27,36 +25,35 @@ export const Web3ConnectFooter: FC<Props> = ({ onLogout, onSwitch }) => {
   return (
     <SContainer>
       {account ? (
-        <ButtonTransparent onClick={onLogout}>
-          <SLogoutContainer>
-            <LogoutIcon css={{ color: theme.colors.basic500 }} />
-            <Text css={{ color: theme.colors.basic500 }} fs={14} fw={500}>
-              {t("walletConnect.logout")}
-            </Text>
-          </SLogoutContainer>
-        </ButtonTransparent>
+        <SLogoutButton variant="outline" size="micro" onClick={onLogout}>
+          <LogoutIcon sx={{ ml: -3 }} />
+          {t("walletConnect.logout")}
+        </SLogoutButton>
       ) : (
         <span />
       )}
 
-      <SSwitchButton onClick={onSwitch}>
-        <div sx={{ flex: "row", gap: 22, align: "center" }}>
-          <div sx={{ flex: "row", gap: 12, align: "center" }}>
-            <>
-              <img
-                src={wallet?.logo.src}
-                alt={wallet?.logo.alt}
-                width={30}
-                height={30}
-              />
-              <Text fs={14} fw={600} css={{ color: theme.colors.basic500 }}>
-                {wallet?.title}
-              </Text>
-            </>
+      <SSwitchButton variant="outline" size="micro" onClick={onSwitch}>
+        <div sx={{ flex: "row", gap: [8, 20], align: "center" }}>
+          <div sx={{ flex: "row", gap: 8, align: "center" }}>
+            <img
+              src={wallet?.logo.src}
+              alt={wallet?.logo.alt}
+              width={26}
+              height={26}
+            />
+            <Text
+              fs={14}
+              fw={600}
+              color="basic400"
+              sx={{ display: ["none", "block"] }}
+            >
+              {wallet?.title}
+            </Text>
           </div>
-          <SSwitchText fs={14} fw={500}>
+          <SSwitchText fs={14} fw={500} font="GeistSemiBold">
             <span>{t("walletConnect.switch")}</span>
-            <ChevronRight css={{ marginLeft: -3, marginTop: 2 }} />
+            <ChevronRight sx={{ ml: -3 }} />
           </SSwitchText>
         </div>
       </SSwitchButton>

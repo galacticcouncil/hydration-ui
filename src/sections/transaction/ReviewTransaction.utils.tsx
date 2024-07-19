@@ -507,6 +507,7 @@ const useStoreExternalAssetsOnSign = () => {
             name: asset.name,
             origin: Number(asset.parachainId),
             internalId: asset.id,
+            isWhiteListed: !!asset.isWhiteListed,
           })
         }
       })
