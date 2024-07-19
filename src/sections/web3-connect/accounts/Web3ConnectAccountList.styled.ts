@@ -5,23 +5,6 @@ export const SAccountsContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-
-  padding-bottom: var(--wallet-footer-height);
-
-  ::-webkit-scrollbar {
-    width: 0px;
-  }
-
-  @media ${theme.viewport.gte.sm} {
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-  }
-
-  &::-webkit-scrollbar-track {
-    margin-bottom: 76px;
-    background: rgba(41, 41, 45, 0.5);
-  }
 `
 
 export const SAccountsSearchContainer = styled.div`
@@ -44,6 +27,35 @@ export const SAccountsSearchContainer = styled.div`
 
     &::placeholder {
       color: rgba(${theme.rgbColors.white}, 0.4);
+    }
+  }
+`
+
+export const SAccountsScrollableContainer = styled.div`
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  max-height: calc(100vh - 260px);
+
+  margin-right: calc((var(--modal-content-padding) / 2) * -1);
+  padding-right: calc(var(--modal-content-padding) / 2);
+
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(41, 41, 45, 0.5);
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    max-height: 300px;
+
+    ::-webkit-scrollbar {
+      width: 4px;
     }
   }
 `

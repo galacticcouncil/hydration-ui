@@ -1,22 +1,34 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { FC, PropsWithChildren } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
   WalletProviderType,
   useEnableWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { SProviderButton } from "./Web3ConnectProviders.styled"
 import {
+  SAltProviderButton,
+  SProviderButton,
+} from "./Web3ConnectProviders.styled"
+import {
+  WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 
-type Props = WalletProvider
+type Props = WalletProvider & {
+  children?: (props: { onClick: () => void }) => JSX.Element
+  mode?: WalletMode
+}
 
-export const Web3ConnectProviderButton: FC<Props> = ({ type, wallet }) => {
+export const Web3ConnectProviderButton: FC<Props> = ({
+  type,
+  wallet,
+  mode,
+  children,
+}) => {
   const { t } = useTranslation()
 
   const { setStatus, setError } = useWeb3ConnectStore()
@@ -36,38 +48,69 @@ export const Web3ConnectProviderButton: FC<Props> = ({ type, wallet }) => {
 
   function onClick() {
     if (type === WalletProviderType.WalletConnect) {
-      // defer WalletConnect enabling until the user clicks chooses a chain to connect to
-      setStatus(type, WalletProviderStatus.Pending)
+      enable(mode === WalletMode.EVM ? "eip155" : "polkadot")
     } else {
       installed ? enable() : openInstallUrl(installUrl)
     }
   }
 
+  if (typeof children === "function") {
+    return children({ onClick })
+  }
+
   return (
     <SProviderButton onClick={onClick}>
-      <img src={logo.src} alt={logo.alt} width={40} height={40} />
-      <Text fs={18} css={{ flexGrow: 1 }}>
+      <img
+        loading="lazy"
+        src={logo.src}
+        alt={logo.alt}
+        width={32}
+        height={32}
+      />
+      <Text fs={[12, 14]} sx={{ mt: 8 }}>
         {title}
       </Text>
       <Text
         color="brightBlue300"
-        fs={14}
-        tAlign="right"
-        sx={{ flex: "row", align: "center", gap: 4 }}
+        fs={[12, 13]}
+        sx={{ flex: "row", align: "center" }}
       >
         {installed ? (
           <>
             {t("walletConnect.provider.continue")}
-            <ChevronRight />
+            <ChevronRight width={18} height={18} />
           </>
         ) : (
           <>
             {t("walletConnect.provider.download")}
-            <DownloadIcon />
+            <DownloadIcon width={18} height={18} />
           </>
         )}
       </Text>
     </SProviderButton>
+  )
+}
+
+export const Web3ConnectAltProviderButton: FC<
+  PropsWithChildren & WalletProvider
+> = ({ children, ...provider }) => {
+  return (
+    <Web3ConnectProviderButton {...provider} key={provider.type}>
+      {(props) => (
+        <SAltProviderButton {...props}>
+          <img
+            loading="lazy"
+            src={provider.wallet.logo.src}
+            alt={provider.wallet.logo.alt}
+            width={24}
+            height={24}
+            sx={{ mr: 4 }}
+          />
+          {children}
+          <ChevronRight width={18} height={18} />
+        </SAltProviderButton>
+      )}
+    </Web3ConnectProviderButton>
   )
 }
 
