@@ -37,9 +37,11 @@ import { AccordionAnimation } from "components/Accordion/Accordion"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { pick } from "utils/rx"
 
-const walletModeIconMap = {
-  [WalletMode.Substrate]: "dot",
-  [WalletMode.EVM]: "eth",
+const getModeIcon = (mode: WalletMode) => {
+  try {
+    const key = mode === WalletMode.EVM ? "eth" : "dot"
+    return MetadataStore.getInstance().asset(key)
+  } catch (e) {}
 }
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
@@ -123,12 +125,12 @@ export const Web3ConnectProviders = () => {
     !SUBSTRATE_PROVIDERS.includes(recentProvider)
 
   const isDefaultMode = mode === "default"
-  const defaultFilter = isRecentEvmProvider
+  const defaultSelectedMode = isRecentEvmProvider
     ? WalletMode.EVM
     : WalletMode.Substrate
 
   const [selectedMode, setSelectedMode] = useState<WalletMode>(
-    isDefaultMode ? defaultFilter : mode,
+    isDefaultMode ? defaultSelectedMode : mode,
   )
 
   const { installedProviders, otherProviders, alternativeProviders } =
@@ -162,9 +164,7 @@ export const Web3ConnectProviders = () => {
                     sx={{ ml: -4 }}
                     icon={
                       <img
-                        src={MetadataStore.getInstance().asset(
-                          walletModeIconMap[mode],
-                        )}
+                        src={getModeIcon(mode)}
                         alt={t(`walletConnect.provider.mode.${mode}`)}
                       />
                     }
