@@ -187,16 +187,14 @@ export const useMemepadForms = () => {
   const submitNext = () => {
     if (step === 0) {
       return formStep1.handleSubmit(async (values) => {
-        const nextId = await getNextAssetHubId()
+        const nextId = summary?.id || (await getNextAssetHubId())
         const id = nextId.toString()
         const token = {
           ...values,
           id,
         }
 
-        const isCreated = !!summary?.id
-
-        if (!isCreated) {
+        if (!summary?.id) {
           // create token on Assethub
           await createToken.mutateAsync(token)
           setSummary((prev) => ({ ...prev, ...token }))
