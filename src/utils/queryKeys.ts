@@ -206,15 +206,6 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  uniquesAsset: (collectionId: string | u128) => [
-    "uniquesAsset",
-    collectionId.toString(),
-  ],
-  uniquesAssetLive: (collectionId: string | u128) => [
-    QUERY_KEY_PREFIX,
-    "uniquesAsset",
-    collectionId.toString(),
-  ],
   omnipoolAssets: ["omnipoolAssets"],
   omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],

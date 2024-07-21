@@ -137,7 +137,7 @@ const parseDepositData = (
 
 export const useAccountPositions = (givenAddress?: string) => {
   const { account } = useAccount()
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   const address = givenAddress ?? account?.address
 
@@ -230,6 +230,6 @@ export const useAccountPositions = (givenAddress?: string) => {
           }
         }
       : undefinedNoop,
-    { enabled: !!address },
+    { enabled: !!address && isLoaded },
   )
 }
