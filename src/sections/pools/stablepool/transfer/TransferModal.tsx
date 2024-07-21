@@ -12,12 +12,10 @@ import { Text } from "components/Typography/Text/Text"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0 } from "utils/constants"
-import { useQueryClient } from "@tanstack/react-query"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { Spinner } from "components/Spinner/Spinner"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useRefetchAccountPositions } from "api/deposits"
 
 export enum Page {
   OPTIONS,
@@ -34,10 +32,9 @@ type Props = {
 }
 
 export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
-  const { account } = useAccount()
-  const queryClient = useQueryClient()
   const { getAssetWithFallback } = useAssets()
   const { pool } = usePoolData()
+  const refetcgPositions = useRefetchAccountPositions()
 
   const {
     id: poolId,
@@ -59,10 +56,6 @@ export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
   const [selectedOption, setSelectedOption] = useState<Option>(
     canAddLiquidity ? "OMNIPOOL" : "STABLEPOOL",
   )
-
-  const refetchPositions = () => {
-    queryClient.refetchQueries(QUERY_KEYS.accountNFTPositions(account?.address))
-  }
 
   const isStablepool = selectedOption === "STABLEPOOL"
 
@@ -167,7 +160,7 @@ export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
                 }}
                 onSuccess={() => {
                   if (isStablepool) {
-                    return refetchPositions()
+                    return refetcgPositions()
                   }
 
                   paginateTo(Page.MOVE_TO_OMNIPOOL)

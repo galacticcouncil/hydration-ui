@@ -11,7 +11,6 @@ const getXYKPools = (api: ApiPromise) => async () => {
 
   const data = res.map(([key, data]) => {
     const poolAddress = key.args[0].toString()
-    //@ts-ignore
     const assets = data.unwrap()?.map((el) => el.toString())
     return { poolAddress, assets }
   })

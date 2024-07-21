@@ -3,15 +3,16 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import {
-  TMiningNftPosition,
-  useXYKDepositValues,
-} from "sections/pools/PoolsPage.utils"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
 import { SSeparator, SValueContainer } from "./FarmingPosition.styled"
-import { useDepositShare } from "./FarmingPosition.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+  TOmniDepositData,
+  TXYKDepositData,
+} from "./FarmingPosition.utils"
 import { JoinedFarms } from "./joined/JoinedFarms"
 import { RedepositFarms } from "./redeposit/RedepositFarms"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -24,9 +25,11 @@ import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
 function FarmingPositionDetailsButton(props: {
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
 }) {
   const { t } = useTranslation()
   const [farmDetails, setFarmDetails] = useState(false)
@@ -44,6 +47,7 @@ function FarmingPositionDetailsButton(props: {
       {farmDetails && (
         <JoinedFarmsDetails
           depositNft={props.depositNft}
+          depositData={props.depositData}
           isOpen={farmDetails}
           onClose={() => setFarmDetails(false)}
         />
@@ -52,7 +56,7 @@ function FarmingPositionDetailsButton(props: {
   )
 }
 
-const ExitFarmsButton = (props: { depositNft: TMiningNftPosition }) => {
+const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
   const { account } = useAccount()
@@ -98,13 +102,14 @@ export const FarmingPosition = ({
   index,
   depositNft,
   availableYieldFarms,
+  depositData,
 }: {
   index: number
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
   availableYieldFarms: Farm[]
 }) => {
   const { t } = useTranslation()
-  const { isXYK } = usePoolData()
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -127,7 +132,10 @@ export const FarmingPosition = ({
         </Text>
         <div sx={{ flex: "row", gap: 8 }}>
           <ExitFarmsButton depositNft={depositNft} />
-          <FarmingPositionDetailsButton depositNft={depositNft} />
+          <FarmingPositionDetailsButton
+            depositNft={depositNft}
+            depositData={depositData}
+          />
         </div>
       </div>
 
@@ -161,10 +169,10 @@ export const FarmingPosition = ({
           </Text>
         </SValueContainer>
         <SSeparator />
-        {isXYK ? (
-          <XYKFields depositNft={depositNft} />
+        {isXYKDeposit(depositData) ? (
+          <XYKFields depositData={depositData} />
         ) : (
-          <OmnipoolFields depositNft={depositNft} />
+          <OmnipoolFields depositData={depositData} />
         )}
       </div>
 
@@ -172,21 +180,18 @@ export const FarmingPosition = ({
         <RedepositFarms
           depositNft={depositNft}
           availableYieldFarms={availableYieldFarms}
+          depositData={depositData}
         />
       ) : null}
     </>
   )
 }
 
-const OmnipoolFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
+const OmnipoolFields = ({ depositData }: { depositData: TOmniDepositData }) => {
   const { t } = useTranslation()
-  const {
-    pool: { id },
-  } = usePoolData()
-  const position = useDepositShare(id, depositNft.id.toString())
 
   const { meta, amountShifted, amountDisplay, valueShifted, lrnaShifted } =
-    position.data ?? {}
+    depositData ?? {}
 
   return (
     <>
@@ -219,35 +224,32 @@ const OmnipoolFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
           />
         </div>
 
-        {position.data && (
-          <div sx={{ flex: "column", align: "flex-end" }}>
-            <Text fs={14}>
-              {t("value.tokenWithSymbol", {
-                value: position.data.totalValueShifted,
-                symbol: meta?.symbol,
-              })}
-            </Text>
-            <DollarAssetValue
-              value={position.data.valueDisplay}
-              wrapper={(children) => (
-                <Text fs={11} lh={12} color="whiteish500">
-                  {children}
-                </Text>
-              )}
-            >
-              <DisplayValue value={position.data.valueDisplay} />
-            </DollarAssetValue>
-          </div>
-        )}
+        <div sx={{ flex: "column", align: "flex-end" }}>
+          <Text fs={14}>
+            {t("value.tokenWithSymbol", {
+              value: depositData.totalValueShifted,
+              symbol: meta?.symbol,
+            })}
+          </Text>
+          <DollarAssetValue
+            value={depositData.valueDisplay}
+            wrapper={(children) => (
+              <Text fs={11} lh={12} color="whiteish500">
+                {children}
+              </Text>
+            )}
+          >
+            <DisplayValue value={depositData.valueDisplay} />
+          </DollarAssetValue>
+        </div>
       </SValueContainer>
     </>
   )
 }
 
-const XYKFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
+const XYKFields = ({ depositData }: { depositData: TXYKDepositData }) => {
   const { t } = useTranslation()
-  const { amountUSD, assetA, assetB } =
-    useXYKDepositValues([depositNft]).data?.[0] ?? {}
+  const { amountUSD, assetA, assetB } = depositData
 
   return (
     <SValueContainer>
@@ -257,13 +259,13 @@ const XYKFields = ({ depositNft }: { depositNft: TMiningNftPosition }) => {
       <div sx={{ flex: "column", align: "flex-end" }}>
         <Text fs={14}>
           {t("value.tokenWithSymbol", {
-            value: assetA?.amount,
-            symbol: assetA?.symbol,
+            value: assetA.amount,
+            symbol: assetA.symbol,
           })}{" "}
           |{" "}
           {t("value.tokenWithSymbol", {
-            value: assetB?.amount,
-            symbol: assetB?.symbol,
+            value: assetB.amount,
+            symbol: assetB.symbol,
           })}
         </Text>
         <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>

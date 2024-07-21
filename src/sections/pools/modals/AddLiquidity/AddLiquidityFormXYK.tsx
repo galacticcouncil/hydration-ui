@@ -180,7 +180,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       {
         onSuccess: () => {
           queryClient.refetchQueries(
-            QUERY_KEYS.accountNFTPositions(account?.address),
+            QUERY_KEYS.accountPositions(account?.address),
           )
           queryClient.refetchQueries(
             QUERY_KEYS.tokenBalance(pool.id, account?.address),

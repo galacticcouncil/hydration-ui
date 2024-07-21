@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { MIN_WITHDRAWAL_FEE } from "utils/constants"
-import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { scaleHuman } from "utils/balance"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -14,32 +13,6 @@ import {
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
 import { useAssets } from "providers/assets"
-
-export const useApiIds = () => {
-  const { api } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.apiIds, getApiIds(api), {
-    enabled: !!isApiLoaded(api),
-  })
-}
-
-export const getApiIds = (api: ApiPromise) => async () => {
-  const apiIds = await Promise.all([
-    api.consts.omnipool.hdxAssetId,
-    api.consts.omnipool.hubAssetId,
-    api.consts.omnipool.nftCollectionId,
-  ])
-
-  const [nativeId, hubId, omnipoolCollectionId] = apiIds.map((c) =>
-    c.toString(),
-  )
-
-  return {
-    nativeId,
-    hubId,
-    omnipoolCollectionId,
-  }
-}
 
 export const useMinWithdrawalFee = () => {
   const { api } = useRpcProvider()

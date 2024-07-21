@@ -1,4 +1,3 @@
-import { useApiIds } from "api/consts"
 import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useMemo } from "react"
@@ -25,7 +24,6 @@ const EVENTS_LIMIT = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
   const { getAsset } = useAssets()
-  const apiIds = useApiIds()
   const allTrades = useAllTrades(assetId ? Number(assetId) : undefined)
   const displayAsset = useDisplayAssetStore()
 
@@ -127,12 +125,12 @@ export const useRecentTradesTableData = (assetId?: string) => {
     withoutRefresh,
   )
 
-  const queries = [apiIds, allTrades, ...spotPrices, ...identities]
+  const queries = [allTrades, ...spotPrices, ...identities]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!events || !apiIds.data || spotPrices.some((q) => !q.data)) return []
+    if (!events || spotPrices.some((q) => !q.data)) return []
 
     const trades = events.reduce(
       (memo, trade) => {
@@ -223,7 +221,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     )
 
     return trades.slice(0, EVENTS_LIMIT)
-  }, [events, apiIds.data, spotPrices, assetId, getAsset, identities])
+  }, [events, spotPrices, assetId, getAsset, identities])
 
   return { data, isLoading: isInitialLoading }
 }

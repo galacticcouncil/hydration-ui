@@ -83,7 +83,6 @@ export const AvailableFarms = () => {
         >
           <FarmDetailsModal
             farm={selectedFarm}
-            depositNft={undefined}
             currentBlock={currentBlock?.toNumber()}
           />
         </Modal>

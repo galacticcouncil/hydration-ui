@@ -1,6 +1,6 @@
 import { useAccountBalances } from "api/accountBalances"
 import { useAssets } from "providers/assets"
-import { useAccountNFTPositions } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import { SubNavigationTabLink } from "components/Layout/SubNavigation/SubNavigation"
 import { SSeparator } from "components/Separator/Separator.styled"
@@ -14,7 +14,7 @@ export const MyLiquidity = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const accountPositions = useAccountNFTPositions()
+  const accountPositions = useAccountPositions()
 
   const balances = useAccountBalances(account?.address)
 

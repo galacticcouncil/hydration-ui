@@ -83,7 +83,7 @@ export const AddLiquidityForm = ({
       {
         onSuccess: () => {
           queryClient.refetchQueries(
-            QUERY_KEYS.accountNFTPositions(account?.address),
+            QUERY_KEYS.accountPositions(account?.address),
           )
         },
         onSubmitted: () => {

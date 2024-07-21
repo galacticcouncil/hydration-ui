@@ -2,13 +2,14 @@ import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { OmnipoolPosition, useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolAssets } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
 import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
 import { scale } from "./balance"
 import { useCallback } from "react"
 import { useAssets } from "providers/assets"
+import { TOmnipoolPosition } from "api/deposits"
 
 type IOptions = {
   sharesValue?: string
@@ -29,7 +30,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
   const spotPrices = useDisplayPrices(assetsId ?? omnipoolAssetIds)
 
   const getData = useCallback(
-    (position: OmnipoolPosition, options?: IOptions) => {
+    (position: TOmnipoolPosition, options?: IOptions) => {
       const omnipoolAsset = omnipoolAssets.data?.find(
         (omnipoolAsset) => omnipoolAsset.id === position.assetId.toString(),
       )

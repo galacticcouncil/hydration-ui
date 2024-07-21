@@ -1,8 +1,4 @@
-import {
-  useShareTokenBalances,
-  useTokenBalance,
-  useTokensBalances,
-} from "api/balances"
+import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
 import { useMemo } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -26,10 +22,6 @@ import BN from "bignumber.js"
 import { useGetXYKPools, useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
-import {
-  useAllOmnipoolDeposits,
-  useAllXYKDeposits,
-} from "./farms/position/FarmingPosition.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
@@ -39,7 +31,7 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
-import { useUserDeposits } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import { TAsset, useAssets } from "providers/assets"
 
 export const XYK_TVL_VISIBILITY = 5000
@@ -86,10 +78,6 @@ export const useAssetsTradability = () => {
   return { data, isLoading, isInitialLoading }
 }
 
-export type TMiningNftPosition = ReturnType<
-  typeof usePoolDetails
->["data"]["miningNftPositions"][number]
-
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
 
@@ -128,9 +116,7 @@ export const usePools = () => {
   const stablepools = useStableswapPools()
 
   const assetsTradability = useAssetsTradability()
-
-  const omnipoolPositions = useOmnipoolPositionsData()
-  const miningPositions = useAllOmnipoolDeposits()
+  const accountPositions = useAccountPositions()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id.toString()) ?? [],
@@ -201,11 +187,16 @@ export const usePools = () => {
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
-      const filteredOmnipoolPositions = omnipoolPositions.data.filter(
-        (omnipoolPosition) => omnipoolPosition.assetId === asset.id,
+      const { liquidityPositions = [], omnipoolDeposits = [] } =
+        accountPositions.data ?? {}
+
+      const filteredOmnipoolPositions = liquidityPositions.filter(
+        (pos) => pos.assetId === asset.id,
       )
 
-      const filteredMiningPositions = miningPositions.data?.[asset.id] ?? []
+      const filteredMiningPositions = omnipoolDeposits.filter(
+        (deposit) => deposit.data.ammPoolId.toString() === asset.id,
+      )
 
       const isPositions =
         !!filteredOmnipoolPositions.length || !!filteredMiningPositions?.length
@@ -242,18 +233,17 @@ export const usePools = () => {
       return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
     })
   }, [
-    native.id,
-    assetsTradability.data,
-    fees.data,
-    fees.isLoading,
-    miningPositions.data,
     omnipoolAssets.data,
-    omnipoolPositions.data,
     spotPrices.data,
-    stableCoinId,
+    assetsTradability.data,
     tvls.data,
     volumes.data,
-    volumes.isLoading,
+    volumes?.isLoading,
+    native.id,
+    fees.data,
+    fees?.isLoading,
+    accountPositions.data,
+    stableCoinId,
   ])
 
   return { data, isLoading: isInitialLoading }
@@ -264,13 +254,10 @@ export const usePoolDetails = (assetId: string) => {
   const meta = getAsset(assetId)
   const isStablePool = meta?.isStableSwap
 
-  const { omnipoolDeposits } = useUserDeposits()
   const omnipoolPositions = useOmnipoolPositionsData()
 
-  const poolAccountAddress = derivePoolAccount(assetId)
-
   const stablePoolBalance = useAccountBalances(
-    isStablePool ? poolAccountAddress : undefined,
+    isStablePool ? derivePoolAccount(assetId) : undefined,
   )
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
 
@@ -281,28 +268,6 @@ export const usePoolDetails = (assetId: string) => {
     const omnipoolNftPositions = omnipoolPositions.data.filter(
       (position) => position.assetId === assetId,
     )
-
-    const miningNftPositions = omnipoolDeposits
-      .filter((position) => position.data.ammPoolId.toString() === assetId)
-      .sort((a, b) => {
-        const firstFarmLastBlock = a.data.yieldFarmEntries.reduce(
-          (acc, curr) =>
-            acc.lt(curr.enteredAt.toBigNumber())
-              ? curr.enteredAt.toBigNumber()
-              : acc,
-          BN_0,
-        )
-
-        const secondFarmLastBlock = b.data.yieldFarmEntries.reduce(
-          (acc, curr) =>
-            acc.lt(curr.enteredAt.toBigNumber())
-              ? curr.enteredAt.toBigNumber()
-              : acc,
-          BN_0,
-        )
-
-        return secondFarmLastBlock.minus(firstFarmLastBlock).toNumber()
-      })
 
     const reserves = isStablePool
       ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
@@ -319,7 +284,7 @@ export const usePoolDetails = (assetId: string) => {
 
     return {
       omnipoolNftPositions,
-      miningNftPositions,
+
       reserves,
       stablepoolFee: stablepool.data?.fee
         ? normalizeBigNumber(stablepool.data.fee).div(BN_MILL)
@@ -331,7 +296,6 @@ export const usePoolDetails = (assetId: string) => {
     getAsset,
     assetId,
     isStablePool,
-    omnipoolDeposits,
     omnipoolPositions.data,
     stablePoolBalance.data?.balances,
     stablepool.data?.fee,
@@ -345,9 +309,6 @@ export const useMyPools = () => {
   const { stableswap } = useAssets()
   const pools = usePools()
 
-  const omnipoolPositions = useOmnipoolPositionsData()
-  const miningPositions = useAllOmnipoolDeposits()
-
   const stableswapsId = stableswap.map((shareToken) => shareToken.id)
 
   const userPositions = useTokensBalances(stableswapsId, account?.address)
@@ -355,16 +316,11 @@ export const useMyPools = () => {
   const data = useMemo(() => {
     if (
       pools.data &&
-      omnipoolPositions.data &&
-      miningPositions.data &&
       userPositions.every((userPosition) => userPosition.data)
     ) {
       return pools.data?.filter(
         (pool) =>
-          omnipoolPositions.data.some(
-            (omnipoolPosition) => omnipoolPosition.assetId === pool.id,
-          ) ||
-          miningPositions.data?.[pool.id] ||
+          pool.isPositions ||
           userPositions.some(
             (userPosition) =>
               userPosition.data?.assetId === pool.id &&
@@ -373,14 +329,11 @@ export const useMyPools = () => {
       )
     }
     return undefined
-  }, [miningPositions.data, omnipoolPositions.data, pools.data, userPositions])
+  }, [pools.data, userPositions])
 
   return {
     data,
-    isLoading:
-      pools.isLoading ||
-      omnipoolPositions.isInitialLoading ||
-      miningPositions.isLoading,
+    isLoading: pools.isLoading,
   }
 }
 
@@ -402,7 +355,7 @@ export const useXYKPools = (withPositions?: boolean) => {
       : [],
   )
 
-  const deposits = useAllXYKDeposits()
+  const { xykDeposits = [] } = useAccountPositions().data ?? {}
 
   const queries = [pools, xykConsts, shareTokeSpotPrices, totalIssuances]
 
@@ -443,8 +396,8 @@ export const useXYKPools = (withPositions?: boolean) => {
             (volume) => volume.poolAddress === pool.poolAddress,
           )?.volume ?? BN_NAN
 
-        const miningPositions = deposits.data.filter(
-          (deposit) => deposit.assetId === shareTokenId,
+        const miningPositions = xykDeposits.filter(
+          (deposit) => deposit.data.ammPoolId.toString() === pool.poolAddress,
         )
 
         return {
@@ -482,7 +435,7 @@ export const useXYKPools = (withPositions?: boolean) => {
     getShareTokenByAddress,
     volumes.data,
     volumes.isLoading,
-    deposits.data,
+    xykDeposits,
     fee,
     withPositions,
   ])
@@ -492,38 +445,12 @@ export const useXYKPools = (withPositions?: boolean) => {
 
 export const useXYKPoolDetails = (pool: TXYKPool) => {
   const volume = useXYKPoolTradeVolumes([pool.poolAddress])
-  const { xykDeposits } = useUserDeposits()
 
   const isInitialLoading = volume.isLoading
-
-  const miningNftPositions = xykDeposits
-    .filter(
-      (position) => position.data.ammPoolId.toString() === pool.poolAddress,
-    )
-    .sort((a, b) => {
-      const firstFarmLastBlock = a.data.yieldFarmEntries.reduce(
-        (acc, curr) =>
-          acc.lt(curr.enteredAt.toBigNumber())
-            ? curr.enteredAt.toBigNumber()
-            : acc,
-        BN_0,
-      )
-
-      const secondFarmLastBlock = b.data.yieldFarmEntries.reduce(
-        (acc, curr) =>
-          acc.lt(curr.enteredAt.toBigNumber())
-            ? curr.enteredAt.toBigNumber()
-            : acc,
-        BN_0,
-      )
-
-      return secondFarmLastBlock.minus(firstFarmLastBlock).toNumber()
-    })
 
   return {
     data: {
       volumeDisplay: volume.data?.[0]?.volume ?? BN_0,
-      miningNftPositions,
     },
     isInitialLoading,
   }
@@ -561,92 +488,4 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
   )
 
   return { priceA, priceB, assetA: metaA, assetB: metaB }
-}
-
-export const useXYKDepositValues = (depositNfts: TMiningNftPosition[]) => {
-  const { getShareTokenByAddress, getShareToken } = useAssets()
-  const depositNftsData = depositNfts.reduce<
-    { assetId: string; depositNft: TMiningNftPosition }[]
-  >((acc, depositNft) => {
-    const assetId = getShareTokenByAddress(
-      depositNft.data.ammPoolId.toString(),
-    )?.id
-
-    if (assetId)
-      acc.push({
-        assetId,
-        depositNft,
-      })
-    return acc
-  }, [])
-
-  const uniqAssetIds = [
-    ...new Set(depositNftsData.map((deposit) => deposit.assetId)),
-  ]
-  const totalIssuances = useShareOfPools(uniqAssetIds)
-  const balances = useShareTokenBalances(uniqAssetIds)
-  const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
-
-  const isLoading =
-    totalIssuances.isInitialLoading ||
-    balances.some((q) => q.isInitialLoading) ||
-    shareTokeSpotPrices.isInitialLoading
-
-  const data = useMemo(() => {
-    const defaultValue = {
-      assetA: undefined,
-      assetB: undefined,
-      amountUSD: undefined,
-    }
-
-    return depositNftsData.map((deposit) => {
-      const shareTokenIssuance = totalIssuances.data?.find(
-        (totalIssuance) => totalIssuance.asset === deposit.assetId,
-      )?.totalShare
-
-      const shareToken = getShareToken(deposit.assetId)
-
-      if (!shareTokenIssuance || !shareToken) {
-        return { ...defaultValue, assetId: deposit.assetId }
-      }
-
-      const shares = deposit.depositNft.data.shares.toBigNumber()
-      const ratio = shares.div(shareTokenIssuance)
-      const amountUSD = scaleHuman(shareTokenIssuance, shareToken.decimals)
-        .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
-        .times(ratio)
-
-      const [assetA, assetB] = shareToken.assets.map((asset) => {
-        const balance =
-          balances.find(
-            (balance) =>
-              balance.data?.assetId === asset.id &&
-              balance.data?.accountId.toString() === shareToken.poolAddress,
-          )?.data?.balance ?? BN_0
-        const amount = scaleHuman(balance.times(ratio), asset.decimals)
-
-        return {
-          id: asset,
-          symbol: asset.symbol,
-          decimals: asset.decimals,
-          amount,
-        }
-      })
-      return {
-        assetA,
-        assetB,
-        amountUSD,
-        assetId: deposit.assetId,
-        depositId: deposit.depositNft.id,
-      }
-    })
-  }, [
-    balances,
-    depositNftsData,
-    getShareToken,
-    shareTokeSpotPrices.data,
-    totalIssuances.data,
-  ])
-
-  return { data, isLoading }
 }

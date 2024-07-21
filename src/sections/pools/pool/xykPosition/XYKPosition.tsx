@@ -21,12 +21,14 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
+import { useRefetchAccountPositions } from "api/deposits"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const queryClient = useQueryClient()
+  const refetchPositions = useRefetchAccountPositions()
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
@@ -82,7 +84,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     queryClient.refetchQueries(
       QUERY_KEYS.tokenBalance(pool.id, account?.address),
     )
-    queryClient.refetchQueries(QUERY_KEYS.accountNFTPositions(account?.address))
+    refetchPositions()
   }
 
   return (

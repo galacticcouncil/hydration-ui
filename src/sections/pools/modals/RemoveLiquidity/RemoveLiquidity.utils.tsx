@@ -17,6 +17,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
@@ -41,15 +42,17 @@ export const useRemoveLiquidity = (
   onSuccess: () => void,
   onSubmit: (value: string) => void,
 ) => {
+  const { t } = useTranslation()
   const { createTransaction } = useStore()
   const { api } = useRpcProvider()
-  const { hub, getAssetWithFallback } = useAssets()
-  const { t } = useTranslation()
+  const { hub } = useAssets()
+  const { pool } = usePoolData()
+
   const isPositionMultiple = Array.isArray(position)
 
-  const { assetId } = isPositionMultiple ? position[0] : position
+  const assetId = pool.id
 
-  const meta = getAssetWithFallback(assetId)
+  const meta = pool.meta
   const hubMeta = hub
 
   const spotPrice = useSpotPrice(hubMeta.id, assetId)

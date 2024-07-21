@@ -1,7 +1,5 @@
-import { useApiIds } from "api/consts"
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
+import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
-import { useUniques } from "api/uniques"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT } from "utils/api"
@@ -13,12 +11,13 @@ import { useFee, useTVL } from "api/stats"
 import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
+import { useAccountPositions } from "api/deposits"
 
 const withoutRefresh = true
 
 export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
-  const { native, getAsset } = useAssets()
-  const apiIds = useApiIds()
+  const { native } = useAssets()
+  const accountPositions = useAccountPositions(HYDRA_TREASURE_ACCOUNT)
   const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
   const { getData } = useLiquidityPositionData()
   const displayAsset = useDisplayAssetStore()
@@ -30,43 +29,29 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   const tvls = useTVL("all")
   const fees = useFee("all")
 
-  // get all NFTs on HYDRA_TREASURE_ACCOUNT to calculate POL
-  const uniques = useUniques(
-    HYDRA_TREASURE_ACCOUNT,
-    apiIds.data?.omnipoolCollectionId ?? "",
-    withoutRefresh,
-  )
-
-  // details of each NFT position of HYDRA_TREASURE_ACCOUNT to calculate POL
-  const positions = useOmnipoolPositions(
-    uniques.data?.map((u) => u.itemId) ?? [],
-    withoutRefresh,
-  )
-
   const spotPrices = useSpotPrices(
     omnipoolAssetsIds,
     displayAsset.stableCoinId,
     withoutRefresh,
   )
 
-  const queries = [omnipoolAssets, uniques, tvls, ...spotPrices, ...positions]
+  const queries = [omnipoolAssets, accountPositions, tvls, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
+
+  const positions = accountPositions.data?.liquidityPositions
 
   const data = useMemo(() => {
     if (
       !omnipoolAssets.data ||
       !tvls.data ||
       spotPrices.some((q) => !q.data) ||
-      positions.some((q) => !q.data)
+      !positions
     )
       return []
 
     // get a price of each position of HYDRA_TREASURE_ACCOUNT and filter it
     const treasurePositionsValue = positions.reduce(
-      (acc, query) => {
-        const position = query.data
-        if (!position) return {}
-
+      (acc, position) => {
         const data = getData(position)
 
         const assetId = position.assetId.toString()
@@ -80,11 +65,11 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     )
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
-      const omnipoolAssetId = omnipoolAsset.id.toString()
+      const omnipoolAssetId = omnipoolAsset.id
       const shares = omnipoolAsset.data.shares.toString()
       const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
 
-      const meta = getAsset(omnipoolAssetId)
+      const meta = omnipoolAsset.meta
 
       const spotPrice = spotPrices.find(
         (sp) => sp?.data?.tokenIn === omnipoolAssetId,
@@ -148,7 +133,6 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   }, [
     fees?.data,
     fees?.isInitialLoading,
-    getAsset,
     getData,
     native.id,
     omnipoolAssets.data,

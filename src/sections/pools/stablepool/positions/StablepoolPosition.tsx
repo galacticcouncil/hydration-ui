@@ -19,7 +19,7 @@ import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { usePoolData } from "sections/pools/pool/Pool"
 
@@ -31,7 +31,7 @@ export const StablepoolPosition = ({ amount }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const pool = usePoolData().pool as TPoolFullData
-  const refetchPositions = useRefetchAccountNFTPositions()
+  const refetchPositions = useRefetchAccountPositions()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 

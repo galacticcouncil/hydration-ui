@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useUserDeposits } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -15,7 +15,7 @@ import { isAfter } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAllFarmDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
@@ -27,7 +27,6 @@ import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraP
 import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
-import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
 import { TLPData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 
@@ -161,18 +160,17 @@ export const useFarmingPositionsData = ({
   search?: string
 } = {}) => {
   const { getShareTokenByAddress, getAsset } = useAssets()
-  const { omnipoolDeposits, xykDeposits } = useUserDeposits()
-  const xykDepositValues = useXYKDepositValues(xykDeposits)
-  const accountDepositsShare = useAllOmnipoolDeposits()
+  const { omnipoolDeposits = [], xykDeposits = [] } =
+    useAccountPositions().data ?? {}
+  const { omnipool, xyk } = useAllFarmDeposits()
 
   const bestNumber = useBestNumber()
 
-  const queries = [accountDepositsShare, bestNumber]
+  const queries = [bestNumber]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!omnipoolDeposits || !accountDepositsShare.data || !bestNumber.data)
-      return []
+    if (!omnipoolDeposits || !bestNumber.data) return []
 
     const rows = [...omnipoolDeposits, ...xykDeposits]
       .map((deposit) => {
@@ -206,9 +204,7 @@ export const useFarmingPositionsData = ({
 
         let position: XYKPosition | TLPData
         if (isXyk) {
-          const values = xykDepositValues.data.find(
-            (value) => value.depositId === deposit.id,
-          )
+          const values = xyk.find((value) => value.depositId === deposit.id)
 
           if (values?.amountUSD) {
             const { assetA, assetB, amountUSD } = values
@@ -230,7 +226,7 @@ export const useFarmingPositionsData = ({
             return undefined
           }
         } else {
-          const omnipoolDeposit = accountDepositsShare.data[poolId]?.find(
+          const omnipoolDeposit = omnipool[poolId]?.find(
             (d) => d.depositId?.toString() === deposit.id,
           )
 
@@ -259,13 +255,13 @@ export const useFarmingPositionsData = ({
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
     omnipoolDeposits,
-    accountDepositsShare.data,
     bestNumber.data,
     xykDeposits,
     search,
     getShareTokenByAddress,
     getAsset,
-    xykDepositValues.data,
+    xyk,
+    omnipool,
   ])
 
   return { data, isLoading }

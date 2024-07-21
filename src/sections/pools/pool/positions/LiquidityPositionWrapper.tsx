@@ -8,7 +8,7 @@ import { Button } from "components/Button/Button"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 import { ReactElement, useMemo, useState } from "react"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { BN_0 } from "utils/constants"
 import { Separator } from "components/Separator/Separator"
@@ -23,7 +23,7 @@ export const LiquidityPositionWrapper = () => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState(false)
-  const refetchPositions = useRefetchAccountNFTPositions()
+  const refetchPositions = useRefetchAccountPositions()
   const pool = usePoolData().pool as TPoolFullData
 
   const positions = pool.omnipoolNftPositions

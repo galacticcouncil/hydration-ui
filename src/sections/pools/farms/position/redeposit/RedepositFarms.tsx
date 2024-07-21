@@ -3,30 +3,33 @@ import { SContainer, SJoinButton } from "./RedepositFarms.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
 import { Farm } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
-import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+} from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
 type RedepositFarmsProps = {
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
   availableYieldFarms: Farm[]
+  depositData: TDepositData
 }
 
 export const RedepositFarms = ({
   depositNft,
   availableYieldFarms,
+  depositData,
 }: RedepositFarmsProps) => {
   const { t } = useTranslation()
-  const { pool, isXYK } = usePoolData()
+  const { pool } = usePoolData()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
-
-  const position = useDepositShare(pool.id, depositNft.id)
 
   const redeposit = useFarmRedepositMutation(
     availableYieldFarms,
@@ -64,8 +67,8 @@ export const RedepositFarms = ({
         <JoinFarmModal
           farms={availableYieldFarms}
           position={
-            !isXYK && position.data
-              ? omit(["depositId"], position.data)
+            !isXYKDeposit(depositData)
+              ? omit(["depositId"], depositData)
               : undefined
           }
           onClose={() => setJoinFarm(false)}

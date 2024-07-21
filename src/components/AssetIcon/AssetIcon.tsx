@@ -67,7 +67,7 @@ export const MultipleAssetLogo = ({
 
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { getAsset } = useAssets()
+  const { getAsset, isExternal } = useAssets()
 
   const externalAssetsWhitelist = useMemo(
     () => MetadataStore.getInstance().externalWhitelist(),
@@ -88,7 +88,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       : false
 
     const badgeVariant: "warning" | "danger" | "" =
-      assetDetails && assets.isExternal(assetDetails)
+      assetDetails && isExternal(assetDetails)
         ? isWhitelisted || assetDetails.isWhiteListed
           ? "warning"
           : "danger"
@@ -99,7 +99,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       symbol: assetDetails?.symbol,
       badgeVariant,
     }
-  }, [getAsset, externalAssetsWhitelist, id])
+  }, [id, getAsset, externalAssetsWhitelist, isExternal])
 
   if (asset.chain || asset.symbol)
     return (

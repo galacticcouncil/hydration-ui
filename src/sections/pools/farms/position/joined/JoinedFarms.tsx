@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useFarmAprs, useFarms } from "api/farms"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { isNotNil } from "utils/helpers"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
-type JoinedFarmsProps = { depositNft: TMiningNftPosition }
+type JoinedFarmsProps = { depositNft: TDeposit }
 
 export const JoinedFarms = ({ depositNft }: JoinedFarmsProps) => {
   const { t } = useTranslation()

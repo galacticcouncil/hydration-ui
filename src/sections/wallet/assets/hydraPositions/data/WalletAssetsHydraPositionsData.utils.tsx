@@ -1,4 +1,3 @@
-import { useOmnipoolPositions } from "api/omnipool"
 import { useMemo } from "react"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
@@ -6,7 +5,7 @@ import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
 import { useAssets } from "providers/assets"
-import { useAccountNFTPositions } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useAcountAssets } from "api/assetDetails"
@@ -15,27 +14,20 @@ export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
-  const accountPositions = useAccountNFTPositions(address)
-  const positions = useOmnipoolPositions(
-    accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
+  const accountPositionsQuery = useAccountPositions(address)
+  const positions = useMemo(
+    () => accountPositionsQuery.data?.liquidityPositions ?? [],
+    [accountPositionsQuery.data?.liquidityPositions],
   )
 
-  const positionIds =
-    positions
-      .map((position) => position.data?.assetId.toString())
-      .filter(isNotNil) ?? []
+  const positionIds = positions.map((position) => position.assetId)
 
   const { getData } = useLiquidityPositionData(positionIds)
 
-  const isLoading = positions.some((q) => q.isLoading)
+  const isLoading = accountPositionsQuery.isInitialLoading
 
   const data = useMemo(() => {
-    if (positions.some((q) => !q.data)) return []
-
-    const rows = positions.reduce<TLPData[]>((acc, query) => {
-      const position = query.data
-      if (!position) return acc
-
+    const rows = positions.reduce<TLPData[]>((acc, position) => {
       const data = getData(position)
       if (data) acc.push(data)
       return acc

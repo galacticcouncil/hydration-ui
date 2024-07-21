@@ -24,11 +24,6 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  omniPositionId: (id: u128 | string) => [
-    QUERY_KEY_PREFIX,
-    "omniPositionId",
-    id?.toString(),
-  ],
   miningPosition: (id: string) => ["miningPosition", id],
   miningPositionXYK: (id: string) => ["miningPositionXYK", id],
   accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
@@ -40,7 +35,7 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountNFTPositions: (id: string | undefined) => ["accountNFTPositions", id],
+  accountPositions: (id: string | undefined) => ["accountPositions", id],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
@@ -211,29 +206,6 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  uniques: (address?: string | AccountId32, collectionId?: string | u128) => [
-    "uniques",
-    address?.toString(),
-    collectionId?.toString(),
-  ],
-  uniquesLive: (
-    address?: string | AccountId32,
-    collectionId?: string | u128,
-  ) => [
-    QUERY_KEY_PREFIX,
-    "uniques",
-    address?.toString(),
-    collectionId?.toString(),
-  ],
-  uniquesAssets: (collectionId?: string | u128) => [
-    "uniquesAssets",
-    collectionId?.toString(),
-  ],
-  uniquesAssetsLive: (collectionId?: string | u128) => [
-    QUERY_KEY_PREFIX,
-    "uniquesAssets",
-    collectionId?.toString(),
-  ],
   uniquesAsset: (collectionId: string | u128) => [
     "uniquesAsset",
     collectionId.toString(),
@@ -254,24 +226,7 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
-  omnipoolPositionsMulti: (itemIds: Array<string | undefined>) => [
-    "omnipoolPositionsMulti",
-    itemIds,
-  ],
-  omnipoolPositionsMultiLive: (itemIds: Array<string | undefined>) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolPositionsMulti",
-    itemIds,
-  ],
-  omnipoolPosition: (id: string | undefined) => [
-    "omnipoolPosition",
-    id?.toString(),
-  ],
-  omnipoolPositionLive: (id: string | undefined) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolPosition",
-    id?.toString(),
-  ],
+  allOmnipoolPositions: ["allOmnipoolPositions"],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
   otcOrdersTable: [QUERY_KEY_PREFIX, "otcOrdersTable"],
   otcOrdersState: (orderId: Maybe<string | u32>) => [
@@ -289,7 +244,6 @@ export const QUERY_KEYS = {
     "accountCurrency",
     address,
   ],
-  apiIds: ["apiIds"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",
     walletAddress,

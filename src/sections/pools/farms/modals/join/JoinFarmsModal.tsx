@@ -22,15 +22,15 @@ import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { TLPData } from "utils/omnipool"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
 type JoinFarmModalProps = {
   onClose: () => void
   position?: TLPData
   farms: Farm[]
   mutation: FarmDepositMutationType | FarmRedepositMutationType
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
 }
 
 export const JoinFarmModal = ({

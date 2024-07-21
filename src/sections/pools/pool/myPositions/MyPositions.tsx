@@ -34,8 +34,8 @@ export const MyPositions = () => {
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
 
   if (
-    !pool.miningNftPositions.length &&
-    !pool.omnipoolNftPositions.length &&
+    !pool.miningPositions.length &&
+    !pool.omnipoolPositions.length &&
     !stablepoolAmount.gt(0)
   )
     return null

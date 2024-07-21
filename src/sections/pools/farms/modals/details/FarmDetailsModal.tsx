@@ -2,21 +2,24 @@ import { Farm } from "api/farms"
 import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { LoyaltyGraph } from "sections/pools/farms/components/loyaltyGraph/LoyaltyGraph"
 import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
+import { TDeposit } from "api/deposits"
+import { TDepositData } from "sections/pools/farms/position/FarmingPosition.utils"
 
 type FarmDetailsModalProps = {
   farm: Farm
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
+  depositData?: TDepositData
   currentBlock?: number
 }
 
 export const FarmDetailsModal = ({
   farm,
   depositNft,
+  depositData,
   currentBlock,
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
@@ -58,8 +61,9 @@ export const FarmDetailsModal = ({
         </SLoyaltyRewardsContainer>
       )}
 
-      {depositNft && enteredBlock ? (
+      {depositNft && depositData && enteredBlock ? (
         <FarmDetailsModalValues
+          depositData={depositData}
           yieldFarmId={farm.yieldFarm.id.toString()}
           depositNft={depositNft}
           enteredBlock={enteredBlock}

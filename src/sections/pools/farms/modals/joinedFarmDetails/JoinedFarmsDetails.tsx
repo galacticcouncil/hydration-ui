@@ -8,7 +8,6 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { ClaimRewardsCard } from "sections/pools/farms/components/claimableCard/ClaimRewardsCard"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
@@ -18,10 +17,14 @@ import { useFarmExitAllMutation } from "utils/farms/exit"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
-import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+} from "sections/pools/farms/position/FarmingPosition.utils"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
-function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
+function isFarmJoined(depositNft: TDeposit, farm: Farm) {
   return depositNft.data.yieldFarmEntries.find(
     (entry) =>
       entry.globalFarmId.eq(farm.globalFarm.id) &&
@@ -30,7 +33,8 @@ function isFarmJoined(depositNft: TMiningNftPosition, farm: Farm) {
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
   onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
   onTxClose: () => void
 }) {
@@ -39,8 +43,6 @@ function JoinedFarmsDetailsRedeposit(props: {
   const { t } = useTranslation()
   const { account } = useAccount()
   const farms = useFarms([poolId])
-
-  const position = useDepositShare(poolId, props.depositNft.id.toString())
 
   const availableFarms = farms.data?.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -83,7 +85,9 @@ function JoinedFarmsDetailsRedeposit(props: {
                 props.depositNft.data.shares.toString(),
                 meta.decimals,
               ).toString(),
-              value: position.data?.totalValueShifted.toString() ?? "",
+              value: !isXYKDeposit(props.depositData)
+                ? props.depositData.totalValueShifted.toString()
+                : "",
             })
           }
           disabled={account?.isExternalWalletConnected}
@@ -97,11 +101,12 @@ function JoinedFarmsDetailsRedeposit(props: {
 }
 
 function JoinedFarmsDetailsPositions(props: {
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
   onSelect: (value: {
     globalFarm: u32
     yieldFarm: u32
-    depositNft: TMiningNftPosition
+    depositNft: TDeposit
   }) => void
   onTxClose: () => void
 }) {
@@ -157,6 +162,7 @@ function JoinedFarmsDetailsPositions(props: {
             key={i}
             farm={farm}
             depositNft={props.depositNft}
+            depositData={props.depositData}
             onSelect={() =>
               props.onSelect({
                 globalFarm: farm.globalFarm.id,
@@ -184,14 +190,15 @@ function JoinedFarmsDetailsPositions(props: {
 export const JoinedFarmsDetails = (props: {
   isOpen: boolean
   onClose: () => void
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
 }) => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
   const [selectedFarmIds, setSelectedFarmIds] = useState<{
     globalFarm: u32
     yieldFarm: u32
-    depositNft?: TMiningNftPosition
+    depositNft?: TDeposit
   } | null>(null)
 
   const bestNumber = useBestNumber()
@@ -235,6 +242,7 @@ export const JoinedFarmsDetails = (props: {
               <div sx={{ flex: "column" }}>
                 <JoinedFarmsDetailsPositions
                   depositNft={props.depositNft}
+                  depositData={props.depositData}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
                     next()
@@ -243,6 +251,7 @@ export const JoinedFarmsDetails = (props: {
                 />
 
                 <JoinedFarmsDetailsRedeposit
+                  depositData={props.depositData}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
                     setSelectedFarmIds(value)
@@ -258,6 +267,7 @@ export const JoinedFarmsDetails = (props: {
               <FarmDetailsModal
                 farm={selectedFarm}
                 depositNft={selectedFarmIds?.depositNft}
+                depositData={props.depositData}
                 currentBlock={currentBlock?.toNumber()}
               />
             ),

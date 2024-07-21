@@ -2,10 +2,10 @@ import { useMutation } from "@tanstack/react-query"
 import { Farm } from "api/farms"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssets } from "providers/assets"
+import { TDeposit } from "api/deposits"
 
 export type FarmRedepositMutationType = ReturnType<
   typeof useFarmRedepositMutation
@@ -13,7 +13,7 @@ export type FarmRedepositMutationType = ReturnType<
 
 export const useFarmRedepositMutation = (
   availableYieldFarms: Farm[] | undefined,
-  depositNft: TMiningNftPosition,
+  depositNft: TDeposit,
   poolId: string,
   onClose?: () => void,
 ) => {

@@ -1,21 +1,26 @@
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useEnteredDate } from "utils/block"
 import { useClaimableAmount } from "utils/farms/claiming"
-import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+} from "sections/pools/farms/position/FarmingPosition.utils"
 import { Summary } from "components/Summary/Summary"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
 type FarmDetailsModalValuesProps = {
-  depositNft: TMiningNftPosition
+  depositNft: TDeposit
+  depositData: TDepositData
   enteredBlock: BigNumber
   yieldFarmId: string
 }
 
 export const FarmDetailsModalValues = ({
   depositNft,
+  depositData,
   enteredBlock,
   yieldFarmId,
 }: FarmDetailsModalValuesProps) => {
@@ -33,10 +38,6 @@ export const FarmDetailsModalValues = ({
     : undefined
   const entered = useEnteredDate(enteredBlock)
 
-  const position = useDepositShare(pool.id, depositNft.id.toString())
-
-  if (!position.data) return null
-
   return (
     <div sx={{ pt: 22 }}>
       <Summary
@@ -49,10 +50,21 @@ export const FarmDetailsModalValues = ({
           },
           {
             label: t("farms.modal.details.value.label"),
-            content: t("value.tokenWithSymbol", {
-              value: position.data.totalValueShifted,
-              symbol: meta?.symbol,
-            }),
+            content: isXYKDeposit(depositData)
+              ? [
+                  t("value.tokenWithSymbol", {
+                    value: depositData.assetA.amount,
+                    symbol: depositData.assetA.symbol,
+                  }),
+                  t("value.tokenWithSymbol", {
+                    value: depositData.assetA.amount,
+                    symbol: depositData.assetA.symbol,
+                  }),
+                ].join(" | ")
+              : t("value.tokenWithSymbol", {
+                  value: depositData.totalValueShifted,
+                  symbol: depositData.meta.symbol,
+                }),
           },
           {
             label: t("farms.modal.details.mined.label"),
