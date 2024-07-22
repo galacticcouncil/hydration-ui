@@ -13,6 +13,7 @@ import {
   safeConvertAddressH160,
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
+import { Permill } from "@polkadot/types/interfaces"
 
 export const useApiIds = () => {
   const { api } = useRpcProvider()
@@ -112,4 +113,22 @@ export const useInsufficientFee = (assetId: string, address: string) => {
         symbol: assets.native.symbol,
       }
     : undefined
+}
+
+export const useOTCfee = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.otcFee,
+    async () => {
+      const fee = (await api.consts.otc.fee) as Permill
+
+      return fee.toBigNumber().div(1000000)
+    },
+    {
+      enabled: isLoaded,
+      cacheTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 1,
+    },
+  )
 }
