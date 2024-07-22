@@ -1,11 +1,14 @@
-import { FC, useMemo, useState } from "react"
+import { FC, Fragment, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { SAccountsContainer } from "./Web3ConnectAccountList.styled"
+import {
+  SAccountsContainer,
+  SAccountsScrollableContainer,
+} from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
@@ -19,19 +22,18 @@ import NoActivities from "assets/icons/NoActivities.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
+import { Alert } from "components/Alert/Alert"
+import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
-  switch (type) {
-    case WalletProviderType.ExternalWallet:
-      return Web3ConnectExternalAccount
-    case WalletProviderType.MetaMask:
-    case WalletProviderType.TalismanEvm:
-    case WalletProviderType.SubwalletEvm:
-    case WalletProviderType.Phantom:
-      return Web3ConnectEvmAccount
-    default:
-      return Web3ConnectSubstrateAccount
-  }
+  if (!type) return Fragment
+
+  if (type === WalletProviderType.ExternalWallet)
+    return Web3ConnectExternalAccount
+
+  if (EVM_PROVIDERS.includes(type)) return Web3ConnectEvmAccount
+
+  return Web3ConnectSubstrateAccount
 }
 
 const AccountComponent: FC<
@@ -105,6 +107,8 @@ export const Web3ConnectAccountList: FC<{
     })
   }, [isReady, accounts, filter, account?.address, balanceMap])
 
+  const noResults = accountList.length === 0
+
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
@@ -112,38 +116,49 @@ export const Web3ConnectAccountList: FC<{
           value={searchVal}
           setValue={setSearchVal}
           placeholder={t("walletconnect.accountSelect.search.placeholder")}
-          css={{ marginBottom: 16 }}
+          sx={{ mb: [4, 8] }}
         />
       )}
-      {filter && !accountList.length && (
-        <div
-          sx={{
-            color: "basic500",
-            flex: "column",
-            justify: "center",
-            align: "center",
-            gap: 12,
-            py: 18,
-          }}
-        >
-          <NoActivities />
-          <Text color="basic500">
-            {t("walletconnect.accountSelect.search.noResults")}
-          </Text>
-        </div>
+      {noResults && (
+        <>
+          {filter ? (
+            <div
+              sx={{
+                color: "basic500",
+                flex: "column",
+                justify: "center",
+                align: "center",
+                gap: 12,
+                py: 18,
+              }}
+            >
+              <NoActivities />
+              <Text color="basic500">
+                {t("walletconnect.accountSelect.search.noResults")}
+              </Text>
+            </div>
+          ) : (
+            <Alert variant="info">
+              <Text>{t("walletconnect.accountSelect.list.noAccounts")}</Text>
+            </Alert>
+          )}
+        </>
       )}
-      {accountList?.map((account) =>
-        isLoaded ? (
-          <AccountComponent
-            key={account.address}
-            {...account}
-            isReady={isReady}
-            setBalanceMap={setBalanceMap}
-          />
-        ) : (
-          <Web3ConnectAccountPlaceholder />
-        ),
-      )}
+
+      <SAccountsScrollableContainer>
+        {accountList?.map((account) =>
+          isLoaded ? (
+            <AccountComponent
+              key={account.address}
+              {...account}
+              isReady={isReady}
+              setBalanceMap={setBalanceMap}
+            />
+          ) : (
+            <Web3ConnectAccountPlaceholder />
+          ),
+        )}
+      </SAccountsScrollableContainer>
     </SAccountsContainer>
   )
 }

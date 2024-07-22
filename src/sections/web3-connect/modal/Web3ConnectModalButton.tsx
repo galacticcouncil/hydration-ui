@@ -28,7 +28,8 @@ const Web3ConnectActiveButton: FC<{
     ? shortenAccountAddress(displayAddress)
     : ""
 
-  const shouldHideAddress = account.name === shortenedAddress?.toLowerCase()
+  const shouldHideAddress =
+    account.name?.toLowerCase() === shortenedAddress?.toLowerCase()
 
   return (
     <SContainer className={className} onClick={onOpen}>

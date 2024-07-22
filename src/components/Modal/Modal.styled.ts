@@ -54,7 +54,7 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
 `
 
 export const SContainer = styled(Content)`
-  --modal-header-padding-y: 10px;
+  --modal-header-padding-y: 12px;
   --modal-header-padding-x: 12px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
@@ -69,7 +69,7 @@ export const SContainer = styled(Content)`
   z-index: ${theme.zIndices.modal};
 
   @media ${theme.viewport.gte.sm} {
-    --modal-header-padding-y: 20px;
+    --modal-header-padding-y: 24px;
     --modal-header-padding-x: 24px;
     --modal-content-padding: 24px;
   }
@@ -123,6 +123,7 @@ export const SBottomContent = styled.div`
 export const SContent = styled.div<{
   isDrawer?: boolean
   hasTopContent?: boolean
+  maxWidth?: number
 }>`
   position: fixed;
   overflow: auto;

@@ -16,7 +16,6 @@ export const SGroupContainer = styled.div`
   flex-direction: column;
   gap: 10px;
 
-  margin-top: 11px;
   margin-left: -10px;
   padding-left: 10px;
   padding-top: 14px;

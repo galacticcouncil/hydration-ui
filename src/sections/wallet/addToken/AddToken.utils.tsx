@@ -29,6 +29,7 @@ const pink = {
   name: "PINK",
   origin: 1000,
   symbol: "PINK",
+  isWhiteListed: false,
 }
 
 const ded = {
@@ -37,6 +38,7 @@ const ded = {
   name: "DED",
   origin: 1000,
   symbol: "DED",
+  isWhiteListed: false,
 }
 
 const dota = {
@@ -45,9 +47,12 @@ const dota = {
   name: "DOTA",
   origin: 1000,
   symbol: "DOTA",
+  isWhiteListed: false,
 }
 
-const version = 0.3
+const version = 0.4
+
+const ahTreasuryAdminKeyIds = ["86"]
 
 const testnet = [
   {
@@ -184,6 +189,7 @@ export type TExternalAsset = {
   symbol: string
   name: string
   origin: number
+  isWhiteListed: boolean
 }
 
 export type TRegisteredAsset = TExternalAsset & { internalId: string }
@@ -351,22 +357,6 @@ export const useUserExternalTokenStore = create<Store>()(
     {
       name: "external-tokens",
       version,
-      merge: (persistedState, currentState) => {
-        if (!persistedState) return currentState
-
-        const { tokens: storedTokens } = persistedState as Store
-
-        return {
-          ...currentState,
-          ...persistedState,
-          tokens: {
-            ...storedTokens,
-            mainnet: storedTokens.mainnet.map((token) =>
-              token.id === "8889" ? { ...token, internalId: "1000091" } : token,
-            ),
-          },
-        }
-      },
       migrate: (persistedState) => {
         const state = persistedState as Store
 
@@ -386,6 +376,26 @@ export const useUserExternalTokenStore = create<Store>()(
             tokens: {
               testnet,
               mainnet: tokens,
+            },
+          }
+        }
+
+        if (state.tokens.mainnet) {
+          const mainnet = state.tokens.mainnet.map((token) => ({
+            ...token,
+            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+          }))
+
+          const testnet = state.tokens.testnet.map((token) => ({
+            ...token,
+            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+          }))
+
+          return {
+            ...state,
+            tokens: {
+              testnet,
+              mainnet,
             },
           }
         }

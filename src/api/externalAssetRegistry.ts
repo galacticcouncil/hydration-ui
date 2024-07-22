@@ -37,6 +37,8 @@ export const ASSET_HUB_ID = 1000
 export const PENDULUM_ID = 2094
 export const HYDRADX_PARACHAIN_ACCOUNT =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
+export const AH_TREASURY_ADDRESS =
+  "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 export type RugSeverityLevel = "none" | "low" | "medium" | "high"
 export const RUG_SEVERITY_LEVELS: RugSeverityLevel[] = [
@@ -100,11 +102,20 @@ export const getAssetHubAssets = async () => {
     if (provider) {
       const api = await provider.api
 
-      const dataRaw = await api.query.assets.metadata.entries()
+      const [dataRaw, assetsRaw] = await Promise.all([
+        api.query.assets.metadata.entries(),
+        api.query.assets.asset.entries(),
+      ])
 
       const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
         const id = key.args[0].toString()
         const data = dataRaw
+
+        const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+        const admin = asset?.[1].unwrap().admin.toString()
+        const owner = asset?.[1].unwrap().owner.toString()
+        const isWhiteListed =
+          admin === AH_TREASURY_ADDRESS && owner === AH_TREASURY_ADDRESS
 
         return {
           id,
@@ -115,6 +126,7 @@ export const getAssetHubAssets = async () => {
           // @ts-ignore
           name: data.name.toHuman() as string,
           origin: provider.parachainId,
+          isWhiteListed,
         }
       })
       return { data, id: provider.parachainId }
@@ -154,6 +166,7 @@ export const getPedulumAssets = async () => {
             name: data.name.toHuman() as string,
             location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
             origin: PENDULUM_ID,
+            isWhiteListed: false,
           })
       }
 
