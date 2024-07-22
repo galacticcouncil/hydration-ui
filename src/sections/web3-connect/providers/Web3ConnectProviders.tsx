@@ -13,6 +13,7 @@ import {
   DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import {
@@ -50,9 +51,10 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
   return useMemo(() => {
     const wallets = getSupportedWallets()
 
-    const isDefaultMode = mode === "default"
-    const isEvmMode = mode === "evm"
-    const isSubstrateMode = mode === "substrate"
+    const isDefaultMode = mode === WalletMode.Default
+    const isEvmMode = mode === WalletMode.EVM
+    const isSubstrateMode = mode === WalletMode.Substrate
+    const isSubstrateH160Mode = mode === WalletMode.SubstrateH160
 
     const filteredProviders = wallets
       .filter((provider) => {
@@ -64,11 +66,15 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
 
         const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
         const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
+        const isSubstrateH160Provider = SUBSTRATE_H160_PROVIDERS.includes(
+          provider.type,
+        )
 
         const byMode =
           isDefaultMode ||
           (isEvmMode && isEvmProvider) ||
-          (isSubstrateMode && isSubstrateProvider)
+          (isSubstrateMode && isSubstrateProvider) ||
+          (isSubstrateH160Mode && isSubstrateH160Provider)
 
         const byWalletConnect =
           isSubstrateMode && provider.type === "walletconnect" && chain

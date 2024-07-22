@@ -146,18 +146,19 @@ export const Web3ConnectAccountList: FC<{
       )}
 
       <SAccountsScrollableContainer>
-        {accountList?.map((account) =>
-          isLoaded ? (
-            <AccountComponent
-              key={account.address}
-              {...account}
-              isReady={isReady}
-              setBalanceMap={setBalanceMap}
-            />
-          ) : (
-            <Web3ConnectAccountPlaceholder />
-          ),
-        )}
+        {accountList?.map((account) => (
+          <Fragment key={account.address}>
+            {isLoaded ? (
+              <AccountComponent
+                {...account}
+                isReady={isReady}
+                setBalanceMap={setBalanceMap}
+              />
+            ) : (
+              <Web3ConnectAccountPlaceholder />
+            )}
+          </Fragment>
+        ))}
       </SAccountsScrollableContainer>
     </SAccountsContainer>
   )

@@ -23,7 +23,7 @@ import {
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { genesisHashToChain } from "utils/helpers"
+import { genesisHashToChain, isAnyParachain } from "utils/helpers"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -107,13 +107,17 @@ export function XcmPage() {
       chain?.key === "acala"
         ? false
         : chain?.isEvmParachain() || chain?.isEvmChain()
+
+    const isSubstrateH160 = chain && isAnyParachain(chain) && chain.h160AccOnly
     const isHydra = chain?.key === "hydradx"
 
     const walletMode = isHydra
       ? WalletMode.Default
       : isEvm
         ? WalletMode.EVM
-        : WalletMode.Substrate
+        : isSubstrateH160
+          ? WalletMode.SubstrateH160
+          : WalletMode.Substrate
 
     setIncomingSrcChain(srcChain)
     toggleWeb3Modal(walletMode, {

@@ -14,6 +14,7 @@ export enum WalletMode {
   Default = "default",
   EVM = "evm",
   Substrate = "substrate",
+  SubstrateH160 = "substrate-h160",
 }
 
 export type Account = {

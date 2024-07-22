@@ -23,12 +23,14 @@ import { ReviewTransactionSummary } from "sections/transaction/ReviewTransaction
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
-import { isEvmAccount } from "utils/evm"
+import { H160, isEvmAccount } from "utils/evm"
 import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
 import {
   EthereumSigner,
   PermitResult,
 } from "sections/web3-connect/signer/EthereumSigner"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { isAnyParachain } from "utils/helpers"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -131,7 +133,18 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
         }
 
-        const signature = await tx.signAsync(address, {
+        const srcChain = props?.xcallMeta?.srcChain
+          ? chainsMap.get(props.xcallMeta.srcChain)
+          : null
+
+        const isH160SrcChain =
+          !!srcChain && isAnyParachain(srcChain) && srcChain.h160AccOnly
+
+        const formattedAddress = isH160SrcChain
+          ? H160.fromAccount(address)
+          : address
+
+        const signature = await tx.signAsync(formattedAddress, {
           era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
