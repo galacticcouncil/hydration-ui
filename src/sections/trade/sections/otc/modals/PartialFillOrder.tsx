@@ -267,10 +267,12 @@ export const PartialFillOrder = ({
                 <Skeleton width={30} height={12} />
               ) : (
                 <Text fs={14} color="white" tAlign="right">
-                  {t("value.tokenWithSymbol", {
-                    value: fee.data?.times(form.getValues("amountOut")),
-                    symbol: assetOutMeta.symbol,
-                  })}
+                  {fee.data
+                    ? t("value.tokenWithSymbol", {
+                        value: fee.data.times(form.getValues("amountOut")),
+                        symbol: assetOutMeta.symbol,
+                      })
+                    : "N/a"}
                 </Text>
               ),
             },
