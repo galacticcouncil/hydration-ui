@@ -35,7 +35,13 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   const rugCheckData = rugCheck.tokensMap.get(internalId ?? "")
 
   const isHighSeverity = rugCheckData?.severity === "high"
-  const badgeVariant = rugCheckData?.isWhitelisted ? "warning" : "danger"
+  const badgeVariant = rugCheckData
+    ? rugCheckData?.isWhitelisted
+      ? "warning"
+      : "danger"
+    : ""
+
+  console.log({ badgeVariant, isHighSeverity, rugCheckData, rugCheck })
 
   return (
     <div sx={{ flex: "row", gap: 10 }}>
@@ -56,13 +62,13 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
                 <SBadgeCointainer slot="badge">
                   <SkullIcon sx={{ color: "alarmRed400" }} />
                 </SBadgeCointainer>
-              ) : (
+              ) : badgeVariant ? (
                 <UigcAssetBadge
                   slot="badge"
                   variant={badgeVariant}
                   text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
                 />
-              )}
+              ) : null}
             </UigcAssetId>
           }
         />
