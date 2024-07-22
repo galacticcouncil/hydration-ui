@@ -232,53 +232,6 @@ export const useAssetsData = ({
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]
 
-export const useLockedValues = (id: string) => {
-  const { native } = useAssets()
-  const isNativeToken = id === native.id
-
-  const locks = useTokenLocks(isNativeToken ? native.id : undefined)
-  const spotPrice = useDisplayPrice(isNativeToken ? native.id : undefined)
-
-  const data = useMemo(() => {
-    if (locks.data && spotPrice.data) {
-      const { decimals } = native
-      const spotPriceData = spotPrice.data.spotPrice
-
-      const lockVesting = locks.data.find(
-        (lock) => lock.id === id.toString() && lock.type === "ormlvest",
-      )
-      const lockedVesting = lockVesting?.amount.shiftedBy(-decimals) ?? BN_0
-      const lockedVestingDisplay = lockedVesting.times(spotPriceData)
-
-      const lockDemocracy = locks.data.find(
-        (lock) => lock.id === id.toString() && lock.type === "democrac",
-      )
-      const lockedDemocracy = lockDemocracy?.amount.shiftedBy(-decimals) ?? BN_0
-      const lockedDemocracyDisplay = lockedDemocracy.times(spotPriceData)
-
-      const lockStaking = locks.data.find(
-        (lock) => lock.id === id.toString() && lock.type === "stk_stks",
-      )
-      const lockedStaking = lockStaking?.amount.shiftedBy(-decimals) ?? BN_0
-      const lockedStakingDisplay = lockedStaking.times(spotPriceData)
-
-      return {
-        lockedVesting,
-        lockedVestingDisplay,
-        lockedDemocracy,
-        lockedDemocracyDisplay,
-        lockedStaking,
-        lockedStakingDisplay,
-      }
-    }
-  }, [native, id, locks.data, spotPrice.data])
-
-  return {
-    data,
-    isLoading: locks.isInitialLoading || spotPrice.isInitialLoading,
-  }
-}
-
 export const useLockedNativeTokens = () => {
   const {
     native: { decimals, id },

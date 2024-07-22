@@ -168,10 +168,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
   const isBond = (asset: TAsset): asset is TBond => asset.isBond
   const isStableSwap = (asset: TAsset) => asset.isStableSwap
-  const isShareToken = (asset: TAsset | undefined): asset is TShareToken => {
-    if (!asset) return false
-    return asset.isShareToken
-  }
+  const isShareToken = (asset: TAsset | undefined): asset is TShareToken =>
+    asset ? asset.isShareToken : false
 
   const { shareTokens, shareTokensMap } = shareTokensRaw.reduce<{
     shareTokens: TShareToken[]
