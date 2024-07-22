@@ -14,6 +14,7 @@ export enum WalletMode {
   Default = "default",
   EVM = "evm",
   Substrate = "substrate",
+  SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
 }
 
