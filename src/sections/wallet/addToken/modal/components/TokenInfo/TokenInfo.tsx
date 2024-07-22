@@ -17,7 +17,7 @@ import Skeleton from "react-loading-skeleton"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
-import { TToken } from "api/assetDetails"
+import { TExternal } from "api/assetDetails"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
 
@@ -26,7 +26,7 @@ export const TokenInfo = ({
   chainStoredAsset,
 }: {
   externalAsset: TExternalAsset
-  chainStoredAsset?: TToken
+  chainStoredAsset?: TExternal
 }) => {
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
