@@ -153,7 +153,7 @@ export const getAccountUnlockedVotes =
       return {
         id: id.toString(),
         balance: voteAmount(dataRaw),
-        conviction: voteConviction(dataRaw)
+        conviction: voteConviction(dataRaw),
       }
     })
 
