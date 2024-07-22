@@ -178,9 +178,7 @@ export const useFarmingPositionsData = ({
         const isXyk = deposit.isXyk
         const poolId = deposit.data.ammPoolId.toString()
 
-        const meta = isXyk
-          ? getShareTokenByAddress(poolId)?.meta
-          : getAsset(poolId)
+        const meta = isXyk ? getShareTokenByAddress(poolId) : getAsset(poolId)
 
         if (!meta) return undefined
 
@@ -204,7 +202,9 @@ export const useFarmingPositionsData = ({
 
         let position: XYKPosition | TLPData
         if (isXyk) {
-          const values = xyk.find((value) => value.depositId === deposit.id)
+          const values = xyk[meta.id]?.find(
+            (value) => value.depositId === deposit.id,
+          )
 
           if (values?.amountUSD) {
             const { assetA, assetB, amountUSD } = values
