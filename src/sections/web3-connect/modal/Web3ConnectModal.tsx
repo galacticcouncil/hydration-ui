@@ -2,7 +2,6 @@ import { css } from "@emotion/react"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useEffect } from "react"
-import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter"
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectContent } from "sections/web3-connect/modal/Web3ConnectContent"
 import {
@@ -64,7 +63,10 @@ export const Web3ConnectModal = () => {
     })
   }, [paginateTo])
 
-  const showFooter = activeProvider && page === ModalPage.AccountSelect
+  const logout = () => {
+    disconnect()
+    toggle()
+  }
 
   return (
     <Modal
@@ -84,20 +86,11 @@ export const Web3ConnectModal = () => {
         onClose={toggle}
         onSelect={() => paginateTo(ModalPage.AccountSelect)}
         onRetry={() => paginateTo(ModalPage.ProviderSelect)}
+        onSwitch={() => paginateTo(ModalPage.ProviderSelect)}
+        onLogout={logout}
         onOpenAddressBook={() => paginateTo(ModalPage.AddressBook)}
         onCloseAddressBook={() => paginateTo(ModalPage.External)}
       />
-      {showFooter && (
-        <Web3ConnectFooter
-          onSwitch={() => {
-            paginateTo(0)
-          }}
-          onLogout={() => {
-            disconnect()
-            toggle()
-          }}
-        />
-      )}
     </Modal>
   )
 }

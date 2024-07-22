@@ -4,10 +4,11 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { SContainer, SFilterButton } from "./SourceFilter.styled"
+import { SContainer } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
 import { isAnyParachain } from "utils/helpers"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { Chip } from "components/Chip"
 
 const chains = Array.from(chainsMap.values()).filter(
   (chain) =>
@@ -31,18 +32,16 @@ export const SourceFilter: FC<Props> = ({ className, value, onChange }) => {
         {t("wallet.addToken.filter.source")}
       </Text>
       {chains.map(({ key, name, parachainId }) => (
-        <SFilterButton
+        <Chip
           active={parachainId === value}
           key={key}
           onClick={() => onChange?.(parachainId)}
         >
           <Icon sx={{ ml: -4 }} icon={<ChainLogo symbol={key} />} size={20} />
           {name}
-        </SFilterButton>
+        </Chip>
       ))}
-      <SFilterButton disabled>
-        {t("wallet.addToken.filter.comingSoon")}
-      </SFilterButton>
+      <Chip disabled>{t("wallet.addToken.filter.comingSoon")}</Chip>
     </SContainer>
   )
 }

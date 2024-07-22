@@ -31,6 +31,7 @@ type WalletProviderMeta = {
 type WalletProviderState = {
   open: boolean
   provider: WalletProviderType | null
+  recentProvider: WalletProviderType | null
   account: Account | null
   status: WalletProviderStatus
   mode: WalletMode
@@ -53,6 +54,7 @@ type WalletProviderStore = WalletProviderState & {
 const initialState: WalletProviderState = {
   open: false,
   provider: null,
+  recentProvider: null,
   account: null,
   status: WalletProviderStatus.Disconnected,
   mode: WalletMode.Default,
@@ -75,13 +77,15 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => set((state) => ({ ...state, account })),
-      setProvider: (provider) => set((state) => ({ ...state, provider })),
+      setProvider: (provider) =>
+        set((state) => ({ ...state, provider, recentProvider: provider })),
       setStatus: (provider, status) => {
         const isConnected = status === WalletProviderStatus.Connected
         const isError = status === WalletProviderStatus.Error
         return set((state) => ({
           ...state,
           provider,
+          recentProvider: provider,
           status,
           account: isConnected ? state.account : null,
           error: isError ? state.error : "",
@@ -93,6 +97,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           ...state,
           ...initialState,
           open: state.open,
+          recentProvider: state.provider,
         }))
       },
     }),
