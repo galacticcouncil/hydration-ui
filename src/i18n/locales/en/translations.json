@@ -564,12 +564,9 @@
   "wallet.addToken.form.info": {
     "title":"Asset details:",
     "registered": "Asset registered on Hydration",
-    "registered.tooltip": "This asset is registered on Hydration.",
     "masterAccount": "Admin rights revoked",
     "masterAccount.tooltip": "If the asset creator has not revoked their admin rights, they can still tamper with the supply. Proceed at your own risk.",
     "availability": "Available on other parachains",
-    "availability.tooltip_one": "This asset is also registered on one other parachain.",
-    "availability.tooltip_other": "This asset is also registered on {{count}} other parachains.",
     "isolatedPool": "Isolated Pool created",
     "volume": "Daily volume on Hydration"
   },

@@ -156,9 +156,6 @@ export const TokenInfo = ({
       />
       <Separator opacity={0.3} color="darkBlue400" />
       <TokenInfoRow
-        tooltip={t("wallet.addToken.form.info.registered.tooltip", {
-          value: isChainStored ? "is" : "is not",
-        })}
         label={t("wallet.addToken.form.info.registered")}
         value={
           isChainStored ? (
@@ -201,9 +198,6 @@ export const TokenInfo = ({
       )}
       <Separator opacity={0.3} color="darkBlue400" />
       <TokenInfoRow
-        tooltip={t("wallet.addToken.form.info.availability.tooltip", {
-          count: BN(parachains.amount).plus(1).toNumber(),
-        })}
         label={t("wallet.addToken.form.info.availability")}
         value={BN(parachains.amount).plus(1).toString()}
       />

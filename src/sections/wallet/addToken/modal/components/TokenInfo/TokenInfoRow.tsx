@@ -34,13 +34,13 @@ export const TokenInfoRow: React.FC<TokenInfoRowProps> = ({
         color={hasWarning ? "alarmRed400" : "basic400"}
         sx={{ flex: "row", align: "center", gap: 4 }}
       >
+        {hasWarning && <SeverityIcon width={12} height={12} />}
+        {label}
         {tooltip && (
           <InfoTooltip text={tooltip}>
             <SInfoIcon />
           </InfoTooltip>
         )}
-        {hasWarning && <SeverityIcon width={12} height={12} />}
-        {label}
       </Text>
       <Text as="span" fs={12} fw={500} font="GeistMedium">
         {value}
