@@ -31,7 +31,9 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   internalId,
 }) => {
   const { t } = useTranslation()
-  const rugCheck = useExternalTokensRugCheck()
+  const rugCheck = useExternalTokensRugCheck(
+    internalId ? [internalId] : undefined,
+  )
   const rugCheckData = rugCheck.tokensMap.get(internalId ?? "")
 
   const isHighSeverity = rugCheckData?.severity === "high"
@@ -40,8 +42,6 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
       ? "warning"
       : "danger"
     : ""
-
-  console.log({ badgeVariant, isHighSeverity, rugCheckData, rugCheck })
 
   return (
     <div sx={{ flex: "row", gap: 10 }}>

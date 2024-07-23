@@ -183,10 +183,13 @@ export const useExternalAssetRegistry = (enabled?: boolean) => {
   const assetHub = useAssetHubAssetRegistry(enabled)
   const pendulum = usePendulumAssetRegistry(enabled)
 
-  return {
-    [ASSET_HUB_ID as number]: assetHub,
-    [PENDULUM_ID as number]: pendulum,
-  }
+  return useMemo(
+    () => ({
+      [ASSET_HUB_ID as number]: assetHub,
+      [PENDULUM_ID as number]: pendulum,
+    }),
+    [assetHub, pendulum],
+  )
 }
 
 /**
@@ -340,23 +343,30 @@ export const useAssetHubTokenBalances = (
   })
 }
 
-export const useExternalTokensRugCheck = () => {
+export const useExternalTokensRugCheck = (ids?: string[]) => {
   const { assets, isLoaded } = useRpcProvider()
   const { getTokenByInternalId, isInRugCheckWhitelist } =
     useUserExternalTokenStore()
 
   const assetRegistry = useExternalAssetRegistry()
 
-  const addedTokens = isLoaded
-    ? assets.external.filter(({ name, symbol }) => !!name && !!symbol)
-    : []
+  const { internalIds, assetHubExternalIds } = useMemo(() => {
+    const externalAssets = isLoaded
+      ? ids?.length
+        ? assets.external.filter((a) => ids?.some((id) => a.id === id))
+        : assets.external.filter(({ name, symbol }) => !!name && !!symbol)
+      : []
 
-  const internalIds = addedTokens.map(({ id }) => id)
-  const assetHubExternalIds = addedTokens
-    .map(({ parachainId, externalId }) =>
-      Number(parachainId) === ASSET_HUB_ID ? externalId : "",
-    )
-    .filter(isNotNil)
+    const internalIds = externalAssets.map(({ id }) => id)
+
+    const assetHubExternalIds = externalAssets
+      .map(({ parachainId, externalId }) =>
+        Number(parachainId) === ASSET_HUB_ID ? externalId : "",
+      )
+      .filter(isNotNil)
+
+    return { externalAssets, internalIds, assetHubExternalIds }
+  }, [assets.external, ids, isLoaded])
 
   const issuanceQueries = useTotalIssuances(internalIds)
 
@@ -401,7 +411,6 @@ export const useExternalTokensRugCheck = () => {
           : false
 
         if (!externalToken) return null
-        if (!storedToken) return null
 
         const totalSupplyExternal =
           !shouldIgnoreRugCheck && balance?.balance ? BN(balance.balance) : null
@@ -462,8 +471,8 @@ const createRugWarningList = ({
 }: {
   totalSupplyExternal: BN | null
   totalSupplyInternal: BN | null
-  storedToken: TRegisteredAsset
   externalToken: TExternalAsset
+  storedToken?: TRegisteredAsset
 }) => {
   const warnings: RugWarning[] = []
 
@@ -478,6 +487,8 @@ const createRugWarningList = ({
       diff: [totalSupplyInternal ?? BN_0, totalSupplyExternal ?? BN_0],
     })
   }
+
+  if (!storedToken) return warnings
 
   if (externalToken.symbol !== storedToken.symbol) {
     warnings.push({
