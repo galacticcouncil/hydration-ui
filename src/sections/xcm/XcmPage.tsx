@@ -11,14 +11,11 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
-import {
-  useWeb3ConnectStore,
-  WalletMode,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   DEFAULT_DEST_CHAIN,
   getDefaultSrcChain,
+  getDesiredWalletMode,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
   getXCall,
@@ -101,21 +98,10 @@ export function XcmPage() {
   const handleWalletChange = (e: CustomEvent<WalletChangeDetail>) => {
     const { srcChain } = e.detail
 
-    const chain = chainsMap.get(srcChain)
-
-    const isEvm =
-      chain?.key === "acala"
-        ? false
-        : chain?.isEvmParachain() || chain?.isEvmChain()
-    const isHydra = chain?.key === "hydradx"
-
-    const walletMode = isHydra
-      ? WalletMode.Default
-      : isEvm
-        ? WalletMode.EVM
-        : WalletMode.Substrate
+    const walletMode = getDesiredWalletMode(srcChain)
 
     setIncomingSrcChain(srcChain)
+
     toggleWeb3Modal(walletMode, {
       chain: srcChain,
     })

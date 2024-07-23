@@ -7,7 +7,7 @@ import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
 import { MetaMaskAvatar } from "./MetaMaskAvatar"
 import { isEvmAccount, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
-import { WalletProviderType } from "sections/web3-connect/wallets"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { genesisHashToChain } from "utils/helpers"
 import type { Icon } from "@polkadot/networks/types"
 
@@ -16,7 +16,7 @@ type Props = {
   size: number
   genesisHash?: `0x${string}`
   className?: string
-  provider?: WalletProviderType
+  provider?: WalletProviderType | null
 }
 
 export const AccountAvatar: FC<Props> = (props) => {
