@@ -44,17 +44,19 @@ export function useNextEvmPermitNonce() {
     revertPermitNonce,
     setPendingPermit,
   } = useEvmPermitStore()
+
+  const isEvmSigner = wallet?.signer instanceof EthereumSigner
+
   useQuery(
     QUERY_KEYS.nextEvmPermitNonce(address),
     async () => {
       if (!address) throw new Error("Missing address")
       if (!wallet?.signer) throw new Error("Missing wallet signer")
-      if (wallet.signer instanceof EthereumSigner) {
-        return await wallet.signer.getPermitNonce()
-      }
+      if (!isEvmSigner) throw new Error("Invalid signer")
+      return await wallet.signer.getPermitNonce()
     },
     {
-      enabled: isEvmAccount(address),
+      enabled: isEvmAccount(address) && isEvmSigner,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 24,
       onSuccess: (nonce) => {

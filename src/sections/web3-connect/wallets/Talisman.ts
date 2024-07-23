@@ -1,22 +1,16 @@
 import {
   NotInstalledError,
-  SubWallet as SubWalletImpl,
+  TalismanWallet,
   WalletAccount,
 } from "@talismn/connect-wallets"
-import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 
-import SubWalletLogo from "assets/icons/SubWalletLogo.svg"
-
-export class SubWallet extends SubWalletImpl {
-  extensionName = WalletProviderType.SubwalletJS
-  logo = {
-    src: SubWalletLogo,
-    alt: "SubWallet Logo",
-  }
+export class Talisman extends TalismanWallet {
+  extensionName = WalletProviderType.Talisman
   getAccounts = async (anyType?: boolean): Promise<WalletAccount[]> => {
     if (!this._extension) {
       throw new NotInstalledError(
