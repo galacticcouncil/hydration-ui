@@ -23,10 +23,12 @@ export const HeaderSettingsMobile = () => {
 
   return (
     <>
-      <div sx={{ flex: "row", align: "center", gap: 10 }}>
+      <div
+        sx={{ flex: "row", align: "center", gap: 10 }}
+        onClick={() => setOpen(true)}
+      >
         <IconButton
           size={34}
-          onClick={() => setOpen(true)}
           icon={<SettingsIcon />}
           css={{
             border: "none",
