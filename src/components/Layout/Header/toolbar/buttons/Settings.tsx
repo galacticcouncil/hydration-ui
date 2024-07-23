@@ -118,7 +118,6 @@ export const SettingsContents = ({
                   icon={<ApeIcon width={22} height={22} />}
                   title={t("header.settings.items.degenMode.title")}
                   subtitle={t("header.settings.items.degenMode.subtitle")}
-                  tooltip={t("header.settings.degenMode.description")}
                   toggleValue={degenMode}
                   onClick={onDegenModeChange}
                   css={{ background: "transparent" }}
