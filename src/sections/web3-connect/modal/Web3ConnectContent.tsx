@@ -9,7 +9,10 @@ import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectEr
 import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
 import { Web3ConnectProviderPending } from "sections/web3-connect/providers/Web3ConnectProviderPending"
 import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3ConnectProviders"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  useWeb3ConnectStore,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { useForm } from "react-hook-form"
@@ -69,11 +72,14 @@ export const Web3ConnectContent: React.FC<Props> = ({
           content: <Web3ConnectProviders />,
           headerVariant: "gradient",
           description:
-            chain && mode === "evm"
+            chain && mode === WalletMode.EVM
               ? t(`walletConnect.provider.description.evmChain`, {
                   chain: chain.name,
                 })
-              : chain && mode === "substrate"
+              : chain &&
+                  [WalletMode.Substrate, WalletMode.SubstrateH160].includes(
+                    mode,
+                  )
                 ? t(`walletConnect.provider.description.substrateChain`, {
                     chain: chain.name,
                   })
