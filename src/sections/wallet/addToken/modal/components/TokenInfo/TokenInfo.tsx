@@ -1,6 +1,6 @@
 import {
   PENDULUM_ID,
-  useExternalTokensRugCheck,
+  TRugCheckData,
   useParachainAmount,
 } from "api/externalAssetRegistry"
 import { Separator } from "components/Separator/Separator"
@@ -12,7 +12,7 @@ import { useMemo } from "react"
 import { useGetXYKPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_0 } from "utils/constants"
-import { MASTER_KEY_WHITELIST, useExternalXYKVolume } from "./TokenInfo.utils"
+import { useExternalXYKVolume } from "./TokenInfo.utils"
 import Skeleton from "react-loading-skeleton"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
@@ -24,16 +24,16 @@ import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/To
 export const TokenInfo = ({
   externalAsset,
   chainStoredAsset,
+  rugCheckData,
 }: {
   externalAsset: TExternalAsset
   chainStoredAsset?: TExternal
+  rugCheckData?: TRugCheckData
 }) => {
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
-  const rugCheck = useExternalTokensRugCheck()
-  const rugCheckData = rugCheck.tokensMap.get(chainStoredAsset?.id ?? "")
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
 
   const isChainStored = !!chainStoredAsset
@@ -176,7 +176,7 @@ export const TokenInfo = ({
           label={t("wallet.addToken.form.info.masterAccount")}
           value={
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              {MASTER_KEY_WHITELIST.some((id) => id === externalAsset.id) ? (
+              {rugCheckData?.isWhiteListed ? (
                 <Text fs={12} color="green600">
                   {t("yes")}
                 </Text>

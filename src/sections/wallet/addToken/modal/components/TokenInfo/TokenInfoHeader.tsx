@@ -1,6 +1,9 @@
 import { AssetId, AssetBadge } from "@galacticcouncil/ui"
 import { createComponent } from "@lit-labs/react"
-import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import {
+  ExternalAssetBadgeVariant,
+  RugSeverityLevel,
+} from "api/externalAssetRegistry"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import * as React from "react"
@@ -24,24 +27,19 @@ export const UigcAssetBadge = createComponent({
 export type TokenHeaderProps = {
   asset: TExternalAsset
   internalId?: string
+  severity?: RugSeverityLevel
+  badge?: ExternalAssetBadgeVariant
 }
 
 export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   asset,
   internalId,
+  severity,
+  badge,
 }) => {
   const { t } = useTranslation()
-  const rugCheck = useExternalTokensRugCheck(
-    internalId ? [internalId] : undefined,
-  )
-  const rugCheckData = rugCheck.tokensMap.get(internalId ?? "")
 
-  const isHighSeverity = rugCheckData?.severity === "high"
-  const badgeVariant = rugCheckData
-    ? rugCheckData?.isWhitelisted
-      ? "warning"
-      : "danger"
-    : ""
+  const isHighSeverity = severity === "high"
 
   return (
     <div sx={{ flex: "row", gap: 10 }}>
@@ -62,11 +60,11 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
                 <SBadgeCointainer slot="badge">
                   <SkullIcon sx={{ color: "alarmRed400" }} />
                 </SBadgeCointainer>
-              ) : badgeVariant ? (
+              ) : badge ? (
                 <UigcAssetBadge
                   slot="badge"
-                  variant={badgeVariant}
-                  text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+                  variant={badge}
+                  text={t(`wallet.addToken.tooltip.${badge}`)}
                 />
               ) : null}
             </UigcAssetId>

@@ -4,7 +4,10 @@ import { Button } from "components/Button/Button"
 import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import {
+  TExternalAsset,
+  useUserExternalTokenStore,
+} from "sections/wallet/addToken/AddToken.utils"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
@@ -47,6 +50,7 @@ enum TokenState {
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
+  const { getTokenByInternalId } = useUserExternalTokenStore()
 
   const chainStored = assets.external.find(
     (chainAsset) =>
@@ -54,10 +58,11 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       chainAsset.parachainId === asset.origin.toString(),
   )
 
-  const rugCheck = useExternalTokensRugCheck()
-  const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
+  const userStored = getTokenByInternalId(chainStored?.id ?? "")
 
-  const userStored = !!rugCheckData?.storedToken
+  const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
+  const rugCheck = useExternalTokensRugCheck(rugCheckIds)
+  const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -104,7 +109,12 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
 
   return (
     <>
-      <TokenInfoHeader asset={asset} internalId={chainStored?.id} />
+      <TokenInfoHeader
+        asset={asset}
+        internalId={chainStored?.id}
+        badge={rugCheckData?.badge}
+        severity={rugCheckData?.severity}
+      />
       <Separator sx={{ my: 10 }} color="darkBlue401" />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -153,9 +163,12 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
               )}
             />
           </div>
-
           <Spacer size={0} />
-          <TokenInfo externalAsset={asset} chainStoredAsset={chainStored} />
+          <TokenInfo
+            externalAsset={asset}
+            chainStoredAsset={chainStored}
+            rugCheckData={rugCheckData}
+          />
           <Spacer size={8} />
           <Button variant="primary" sx={{ mt: "auto" }} type="submit">
             {tokenState === TokenState.NotRegistered && (
