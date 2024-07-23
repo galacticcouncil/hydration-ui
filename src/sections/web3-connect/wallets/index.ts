@@ -2,6 +2,7 @@ import { SubscriptionFn, Wallet, getWallets } from "@talismn/connect-wallets"
 
 import { ExternalWallet } from "./ExternalWallet"
 import { MetaMask } from "./MetaMask"
+import { Talisman } from "./Talisman"
 import { TalismanEvm } from "./TalismanEvm"
 import { NovaWallet } from "./NovaWallet"
 import { WalletConnect } from "./WalletConnect"
@@ -11,7 +12,10 @@ import { SubWallet } from "./SubWallet"
 import { TrustWallet } from "./TrustWallet"
 import { BraveWallet } from "./BraveWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
-import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import {
+  SUBSTRATE_H160_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 export type WalletProvider = {
@@ -20,7 +24,8 @@ export type WalletProvider = {
 }
 
 const wallets = getWallets().filter(
-  ({ extensionName }) => extensionName !== WalletProviderType.SubwalletJS,
+  ({ extensionName }) =>
+    !SUBSTRATE_H160_PROVIDERS.includes(extensionName as WalletProviderType),
 )
 
 const onMetaMaskLikeAccountChange =
@@ -43,6 +48,8 @@ const onMetaMaskLikeAccountChange =
   }
 
 const novaWallet: Wallet = new NovaWallet()
+
+const talisman = new Talisman()
 const talismanEvm: Wallet = new TalismanEvm({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.TalismanEvm,
@@ -86,6 +93,7 @@ const externalWallet: Wallet = new ExternalWallet()
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
   metaMask,
+  talisman,
   talismanEvm,
   subwalletEvm,
   subwallet,

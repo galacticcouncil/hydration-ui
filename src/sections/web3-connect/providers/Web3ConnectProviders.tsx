@@ -13,6 +13,7 @@ import {
   DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import {
@@ -50,9 +51,11 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
   return useMemo(() => {
     const wallets = getSupportedWallets()
 
-    const isDefaultMode = mode === "default"
-    const isEvmMode = mode === "evm"
-    const isSubstrateMode = mode === "substrate"
+    const isDefaultMode = mode === WalletMode.Default
+    const isEvmMode = mode === WalletMode.EVM
+    const isSubstrateMode = mode === WalletMode.Substrate
+    const isSubstrateEvmMode = mode === WalletMode.SubstrateEVM
+    const isSubstrateH160Mode = mode === WalletMode.SubstrateH160
 
     const filteredProviders = wallets
       .filter((provider) => {
@@ -64,11 +67,16 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
 
         const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
         const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
+        const isSubstrateH160Provider = SUBSTRATE_H160_PROVIDERS.includes(
+          provider.type,
+        )
 
         const byMode =
           isDefaultMode ||
+          isSubstrateEvmMode ||
           (isEvmMode && isEvmProvider) ||
-          (isSubstrateMode && isSubstrateProvider)
+          (isSubstrateMode && isSubstrateProvider) ||
+          (isSubstrateH160Mode && isSubstrateH160Provider)
 
         const byWalletConnect =
           isSubstrateMode && provider.type === "walletconnect" && chain
@@ -124,13 +132,15 @@ export const Web3ConnectProviders = () => {
     EVM_PROVIDERS.includes(recentProvider) &&
     !SUBSTRATE_PROVIDERS.includes(recentProvider)
 
-  const isDefaultMode = mode === "default"
+  const isFilterable =
+    mode === WalletMode.Default || mode === WalletMode.SubstrateEVM
+
   const defaultSelectedMode = isRecentEvmProvider
     ? WalletMode.EVM
     : WalletMode.Substrate
 
   const [selectedMode, setSelectedMode] = useState<WalletMode>(
-    isDefaultMode ? defaultSelectedMode : mode,
+    isFilterable ? defaultSelectedMode : mode,
   )
 
   const { installedProviders, otherProviders, alternativeProviders } =
@@ -146,7 +156,7 @@ export const Web3ConnectProviders = () => {
 
   return (
     <>
-      {isDefaultMode && (
+      {isFilterable && (
         <>
           <div sx={{ flex: "row", align: "center", gap: 10, flexWrap: "wrap" }}>
             <Text color="basic500" fs={14}>

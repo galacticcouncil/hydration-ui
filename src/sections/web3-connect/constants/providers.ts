@@ -49,6 +49,11 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.WalletConnect,
 ]
 
+export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.SubwalletJS,
+  WalletProviderType.Talisman,
+]
+
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.ExternalWallet,
 ]
