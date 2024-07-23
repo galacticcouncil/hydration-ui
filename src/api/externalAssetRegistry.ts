@@ -61,7 +61,7 @@ export const getIconByRugSeverity = (severity: RugSeverityLevel) => {
 }
 
 export type RugWarning = {
-  type: "supply" | "symbol" | "decimals"
+  type: "supply" | "symbol" | "name" | "decimals"
   severity: RugSeverityLevel
   diff: [number | string | BN, number | string | BN]
 }
@@ -494,6 +494,14 @@ const createRugWarningList = ({
       type: "symbol",
       severity: "medium",
       diff: [storedToken.symbol, externalToken.symbol],
+    })
+  }
+
+  if (externalToken.name !== storedToken.name) {
+    warnings.push({
+      type: "name",
+      severity: "medium",
+      diff: [storedToken.name, externalToken.name],
     })
   }
 

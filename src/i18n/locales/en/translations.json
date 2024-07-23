@@ -574,6 +574,7 @@
     "volume": "Daily volume on Hydration"
   },
   "wallet.addToken.rugCheck.symbol": "Asset symbols don't usually change. This could be an indication that the asset creator is trying to create the false impression that the asset in question is another asset.",
+  "wallet.addToken.rugCheck.name": "Asset names don't usually change. This could be an indication that the asset creator is trying to create the false impression that the asset in question is another asset.",
   "wallet.addToken.rugCheck.decimals": "Asset decimals don't usually change. This could be an indication that the asset creator is trying to manipulate the supply in order to inflate the value of the asset.",
   "wallet.addToken.rugCheck.supply": "The supply of asset {{ name }} has most likely been tampered with. As a result, you are no longer able to withdraw all your funds.",
   "wallet.addToken.toast.register.onLoading": "Registering {{name}} on Hydration...",

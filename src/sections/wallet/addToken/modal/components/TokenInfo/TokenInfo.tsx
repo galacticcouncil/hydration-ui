@@ -115,6 +115,23 @@ export const TokenInfo = ({
           />
         </>
       )}
+      {warningFlags.name && (
+        <>
+          <Separator opacity={0.3} color="darkBlue400" />
+          <TokenInfoRow
+            label={t("wallet.addToken.form.name")}
+            value={
+              <TokenInfoValueDiff
+                before={warningFlags.name.from}
+                after={warningFlags.name.to}
+              />
+            }
+            warning={
+              warningFlags.name ? t("wallet.addToken.rugCheck.name") : ""
+            }
+          />
+        </>
+      )}
       <Separator opacity={0.3} color="darkBlue400" />
       <TokenInfoRow
         label={t("wallet.addToken.form.symbol")}
