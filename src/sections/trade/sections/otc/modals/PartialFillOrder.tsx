@@ -258,26 +258,31 @@ export const PartialFillOrder = ({
             />
           )}
         />
-        <Spacer size={8} />
-        <Summary
-          rows={[
-            {
-              label: t("liquidity.add.modal.tradeFee"),
-              content: fee.isLoading ? (
-                <Skeleton width={30} height={12} />
-              ) : (
-                <Text fs={14} color="white" tAlign="right">
-                  {fee.data
-                    ? t("value.tokenWithSymbol", {
-                        value: fee.data.times(form.getValues("amountOut")),
-                        symbol: assetOutMeta.symbol,
-                      })
-                    : "N/a"}
-                </Text>
-              ),
-            },
-          ]}
-        />
+        {fee.data?.isNaN() ? null : (
+          <>
+            <Spacer size={8} />
+            <Summary
+              rows={[
+                {
+                  label: t("liquidity.add.modal.tradeFee"),
+                  content: fee.isLoading ? (
+                    <Skeleton width={30} height={12} />
+                  ) : (
+                    <Text fs={14} color="white" tAlign="right">
+                      {fee.data
+                        ? t("value.tokenWithSymbol", {
+                            value: fee.data.times(form.getValues("amountOut")),
+                            symbol: assetOutMeta.symbol,
+                          })
+                        : "N/a"}
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          </>
+        )}
+
         <Button
           sx={{ mt: 20 }}
           variant="primary"
