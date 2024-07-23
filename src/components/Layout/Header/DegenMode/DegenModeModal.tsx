@@ -1,15 +1,13 @@
 import ApeIcon from "assets/icons/ApeIcon.svg?react"
-import IconLink from "assets/icons/LinkIcon.svg?react"
 import PixelBg from "assets/icons/PixelBg.svg?react"
 import { Button } from "components/Button/Button"
 import { CheckBox } from "components/CheckBox/CheckBox"
-import { SLearnMoreLink } from "components/Layout/Header/DegenMode/DegenModeModal.styled"
 
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { FC, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 type DegenModeModalProps = {
   open: boolean
@@ -50,20 +48,14 @@ export const DegenModeModal: FC<DegenModeModalProps> = ({
             css={{ position: "absolute" }}
           />
         </div>
-        <div sx={{ width: ["100%", "75%"], mx: "auto" }}>
+        <div sx={{ px: [0, 20], mx: "auto" }}>
           <Text font="GeistMono" tAlign="center" fs={22} sx={{ mt: 20 }}>
             {t("header.settings.degenMode.title")}
           </Text>
-          <Text color="basic400" tAlign="center" sx={{ mt: 20 }}>
-            {t("header.settings.degenMode.description")}
+          <Text color="basic400" tAlign="center" fs={14} sx={{ mt: 20 }}>
+            <Trans t={t} i18nKey="header.settings.degenMode.description" />
           </Text>
-          <Text tAlign="center" sx={{ mt: 10 }}>
-            <SLearnMoreLink>
-              {t("stats.tiles.link")}
-              <IconLink />
-            </SLearnMoreLink>
-          </Text>
-          <Separator sx={{ mt: 20 }} color="darkBlue401" />
+          <Separator sx={{ my: 20 }} color="darkBlue401" />
           <CheckBox
             sx={{ mt: 14, mb: 32 }}
             size="small"

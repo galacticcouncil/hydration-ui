@@ -205,15 +205,22 @@ export const Web3ConnectProviders = () => {
       <Text color="basic400">
         {t("walletConnect.provider.section.installed")}
       </Text>
-      <SProviderContainer>
-        {installedProviders.map((provider) => (
-          <Web3ConnectProviderButton
-            key={provider.type}
-            mode={selectedMode}
-            {...provider}
-          />
-        ))}
-      </SProviderContainer>
+      {installedProviders.length > 0 ? (
+        <SProviderContainer>
+          {installedProviders.map((provider) => (
+            <Web3ConnectProviderButton
+              key={provider.type}
+              mode={selectedMode}
+              {...provider}
+            />
+          ))}
+        </SProviderContainer>
+      ) : (
+        <Text fs={12} color="basic400" sx={{ mt: 8 }}>
+          {t("walletConnect.provider.section.installed.notFound")}
+        </Text>
+      )}
+
       <div sx={{ display: ["block", "none"], mt: 20 }}>
         {alternativeProviders.map((provider) => (
           <Web3ConnectAltProviderButton {...provider} key={provider.type}>

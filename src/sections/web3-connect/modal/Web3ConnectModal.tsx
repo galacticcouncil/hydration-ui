@@ -30,8 +30,6 @@ export const Web3ConnectModal = () => {
   const shouldShowProviderSelect =
     mode !== WalletMode.Default || !activeProvider || !account
 
-  console.log({ shouldShowProviderSelect, mode })
-
   const initialPage = shouldShowProviderSelect
     ? ModalPage.ProviderSelect
     : ModalPage.AccountSelect
