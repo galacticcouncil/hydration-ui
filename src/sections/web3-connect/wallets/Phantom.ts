@@ -1,8 +1,9 @@
 import { isPhantom } from "utils/metamask"
 import { MetaMask } from "./MetaMask"
+import { WalletProviderType } from "sections/web3-connect/constants/providers"
 
 export class Phantom extends MetaMask {
-  extensionName = "phantom"
+  extensionName = WalletProviderType.Phantom
   title = "Phantom"
   installUrl = ""
   logo = {

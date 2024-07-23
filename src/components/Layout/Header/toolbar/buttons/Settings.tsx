@@ -21,6 +21,9 @@ import { Separator } from "components/Separator/Separator"
 import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal"
 import { Root as DialogRoot } from "@radix-ui/react-dialog"
 
+const DISPLAY_ASSET_ENABLED =
+  import.meta.env.VITE_FF_DISPLAY_ASSET_ENABLED === "true"
+
 export const Settings = () => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
@@ -102,23 +105,29 @@ export const SettingsContents = ({
             noPadding: true,
             content: (
               <HeaderDropdownItems>
-                <HeaderDropdownItem
-                  variant="navigation"
-                  onClick={next}
-                  icon={<IconDollar width={22} height={22} />}
-                  title={t("header.settings.items.displayAsset.title")}
-                  subtitle={t("header.settings.items.displayAsset.subtitle")}
-                />
-                <Separator
-                  color="darkBlue401"
-                  sx={{ mt: 10, mx: -16, width: "auto" }}
-                />
+                {DISPLAY_ASSET_ENABLED && (
+                  <>
+                    <HeaderDropdownItem
+                      variant="navigation"
+                      onClick={next}
+                      icon={<IconDollar width={22} height={22} />}
+                      title={t("header.settings.items.displayAsset.title")}
+                      subtitle={t(
+                        "header.settings.items.displayAsset.subtitle",
+                      )}
+                    />
+                    <Separator
+                      color="darkBlue401"
+                      sx={{ mt: 10, mx: -16, width: "auto" }}
+                    />
+                  </>
+                )}
+
                 <HeaderDropdownItem
                   variant="toggle"
                   icon={<ApeIcon width={22} height={22} />}
                   title={t("header.settings.items.degenMode.title")}
                   subtitle={t("header.settings.items.degenMode.subtitle")}
-                  tooltip={t("header.settings.degenMode.description")}
                   toggleValue={degenMode}
                   onClick={onDegenModeChange}
                   css={{ background: "transparent" }}

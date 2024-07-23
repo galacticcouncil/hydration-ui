@@ -99,7 +99,13 @@ export type TShareToken = TAssetCommon & {
   poolAddress: string
 }
 
-export type TAsset = TToken | TBond | TStableSwap | TShareToken
+export type TExternal = TAssetCommon & {
+  assetType: "External"
+  externalId?: string
+  isWhiteListed?: boolean
+}
+
+export type TAsset = TToken | TBond | TStableSwap | TShareToken | TExternal
 
 export const fallbackAsset: TToken = {
   id: "",
@@ -170,7 +176,7 @@ export const getAssets = async (api: ApiPromise) => {
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
   const shareTokensRaw = []
-  const external: TToken[] = []
+  const external: TExternal[] = []
 
   for (const [key, dataRaw] of rawAssetsData) {
     if (!dataRaw.isNone) {
@@ -409,9 +415,9 @@ export const getAssets = async (api: ApiPromise) => {
               : getGeneralIndex(location)
             : undefined
 
-        const asset: TToken = {
+        const asset: TExternal = {
           ...assetCommon,
-          assetType: assetType as "Token",
+          assetType: assetType,
           parachainId:
             location && !location.isNone
               ? getTokenParachainId(location)
@@ -483,7 +489,7 @@ export const getAssets = async (api: ApiPromise) => {
     rawTradeAssets = await tradeRouter.getAllAssets()
   } catch (e) {}
 
-  const tradableBonds = bonds.map((bond) => {
+  const tradableBonds: TBond[] = bonds.map((bond) => {
     const isTradable = rawTradeAssets.some(
       (tradeAsset) => tradeAsset.id === bond.id,
     )

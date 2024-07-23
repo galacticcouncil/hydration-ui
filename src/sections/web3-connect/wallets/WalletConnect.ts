@@ -18,6 +18,7 @@ import {
 } from "sections/web3-connect/signer/PolkadotSigner"
 import { noop } from "utils/helpers"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 
 // @TODO: Remove when the old domain is deprecated
 const isOldDomain = window?.location?.hostname.includes("hydradx.io")
@@ -98,7 +99,7 @@ export type NamespaceType = keyof typeof namespaces
 type ModalSubFn = (session?: SessionTypes.Struct) => void
 
 export class WalletConnect implements Wallet {
-  extensionName = "walletconnect"
+  extensionName = WalletProviderType.WalletConnect
   title = "WalletConnect"
   installUrl = ""
   logo = {
