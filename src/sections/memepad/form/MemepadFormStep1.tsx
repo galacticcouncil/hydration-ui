@@ -15,6 +15,8 @@ type MemepadFormStep1Props = {
   form: UseFormReturn<MemepadStep1Values>
 }
 
+const DOT_COST_ENABLED = false
+
 export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
   const { t } = useTranslation()
 
@@ -108,6 +110,19 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
             />
           )}
         />
+        {DOT_COST_ENABLED && (
+          <AssetSelect
+            id="5"
+            title={t("memepad.form.assetCreationCost")}
+            withoutMaxBtn
+            name="creation-cost"
+            value="10"
+            balance={data?.balance}
+            balanceLabel={t("balance")}
+            onChange={undefinedNoop}
+            disabled
+          />
+        )}
       </div>
     </form>
   )
