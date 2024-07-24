@@ -23,23 +23,24 @@ import { Spacer } from "components/Spacer/Spacer"
 import { FormValues } from "utils/helpers"
 import { FarmRedepositMutationType } from "utils/farms/redeposit"
 import { TLPData } from "utils/omnipool"
+import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 
 type JoinFarmModalProps = {
   onClose: () => void
   poolId: string
   position?: TLPData
   farms: Farm[]
-  isRedeposit?: boolean
   mutation: FarmDepositMutationType | FarmRedepositMutationType
+  depositNft?: TMiningNftPosition
 }
 
 export const JoinFarmModal = ({
   onClose,
-  isRedeposit,
   poolId,
   position,
   farms,
   mutation,
+  depositNft,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -49,7 +50,8 @@ export const JoinFarmModal = ({
   } | null>(null)
   const meta = assets.getAsset(poolId)
   const bestNumber = useBestNumber()
-  const shouldValidate = !!position?.amount
+  const shouldValidate =
+    !!position?.amount || (meta.isShareToken && !depositNft)
 
   const zodSchema = useZodSchema({
     id: meta.id,
@@ -86,11 +88,14 @@ export const JoinFarmModal = ({
     .dividedToIntegerBy(
       selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
     )
+  const positionValue =
+    position?.totalValueShifted ??
+    (depositNft ? scaleHuman(depositNft.data.shares, meta.decimals) : undefined)
 
   const onSubmit = (values: FormValues<typeof form>) => {
     mutation.mutate({
       shares: values.amount,
-      value: position?.totalValueShifted.toString() ?? "",
+      value: positionValue?.toString() ?? "",
     })
   }
 
@@ -110,37 +115,35 @@ export const JoinFarmModal = ({
             }),
             content: (
               <>
-                <>
-                  {isRedeposit && (
-                    <Text color="basic400" sx={{ mb: 12 }}>
-                      {t("farms.modal.join.description", {
-                        assets: meta.symbol,
-                      })}
-                    </Text>
-                  )}
-                  <div sx={{ flex: "column", gap: 8 }}>
-                    {farms.map((farm, i) => {
-                      return (
-                        <FarmDetailsCard
-                          key={i}
-                          poolId={poolId}
-                          farm={farm}
-                          onSelect={() => {
-                            setSelectedFarmId({
-                              globalFarmId: farm.globalFarm.id,
-                              yieldFarmId: farm.yieldFarm.id,
-                            })
-                            next()
-                          }}
-                        />
-                      )
+                {!!depositNft && (
+                  <Text color="basic400" sx={{ mb: 12 }}>
+                    {t("farms.modal.join.description", {
+                      assets: meta.symbol,
                     })}
-                  </div>
-                </>
+                  </Text>
+                )}
+                <div sx={{ flex: "column", gap: 8 }}>
+                  {farms.map((farm, i) => {
+                    return (
+                      <FarmDetailsCard
+                        key={i}
+                        poolId={poolId}
+                        farm={farm}
+                        onSelect={() => {
+                          setSelectedFarmId({
+                            globalFarmId: farm.globalFarm.id,
+                            yieldFarmId: farm.yieldFarm.id,
+                          })
+                          next()
+                        }}
+                      />
+                    )
+                  })}
+                </div>
 
                 <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
                   <SJoinFarmContainer>
-                    {position ? (
+                    {positionValue ? (
                       <div
                         sx={{
                           flex: ["column", "row"],
@@ -154,11 +157,11 @@ export const JoinFarmModal = ({
                         </div>
                         <Text
                           color="pink600"
-                          fs={24}
+                          fs={20}
                           css={{ whiteSpace: "nowrap" }}
                         >
                           {t("value.tokenWithSymbol", {
-                            value: position.totalValueShifted,
+                            value: positionValue,
                             symbol: meta.symbol,
                           })}
                         </Text>

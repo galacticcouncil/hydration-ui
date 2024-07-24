@@ -15,7 +15,7 @@ export const PoolAddLiquidityInformationCard = () => {
         <Text fs={13} lh={16}>
           {t("liquidity.add.modal.information.text")}
         </Text>
-        <SLink href={`${DOC_LINK}/howto_lp`} target="_blank">
+        <SLink href={`${DOC_LINK}/omnipool_impermanent_loss`} target="_blank">
           {t("liquidity.add.modal.information.linkText")}
         </SLink>
       </div>

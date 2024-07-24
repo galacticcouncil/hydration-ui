@@ -63,8 +63,8 @@ export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
           b.original.valueDisplay.isNaN()
             ? 1
             : a.original.valueDisplay.gt(b.original.valueDisplay)
-            ? 1
-            : -1,
+              ? 1
+              : -1,
         cell: ({ row }) => (
           <div
             sx={{

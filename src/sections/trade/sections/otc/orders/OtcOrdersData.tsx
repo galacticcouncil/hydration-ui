@@ -188,8 +188,8 @@ export const OrderMarketPriceColumn = (props: {
     props.percentage > 0
       ? "green600"
       : props.percentage < 0
-      ? "red400"
-      : "whiteish500"
+        ? "red400"
+        : "whiteish500"
 
   const formatPercentage = (percent: number) => {
     if (percent) {

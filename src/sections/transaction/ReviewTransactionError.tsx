@@ -108,8 +108,8 @@ function getErrorTemplate(
       error instanceof Error
         ? error.message || error.toString()
         : typeof error === "object"
-        ? JSON.stringify(error)
-        : `${error}`
+          ? JSON.stringify(error)
+          : `${error}`
   } catch (err) {}
 
   return `Address: ${account?.address}\nProvider: ${account?.provider}\nMessage: ${message}\nSpec Version: ${specVersion}`

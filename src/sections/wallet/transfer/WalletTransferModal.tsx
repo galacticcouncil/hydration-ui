@@ -70,6 +70,7 @@ export function WalletTransferModal(props: {
               <AssetsModalContent
                 withExternal
                 withBonds
+                defaultSelectedAsssetId={asset}
                 onSelect={(a) => {
                   setAsset(a.id)
                   openTransfer()

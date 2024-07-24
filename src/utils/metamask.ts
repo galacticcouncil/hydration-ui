@@ -11,6 +11,9 @@ const METAMASK_LIKE_CHECKS = [
   "isSubWallet",
   "isPhantom",
   "isNovaWallet",
+  "isTrust",
+  "isBraveWallet",
+  "isEnkrypt",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -31,8 +34,13 @@ export interface AddEvmChainParams {
     symbol: string
     decimals: number
   }
+  iconUrls: string[]
   rpcUrls: string[]
   blockExplorerUrls?: string[]
+}
+
+const chainIconMap: { [key: string]: string[] } = {
+  hydradx: ["https://app.hydration.net/favicon.ico"],
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
@@ -42,11 +50,12 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
     chainId: "0x" + Number(chainProps.id).toString(16),
     chainName: chainProps.name,
     rpcUrls: chainProps.rpcUrls.default.http as string[],
+    iconUrls: chainIconMap[chain] || [],
     nativeCurrency: chainProps.nativeCurrency,
     blockExplorerUrls: chainProps.blockExplorers?.default
       ? [chainProps.blockExplorers.default.url]
       : [],
-  }
+  } satisfies AddEvmChainParams
 }
 
 export function isMetaMask(
@@ -87,6 +96,18 @@ export function isNovaWalletEvm(
   return isMetaMaskLike(provider) && !!provider?.isNovaWallet
 }
 
+export function isTrustWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isTrust
+}
+
+export function isBraveWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isBraveWallet
+}
+
+export function isEnkrypt(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isEnkrypt
+}
+
 export function isEthereumProvider(
   provider: Maybe<ExternalProvider>,
 ): provider is Required<MetaMaskLikeProvider | UniversalProvider> {
@@ -113,19 +134,9 @@ export async function requestNetworkSwitch(
       })
       .then(options?.onSwitch)
   } catch (error: any) {
-    let message: Record<string, any> = {}
-    try {
-      message =
-        typeof error?.message === "string" ? JSON.parse(error.message) : {}
-    } catch (err) {}
+    const errorType = normalizeChainSwitchError(provider, error)
 
-    const errorCode =
-      message?.data?.originalError?.code ||
-      error.data?.originalError?.code ||
-      error?.code
-
-    // missing or unsupported network error
-    if (errorCode === 4902) {
+    if (errorType === "CHAIN_NOT_FOUND") {
       try {
         await provider
           .request({
@@ -190,6 +201,32 @@ export const requestAccounts = async (
       },
     ],
   })
+}
+
+function normalizeChainSwitchError(
+  provider: Maybe<MetaMaskLikeProvider>,
+  error: any,
+) {
+  if (!provider) return
+  let message: Record<string, any> = {}
+  try {
+    message =
+      typeof error?.message === "string" ? JSON.parse(error.message) : {}
+  } catch (err) {}
+
+  const errorCode =
+    message?.data?.originalError?.code ||
+    error.data?.originalError?.code ||
+    error?.code
+
+  if (provider.isTrust) {
+    const notFound = errorCode === 4200 || error?.message === "No assets found"
+    if (notFound) return "CHAIN_NOT_FOUND"
+  }
+
+  if (errorCode === 4902) {
+    return "CHAIN_NOT_FOUND"
+  }
 }
 
 function numToBuffer(num: number) {

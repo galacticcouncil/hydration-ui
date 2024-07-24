@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { u128, u32, Option } from "@polkadot/types"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
 import { PalletLiquidityMiningDepositData } from "@polkadot/types/lookup"
@@ -79,6 +79,15 @@ const getOmniPositionId =
     return { depositionId, value: res.value }
   }
 
+export const useRefetchAccountNFTPositions = () => {
+  const queryClient = useQueryClient()
+  const { account } = useAccount()
+
+  return () => {
+    queryClient.refetchQueries(QUERY_KEYS.accountNFTPositions(account?.address))
+  }
+}
+
 export const useAccountNFTPositions = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
@@ -86,7 +95,7 @@ export const useAccountNFTPositions = (givenAddress?: string) => {
   const address = givenAddress ?? account?.address
 
   return useQuery(
-    QUERY_KEYS.accountOmnipoolPositions(address),
+    QUERY_KEYS.accountNFTPositions(address),
     address != null
       ? async () => {
           const [omnipoolNftId, miningNftId, xykMiningNftId] =

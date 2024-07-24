@@ -2,9 +2,10 @@ import NovaWalletLogo from "assets/icons/NovaWallet.svg"
 
 import { MetaMask } from "./MetaMask"
 import { isNovaWalletEvm } from "utils/metamask"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 
 export class NovaWalletEvm extends MetaMask {
-  extensionName = "nova-wallet-evm"
+  extensionName = WalletProviderType.NovaWalletEvm
   title = "Nova Wallet EVM"
   installUrl = "https://novawallet.io"
   logo = {

@@ -3,7 +3,7 @@ import { required } from "utils/validators"
 import { z } from "zod"
 
 export const WSS_REGEX =
-  /^wss:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+(:[0-9]+)?(\/.*)?$/i
+  /^wss?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+(:[0-9]+)?(\/.*)?$/i
 
 export const useProviderSelectFormSchema = (rpcList: string[]) => {
   const { t } = useTranslation()

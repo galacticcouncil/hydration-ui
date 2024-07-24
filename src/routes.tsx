@@ -10,6 +10,7 @@ import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
 import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
+import { LINKS } from "utils/navigation"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
 
@@ -99,6 +100,10 @@ const StakingPage = lazy(async () => ({
 
 const ReferralsWrapper = lazy(async () => ({
   default: (await import("sections/referrals/ReferralsPage")).ReferralsWrapper,
+}))
+const SubmitTransaction = lazy(async () => ({
+  default: (await import("sections/submit-transaction/SubmitTransaction"))
+    .SubmitTransaction,
 }))
 
 export const routes: Route[] = [
@@ -362,6 +367,14 @@ export const routes: Route[] = [
     element: (
       <Suspense fallback={<ReferralsSkeleton />}>
         <ReferralsWrapper />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.submitTransaction,
+    element: (
+      <Suspense fallback={null}>
+        <SubmitTransaction />
       </Suspense>
     ),
   },

@@ -15,6 +15,8 @@ import { omit } from "utils/rx"
 import { useProviderRpcUrlStore } from "./provider"
 import { PENDULUM_ID } from "./externalAssetRegistry"
 import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { useSettingsStore } from "state/store"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -97,7 +99,13 @@ export type TShareToken = TAssetCommon & {
   poolAddress: string
 }
 
-export type TAsset = TToken | TBond | TStableSwap | TShareToken
+export type TExternal = TAssetCommon & {
+  assetType: "External"
+  externalId?: string
+  isWhiteListed?: boolean
+}
+
+export type TAsset = TToken | TBond | TStableSwap | TShareToken | TExternal
 
 export const fallbackAsset: TToken = {
   id: "",
@@ -157,15 +165,18 @@ export const getAssets = async (api: ApiPromise) => {
     api.tx.multiTransactionPayment.dispatchPermit,
   ])
 
+  const degenMode = useSettingsStore.getState().degenMode
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
-  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
+  const { tokens: externalTokens } = degenMode
+    ? ExternalAssetCursor.deref().state
+    : useUserExternalTokenStore.getState()
 
   const tokens: TToken[] = []
   const bonds: TBond[] = []
   const stableswap: TStableSwap[] = []
   const shareTokensRaw = []
-  const external: TToken[] = []
+  const external: TExternal[] = []
 
   for (const [key, dataRaw] of rawAssetsData) {
     if (!dataRaw.isNone) {
@@ -188,6 +199,7 @@ export const getAssets = async (api: ApiPromise) => {
       if (rawAssetsMeta) {
         const assetsMeta = rawAssetsMeta
           .find((meta) => meta[0].args[0].toString() === id)?.[1]
+          //@ts-ignore
           .unwrap()
 
         meta = {
@@ -240,7 +252,10 @@ export const getAssets = async (api: ApiPromise) => {
               location && !location.isNone
                 ? getTokenParachainId(location)
                 : undefined,
-            externalId: undefined,
+            externalId:
+              location && !location.isNone
+                ? getGeneralIndex(location)
+                : undefined,
             iconId: assetCommon.id,
           }
 
@@ -266,6 +281,7 @@ export const getAssets = async (api: ApiPromise) => {
               (meta) => meta[0].args[0].toString() === assetId,
             )
             if (meta) {
+              //@ts-ignore
               const underlyingAssetMeta = meta[1].unwrap()
               underlyingAsset = {
                 decimals: Number(
@@ -329,6 +345,7 @@ export const getAssets = async (api: ApiPromise) => {
 
               const meta = (rawAssetsMeta ?? rawAssetsData)
                 .find((meta) => meta[0].args[0].toString() === assetId)?.[1]
+                //@ts-ignore
                 .unwrap()
 
               if (meta) {
@@ -398,15 +415,15 @@ export const getAssets = async (api: ApiPromise) => {
               : getGeneralIndex(location)
             : undefined
 
-        const asset: TToken = {
+        const asset: TExternal = {
           ...assetCommon,
-          assetType,
+          assetType: assetType,
           parachainId:
             location && !location.isNone
               ? getTokenParachainId(location)
               : undefined,
           externalId,
-          iconId: "",
+          iconId: assetCommon.id,
           ...(externalTokenStored
             ? omit(["id", "internalId", "origin"], {
                 ...externalTokenStored,
@@ -472,7 +489,7 @@ export const getAssets = async (api: ApiPromise) => {
     rawTradeAssets = await tradeRouter.getAllAssets()
   } catch (e) {}
 
-  const tradableBonds = bonds.map((bond) => {
+  const tradableBonds: TBond[] = bonds.map((bond) => {
     const isTradable = rawTradeAssets.some(
       (tradeAsset) => tradeAsset.id === bond.id,
     )

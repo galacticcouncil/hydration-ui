@@ -9,8 +9,9 @@ import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
 import { AnyChain, AnyEvmChain, AnyParachain } from "@galacticcouncil/xcm-core"
+import { TAsset } from "api/assetDetails"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -24,9 +25,8 @@ export const safelyParse = <T>(input: string): T | undefined => {
 }
 
 export type Maybe<T> = T | null | undefined
-export type FormValues<T> = T extends UseFormReturn<infer Values>
-  ? Values
-  : never
+export type FormValues<T> =
+  T extends UseFormReturn<infer Values> ? Values : never
 
 export function isRecord<Key extends string, Value>(
   x: unknown,
@@ -338,4 +338,61 @@ export const isJson = (item: string) => {
   }
 
   return typeof value === "object" && value !== null
+}
+
+export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
+  assets: Array<T>,
+  balanceKey: Extract<KeyOfType<T, BigNumber>, string>,
+  firstAssetId?: string,
+) => {
+  const tickerOrder = [
+    "HDX",
+    "DOT",
+    "USDC",
+    "USDT",
+    "IBTC",
+    "VDOT",
+    "WETH",
+    "WBTC",
+  ]
+  const getTickerIndex = (ticker: string) => {
+    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    return index === -1 ? Infinity : index
+  }
+
+  return [...assets].sort((a, b) => {
+    if (firstAssetId) {
+      if (a.meta.id === firstAssetId) return -1
+      if (b.meta.id === firstAssetId) return 1
+    }
+    const balanceA = a[balanceKey] as BN
+    const balanceB = b[balanceKey] as BN
+
+    if (balanceA.isNaN() || balanceB.isNaN()) {
+      if (balanceA.isNaN() && !balanceB.isNaN()) return 1
+      if (!balanceA.isNaN() && balanceB.isNaN()) return -1
+
+      if (a.meta.symbol && b.meta.symbol)
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+    }
+
+    if (balanceB.isZero() && balanceA.isZero()) {
+      const tickerIndexA = getTickerIndex(a.meta.symbol)
+      const tickerIndexB = getTickerIndex(b.meta.symbol)
+
+      if (a.meta.isExternal && !b.meta.isExternal) return 1
+      if (!a.meta.isExternal && b.meta.isExternal) return -1
+
+      if (
+        tickerIndexA === tickerIndexB ||
+        (a.meta.isExternal && b.meta.isExternal)
+      ) {
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+      } else {
+        return tickerIndexA - tickerIndexB
+      }
+    }
+
+    return b[balanceKey].minus(a[balanceKey]).toNumber()
+  })
 }

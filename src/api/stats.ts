@@ -156,8 +156,6 @@ const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
 
   return {
     address,
-    identity: res.isSome
-      ? res.unwrapOr(null)?.info.display.asRaw.toUtf8()
-      : null,
+    identity: res.isSome ? res.unwrap()[0].info.display.asRaw.toUtf8() : null,
   }
 }

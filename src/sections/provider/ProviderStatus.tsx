@@ -102,10 +102,10 @@ export function ProviderStatus(props: {
     status === "online"
       ? "#00FFA0"
       : status === "offline"
-      ? "#FF4B4B"
-      : status === "slow"
-      ? "#F5A855"
-      : undefined
+        ? "#FF4B4B"
+        : status === "slow"
+          ? "#F5A855"
+          : undefined
 
   const statusText = status != null ? t(`rpc.status.${status}`) : ""
 

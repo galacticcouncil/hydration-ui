@@ -92,11 +92,11 @@ export const getGeneralIndex = (
         ? xcm.asGeneralIndex.unwrap().toString()
         : undefined
       : xcm.filter((el) => el.isGeneralIndex).length > 1
-      ? undefined
-      : xcm
-          .find((el) => el.isGeneralIndex)
-          ?.asGeneralIndex.unwrap()
-          .toString()
+        ? undefined
+        : xcm
+            .find((el) => el.isGeneralIndex)
+            ?.asGeneralIndex.unwrap()
+            .toString()
 
     return generalIndex
   }

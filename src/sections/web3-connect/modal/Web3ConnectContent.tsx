@@ -9,10 +9,14 @@ import { Web3ConnectErrorModal } from "sections/web3-connect/modal/Web3ConnectEr
 import { Web3ConnectExternalModal } from "sections/web3-connect/modal/Web3ConnectExternalModal"
 import { Web3ConnectProviderPending } from "sections/web3-connect/providers/Web3ConnectProviderPending"
 import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3ConnectProviders"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  useWeb3ConnectStore,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { useForm } from "react-hook-form"
+import { Web3ConnectFooter } from "sections/web3-connect/modal/Web3ConnectFooter"
 
 type Props = {
   page: number
@@ -21,6 +25,8 @@ type Props = {
   onBack: () => void
   onSelect: () => void
   onRetry: () => void
+  onSwitch: () => void
+  onLogout: () => void
   onOpenAddressBook: () => void
   onCloseAddressBook: () => void
 }
@@ -28,6 +34,8 @@ type Props = {
 export const Web3ConnectContent: React.FC<Props> = ({
   onSelect,
   onRetry,
+  onSwitch,
+  onLogout,
   onOpenAddressBook,
   onCloseAddressBook,
   ...props
@@ -60,21 +68,26 @@ export const Web3ConnectContent: React.FC<Props> = ({
       {...props}
       contents={[
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.provider.title").toUpperCase(),
           content: <Web3ConnectProviders />,
+          headerVariant: "gradient",
           description:
-            chain && mode === "evm"
+            chain && mode === WalletMode.EVM
               ? t(`walletConnect.provider.description.evmChain`, {
                   chain: chain.name,
                 })
-              : chain && mode === "substrate"
-              ? t(`walletConnect.provider.description.substrateChain`, {
-                  chain: chain.name,
-                })
-              : t(`walletConnect.provider.description.${mode || "all"}`),
+              : chain &&
+                  [WalletMode.Substrate, WalletMode.SubstrateH160].includes(
+                    mode,
+                  )
+                ? t(`walletConnect.provider.description.substrateChain`, {
+                    chain: chain.name,
+                  })
+                : "",
         },
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.externalWallet.modal.title").toUpperCase(),
+          description: t("walletConnect.externalWallet.modal.desc"),
           content: (
             <Web3ConnectExternalModal
               form={externalWalletForm}
@@ -85,17 +98,21 @@ export const Web3ConnectContent: React.FC<Props> = ({
           ),
         },
         {
-          title: t("walletConnect.accountSelect.title"),
+          title: t("walletConnect.accountSelect.title").toUpperCase(),
           description: t("walletConnect.accountSelect.description"),
-          content:
-            activeProvider && isConnecting ? (
-              <Web3ConnectProviderPending provider={activeProvider} />
-            ) : (
-              <Web3ConnectAccountList accounts={accounts} />
-            ),
+          content: (
+            <>
+              {activeProvider && isConnecting ? (
+                <Web3ConnectProviderPending provider={activeProvider} />
+              ) : (
+                <Web3ConnectAccountList accounts={accounts} />
+              )}
+              <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
+            </>
+          ),
         },
         {
-          title: t("walletConnect.provider.title"),
+          title: t("walletConnect.provider.title").toUpperCase(),
           content: (
             <Web3ConnectErrorModal
               message={error}
@@ -107,7 +124,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
           ),
         },
         {
-          title: t("addressbook.title"),
+          title: t("addressbook.title").toUpperCase(),
           content: (
             <AddressBook
               onSelect={(address) => {

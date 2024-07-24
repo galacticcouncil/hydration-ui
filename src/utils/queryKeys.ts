@@ -38,10 +38,7 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountOmnipoolPositions: (id: string | undefined) => [
-    "accountOmnipoolPositions",
-    id,
-  ],
+  accountNFTPositions: (id: string | undefined) => ["accountNFTPositions", id],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
@@ -307,6 +304,7 @@ export const QUERY_KEYS = {
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  otcFee: ["otcFee"],
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
@@ -419,5 +417,10 @@ export const QUERY_KEYS = {
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
   pendulumAssetRegistry: ["pendulumAssetRegistry"],
+  assetHubTokenBalance: (address: string, id: string) => [
+    "assetHubTokenBalance",
+    address,
+    id,
+  ],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
 } as const

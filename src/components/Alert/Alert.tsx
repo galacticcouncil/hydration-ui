@@ -21,7 +21,7 @@ const SContainer = styled.div<{ variant: TVariant }>`
         return { backgroundColor: `rgba(${theme.rgbColors.red100}, 0.25)` }
       }
       case "warning": {
-        return { backgroundColor: `rgba(${theme.rgbColors.warning200}, 0.4)` }
+        return { backgroundColor: `rgba(${theme.rgbColors.warning300}, 0.3)` }
       }
 
       case "info": {

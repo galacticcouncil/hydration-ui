@@ -1,6 +1,6 @@
 import { LINKS } from "utils/navigation"
 
-export const REFERRAL_PROD_HOST = "hydradx.io"
+export const REFERRAL_PROD_HOST = "hydration.net"
 export const REFERRAL_PARAM_NAME = "referral"
 export function getShareUrl(code: string, origin?: string) {
   if (origin && import.meta.env.VITE_ENV !== "production") {

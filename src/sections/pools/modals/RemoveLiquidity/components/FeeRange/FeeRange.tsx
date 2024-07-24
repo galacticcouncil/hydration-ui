@@ -172,8 +172,8 @@ export const FeeRange = ({
                     numberPrefix: isFirstEl
                       ? "MIN "
                       : isLastEl
-                      ? "MAX "
-                      : undefined,
+                        ? "MAX "
+                        : undefined,
                   })}
                 </Text>
               )

@@ -20,8 +20,8 @@ export function decodedResultToJson(result: AbiDecoderResult) {
         Array.isArray(value) && value.every((v) => typeof v !== "string")
           ? decodedResultToJson(value)
           : value?._isBigNumber
-          ? value.toString()
-          : value
+            ? value.toString()
+            : value
     }
     return acc
   }, {})

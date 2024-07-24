@@ -3,7 +3,7 @@ import { SAssetRow } from "./AssetsModalRow.styled"
 
 export const AssetsModalRowSkeleton = () => {
   return (
-    <SAssetRow>
+    <SAssetRow isSelected={false}>
       <div sx={{ flex: "row", align: "center", gap: 10 }}>
         <Skeleton width={30} height={30} circle />
         <div sx={{ flex: "column", gap: 2 }}>

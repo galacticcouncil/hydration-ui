@@ -6,33 +6,30 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
-import { useFarms } from "api/farms"
+import { Farm } from "api/farms"
 import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type RedepositFarmsProps = {
   depositNft: TMiningNftPosition
   poolId: string
+  availableYieldFarms: Farm[]
 }
 
-export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
+export const RedepositFarms = ({
+  depositNft,
+  poolId,
+  availableYieldFarms,
+}: RedepositFarmsProps) => {
   const { t } = useTranslation()
+  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
 
-  const farms = useFarms([poolId])
-  const position = useDepositShare(poolId, depositNft.id.toString())
-
-  let availableYieldFarms =
-    farms.data?.filter(
-      (i) =>
-        !depositNft.data.yieldFarmEntries.some(
-          (entry) =>
-            entry.globalFarmId.eq(i.globalFarm.id) &&
-            entry.yieldFarmId.eq(i.yieldFarm.id),
-        ),
-    ) ?? []
+  const isXyk = assets.getAsset(poolId).isShareToken
+  const position = useDepositShare(poolId, depositNft.id)
 
   const redeposit = useFarmRedepositMutation(
     availableYieldFarms,
@@ -66,13 +63,17 @@ export const RedepositFarms = ({ depositNft, poolId }: RedepositFarmsProps) => {
           {t("farms.positions.join.button.label")}
         </Text>
       </SJoinButton>
-      {joinFarm && position.data && (
+      {joinFarm && (
         <JoinFarmModal
           farms={availableYieldFarms}
           poolId={poolId}
-          position={omit(["depositId"], position.data)}
+          position={
+            !isXyk && position.data
+              ? omit(["depositId"], position.data)
+              : undefined
+          }
           onClose={() => setJoinFarm(false)}
-          isRedeposit
+          depositNft={depositNft}
           mutation={redeposit}
         />
       )}
