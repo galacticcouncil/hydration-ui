@@ -1,11 +1,15 @@
 import { InjectedWindowProvider } from "@polkadot/extension-inject/types"
-import BN from "bignumber.js"
-
 import { MetaMaskLikeProvider } from "utils/metamask"
 
-declare module "@polkadot/types-codec/abstract" {
-  class AbstractInt {
-    toBigNumber(): BN
+import BigNumber from "bignumber.js"
+
+declare module "@polkadot/types" {
+  interface Int {
+    toBigNumber(): BigNumber
+  }
+
+  interface UInt {
+    toBigNumber(): BigNumber
   }
 }
 
