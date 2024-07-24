@@ -159,7 +159,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       : null,
     assets.isExternal(props.asset.meta)
       ? {
-          key: "watch",
+          key: "checkData",
           icon: <InfoIcon width={18} height={18} />,
           label: t("wallet.assets.table.actions.checkExternal"),
           onSelect: () => setAssetCheckModalOpen(true),
