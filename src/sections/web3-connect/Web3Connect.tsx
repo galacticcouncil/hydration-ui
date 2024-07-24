@@ -3,10 +3,12 @@ import { Web3ConnectModal } from "./modal/Web3ConnectModal"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useShallow } from "hooks/useShallow"
 import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
+import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
 
 export const Web3Connect = () => {
   useDegenModeSubscription()
   useWeb3ConnectEagerEnable()
+  useExternalTokensRugCheck()
 
   const open = useWeb3ConnectStore(useShallow((state) => state.open))
 

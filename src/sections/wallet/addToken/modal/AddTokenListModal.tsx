@@ -104,7 +104,8 @@ export const AddTokenListModal: React.FC<Props> = ({
 
     const isSearched = search.length
       ? asset.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
-        asset.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+        asset.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+        asset.id.toString().includes(search)
       : true
 
     return isSearched
@@ -159,7 +160,14 @@ export const AddTokenListModal: React.FC<Props> = ({
                         }
                         size={24}
                       />
-                      <Text fs={14}>{asset.name}</Text>
+                      <div sx={{ minWidth: 0 }}>
+                        <Text fs={14} font="GeistSemiBold">
+                          {asset.symbol}
+                        </Text>
+                        <Text fs={12} color="basic500">
+                          {asset.name}
+                        </Text>
+                      </div>
                     </AssetRow>
                   ))}
                 </>

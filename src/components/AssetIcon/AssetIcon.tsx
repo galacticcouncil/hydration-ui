@@ -12,11 +12,11 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
-import { MetadataStore } from "@galacticcouncil/ui"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Icon } from "components/Icon/Icon"
 import { ResponsiveValue } from "utils/responsive"
 import { useAssets } from "providers/assets"
+import { useExternalAssetsWhiteList } from "api/externalAssetRegistry"
 
 const chains = Array.from(chainsMap.values())
 
@@ -67,12 +67,9 @@ export const MultipleAssetLogo = ({
 
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { getAsset, isExternal } = useAssets()
+  const { getAsset } = useAssets()
 
-  const externalAssetsWhitelist = useMemo(
-    () => MetadataStore.getInstance().externalWhitelist(),
-    [],
-  )
+  const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
     const assetDetails = id ? getAsset(id) : undefined
@@ -83,23 +80,14 @@ export const AssetLogo = ({ id }: { id?: string }) => {
         chain.parachainId === Number(assetDetails?.parachainId),
     ) as AnyParachain
 
-    const isWhitelisted = assetDetails
-      ? externalAssetsWhitelist.includes(assetDetails.id)
-      : false
-
-    const badgeVariant: "warning" | "danger" | "" =
-      assetDetails && isExternal(assetDetails)
-        ? isWhitelisted || assetDetails.isWhiteListed
-          ? "warning"
-          : "danger"
-        : ""
+    const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
 
     return {
       chain: chain?.key,
       symbol: assetDetails?.symbol,
-      badgeVariant,
+      badgeVariant: badge,
     }
-  }, [id, getAsset, externalAssetsWhitelist, isExternal])
+  }, [getAsset, getIsWhiteListed, id])
 
   if (asset.chain || asset.symbol)
     return (

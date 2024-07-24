@@ -1,27 +1,32 @@
+import * as React from "react"
+import { AssetId } from "@galacticcouncil/ui"
 import { Button } from "components/Button/Button"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import {
-  PARACHAIN_CONFIG,
   TExternalAsset,
-  TExternalAssetInput,
-  TRegisteredAsset,
-  useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Spacer } from "components/Spacer/Spacer"
-import { useToast } from "state/toasts"
-import { useRefetchProviderData } from "api/provider"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
-import { ASSET_HUB_ID, PENDULUM_ID } from "api/externalAssetRegistry"
-import { getPendulumInputData } from "utils/externalAssets"
 import { omit } from "utils/rx"
 import { useAssets } from "providers/assets"
+import { createComponent } from "@lit-labs/react"
+import { Separator } from "components/Separator/Separator"
+import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
+import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
+
+export const UigcAssetId = createComponent({
+  tagName: "uigc-asset-id",
+  elementClass: AssetId,
+  react: React,
+})
 
 type Props = {
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation }
@@ -34,26 +39,30 @@ type FormFields = {
   symbol: string
 }
 
+enum TokenState {
+  NotRegistered,
+  Registered,
+  UpdateRequired,
+  RiskConsentRequired,
+  NoActionRequired,
+}
+
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
   const { external } = useAssets()
-  const { addToken } = useUserExternalTokenStore()
-  const refetchProvider = useRefetchProviderData()
-  const { add } = useToast()
-
-  const mutation = useRegisterToken({
-    onSuccess: (id: string) => {
-      addToken({ ...omit(["location"], asset), internalId: id })
-      refetchProvider()
-    },
-    assetName: asset.name,
-  })
+  const { getTokenByInternalId } = useUserExternalTokenStore()
 
   const chainStored = external.find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
   )
+
+  const userStored = getTokenByInternalId(chainStored?.id ?? "")
+
+  const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
+  const rugCheck = useExternalTokensRugCheck(rugCheckIds)
+  const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -64,139 +73,127 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     },
   })
 
+  const { addTokenToUser, registerToken, addTokenConsent } =
+    useAddTokenFormModalActions(asset)
+
+  const tokenState = useMemo(() => {
+    if (!chainStored) return TokenState.NotRegistered
+
+    const warningTypes =
+      rugCheckData?.warnings.map((warning) => warning.type) ?? []
+
+    if (warningTypes.length) {
+      if (warningTypes.includes("supply")) return TokenState.RiskConsentRequired
+      return TokenState.UpdateRequired
+    }
+
+    return userStored ? TokenState.NoActionRequired : TokenState.Registered
+  }, [userStored, chainStored, rugCheckData?.warnings])
+
   const onSubmit = async () => {
-    if (!asset) throw new Error("Selected asset cannot be added")
-
-    const { parents, palletInstance } = PARACHAIN_CONFIG[ASSET_HUB_ID]
-
-    let input: TExternalAssetInput | undefined = undefined
-
-    if (asset.origin === ASSET_HUB_ID) {
-      input = {
-        parents,
-        interior: {
-          X3: [
-            {
-              Parachain: asset.origin.toString(),
-            },
-            {
-              PalletInstance: palletInstance,
-            },
-            {
-              GeneralIndex: asset.id,
-            },
-          ],
-        },
+    if (chainStored) {
+      if (tokenState === TokenState.RiskConsentRequired) {
+        addTokenConsent(chainStored.id)
       }
+
+      await addTokenToUser({
+        ...omit(["location"], asset),
+        internalId: chainStored.id,
+      })
+    } else {
+      await registerToken()
     }
 
-    if (asset.origin === PENDULUM_ID && asset.location) {
-      input = getPendulumInputData(asset.location)
-    }
-
-    if (input) {
-      await mutation.mutate(input)
-    }
-
-    onClose()
-  }
-
-  const hasAsset = !!asset
-
-  const onAddTokenToUser = async (asset: TRegisteredAsset) => {
-    addToken(asset)
-    refetchProvider()
-    add("success", {
-      title: (
-        <Trans
-          t={t}
-          i18nKey="wallet.addToken.toast.add.onSuccess"
-          tOptions={{
-            name: asset.name,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-    })
     onClose()
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      autoComplete="off"
-      sx={{ height: "100%" }}
-    >
-      <div sx={{ flex: "column", gap: 8, height: "100%" }}>
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.name")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.name")}
-              withLabel
+    <>
+      <TokenInfoHeader
+        asset={asset}
+        internalId={chainStored?.id}
+        badge={rugCheckData?.badge}
+        severity={rugCheckData?.severity}
+      />
+      <Separator sx={{ my: 10 }} color="darkBlue401" />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
+        sx={{ height: "100%" }}
+      >
+        <div sx={{ flex: "column", gap: 8, height: "100%" }}>
+          <div hidden>
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.name")}
+                  {...field}
+                  disabled
+                  label={t("wallet.addToken.form.name")}
+                  withLabel
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="symbol"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.symbol")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.symbol")}
-              withLabel
+            <Controller
+              name="symbol"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.symbol")}
+                  {...field}
+                  disabled
+                  label={t("wallet.addToken.form.symbol")}
+                  withLabel
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="decimals"
-          control={form.control}
-          render={({ field }) => (
-            <InputBox
-              placeholder={t("wallet.addToken.form.decimals")}
-              {...field}
-              disabled={hasAsset}
-              label={t("wallet.addToken.form.decimals")}
-              withLabel
+            <Controller
+              name="decimals"
+              control={form.control}
+              render={({ field }) => (
+                <InputBox
+                  placeholder={t("wallet.addToken.form.decimals")}
+                  {...field}
+                  disabled
+                  label={t("wallet.addToken.form.decimals")}
+                  withLabel
+                />
+              )}
             />
-          )}
-        />
+          </div>
+          <Spacer size={0} />
+          <TokenInfo
+            externalAsset={asset}
+            chainStoredAsset={chainStored}
+            rugCheckData={rugCheckData}
+          />
+          <Spacer size={8} />
+          <Button variant="primary" sx={{ mt: "auto" }} type="submit">
+            {tokenState === TokenState.NotRegistered && (
+              <DropletIcon width={18} height={18} />
+            )}
+            {tokenState === TokenState.Registered && (
+              <PlusIcon width={18} height={18} />
+            )}
 
-        <Spacer size={0} />
+            {tokenState === TokenState.NotRegistered &&
+              t("wallet.addToken.form.button.register.hydra")}
 
-        <TokenInfo asset={asset} isChainStored={!!chainStored} />
+            {tokenState === TokenState.Registered &&
+              t("wallet.addToken.form.button.register.forMe")}
 
-        <Spacer size={8} />
+            {tokenState === TokenState.UpdateRequired &&
+              t("wallet.addToken.form.button.register.update")}
 
-        {chainStored ? (
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() =>
-              onAddTokenToUser({
-                ...omit(["location"], asset),
-                internalId: chainStored.id,
-              })
-            }
-          >
-            <PlusIcon width={18} height={18} />
-            {t("wallet.addToken.form.button.register.forMe")}
+            {tokenState === TokenState.RiskConsentRequired &&
+              t("wallet.addToken.form.button.register.acceptRisk")}
+
+            {tokenState === TokenState.NoActionRequired && t("close")}
           </Button>
-        ) : (
-          <Button variant="primary">
-            <DropletIcon width={18} height={18} />
-            {t("wallet.addToken.form.button.register.hydra")}
-          </Button>
-        )}
-      </div>
-    </form>
+        </div>
+      </form>
+    </>
   )
 }

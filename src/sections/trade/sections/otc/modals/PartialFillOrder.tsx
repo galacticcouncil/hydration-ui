@@ -17,6 +17,10 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { usePartialFillFormSchema } from "sections/trade/sections/otc/modals/PartialFillOrder.utils"
+import { Spacer } from "components/Spacer/Spacer"
+import { Summary } from "components/Summary/Summary"
+import Skeleton from "react-loading-skeleton"
+import { useOTCfee } from "api/consts"
 import { useAssets } from "providers/assets"
 
 const FULL_ORDER_PCT_LBOUND = 99
@@ -40,6 +44,7 @@ export const PartialFillOrder = ({
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const { api } = useRpcProvider()
+  const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
   const assetOutMeta = getAssetWithFallback(offering.asset)
@@ -255,6 +260,31 @@ export const PartialFillOrder = ({
             />
           )}
         />
+        {fee.data?.isNaN() ? null : (
+          <>
+            <Spacer size={8} />
+            <Summary
+              rows={[
+                {
+                  label: t("liquidity.add.modal.tradeFee"),
+                  content: fee.isLoading ? (
+                    <Skeleton width={30} height={12} />
+                  ) : (
+                    <Text fs={14} color="white" tAlign="right">
+                      {fee.data
+                        ? t("value.tokenWithSymbol", {
+                            value: fee.data.times(form.getValues("amountOut")),
+                            symbol: assetOutMeta.symbol,
+                          })
+                        : "N/a"}
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          </>
+        )}
+
         <Button
           sx={{ mt: 20 }}
           variant="primary"

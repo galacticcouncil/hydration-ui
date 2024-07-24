@@ -22,6 +22,7 @@ import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
 import { TExternal, useAssets } from "providers/assets"
 import { useShallow } from "hooks/useShallow"
+import { getPendulumInputData } from "utils/externalAssets"
 
 const pink = {
   decimals: 10,
@@ -263,29 +264,67 @@ export const useRegisterToken = ({
 }
 
 type Store = {
+  riskConsentIds: {
+    testnet: string[]
+    mainnet: string[]
+  }
   tokens: {
     testnet: TRegisteredAsset[]
     mainnet: TRegisteredAsset[]
   }
+  addTokenConsent: (id: string) => void
+  isRiskConsentAdded: (id: string) => boolean
   addToken: (TokensConversion: TRegisteredAsset) => void
+  getTokenByInternalId: (interlanlId: string) => TRegisteredAsset | undefined
   isAdded: (id: string | undefined) => boolean
 }
 
 export const useUserExternalTokenStore = create<Store>()(
   persist(
     (set, get) => ({
+      riskConsentIds: {
+        testnet: [],
+        mainnet: [],
+      },
       tokens: {
         testnet,
         mainnet,
+      },
+      addTokenConsent: (id) => {
+        set((store) => {
+          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+          return {
+            riskConsentIds: {
+              ...store.riskConsentIds,
+              [dataEnv]: [...store.riskConsentIds[dataEnv], id],
+            },
+          }
+        })
       },
       addToken: (token) =>
         set((store) => {
           const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
+          const existingToken = store.tokens[dataEnv].find(
+            ({ origin, id }) => origin === token.origin && id === token.id,
+          )
+
+          const updatedTokens = existingToken
+            ? store.tokens[dataEnv].map((currentToken) => {
+                if (
+                  currentToken.origin === token.origin &&
+                  currentToken.id === token.id
+                ) {
+                  return token
+                }
+                return currentToken
+              })
+            : [...store.tokens[dataEnv], token]
+
           const latest = {
             tokens: {
               ...store.tokens,
-              [dataEnv]: [...store.tokens[dataEnv], token],
+              [dataEnv]: updatedTokens,
             },
           }
 
@@ -295,6 +334,18 @@ export const useUserExternalTokenStore = create<Store>()(
           })
           return latest
         }),
+      getTokenByInternalId: (internalId) => {
+        const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+        return get().tokens[dataEnv].find(
+          (token) => token.internalId === internalId,
+        )
+      },
+      isRiskConsentAdded: (id: string) => {
+        const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+        return id ? get().riskConsentIds[dataEnv].includes(id) : false
+      },
       isAdded: (id) => {
         const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
@@ -392,6 +443,34 @@ export const useExternalTokenMeta = () => {
   )
 
   return getExtrernalToken
+}
+
+export const getInputData = (
+  asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation },
+): TExternalAssetInput | undefined => {
+  if (asset.origin === ASSET_HUB_ID) {
+    const { parents, palletInstance } = PARACHAIN_CONFIG[ASSET_HUB_ID]
+    return {
+      parents,
+      interior: {
+        X3: [
+          {
+            Parachain: asset.origin.toString(),
+          },
+          {
+            PalletInstance: palletInstance,
+          },
+          {
+            GeneralIndex: asset.id,
+          },
+        ],
+      },
+    }
+  }
+
+  if (asset.origin === PENDULUM_ID && asset.location) {
+    return getPendulumInputData(asset.location)
+  }
 }
 
 export const updateExternalAssetsCursor = (

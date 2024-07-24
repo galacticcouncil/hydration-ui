@@ -11,8 +11,6 @@ import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { DOC_LINK } from "utils/constants"
 
-const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
-
 type MoreButtonProps = { tabs: ReactNode }
 
 export const MoreButton = ({ tabs }: MoreButtonProps) => {
@@ -34,15 +32,12 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
               width: "calc(100% - 20px)",
             }}
           >
-            {settingsEanbled && (
-              <>
-                <HeaderSettingsMobile />
-                <Separator
-                  orientation="vertical"
-                  css={{ background: "rgba(158, 167, 186, 0.06)" }}
-                />
-              </>
-            )}
+            <HeaderSettingsMobile />
+            <Separator
+              orientation="vertical"
+              css={{ background: "rgba(158, 167, 186, 0.06)" }}
+            />
+
             <a
               href={DOC_LINK}
               target="blank"
