@@ -201,7 +201,6 @@ const setItems = async (db: IDBDatabase, data: object[], key: StoreKey) =>
   await new Promise((resolve) => {
     const tx = db.transaction(IndexedDBStores.Assets, "readwrite")
     const store = tx.objectStore(IndexedDBStores.Assets)
-    console.log("Updating IndexedDB store", key, data)
     store.put({ key, data })
 
     resolve(data)

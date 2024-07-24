@@ -33,7 +33,6 @@ export const useShareTokens = () => {
     QUERY_KEYS.shareTokens(rpcUrlList.join()),
     provider
       ? async () => {
-          console.log("FETCH SHARE TOKENS")
           const [shareToken, poolAssets] = await Promise.all([
             provider.api.query.xyk.shareToken.entries(),
             provider.api.query.xyk.poolAssets.entries(),
