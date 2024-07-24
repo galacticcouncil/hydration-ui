@@ -159,8 +159,6 @@ export const useProviderAssets = () => {
 
           const assetClient = new AssetClient(provider.api)
 
-          await provider.poolService.syncRegistry(externalTokens[dataEnv])
-
           const [tradeAssets, sdkAssets] = await Promise.all([
             provider.tradeRouter.getAllAssets(),
             assetClient.getOnChainAssets(externalTokens[dataEnv]),
@@ -204,6 +202,12 @@ export const useProviderData = () => {
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(rpcUrlList, maxRetries)
 
+      const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+      const degenMode = useSettingsStore.getState().degenMode
+      const { tokens: externalTokens } = degenMode
+        ? ExternalAssetCursor.deref().state
+        : useUserExternalTokenStore.getState()
+
       api.registry.register({
         XykLMDeposit: {
           shares: "u128",
@@ -228,6 +232,8 @@ export const useProviderData = () => {
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
+
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
         api.query.referrals,

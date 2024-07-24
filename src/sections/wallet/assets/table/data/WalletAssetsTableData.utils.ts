@@ -129,7 +129,7 @@ export const useAssetsData = ({
 
     const rows = isAllAssets
       ? allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
-          const { id, symbol, name } = meta
+          const { id, symbol, name, isExternal } = meta
           const tokenWithBalance = rowsWithBalance.find((row) => row.id === id)
 
           if (tokenWithBalance) {
@@ -145,40 +145,7 @@ export const useAssetsData = ({
               inTradeRouter,
             }
 
-            if (tokenWithBalance) {
-              acc.push(tokenWithBalance)
-            } else {
-              const inTradeRouter = tradable.some(
-                (tradeAsset) => tradeAsset.id === id,
-              )
-
-              const tradability = {
-                canBuy: inTradeRouter,
-                canSell: inTradeRouter,
-                inTradeRouter,
-              }
-
-              const asset = {
-                id,
-                symbol,
-                name,
-                meta,
-                isPaymentFee: false,
-                couldBeSetAsPaymentFee: false,
-                reserved: BN_0,
-                reservedDisplay: BN_0,
-                total: BN_0,
-                totalDisplay: BN_0,
-                transferable: BN_0,
-                transferableDisplay: BN_0,
-                tradability,
-                isExternalInvalid: true,
-              }
-
-              if (asset.symbol) {
-                acc.push(asset)
-              }
-            }
+            const isExternalInvalid = isExternal && !symbol
 
             const asset = {
               id,
@@ -194,12 +161,10 @@ export const useAssetsData = ({
               transferable: BN_0,
               transferableDisplay: BN_0,
               tradability,
-              isExternalInvalid: false,
+              isExternalInvalid,
             }
 
-            if (asset.symbol) {
-              acc.push(asset)
-            }
+            acc.push(asset)
           }
           return acc
         }, [])
