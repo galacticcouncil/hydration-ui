@@ -35,7 +35,7 @@ export const useOrdersTableData = () => {
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!orders.data) return []
+    if (!orders.data || isInitialLoading) return []
     return orders.data
       .map((order) => {
         const assetInValid = order.assetIn?.isExternal
@@ -110,7 +110,7 @@ export const useOrdersTableData = () => {
         } as OrderTableData
       })
       .filter(isNotNil)
-  }, [orders.data, ordersState, treasuryAddr, assetPrices])
+  }, [orders.data, ordersState, treasuryAddr, assetPrices, isInitialLoading])
 
   return {
     data,
