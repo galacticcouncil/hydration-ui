@@ -11,6 +11,10 @@ import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
+import { useOTCfee } from "api/consts"
+import { Summary } from "components/Summary/Summary"
+import Skeleton from "react-loading-skeleton"
+import { Spacer } from "components/Spacer/Spacer"
 
 type FillOrderProps = {
   orderId: string
@@ -29,7 +33,7 @@ export const FillOrder = ({
 }: FillOrderProps) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-
+  const fee = useOTCfee()
   const { api, assets } = useRpcProvider()
   const assetInMeta = assets.getAsset(accepting.asset)
   const assetInBalance = useTokenBalance(accepting.asset, account?.address)
@@ -147,6 +151,30 @@ export const FillOrder = ({
           asset={offering.asset}
           readonly={true}
         />
+        {fee.data?.isNaN() ? null : (
+          <>
+            <Spacer size={8} />
+            <Summary
+              rows={[
+                {
+                  label: t("liquidity.add.modal.tradeFee"),
+                  content: fee.isLoading ? (
+                    <Skeleton width={30} height={12} />
+                  ) : (
+                    <Text fs={14} color="white" tAlign="right">
+                      {fee.data
+                        ? t("value.tokenWithSymbol", {
+                            value: fee.data.times(offering.amount),
+                            symbol: assetOutMeta.symbol,
+                          })
+                        : "N/a"}
+                    </Text>
+                  ),
+                },
+              ]}
+            />
+          </>
+        )}
         <Button sx={{ mt: 20 }} variant="primary" disabled={isDisabled}>
           {t("otc.order.fill.confirm")}
         </Button>

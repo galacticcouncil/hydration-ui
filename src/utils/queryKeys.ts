@@ -304,6 +304,7 @@ export const QUERY_KEYS = {
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  otcFee: ["otcFee"],
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
