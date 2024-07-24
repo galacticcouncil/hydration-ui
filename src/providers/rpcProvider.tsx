@@ -88,6 +88,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       featureFlags: {} as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayAsset, isAssets, providerData.data])
 
   return (
