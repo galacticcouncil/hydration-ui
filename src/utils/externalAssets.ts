@@ -1,15 +1,25 @@
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { pendulum, assethub } from "api/external"
 import { Buffer } from "buffer"
-import {
-  InteriorProp,
-  TExternalAsset,
-  TExternalAssetInput,
-} from "sections/wallet/addToken/AddToken.utils"
+import { XcmV3Junction } from "@polkadot/types/lookup"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { Option } from "@polkadot/types"
 
 export type TExternalAssetWithLocation = TExternalAsset & {
   location?: HydradxRuntimeXcmAssetLocation
+}
+
+export type InteriorTypes = {
+  [x: string]: InteriorProp[]
+}
+
+export type InteriorProp = {
+  [K in XcmV3Junction["type"]]: { [P in K]: any }
+}[XcmV3Junction["type"]]
+
+export type TExternalAssetInput = {
+  parents: string
+  interior: InteriorTypes | string
 }
 
 export const PARACHAIN_CONFIG: {
@@ -26,6 +36,12 @@ export const PARACHAIN_CONFIG: {
     parents: "1",
     interior: "X3",
   },
+}
+
+export const isGeneralKey = (
+  prop: InteriorProp,
+): prop is { GeneralKey: string } => {
+  return typeof prop !== "string" && "GeneralKey" in prop
 }
 
 export const getParachainInputData = (asset: TExternalAssetWithLocation) => {

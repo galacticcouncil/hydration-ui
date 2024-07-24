@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSettingsStore, useStore } from "state/store"
-import { XcmV3Junction } from "@polkadot/types/lookup"
+
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { createToastMessages } from "state/toasts"
@@ -174,25 +174,6 @@ export type TExternalAsset = {
 }
 
 export type TRegisteredAsset = TExternalAsset & { internalId: string }
-
-export type InteriorTypes = {
-  [x: string]: InteriorProp[]
-}
-
-export type InteriorProp = {
-  [K in XcmV3Junction["type"]]: { [P in K]: any }
-}[XcmV3Junction["type"]]
-
-export const isGeneralKey = (
-  prop: InteriorProp,
-): prop is { GeneralKey: string } => {
-  return typeof prop !== "string" && "GeneralKey" in prop
-}
-
-export type TExternalAssetInput = {
-  parents: string
-  interior: InteriorTypes | string
-}
 
 export const useRegisterToken = ({
   onSuccess,

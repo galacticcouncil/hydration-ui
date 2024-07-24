@@ -11,7 +11,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
-
 import { omit } from "utils/rx"
 import { createComponent } from "@lit-labs/react"
 import { Separator } from "components/Separator/Separator"
