@@ -2,10 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSettingsStore, useStore } from "state/store"
-import {
-  HydradxRuntimeXcmAssetLocation,
-  XcmV3Junction,
-} from "@polkadot/types/lookup"
+import { XcmV3Junction } from "@polkadot/types/lookup"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { createToastMessages } from "state/toasts"
@@ -16,7 +13,7 @@ import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
-import { getPendulumInputData } from "utils/externalAssets"
+import { getInputData, TExternalAssetWithLocation } from "utils/externalAssets"
 import { useShallow } from "hooks/useShallow"
 import { ISubmittableResult } from "@polkadot/types/types"
 
@@ -167,22 +164,6 @@ export const SELECTABLE_PARACHAINS_IDS = [
   pendulum.parachainId,
 ]
 
-export const PARACHAIN_CONFIG: {
-  [x: number]: {
-    palletInstance: string
-    network: string
-    parents: string
-    interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
-  }
-} = {
-  [assethub.parachainId]: {
-    palletInstance: "50",
-    network: "polkadot",
-    parents: "1",
-    interior: "X3",
-  },
-}
-
 export type TExternalAsset = {
   id: string
   decimals: number
@@ -211,10 +192,6 @@ export const isGeneralKey = (
 export type TExternalAssetInput = {
   parents: string
   interior: InteriorTypes | string
-}
-
-export type TExternalAssetWithLocation = TExternalAsset & {
-  location?: HydradxRuntimeXcmAssetLocation
 }
 
 export const useRegisterToken = ({
@@ -437,34 +414,6 @@ export const useExternalTokenMeta = () => {
   )
 
   return getExtrernalToken
-}
-
-export const getInputData = (
-  asset: TExternalAssetWithLocation,
-): TExternalAssetInput | undefined => {
-  if (asset.origin === assethub.parachainId) {
-    const { parents, palletInstance } = PARACHAIN_CONFIG[assethub.parachainId]
-    return {
-      parents,
-      interior: {
-        X3: [
-          {
-            Parachain: asset.origin.toString(),
-          },
-          {
-            PalletInstance: palletInstance,
-          },
-          {
-            GeneralIndex: asset.id,
-          },
-        ],
-      },
-    }
-  }
-
-  if (asset.origin === pendulum.parachainId && asset.location) {
-    return getPendulumInputData(asset.location)
-  }
 }
 
 export const updateExternalAssetsCursor = (

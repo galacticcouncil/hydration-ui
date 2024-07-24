@@ -4,10 +4,7 @@ import { Button } from "components/Button/Button"
 import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import {
-  TExternalAssetWithLocation,
-  useUserExternalTokenStore,
-} from "sections/wallet/addToken/AddToken.utils"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -21,6 +18,7 @@ import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
 import { useExternalTokensRugCheck } from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
+import { TExternalAssetWithLocation } from "utils/externalAssets"
 
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",

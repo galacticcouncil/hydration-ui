@@ -27,13 +27,7 @@ import { pendulum, usePendulumAssetRegistry } from "./pendulum"
 import { usePolkadotRegistry } from "./polkadot"
 import { useAssetHubTokenBalances } from "api/external/assethub"
 
-export {
-  assethub,
-  pendulum,
-  useAssetHubAssetRegistry,
-  usePendulumAssetRegistry,
-  usePolkadotRegistry,
-}
+export { assethub, pendulum }
 
 export type RugSeverityLevel = "none" | "low" | "medium" | "high"
 export const RUG_SEVERITY_LEVELS: RugSeverityLevel[] = [

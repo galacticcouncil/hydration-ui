@@ -1,11 +1,55 @@
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { pendulum } from "api/external"
+import { pendulum, assethub } from "api/external"
 import { Buffer } from "buffer"
 import {
   InteriorProp,
+  TExternalAsset,
   TExternalAssetInput,
 } from "sections/wallet/addToken/AddToken.utils"
 import { Option } from "@polkadot/types"
+
+export type TExternalAssetWithLocation = TExternalAsset & {
+  location?: HydradxRuntimeXcmAssetLocation
+}
+
+export const PARACHAIN_CONFIG: {
+  [x: number]: {
+    palletInstance: string
+    network: string
+    parents: string
+    interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
+  }
+} = {
+  [assethub.parachainId]: {
+    palletInstance: "50",
+    network: "polkadot",
+    parents: "1",
+    interior: "X3",
+  },
+}
+
+export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
+  const config = PARACHAIN_CONFIG[asset.origin]
+  if (!config) throw new Error("Parachain config not found")
+
+  const { parents, palletInstance } = config
+  return {
+    parents,
+    interior: {
+      X3: [
+        {
+          Parachain: asset.origin.toString(),
+        },
+        {
+          PalletInstance: palletInstance,
+        },
+        {
+          GeneralIndex: asset.id,
+        },
+      ],
+    },
+  }
+}
 
 export const getPendulumInputData = (
   location: HydradxRuntimeXcmAssetLocation,
@@ -34,6 +78,16 @@ export const getPendulumInputData = (
       interior: interiorType,
     }
   }
+}
+
+export const getInputData = (
+  asset: TExternalAssetWithLocation,
+): TExternalAssetInput | undefined => {
+  if (asset.origin === pendulum.parachainId && asset.location) {
+    return getPendulumInputData(asset.location)
+  }
+
+  return getParachainInputData(asset)
 }
 
 const getPendulumAssetIdFromGeneralKey = (generalKey: {
