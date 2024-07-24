@@ -19,12 +19,13 @@ export const AssetTableName = ({
   const { assets } = useRpcProvider()
   const asset = assets.getAsset(id)
 
-  const externalAsset = useExternalTokenMeta(id)
+  const getExternalMeta = useExternalTokenMeta()
+  const externalMeta = getExternalMeta(id)
 
   const iconIds =
     assets.isStableSwap(asset) || assets.isShareToken(asset)
       ? asset.assets
-      : externalAsset?.id ?? asset.id
+      : externalMeta?.id ?? asset.id
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -65,7 +66,7 @@ export const AssetTableName = ({
             font="GeistMedium"
             color="white"
           >
-            {externalAsset?.symbol ?? asset.symbol}
+            {externalMeta?.symbol ?? asset.symbol}
           </Text>
           <Text
             fs={large ? 14 : 12}

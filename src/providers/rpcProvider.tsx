@@ -3,6 +3,7 @@ import { ApiPromise } from "@polkadot/api"
 import {
   TAsset,
   TBond,
+  TExternal,
   TShareToken,
   TStableSwap,
   TToken,
@@ -14,10 +15,11 @@ import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 
 type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
-  all: (TToken | TBond | TStableSwap | TShareToken)[]
+  all: (TToken | TBond | TStableSwap | TShareToken | TExternal)[]
   isStableSwap: (asset: TAsset) => asset is TStableSwap
   isBond: (asset: TAsset) => asset is TBond
   isShareToken: (asset: TAsset | undefined) => asset is TShareToken
+  isExternal: (asset: TAsset) => asset is TExternal
   getAsset: (id: string) => TAsset
   getBond: (id: string) => TBond | undefined
   getAssets: (ids: string[]) => TAsset[]
@@ -87,6 +89,8 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
       const isBond = (asset: TAsset): asset is TBond => asset.isBond
 
+      const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
+
       const isShareToken = (
         asset: TAsset | undefined,
       ): asset is TShareToken => {
@@ -119,6 +123,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           isStableSwap,
           isBond,
           isShareToken,
+          isExternal,
           getAsset,
           getBond,
           getAssets,

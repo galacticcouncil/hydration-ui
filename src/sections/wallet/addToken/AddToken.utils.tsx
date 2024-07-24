@@ -14,10 +14,10 @@ import { assethub, pendulum, useExternalAssetRegistry } from "api/external"
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { omit } from "utils/rx"
-import { useShallow } from "hooks/useShallow"
 import { getPendulumInputData } from "utils/externalAssets"
+import { useShallow } from "hooks/useShallow"
 import { ISubmittableResult } from "@polkadot/types/types"
 
 const pink = {
@@ -26,6 +26,7 @@ const pink = {
   name: "PINK",
   origin: 1000,
   symbol: "PINK",
+  isWhiteListed: false,
 }
 
 const ded = {
@@ -34,6 +35,7 @@ const ded = {
   name: "DED",
   origin: 1000,
   symbol: "DED",
+  isWhiteListed: false,
 }
 
 const dota = {
@@ -42,9 +44,12 @@ const dota = {
   name: "DOTA",
   origin: 1000,
   symbol: "DOTA",
+  isWhiteListed: false,
 }
 
-const version = 0.3
+const version = 0.4
+
+const ahTreasuryAdminKeyIds = ["86"]
 
 const testnet = [
   {
@@ -184,6 +189,7 @@ export type TExternalAsset = {
   symbol: string
   name: string
   origin: number
+  isWhiteListed: boolean
 }
 
 export type TRegisteredAsset = TExternalAsset & { internalId: string }
@@ -250,29 +256,67 @@ export const useRegisterToken = ({
 }
 
 type Store = {
+  riskConsentIds: {
+    testnet: string[]
+    mainnet: string[]
+  }
   tokens: {
     testnet: TRegisteredAsset[]
     mainnet: TRegisteredAsset[]
   }
+  addTokenConsent: (id: string) => void
+  isRiskConsentAdded: (id: string) => boolean
   addToken: (TokensConversion: TRegisteredAsset) => void
+  getTokenByInternalId: (interlanlId: string) => TRegisteredAsset | undefined
   isAdded: (id: string | undefined) => boolean
 }
 
 export const useUserExternalTokenStore = create<Store>()(
   persist(
     (set, get) => ({
+      riskConsentIds: {
+        testnet: [],
+        mainnet: [],
+      },
       tokens: {
         testnet,
         mainnet,
+      },
+      addTokenConsent: (id) => {
+        set((store) => {
+          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+          return {
+            riskConsentIds: {
+              ...store.riskConsentIds,
+              [dataEnv]: [...store.riskConsentIds[dataEnv], id],
+            },
+          }
+        })
       },
       addToken: (token) =>
         set((store) => {
           const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
+          const existingToken = store.tokens[dataEnv].find(
+            ({ origin, id }) => origin === token.origin && id === token.id,
+          )
+
+          const updatedTokens = existingToken
+            ? store.tokens[dataEnv].map((currentToken) => {
+                if (
+                  currentToken.origin === token.origin &&
+                  currentToken.id === token.id
+                ) {
+                  return token
+                }
+                return currentToken
+              })
+            : [...store.tokens[dataEnv], token]
+
           const latest = {
             tokens: {
               ...store.tokens,
-              [dataEnv]: [...store.tokens[dataEnv], token],
+              [dataEnv]: updatedTokens,
             },
           }
 
@@ -282,6 +326,18 @@ export const useUserExternalTokenStore = create<Store>()(
           })
           return latest
         }),
+      getTokenByInternalId: (internalId) => {
+        const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+        return get().tokens[dataEnv].find(
+          (token) => token.internalId === internalId,
+        )
+      },
+      isRiskConsentAdded: (id: string) => {
+        const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+        return id ? get().riskConsentIds[dataEnv].includes(id) : false
+      },
       isAdded: (id) => {
         const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
@@ -294,21 +350,6 @@ export const useUserExternalTokenStore = create<Store>()(
     {
       name: "external-tokens",
       version,
-      merge: (persistedState, currentState) => {
-        if (!persistedState) return currentState
-
-        const { tokens: storedTokens } = persistedState as Store
-
-        return {
-          ...currentState,
-          tokens: {
-            ...storedTokens,
-            mainnet: storedTokens.mainnet.map((token) =>
-              token.id === "8889" ? { ...token, internalId: "1000091" } : token,
-            ),
-          },
-        }
-      },
       migrate: (persistedState) => {
         const state = persistedState as Store
 
@@ -332,48 +373,70 @@ export const useUserExternalTokenStore = create<Store>()(
           }
         }
 
+        if (state.tokens.mainnet) {
+          const mainnet = state.tokens.mainnet.map((token) => ({
+            ...token,
+            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+          }))
+
+          const testnet = state.tokens.testnet.map((token) => ({
+            ...token,
+            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+          }))
+
+          return {
+            ...state,
+            tokens: {
+              testnet,
+              mainnet,
+            },
+          }
+        }
+
         return state
       },
     },
   ),
 )
 
-export const useExternalTokenMeta = (id: string | undefined) => {
+export const useExternalTokenMeta = () => {
   const { assets } = useRpcProvider()
-  const asset = id ? assets.getAsset(id) : undefined
 
   const externalRegistry = useExternalAssetRegistry()
 
-  const externalAsset = useMemo(() => {
-    if (asset?.externalId && asset?.isExternal && !asset?.symbol) {
-      for (const parachain in externalRegistry) {
-        const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
-          asset.externalId,
-        )
-        if (externalAsset) {
-          const meta = assets.external.find(
-            (asset) => asset.externalId === externalAsset.id,
+  const getExtrernalToken = useCallback(
+    (id: string) => {
+      const meta = id ? assets.getAsset(id) : undefined
+
+      if (meta?.isExternal && meta.externalId) {
+        for (const parachain in externalRegistry) {
+          const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
+            meta.externalId,
           )
+          if (externalAsset) {
+            const meta = assets.external.find(
+              (asset) => asset.externalId === externalAsset.id,
+            )
 
-          if (meta) {
-            const externalMeta = omit(["id"], externalAsset)
+            if (meta) {
+              const externalMeta = omit(["id"], externalAsset)
 
-            return {
-              ...meta,
-              ...externalMeta,
-              externalId: externalAsset.id,
+              return {
+                ...meta,
+                ...externalMeta,
+                externalId: externalAsset.id,
+              }
             }
-          }
 
-          return undefined
+            return undefined
+          }
         }
       }
-    }
+    },
+    [assets, externalRegistry],
+  )
 
-    return undefined
-  }, [asset, externalRegistry, assets.external])
-
-  return externalAsset
+  return getExtrernalToken
 }
 
 export const getInputData = (

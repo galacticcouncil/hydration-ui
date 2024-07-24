@@ -4,10 +4,7 @@ import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { MemepadStep1Values } from "./MemepadForm.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import {
-  ASSETHUB_ASSET_CREATION_DOT_COST,
-  useAssetHubNativeBalance,
-} from "api/external/assethub"
+import { useAssetHubNativeBalance } from "api/external/assethub"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { undefinedNoop } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
@@ -110,17 +107,6 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
               {...field}
             />
           )}
-        />
-        <AssetSelect
-          id="5"
-          title={t("memepad.form.assetCreationCost")}
-          withoutMaxBtn
-          name="creation-cost"
-          value={ASSETHUB_ASSET_CREATION_DOT_COST.toString()}
-          balance={data?.balance}
-          balanceLabel={t("balance")}
-          onChange={undefinedNoop}
-          disabled
         />
       </div>
     </form>

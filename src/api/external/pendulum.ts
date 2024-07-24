@@ -61,6 +61,7 @@ export const getPedulumAssets = async (api: ApiPromise) => {
             name: data.name.toHuman() as string,
             location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
             origin: pendulum.parachainId,
+            isWhiteListed: false,
           })
       }
 

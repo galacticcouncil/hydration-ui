@@ -48,4 +48,6 @@ export const QUINTILL = 18
 
 export const DOC_LINK = "https://docs.hydration.net"
 
-export const HYDRA_PARACHAIN_ID = 2034
+export const HYDRATION_PARACHAIN_ID = 2034
+export const HYDRATION_PARACHAIN_ADDRESS =
+  "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"

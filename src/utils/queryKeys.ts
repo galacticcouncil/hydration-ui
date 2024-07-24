@@ -304,6 +304,7 @@ export const QUERY_KEYS = {
   ],
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
+  otcFee: ["otcFee"],
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
@@ -421,6 +422,11 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   polkadotRegistry: ["polkadotRegistry"],
+  assetHubTokenBalance: (address: string, id: string) => [
+    "assetHubTokenBalance",
+    address,
+    id,
+  ],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   xcmTransfer: (
     asset: string,

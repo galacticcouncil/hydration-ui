@@ -75,8 +75,8 @@ export const AssetsModalContent = ({
   }
 
   const sortedTokens = useMemo(
-    () => sortAssets(tokens.allowed, "displayValue", selectedAssetId),
-    [selectedAssetId, tokens.allowed],
+    () => sortAssets(tokens.allowed, "displayValue", defaultSelectedAsssetId),
+    [defaultSelectedAsssetId, tokens.allowed],
   )
   const sortedBonds = useMemo(
     () =>

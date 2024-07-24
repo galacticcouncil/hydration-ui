@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
-import { MIN_WITHDRAWAL_FEE } from "utils/constants"
+import { BN_NAN, MIN_WITHDRAWAL_FEE } from "utils/constants"
 import { isApiLoaded } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { scaleHuman } from "utils/balance"
@@ -13,6 +13,7 @@ import {
   safeConvertAddressH160,
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
+import { Permill } from "@polkadot/types/interfaces"
 
 export const useApiIds = () => {
   const { api } = useRpcProvider()
@@ -112,4 +113,25 @@ export const useInsufficientFee = (assetId: string, address: string) => {
         symbol: assets.native.symbol,
       }
     : undefined
+}
+
+export const useOTCfee = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.otcFee,
+    async () => {
+      const fee = (await api.consts.otc.fee) as Permill
+
+      if (!fee) return BN_NAN
+
+      return fee.toBigNumber().div(1000000)
+    },
+    {
+      enabled: isLoaded,
+      retry: 0,
+      cacheTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 1,
+    },
+  )
 }

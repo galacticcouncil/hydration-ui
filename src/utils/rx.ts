@@ -103,3 +103,7 @@ export const arrayToMap = <T extends object>(prop: keyof T, arr?: T[]) => {
     }),
   )
 }
+
+export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
+  return a.map((item, index) => [item, b[index]])
+}

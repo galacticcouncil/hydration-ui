@@ -153,6 +153,7 @@ export const useMemepadForms = () => {
       addToken({
         ...pick(asset, ["name", "symbol", "decimals", "origin", "id"]),
         internalId,
+        isWhiteListed: false,
       })
       refetchProvider()
     },
@@ -192,6 +193,7 @@ export const useMemepadForms = () => {
         const token = {
           ...values,
           id,
+          isWhiteListed: false,
         }
 
         if (!summary?.id) {
@@ -207,7 +209,14 @@ export const useMemepadForms = () => {
         const { assetId } = getInternalIdFromResult(result)
         const internalId = assetId?.toString() ?? ""
         const registeredAsset: TRegisteredAsset = {
-          ...pick(token, ["id", "decimals", "symbol", "name", "origin"]),
+          ...pick(token, [
+            "id",
+            "decimals",
+            "symbol",
+            "name",
+            "origin",
+            "isWhiteListed",
+          ]),
           internalId,
         }
         syncAssethubXcmConfig(registeredAsset)

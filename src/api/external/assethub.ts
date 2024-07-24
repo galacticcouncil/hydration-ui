@@ -3,7 +3,8 @@ import { Parachain } from "@galacticcouncil/xcm-core"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { u32 } from "@polkadot/types"
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { useExternalApi } from "api/external"
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
@@ -11,31 +12,42 @@ import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
-import { BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
-export const ASSETHUB_ASSET_CREATION_DOT_COST = 10
+export const ASSETHUB_TREASURY_ADDRESS =
+  "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get("dot")
 
 // TEMP CHOPSTICKS SETUP
 //@ts-ignore
-// assethub.ws = "ws://172.25.126.217:8000"
-// const hydradx = chainsMap.get("hydradx") as Parachain
+assethub.ws = "ws://172.25.126.217:8000"
+const hydradx = chainsMap.get("hydradx") as Parachain
 //@ts-ignore
-// hydradx.ws = "ws://172.25.126.217:8001"
+hydradx.ws = "ws://172.25.126.217:8001"
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
-    const dataRaw = await api.query.assets.metadata.entries()
+    const [dataRaw, assetsRaw] = await Promise.all([
+      api.query.assets.metadata.entries(),
+      api.query.assets.asset.entries(),
+    ])
 
     const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
       const id = key.args[0].toString()
       const data = dataRaw
+
+      const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+      const admin = asset?.[1].unwrap().admin.toString()
+      const owner = asset?.[1].unwrap().owner.toString()
+      const isWhiteListed =
+        admin === ASSETHUB_TREASURY_ADDRESS &&
+        owner === ASSETHUB_TREASURY_ADDRESS
 
       return {
         id,
@@ -46,9 +58,9 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
         // @ts-ignore
         name: data.name.toHuman() as string,
         origin: assethub.parachainId,
+        isWhiteListed,
       }
     })
-
     return { data, id: assethub.parachainId }
   } catch (e) {}
 }
@@ -122,6 +134,49 @@ export const useAssetHubNativeBalance = (
       enabled,
     },
   )
+}
+
+export const getAssetHubTokenBalance =
+  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
+  async () => {
+    try {
+      const codec = await api.query.assets.account(id, account)
+      // @ts-ignore
+      const balance = !codec.isNone
+        ? // @ts-ignore
+          codec.unwrap().balance.toBigNumber()
+        : BN_0
+
+      return {
+        accountId: account,
+        assetId: id,
+        balance,
+      }
+    } catch (e) {}
+  }
+
+export const useAssetHubTokenBalances = (
+  account: AccountId32 | string,
+  ids: string[],
+) => {
+  const { data: api } = useExternalApi("assethub")
+  const enabled = !!account && !!api
+  return useQueries({
+    queries: ids.map((id) => ({
+      queryKey: QUERY_KEYS.assetHubTokenBalance(
+        account.toString(),
+        id.toString(),
+      ),
+      queryFn: enabled
+        ? getAssetHubTokenBalance(api, account, id)
+        : undefinedNoop,
+      enabled: enabled && !!id,
+      retry: false,
+      refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    })),
+  })
 }
 
 export const useGetNextAssetHubId = () => {
@@ -216,7 +271,7 @@ export const useCreateAssetHubToken = ({
         ]),
         xcallMeta: {
           srcChain: assethub.key,
-          srcChainFee: fee.plus(ASSETHUB_ASSET_CREATION_DOT_COST).toString(),
+          srcChainFee: fee.toString(),
           srcChainFeeBalance: feeBalance.toString(),
           srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
         },
