@@ -16,6 +16,7 @@ import { omit } from "utils/rx"
 import { getInputData, TExternalAssetWithLocation } from "utils/externalAssets"
 import { useShallow } from "hooks/useShallow"
 import { ISubmittableResult } from "@polkadot/types/types"
+import BN from "bignumber.js"
 
 const pink = {
   decimals: 10,
@@ -170,10 +171,13 @@ export type TExternalAsset = {
   symbol: string
   name: string
   origin: number
+  supply: BN
   isWhiteListed: boolean
 }
 
-export type TRegisteredAsset = TExternalAsset & { internalId: string }
+export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {
+  internalId: string
+}
 
 export const useRegisterToken = ({
   onSuccess,

@@ -8,6 +8,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { arrayToMap } from "utils/rx"
 import { ApiPromise } from "@polkadot/api"
 import { useExternalApi } from "api/external"
+import { BN_NAN } from "utils/constants"
 
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
@@ -60,6 +61,7 @@ export const getPedulumAssets = async (api: ApiPromise) => {
             // @ts-ignore
             name: data.name.toHuman() as string,
             location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
+            supply: BN_NAN,
             origin: pendulum.parachainId,
             isWhiteListed: false,
           })

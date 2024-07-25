@@ -6,6 +6,7 @@ import MetamaskLogo from "assets/icons/MetaMask.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
+import InfoIcon from "assets/icons/InfoIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown, TDropdownItem } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
@@ -38,8 +39,9 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
-  const { featureFlags } = useRpcProvider()
+  const { featureFlags, assets } = useRpcProvider()
   const rugCheck = useExternalTokensRugCheck()
+  const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -155,6 +157,14 @@ export const WalletAssetsTableActions = (props: Props) => {
             }),
         }
       : null,
+    assets.isExternal(props.asset.meta)
+      ? {
+          key: "checkData",
+          icon: <InfoIcon width={18} height={18} />,
+          label: t("wallet.assets.table.actions.checkExternal"),
+          onSelect: () => setAssetCheckModalOpen(true),
+        }
+      : null,
   ].filter(isNotNil)
 
   return (
@@ -223,6 +233,15 @@ export const WalletAssetsTableActions = (props: Props) => {
       >
         <ChevronDownIcon />
       </ButtonTransparent>
+      {assetCheckModalOpen && (
+        <ExternalAssetUpdateModal
+          open={assetCheckModalOpen}
+          assetId={id}
+          onClose={() => {
+            setAssetCheckModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }

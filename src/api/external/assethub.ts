@@ -16,6 +16,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
+import BN from "bignumber.js"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -43,6 +44,8 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
       const data = dataRaw
 
       const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+
+      const supply = asset?.[1].unwrap().supply.toString()
       const admin = asset?.[1].unwrap().admin.toString()
       const owner = asset?.[1].unwrap().owner.toString()
       const isWhiteListed =
@@ -51,12 +54,10 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
 
       return {
         id,
-        // @ts-ignore
-        decimals: data.decimals.toNumber() as number,
-        // @ts-ignore
+        decimals: data.decimals.toNumber(),
         symbol: data.symbol.toHuman() as string,
-        // @ts-ignore
         name: data.name.toHuman() as string,
+        supply: supply ? BN(supply) : BN_NAN,
         origin: assethub.parachainId,
         isWhiteListed,
       }

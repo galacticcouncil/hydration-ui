@@ -15,14 +15,14 @@ import {
   useCreateXYKPool,
   useCreateXYKPoolForm,
 } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
+import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import {
   getInternalIdFromResult,
-  TRegisteredAsset,
+  TExternalAsset,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { pick } from "utils/rx"
 import { positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormStep1 } from "./MemepadFormStep1"
@@ -33,7 +33,8 @@ import {
   useCrossChainTransaction,
 } from "api/xcm"
 import { useTranslation } from "react-i18next"
-import BigNumber from "bignumber.js"
+
+import BN from "bignumber.js"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
@@ -109,7 +110,7 @@ export const useMemepadStep1Form = () => {
             ),
           deposit: required.pipe(positive),
           supply: required.refine((value) => {
-            const supply = BigNumber(value)
+            const supply = BN(value)
             return supply.isFinite() && supply.gt(values.deposit)
           }, t("memepad.form.error.minSupply")),
           decimals: z.number().min(0).max(MAX_DECIMALS_COUNT),
@@ -150,11 +151,7 @@ export const useMemepadForms = () => {
   const createToken = useCreateAssetHubToken()
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
-      addToken({
-        ...pick(asset, ["name", "symbol", "decimals", "origin", "id"]),
-        internalId,
-        isWhiteListed: false,
-      })
+      addToken(externalAssetToRegisteredAsset(asset, internalId))
       refetchProvider()
     },
   })
@@ -203,22 +200,19 @@ export const useMemepadForms = () => {
         }
 
         // register token on Hydration
-        const result = await registerToken.mutateAsync(token)
+        const externalAsset: TExternalAsset = {
+          ...token,
+          supply: BN(token.supply),
+        }
+        const result = await registerToken.mutateAsync(externalAsset)
 
         // sync registered token with assethub XCM config
         const { assetId } = getInternalIdFromResult(result)
         const internalId = assetId?.toString() ?? ""
-        const registeredAsset: TRegisteredAsset = {
-          ...pick(token, [
-            "id",
-            "decimals",
-            "symbol",
-            "name",
-            "origin",
-            "isWhiteListed",
-          ]),
+        const registeredAsset = externalAssetToRegisteredAsset(
+          externalAsset,
           internalId,
-        }
+        )
         syncAssethubXcmConfig(registeredAsset)
 
         setNextStep({
