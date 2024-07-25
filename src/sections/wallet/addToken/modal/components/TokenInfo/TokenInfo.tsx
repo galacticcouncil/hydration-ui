@@ -266,8 +266,10 @@ const XYKVolume = ({ pools }: { pools: string[] }) => {
     <Text fs={12}>
       {volumes.isLoading ? (
         <Skeleton width={40} height={10} />
+      ) : total?.isNaN() || !total ? (
+        "N/A"
       ) : (
-        <DisplayValue value={total?.div(2)} />
+        <DisplayValue value={total.div(2)} />
       )}
     </Text>
   )
