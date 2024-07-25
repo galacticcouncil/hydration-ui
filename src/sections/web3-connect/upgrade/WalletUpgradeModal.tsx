@@ -1,6 +1,5 @@
 import UpdateMetadataIcon from "assets/icons/UpdateMetadataIcon.svg?react"
 import { Button } from "components/Button/Button"
-import { ExternalLink } from "components/Link/ExternalLink"
 import { Modal } from "components/Modal/Modal"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -52,12 +51,6 @@ export function WalletUpgradeModal() {
         >
           {t("metadata.update.description")}
         </Text>
-
-        <Spacer size={12} />
-
-        <ExternalLink sx={{ color: "brightBlue300" }} href="/">
-          {t("metadata.update.link")}
-        </ExternalLink>
 
         <Spacer size={40} />
 

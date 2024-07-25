@@ -9,6 +9,7 @@ import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
+import { TExternal } from "api/assetDetails"
 import { useNextEvmPermitNonce } from "api/transaction"
 import { decodeError } from "ethers-decode-error"
 import { useShallow } from "hooks/useShallow"
@@ -496,7 +497,7 @@ const useStoreExternalAssetsOnSign = () => {
     (assetIds: string[]) => {
       if (!degenMode) return
       assetIds.forEach((id) => {
-        const asset = assets.getAsset(id)
+        const asset = assets.getAsset(id) as TExternal
         if (
           !isAdded(asset.externalId) &&
           asset.isExternal &&
@@ -509,6 +510,7 @@ const useStoreExternalAssetsOnSign = () => {
             name: asset.name,
             origin: Number(asset.parachainId),
             internalId: asset.id,
+            isWhiteListed: !!asset.isWhiteListed,
           })
         }
       })

@@ -22,11 +22,7 @@ import {
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "./store/useWeb3ConnectStore"
-import {
-  WalletProviderType,
-  getSupportedWallets,
-  handleAnnounceProvider,
-} from "./wallets"
+import { getSupportedWallets, handleAnnounceProvider } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
 import { MetaMask } from "./wallets/MetaMask"
 import {
@@ -39,7 +35,10 @@ import {
   EIP6963AnnounceProviderEvent,
   WalletAccount,
 } from "sections/web3-connect/types"
-import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import {
+  EVM_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
@@ -113,14 +112,7 @@ export const useWalletAccounts = (
       select: (data) => {
         if (!data) return []
 
-        return data
-          .filter(({ address }) => {
-            // filter out evm addresses for Talisman
-            return type === WalletProviderType.Talisman
-              ? !isEvmAddress(address)
-              : true
-          })
-          .map(mapWalletAccount)
+        return data.map(mapWalletAccount)
       },
       ...options,
     },
