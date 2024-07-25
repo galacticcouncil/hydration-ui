@@ -26,6 +26,7 @@ export const SSpinnerContainer = styled.div<{
 export const Gradient = styled.div`
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   background: conic-gradient(
     from 1deg at 50% 50%,
     rgba(10, 13, 26, 0) 90deg,
@@ -35,4 +36,6 @@ export const Gradient = styled.div`
     #ffffff 353deg,
     rgba(10, 13, 26, 0) 358deg
   );
+  mask: radial-gradient(farthest-side, #0000 calc(100% - 2px), #000 0);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 2px), #000 0);
 `
