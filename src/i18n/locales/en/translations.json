@@ -1010,6 +1010,7 @@
   "memepad.form.spinner.fundCheck.description": "The liquidity is still on its way to Hydration. This may take a while, don't close the tab.",
   "memepad.form.error.maxTransferable": "The maximum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
   "memepad.form.error.minTransferable": "The minimum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
+  "memepad.form.error.dstFee": "You need to have at least {{ value, bignumber(type: 'token') }} {{ symbol }} on {{ chain }}.",
   "memepad.form.error.maxNameLength": "The maximum allowed length of the asset name is {{ count }} characters.",
   "memepad.form.error.maxSymbolLength": "The maximum allowed length of the symbol is {{ count }} characters.",
   "memepad.form.error.nameExists": "An asset with this name already exists.",

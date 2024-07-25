@@ -427,6 +427,10 @@ export const QUERY_KEYS = {
     address,
     id,
   ],
+  assetHubExistentialDeposit: (id: string) => [
+    "assetHubExistentialDeposit",
+    id,
+  ],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   xcmTransfer: (
     asset: string,

@@ -7,7 +7,7 @@ import {
   useGetNextAssetHubId,
 } from "api/external/assethub"
 import { useRefetchProviderData } from "api/provider"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
 import {
@@ -58,6 +58,12 @@ export type MemepadStep3Values = CreateXYKPoolFormData
 export type MemepadSummaryValues = Partial<
   MemepadStep1Values & MemepadStep2Values & MemepadStep3Values
 > & { internalId?: string; xykPoolAssetId?: string }
+
+export type MemepadAlert = {
+  key: string
+  text: string
+  variant: "warning" | "error" | "info"
+}
 
 export const useMemepadStep1Form = () => {
   const { t } = useTranslation()
@@ -135,8 +141,19 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(0)
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
+  const [step, setStep] = useState(1)
+  const [alerts, setAlerts] = useState<MemepadAlert[]>([])
+  const [summary, setSummary] = useState<MemepadSummaryValues | null>({
+    name: "TestCoin2",
+    symbol: "TC2",
+    deposit: "1",
+    supply: "1000000",
+    decimals: 12,
+    origin: 1000,
+    account: "5GuL1M5raQ9xdZTenTzPszigicAQR96SHDirDjp57po6eCVD",
+    id: "53",
+    internalId: "1000229",
+  })
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
@@ -252,11 +269,21 @@ export const useMemepadForms = () => {
     }
   }
 
-  function reset() {
+  const reset = () => {
     setStep(0)
     setSummary(null)
     formInstances.forEach((form) => form.reset())
   }
+
+  const setAlert = useCallback((alert: MemepadAlert) => {
+    setAlerts((prev) =>
+      prev.some(({ key }) => key === alert.key) ? prev : [...prev, alert],
+    )
+  }, [])
+
+  const clearAlert = useCallback((key: string) => {
+    setAlerts((prev) => prev.filter((alert) => alert.key !== key))
+  }, [])
 
   function setSummaryValue<K extends keyof MemepadSummaryValues>(
     key: K,
@@ -286,6 +313,9 @@ export const useMemepadForms = () => {
     setSummaryValue,
     submitNext,
     reset,
+    alerts,
+    setAlert,
+    clearAlert,
     isLoading,
   }
 }

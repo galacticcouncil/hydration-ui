@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
 import { useMemepadFormContext } from "./MemepadFormContext"
 import { useTranslation } from "react-i18next"
+import { Alert } from "components/Alert/Alert"
 
 const useSpinnerPropsByStep = () => {
   const { step, summary } = useMemepadFormContext()
@@ -42,7 +43,7 @@ const useSpinnerPropsByStep = () => {
 export const MemepadForm = () => {
   const { t } = useTranslation()
   const spinnerProps = useSpinnerPropsByStep()
-  const { step, currentForm, isLoading } = useMemepadFormContext()
+  const { step, currentForm, isLoading, alerts } = useMemepadFormContext()
 
   const steps = useMemo(() => {
     const stepLabels = [
@@ -61,11 +62,20 @@ export const MemepadForm = () => {
   }, [step, t])
 
   return (
-    <div sx={{ flex: "column", gap: [20, 60] }}>
-      <Stepper steps={steps} />
+    <div sx={{ flex: "column", gap: [20] }}>
+      <Stepper steps={steps} sx={{ mb: [0, 60] }} />
       <div>
         {isLoading ? <MemepadSpinner {...spinnerProps} /> : currentForm}
       </div>
+      {alerts.length > 0 && (
+        <div sx={{ flex: "column", gap: 10 }}>
+          {alerts.map(({ key, variant, text }) => (
+            <Alert key={key} variant={variant}>
+              {text}
+            </Alert>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

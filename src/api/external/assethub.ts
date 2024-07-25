@@ -27,10 +27,13 @@ export const assethubNativeToken = assethub.assetsData.get("dot")
 
 // TEMP CHOPSTICKS SETUP
 //@ts-ignore
-// assethub.ws = "ws://172.25.126.217:8000"
-// const hydradx = chainsMap.get("hydradx") as Parachain
+//assethub.ws = "ws://172.25.126.217:8000"
+//const hydradx = chainsMap.get("hydradx") as Parachain
 //@ts-ignore
-// hydradx.ws = "ws://172.25.126.217:8001"
+//hydradx.ws = "ws://172.25.126.217:8001"
+//const polkadot = chainsMap.get("polkadot") as Parachain
+//@ts-ignore
+//polkadot.ws = "ws://172.25.126.217:8002"
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -180,6 +183,19 @@ export const useAssetHubTokenBalances = (
   })
 }
 
+export const useAssetHubTokenBalance = (
+  account: AccountId32 | string,
+  id: string,
+) => {
+  const { data: api } = useExternalApi("assethub")
+  const enabled = !!account && !!api && !!id
+  return useQuery(
+    QUERY_KEYS.assetHubTokenBalance(account.toString(), id.toString()),
+    enabled ? getAssetHubTokenBalance(api, account, id) : undefinedNoop,
+    { enabled },
+  )
+}
+
 export const useGetNextAssetHubId = () => {
   const { data: api } = useExternalApi("assethub")
   const mutation = useMutation(async () => {
@@ -286,5 +302,15 @@ export const useCreateAssetHubToken = ({
         onSuccess,
       },
     )
+  })
+}
+
+export const useAssetHubExistentialDeposit = (id: string) => {
+  const { data: api } = useExternalApi("assethub")
+  return useQuery(QUERY_KEYS.assetHubExistentialDeposit(id), async () => {
+    if (!api) throw new Error("Asset Hub is not connected")
+    const response = await api.query.assets.asset(id)
+    const details = response.unwrap()
+    return BN(details.minBalance.toString())
   })
 }

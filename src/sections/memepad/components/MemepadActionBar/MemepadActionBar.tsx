@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 
 type MemepadActionBarProps = {
   step: number
+  disabled?: boolean
   isLoading?: boolean
   isRegistering?: boolean
   onNext?: () => void
@@ -11,6 +12,7 @@ type MemepadActionBarProps = {
 
 export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
   step,
+  disabled = false,
   isLoading = false,
   isRegistering = false,
   onNext,
@@ -19,7 +21,7 @@ export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
   return (
     <SContainer>
       <Button
-        disabled={isLoading}
+        disabled={disabled || isLoading}
         isLoading={isLoading}
         variant="primary"
         sx={{ minWidth: ["100%", 200] }}
