@@ -141,19 +141,9 @@ export const useMemepadStep2Form = () => {
 }
 
 export const useMemepadForms = () => {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const [alerts, setAlerts] = useState<MemepadAlert[]>([])
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>({
-    name: "TestCoin2",
-    symbol: "TC2",
-    deposit: "1",
-    supply: "1000000",
-    decimals: 12,
-    origin: 1000,
-    account: "5GuL1M5raQ9xdZTenTzPszigicAQR96SHDirDjp57po6eCVD",
-    id: "53",
-    internalId: "1000229",
-  })
+  const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
