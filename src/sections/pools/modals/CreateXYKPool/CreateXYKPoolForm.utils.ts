@@ -7,15 +7,15 @@ import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { ToastMessage, useSettingsStore, useStore } from "state/store"
-import { TOAST_MESSAGES } from "state/toasts"
+import { useSettingsStore, useStore } from "state/store"
 import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
+import { createToastMessages } from "state/toasts"
 
 export type CreateXYKPoolFormData = {
   assetA: string
@@ -155,24 +155,6 @@ export const useCreateXYKPool = (
       },
     }
 
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`liquidity.pool.xyk.create.toast.${msType}`}
-          tOptions={{
-            symbolA: assetAMeta.symbol,
-            symbolB: assetBMeta.symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
-
     return await createTransaction(
       {
         tx: api.tx.xyk.createPool(
@@ -190,7 +172,14 @@ export const useCreateXYKPool = (
           queryClient.refetchQueries(QUERY_KEYS.xykPools)
           onSuccess?.()
         },
-        toast,
+        toast: createToastMessages("liquidity.pool.xyk.create.toast", {
+          t,
+          tOptions: {
+            symbolA: assetAMeta.symbol,
+            symbolB: assetBMeta.symbol,
+          },
+          components: ["span", "span.highlight"],
+        }),
       },
     )
   })

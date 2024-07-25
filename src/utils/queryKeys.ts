@@ -431,6 +431,7 @@ export const QUERY_KEYS = {
     "assetHubExistentialDeposit",
     id,
   ],
+  memepadDryRun: ["memepadDryRun"],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   xcmTransfer: (
     asset: string,
