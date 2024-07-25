@@ -14,9 +14,8 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Fragment, useCallback, useMemo } from "react"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useRpcProvider } from "providers/rpcProvider"
-import { zipArrays } from "utils/rx"
 import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import SkullIcon from "assets/icons/SkullIcon.svg?react"
 import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import WarningIconRed from "assets/icons/WarningIconRed.svg?react"
@@ -112,6 +111,8 @@ export const getAssetHubAssets = async () => {
         const data = dataRaw
 
         const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+
+        const supply = asset?.[1].unwrap().supply.toString()
         const admin = asset?.[1].unwrap().admin.toString()
         const owner = asset?.[1].unwrap().owner.toString()
         const isWhiteListed =
@@ -119,12 +120,10 @@ export const getAssetHubAssets = async () => {
 
         return {
           id,
-          // @ts-ignore
-          decimals: data.decimals.toNumber() as number,
-          // @ts-ignore
+          decimals: data.decimals.toNumber(),
           symbol: data.symbol.toHuman() as string,
-          // @ts-ignore
           name: data.name.toHuman() as string,
+          supply: supply ? BN(supply) : BN_NAN,
           origin: provider.parachainId,
           isWhiteListed,
         }
@@ -164,6 +163,7 @@ export const getPedulumAssets = async () => {
             symbol: data.symbol.toHuman() as string,
             // @ts-ignore
             name: data.name.toHuman() as string,
+            supply: BN_NAN,
             location: location[`as${type}`] as HydradxRuntimeXcmAssetLocation,
             origin: PENDULUM_ID,
             isWhiteListed: false,
@@ -355,7 +355,7 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
   const assetRegistry = useExternalAssetRegistry()
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
-  const { internalIds, assetHubExternalIds } = useMemo(() => {
+  const { internalIds } = useMemo(() => {
     const externalAssets = isLoaded
       ? ids?.length
         ? assets.external.filter((a) => ids?.some((id) => a.id === id))
@@ -364,35 +364,20 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
 
     const internalIds = externalAssets.map(({ id }) => id)
 
-    const assetHubExternalIds = externalAssets
-      .map(({ parachainId, externalId }) =>
-        Number(parachainId) === ASSET_HUB_ID ? externalId : "",
-      )
-      .filter(isNotNil)
-
-    return { externalAssets, internalIds, assetHubExternalIds }
+    return { externalAssets, internalIds }
   }, [assets.external, ids, isLoaded])
 
   const issuanceQueries = useTotalIssuances(internalIds)
 
-  const balanceQueries = useAssetHubTokenBalances(
-    HYDRADX_PARACHAIN_ADDRESS,
-    assetHubExternalIds,
-  )
-
   const tokens = useMemo(() => {
-    if (
-      issuanceQueries.some(({ data }) => !data) ||
-      balanceQueries.some(({ fetchStatus }) => fetchStatus !== "idle")
-    ) {
+    if (issuanceQueries.some(({ data }) => !data)) {
       return []
     }
 
     const issuanceData = issuanceQueries.map((q) => q.data)
-    const balanceData = balanceQueries.map((q) => q.data)
 
-    return zipArrays(issuanceData, balanceData)
-      .map(([issuance, balance]) => {
+    return issuanceData
+      .map((issuance) => {
         if (!issuance?.token) return null
 
         const internalToken = assets.getAsset(issuance.token.toString())
@@ -409,12 +394,15 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
         if (!externalToken) return null
 
         const totalSupplyExternal =
-          !shouldIgnoreRugCheck && balance?.balance ? BN(balance.balance) : null
+          !shouldIgnoreRugCheck && !externalToken.supply.isNaN()
+            ? externalToken.supply
+            : null
+
         const totalSupplyInternal =
           !shouldIgnoreRugCheck && issuance?.total ? BN(issuance.total) : null
 
         const warnings = createRugWarningList({
-          totalSupplyExternal,
+          totalSupplyExternal: externalToken.supply,
           totalSupplyInternal,
           storedToken,
           externalToken,
@@ -445,7 +433,6 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
   }, [
     assetRegistry,
     assets,
-    balanceQueries,
     getIsWhiteListed,
     getTokenByInternalId,
     isRiskConsentAdded,
