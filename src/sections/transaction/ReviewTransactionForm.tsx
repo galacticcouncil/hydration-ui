@@ -162,6 +162,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           signer: wallet.signer,
           // defer to polkadot/api to handle nonce w/ regard to mempool
           nonce: customNonce ? parseInt(customNonce) : -1,
+          withSignedTransaction: true,
         })
 
         return props.onSigned(signature, props.xcallMeta)
