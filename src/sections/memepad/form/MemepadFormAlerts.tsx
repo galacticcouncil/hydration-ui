@@ -17,6 +17,8 @@ import { BN_0 } from "utils/constants"
 import { groupBy } from "utils/rx"
 import { useMemepadFormContext } from "./MemepadFormContext"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
+import { Text } from "components/Typography/Text/Text"
+import { Spinner } from "components/Spinner/Spinner"
 
 export const MemepadFormAlerts = () => {
   const { t } = useTranslation()
@@ -67,7 +69,7 @@ export const MemepadFormAlerts = () => {
     }
   }
 
-  useMemepadDryRun({
+  const { isLoading } = useMemepadDryRun({
     onSuccess: (data) => {
       const {
         registerTokenFee,
@@ -117,6 +119,19 @@ export const MemepadFormAlerts = () => {
       printDebug(data)
     },
   })
+
+  if (isLoading) {
+    return (
+      <div sx={{ flex: "row", gap: 10, align: "center" }}>
+        <Spinner size={16} />
+        <Text fs={12} color="basic400">
+          {t("memepad.form.balance.isLoading")}
+        </Text>
+      </div>
+    )
+  }
+
+  if (!alerts.length) return null
 
   return (
     <div sx={{ flex: "column", gap: 10 }}>

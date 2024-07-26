@@ -17,13 +17,16 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
+import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain/Parachain"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 export const assethub = chainsMap.get("assethub") as Parachain
-export const assethubNativeToken = assethub.assetsData.get("dot")
+export const assethubNativeToken = assethub.assetsData.get(
+  "dot",
+) as ParachainAssetsData
 
 // TEMP CHOPSTICKS SETUP
 //@ts-ignore
@@ -265,7 +268,6 @@ export const useCreateAssetHubToken = ({
 
   return useMutation(async (values: CreateTokenValues) => {
     if (!account) throw new Error("Missing account")
-    if (!assethubNativeToken) throw new Error("Missing native token")
     if (!api) throw new Error("Asset Hub is not connected")
 
     const tx = createAssetHubAssetAndMint(api, values)

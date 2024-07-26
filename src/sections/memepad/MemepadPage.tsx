@@ -11,6 +11,7 @@ import {
   MemepadFormProvider,
   useMemepadFormContext,
 } from "./form/MemepadFormContext"
+import { useMemepadDryRun } from "./form/MemepadForm.utils"
 import { isEvmAccount } from "utils/evm"
 import { Alert } from "components/Alert/Alert"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -24,6 +25,10 @@ const MemepadPageContent = () => {
   const { step, submitNext, isFinalized, isLoading, summary, reset, alerts } =
     useMemepadFormContext()
 
+  const { isLoading: isDryRunLoading } = useMemepadDryRun()
+
+  const actionDisabled = !isLoaded || isDryRunLoading || alerts.length > 0
+
   return (
     <>
       {isFinalized ? (
@@ -33,7 +38,7 @@ const MemepadPageContent = () => {
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
           <MemepadActionBar
             step={step}
-            disabled={!isLoaded || alerts.length > 0}
+            disabled={actionDisabled}
             isLoading={isLoading}
             isRegistering={!!summary?.id}
             onNext={submitNext}

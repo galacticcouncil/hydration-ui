@@ -1016,6 +1016,7 @@
   "memepad.form.error.nameExists": "An asset with this name already exists.",
   "memepad.form.error.symbolExists": "An asset with this symbol already exists.",
   "memepad.form.error.minSupply": "The supply must be higher than the existential deposit.",
+  "memepad.form.balance.isLoading": "Checking your balance...",
   "memepad.summary.congrats": "Congrats!",
   "memepad.summary.title": "The asset is successfully launched.",
   "memepad.summary.yourSummary": "Summary",

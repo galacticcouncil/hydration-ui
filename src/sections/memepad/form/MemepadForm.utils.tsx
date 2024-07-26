@@ -345,12 +345,15 @@ const MEMEPAD_DRY_RUN_VALUES = {
 export const useMemepadDryRun = (
   options: { onSuccess?: (data: MemepadDryRunResult) => void } = {},
 ) => {
-  const { api, assets } = useRpcProvider()
+  const { isLoaded, api, assets } = useRpcProvider()
   const { data: assethubApi } = useExternalApi("assethub")
   const { account } = useAccount()
   const feePaymentAssets = useAccountFeePaymentAssets()
+
+  const nativeAssetId = isLoaded ? assets.native.id : ""
   const { feePaymentAssetId } = feePaymentAssets
-  const spotPrice = useSpotPrice(assets.native.id, feePaymentAssetId)
+
+  const spotPrice = useSpotPrice(nativeAssetId, feePaymentAssetId)
 
   const feePaymentAssetSpotPrice = spotPrice.data?.spotPrice ?? BN_1
 
@@ -359,12 +362,11 @@ export const useMemepadDryRun = (
   async function dryRun(): Promise<MemepadDryRunResult> {
     if (!api) throw new Error("API is not connected")
     if (!assethubApi) throw new Error("Asset Hub is not connected")
-    if (!assethubNativeToken) throw new Error("Missing native token")
     if (!address) throw new Error("Missing account address")
 
-    const hydraNativeAsset = assets.getAsset(assets.native.id)
+    const hydraNativeAsset = assets.getAsset(nativeAssetId)
     const hydraFeePaymentAsset = assets.getAsset(
-      feePaymentAssetId ?? assets.native.id,
+      feePaymentAssetId ?? nativeAssetId,
     )
 
     const token = {
@@ -451,7 +453,6 @@ export const useMemepadDryRun = (
     enabled:
       !!api &&
       !!assethubApi &&
-      !!assethubNativeToken &&
       !!address &&
       feePaymentAssets.isSuccess &&
       spotPrice.isSuccess,
