@@ -50,7 +50,7 @@ export const MemepadFormAlerts = () => {
   } = {}) {
     if (!assetAmount) return
 
-    const key = `balance-${assetAmount.key}`
+    const key = `balance-${assetAmount.key}-${chain}`
     if (balance && balance.lt(assetAmount.amount.toString())) {
       setAlert({
         key,

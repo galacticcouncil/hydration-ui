@@ -169,15 +169,15 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
         if (!externalToken) return null
 
         const totalSupplyExternal =
-          !shouldIgnoreRugCheck && !externalToken.supply.isNaN()
-            ? externalToken.supply
+          !shouldIgnoreRugCheck && externalToken.supply
+            ? BN(externalToken.supply)
             : null
 
         const totalSupplyInternal =
           !shouldIgnoreRugCheck && issuance?.total ? BN(issuance.total) : null
 
         const warnings = createRugWarningList({
-          totalSupplyExternal: externalToken.supply,
+          totalSupplyExternal,
           totalSupplyInternal,
           storedToken,
           externalToken,

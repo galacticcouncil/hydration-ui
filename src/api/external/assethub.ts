@@ -60,7 +60,7 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
         decimals: data.decimals.toNumber(),
         symbol: data.symbol.toHuman() as string,
         name: data.name.toHuman() as string,
-        supply: supply ? BN(supply) : BN_NAN,
+        supply,
         origin: assethub.parachainId,
         isWhiteListed,
       }
@@ -230,6 +230,28 @@ export type CreateTokenValues = {
   account: string
 }
 
+export function createAssetHubAssetAndMint(
+  api: ApiPromise,
+  values: CreateTokenValues,
+) {
+  const supply = BigNumber(values.supply).shiftedBy(values.decimals).toString()
+
+  const deposit = BigNumber(values.deposit)
+    .shiftedBy(values.decimals)
+    .toString()
+
+  return api.tx.utility.batchAll([
+    api.tx.assets.create(values.id, values.account, deposit),
+    api.tx.assets.setMetadata(
+      values.id,
+      values.name,
+      values.symbol,
+      values.decimals,
+    ),
+    api.tx.assets.mint(values.id, values.account, supply),
+  ])
+}
+
 export const useCreateAssetHubToken = ({
   onSuccess,
 }: {
@@ -246,24 +268,7 @@ export const useCreateAssetHubToken = ({
     if (!assethubNativeToken) throw new Error("Missing native token")
     if (!api) throw new Error("Asset Hub is not connected")
 
-    const supply = BigNumber(values.supply)
-      .shiftedBy(values.decimals)
-      .toString()
-
-    const deposit = BigNumber(values.deposit)
-      .shiftedBy(values.decimals)
-      .toString()
-
-    const tx = api.tx.utility.batchAll([
-      api.tx.assets.create(values.id, values.account, deposit),
-      api.tx.assets.setMetadata(
-        values.id,
-        values.name,
-        values.symbol,
-        values.decimals,
-      ),
-      api.tx.assets.mint(values.id, values.account, supply),
-    ])
+    const tx = createAssetHubAssetAndMint(api, values)
     const paymentInfo = await tx.paymentInfo(account.address)
 
     const feeAssetDecimals = assethubNativeToken.decimals ?? 10
@@ -276,16 +281,7 @@ export const useCreateAssetHubToken = ({
     return await createTransaction(
       {
         title: t("wallet.addToken.reviewTransaction.modal.create.title"),
-        tx: api.tx.utility.batchAll([
-          api.tx.assets.create(values.id, values.account, deposit),
-          api.tx.assets.setMetadata(
-            values.id,
-            values.name,
-            values.symbol,
-            values.decimals,
-          ),
-          api.tx.assets.mint(values.id, values.account, supply),
-        ]),
+        tx,
         xcallMeta: {
           srcChain: assethub.key,
           srcChainFee: fee.toString(),

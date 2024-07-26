@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   assethub,
   assethubNativeToken,
+  createAssetHubAssetAndMint,
   CreateTokenValues,
   useAssetHubAssetRegistry,
   useCreateAssetHubToken,
@@ -21,7 +22,6 @@ import {
 import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import {
   getInternalIdFromResult,
-  TExternalAsset,
   useRegisterToken,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
@@ -221,17 +221,13 @@ export const useMemepadForms = () => {
         }
 
         // register token on Hydration
-        const externalAsset: TExternalAsset = {
-          ...token,
-          supply: BN(token.supply),
-        }
-        const result = await registerToken.mutateAsync(externalAsset)
+        const result = await registerToken.mutateAsync(token)
 
         // sync registered token with assethub XCM config
         const { assetId } = getInternalIdFromResult(result)
         const internalId = assetId?.toString() ?? ""
         const registeredAsset = externalAssetToRegisteredAsset(
-          externalAsset,
+          token,
           internalId,
         )
         syncAssethubXcmConfig(registeredAsset)
@@ -374,19 +370,7 @@ export const useMemepadDryRun = (
       feePaymentAssetId ?? assets.native.id,
     )
 
-    const supply = BN(values.supply).shiftedBy(values.decimals).toString()
-    const deposit = BN(values.deposit).shiftedBy(values.decimals).toString()
-    const createTokenTx = assethubApi.tx.utility.batchAll([
-      assethubApi.tx.assets.create(values.id, values.account, deposit),
-      assethubApi.tx.assets.setMetadata(
-        values.id,
-        values.name,
-        values.symbol,
-        values.decimals,
-      ),
-      assethubApi.tx.assets.mint(values.id, values.account, supply),
-    ])
-
+    const createTokenTx = createAssetHubAssetAndMint(assethubApi, values)
     const createTokenPaymentInfo = await createTokenTx.paymentInfo(
       account.address,
     )
@@ -402,7 +386,6 @@ export const useMemepadDryRun = (
     const registerTokenTx = api.tx.assetRegistry.registerExternal(
       getParachainInputData({
         ...values,
-        supply: BN(values.supply),
         isWhiteListed: false,
       }),
     )
@@ -419,7 +402,7 @@ export const useMemepadDryRun = (
     })
 
     const xcmTransfer = await wallet.transfer(
-      "pink",
+      "ded",
       account.address,
       MEMEPAD_XCM_SRC_CHAIN,
       account.address,
