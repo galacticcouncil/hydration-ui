@@ -354,26 +354,26 @@ export const useMemepadDryRun = (
 
   const feePaymentAssetSpotPrice = spotPrice.data?.spotPrice ?? BN_1
 
-  const values = {
-    ...MEMEPAD_DRY_RUN_VALUES,
-    account: account?.address ?? "",
-  }
+  const address = account?.address ?? ""
 
   async function dryRun(): Promise<MemepadDryRunResult> {
     if (!api) throw new Error("API is not connected")
     if (!assethubApi) throw new Error("Asset Hub is not connected")
     if (!assethubNativeToken) throw new Error("Missing native token")
-    if (!account) throw new Error("Missing account")
+    if (!address) throw new Error("Missing account address")
 
     const hydraNativeAsset = assets.getAsset(assets.native.id)
     const hydraFeePaymentAsset = assets.getAsset(
       feePaymentAssetId ?? assets.native.id,
     )
 
-    const createTokenTx = createAssetHubAssetAndMint(assethubApi, values)
-    const createTokenPaymentInfo = await createTokenTx.paymentInfo(
-      account.address,
-    )
+    const token = {
+      ...MEMEPAD_DRY_RUN_VALUES,
+      account: address,
+    }
+
+    const createTokenTx = createAssetHubAssetAndMint(assethubApi, token)
+    const createTokenPaymentInfo = await createTokenTx.paymentInfo(address)
 
     const createTokenFee = new AssetAmount({
       amount: createTokenPaymentInfo.partialFee.toBigInt(),
@@ -385,14 +385,12 @@ export const useMemepadDryRun = (
 
     const registerTokenTx = api.tx.assetRegistry.registerExternal(
       getParachainInputData({
-        ...values,
+        ...token,
         isWhiteListed: false,
       }),
     )
 
-    const registerTokenPaymentInfo = await registerTokenTx.paymentInfo(
-      account.address,
-    )
+    const registerTokenPaymentInfo = await registerTokenTx.paymentInfo(address)
 
     const registerTokenFee = convertFeeToPaymentAsset({
       amount: registerTokenPaymentInfo.partialFee.toBigNumber(),
@@ -403,9 +401,9 @@ export const useMemepadDryRun = (
 
     const xcmTransfer = await wallet.transfer(
       "ded",
-      account.address,
+      address,
       MEMEPAD_XCM_SRC_CHAIN,
-      account.address,
+      address,
       MEMEPAD_XCM_DST_CHAIN,
     )
 
@@ -430,9 +428,7 @@ export const useMemepadDryRun = (
     })
 
     const createXYKPoolTx = api.tx.xyk.createPool("0", "1", "5", "1")
-    const createXYKPoolPaymentInfo = await createXYKPoolTx.paymentInfo(
-      account.address,
-    )
+    const createXYKPoolPaymentInfo = await createXYKPoolTx.paymentInfo(address)
 
     const createXYKPoolFee = convertFeeToPaymentAsset({
       amount: createXYKPoolPaymentInfo.partialFee.toBigNumber(),
@@ -451,12 +447,12 @@ export const useMemepadDryRun = (
     }
   }
 
-  return useQuery(QUERY_KEYS.memepadDryRun, dryRun, {
+  return useQuery(QUERY_KEYS.memepadDryRun(address), dryRun, {
     enabled:
       !!api &&
       !!assethubApi &&
       !!assethubNativeToken &&
-      !!account &&
+      !!address &&
       feePaymentAssets.isSuccess &&
       spotPrice.isSuccess,
     retry: false,
