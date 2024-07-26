@@ -33,7 +33,7 @@ const MemepadPageContent = () => {
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
           <MemepadActionBar
             step={step}
-            disabled={alerts.length > 0}
+            disabled={!isLoaded || alerts.length > 0}
             isLoading={isLoading}
             isRegistering={!!summary?.id}
             onNext={submitNext}

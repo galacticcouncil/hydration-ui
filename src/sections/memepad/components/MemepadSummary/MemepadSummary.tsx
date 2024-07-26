@@ -8,7 +8,7 @@ import {
   SRowItem,
 } from "./MemepadSummary.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { shortenAccountAddress } from "utils/formatting"
 import { MemepadVisual } from "sections/memepad/components/MemepadVisual"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -53,10 +53,10 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
 
   const onGithubOpen = () => {
     const url = `${GITHUB_ISSUE_URL}${qs({
-      title: `[MEMEPAD] Add ${name} (${symbol})`,
+      title: `Add ${name} (${symbol})`,
       ticker: symbol,
       template: "ADD-ASSET.yml",
-      labels: "add-token",
+      labels: "add-token,memepad",
       "token-id": internalId,
     })}`
     window.open(url)
@@ -87,8 +87,9 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             tTransform="uppercase"
             tAlign="center"
             sx={{ display: "block" }}
+            css={{ textWrap: "balance" }}
           >
-            <Trans t={t} i18nKey="memepad.summary.title" />
+            {t("memepad.summary.title")}
           </GradientText>
           <SDecorativeStarIcon />
         </SHeading>
@@ -98,18 +99,18 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           </Text>
           <SRowItem>
             <Text fs={14} color="basic400">
-              {t("memepad.form.symbol")}
-            </Text>
-            <Text fs={14} color="brightBlue300">
-              {symbol}
-            </Text>
-          </SRowItem>
-          <SRowItem>
-            <Text fs={14} color="basic400">
               {t("memepad.form.name")}
             </Text>
             <Text fs={14} color="brightBlue300">
               {name}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              {t("memepad.form.symbol")}
+            </Text>
+            <Text fs={14} color="brightBlue300">
+              {symbol}
             </Text>
           </SRowItem>
           <SRowItem>

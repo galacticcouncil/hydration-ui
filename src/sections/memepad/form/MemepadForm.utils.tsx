@@ -327,7 +327,7 @@ export const useMemepadForms = () => {
   }
 }
 
-type MemepadDryRunResult = {
+export type MemepadDryRunResult = {
   xcmDstFeeED: AssetAmount
   xcmSrcFee: AssetAmount
   xcmDstFee: AssetAmount
@@ -426,7 +426,7 @@ export const useMemepadDryRun = (
       MEMEPAD_XCM_DST_CHAIN,
     )
 
-    const xcmSrcFee = await xcmTransfer.estimateFee(100)
+    const xcmSrcFee = await xcmTransfer.estimateFee(1)
 
     const xcmDstChainFeeAssetId = xcmTransfer?.dstFee
       ? assethub.getAssetId(xcmTransfer.dstFee)
@@ -447,12 +447,12 @@ export const useMemepadDryRun = (
     })
 
     const createXYKPoolTx = api.tx.xyk.createPool("0", "1", "5", "1")
-    const createXYKPoolTxPaymentInfo = await createXYKPoolTx.paymentInfo(
+    const createXYKPoolPaymentInfo = await createXYKPoolTx.paymentInfo(
       account.address,
     )
 
     const createXYKPoolFee = convertFeeToPaymentAsset({
-      amount: createXYKPoolTxPaymentInfo.partialFee.toBigNumber(),
+      amount: createXYKPoolPaymentInfo.partialFee.toBigNumber(),
       nativeAsset: hydraNativeAsset,
       feePaymentAsset: hydraFeePaymentAsset,
       spotPrice: feePaymentAssetSpotPrice,
@@ -505,7 +505,7 @@ function convertFeeToPaymentAsset({
     amount: BigInt(amountFmt.toString()),
     decimals: paymentAsset.decimals,
     symbol: paymentAsset.symbol,
-    key: paymentAsset.symbol.toLowerCase(),
+    key: paymentAsset.id,
     originSymbol: paymentAsset.symbol,
   })
 }

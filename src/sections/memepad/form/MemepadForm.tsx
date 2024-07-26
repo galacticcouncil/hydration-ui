@@ -1,12 +1,9 @@
 import { Stepper } from "components/Stepper/Stepper"
 import { useMemo } from "react"
-import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
-import { useMemepadFormContext } from "./MemepadFormContext"
 import { useTranslation } from "react-i18next"
-import { Alert } from "components/Alert/Alert"
-import { useMemepadDryRun } from "sections/memepad/form/MemepadForm.utils"
-import { groupBy } from "utils/rx"
-import BN from "bignumber.js"
+import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
+import { MemepadFormAlerts } from "sections/memepad/form/MemepadFormAlerts"
+import { useMemepadFormContext } from "./MemepadFormContext"
 
 const useSpinnerPropsByStep = () => {
   const { step, summary } = useMemepadFormContext()
@@ -46,74 +43,7 @@ const useSpinnerPropsByStep = () => {
 export const MemepadForm = () => {
   const { t } = useTranslation()
   const spinnerProps = useSpinnerPropsByStep()
-  const { step, currentForm, isLoading, alerts } = useMemepadFormContext()
-
-  useMemepadDryRun({
-    onSuccess: (data) => {
-      const {
-        registerTokenFee,
-        createXYKPoolFee,
-        createTokenFee,
-        xcmDstFeeED,
-        xcmSrcFee,
-        xcmDstFee,
-      } = data
-      const hydraAmounts = [registerTokenFee, createXYKPoolFee]
-      const hydraGroup = groupBy(hydraAmounts, (x) => x.key)
-
-      const hydraTotals = Object.fromEntries(
-        Object.entries(hydraGroup).map(([key, group]) => {
-          const total = group.reduce((acc, x) => x.amount + acc, 0n)
-          const symbol = group[0].symbol
-          const decimals = group[0].decimals
-          return [
-            key,
-            {
-              total: `${BN(total.toString()).shiftedBy(-decimals).toString()} ${symbol}`,
-            },
-          ]
-        }),
-      )
-
-      console.group("Hydration Fees:")
-      console.table({
-        registerTokenFee: `${data.registerTokenFee.toDecimal()} ${data.registerTokenFee.symbol}`,
-        createXYKPoolFee: `${data.createXYKPoolFee.toDecimal()} ${data.createXYKPoolFee.symbol}`,
-      })
-      console.table(hydraTotals)
-      console.groupEnd()
-
-      const assethubAmounts = [
-        createTokenFee,
-        xcmDstFeeED,
-        xcmSrcFee,
-        xcmDstFee,
-      ]
-      const assethubGroup = groupBy(assethubAmounts, (x) => x.key)
-      const assethubTotals = Object.fromEntries(
-        Object.entries(assethubGroup).map(([key, group]) => {
-          const total = group.reduce((acc, x) => x.amount + acc, 0n)
-          const symbol = group[0].symbol
-          const decimals = group[0].decimals
-          return [
-            key,
-            {
-              total: `${BN(total.toString()).shiftedBy(-decimals).toString()} ${symbol}`,
-            },
-          ]
-        }),
-      )
-      console.group("Assethub Fees:")
-      console.table({
-        createTokenFee: `${data.createTokenFee.toDecimal()} ${data.createTokenFee.symbol}`,
-        xcmDstFeeED: `${data.xcmDstFeeED.toDecimal()} ${data.xcmDstFeeED.symbol}`,
-        xcmSrcFee: `${data.xcmSrcFee.toDecimal()} ${data.xcmSrcFee.symbol}`,
-        xcmDstFee: `${data.xcmDstFee.toDecimal()} ${data.xcmDstFee.symbol}`,
-      })
-      console.table(assethubTotals)
-      console.groupEnd()
-    },
-  })
+  const { step, currentForm, isLoading } = useMemepadFormContext()
 
   const steps = useMemo(() => {
     const stepLabels = [
@@ -137,15 +67,7 @@ export const MemepadForm = () => {
       <div>
         {isLoading ? <MemepadSpinner {...spinnerProps} /> : currentForm}
       </div>
-      {alerts.length > 0 && (
-        <div sx={{ flex: "column", gap: 10 }}>
-          {alerts.map(({ key, variant, text }) => (
-            <Alert key={key} variant={variant}>
-              {text}
-            </Alert>
-          ))}
-        </div>
-      )}
+      <MemepadFormAlerts />
     </div>
   )
 }

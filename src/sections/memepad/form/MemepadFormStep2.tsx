@@ -1,27 +1,23 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { Parachain } from "@galacticcouncil/xcm-core"
 import { createXcmAssetKey, useCrossChainTransfer } from "api/xcm"
-import { FC, useEffect, useState } from "react"
+import BN from "bignumber.js"
+import { AddressBook } from "components/AddressBook/AddressBook"
+import { Modal } from "components/Modal/Modal"
+import { Text } from "components/Typography/Text/Text"
+import { FC, useState } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { SRowItem } from "sections/memepad/components/MemepadSummary"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
+import { BN_NAN } from "utils/constants"
 import {
   MEMEPAD_XCM_DST_CHAIN,
   MEMEPAD_XCM_SRC_CHAIN,
   MemepadStep2Values,
 } from "./MemepadForm.utils"
-import BN from "bignumber.js"
-import { Text } from "components/Typography/Text/Text"
-import { BN_0, BN_NAN } from "utils/constants"
-import { AddressBook } from "components/AddressBook/AddressBook"
-import { Modal } from "components/Modal/Modal"
-import { SRowItem } from "sections/memepad/components/MemepadSummary"
 import { useMemepadFormContext } from "./MemepadFormContext"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain } from "@galacticcouncil/xcm-core"
-import {
-  useAssetHubExistentialDeposit,
-  useAssetHubTokenBalance,
-} from "api/external/assethub"
 
 const ALLOW_ADDRESSBOOK = false
 
@@ -32,7 +28,7 @@ type MemepadFormStep2Props = {
 export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({ form }) => {
   const { t } = useTranslation()
   const [addressBookOpen, setAddressBookOpen] = useState(false)
-  const { summary, setAlert, clearAlert } = useMemepadFormContext()
+  const { summary } = useMemepadFormContext()
 
   const srcAddress = summary?.account ?? ""
   const internalId = summary?.internalId ?? ""
@@ -71,47 +67,6 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({ form }) => {
   const dstFee = BN(transfer?.dstFee?.amount?.toString() ?? BN_NAN).shiftedBy(
     -dstFeeDecimals,
   )
-
-  const dstChainFeeAssetId = transfer?.dstFee
-    ? dstChain.getAssetId(transfer?.dstFee)
-    : ""
-
-  const { data: dstFeeBalanceData, isSuccess: isDstFeeBalanceSuccess } =
-    useAssetHubTokenBalance(
-      summary?.account ?? "",
-      dstChainFeeAssetId.toString(),
-    )
-
-  const { data: ed, isSuccess: isEdSuccess } = useAssetHubExistentialDeposit(
-    dstChainFeeAssetId.toString(),
-  )
-
-  const dstEd = (ed ?? BN_0).shiftedBy(-dstFeeDecimals)
-  const dstFeeBalance = (dstFeeBalanceData?.balance ?? BN_0).shiftedBy(
-    -dstFeeDecimals,
-  )
-  const minDstFeeBalance = dstFee.plus(dstEd)
-
-  const dstFeeAlert =
-    isEdSuccess && isDstFeeBalanceSuccess && dstFeeBalance.lt(minDstFeeBalance)
-      ? t("memepad.form.error.dstFee", {
-          value: minDstFeeBalance,
-          symbol: transfer?.dstFee?.symbol,
-          chain: srcChain.name,
-        })
-      : null
-
-  useEffect(() => {
-    if (dstFeeAlert) {
-      setAlert({
-        key: "xcmDstFee",
-        variant: "error",
-        text: dstFeeAlert,
-      })
-    } else {
-      clearAlert("xcmDstFee")
-    }
-  }, [clearAlert, dstFeeAlert, setAlert])
 
   return (
     <>

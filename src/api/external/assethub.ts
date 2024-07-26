@@ -141,7 +141,7 @@ export const useAssetHubNativeBalance = (
 }
 
 export const getAssetHubTokenBalance =
-  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
+  (api: ApiPromise, id: string | u32, account: AccountId32 | string) =>
   async () => {
     try {
       const codec = await api.query.assets.account(id, account)
@@ -160,19 +160,19 @@ export const getAssetHubTokenBalance =
   }
 
 export const useAssetHubTokenBalances = (
-  account: AccountId32 | string,
   ids: string[],
+  account: AccountId32 | string,
 ) => {
   const { data: api } = useExternalApi("assethub")
   const enabled = !!account && !!api
   return useQueries({
     queries: ids.map((id) => ({
       queryKey: QUERY_KEYS.assetHubTokenBalance(
-        account.toString(),
         id.toString(),
+        account.toString(),
       ),
       queryFn: enabled
-        ? getAssetHubTokenBalance(api, account, id)
+        ? getAssetHubTokenBalance(api, id, account)
         : undefinedNoop,
       enabled: enabled && !!id,
       retry: false,
@@ -184,14 +184,14 @@ export const useAssetHubTokenBalances = (
 }
 
 export const useAssetHubTokenBalance = (
-  account: AccountId32 | string,
   id: string,
+  account: AccountId32 | string,
 ) => {
   const { data: api } = useExternalApi("assethub")
   const enabled = !!account && !!api && !!id
   return useQuery(
     QUERY_KEYS.assetHubTokenBalance(account.toString(), id.toString()),
-    enabled ? getAssetHubTokenBalance(api, account, id) : undefinedNoop,
+    enabled ? getAssetHubTokenBalance(api, id, account) : undefinedNoop,
     { enabled },
   )
 }
