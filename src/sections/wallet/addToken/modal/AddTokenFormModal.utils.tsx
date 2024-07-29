@@ -9,7 +9,26 @@ import {
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useToast } from "state/toasts"
-import { omit } from "utils/rx"
+import { pick } from "utils/rx"
+
+const externalAssetToRegisteredAsset = (
+  asset: TExternalAsset,
+  internalId: string,
+): TRegisteredAsset => {
+  const assetProps = pick(asset, [
+    "id",
+    "name",
+    "symbol",
+    "decimals",
+    "origin",
+    "isWhiteListed",
+  ])
+
+  return {
+    ...assetProps,
+    internalId,
+  }
+}
 
 export const useAddTokenFormModalActions = (
   asset: TExternalAsset & { location?: HydradxRuntimeXcmAssetLocation },
@@ -20,7 +39,7 @@ export const useAddTokenFormModalActions = (
   const { add } = useToast()
   const mutation = useRegisterToken({
     onSuccess: (id: string) => {
-      addToken({ ...omit(["location"], asset), internalId: id })
+      addToken(externalAssetToRegisteredAsset(asset, id))
       refetchProvider()
     },
     assetName: asset.name,

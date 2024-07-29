@@ -23,6 +23,7 @@ import { omit } from "utils/rx"
 import { TExternal, useAssets } from "providers/assets"
 import { useShallow } from "hooks/useShallow"
 import { getPendulumInputData } from "utils/externalAssets"
+import BN from "bignumber.js"
 
 const pink = {
   decimals: 10,
@@ -190,10 +191,13 @@ export type TExternalAsset = {
   symbol: string
   name: string
   origin: number
+  supply: BN
   isWhiteListed: boolean
 }
 
-export type TRegisteredAsset = TExternalAsset & { internalId: string }
+export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {
+  internalId: string
+}
 
 export type InteriorTypes = {
   [x: string]: InteriorProp[]
