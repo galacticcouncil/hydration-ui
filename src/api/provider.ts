@@ -270,6 +270,7 @@ export const useRefetchProviderData = () => {
 
   return () => {
     queryClient.invalidateQueries(QUERY_KEYS.provider(rpcList.join()))
+    queryClient.invalidateQueries(QUERY_KEYS.assets(rpcList.join()))
   }
 }
 

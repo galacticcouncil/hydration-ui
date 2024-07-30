@@ -1,4 +1,3 @@
-import { useAssets } from "providers/assets"
 import { useExternalAssetRegistry } from "api/externalAssetRegistry"
 import { useProviderRpcUrlStore, useRefetchProviderData } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -8,14 +7,16 @@ import {
   updateExternalAssetsCursor,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useSettingsStore } from "state/store"
+import { useAssetsLocations } from "api/assetDetails"
+import { parseLocation } from "utils/externalAssets"
 
 export const useDegenModeSubscription = () => {
   const { degenMode } = useSettingsStore()
   const externalAssets = useExternalAssetRegistry(degenMode)
+  const locations = useAssetsLocations()
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
   const { isLoaded } = useRpcProvider()
-  const { external } = useAssets()
 
   const hasInitializedDegenMode = useRef(false)
 
@@ -31,26 +32,34 @@ export const useDegenModeSubscription = () => {
       }
     }
 
-    const data = external.reduce((acc, asset) => {
-      const externalAsset = externalAssets[
-        Number(asset.parachainId)
-      ]?.data?.get(asset.externalId ?? "")
+    const locationIds = (locations.data ?? []).reduce<Map<string, string>>(
+      (acc, location) => {
+        const id = parseLocation("generalIndex", location.data)?.toString()
 
-      if (externalAsset) {
-        acc.push({
-          ...externalAsset,
-          internalId: asset.id,
-        })
-      }
+        if (id) acc.set(id, location.id)
 
-      return acc
-    }, [] as TRegisteredAsset[])
+        return acc
+      },
+      new Map([]),
+    )
+
+    const data: TRegisteredAsset[] = []
+    for (const parachain in externalAssets) {
+      externalAssets[parachain].data?.forEach((value, key) => {
+        const internalId = locationIds.get(key)
+        if (internalId)
+          data.push({
+            ...value,
+            internalId,
+          })
+      })
+    }
 
     return {
       data,
       isSuccess,
     }
-  }, [external, externalAssets, isLoaded])
+  }, [externalAssets, isLoaded, locations.data])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {

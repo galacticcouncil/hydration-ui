@@ -6,12 +6,13 @@ import {
   useMemo,
 } from "react"
 import BN from "bignumber.js"
-import { TAssetStored, useAssetRegistry } from "state/store"
+import { TAssetStored, useAssetRegistry, useSettingsStore } from "state/store"
 import { Bond } from "@galacticcouncil/sdk"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
 
 type TAssetsContext = {
   all: Map<string, TAsset>
@@ -95,7 +96,11 @@ export type TShareToken = TAsset & {
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   const { assets, shareTokens: shareTokensRaw } = useAssetRegistry.getState()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
-  const { tokens: externalTokens } = useUserExternalTokenStore.getState()
+  const degenMode = useSettingsStore.getState().degenMode
+  const { tokens: externalTokens } =
+    degenMode && ExternalAssetCursor.deref()
+      ? ExternalAssetCursor.deref().state
+      : useUserExternalTokenStore.getState()
 
   const { all, stableswap, bonds, external, tradable, native, hub, tokens } =
     useMemo(() => {

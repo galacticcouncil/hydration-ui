@@ -6,6 +6,7 @@ import {
   TExternalAssetInput,
 } from "sections/wallet/addToken/AddToken.utils"
 import { Option } from "@polkadot/types"
+import { findNestedKey } from "@galacticcouncil/sdk"
 
 export const getPendulumInputData = (
   location: HydradxRuntimeXcmAssetLocation,
@@ -99,5 +100,17 @@ export const getGeneralIndex = (
             .toString()
 
     return generalIndex
+  }
+}
+
+export const parseLocation = (
+  key: string,
+  location?: HydradxRuntimeXcmAssetLocation,
+) => {
+  if (location) {
+    const entry = findNestedKey(location.toJSON(), key)
+    return entry && entry[key]
+  } else {
+    return undefined
   }
 }

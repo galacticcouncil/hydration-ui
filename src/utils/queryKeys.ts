@@ -12,6 +12,7 @@ export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
   assets: (rpc: string) => ["assets", rpc],
+  assetLocations: (rpc: string) => ["assetLocations", rpc],
   bondsAssets: ["bondsAssets"],
   providerAccounts: (provider: string | undefined) => [
     "web3Accounts",
