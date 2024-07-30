@@ -145,7 +145,6 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                 name={provider.name}
                 url={provider.url}
                 isActive={provider.url === rpcUrl}
-                isError={provider.url === timeoutedRpc}
                 onClick={() => onSave(provider.url)}
               />
               {index + 1 < PROVIDER_LIST.length && (
@@ -164,7 +163,6 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
               }
               url={rpc.url}
               isActive={rpc.url === rpcUrl}
-              isError={rpc.url === timeoutedRpc}
               onClick={() => onSave(rpc.url)}
               custom
               onRemove={onRemove}

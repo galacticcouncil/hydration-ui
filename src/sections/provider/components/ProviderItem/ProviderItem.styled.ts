@@ -42,7 +42,15 @@ export const SItem = styled.div`
   }
 
   @media ${theme.viewport.gte.sm} {
-    grid-template-columns: 2fr 1fr 3fr;
+    grid-template-columns: 150px 1fr 3fr;
     grid-template-areas: "name status url";
   }
+`
+
+export const SStatus = styled.div`
+  height: 25px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 `
