@@ -191,6 +191,7 @@ const ProviderSelectItemExternal = ({
       }
 
       api.on("connected", () => {
+        onNewBlock()
         setDisconnected(false)
       })
       api.rpc.chain.subscribeNewHeads(onNewBlock).then(
