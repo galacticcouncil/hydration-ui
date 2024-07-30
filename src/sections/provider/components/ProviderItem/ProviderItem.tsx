@@ -183,11 +183,11 @@ const ProviderSelectItemExternal = ({
         const tsNum = timestamp.toNumber()
         const ping = now > tsNum ? now - tsNum : undefined
 
-        setBestNumberState({
+        setBestNumberState((prev) => ({
           parachainBlockNumber: parachain,
           timestamp: timestamp,
-          ping,
-        })
+          ping: ping ?? prev?.ping,
+        }))
       }
 
       api.on("connected", () => {
