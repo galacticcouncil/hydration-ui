@@ -14,6 +14,7 @@ import {
 } from "sections/web3-connect/signer/EthereumSigner"
 import { create } from "zustand"
 import BigNumber from "bignumber.js"
+import { createSubscanLink } from "utils/formatting"
 
 const getPaymentInfo =
   (tx: SubmittableExtrinsic, account: AccountId32 | string) => async () => {
@@ -91,12 +92,6 @@ export function useNextNonce(account: Maybe<AccountId32 | string>) {
   )
 }
 
-export function getSubscanLink(blockNumber: string, txIndex: string) {
-  return `https://hydration.subscan.io/extrinsic/${[blockNumber, txIndex].join(
-    "-",
-  )}`
-}
-
 export function useTransactionLink() {
   const { api } = useRpcProvider()
   return useMutation(
@@ -125,7 +120,7 @@ export async function getTransactionLinkFromHash(
     const blockNumber = block.header.number.toString()
 
     if (blockNumber) {
-      return getSubscanLink(blockNumber, txIndex)
+      return createSubscanLink("extrinsic", `${blockNumber}-${txIndex}`)
     }
 
     return undefined
