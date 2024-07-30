@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountBalances } from "api/accountBalances"
@@ -102,7 +102,7 @@ export const useWalletAssetsTotals = ({
 
         const value = shareTokenBalance.freeBalance
           .shiftedBy(-meta.decimals)
-          .multipliedBy(spotPrice?.spotPrice ?? 1)
+          .multipliedBy(spotPrice?.spotPrice ?? BN_NAN)
 
         return acc.plus(!value.isNaN() ? value : BN_0)
       }

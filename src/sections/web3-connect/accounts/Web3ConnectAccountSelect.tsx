@@ -10,7 +10,6 @@ import { theme as themeParams } from "theme"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { ButtonTransparent } from "components/Button/Button"
 import { BN_BILL } from "utils/constants"
 
 type Props = {
@@ -38,7 +37,7 @@ export const Web3ConnectAccountSelect = ({
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
 
   return (
-    <ButtonTransparent onClick={onClick} sx={{ gap: 12 }}>
+    <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
       <AccountAvatar
         address={address}
         genesisHash={genesisHash}
@@ -85,6 +84,6 @@ export const Web3ConnectAccountSelect = ({
           </InfoTooltip>
         </div>
       </div>
-    </ButtonTransparent>
+    </div>
   )
 }

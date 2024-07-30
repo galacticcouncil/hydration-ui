@@ -329,37 +329,23 @@ export const usePoolTable = (
                   />
                 ) : null,
             }),
+            accessor("spotPrice", {
+              id: "spotPrice",
+              header: t("liquidity.table.header.price"),
+              sortingFn: (a, b) =>
+                (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
+                  ? 1
+                  : -1,
+              cell: ({ row }) => (
+                <NonClickableContainer>
+                  <Text color="white" fs={14}>
+                    <DisplayValue value={row.original.spotPrice} type="token" />
+                  </Text>
+                </NonClickableContainer>
+              ),
+            }),
           ]
         : []),
-      isXyk
-        ? accessor("fee", {
-            id: "fee",
-            header: t("fee"),
-            sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
-            cell: ({ row }) => (
-              <NonClickableContainer>
-                <Text color="white" fs={14}>
-                  {t("value.percentage", { value: row.original.fee })}
-                </Text>
-              </NonClickableContainer>
-            ),
-          })
-        : accessor("spotPrice", {
-            id: "spotPrice",
-            header: t("liquidity.table.header.price"),
-            sortingFn: (a, b) =>
-              (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
-                ? 1
-                : -1,
-            cell: ({ row }) => (
-              <NonClickableContainer>
-                <Text color="white" fs={14}>
-                  <DisplayValue value={row.original.spotPrice} type="token" />
-                </Text>
-              </NonClickableContainer>
-            ),
-          }),
-
       accessor("id", {
         id: "volumeDisplay",
         header: t("liquidity.table.header.volume"),
