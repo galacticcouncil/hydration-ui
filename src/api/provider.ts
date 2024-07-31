@@ -161,7 +161,8 @@ export const useProviderAssets = () => {
 
           const [tradeAssets, sdkAssets] = await Promise.all([
             provider.tradeRouter.getAllAssets(),
-            assetClient.getOnChainAssets(externalTokens[dataEnv]),
+            assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
+            provider.api.query.assetRegistry.assets.entries(),
           ])
 
           if (sdkAssets.length) {
@@ -173,6 +174,9 @@ export const useProviderAssets = () => {
 
                 return {
                   ...omit(["externalId"], asset),
+                  symbol: asset.symbol ?? "",
+                  decimals: asset.decimals ?? 0,
+                  name: asset.name ?? "",
                   externalId: asset.externalId?.toString(),
                   isTradable,
                 }

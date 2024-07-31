@@ -11,7 +11,7 @@ import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
 const useMissingExternalAssets = (ids: string[]) => {
-  const { tradable, getExternalByExternalId } = useAssets()
+  const { tradable, getAsset } = useAssets()
   const externalAssets = useAssetHubAssetRegistry()
 
   const missingExternalAssets = useMemo(() => {
@@ -22,7 +22,7 @@ const useMissingExternalAssets = (ids: string[]) => {
 
       return invalidTokensId
         .map((tokenId) => {
-          const externalId = getExternalByExternalId(tokenId)?.externalId
+          const externalId = getAsset(tokenId)?.externalId
 
           const meta = externalId
             ? externalAssets.data?.get(externalId)
@@ -38,7 +38,7 @@ const useMissingExternalAssets = (ids: string[]) => {
     }
 
     return []
-  }, [externalAssets.data, getExternalByExternalId, ids, tradable])
+  }, [externalAssets.data, getAsset, ids, tradable])
 
   return missingExternalAssets
 }

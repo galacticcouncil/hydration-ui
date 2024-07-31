@@ -25,14 +25,14 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
-  const { external, getAssets } = useAssets()
+  const { externalInvalid, getAssets } = useAssets()
   const { isAdded } = useUserExternalTokenStore()
   const { page, direction, paginateTo } = useModalPagination()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const assetsMeta = (getAssets(assetIds) as TExternal[]).filter(
     ({ id, externalId }) => {
-      const isChainStored = external.some((asset) => asset.id === id)
+      const isChainStored = externalInvalid.some((asset) => asset.id === id)
       const isUserStored = degenMode || isAdded(externalId)
       return isChainStored && !isUserStored
     },
@@ -60,7 +60,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
       assetsToAddRef.current = assetsToAdd
       setIsOpen(true)
     }
-  }, [external, assetsMeta, externalAssets, isAdded])
+  }, [assetsMeta, externalAssets, isAdded])
 
   return (
     <Modal open={isOpen} disableCloseOutside={true} onClose={onCloseHandler}>

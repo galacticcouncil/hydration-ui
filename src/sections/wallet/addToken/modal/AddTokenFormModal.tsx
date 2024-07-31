@@ -49,17 +49,16 @@ enum TokenState {
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
-  const { external } = useAssets()
+  const { externalInvalid } = useAssets()
   const { getTokenByInternalId } = useUserExternalTokenStore()
 
-  const chainStored = external.find(
+  const chainStored = externalInvalid.find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
   )
 
   const userStored = getTokenByInternalId(chainStored?.id ?? "")
-
   const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
   const rugCheck = useExternalTokensRugCheck(rugCheckIds)
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")

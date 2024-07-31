@@ -14,12 +14,15 @@ import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 
+const bannedAssets = ["1000042"]
+
 type TAssetsContext = {
   all: Map<string, TAsset>
   tokens: TAsset[]
   stableswap: TAsset[]
   bonds: TBond[]
   external: TExternal[]
+  externalInvalid: TExternal[]
   tradable: TAsset[]
   shareTokens: TShareToken[]
   native: TAsset
@@ -102,73 +105,89 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
       ? ExternalAssetCursor.deref().state
       : useUserExternalTokenStore.getState()
 
-  const { all, stableswap, bonds, external, tradable, native, hub, tokens } =
-    useMemo(() => {
-      return assets.reduce<{
-        all: Map<string, TAsset>
-        tradable: TAsset[]
-        tokens: TAsset[]
-        stableswap: TAsset[]
-        bonds: TBond[]
-        external: TExternal[]
-        native: TAsset
-        hub: TAsset
-      }>(
-        (acc, assetRaw) => {
-          const asset = {
-            ...getFullAsset(assetRaw),
-            iconId:
-              assetRaw.type === "Bond"
-                ? (assetRaw as TBond).underlyingAssetId
-                : assetRaw.meta
-                  ? Object.keys(assetRaw.meta)
-                  : assetRaw.id,
+  const {
+    all,
+    stableswap,
+    bonds,
+    external,
+    externalInvalid,
+    tradable,
+    native,
+    hub,
+    tokens,
+  } = useMemo(() => {
+    return assets.reduce<{
+      all: Map<string, TAsset>
+      tradable: TAsset[]
+      tokens: TAsset[]
+      stableswap: TAsset[]
+      bonds: TBond[]
+      external: TExternal[]
+      externalInvalid: TExternal[]
+      native: TAsset
+      hub: TAsset
+    }>(
+      (acc, assetRaw) => {
+        if (bannedAssets.includes(assetRaw.id)) return acc
+
+        const asset = {
+          ...getFullAsset(assetRaw),
+          iconId:
+            assetRaw.type === "Bond"
+              ? (assetRaw as TBond).underlyingAssetId
+              : assetRaw.meta
+                ? Object.keys(assetRaw.meta)
+                : assetRaw.id,
+        }
+
+        acc.all.set(asset.id, asset)
+
+        if (asset.isTradable) {
+          acc.tradable.push(asset)
+        }
+
+        if (asset.id === NATIVE_ASSET_ID) {
+          acc.native = asset
+        }
+
+        if (asset.id === HUB_ID) {
+          acc.hub = asset
+        }
+
+        if (asset.isToken) {
+          acc.tokens.push(asset)
+        } else if (asset.isStableSwap) {
+          acc.stableswap.push(asset)
+        } else if (asset.isBond) {
+          acc.bonds.push(asset as TBond)
+        } else if (asset.isExternal) {
+          const externalId = externalTokens[dataEnv].find(
+            (token) => token.internalId === asset.id,
+          )?.id
+
+          if (externalId) {
+            acc.external.push({ ...asset, externalId })
+          } else if (asset.externalId) {
+            acc.external.push(asset as TExternal)
+            acc.externalInvalid.push(asset as TExternal)
           }
+        }
 
-          acc.all.set(asset.id, asset)
-
-          if (asset.isTradable) {
-            acc.tradable.push(asset)
-          }
-
-          if (asset.id === NATIVE_ASSET_ID) {
-            acc.native = asset
-          }
-
-          if (asset.id === HUB_ID) {
-            acc.hub = asset
-          }
-
-          if (asset.isToken) {
-            acc.tokens.push(asset)
-          } else if (asset.isStableSwap) {
-            acc.stableswap.push(asset)
-          } else if (asset.isBond) {
-            acc.bonds.push(asset as TBond)
-          } else if (asset.isExternal) {
-            const externalId = externalTokens[dataEnv].find(
-              (token) => token.internalId === asset.id,
-            )?.id
-
-            if (externalId) {
-              acc.external.push({ ...asset, externalId })
-            }
-          }
-
-          return acc
-        },
-        {
-          all: new Map([]),
-          tradable: [],
-          tokens: [],
-          stableswap: [],
-          bonds: [],
-          external: [],
-          native: {} as TAsset,
-          hub: {} as TAsset,
-        },
-      )
-    }, [assets, dataEnv, externalTokens])
+        return acc
+      },
+      {
+        all: new Map([]),
+        tradable: [],
+        tokens: [],
+        stableswap: [],
+        bonds: [],
+        external: [],
+        externalInvalid: [],
+        native: {} as TAsset,
+        hub: {} as TAsset,
+      },
+    )
+  }, [assets, dataEnv, externalTokens])
 
   const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
   const isBond = (asset: TAsset): asset is TBond => asset.isBond
@@ -184,7 +203,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
       const assetA = all.get(token.assets[0])
       const assetB = all.get(token.assets[1])
 
-      if (assetA && assetB) {
+      if (assetA && assetB && assetA.symbol && assetB.symbol) {
         const assetDecimal =
           Number(assetA.id) > Number(assetB.id) ? assetB : assetA
         const decimals = assetDecimal.decimals
@@ -257,6 +276,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         stableswap,
         bonds,
         external,
+        externalInvalid,
         tradable,
         shareTokens,
         native,
