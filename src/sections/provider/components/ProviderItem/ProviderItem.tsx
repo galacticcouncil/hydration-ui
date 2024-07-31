@@ -82,12 +82,11 @@ export const ProviderItem = ({
           color={isActive ? "pink600" : "basic600"}
           css={{ transition: `all ${theme.transitions.default}` }}
         >
-          {new URL(url).hostname}
+          {new URL(url).host}
         </Text>
 
-        <SCircle>{isActive && <SCircleThumb />}</SCircle>
         {custom && (
-          <div sx={{ flex: "row", align: "center", gap: 12, ml: 8 }}>
+          <div sx={{ flex: "row", align: "center", gap: 12 }}>
             <InfoTooltip text="Remove" type="black">
               <Icon
                 icon={<IconRemove />}
@@ -113,6 +112,7 @@ export const ProviderItem = ({
             </InfoTooltip>
           </div>
         )}
+        <SCircle>{isActive && <SCircleThumb />}</SCircle>
       </div>
     </SItem>
   )
@@ -211,10 +211,12 @@ const ProviderSelectItemExternal = ({
 
   if (disconnected) {
     return (
-      <span
-        sx={{ width: 7, height: 7, display: "block" }}
-        css={{ background: "#FF4B4B" }}
-      />
+      <SStatus>
+        <span
+          sx={{ width: 7, height: 7, display: "block" }}
+          css={{ background: "#FF4B4B" }}
+        />
+      </SStatus>
     )
   }
 

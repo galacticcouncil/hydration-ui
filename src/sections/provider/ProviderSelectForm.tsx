@@ -18,7 +18,6 @@ import { ProviderInput } from "./components/ProviderInput/ProviderInput"
 import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useTimeoutFn } from "react-use"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export type ProviderSelectFormProps = {
@@ -36,7 +35,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   const { rpcUrl } = useProviderRpcUrlStore()
   const { t } = useTranslation()
   const { rpcList, addRpc } = useRpcStore()
-  const [timeoutedRpc, setTimeoutedRpc] = useState("")
+  const [isRpcUrlChanging, setIsRpcUrlChanging] = useState(false)
 
   const fullRpcUrlList = [...PROVIDER_URLS, ...rpcList.map(({ url }) => url)]
 
@@ -46,22 +45,15 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     resolver: zodResolver(useProviderSelectFormSchema(fullRpcUrlList)),
   })
 
-  useTimeoutFn(async () => {
-    if (!isLoaded) {
-      setTimeoutedRpc(rpcUrl)
-    }
-  }, 5000)
-
   useEffect(() => {
-    return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
-      if (state.rpcUrl !== prevState.rpcUrl) {
-        setTimeoutedRpc("")
-      }
-    })
-  }, [])
+    setIsRpcUrlChanging(true)
+    const id = setTimeout(() => {
+      setIsRpcUrlChanging(false)
+    }, 5000)
+    return () => clearTimeout(id)
+  }, [rpcUrl])
 
   const mutation = useMutation(async (value: FormValues<typeof form>) => {
-    setTimeoutedRpc("")
     return await new Promise(async (resolve, reject) => {
       const errMessage = t("rpc.change.modal.errors.notExist")
       const timeout = setTimeout(() => {
@@ -125,7 +117,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         />
       </form>
 
-      <SContainer isLoading={!isLoaded && !timeoutedRpc}>
+      <SContainer isLoading={!isLoaded && isRpcUrlChanging}>
         <SHeader>
           <div css={{ gridArea: "name" }}>
             {t("rpc.change.modal.column.name")}

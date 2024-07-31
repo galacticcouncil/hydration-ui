@@ -30,7 +30,7 @@ export const SItem = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-areas: "name url" "status url";
-  gap: 24px;
+  gap: 16px;
   row-gap: 8px;
   align-items: center;
 
