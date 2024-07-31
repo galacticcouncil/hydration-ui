@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
+import { BN_0, BN_10 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -22,6 +22,7 @@ import { useDebounce } from "react-use"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useEstimatedFees } from "api/transaction"
 
 type Props = {
   assetId: string
@@ -59,6 +60,12 @@ export const AddLiquidityForm = ({
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
+  useEffect(() => {
+    if (initialAmount && assetBalance?.balance) {
+      form.trigger()
+    }
+  }, [assetBalance?.balance, form, initialAmount])
+
   const {
     api,
     assets: { native },
@@ -70,6 +77,18 @@ export const AddLiquidityForm = ({
     amount: amountIn,
     decimals: assetMeta.decimals,
   })
+
+  const estimatedFees = useEstimatedFees([
+    api.tx.omnipool.addLiquidity(assetId, "1"),
+  ])
+
+  const balance = assetBalance?.balance ?? BN_0
+  const balanceMax =
+    estimatedFees.accountCurrencyId === assetMeta.id
+      ? balance
+          .minus(estimatedFees.accountCurrencyFee)
+          .minus(assetMeta.existentialDeposit)
+      : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
@@ -210,6 +229,8 @@ export const AddLiquidityForm = ({
               onBlur={setAssetValue}
               onChange={onChange}
               asset={assetId}
+              balance={balance}
+              balanceMax={balanceMax}
               error={error?.message}
               onAssetOpen={onAssetOpen}
             />
