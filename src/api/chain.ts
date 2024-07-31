@@ -25,6 +25,7 @@ export const useBestNumber = (disable?: boolean) => {
     },
     {
       enabled: "query" in api && !!activeProvider?.url && !disable,
+      refetchOnWindowFocus: false,
     },
   )
 }
