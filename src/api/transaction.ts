@@ -1,19 +1,22 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import { isEvmAccount } from "utils/evm"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import {
   EthereumSigner,
   PermitResult,
 } from "sections/web3-connect/signer/EthereumSigner"
 import { create } from "zustand"
 import BigNumber from "bignumber.js"
+import { useSpotPrice } from "api/spotPrice"
+import { useAccountCurrency } from "api/payments"
+import { useMemo } from "react"
 import { createSubscanLink } from "utils/formatting"
 
 const getPaymentInfo =
@@ -31,6 +34,23 @@ export function usePaymentInfo(tx: SubmittableExtrinsic, disabled?: boolean) {
     finalAccount != null ? getPaymentInfo(tx, finalAccount) : undefinedNoop,
     { enabled: !!finalAccount && !disabled },
   )
+}
+
+export function useMultiplePaymentInfo(
+  txs: SubmittableExtrinsic[],
+  disabled?: boolean,
+) {
+  const { account } = useAccount()
+  const finalAccount = account?.address
+
+  const queries = txs.map((tx) => ({
+    queryKey: QUERY_KEYS.paymentInfo(tx.hash, finalAccount),
+    queryFn:
+      finalAccount != null ? getPaymentInfo(tx, finalAccount) : undefinedNoop,
+    enabled: !!finalAccount && !disabled,
+  }))
+
+  return useQueries({ queries })
 }
 
 export function useNextEvmPermitNonce() {
@@ -146,3 +166,72 @@ export const useEvmPermitStore = create<{
   incrementPermitNonce: () =>
     set((state) => ({ permitNonce: state.permitNonce.plus(1) })),
 }))
+
+export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
+  const { assets } = useRpcProvider()
+  const { account } = useAccount()
+
+  const accountCurrency = useAccountCurrency(account?.address)
+  const accountCurrencyMeta = accountCurrency.data
+    ? assets.getAsset(accountCurrency.data)
+    : undefined
+
+  const nativeId = assets.native.id
+  const nativeDecimals = assets.native.decimals
+  const accountCurrencyId = accountCurrencyMeta?.id
+  const accountCurrencyDecimals = accountCurrencyMeta?.decimals ?? 0
+
+  const decimalsDiff =
+    nativeDecimals - (accountCurrencyDecimals || nativeDecimals)
+
+  const spotPrice = useSpotPrice(nativeId, accountCurrencyId)
+
+  const fees = useMultiplePaymentInfo(txs)
+
+  return useMemo(() => {
+    const defaultFees = {
+      nativeFee: BN_0,
+      nativeFeeDisplay: BN_0,
+      accountCurrencyFee: BN_0,
+      accountCurrencyFeeDisplay: BN_0,
+      accountCurrencyId,
+    }
+
+    if (fees.some(({ data }) => !data) || !spotPrice.data) {
+      return defaultFees
+    }
+
+    return fees.reduce((prev, curr) => {
+      const price = spotPrice.data.spotPrice ?? BN_1
+
+      const nativeFee = curr?.data?.partialFee?.toBigNumber() ?? BN_0
+      const nativeFeeTotal = nativeFee.plus(prev.nativeFee)
+
+      const accountCurrencyFee = nativeFee
+        .multipliedBy(price)
+        .shiftedBy(-decimalsDiff)
+        .decimalPlaces(0, BigNumber.ROUND_CEIL)
+
+      const accountCurrencyFeeTotal = accountCurrencyFee.plus(
+        prev.accountCurrencyFee,
+      )
+
+      return {
+        ...prev,
+        nativeFee: nativeFeeTotal,
+        nativeFeeDisplay: nativeFeeTotal.shiftedBy(-nativeDecimals),
+        accountCurrencyFee: accountCurrencyFeeTotal,
+        accountCurrencyFeeDisplay: accountCurrencyFeeTotal.shiftedBy(
+          -accountCurrencyDecimals,
+        ),
+      }
+    }, defaultFees)
+  }, [
+    accountCurrencyDecimals,
+    accountCurrencyId,
+    decimalsDiff,
+    fees,
+    nativeDecimals,
+    spotPrice.data,
+  ])
+}

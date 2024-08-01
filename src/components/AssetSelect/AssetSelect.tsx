@@ -14,6 +14,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { AssetSelectButton } from "./AssetSelectButton"
 import { useMedia } from "react-use"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
+import { BN_0 } from "utils/constants"
 
 export const AssetSelect = (props: {
   name: string
@@ -108,9 +109,12 @@ export const AssetSelect = (props: {
                   onClick={(e) => {
                     e.preventDefault()
                     if (props.balance != null) {
-                      const value = getFloatingPointAmount(
-                        props.balanceMax ?? props.balance,
-                        decimals,
+                      const value = BigNumber.max(
+                        BN_0,
+                        getFloatingPointAmount(
+                          props.balanceMax ?? props.balance,
+                          decimals,
+                        ),
                       ).toString()
                       props.onChange(value)
                       props.onBlur?.(value)
