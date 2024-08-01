@@ -180,8 +180,13 @@ export const getPedulumAssets = async () => {
  * Used for fetching tokens from supported parachains
  */
 export const useExternalAssetRegistry = (enabled?: boolean) => {
-  const assetHub = useAssetHubAssetRegistry(enabled)
-  const pendulum = usePendulumAssetRegistry(enabled)
+  const { isLoaded } = useRpcProvider()
+
+  const queryEnabled =
+    typeof enabled === "boolean" ? enabled && isLoaded : isLoaded
+
+  const assetHub = useAssetHubAssetRegistry(queryEnabled)
+  const pendulum = usePendulumAssetRegistry(queryEnabled)
 
   return useMemo(
     () => ({
