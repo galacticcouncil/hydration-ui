@@ -18,6 +18,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
 import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain/Parachain"
+import { useSpotPrice } from "api/spotPrice"
+import { wallet } from "api/xcm"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -29,14 +31,14 @@ export const assethubNativeToken = assethub.assetsData.get(
 ) as ParachainAssetsData
 
 // TEMP CHOPSTICKS SETUP
+/* //@ts-ignore
+assethub.ws = "ws://172.25.126.217:8000"
+const hydradx = chainsMap.get("hydradx") as Parachain
 //@ts-ignore
-//assethub.ws = "ws://172.25.126.217:8000"
-//const hydradx = chainsMap.get("hydradx") as Parachain
+hydradx.ws = "ws://172.25.126.217:8001"
+const polkadot = chainsMap.get("polkadot") as Parachain
 //@ts-ignore
-//hydradx.ws = "ws://172.25.126.217:8001"
-//const polkadot = chainsMap.get("polkadot") as Parachain
-//@ts-ignore
-//polkadot.ws = "ws://172.25.126.217:8002"
+polkadot.ws = "ws://172.25.126.217:8002" */
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -233,9 +235,74 @@ export type CreateTokenValues = {
   account: string
 }
 
-export function createAssetHubAssetAndMint(
+type SwapOptions = {
+  asset: ParachainAssetsData
+  address: string
+  nativeAmount: string
+  assetAmount: string
+}
+
+export function assetHubSwapNativeForAssetExactOut(
+  api: ApiPromise,
+  options: SwapOptions,
+) {
+  return api.tx.assetConversion.swapTokensForExactTokens(
+    [
+      api
+        .createType("MultiLocation", {
+          parents: 1,
+          interior: {
+            here: null,
+          },
+        })
+        .toU8a(),
+      api
+        .createType("MultiLocation", {
+          parents: 0,
+          interior: {
+            x2: [
+              { palletInstance: options.asset.palletInstance },
+              { generalIndex: options.asset.id },
+            ],
+          },
+        })
+        .toU8a(),
+    ],
+    options.assetAmount,
+    options.nativeAmount,
+    options.address,
+    true,
+  )
+}
+
+type XCMTransferOptions = {
+  asset: ParachainAssetsData
+  address: string
+}
+
+export async function assetHubTransferAssetToHydration(
+  api: ApiPromise,
+  options: XCMTransferOptions,
+) {
+  const xTransfer = await wallet.transfer(
+    options.asset.asset.key,
+    options.address,
+    "assethub",
+    options.address,
+    "hydradx",
+  )
+
+  console.log({ xTransfer })
+  const call = await xTransfer.buildCall("0.25")
+  console.log({ call })
+
+  return api.tx(call.data)
+}
+
+export async function createAssetHubAssetAndMint(
   api: ApiPromise,
   values: CreateTokenValues,
+  swap?: SwapOptions,
 ) {
   const supply = BigNumber(values.supply).shiftedBy(values.decimals).toString()
 
@@ -243,7 +310,17 @@ export function createAssetHubAssetAndMint(
     .shiftedBy(values.decimals)
     .toString()
 
+  const swapTx = swap ? assetHubSwapNativeForAssetExactOut(api, swap) : null
+  const xcmTransferTx = swap
+    ? await assetHubTransferAssetToHydration(api, {
+        asset: swap.asset,
+        address: swap.address,
+      })
+    : null
+
   return api.tx.utility.batchAll([
+    ...(swapTx ? [swapTx] : []),
+    ...(xcmTransferTx ? [xcmTransferTx] : []),
     api.tx.assets.create(values.id, values.account, deposit),
     api.tx.assets.setMetadata(
       values.id,
@@ -266,11 +343,32 @@ export const useCreateAssetHubToken = ({
   const { data: api } = useExternalApi("assethub")
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
 
+  // DOT to USDT spot price
+  const { data: spotPrice } = useSpotPrice("5", "10")
+
   return useMutation(async (values: CreateTokenValues) => {
     if (!account) throw new Error("Missing account")
     if (!api) throw new Error("Asset Hub is not connected")
 
-    const tx = createAssetHubAssetAndMint(api, values)
+    const usdt = assethub.assetsData.get("usdt")
+    if (!usdt) throw new Error("USDT asset not found")
+
+    const usdtDotExchangeRate = 1 / (spotPrice?.spotPrice?.toNumber() ?? 1)
+    const usdtAmount = 0.5
+    const slippage = 1.05 // 5%
+    const nativeAmount = usdtAmount * usdtDotExchangeRate * slippage
+
+    const tx = await createAssetHubAssetAndMint(api, values, {
+      asset: usdt,
+      address: account.address,
+      assetAmount: BN(0.5)
+        .shiftedBy(usdt?.decimals ?? 0)
+        .toString(),
+      nativeAmount: BN(nativeAmount)
+        .shiftedBy(assethubNativeToken.decimals ?? 0)
+        .decimalPlaces(0)
+        .toString(),
+    })
     const paymentInfo = await tx.paymentInfo(account.address)
 
     const feeAssetDecimals = assethubNativeToken.decimals ?? 10
@@ -312,3 +410,41 @@ export const useAssetHubExistentialDeposit = (id: string) => {
     return BN(details.minBalance.toString())
   })
 }
+
+/* export const useAssetHubSwap = (assetId: string) => {
+  const { account } = useAccount()
+  const { data: api } = useExternalApi("assethub")
+  const address = account?.address ?? ""
+  return useMutation(async () => {
+    if (!api) throw new Error("Asset Hub is not connected")
+    if (!assetId) throw new Error("Missing assetId")
+    if (!address) throw new Error("Missing account")
+
+    api.tx.assetConversion.swapExactTokensForTokens(
+      [
+        {
+          parents: "1",
+          interior: "Here",
+        },
+        {
+          parents: "0",
+          interior: {
+            X3: [
+              {
+                PalletInstance: "50",
+              },
+              {
+                GeneralIndex: assetId,
+              },
+            ],
+          },
+        },
+      ],
+      "100000000",
+      "500000",
+      address,
+      true,
+    )
+  })
+}
+ */

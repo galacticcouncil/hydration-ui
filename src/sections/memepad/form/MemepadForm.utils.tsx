@@ -98,7 +98,7 @@ export const useMemepadStep1Form = () => {
       id: "",
       name: "",
       symbol: "",
-      deposit: "",
+      deposit: "1",
       supply: "",
       decimals: DEFAULT_DECIMALS_COUNT,
       origin: assethub.parachainId,
@@ -374,7 +374,7 @@ export const useMemepadDryRun = (
       account: address,
     }
 
-    const createTokenTx = createAssetHubAssetAndMint(assethubApi, token)
+    const createTokenTx = await createAssetHubAssetAndMint(assethubApi, token)
     const createTokenPaymentInfo = await createTokenTx.paymentInfo(address)
 
     const createTokenFee = new AssetAmount({

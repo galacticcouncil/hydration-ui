@@ -20,6 +20,8 @@ import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 
+const VALIDATE_BALANCES = false
+
 export const MemepadFormAlerts = () => {
   const { t } = useTranslation()
   const { alerts, setAlert, clearAlert } = useMemepadFormContext()
@@ -71,50 +73,52 @@ export const MemepadFormAlerts = () => {
 
   const { isLoading } = useMemepadDryRun({
     onSuccess: (data) => {
-      const {
-        registerTokenFee,
-        createXYKPoolFee,
-        createTokenFee,
-        xcmDstFeeED,
-        xcmSrcFee,
-        xcmDstFee,
-      } = data
+      if (VALIDATE_BALANCES) {
+        const {
+          registerTokenFee,
+          createXYKPoolFee,
+          createTokenFee,
+          xcmDstFeeED,
+          xcmSrcFee,
+          xcmDstFee,
+        } = data
 
-      const hydraTotals = groupAndSumAmounts([
-        registerTokenFee,
-        createXYKPoolFee,
-      ])
+        const hydraTotals = groupAndSumAmounts([
+          registerTokenFee,
+          createXYKPoolFee,
+        ])
 
-      const hydraFeeAsset = feePaymentAssetId
-        ? hydraTotals[feePaymentAssetId]
-        : undefined
+        const hydraFeeAsset = feePaymentAssetId
+          ? hydraTotals[feePaymentAssetId]
+          : undefined
 
-      handleBalanceAlert({
-        balance: hydraFeeBalance,
-        assetAmount: hydraFeeAsset,
-        chain: "Hydration",
-      })
+        handleBalanceAlert({
+          balance: hydraFeeBalance,
+          assetAmount: hydraFeeAsset,
+          chain: "Hydration",
+        })
 
-      const assethubTotals = groupAndSumAmounts([
-        createTokenFee,
-        xcmDstFeeED,
-        xcmSrcFee,
-        xcmDstFee,
-      ])
+        const assethubTotals = groupAndSumAmounts([
+          createTokenFee,
+          xcmDstFeeED,
+          xcmSrcFee,
+          xcmDstFee,
+        ])
 
-      const ahDot = assethubTotals.dot
-      handleBalanceAlert({
-        balance: ahNativeBalance,
-        assetAmount: ahDot,
-        chain: assethub.name,
-      })
+        const ahDot = assethubTotals.dot
+        handleBalanceAlert({
+          balance: ahNativeBalance,
+          assetAmount: ahDot,
+          chain: assethub.name,
+        })
 
-      const ahUsdt = assethubTotals.usdt
-      handleBalanceAlert({
-        balance: ahXcmFeeBalance,
-        assetAmount: ahUsdt,
-        chain: assethub.name,
-      })
+        const ahUsdt = assethubTotals.usdt
+        handleBalanceAlert({
+          balance: ahXcmFeeBalance,
+          assetAmount: ahUsdt,
+          chain: assethub.name,
+        })
+      }
 
       printDebug(data)
     },
