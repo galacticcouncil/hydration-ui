@@ -18,6 +18,8 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { PENDULUM_ID } from "./externalAssetRegistry"
+import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -177,7 +179,11 @@ export const useProviderAssets = () => {
                   symbol: asset.symbol ?? "",
                   decimals: asset.decimals ?? 0,
                   name: asset.name ?? "",
-                  externalId: asset.externalId?.toString(),
+                  externalId:
+                    asset.origin === PENDULUM_ID &&
+                    asset.externalId instanceof Object
+                      ? getPendulumAssetIdFromGeneralKey(asset.externalId)
+                      : asset.externalId?.toString(),
                   isTradable,
                 }
               }),

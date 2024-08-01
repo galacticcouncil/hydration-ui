@@ -9,8 +9,10 @@ import {
 import { useSettingsStore } from "state/store"
 import { useAssetsLocations } from "api/assetDetails"
 import { parseLocation } from "utils/externalAssets"
+import { useAssets } from "providers/assets"
 
 export const useDegenModeSubscription = () => {
+  const { external } = useAssets()
   const { degenMode } = useSettingsStore()
   const externalAssets = useExternalAssetRegistry(degenMode)
   const locations = useAssetsLocations()
@@ -43,23 +45,26 @@ export const useDegenModeSubscription = () => {
       new Map([]),
     )
 
-    const data: TRegisteredAsset[] = []
-    for (const parachain in externalAssets) {
-      externalAssets[parachain].data?.forEach((value, key) => {
-        const internalId = locationIds.get(key)
-        if (internalId)
-          data.push({
-            ...value,
-            internalId,
-          })
-      })
-    }
+    const data = external.reduce((acc, asset) => {
+      const externalAsset = externalAssets[
+        Number(asset.parachainId)
+      ]?.data?.get(asset.externalId ?? "")
+
+      if (externalAsset) {
+        acc.push({
+          ...externalAsset,
+          internalId: asset.id,
+        })
+      }
+
+      return acc
+    }, [] as TRegisteredAsset[])
 
     return {
       data,
       isSuccess,
     }
-  }, [externalAssets, isLoaded, locations.data])
+  }, [external, externalAssets, isLoaded, locations.data])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {
