@@ -10,13 +10,15 @@ import {
   useAssetHubNativeBalance,
   useAssetHubTokenBalance,
 } from "api/external/assethub"
-import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useMemepadFormContext } from "./MemepadFormContext"
 import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
+import { MemepadSupplySlider } from "sections/memepad/components/MemepadSupplySlider"
 import { SRowItem } from "sections/memepad/components/MemepadSummary"
 import { Text } from "components/Typography/Text/Text"
 import { useTokenBalance } from "api/balances"
+import { AssetSelect } from "components/AssetSelect/AssetSelect"
 
+const hydraDotAssetId = "5"
 const hydraUsdtAssetId = "10"
 
 const ahUsdtToken = assethub.assetsData.get("usdt")
@@ -42,6 +44,9 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
   )
 
   const { summary } = useMemepadFormContext()
+
+  const supply = form.watch("supply")
+  const symbol = form.watch("symbol")
 
   const isCreated = !!summary?.id
 
@@ -103,6 +108,36 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
           )}
         />
         <Controller
+          name="allocatedSupply"
+          control={form.control}
+          render={({ field }) => (
+            <MemepadSupplySlider
+              totalSupply={supply}
+              symbol={symbol}
+              onChange={(value) => field.onChange(value)}
+              min={1}
+              max={100}
+              step={1}
+            />
+          )}
+        />
+
+        <Controller
+          name="dotSupply"
+          control={form.control}
+          render={({ field }) => (
+            <AssetSelect
+              id={hydraDotAssetId}
+              title={t("memepad.form.dotSupply")}
+              withoutMaxBtn
+              balance={ahNativeBalance?.balance}
+              balanceLabel={t("balance")}
+              {...field}
+            />
+          )}
+        />
+
+        {/* <Controller
           name="account"
           control={form.control}
           render={({ field }) => (
@@ -114,7 +149,7 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
               {...field}
             />
           )}
-        />
+        /> */}
 
         <div>
           <SRowItem>
@@ -154,29 +189,6 @@ export const MemepadFormStep1: FC<MemepadFormStep1Props> = ({ form }) => {
             </Text>
           </SRowItem>
         </div>
-
-        {/* <AssetSelect
-          id="5"
-          title={t("memepad.form.assetCreationCost")}
-          withoutMaxBtn
-          name="dot-creation-cost"
-          value="10"
-          balance={ahNativeBalance?.balance}
-          balanceLabel={t("balance")}
-          onChange={undefinedNoop}
-          disabled
-        />
-        <AssetSelect
-          id="10"
-          title={t("memepad.form.assetCreationCost")}
-          withoutMaxBtn
-          name="usdt-creation-cost"
-          value="10"
-          balance={ahUsdtBalance?.balance}
-          balanceLabel={t("balance")}
-          onChange={undefinedNoop}
-          disabled
-        /> */}
       </div>
     </form>
   )

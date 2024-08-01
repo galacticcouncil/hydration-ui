@@ -60,6 +60,8 @@ const DEFAULT_DECIMALS_COUNT = 12
 
 export type MemepadStep1Values = CreateTokenValues & {
   origin: number
+  allocatedSupply: string
+  dotSupply: string
 }
 
 export type MemepadStep2Values = {
@@ -100,6 +102,8 @@ export const useMemepadStep1Form = () => {
       symbol: "",
       deposit: "1",
       supply: "",
+      allocatedSupply: "",
+      dotSupply: "10",
       decimals: DEFAULT_DECIMALS_COUNT,
       origin: assethub.parachainId,
       account: account?.address ?? "",
@@ -129,7 +133,7 @@ export const useMemepadStep1Form = () => {
               t("memepad.form.error.symbolExists"),
             ),
           deposit: required.pipe(positive),
-          supply: required.refine((value) => {
+          supply: required.pipe(positive).refine((value) => {
             const supply = BN(value)
             return supply.isFinite() && supply.gt(values.deposit)
           }, t("memepad.form.error.minSupply")),

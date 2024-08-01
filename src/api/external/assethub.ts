@@ -31,14 +31,16 @@ export const assethubNativeToken = assethub.assetsData.get(
 ) as ParachainAssetsData
 
 // TEMP CHOPSTICKS SETUP
-/* //@ts-ignore
-assethub.ws = "ws://172.25.126.217:8000"
-const hydradx = chainsMap.get("hydradx") as Parachain
-//@ts-ignore
-hydradx.ws = "ws://172.25.126.217:8001"
-const polkadot = chainsMap.get("polkadot") as Parachain
-//@ts-ignore
-polkadot.ws = "ws://172.25.126.217:8002" */
+if (window.location.hostname === "localhost") {
+  //@ts-ignore
+  assethub.ws = "ws://172.25.126.217:8000"
+  const hydradx = chainsMap.get("hydradx") as Parachain
+  //@ts-ignore
+  hydradx.ws = "ws://172.25.126.217:8001"
+  const polkadot = chainsMap.get("polkadot") as Parachain
+  //@ts-ignore
+  polkadot.ws = "ws://172.25.126.217:8002"
+}
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -280,7 +282,7 @@ type XCMTransferOptions = {
   address: string
 }
 
-export async function assetHubTransferAssetToHydration(
+export async function getAssetHubToHydrationTransfer(
   api: ApiPromise,
   options: XCMTransferOptions,
 ) {
@@ -292,10 +294,7 @@ export async function assetHubTransferAssetToHydration(
     "hydradx",
   )
 
-  console.log({ xTransfer })
   const call = await xTransfer.buildCall("0.25")
-  console.log({ call })
-
   return api.tx(call.data)
 }
 
@@ -312,7 +311,7 @@ export async function createAssetHubAssetAndMint(
 
   const swapTx = swap ? assetHubSwapNativeForAssetExactOut(api, swap) : null
   const xcmTransferTx = swap
-    ? await assetHubTransferAssetToHydration(api, {
+    ? await getAssetHubToHydrationTransfer(api, {
         asset: swap.asset,
         address: swap.address,
       })

@@ -43,7 +43,7 @@ const useSpinnerPropsByStep = () => {
 export const MemepadForm = () => {
   const { t } = useTranslation()
   const spinnerProps = useSpinnerPropsByStep()
-  const { step, currentForm, isLoading } = useMemepadFormContext()
+  const { step, currentForm, isLoading, formStep1 } = useMemepadFormContext()
 
   const steps = useMemo(() => {
     const stepLabels = [
@@ -68,6 +68,9 @@ export const MemepadForm = () => {
         {isLoading ? <MemepadSpinner {...spinnerProps} /> : currentForm}
       </div>
       <MemepadFormAlerts />
+      <pre sx={{ color: "white" }}>
+        {JSON.stringify(formStep1.watch(), null, 2)}
+      </pre>
     </div>
   )
 }
