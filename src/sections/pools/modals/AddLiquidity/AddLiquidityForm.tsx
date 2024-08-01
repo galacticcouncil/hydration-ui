@@ -293,7 +293,7 @@ export const AddLiquidityForm = ({
         type="submit"
         disabled={
           limits?.cap === false ||
-          !form.formState.isValid ||
+          !form.formState.errors ||
           !limits?.circuitBreaker.isWithinLimit
         }
       >
