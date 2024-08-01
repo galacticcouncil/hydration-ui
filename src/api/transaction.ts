@@ -17,6 +17,7 @@ import BigNumber from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { useAccountCurrency } from "api/payments"
 import { useMemo } from "react"
+import { createSubscanLink } from "utils/formatting"
 
 const getPaymentInfo =
   (tx: SubmittableExtrinsic, account: AccountId32 | string) => async () => {
@@ -111,12 +112,6 @@ export function useNextNonce(account: Maybe<AccountId32 | string>) {
   )
 }
 
-export function getSubscanLink(blockNumber: string, txIndex: string) {
-  return `https://hydration.subscan.io/extrinsic/${[blockNumber, txIndex].join(
-    "-",
-  )}`
-}
-
 export function useTransactionLink() {
   const { api } = useRpcProvider()
   return useMutation(
@@ -145,7 +140,7 @@ export async function getTransactionLinkFromHash(
     const blockNumber = block.header.number.toString()
 
     if (blockNumber) {
-      return getSubscanLink(blockNumber, txIndex)
+      return createSubscanLink("extrinsic", `${blockNumber}-${txIndex}`)
     }
 
     return undefined
