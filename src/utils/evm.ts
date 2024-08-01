@@ -9,6 +9,7 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
+import { createSubscanLink } from "utils/formatting"
 
 const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
 
@@ -63,9 +64,9 @@ export class H160 {
 export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
-  key = "hydradx",
+  chainKey = "hydradx",
 ) {
-  const chain = chainsMap.get(key)
+  const chain = chainsMap.get(chainKey)
 
   if (!chain) return ""
 
@@ -75,10 +76,13 @@ export function getEvmTxLink(
     return isApproveTx
       ? `https://etherscan.io/tx/${txHash}`
       : `https://wormholescan.io/#/tx/${txHash}`
-  } else if (key === "moonbeam") {
-    return `https://moonbeam.subscan.io/tx/${txHash}`
+  }
+
+  if (chain.isEvmParachain()) {
+    const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
+    return blockExplorers ? `${blockExplorers.default.url}/tx/${txHash}` : ""
   } else {
-    return `https://hydration.subscan.io/tx/${txHash}`
+    return createSubscanLink("extrinsic", txHash, chainKey)
   }
 }
 
@@ -98,10 +102,6 @@ export function getEvmChainById(chainId: number) {
   if (chain) {
     return chain
   }
-}
-
-export function getChainByKey(key: string) {
-  return chainsMap.get(key)
 }
 
 export { getEvmAddress, isEvmAddress }
