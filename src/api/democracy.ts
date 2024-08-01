@@ -161,24 +161,34 @@ export const getAccountUnlockedVotes =
       votes.map(async (vote) => {
         const voteId = vote.id
         const referendumRaw = await api.query.democracy.referendumInfoOf(voteId)
-        const referendum = referendumRaw.unwrap()
-        const isFinished = referendum.isFinished
 
-        const endBlock = isFinished
-          ? referendum.asFinished.end.toBigNumber()
-          : referendum.asOngoing.end.toBigNumber()
-        const convictionBlock =
-          CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
-        const unlockBlockNumber = endBlock.plus(convictionBlock)
-        const isUnlocked = isFinished
-          ? unlockBlockNumber.lte(currentBlock.toNumber())
-          : false
+        if (!referendumRaw.isNone) {
+          const referendum = referendumRaw.unwrap()
+          const isFinished = referendum.isFinished
+
+          const endBlock = isFinished
+            ? referendum.asFinished.end.toBigNumber()
+            : referendum.asOngoing.end.toBigNumber()
+          const convictionBlock =
+            CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
+          const unlockBlockNumber = endBlock.plus(convictionBlock)
+          const isUnlocked = isFinished
+            ? unlockBlockNumber.lte(currentBlock.toNumber())
+            : false
+
+          return {
+            isUnlocked,
+            amount: vote.balance,
+            id: voteId,
+            endDiff: unlockBlockNumber.minus(currentBlock.toNumber()),
+          }
+        }
 
         return {
-          isUnlocked,
+          isUnlocked: true,
           amount: vote.balance,
           id: voteId,
-          endDiff: unlockBlockNumber.minus(currentBlock.toNumber()),
+          endDiff: BN_0,
         }
       }),
     )
