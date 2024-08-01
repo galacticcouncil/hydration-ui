@@ -60,12 +60,6 @@ export const AddLiquidityForm = ({
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, assetValue)
 
-  useEffect(() => {
-    if (initialAmount && assetBalance?.balance) {
-      form.trigger()
-    }
-  }, [assetBalance?.balance, form, initialAmount])
-
   const {
     api,
     assets: { native },
