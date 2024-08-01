@@ -24,6 +24,9 @@ import { theme } from "theme"
 import BN from "bignumber.js"
 import { useRefetchAccountNFTPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   pool: TPoolFullData
@@ -33,9 +36,11 @@ type Props = {
 
 export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const refetchPositions = useRefetchAccountNFTPositions()
+  const queryClient = useQueryClient()
 
   const [transferOpen, setTransferOpen] = useState<Page>()
 
@@ -164,7 +169,15 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
                 {t("liquidity.stablepool.addToOmnipool")}
               </div>
             </SOmnipoolButton>
-            <RemoveLiquidityButton onSuccess={refetchPositions} pool={pool} />
+            <RemoveLiquidityButton
+              onSuccess={() => {
+                refetchPositions()
+                queryClient.invalidateQueries(
+                  QUERY_KEYS.tokenBalance(pool.id, account?.address),
+                )
+              }}
+              pool={pool}
+            />
           </div>
         </SContainer>
       </div>
