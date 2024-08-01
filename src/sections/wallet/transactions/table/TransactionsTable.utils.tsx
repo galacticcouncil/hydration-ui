@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { AccountColumn } from "sections/wallet/transactions/table/columns/AccountColumn"
 import { theme } from "theme"
-import { getSubscanLinkByType } from "utils/formatting"
+import { createSubscanLink } from "utils/formatting"
 import { TTransactionsTableData } from "./data/TransactionsTableData.utils"
 
 export const useTransactionsTable = (data: TTransactionsTableData) => {
@@ -186,7 +186,7 @@ export const useTransactionsTable = (data: TTransactionsTableData) => {
         const hash = row.original.extrinsicHash
         return (
           <a
-            href={`${getSubscanLinkByType("extrinsic")}/${hash}`}
+            href={createSubscanLink("extrinsic", hash)}
             target="blank"
             rel="noreferrer"
           >
