@@ -209,7 +209,10 @@ export const RemoveLiquidityModal = ({
                     ? BigNumber(sharesAmount ?? 0)
                     : stablepoolPositionAmount,
                 }}
-                onSuccess={onSuccess}
+                onSuccess={() => {
+                  onSuccess()
+                  stablepoolPosition.refetch()
+                }}
                 onAssetOpen={() =>
                   paginateTo(RemoveStablepoolLiquidityPage.ASSETS)
                 }

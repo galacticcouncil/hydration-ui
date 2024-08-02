@@ -12,6 +12,7 @@ import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { AssetSelectButton } from "./AssetSelectButton"
 import { useMedia } from "react-use"
+import { BN_0 } from "utils/constants"
 import { useAssets } from "providers/assets"
 
 export const AssetSelect = (props: {
@@ -101,9 +102,12 @@ export const AssetSelect = (props: {
                   onClick={(e) => {
                     e.preventDefault()
                     if (props.balance != null) {
-                      const value = getFloatingPointAmount(
-                        props.balanceMax ?? props.balance,
-                        decimals,
+                      const value = BigNumber.max(
+                        BN_0,
+                        getFloatingPointAmount(
+                          props.balanceMax ?? props.balance,
+                          decimals,
+                        ),
                       ).toString()
                       props.onChange(value)
                       props.onBlur?.(value)

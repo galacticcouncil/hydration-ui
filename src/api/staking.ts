@@ -129,7 +129,9 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const conviction = data.conviction.toString()
 
     const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.unwrapOr(null)?.isFinished
+    const isFinished = referendaInfo.isNone
+      ? true
+      : referendaInfo.unwrap().isFinished
 
     if (isFinished) {
       prevAcc.push({

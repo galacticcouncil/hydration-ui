@@ -143,6 +143,7 @@ export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
+                isStablepoolOnly={isStablepool}
                 poolId={poolId}
                 onCancel={onClose}
                 onClose={() => {

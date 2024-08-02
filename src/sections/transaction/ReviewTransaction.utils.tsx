@@ -2,6 +2,7 @@ import {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
@@ -22,14 +23,8 @@ import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
-import {
-  H160,
-  getEvmChainById,
-  getChainByKey,
-  getEvmTxLink,
-  isEvmAccount,
-} from "utils/evm"
-import { getSubscanLinkByType } from "utils/formatting"
+import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
+import { createSubscanLink } from "utils/formatting"
 
 type TxMethod = AnyJson & {
   method: string
@@ -208,7 +203,7 @@ export const useSendEvmTransactionMutation = (
   const isApproveTx = txData?.startsWith("0x095ea7b3")
 
   const destChain = xcallMeta?.dstChain
-    ? getChainByKey(xcallMeta.dstChain)
+    ? chainsMap.get(xcallMeta.dstChain)
     : undefined
 
   const bridge =
@@ -297,13 +292,16 @@ export const useSendDispatchPermit = (
     })
   }, options)
 
-  const txLink = txHash
-    ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
+  const destChain = xcallMeta?.dstChain
+    ? chainsMap.get(xcallMeta.dstChain)
     : undefined
 
-  const destChain = xcallMeta?.dstChain
-    ? getChainByKey(xcallMeta.dstChain)
-    : undefined
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+
+  const txLink =
+    txHash && srcChain
+      ? createSubscanLink("extrinsic", txHash, srcChain.key)
+      : undefined
 
   const bridge = destChain?.isEvmChain() ? "substrate" : undefined
 
@@ -377,13 +375,16 @@ export const useSendTransactionMutation = (
     })
   }, options)
 
-  const txLink = txHash
-    ? `${getSubscanLinkByType("extrinsic")}/${txHash}`
+  const destChain = xcallMeta?.dstChain
+    ? chainsMap.get(xcallMeta.dstChain)
     : undefined
 
-  const destChain = xcallMeta?.dstChain
-    ? getChainByKey(xcallMeta.dstChain)
-    : undefined
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+
+  const txLink =
+    txHash && srcChain
+      ? createSubscanLink("extrinsic", txHash, srcChain.key)
+      : undefined
 
   const bridge = destChain?.isEvmChain() ? "substrate" : undefined
 

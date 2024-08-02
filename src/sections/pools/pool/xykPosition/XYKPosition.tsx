@@ -9,7 +9,7 @@ import { TAsset } from "providers/assets"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
@@ -22,6 +22,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
 import { useRefetchAccountPositions } from "api/deposits"
+import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
@@ -29,6 +30,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const queryClient = useQueryClient()
   const refetchPositions = useRefetchAccountPositions()
+  const [openRemove, setOpenRemove] = useState(false)
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
@@ -88,130 +90,177 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   }
 
   return (
-    <SPoolDetailsContainer
-      sx={{ height: ["auto", "auto"] }}
-      css={{ background: "transparent" }}
-    >
-      <div sx={{ flex: "row", align: "center", gap: 8 }}>
-        <Icon size={15} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
-        <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
-          {t("liquidity.xyk.asset.positions.title")}
-        </Text>
-      </div>
-      <SPositionContainer>
-        <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
-          <div sx={{ flex: "row", justify: "space-between" }}>
-            <div sx={{ flex: "row", gap: 7, align: "center" }}>
-              <MultipleIcons
-                icons={assetsMeta.map((asset: TAsset) => ({
-                  icon: (
-                    <AssetLogo
-                      key={asset.iconId as string}
-                      id={asset.iconId as string}
-                    />
-                  ),
-                }))}
-              />
+    <>
+      <SPoolDetailsContainer
+        sx={{ height: ["auto", "auto"] }}
+        css={{ background: "transparent" }}
+      >
+        <div sx={{ flex: "row", align: "center", gap: 8 }}>
+          <Icon size={15} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
+          <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
+            {t("liquidity.xyk.asset.positions.title")}
+          </Text>
+        </div>
+        <SPositionContainer>
+          <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
+            <div sx={{ flex: "row", justify: "space-between" }}>
+              <div sx={{ flex: "row", gap: 7, align: "center" }}>
+                <MultipleIcons
+                  icons={assetsMeta.map((asset: TAsset) => ({
+                    icon: (
+                      <AssetLogo
+                        key={asset.iconId as string}
+                        id={asset.iconId as string}
+                      />
+                    ),
+                  }))}
+                />
 
-              <Text fs={[14, 18]} color={["white", "basic100"]}>
-                {t("liquidity.xyk.asset.position.title", {
-                  symbol: assetsMeta
-                    .map((assetMeta) => assetMeta.symbol)
-                    .join("/"),
-                })}
-              </Text>
-            </div>
-            <div sx={{ flex: "row", gap: 8 }}>
-              <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
-              <LiquidityPositionRemoveLiquidity
-                pool={pool}
-                onSuccess={onSuccess}
-              />
-            </div>
-          </div>
-
-          <Separator color="white" opacity={0.06} />
-
-          <div
-            sx={{
-              flex: ["column", "row"],
-              justify: "space-between",
-              gap: [10, 0],
-            }}
-          >
-            <div
-              sx={{
-                flex: ["row", "column"],
-                gap: 6,
-                justify: ["space-between", "initial"],
-              }}
-            >
-              <Text fs={[13, 14]} color="whiteish500">
-                {t("liquidity.xyk.asset.position.availableShares")}
-              </Text>
-              <div>
-                <Text fs={[13, 16]}>
-                  {t("value.token", {
-                    value: shareTokensBalance.data?.balance,
-                    fixedPointScale: pool.meta.decimals,
+                <Text fs={[14, 18]} color={["white", "basic100"]}>
+                  {t("liquidity.xyk.asset.position.title", {
+                    symbol: assetsMeta
+                      .map((assetMeta) => assetMeta.symbol)
+                      .join("/"),
                   })}
                 </Text>
               </div>
+              <div sx={{ flex: "row", gap: 8 }}>
+                <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
+                <LiquidityPositionRemoveLiquidity
+                  pool={pool}
+                  onRemovePosition={() => setOpenRemove(true)}
+                />
+              </div>
             </div>
 
-            <Separator
-              orientation={isDesktop ? "vertical" : "horizontal"}
-              color="white"
-              opacity={0.06}
-            />
+            <Separator color="white" opacity={0.06} />
 
-            {myBalance && (
+            <div
+              sx={{
+                flex: ["column", "row"],
+                justify: "space-between",
+                gap: [10, 0],
+              }}
+            >
               <div
                 sx={{
                   flex: ["row", "column"],
                   gap: 6,
-                  justify: "space-between",
+                  justify: ["space-between", "initial"],
                 }}
               >
-                <div sx={{ flex: ["row", "column"], gap: 6 }}>
-                  <Text fs={[13, 14]} color="whiteish500">
-                    {t("liquidity.asset.positions.position.currentValue")}
-                  </Text>
-                </div>
-                <div sx={{ flex: "column", align: ["end", "start"] }}>
-                  <Text
-                    fs={[13, 16]}
-                    lh={[13, 18]}
-                    fw={500}
-                    color="white"
-                    tAlign="left"
-                  >
-                    {t("value.tokenWithSymbol", {
-                      value: myBalance.myBalanceA,
-                      symbol: assetMetaA.symbol,
-                    })}{" "}
-                    |{" "}
-                    {t("value.tokenWithSymbol", {
-                      value: myBalance.myBalanceB,
-                      symbol: assetMetaB.symbol,
+                <Text fs={[13, 14]} color="whiteish500">
+                  {t("liquidity.xyk.asset.position.availableShares")}
+                </Text>
+                <div>
+                  <Text fs={[13, 16]}>
+                    {t("value.token", {
+                      value: shareTokensBalance.data?.balance,
+                      fixedPointScale: pool.meta.decimals,
                     })}
                   </Text>
-                  <DollarAssetValue
-                    value={myBalance.totalDisplay}
-                    wrapper={(children) => (
-                      <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
-                        {children}
-                      </Text>
-                    )}
-                  >
-                    <DisplayValue value={myBalance.totalDisplay} />
-                  </DollarAssetValue>
+                </div>
+                <div sx={{ flex: "row", gap: 8 }}>
+                  <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
+                  <LiquidityPositionRemoveLiquidity
+                    pool={pool}
+                    onRemovePosition={() => setOpenRemove(true)}
+                  />
                 </div>
               </div>
-            )}
+
+              <Separator color="white" opacity={0.06} />
+
+              <div
+                sx={{
+                  flex: ["column", "row"],
+                  justify: "space-between",
+                  gap: [10, 0],
+                }}
+              >
+                <div
+                  sx={{
+                    flex: ["row", "column"],
+                    gap: 6,
+                    justify: ["space-between", "initial"],
+                  }}
+                >
+                  <Text fs={[13, 14]} color="whiteish500">
+                    {t("liquidity.xyk.asset.position.availableShares")}
+                  </Text>
+                  <div>
+                    <Text fs={[13, 16]}>
+                      {t("value.token", {
+                        value: shareTokensBalance.data?.balance,
+                        fixedPointScale: pool.meta.decimals,
+                      })}
+                    </Text>
+                  </div>
+                </div>
+
+                <Separator
+                  orientation={isDesktop ? "vertical" : "horizontal"}
+                  color="white"
+                  opacity={0.06}
+                />
+
+                {myBalance && (
+                  <div
+                    sx={{
+                      flex: ["row", "column"],
+                      gap: 6,
+                      justify: "space-between",
+                    }}
+                  >
+                    <div sx={{ flex: ["row", "column"], gap: 6 }}>
+                      <Text fs={[13, 14]} color="whiteish500">
+                        {t("liquidity.asset.positions.position.currentValue")}
+                      </Text>
+                    </div>
+                    <div sx={{ flex: "column", align: ["end", "start"] }}>
+                      <Text
+                        fs={[13, 16]}
+                        lh={[13, 18]}
+                        fw={500}
+                        color="white"
+                        tAlign="left"
+                      >
+                        {t("value.tokenWithSymbol", {
+                          value: myBalance.myBalanceA,
+                          symbol: assetMetaA.symbol,
+                        })}{" "}
+                        |{" "}
+                        {t("value.tokenWithSymbol", {
+                          value: myBalance.myBalanceB,
+                          symbol: assetMetaB.symbol,
+                        })}
+                      </Text>
+                      <DollarAssetValue
+                        value={myBalance.totalDisplay}
+                        wrapper={(children) => (
+                          <Text fs={[11, 12]} lh={[14, 16]} color="whiteish500">
+                            {children}
+                          </Text>
+                        )}
+                      >
+                        <DisplayValue value={myBalance.totalDisplay} />
+                      </DollarAssetValue>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </SPositionContainer>
-    </SPoolDetailsContainer>
+        </SPositionContainer>
+      </SPoolDetailsContainer>
+      {openRemove && (
+        <RemoveLiquidity
+          pool={pool}
+          isOpen
+          onClose={() => setOpenRemove(false)}
+          onSuccess={onSuccess}
+        />
+      )}
+    </>
   )
 }

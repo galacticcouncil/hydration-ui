@@ -28,6 +28,7 @@ export type RemoveLiquidityProps = {
 
 const defaultValues = {
   tokensToGet: BN_0,
+  tokensToGetShifted: BN_0,
   lrnaToGet: BN_0,
   lrnaPayWith: BN_0,
   tokensPayWith: BN_0,
@@ -128,7 +129,8 @@ export const useRemoveLiquidity = (
         if (!valueWithFee || !valueWithoutFee) return undefined
 
         return {
-          tokensToGet: valueWithFee.valueShifted,
+          tokensToGet: valueWithFee.value,
+          tokensToGetShifted: valueWithFee.valueShifted,
           lrnaToGet: valueWithFee.lrnaShifted,
           lrnaPayWith: valueWithoutFee.lrnaShifted.minus(
             valueWithFee.lrnaShifted,
@@ -152,6 +154,9 @@ export const useRemoveLiquidity = (
         if (values) {
           return {
             tokensToGet: acc.tokensToGet.plus(values.tokensToGet),
+            tokensToGetShifted: acc.tokensToGetShifted.plus(
+              values.tokensToGetShifted,
+            ),
             lrnaToGet: acc.lrnaToGet.plus(values.lrnaToGet),
             lrnaPayWith: acc.lrnaPayWith.plus(values.lrnaPayWith),
             tokensPayWith: acc.tokensPayWith.plus(values.tokensPayWith),
@@ -205,7 +210,7 @@ export const useRemoveLiquidity = (
       if (!values) return null
 
       const tOptions = {
-        amount: values.tokensToGet,
+        amount: values.tokensToGetShifted,
         symbol: meta.symbol,
         withLrna: values.lrnaToGet.isGreaterThan(0)
           ? t("liquidity.remove.modal.toast.withLrna", {
