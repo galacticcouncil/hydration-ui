@@ -23,6 +23,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { BN_0 } from "utils/constants"
+import { useEstimatedFees } from "api/transaction"
 
 type Props = {
   poolId: string
@@ -34,6 +35,7 @@ type Props = {
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
+  isStablepoolOnly: boolean
 }
 
 const createFormSchema = (balance: BigNumber, decimals: number) =>
@@ -51,6 +53,7 @@ export const AddStablepoolLiquidity = ({
   onCancel,
   reserves,
   fee,
+  isStablepoolOnly,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -60,11 +63,26 @@ export const AddStablepoolLiquidity = ({
   const { account } = useAccount()
   const walletBalance = useTokenBalance(asset.id, account?.address)
 
+  const estimationTxs = [
+    api.tx.stableswap.addLiquidity(poolId, [
+      { assetId: asset.id, amount: "1" },
+    ]),
+    ...(!isStablepoolOnly ? [api.tx.omnipool.addLiquidity(poolId, "1")] : []),
+  ]
+
+  const estimatedFees = useEstimatedFees(estimationTxs)
+
+  const balance = walletBalance.data?.balance ?? BN_0
+  const balanceMax =
+    estimatedFees.accountCurrencyId === asset.id
+      ? balance
+          .minus(estimatedFees.accountCurrencyFee)
+          .minus(asset.existentialDeposit)
+      : balance
+
   const form = useForm<{ amount: string }>({
     mode: "onChange",
-    resolver: zodResolver(
-      createFormSchema(walletBalance.data?.balance ?? BN_0, asset?.decimals),
-    ),
+    resolver: zodResolver(createFormSchema(balanceMax, asset?.decimals)),
   })
   const displayPrice = useDisplayPrice(asset.id)
 
@@ -162,6 +180,8 @@ export const AddStablepoolLiquidity = ({
               name={name}
               value={value}
               onChange={onChange}
+              balance={balance}
+              balanceMax={balanceMax}
               asset={asset.id}
               error={error?.message}
               onAssetOpen={onAssetOpen}
