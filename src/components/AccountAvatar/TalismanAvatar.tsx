@@ -108,7 +108,7 @@ export const TalismanAvatar: FC<TalismanAvatarProps> = memo(
             </g>
           ) : (
             <g
-              clip-path="url(#:r27:_1751_2030)"
+              clipPath="url(#:r27:_1751_2030)"
               opacity="0.75"
               transform="scale(2.2) translate(4.5 3.9)"
             >

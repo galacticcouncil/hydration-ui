@@ -5,8 +5,6 @@ import { Text } from "components/Typography/Text/Text"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { useTranslation } from "react-i18next"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
-import { useState } from "react"
-import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 import { Button } from "components/Button/Button"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -24,50 +22,31 @@ type Props = {
   index: number
   pool: TPoolFullData
   onSuccess: () => void
+  onRemovePosition: () => void
 }
 
-export function LiquidityPositionRemoveLiquidity(
-  props:
-    | {
-        pool: TPoolFullData
-        position: TLPData
-        onSuccess: () => void
-      }
-    | {
-        pool: TXYKPool
-        position?: never
-        onSuccess: () => void
-      },
-) {
+export function LiquidityPositionRemoveLiquidity(props: {
+  pool: TXYKPool | TPoolFullData
+  onRemovePosition: () => void
+}) {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const [openRemove, setOpenRemove] = useState(false)
+
   return (
-    <>
-      <Button
-        variant="error"
-        size="compact"
-        onClick={() => setOpenRemove(true)}
-        disabled={
-          account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
-        }
-        css={{ flex: "1 0 0" }}
-      >
-        <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
-          {t("remove")}
-        </div>
-      </Button>
-      {openRemove && (
-        <RemoveLiquidity
-          pool={props.pool}
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
-          position={props.position}
-          onSuccess={props.onSuccess}
-        />
-      )}
-    </>
+    <Button
+      variant="error"
+      size="compact"
+      onClick={props.onRemovePosition}
+      disabled={
+        account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
+      }
+      css={{ flex: "1 0 0" }}
+    >
+      <div sx={{ flex: "row", align: "center", justify: "center" }}>
+        <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
+        {t("remove")}
+      </div>
+    </Button>
   )
 }
 
@@ -76,6 +55,7 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
+  onRemovePosition,
 }: Props) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
@@ -119,9 +99,8 @@ export const LiquidityPosition = ({
               onSuccess={onSuccess}
             />
             <LiquidityPositionRemoveLiquidity
-              position={position}
-              onSuccess={onSuccess}
               pool={pool}
+              onRemovePosition={onRemovePosition}
             />
           </div>
         </div>

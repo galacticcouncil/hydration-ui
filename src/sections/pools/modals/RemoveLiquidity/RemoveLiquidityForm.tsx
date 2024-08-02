@@ -50,7 +50,9 @@ export const RemoveLiquidityForm = ({
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
-    values && values?.tokensToGet.gt(0) ? values.tokensToGet : BN(0)
+    values && values?.tokensToGetShifted.gt(0)
+      ? values.tokensToGetShifted
+      : BN(0)
 
   return (
     <form
