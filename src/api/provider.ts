@@ -181,7 +181,7 @@ export const useProviderAssets = () => {
                   name: asset.name ?? "",
                   externalId:
                     asset.origin === PENDULUM_ID &&
-                    asset.externalId instanceof Object
+                    typeof asset.externalId === "object"
                       ? getPendulumAssetIdFromGeneralKey(asset.externalId)
                       : asset.externalId?.toString(),
                   isTradable,

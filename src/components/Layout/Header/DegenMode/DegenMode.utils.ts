@@ -7,15 +7,12 @@ import {
   updateExternalAssetsCursor,
 } from "sections/wallet/addToken/AddToken.utils"
 import { useSettingsStore } from "state/store"
-import { useAssetsLocations } from "api/assetDetails"
-import { parseLocation } from "utils/externalAssets"
 import { useAssets } from "providers/assets"
 
 export const useDegenModeSubscription = () => {
   const { external } = useAssets()
   const { degenMode } = useSettingsStore()
   const externalAssets = useExternalAssetRegistry(degenMode)
-  const locations = useAssetsLocations()
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
   const { isLoaded, poolService } = useRpcProvider()
@@ -33,17 +30,6 @@ export const useDegenModeSubscription = () => {
         isSuccess: false,
       }
     }
-
-    const locationIds = (locations.data ?? []).reduce<Map<string, string>>(
-      (acc, location) => {
-        const id = parseLocation("generalIndex", location.data)?.toString()
-
-        if (id) acc.set(id, location.id)
-
-        return acc
-      },
-      new Map([]),
-    )
 
     const data = external.reduce((acc, asset) => {
       const externalAsset = externalAssets[
@@ -64,7 +50,7 @@ export const useDegenModeSubscription = () => {
       data,
       isSuccess,
     }
-  }, [external, externalAssets, isLoaded, locations.data])
+  }, [external, externalAssets, isLoaded])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {
