@@ -171,6 +171,9 @@ export const TransferModal = ({
                 }}
                 onSuccess={() => {
                   if (isStablepool) {
+                    queryClient.invalidateQueries(
+                      QUERY_KEYS.tokenBalance(pool.id, account?.address),
+                    )
                     return refetchPositions()
                   }
 
