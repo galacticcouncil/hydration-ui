@@ -69,9 +69,9 @@ export const MemepadBottlecaps: React.FC<MemepadBottlecapsProps> = ({
         animation4.start({
           x: (moveX / offseFactor1) * -1,
           y: (moveY / offseFactor1) * -1,
-          rotateY: moveY * 0.0025,
-          rotateX: moveX * 0.0025,
-          rotateZ: (moveX + moveY) * 0.0025,
+          rotateY: moveY * 0.0015,
+          rotateX: moveX * 0.0015,
+          rotateZ: (moveX + moveY) * 0.005,
         })
       })
     }
