@@ -37,12 +37,13 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_1 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import { getParachainInputData } from "utils/externalAssets"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { positive, required } from "utils/validators"
+import { maxBalance, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
+import { useTokenBalance } from "api/balances"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
@@ -74,6 +75,7 @@ export type MemepadAlert = {
 export const useMemepadForm = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { assets, isLoaded } = useRpcProvider()
 
   const { data } = useAssetHubAssetRegistry()
 
@@ -84,6 +86,14 @@ export const useMemepadForm = () => {
       symbols: assets.map((asset) => asset.symbol.toLowerCase()),
     }
   }, [data])
+
+  const dotMeta = isLoaded ? assets.getAsset(HYDRA_DOT_ASSET_ID) : null
+
+  const { data: dotBalanceData } = useTokenBalance(
+    dotMeta?.id,
+    account?.address,
+  )
+  const dotBalance = dotBalanceData?.balance ?? BN_0
 
   return useForm<MemepadFormValues>({
     defaultValues: {
@@ -138,7 +148,9 @@ export const useMemepadForm = () => {
               minDeposit: values.deposit,
             }),
           ),
-          xykPoolSupply: required.pipe(positive),
+          xykPoolSupply: required.pipe(
+            maxBalance(dotBalance, dotMeta?.decimals ?? 0),
+          ),
           allocatedSupply: minSupply(
             t("memepad.form.error.minAllocatedSupply", {
               minDeposit: values.deposit,
