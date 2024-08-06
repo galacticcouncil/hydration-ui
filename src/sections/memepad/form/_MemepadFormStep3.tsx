@@ -46,6 +46,7 @@ export const MemepadFormStep3: FC<MemepadFormStep3Props> = ({ form }) => {
       <CreateXYKPool
         controlledForm={form}
         defaultAssetA={assetA}
+        defaultAssetB="5"
         onTxClose={onClose}
         onAssetBOpen={() => setAssetsBOpen(true)}
         onAssetBSelect={(asset) => setSummaryValue("xykPoolAssetId", asset.id)}

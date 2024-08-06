@@ -124,7 +124,7 @@ export const MemepadFormAlerts = () => {
     },
   })
 
-  if (isLoading) {
+  if (VALIDATE_BALANCES && isLoading) {
     return (
       <div sx={{ flex: "row", gap: 10, align: "center" }}>
         <Spinner size={16} />

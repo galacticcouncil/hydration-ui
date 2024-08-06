@@ -2,7 +2,7 @@ import { assetsMap, chainsConfigMap, chainsMap } from "@galacticcouncil/xcm-cfg"
 import { ConfigService, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { useStore } from "state/store"
+import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
@@ -56,7 +56,11 @@ export const useCrossChainTransfer = ({
   )
 }
 
-export const useCrossChainTransaction = () => {
+export const useCrossChainTransaction = ({
+  steps,
+}: {
+  steps?: Transaction["steps"]
+} = {}) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
 
@@ -86,6 +90,10 @@ export const useCrossChainTransaction = () => {
 
     return await createTransaction(
       {
+        title: t("xcm.transfer.reviewTransaction.modal.title", {
+          srcChain: srcChain.name,
+          dstChain: dstChain.name,
+        }),
         tx: api.tx(call.data),
         xcallMeta: {
           srcChain: values.srcChain,
@@ -98,6 +106,7 @@ export const useCrossChainTransaction = () => {
         },
       },
       {
+        steps,
         toast: createToastMessages("xcm.transfer.toast", {
           t,
           tOptions: {

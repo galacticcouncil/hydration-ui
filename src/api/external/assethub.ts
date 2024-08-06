@@ -10,7 +10,7 @@ import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useStore } from "state/store"
+import { Transaction, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { BN_0, BN_NAN } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
@@ -333,8 +333,10 @@ export async function createAssetHubAssetAndMint(
 
 export const useCreateAssetHubToken = ({
   onSuccess,
+  steps,
 }: {
   onSuccess?: () => ISubmittableResult
+  steps?: Transaction["steps"]
 } = {}) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
@@ -360,7 +362,7 @@ export const useCreateAssetHubToken = ({
     const tx = await createAssetHubAssetAndMint(api, values, {
       asset: usdt,
       address: account.address,
-      assetAmount: BN(0.5)
+      assetAmount: BN(usdtAmount)
         .shiftedBy(usdt?.decimals ?? 0)
         .toString(),
       nativeAmount: BN(nativeAmount)
@@ -389,6 +391,7 @@ export const useCreateAssetHubToken = ({
         },
       },
       {
+        steps,
         toast: createToastMessages("wallet.addToken.toast.create", {
           t,
           tOptions: { name: values.name, chainName: assethub.name },
@@ -409,41 +412,3 @@ export const useAssetHubExistentialDeposit = (id: string) => {
     return BN(details.minBalance.toString())
   })
 }
-
-/* export const useAssetHubSwap = (assetId: string) => {
-  const { account } = useAccount()
-  const { data: api } = useExternalApi("assethub")
-  const address = account?.address ?? ""
-  return useMutation(async () => {
-    if (!api) throw new Error("Asset Hub is not connected")
-    if (!assetId) throw new Error("Missing assetId")
-    if (!address) throw new Error("Missing account")
-
-    api.tx.assetConversion.swapExactTokensForTokens(
-      [
-        {
-          parents: "1",
-          interior: "Here",
-        },
-        {
-          parents: "0",
-          interior: {
-            X3: [
-              {
-                PalletInstance: "50",
-              },
-              {
-                GeneralIndex: assetId,
-              },
-            ],
-          },
-        },
-      ],
-      "100000000",
-      "500000",
-      address,
-      true,
-    )
-  })
-}
- */

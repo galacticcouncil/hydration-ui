@@ -1,11 +1,11 @@
 import { createContext, useContext } from "react"
-import { useMemepadForms } from "./MemepadForm.utils"
+import { useMemepad } from "./MemepadForm.utils"
 
 export type MemepadFormContextProps = {
   children?: React.ReactNode
 }
 
-type FormContext = ReturnType<typeof useMemepadForms>
+type FormContext = ReturnType<typeof useMemepad>
 
 const MemepadFormContext = createContext<FormContext>({} as FormContext)
 
@@ -16,7 +16,7 @@ export const useMemepadFormContext = () => {
 export const MemepadFormProvider: React.FC<MemepadFormContextProps> = ({
   children,
 }) => {
-  const value = useMemepadForms()
+  const value = useMemepad()
   return (
     <MemepadFormContext.Provider value={value}>
       {children}

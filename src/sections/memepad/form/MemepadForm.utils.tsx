@@ -1,4 +1,11 @@
+import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { ApiPromise } from "@polkadot/api"
+import { Option } from "@polkadot/types"
+import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup"
+import { useQuery } from "@tanstack/react-query"
+import { TAsset } from "api/assetDetails"
+import { useExternalApi } from "api/external"
 import {
   assethub,
   assethubNativeToken,
@@ -8,72 +15,55 @@ import {
   useCreateAssetHubToken,
   useGetNextAssetHubId,
 } from "api/external/assethub"
+import { useAccountFeePaymentAssets } from "api/payments"
 import { useRefetchProviderData } from "api/provider"
-import { useCallback, useMemo, useState } from "react"
-import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup"
-import { Option } from "@polkadot/types"
-import { useForm } from "react-hook-form"
-import { MemepadFormStep3 } from "sections/memepad/form/MemepadFormStep3"
-import {
-  CreateXYKPoolFormData,
-  useCreateXYKPool,
-  useCreateXYKPoolForm,
-} from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
-import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
-import {
-  getInternalIdFromResult,
-  useRegisterToken,
-  useUserExternalTokenStore,
-} from "sections/wallet/addToken/AddToken.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { positive, required } from "utils/validators"
-import { z } from "zod"
-import { MemepadFormStep1 } from "./MemepadFormStep1"
-import { MemepadFormStep2 } from "./MemepadFormStep2"
+import { useSpotPrice } from "api/spotPrice"
 import {
   createXcmAssetKey,
   syncAssethubXcmConfig,
   useCrossChainTransaction,
   wallet,
 } from "api/xcm"
-import { useTranslation } from "react-i18next"
-
 import BN from "bignumber.js"
-import { useExternalApi } from "api/external"
-import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { useRpcProvider } from "providers/rpcProvider"
-import { getParachainInputData } from "utils/externalAssets"
-import { useSpotPrice } from "api/spotPrice"
-import { useAccountFeePaymentAssets } from "api/payments"
-import { TAsset } from "api/assetDetails"
+import { useCallback, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { useCreateXYKPool } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
+import {
+  getInternalIdFromResult,
+  useRegisterToken,
+  useUserExternalTokenStore,
+} from "sections/wallet/addToken/AddToken.utils"
+import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
-import { useQuery } from "@tanstack/react-query"
+import { getParachainInputData } from "utils/externalAssets"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { positive, required } from "utils/validators"
+import { z } from "zod"
+import { MemepadFormFields } from "./MemepadFormFields"
 
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
+
+export const HYDRA_DOT_ASSET_ID = "5"
+export const HYDRA_USDT_ASSET_ID = "10"
 
 const MAX_NAME_LENGTH = 20
 const MAX_SYMBOL_LENGTH = 6
 const MAX_DECIMALS_COUNT = 20
 const DEFAULT_DECIMALS_COUNT = 12
+const DEFAULT_EXISTENTIAL_DEPOSIT = 1
+const DEFAULT_DOT_SUPPLY = 10
 
-export type MemepadStep1Values = CreateTokenValues & {
+export type MemepadFormValues = CreateTokenValues & {
+  internalId: string
+  xykPoolAssetId: string
+  xykPoolSupply: string
   origin: number
   allocatedSupply: string
-  dotSupply: string
 }
-
-export type MemepadStep2Values = {
-  amount: string
-  hydrationAddress: string
-}
-
-export type MemepadStep3Values = CreateXYKPoolFormData
-
-export type MemepadSummaryValues = Partial<
-  MemepadStep1Values & MemepadStep2Values & MemepadStep3Values
-> & { internalId?: string; xykPoolAssetId?: string }
 
 export type MemepadAlert = {
   key: string
@@ -81,7 +71,7 @@ export type MemepadAlert = {
   variant: "warning" | "error" | "info"
 }
 
-export const useMemepadStep1Form = () => {
+export const useMemepadForm = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
@@ -95,21 +85,31 @@ export const useMemepadStep1Form = () => {
     }
   }, [data])
 
-  return useForm<MemepadStep1Values>({
+  return useForm<MemepadFormValues>({
     defaultValues: {
       id: "",
       name: "",
       symbol: "",
-      deposit: "1",
+      deposit: DEFAULT_EXISTENTIAL_DEPOSIT.toString(),
       supply: "",
+      xykPoolSupply: DEFAULT_DOT_SUPPLY.toString(),
       allocatedSupply: "",
-      dotSupply: "10",
       decimals: DEFAULT_DECIMALS_COUNT,
       origin: assethub.parachainId,
       account: account?.address ?? "",
+      internalId: "",
+      xykPoolAssetId: HYDRA_DOT_ASSET_ID,
     },
+    mode: "onChange",
     resolver: (...args) => {
       const [values] = args
+
+      const minSupply = (msg: string) =>
+        required.pipe(positive).refine((value) => {
+          const supply = BN(value)
+          return supply.isFinite() && supply.gt(values.deposit)
+        }, msg)
+
       return zodResolver(
         z.object({
           name: required
@@ -133,10 +133,17 @@ export const useMemepadStep1Form = () => {
               t("memepad.form.error.symbolExists"),
             ),
           deposit: required.pipe(positive),
-          supply: required.pipe(positive).refine((value) => {
-            const supply = BN(value)
-            return supply.isFinite() && supply.gt(values.deposit)
-          }, t("memepad.form.error.minSupply")),
+          supply: minSupply(
+            t("memepad.form.error.minSupply", {
+              minDeposit: values.deposit,
+            }),
+          ),
+          xykPoolSupply: required.pipe(positive),
+          allocatedSupply: minSupply(
+            t("memepad.form.error.minAllocatedSupply", {
+              minDeposit: values.deposit,
+            }),
+          ),
           decimals: z.number().min(0).max(MAX_DECIMALS_COUNT),
           origin: z.number().min(0),
           account: required,
@@ -146,137 +153,155 @@ export const useMemepadStep1Form = () => {
   })
 }
 
-export const useMemepadStep2Form = () => {
-  const { account } = useAccount()
-
-  return useForm<MemepadStep2Values>({
-    mode: "onChange",
-    defaultValues: {
-      amount: "",
-      hydrationAddress: account?.address ?? "",
-    },
-  })
+enum MemepadStep {
+  CREATE_TOKEN,
+  REGISTER_TOKEN,
+  TRANSFER_TOKEN,
+  CREATE_XYK_POOL,
+  SUMMARY,
 }
 
-export const useMemepadForms = () => {
-  const [step, setStep] = useState(0)
+const useMemepadSteps = (step: MemepadStep) => {
+  const { t } = useTranslation()
+  return useMemo(() => {
+    const stepLabels = [
+      t("memepad.form.step1.title"),
+      t("memepad.form.step2.title"),
+      t("memepad.form.step3.title"),
+      t("memepad.form.step4.title"),
+    ]
+
+    function getSteps(step: number) {
+      return stepLabels.map(
+        (label, index) =>
+          ({
+            label,
+            state: step === index ? "active" : step > index ? "done" : "todo",
+          }) as const,
+      )
+    }
+    return {
+      steps: getSteps(step),
+      getSteps,
+    }
+  }, [step, t])
+}
+
+export const useMemepad = () => {
+  const { api } = useRpcProvider()
+  const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
   const [alerts, setAlerts] = useState<MemepadAlert[]>([])
-  const [summary, setSummary] = useState<MemepadSummaryValues | null>(null)
+  const [supplyPerc, setSupplyPerc] = useState(50)
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
 
-  const formStep1 = useMemepadStep1Form()
-  const formStep2 = useMemepadStep2Form()
-  const formStep3 = useCreateXYKPoolForm(
-    summary?.internalId,
-    summary?.xykPoolAssetId,
-  )
+  const form = useMemepadForm()
 
-  const createToken = useCreateAssetHubToken()
+  const { steps, getSteps } = useMemepadSteps(step)
+
+  const createToken = useCreateAssetHubToken({
+    steps: getSteps(MemepadStep.CREATE_TOKEN),
+  })
   const registerToken = useRegisterToken({
     onSuccess: (internalId, asset) => {
       addToken(externalAssetToRegisteredAsset(asset, internalId))
       refetchProvider()
     },
+    steps: getSteps(MemepadStep.REGISTER_TOKEN),
   })
-  const xTransfer = useCrossChainTransaction()
-  const createXykPool = useCreateXYKPool(
-    summary?.internalId ?? "",
-    summary?.xykPoolAssetId ?? "",
-    {
-      onSuccess: refetchProvider,
-    },
-  )
+  const xTransfer = useCrossChainTransaction({
+    steps: getSteps(MemepadStep.TRANSFER_TOKEN),
+  })
+  const createXykPool = useCreateXYKPool({
+    onSuccess: refetchProvider,
+    steps: getSteps(MemepadStep.CREATE_XYK_POOL),
+  })
 
   const { getNextAssetHubId } = useGetNextAssetHubId()
 
-  const formComponents = [
-    <MemepadFormStep1 form={formStep1} />,
-    <MemepadFormStep2 form={formStep2} />,
-    <MemepadFormStep3 form={formStep3} />,
-  ]
+  const isDirty = form.formState.isDirty
+  const isSubmitting = form.formState.isSubmitting
 
-  const formInstances = [formStep1, formStep2, formStep3]
-
-  const isDirty = formInstances.some((form) => form.formState.isDirty)
-  const isSubmitting = formInstances.some((form) => form.formState.isSubmitting)
-
-  const setNextStep = (values: MemepadSummaryValues) => {
+  const setNextStep = () => {
     setStep((prev) => prev + 1)
-    setSummary((prev) => ({ ...prev, ...values }))
   }
 
-  const submitNext = () => {
-    if (step === 0) {
-      return formStep1.handleSubmit(async (values) => {
-        const nextId = summary?.id || (await getNextAssetHubId())
-        const id = nextId.toString()
-        const token = {
-          ...values,
-          id,
-          isWhiteListed: false,
-        }
+  const formValues = form.getValues()
 
-        if (!summary?.id) {
-          // create token on Assethub
-          await createToken.mutateAsync(token)
-          setSummary((prev) => ({ ...prev, ...token }))
-        }
+  const submit = () => {
+    return form.handleSubmit(async (values) => {
+      let currentStep = step
+      let internalId = formValues?.internalId ?? ""
+      const nextId = formValues?.id || (await getNextAssetHubId())
+      const id = nextId.toString()
+      const token = {
+        ...values,
+        id,
+        isWhiteListed: false,
+      }
 
-        // register token on Hydration
+      // Create token on Assethub
+      if (currentStep === 0) {
+        await createToken.mutateAsync(token)
+        form.setValue("id", id)
+        setNextStep()
+        currentStep++
+      }
+
+      // Register token on Hydration
+      if (currentStep === 1) {
         const result = await registerToken.mutateAsync(token)
 
-        // sync registered token with assethub XCM config
+        // Sync registered token with assethub XCM config
         const { assetId } = getInternalIdFromResult(result)
-        const internalId = assetId?.toString() ?? ""
+        internalId = assetId?.toString() ?? ""
         const registeredAsset = externalAssetToRegisteredAsset(
           token,
           internalId,
         )
         syncAssethubXcmConfig(registeredAsset)
 
-        setNextStep({
-          ...values,
-          ...registeredAsset,
-        })
-      })()
-    }
+        form.setValue("internalId", internalId)
+        setNextStep()
+        currentStep++
+      }
 
-    if (step === 1) {
-      return formStep2.handleSubmit(async (values) => {
-        const xcmAssetKey = createXcmAssetKey(
-          summary?.id ?? "",
-          summary?.symbol ?? "",
-        )
+      // Transfer created token to Hydration
+      if (currentStep === 2) {
+        const xcmAssetKey = createXcmAssetKey(id, values.symbol)
         await xTransfer.mutateAsync({
-          amount: parseFloat(values.amount),
+          amount: parseFloat(values.allocatedSupply),
           asset: xcmAssetKey,
-          srcAddr: summary?.account ?? values.hydrationAddress,
+          srcAddr: values?.account ?? "",
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
-          dstAddr: values.hydrationAddress,
+          dstAddr: values?.account ?? "",
           dstChain: MEMEPAD_XCM_DST_CHAIN,
         })
 
-        setNextStep(values)
-      })()
-    }
+        await waitForBalance(api, values.account, internalId)
+        setNextStep()
+        currentStep++
+      }
 
-    if (step === 2) {
-      return formStep3.handleSubmit(async (values) => {
+      // Create XYK Pool
+      if (currentStep === 3) {
         await createXykPool.mutateAsync({
-          assetA: values.assetA,
-          assetB: values.assetB,
+          assetAId: internalId,
+          assetBId: HYDRA_DOT_ASSET_ID,
+          assetAAmount: values.allocatedSupply,
+          assetBAmount: values.xykPoolSupply,
         })
-        setNextStep(values)
-      })()
-    }
+
+        setNextStep()
+        currentStep++
+      }
+    })()
   }
 
   const reset = () => {
-    setStep(0)
-    setSummary(null)
-    formInstances.forEach((form) => form.reset())
+    setStep(MemepadStep.CREATE_TOKEN)
+    form.reset()
   }
 
   const setAlert = useCallback((alert: MemepadAlert) => {
@@ -289,18 +314,8 @@ export const useMemepadForms = () => {
     setAlerts((prev) => prev.filter((alert) => alert.key !== key))
   }, [])
 
-  const setSummaryValue = useCallback(
-    <K extends keyof MemepadSummaryValues>(
-      key: K,
-      value: MemepadSummaryValues[K],
-    ) => {
-      setSummary((prev) => ({ ...prev, [key]: value }))
-    },
-    [],
-  )
-
-  const currentForm = formComponents[step]
-  const isFinalized = step === formComponents.length
+  const formComponent = <MemepadFormFields form={form} />
+  const isFinalized = step === MemepadStep.SUMMARY
 
   const isLoading =
     isSubmitting ||
@@ -309,16 +324,15 @@ export const useMemepadForms = () => {
     xTransfer.isLoading
 
   return {
+    form,
     step,
-    formStep1,
-    formStep2,
-    formStep3,
-    currentForm,
+    steps,
+    formComponent,
     isFinalized,
     isDirty,
-    summary,
-    setSummaryValue,
-    submitNext,
+    supplyPerc,
+    setSupplyPerc,
+    submit,
     reset,
     alerts,
     setAlert,
@@ -357,9 +371,12 @@ export const useMemepadDryRun = (
   const nativeAssetId = isLoaded ? assets.native.id : ""
   const { feePaymentAssetId } = feePaymentAssets
 
-  const spotPrice = useSpotPrice(nativeAssetId, feePaymentAssetId)
+  const { data: feeSpotPrice, ...feeSpotPriceQuery } = useSpotPrice(
+    nativeAssetId,
+    feePaymentAssetId,
+  )
 
-  const feePaymentAssetSpotPrice = spotPrice.data?.spotPrice ?? BN_1
+  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_1
 
   const address = account?.address ?? ""
 
@@ -402,7 +419,7 @@ export const useMemepadDryRun = (
       amount: registerTokenPaymentInfo.partialFee.toBigNumber(),
       nativeAsset: hydraNativeAsset,
       feePaymentAsset: hydraFeePaymentAsset,
-      spotPrice: feePaymentAssetSpotPrice,
+      spotPrice: hydraFeeSpotPrice,
     })
 
     const xcmTransfer = await wallet.transfer(
@@ -440,7 +457,7 @@ export const useMemepadDryRun = (
       amount: createXYKPoolPaymentInfo.partialFee.toBigNumber(),
       nativeAsset: hydraNativeAsset,
       feePaymentAsset: hydraFeePaymentAsset,
-      spotPrice: feePaymentAssetSpotPrice,
+      spotPrice: hydraFeeSpotPrice,
     })
 
     return {
@@ -459,7 +476,7 @@ export const useMemepadDryRun = (
       !!assethubApi &&
       !!address &&
       feePaymentAssets.isSuccess &&
-      spotPrice.isSuccess,
+      feeSpotPriceQuery.isSuccess,
     retry: false,
     ...options,
   })
@@ -491,5 +508,30 @@ function convertFeeToPaymentAsset({
     symbol: paymentAsset.symbol,
     key: paymentAsset.id,
     originSymbol: paymentAsset.symbol,
+  })
+}
+
+function waitForBalance(
+  api: ApiPromise,
+  account: string,
+  id: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const checkBalance = async () => {
+      try {
+        const res = await api.query.tokens.accounts(account, id)
+        const balance = res.free.toBigNumber()
+
+        if (balance.gt(0)) {
+          resolve()
+        } else {
+          setTimeout(checkBalance, 2000)
+        }
+      } catch (error) {
+        reject(error)
+      }
+    }
+
+    checkBalance()
   })
 }

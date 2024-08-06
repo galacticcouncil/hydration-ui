@@ -70,7 +70,7 @@ export const CreateXYKPool = ({
   const defaultForm = useCreateXYKPoolForm(assetA, assetB)
   const formInstance = controlledForm || defaultForm
 
-  const createXykPool = useCreateXYKPool(assetA, assetB, {
+  const createXykPool = useCreateXYKPool({
     onClose: onTxClose,
     onSubmitted: () => {
       onTxClose?.()

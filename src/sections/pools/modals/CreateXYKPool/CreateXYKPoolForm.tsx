@@ -36,8 +36,8 @@ export const CreateXYKPoolForm = ({
   const assetAMeta = assets.getAsset(assetA ?? "")
   const assetBMeta = assets.getAsset(assetB ?? "")
 
-  const assetAValue = BigNumber(form.watch("assetA"))
-  const assetBValue = BigNumber(form.watch("assetB"))
+  const assetAValue = BigNumber(form.watch("assetAAmount"))
+  const assetBValue = BigNumber(form.watch("assetBAmount"))
 
   const [rateReversed, setRateReversed] = useState(false)
 
@@ -74,7 +74,7 @@ export const CreateXYKPoolForm = ({
       }}
     >
       <Controller
-        name="assetA"
+        name="assetAAmount"
         control={form.control}
         render={({
           field: { name, value, onChange },
@@ -99,7 +99,7 @@ export const CreateXYKPoolForm = ({
         onClick={() => setRateReversed((prev) => !prev)}
       />
       <Controller
-        name="assetB"
+        name="assetBAmount"
         control={form.control}
         render={({
           field: { name, value, onChange },

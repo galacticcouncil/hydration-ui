@@ -6,16 +6,14 @@ type MemepadActionBarProps = {
   step: number
   disabled?: boolean
   isLoading?: boolean
-  isRegistering?: boolean
-  onNext?: () => void
+  onSubmit?: () => void
 }
 
 export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
   step,
   disabled = false,
   isLoading = false,
-  isRegistering = false,
-  onNext,
+  onSubmit,
 }) => {
   const { t } = useTranslation()
   return (
@@ -25,17 +23,12 @@ export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
         isLoading={isLoading}
         variant="primary"
         sx={{ minWidth: ["100%", 200] }}
-        onClick={onNext}
+        onClick={onSubmit}
       >
-        {step === 0 && (
-          <>
-            {isRegistering
-              ? t("memepad.form.submit.register")
-              : t("memepad.form.submit.create")}
-          </>
-        )}
-        {step === 1 && t("memepad.form.submit.transfer")}
-        {step === 2 && t("memepad.form.submit.finish")}
+        {step === 0 && t("memepad.form.submit.create")}
+        {step === 1 && t("memepad.form.submit.register")}
+        {step === 2 && t("memepad.form.submit.transfer")}
+        {step === 3 && t("memepad.form.submit.finish")}
       </Button>
     </SContainer>
   )

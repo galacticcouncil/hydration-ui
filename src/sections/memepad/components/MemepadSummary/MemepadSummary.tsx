@@ -1,6 +1,6 @@
 import { Button } from "components/Button/Button"
 import { GradientText } from "components/Typography/GradientText/GradientText"
-import { MemepadSummaryValues } from "sections/memepad/form/MemepadForm.utils"
+import { MemepadFormValues } from "sections/memepad/form/MemepadForm.utils"
 import {
   SContainer,
   SDecorativeStarIcon,
@@ -20,7 +20,7 @@ import IconGithub from "assets/icons/IconGithub.svg?react"
 import { qs } from "utils/formatting"
 
 type MemepadSummaryProps = {
-  values: MemepadSummaryValues | null
+  values: MemepadFormValues
   onReset: () => void
 }
 
@@ -42,7 +42,6 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
     name,
     decimals,
     account,
-    amount,
     supply,
     xykPoolAssetId,
     internalId,
@@ -134,23 +133,25 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           </SRowItem>
           <SRowItem>
             <Text fs={14} color="basic400">
-              {t("memepad.form.account")}
-            </Text>
-            <Text fs={14} color="brightBlue300">
-              {account ? shortenAccountAddress(account) : ""}
-            </Text>
-          </SRowItem>
-          <SRowItem>
-            <Text fs={14} color="basic400">
               {t("memepad.summary.liquidityTransfered")}
             </Text>
             <Text fs={14} color="brightBlue300">
               {t("value.tokenWithSymbol", {
-                value: amount,
+                value: values.allocatedSupply,
                 symbol: symbol,
               })}
             </Text>
           </SRowItem>
+          {account && (
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                {t("memepad.form.account")}
+              </Text>
+              <Text fs={14} color="brightBlue300">
+                {shortenAccountAddress(account)}
+              </Text>
+            </SRowItem>
+          )}
           <SRowItem>
             <Text fs={14} color="basic400">
               {t("memepad.summary.xykPool")}

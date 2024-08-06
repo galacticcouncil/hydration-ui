@@ -5,7 +5,7 @@ import BN from "bignumber.js"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { SRowItem } from "sections/memepad/components/MemepadSummary"
@@ -68,12 +68,19 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({ form }) => {
     -dstFeeDecimals,
   )
 
+  useEffect(() => {
+    if (summary?.allocatedSupply) {
+      form.setValue("amount", summary.allocatedSupply)
+    }
+  }, [form, summary?.allocatedSupply])
+
   return (
     <>
       <form autoComplete="off">
         <div sx={{ flex: "column", gap: 8 }}>
           <Controller
             name="amount"
+            disabled
             control={form.control}
             rules={{
               required: t("error.required"),
@@ -101,6 +108,7 @@ export const MemepadFormStep2: FC<MemepadFormStep2Props> = ({ form }) => {
             }}
             render={({ field, fieldState: { error } }) => (
               <WalletTransferAssetSelect
+                withoutMaxBtn
                 title={t("memepad.form.amount")}
                 asset={internalId}
                 error={error?.message}

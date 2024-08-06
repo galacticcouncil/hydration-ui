@@ -22,26 +22,25 @@ import { useTranslation } from "react-i18next"
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
-  const { step, submitNext, isFinalized, isLoading, summary, reset, alerts } =
+  const { step, submit, isFinalized, isLoading, form, reset, alerts } =
     useMemepadFormContext()
 
   const { isLoading: isDryRunLoading } = useMemepadDryRun()
 
-  const actionDisabled = !isLoaded || isDryRunLoading || alerts.length > 0
+  const submitDisabled = !isLoaded || isDryRunLoading || alerts.length > 0
 
   return (
     <>
       {isFinalized ? (
-        <MemepadSummary values={summary} onReset={reset} />
+        <MemepadSummary values={form.getValues()} onReset={reset} />
       ) : (
         <MemepadLayout>
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
           <MemepadActionBar
             step={step}
-            disabled={actionDisabled}
+            disabled={submitDisabled}
             isLoading={isLoading}
-            isRegistering={!!summary?.id}
-            onNext={submitNext}
+            onSubmit={submit}
           />
         </MemepadLayout>
       )}

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useSettingsStore, useStore } from "state/store"
+import { Transaction, useSettingsStore, useStore } from "state/store"
 
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -180,9 +180,11 @@ export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {
 
 export const useRegisterToken = ({
   onSuccess,
+  steps,
 }: {
-  onSuccess: (assetId: string, asset: TExternalAssetWithLocation) => void
-}) => {
+  onSuccess?: (assetId: string, asset: TExternalAssetWithLocation) => void
+  steps?: Transaction["steps"]
+} = {}) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { t } = useTranslation()
@@ -198,6 +200,7 @@ export const useRegisterToken = ({
         tx: api.tx.assetRegistry.registerExternal(assetInput),
       },
       {
+        steps,
         toast: createToastMessages("wallet.addToken.toast.register", {
           t,
           tOptions: {
@@ -209,7 +212,7 @@ export const useRegisterToken = ({
           const data = getInternalIdFromResult(res)
           const assetId = data?.assetId?.toString()
 
-          if (assetId) onSuccess(assetId, asset)
+          if (assetId) onSuccess?.(assetId, asset)
         },
       },
     )
