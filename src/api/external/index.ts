@@ -78,8 +78,13 @@ export const useExternalApi = (chainKey: string) => {
  * Used for fetching tokens from supported parachains
  */
 export const useExternalAssetRegistry = (enabled?: boolean) => {
-  const assethubRegistry = useAssetHubAssetRegistry(enabled)
-  const pendulumRegistry = usePendulumAssetRegistry(enabled)
+  const { isLoaded } = useRpcProvider()
+
+  const queryEnabled =
+    typeof enabled === "boolean" ? enabled && isLoaded : isLoaded
+
+  const assethubRegistry = useAssetHubAssetRegistry(queryEnabled)
+  const pendulumRegistry = usePendulumAssetRegistry(queryEnabled)
 
   return {
     [assethub.parachainId]: assethubRegistry,

@@ -15,11 +15,17 @@ export const useBestNumber = (disable?: boolean) => {
           api.derive.chain.bestNumber(),
           api.query.timestamp.now(),
         ])
+
+      const now = Date.now()
+      const tsNum = timestamp.toNumber()
+      const ping = now > tsNum ? now - tsNum : undefined
+
       const relaychainBlockNumber = validationData.unwrap().relayParentNumber
-      return { parachainBlockNumber, relaychainBlockNumber, timestamp }
+      return { parachainBlockNumber, relaychainBlockNumber, timestamp, ping }
     },
     {
       enabled: "query" in api && !!activeProvider?.url && !disable,
+      refetchOnWindowFocus: false,
     },
   )
 }

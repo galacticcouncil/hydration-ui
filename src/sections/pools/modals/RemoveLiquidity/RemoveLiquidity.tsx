@@ -36,7 +36,7 @@ export const RemoveLiquidity = ({
         pool={pool}
         onClose={onClose}
         onSuccess={onSuccess}
-        position={Array.isArray(position) ? position[0] : position}
+        position={position}
       />
     )
   }
