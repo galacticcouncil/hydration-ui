@@ -18,6 +18,12 @@ import { theme } from "theme"
 import { useMedia } from "react-use"
 import IconGithub from "assets/icons/IconGithub.svg?react"
 import { qs } from "utils/formatting"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssetHubRevokeAdminRights } from "api/external/assethub"
+import { useState } from "react"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import BN from "bignumber.js"
 
 type MemepadSummaryProps = {
   values: MemepadFormValues
@@ -34,6 +40,10 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.md)
+  const [adminRightsRevoked, setAdminRightsRevoked] = useState(false)
+  const { mutate: revokeAdminRights } = useAssetHubRevokeAdminRights({
+    onSuccess: () => setAdminRightsRevoked(true),
+  })
 
   if (!values) return null
 
@@ -170,9 +180,48 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
               </Text>
             </div>
           </SRowItem>
+          <SRowItem>
+            <Text
+              sx={{ mb: 4, flex: "row", align: "center", gap: 4 }}
+              color="basic400"
+              fs={14}
+            >
+              {t("memepad.summary.adminRights")}
+              <InfoTooltip text={t("memepad.summary.adminRights.tooltip")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            </Text>
+            {adminRightsRevoked ? (
+              <Text fs={14} color="green400">
+                <SuccessIcon sx={{ mr: 4 }} />
+                {t("memepad.summary.adminRights.burned")}
+              </Text>
+            ) : (
+              <Button
+                variant="warning"
+                size="micro"
+                sx={{ height: "auto", ml: ["initial", "auto"], py: 4 }}
+                onClick={() =>
+                  revokeAdminRights({
+                    id: values.id,
+                    minBalance: BN(values.deposit)
+                      .shiftedBy(values.decimals)
+                      .toString(),
+                  })
+                }
+              >
+                {t("memepad.summary.adminRights.burn")}
+              </Button>
+            )}
+          </SRowItem>
         </div>
+
         <div
-          sx={{ flex: ["column", "row"], gap: 12, justify: "space-between" }}
+          sx={{
+            flex: ["column", "row"],
+            gap: 12,
+            justify: "space-between",
+          }}
         >
           <Button size="small" onClick={onReset} sx={{ height: "auto" }}>
             {t("memepad.summary.createNewAsset")}

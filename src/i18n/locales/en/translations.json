@@ -1032,5 +1032,11 @@
   "memepad.summary.createGithubIssue": "Add logo through GitHub",
   "memepad.summary.liquidityTransfered": "Liquidity transfered",
   "memepad.summary.totalSupply": "Total supply",
-  "memepad.summary.xykPool": "Isolated pool"
+  "memepad.summary.xykPool": "Isolated pool",
+  "memepad.summary.adminRights": "Admin rights",
+  "memepad.summary.adminRights.tooltip": "Revoke admin rights and get higher asset status on Hydration.",
+  "memepad.summary.adminRights.burn": "Burn admin rights",
+  "memepad.summary.adminRights.burned": "Admin rights revoked",
+  "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
+  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked."
 }

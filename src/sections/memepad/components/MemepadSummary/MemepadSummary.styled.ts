@@ -51,10 +51,12 @@ export const SHeading = styled.div`
 `
 export const SRowItem = styled.div`
   display: flex;
-  gap: 20;
+  gap: 20px;
   justify-content: space-between;
+  align-items: center;
 
-  padding: 5px 0;
+  padding: 7px 0;
+  min-height: 35px;
 
   border-bottom: 1px solid rgba(${theme.rgbColors.darkBlue400}, 0.3);
 

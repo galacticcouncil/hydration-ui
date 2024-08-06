@@ -412,3 +412,59 @@ export const useAssetHubExistentialDeposit = (id: string) => {
     return BN(details.minBalance.toString())
   })
 }
+
+export const useAssetHubRevokeAdminRights = ({
+  onSuccess,
+}: { onSuccess?: () => void } = {}) => {
+  const { t } = useTranslation()
+  const { data: api } = useExternalApi("assethub")
+  const { account } = useAccount()
+  const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
+  const { createTransaction } = useStore()
+
+  return useMutation(
+    async ({ id, minBalance }: { id: string; minBalance: string }) => {
+      if (!account) throw new Error("Missing account")
+      if (!api) throw new Error("Asset Hub is not connected")
+      if (!id) throw new Error("Missing asset id")
+
+      const tx = api.tx.assets.forceAssetStatus(
+        id,
+        ASSETHUB_TREASURY_ADDRESS,
+        ASSETHUB_TREASURY_ADDRESS,
+        ASSETHUB_TREASURY_ADDRESS,
+        ASSETHUB_TREASURY_ADDRESS,
+        minBalance || "0",
+        false,
+        false,
+      )
+
+      const paymentInfo = await tx.paymentInfo(account.address)
+
+      const feeAssetDecimals = assethubNativeToken.decimals ?? 10
+      const feeBalance =
+        nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
+      const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
+        -feeAssetDecimals,
+      )
+
+      return createTransaction(
+        {
+          tx,
+          xcallMeta: {
+            srcChain: assethub.key,
+            srcChainFee: fee.toString(),
+            srcChainFeeBalance: feeBalance.toString(),
+            srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
+          },
+        },
+        {
+          toast: createToastMessages("memepad.summary.adminRights.toast", {
+            t,
+          }),
+          onSuccess,
+        },
+      )
+    },
+  )
+}
