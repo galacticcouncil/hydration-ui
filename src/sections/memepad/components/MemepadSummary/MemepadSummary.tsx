@@ -23,7 +23,6 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssetHubRevokeAdminRights } from "api/external/assethub"
 import { useState } from "react"
 import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
-import BN from "bignumber.js"
 
 type MemepadSummaryProps = {
   values: MemepadFormValues
@@ -201,14 +200,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
                 variant="warning"
                 size="micro"
                 sx={{ height: "auto", ml: ["initial", "auto"], py: 4 }}
-                onClick={() =>
-                  revokeAdminRights({
-                    id: values.id,
-                    minBalance: BN(values.deposit)
-                      .shiftedBy(values.decimals)
-                      .toString(),
-                  })
-                }
+                onClick={() => revokeAdminRights(values.id)}
               >
                 {t("memepad.summary.adminRights.burn")}
               </Button>

@@ -422,49 +422,46 @@ export const useAssetHubRevokeAdminRights = ({
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
   const { createTransaction } = useStore()
 
-  return useMutation(
-    async ({ id, minBalance }: { id: string; minBalance: string }) => {
-      if (!account) throw new Error("Missing account")
-      if (!api) throw new Error("Asset Hub is not connected")
-      if (!id) throw new Error("Missing asset id")
+  return useMutation(async (id: string) => {
+    if (!account) throw new Error("Missing account")
+    if (!api) throw new Error("Asset Hub is not connected")
+    if (!id) throw new Error("Missing asset id")
 
-      const tx = api.tx.assets.forceAssetStatus(
+    const tx = api.tx.utility.batchAll([
+      api.tx.assets.setTeam(
         id,
         ASSETHUB_TREASURY_ADDRESS,
         ASSETHUB_TREASURY_ADDRESS,
         ASSETHUB_TREASURY_ADDRESS,
-        ASSETHUB_TREASURY_ADDRESS,
-        minBalance || "0",
-        false,
-        false,
-      )
+      ),
+      api.tx.assets.transferOwnership(id, ASSETHUB_TREASURY_ADDRESS),
+    ])
 
-      const paymentInfo = await tx.paymentInfo(account.address)
+    const paymentInfo = await tx.paymentInfo(account.address)
 
-      const feeAssetDecimals = assethubNativeToken.decimals ?? 10
-      const feeBalance =
-        nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
-      const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
-        -feeAssetDecimals,
-      )
+    const feeAssetDecimals = assethubNativeToken.decimals ?? 10
+    const feeBalance =
+      nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
+    const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
+      -feeAssetDecimals,
+    )
 
-      return createTransaction(
-        {
-          tx,
-          xcallMeta: {
-            srcChain: assethub.key,
-            srcChainFee: fee.toString(),
-            srcChainFeeBalance: feeBalance.toString(),
-            srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
-          },
+    return createTransaction(
+      {
+        tx,
+        xcallMeta: {
+          srcChain: assethub.key,
+          srcChainFee: fee.toString(),
+          srcChainFeeBalance: feeBalance.toString(),
+          srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
         },
-        {
-          toast: createToastMessages("memepad.summary.adminRights.toast", {
-            t,
-          }),
-          onSuccess,
-        },
-      )
-    },
-  )
+      },
+      {
+        toast: createToastMessages("memepad.summary.adminRights.toast", {
+          t,
+        }),
+        onSuccess,
+      },
+    )
+  })
 }
