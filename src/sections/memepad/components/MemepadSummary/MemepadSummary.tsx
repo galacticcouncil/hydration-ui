@@ -10,7 +10,7 @@ import {
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { shortenAccountAddress } from "utils/formatting"
-import { MemepadVisual } from "sections/memepad/components/MemepadVisual"
+import { MemepadBottlecaps } from "sections/memepad/components/MemepadBottlecaps"
 import { useRpcProvider } from "providers/rpcProvider"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
@@ -56,8 +56,10 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
     internalId,
   } = values || {}
 
-  const xykAssetAMeta = internalId ? assets.getAsset(internalId) : null
-  const xykAssetBMeta = xykPoolAssetId ? assets.getAsset(xykPoolAssetId) : null
+  const xykAssetAMeta = internalId ? assets.getAsset?.(internalId) : null
+  const xykAssetBMeta = xykPoolAssetId
+    ? assets.getAsset?.(xykPoolAssetId)
+    : null
 
   const onGithubOpen = () => {
     const url = `${GITHUB_ISSUE_URL}${qs({
@@ -74,7 +76,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
     <SContainer>
       {isDesktop && (
         <div sx={{ mt: -50 }}>
-          <MemepadVisual variant="b" />
+          <MemepadBottlecaps variant="b" />
         </div>
       )}
       <div>
@@ -226,7 +228,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
       </div>
       {isDesktop && (
         <div sx={{ mt: -100 }}>
-          <MemepadVisual variant="a" />
+          <MemepadBottlecaps variant="a" />
         </div>
       )}
     </SContainer>

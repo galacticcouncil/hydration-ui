@@ -2,9 +2,9 @@ import { Spacer } from "components/Spacer/Spacer"
 import { SContent } from "./MemepadLayout.styled"
 import { MemepadHeader } from "sections/memepad/components/MemepadHeader"
 import {
-  MemepadVisual,
-  MemepadVisualMobile,
-} from "sections/memepad/components/MemepadVisual"
+  MemepadBottlecaps,
+  MemepadBottlecapsMobile,
+} from "sections/memepad/components/MemepadBottlecaps"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 
@@ -19,9 +19,9 @@ export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
       <SContent>
         <div>{children}</div>
         {isDesktop ? (
-          <MemepadVisual animmated variant="a" sx={{ mt: -200, ml: 80 }} />
+          <MemepadBottlecaps animmated variant="a" sx={{ mt: -200, ml: 80 }} />
         ) : (
-          <MemepadVisualMobile
+          <MemepadBottlecapsMobile
             sx={{
               top: 0,
               right: 0,

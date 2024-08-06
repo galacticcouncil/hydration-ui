@@ -1026,7 +1026,7 @@
   "memepad.form.error.minAllocatedSupply": "The initial supply must be higher than the existential deposit ({{ minDeposit }}). Please increase your allocation.",
   "memepad.form.balance.isLoading": "Checking your balance...",
   "memepad.summary.congrats": "Congrats!",
-  "memepad.summary.title": "The asset is successfully launched.",
+  "memepad.summary.title": "The asset is successfully launched!",
   "memepad.summary.yourSummary": "Summary",
   "memepad.summary.createNewAsset": "Create another asset",
   "memepad.summary.createGithubIssue": "Add logo through GitHub",

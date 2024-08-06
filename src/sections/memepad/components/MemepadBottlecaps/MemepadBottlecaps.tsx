@@ -6,11 +6,12 @@ import {
   useReducedMotion,
 } from "framer-motion"
 import React, { useEffect, useRef } from "react"
-import { SContainer, SContainerMobile } from "./MemepadVisual.styled"
+import { SContainer, SContainerMobile } from "./MemepadBottlecaps.styled"
 
 import bottlecap1a from "assets/images/bottlecap1a.webp"
 import bottlecap2a from "assets/images/bottlecap2a.webp"
 import bottlecap3a from "assets/images/bottlecap3a.webp"
+import bottlecap4a from "assets/images/bottlecap4a.webp"
 
 import bottlecap1b from "assets/images/bottlecap1b.webp"
 import bottlecap2b from "assets/images/bottlecap2b.webp"
@@ -18,13 +19,13 @@ import bottlecap3b from "assets/images/bottlecap3b.webp"
 
 import bottlecapsMobile from "assets/images/bottlecaps-mobile.webp"
 
-type MemepadVisualProps = {
+type MemepadBottlecapsProps = {
   variant: "a" | "b"
   className?: string
   animmated?: boolean
 }
 
-export const MemepadVisual: React.FC<MemepadVisualProps> = ({
+export const MemepadBottlecaps: React.FC<MemepadBottlecapsProps> = ({
   className,
   variant,
   animmated = false,
@@ -35,6 +36,7 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
   const animation1 = useAnimation()
   const animation2 = useAnimation()
   const animation3 = useAnimation()
+  const animation4 = useAnimation()
 
   const shouldAnimate = animmated && !shouldReduceMotion
 
@@ -45,7 +47,7 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
 
       const moveX = clientX - window.innerWidth / 2
       const moveY = clientY - window.innerHeight / 2
-      const offseFactor1 = 100
+      const offseFactor1 = 250
       const offseFactor2 = 130
       const offseFactor3 = 600
 
@@ -53,9 +55,6 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
         animation1.start({
           x: (moveX / offseFactor1) * -1,
           y: (moveY / offseFactor1) * -1,
-          rotateY: moveY * 0.0025,
-          rotateX: moveX * 0.0025,
-          rotateZ: (moveX + moveY) * 0.0025,
         })
         animation2.start({
           x: moveX / offseFactor2,
@@ -66,6 +65,13 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
           x: (moveX / offseFactor3) * -1,
           y: (moveY / offseFactor3) * -1,
           rotateZ: (moveX + moveY) * -0.005,
+        })
+        animation4.start({
+          x: (moveX / offseFactor1) * -1,
+          y: (moveY / offseFactor1) * -1,
+          rotateY: moveY * 0.0025,
+          rotateX: moveX * 0.0025,
+          rotateZ: (moveX + moveY) * 0.0025,
         })
       })
     }
@@ -78,7 +84,7 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
           window.cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [animation1, animation2, animation3, shouldAnimate])
+  }, [animation1, animation2, animation3, animation4, shouldAnimate])
 
   return (
     <LazyMotion features={domAnimation}>
@@ -106,22 +112,33 @@ export const MemepadVisual: React.FC<MemepadVisualProps> = ({
             loading="lazy"
             src={variant === "a" ? bottlecap1a : bottlecap1b}
             alt=""
-            width={250}
-            height={250}
+            width={variant === "a" ? 150 : 250}
+            height={variant === "a" ? 150 : 250}
           />
         </motion.div>
+        {variant === "a" && (
+          <motion.div animate={animation4}>
+            <img
+              loading="lazy"
+              src={bottlecap4a}
+              alt=""
+              width={250}
+              height={250}
+            />
+          </motion.div>
+        )}
       </SContainer>
     </LazyMotion>
   )
 }
 
-export type MemepadVisualMobileProps = {
+export type MemepadBottlecapsMobileProps = {
   className?: string
 }
 
-export const MemepadVisualMobile: React.FC<MemepadVisualMobileProps> = ({
-  className,
-}) => {
+export const MemepadBottlecapsMobile: React.FC<
+  MemepadBottlecapsMobileProps
+> = ({ className }) => {
   return (
     <SContainerMobile className={className}>
       <img loading="lazy" src={bottlecapsMobile} alt="" />
