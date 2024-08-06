@@ -40,7 +40,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0, BN_1 } from "utils/constants"
 import { getParachainInputData } from "utils/externalAssets"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { maxBalance, positive, required } from "utils/validators"
+import { maxBalance, noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
 import { useTokenBalance } from "api/balances"
@@ -141,7 +141,8 @@ export const useMemepadForm = () => {
             .refine(
               (value) => !symbols.includes(value.toLowerCase()),
               t("memepad.form.error.symbolExists"),
-            ),
+            )
+            .pipe(noWhitespace),
           deposit: required.pipe(positive),
           supply: minSupply(
             t("memepad.form.error.minSupply", {

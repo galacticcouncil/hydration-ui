@@ -86,6 +86,7 @@
   "error.validNumber": "Must be a number",
   "error.required": "This field is required.",
   "error.maxBalance": "Insufficient balance on your account.",
+  "error.whitespace": "Spaces are not allowed.",
   "modal.closeButton.name": "Close modal button",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
