@@ -12,7 +12,7 @@ import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Transaction, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_1, BN_NAN } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
@@ -20,6 +20,7 @@ import BN from "bignumber.js"
 import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain/Parachain"
 import { useSpotPrice } from "api/spotPrice"
 import { wallet } from "api/xcm"
+import { SubmittableExtrinsic } from "@polkadot/api/types"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -235,9 +236,10 @@ export type CreateTokenValues = {
   supply: string
   decimals: number
   account: string
+  dotAmount?: string
 }
 
-type SwapOptions = {
+type SwapNativeOptions = {
   asset: ParachainAssetsData
   address: string
   nativeAmount: string
@@ -246,7 +248,7 @@ type SwapOptions = {
 
 export function assetHubSwapNativeForAssetExactOut(
   api: ApiPromise,
-  options: SwapOptions,
+  options: SwapNativeOptions,
 ) {
   return api.tx.assetConversion.swapTokensForExactTokens(
     [
@@ -277,31 +279,32 @@ export function assetHubSwapNativeForAssetExactOut(
   )
 }
 
-type XCMTransferOptions = {
+type XCMOutTransferOptions = {
   asset: ParachainAssetsData
   address: string
+  amount: string
+  dstChain: string
 }
 
-export async function getAssetHubToHydrationTransfer(
+export async function getAssetHubXcmOutTransfer(
   api: ApiPromise,
-  options: XCMTransferOptions,
+  options: XCMOutTransferOptions,
 ) {
   const xTransfer = await wallet.transfer(
     options.asset.asset.key,
     options.address,
     "assethub",
     options.address,
-    "hydradx",
+    options.dstChain,
   )
 
-  const call = await xTransfer.buildCall("0.25")
+  const call = await xTransfer.buildCall(options.amount)
   return api.tx(call.data)
 }
 
-export async function createAssetHubAssetAndMint(
+export function getCreateAssetCalls(
   api: ApiPromise,
   values: CreateTokenValues,
-  swap?: SwapOptions,
 ) {
   const supply = BigNumber(values.supply).shiftedBy(values.decimals).toString()
 
@@ -309,17 +312,7 @@ export async function createAssetHubAssetAndMint(
     .shiftedBy(values.decimals)
     .toString()
 
-  const swapTx = swap ? assetHubSwapNativeForAssetExactOut(api, swap) : null
-  const xcmTransferTx = swap
-    ? await getAssetHubToHydrationTransfer(api, {
-        asset: swap.asset,
-        address: swap.address,
-      })
-    : null
-
-  return api.tx.utility.batchAll([
-    ...(swapTx ? [swapTx] : []),
-    ...(xcmTransferTx ? [xcmTransferTx] : []),
+  return [
     api.tx.assets.create(values.id, values.account, deposit),
     api.tx.assets.setMetadata(
       values.id,
@@ -328,7 +321,7 @@ export async function createAssetHubAssetAndMint(
       values.decimals,
     ),
     api.tx.assets.mint(values.id, values.account, supply),
-  ])
+  ]
 }
 
 export const useCreateAssetHubToken = ({
@@ -345,7 +338,7 @@ export const useCreateAssetHubToken = ({
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
 
   // DOT to USDT spot price
-  const { data: spotPrice } = useSpotPrice("5", "10")
+  const { data: spotPrice } = useSpotPrice("10", "5")
 
   return useMutation(async (values: CreateTokenValues) => {
     if (!account) throw new Error("Missing account")
@@ -354,12 +347,13 @@ export const useCreateAssetHubToken = ({
     const usdt = assethub.assetsData.get("usdt")
     if (!usdt) throw new Error("USDT asset not found")
 
-    const usdtDotExchangeRate = 1 / (spotPrice?.spotPrice?.toNumber() ?? 1)
-    const usdtAmount = 0.5
-    const slippage = 1.05 // 5%
-    const nativeAmount = usdtAmount * usdtDotExchangeRate * slippage
+    const usdtDotExchangeRate = spotPrice?.spotPrice ?? BN_1
+    const usdtAmount = BN(0.5)
+    const slippage = BN(1.05) // 5%
+    const nativeAmount = usdtAmount.times(usdtDotExchangeRate).times(slippage)
 
-    const tx = await createAssetHubAssetAndMint(api, values, {
+    // Swap DOT for USDT on AH
+    const swapCall = assetHubSwapNativeForAssetExactOut(api, {
       asset: usdt,
       address: account.address,
       assetAmount: BN(usdtAmount)
@@ -370,14 +364,36 @@ export const useCreateAssetHubToken = ({
         .decimalPlaces(0)
         .toString(),
     })
-    const paymentInfo = await tx.paymentInfo(account.address)
 
-    const feeAssetDecimals = assethubNativeToken.decimals ?? 10
-    const feeBalance =
-      nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
-    const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
-      -feeAssetDecimals,
-    )
+    // Transfer half of the USDT to Hydration
+    const usdtTransferCall = await getAssetHubXcmOutTransfer(api, {
+      asset: usdt,
+      address: account.address,
+      amount: usdtAmount.div(2).toString(),
+      dstChain: "hydradx",
+    })
+
+    // Transfer DOT from AH to Polkadot
+    const dotTransferCall = values.dotAmount
+      ? await getAssetHubXcmOutTransfer(api, {
+          asset: assethubNativeToken,
+          address: account.address,
+          amount: values.dotAmount,
+          dstChain: "polkadot",
+        })
+      : null
+
+    const tx = api.tx.utility.batchAll([
+      swapCall,
+      usdtTransferCall,
+      ...(dotTransferCall ? [dotTransferCall] : []),
+      ...getCreateAssetCalls(api, values),
+    ])
+
+    const { fee, feeBalance, feeSymbol } = await calculateNativeFee(tx, {
+      balance: nativeBalance?.balance ?? BN_NAN,
+      address: account.address,
+    })
 
     return await createTransaction(
       {
@@ -385,9 +401,9 @@ export const useCreateAssetHubToken = ({
         tx,
         xcallMeta: {
           srcChain: assethub.key,
-          srcChainFee: fee.toString(),
-          srcChainFeeBalance: feeBalance.toString(),
-          srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
+          srcChainFee: fee,
+          srcChainFeeBalance: feeBalance,
+          srcChainFeeSymbol: feeSymbol,
         },
       },
       {
@@ -437,23 +453,19 @@ export const useAssetHubRevokeAdminRights = ({
       api.tx.assets.transferOwnership(id, ASSETHUB_TREASURY_ADDRESS),
     ])
 
-    const paymentInfo = await tx.paymentInfo(account.address)
-
-    const feeAssetDecimals = assethubNativeToken.decimals ?? 10
-    const feeBalance =
-      nativeBalance?.balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
-    const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
-      -feeAssetDecimals,
-    )
+    const { fee, feeBalance, feeSymbol } = await calculateNativeFee(tx, {
+      balance: nativeBalance?.balance ?? BN_NAN,
+      address: account.address,
+    })
 
     return createTransaction(
       {
         tx,
         xcallMeta: {
           srcChain: assethub.key,
-          srcChainFee: fee.toString(),
-          srcChainFeeBalance: feeBalance.toString(),
-          srcChainFeeSymbol: assethubNativeToken.asset.originSymbol,
+          srcChainFee: fee,
+          srcChainFeeBalance: feeBalance,
+          srcChainFeeSymbol: feeSymbol,
         },
       },
       {
@@ -464,4 +476,22 @@ export const useAssetHubRevokeAdminRights = ({
       },
     )
   })
+}
+
+async function calculateNativeFee(
+  tx: SubmittableExtrinsic<"promise">,
+  { balance, address }: { balance: BigNumber; address: string },
+) {
+  const paymentInfo = await tx.paymentInfo(address)
+  const feeAssetDecimals = assethubNativeToken.decimals || 10
+  const feeBalance = balance?.shiftedBy(feeAssetDecimals) ?? BN_NAN
+  const fee = new BigNumber(paymentInfo.partialFee.toString()).shiftedBy(
+    -feeAssetDecimals,
+  )
+
+  return {
+    fee: fee.toString(),
+    feeBalance: feeBalance.toString(),
+    feeSymbol: assethubNativeToken.asset.originSymbol,
+  }
 }

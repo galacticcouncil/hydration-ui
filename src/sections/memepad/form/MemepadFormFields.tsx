@@ -10,6 +10,7 @@ import BN from "bignumber.js"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { InputBox } from "components/Input/InputBox"
 import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 import { FC } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -19,13 +20,13 @@ import { MemepadSupplySlider } from "sections/memepad/components/MemepadSupplySl
 import { MemepadTokenPrice } from "sections/memepad/components/MemepadTokenPrice"
 import { useMemepadFormContext } from "sections/memepad/form/MemepadFormContext"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BN_0 } from "utils/constants"
 import {
-  HYDRA_DOT_ASSET_ID,
   HYDRA_USDT_ASSET_ID,
   MemepadFormValues,
+  DOT_TRANSFER_FEE_BUFFER,
+  useMemepadDryRun,
 } from "./MemepadForm.utils"
-import { useRpcProvider } from "providers/rpcProvider"
-import { BN_1 } from "utils/constants"
 
 const DISPLAY_DEBUG_BALANCES = false
 const AH_USDT_ASSET = assethub.assetsData.get("usdt")
@@ -53,11 +54,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
     account?.address,
   )
 
-  const { data: dotBalance } = useTokenBalance(
-    HYDRA_DOT_ASSET_ID,
-    account?.address,
-  )
-
+  const { data: fees } = useMemepadDryRun()
   const { data: spotPrice } = useSpotPrice(xykPoolAssetId, HYDRA_USDT_ASSET_ID)
   const { data: ahNativeBalance } = useAssetHubNativeBalance(account?.address)
   const { data: ahUsdtBalance } = useAssetHubTokenBalance(
@@ -65,19 +62,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
     account?.address ?? "",
   )
 
-  const { data: dotSpotPrice } = useSpotPrice(
-    HYDRA_DOT_ASSET_ID,
-    HYDRA_USDT_ASSET_ID,
-  )
-
-  const creationCostSpotPrice = dotSpotPrice?.spotPrice ?? BN_1
-
-  const usdtDotExchangeRate = BN_1.div(creationCostSpotPrice)
-  const creationCostUsdtAmount = BN(0.5)
-  const creationCostSlippage = BN(1.05) // 5%
-  const creationCostAmount = creationCostUsdtAmount
-    .times(usdtDotExchangeRate)
-    .times(creationCostSlippage)
+  const dotBalance = ahNativeBalance?.balance ?? BN_0
 
   if (step === 1) {
     return (
@@ -200,8 +185,9 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
                 title={t("memepad.form.xykPoolSupply", {
                   symbol: assets.getAsset(xykPoolAssetId)?.symbol,
                 })}
-                balance={dotBalance?.balance}
-                balanceLabel={t("balance")}
+                balance={dotBalance}
+                withoutMaxBtn
+                balanceLabel={t("memepad.form.balance.label.assethub")}
                 error={error?.message}
                 {...field}
               />
@@ -216,7 +202,19 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
             </Text>
             <Text fs={14}>
               {t("value.tokenWithSymbol", {
-                value: creationCostAmount,
+                value: BN(fees?.feeBuffer.amount.toString() ?? "0"),
+                symbol: fees?.feeBuffer.symbol,
+                fixedPointScale: fees?.feeBuffer.decimals,
+              })}
+            </Text>
+          </SRowItem>
+          <SRowItem>
+            <Text fs={14} color="basic400">
+              Transfer cost:
+            </Text>
+            <Text fs={14}>
+              {t("value.tokenWithSymbol", {
+                value: DOT_TRANSFER_FEE_BUFFER,
                 symbol: assethubNativeToken?.asset.originSymbol,
               })}
             </Text>

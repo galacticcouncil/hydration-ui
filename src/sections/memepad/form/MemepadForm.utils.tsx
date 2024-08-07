@@ -9,9 +9,10 @@ import { useExternalApi } from "api/external"
 import {
   assethub,
   assethubNativeToken,
-  createAssetHubAssetAndMint,
   CreateTokenValues,
+  getCreateAssetCalls,
   useAssetHubAssetRegistry,
+  useAssetHubNativeBalance,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
 } from "api/external/assethub"
@@ -40,16 +41,18 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0, BN_1 } from "utils/constants"
 import { getParachainInputData } from "utils/externalAssets"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { maxBalance, noWhitespace, positive, required } from "utils/validators"
+import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
-import { useTokenBalance } from "api/balances"
 
+export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
 export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
 
 export const HYDRA_DOT_ASSET_ID = "5"
 export const HYDRA_USDT_ASSET_ID = "10"
+
+export const DOT_TRANSFER_FEE_BUFFER = 1.1
 
 const MAX_NAME_LENGTH = 20
 const MAX_SYMBOL_LENGTH = 6
@@ -77,23 +80,25 @@ export const useMemepadForm = () => {
   const { account } = useAccount()
   const { assets, isLoaded } = useRpcProvider()
 
-  const { data } = useAssetHubAssetRegistry()
+  const { data: ahRegistry } = useAssetHubAssetRegistry()
+  const { data: fees } = useMemepadDryRun()
 
   const { symbols, names } = useMemo(() => {
-    const assets = data?.size ? [...data.values()] : []
+    const assets = ahRegistry?.size ? [...ahRegistry.values()] : []
     return {
       names: assets.map((asset) => asset.name.toLowerCase()),
       symbols: assets.map((asset) => asset.symbol.toLowerCase()),
     }
-  }, [data])
+  }, [ahRegistry])
 
   const dotMeta = isLoaded ? assets.getAsset(HYDRA_DOT_ASSET_ID) : null
-
-  const { data: dotBalanceData } = useTokenBalance(
-    dotMeta?.id,
-    account?.address,
-  )
+  const { data: dotBalanceData } = useAssetHubNativeBalance(account?.address)
   const dotBalance = dotBalanceData?.balance ?? BN_0
+  const dotBalanceShifted = dotBalance.shiftedBy(-(dotMeta?.decimals ?? 10))
+
+  const feeBufferTotal = BN(fees?.feeBuffer.amount.toString() ?? 0)
+    .shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
+    .plus(DOT_TRANSFER_FEE_BUFFER)
 
   return useForm<MemepadFormValues>({
     defaultValues: {
@@ -149,8 +154,13 @@ export const useMemepadForm = () => {
               minDeposit: values.deposit,
             }),
           ),
-          xykPoolSupply: required.pipe(
-            maxBalance(dotBalance, dotMeta?.decimals ?? 0),
+          xykPoolSupply: required.pipe(positive).refine(
+            (value) => BN(value).plus(feeBufferTotal).lte(dotBalanceShifted),
+            t("memepad.form.error.balance", {
+              value: BN(values.xykPoolSupply).plus(feeBufferTotal),
+              symbol: dotMeta?.symbol,
+              chain: assethub.name,
+            }),
           ),
           allocatedSupply: minSupply(
             t("memepad.form.error.minAllocatedSupply", {
@@ -256,7 +266,19 @@ export const useMemepad = () => {
 
       // Create token on Assethub
       if (currentStep === 0) {
-        await createToken.mutateAsync(token)
+        const dotAmountWithBuffer =
+          parseFloat(token.xykPoolSupply) + DOT_TRANSFER_FEE_BUFFER
+        await createToken.mutateAsync({
+          id: token.id,
+          name: token.name,
+          symbol: token.symbol,
+          deposit: token.deposit,
+          supply: token.supply,
+          decimals: token.decimals,
+          account: token.account,
+          dotAmount: dotAmountWithBuffer.toString(),
+        })
+        await waitForBalance(api, values.account, HYDRA_USDT_ASSET_ID)
         form.setValue("id", id)
         setNextStep()
         currentStep++
@@ -280,8 +302,19 @@ export const useMemepad = () => {
         currentStep++
       }
 
-      // Transfer created token to Hydration
       if (currentStep === 2) {
+        // Transfer DOT from AH to Hydration
+        const dotAmountWithBuffer = parseFloat(token.xykPoolSupply) + 0.01
+        await xTransfer.mutateAsync({
+          amount: dotAmountWithBuffer,
+          asset: "dot",
+          srcAddr: values?.account ?? "",
+          srcChain: MEMEPAD_XCM_RELAY_CHAIN,
+          dstAddr: values?.account ?? "",
+          dstChain: MEMEPAD_XCM_DST_CHAIN,
+        })
+
+        // Transfer created token to Hydration
         const xcmAssetKey = createXcmAssetKey(id, values.symbol)
         await xTransfer.mutateAsync({
           amount: parseFloat(values.allocatedSupply),
@@ -361,6 +394,7 @@ export type MemepadDryRunResult = {
   createTokenFee: AssetAmount
   registerTokenFee: AssetAmount
   createXYKPoolFee: AssetAmount
+  feeBuffer: AssetAmount
 }
 
 const MEMEPAD_DRY_RUN_VALUES = {
@@ -389,6 +423,12 @@ export const useMemepadDryRun = (
     feePaymentAssetId,
   )
 
+  const { data: dotSpotPrice, ...dotSpotPriceQuery } = useSpotPrice(
+    HYDRA_USDT_ASSET_ID,
+    HYDRA_DOT_ASSET_ID,
+  )
+
+  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_1
   const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_1
 
   const address = account?.address ?? ""
@@ -408,7 +448,9 @@ export const useMemepadDryRun = (
       account: address,
     }
 
-    const createTokenTx = await createAssetHubAssetAndMint(assethubApi, token)
+    const createTokenTx = assethubApi.tx.utility.batchAll(
+      getCreateAssetCalls(assethubApi, token),
+    )
     const createTokenPaymentInfo = await createTokenTx.paymentInfo(address)
 
     const createTokenFee = new AssetAmount({
@@ -473,6 +515,22 @@ export const useMemepadDryRun = (
       spotPrice: hydraFeeSpotPrice,
     })
 
+    const feeBufferUsdtAmount = BN(0.5)
+    const feeBufferSlippage = BN(1.05) // 5%
+    const feeBufferAmount = feeBufferUsdtAmount
+      .times(usdtDotSpotPrice)
+      .times(feeBufferSlippage)
+      .shiftedBy(assethubNativeToken.decimals ?? 0)
+      .decimalPlaces(0)
+
+    const feeBuffer = new AssetAmount({
+      amount: BigInt(feeBufferAmount.toString()),
+      decimals: assethubNativeToken.decimals ?? 0,
+      symbol: assethubNativeToken.asset.originSymbol,
+      key: assethubNativeToken.asset.key,
+      originSymbol: assethubNativeToken.asset.originSymbol,
+    })
+
     return {
       xcmDstFeeED,
       xcmSrcFee,
@@ -480,6 +538,7 @@ export const useMemepadDryRun = (
       createTokenFee,
       registerTokenFee,
       createXYKPoolFee,
+      feeBuffer,
     }
   }
 
@@ -489,7 +548,8 @@ export const useMemepadDryRun = (
       !!assethubApi &&
       !!address &&
       feePaymentAssets.isSuccess &&
-      feeSpotPriceQuery.isSuccess,
+      feeSpotPriceQuery.isSuccess &&
+      dotSpotPriceQuery.isSuccess,
     retry: false,
     ...options,
   })
