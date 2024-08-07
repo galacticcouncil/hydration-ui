@@ -121,11 +121,8 @@ export const useMemepadForm = () => {
     resolver: (...args) => {
       const [values] = args
 
-      const minSupply = (min: string | number, msg: string) =>
-        required.pipe(positive).refine((value) => {
-          const supply = BN(value)
-          return supply.isFinite() && supply.gt(min)
-        }, msg)
+      const gt = createSupplyValidator("gt")
+      const gte = createSupplyValidator("gte")
 
       return zodResolver(
         z.object({
@@ -151,13 +148,13 @@ export const useMemepadForm = () => {
             )
             .pipe(noWhitespace),
           deposit: required.pipe(positive),
-          supply: minSupply(
+          supply: gt(
             values.deposit,
             t("memepad.form.error.minSupply", {
               minDeposit: values.deposit,
             }),
           ),
-          xykPoolSupply: minSupply(
+          xykPoolSupply: gte(
             MIN_XYK_POOL_SUPPLY,
             t("memepad.form.error.minXykSupply", {
               value: MIN_XYK_POOL_SUPPLY,
@@ -170,7 +167,7 @@ export const useMemepadForm = () => {
               symbol: dotMeta?.symbol,
             }),
           ),
-          allocatedSupply: minSupply(
+          allocatedSupply: gt(
             values.deposit,
             t("memepad.form.error.minAllocatedSupply", {
               minDeposit: values.deposit,
@@ -621,4 +618,12 @@ function waitForBalance(
 
     checkBalance()
   })
+}
+
+function createSupplyValidator(method: "gt" | "gte" | "lt" | "lte") {
+  return (amount: string | number, msg: string) =>
+    required.pipe(positive).refine((value) => {
+      const supply = BN(value)
+      return supply.isFinite() && supply[method](amount)
+    }, msg)
 }
