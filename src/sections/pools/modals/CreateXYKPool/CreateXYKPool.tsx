@@ -57,6 +57,9 @@ export const CreateXYKPool = ({
   const [assetA, setAssetA] = useState(defaultAssetA)
   const [assetB, setAssetB] = useState(defaultAssetB)
 
+  const defaultForm = useCreateXYKPoolForm(assetA, assetB)
+  const formInstance = controlledForm || defaultForm
+
   const allowedAssetsA = useMemo(
     () => filterIdsByExclusivity(assetB, allowedAssetIds, poolExclusivityMap),
     [assetB, allowedAssetIds, poolExclusivityMap],
@@ -66,9 +69,6 @@ export const CreateXYKPool = ({
     () => filterIdsByExclusivity(assetA, allowedAssetIds, poolExclusivityMap),
     [assetA, allowedAssetIds, poolExclusivityMap],
   )
-
-  const defaultForm = useCreateXYKPoolForm(assetA, assetB)
-  const formInstance = controlledForm || defaultForm
 
   const createXykPool = useCreateXYKPool({
     onClose: onTxClose,
@@ -84,8 +84,6 @@ export const CreateXYKPool = ({
       onSubmit={createXykPool.mutateAsync}
       onAssetAOpen={onAssetAOpen}
       onAssetBOpen={onAssetBOpen}
-      assetA={assetA}
-      assetB={assetB}
       submitHidden={submitHidden}
     />
   )
@@ -98,6 +96,7 @@ export const CreateXYKPool = ({
       withExternal
       hideInactiveAssets
       onSelect={(asset) => {
+        formInstance.setValue("assetAId", asset.id)
         setAssetA(asset.id)
         onAssetASelect?.(asset)
         onAssetSelectClose?.()
@@ -113,6 +112,7 @@ export const CreateXYKPool = ({
       withExternal
       hideInactiveAssets
       onSelect={(asset) => {
+        formInstance.setValue("assetBId", asset.id)
         setAssetB(asset.id)
         onAssetBSelect?.(asset)
         onAssetSelectClose?.()

@@ -57,6 +57,8 @@ export const DOT_TRANSFER_FEE_BUFFER = 1.1
 const MAX_NAME_LENGTH = 20
 const MAX_SYMBOL_LENGTH = 6
 const MAX_DECIMALS_COUNT = 20
+const MIN_XYK_POOL_SUPPLY = 2
+
 const DEFAULT_DECIMALS_COUNT = 12
 const DEFAULT_EXISTENTIAL_DEPOSIT = 1
 const DEFAULT_DOT_SUPPLY = 10
@@ -107,22 +109,22 @@ export const useMemepadForm = () => {
       symbol: "",
       deposit: DEFAULT_EXISTENTIAL_DEPOSIT.toString(),
       supply: "",
-      xykPoolSupply: DEFAULT_DOT_SUPPLY.toString(),
       allocatedSupply: "",
       decimals: DEFAULT_DECIMALS_COUNT,
       origin: assethub.parachainId,
       account: account?.address ?? "",
       internalId: "",
+      xykPoolSupply: DEFAULT_DOT_SUPPLY.toString(),
       xykPoolAssetId: HYDRA_DOT_ASSET_ID,
     },
     mode: "onChange",
     resolver: (...args) => {
       const [values] = args
 
-      const minSupply = (msg: string) =>
+      const minSupply = (min: string | number, msg: string) =>
         required.pipe(positive).refine((value) => {
           const supply = BN(value)
-          return supply.isFinite() && supply.gt(values.deposit)
+          return supply.isFinite() && supply.gt(min)
         }, msg)
 
       return zodResolver(
@@ -150,19 +152,26 @@ export const useMemepadForm = () => {
             .pipe(noWhitespace),
           deposit: required.pipe(positive),
           supply: minSupply(
+            values.deposit,
             t("memepad.form.error.minSupply", {
               minDeposit: values.deposit,
             }),
           ),
-          xykPoolSupply: required.pipe(positive).refine(
+          xykPoolSupply: minSupply(
+            MIN_XYK_POOL_SUPPLY,
+            t("memepad.form.error.minXykSupply", {
+              value: MIN_XYK_POOL_SUPPLY,
+              symbol: dotMeta?.symbol,
+            }),
+          ).refine(
             (value) => BN(value).plus(feeBufferTotal).lte(dotBalanceShifted),
             t("memepad.form.error.balance", {
               value: BN(values.xykPoolSupply).plus(feeBufferTotal),
               symbol: dotMeta?.symbol,
-              chain: assethub.name,
             }),
           ),
           allocatedSupply: minSupply(
+            values.deposit,
             t("memepad.form.error.minAllocatedSupply", {
               minDeposit: values.deposit,
             }),
@@ -243,6 +252,11 @@ export const useMemepad = () => {
 
   const { getNextAssetHubId } = useGetNextAssetHubId()
 
+  const { data: fees } = useMemepadDryRun()
+  const creationFeeBuffer = BN(
+    fees?.feeBuffer.amount.toString() ?? 0,
+  ).shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
+
   const isDirty = form.formState.isDirty
   const isSubmitting = form.formState.isSubmitting
 
@@ -266,8 +280,6 @@ export const useMemepad = () => {
 
       // Create token on Assethub
       if (currentStep === 0) {
-        const dotAmountWithBuffer =
-          parseFloat(token.xykPoolSupply) + DOT_TRANSFER_FEE_BUFFER
         await createToken.mutateAsync({
           id: token.id,
           name: token.name,
@@ -276,7 +288,10 @@ export const useMemepad = () => {
           supply: token.supply,
           decimals: token.decimals,
           account: token.account,
-          dotAmount: dotAmountWithBuffer.toString(),
+          dotAmount: BN(token.xykPoolSupply)
+            .plus(creationFeeBuffer)
+            .plus(DOT_TRANSFER_FEE_BUFFER)
+            .toString(),
         })
         await waitForBalance(api, values.account, HYDRA_USDT_ASSET_ID)
         form.setValue("id", id)
@@ -304,9 +319,8 @@ export const useMemepad = () => {
 
       if (currentStep === 2) {
         // Transfer DOT from AH to Hydration
-        const dotAmountWithBuffer = parseFloat(token.xykPoolSupply) + 0.01
         await xTransfer.mutateAsync({
-          amount: dotAmountWithBuffer,
+          amount: token.xykPoolSupply,
           asset: "dot",
           srcAddr: values?.account ?? "",
           srcChain: MEMEPAD_XCM_RELAY_CHAIN,
@@ -317,7 +331,7 @@ export const useMemepad = () => {
         // Transfer created token to Hydration
         const xcmAssetKey = createXcmAssetKey(id, values.symbol)
         await xTransfer.mutateAsync({
-          amount: parseFloat(values.allocatedSupply),
+          amount: values.allocatedSupply,
           asset: xcmAssetKey,
           srcAddr: values?.account ?? "",
           srcChain: MEMEPAD_XCM_SRC_CHAIN,

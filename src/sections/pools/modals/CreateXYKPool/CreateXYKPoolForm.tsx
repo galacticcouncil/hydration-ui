@@ -12,8 +12,6 @@ import { useState } from "react"
 
 type CreateXYKPoolFormProps = {
   form: UseFormReturn<CreateXYKPoolFormData>
-  assetA: string
-  assetB: string
   onSubmit: (values: CreateXYKPoolFormData) => void
   onAssetAOpen?: () => void
   onAssetBOpen?: () => void
@@ -22,8 +20,6 @@ type CreateXYKPoolFormProps = {
 
 export const CreateXYKPoolForm = ({
   form,
-  assetA,
-  assetB,
   onSubmit,
   onAssetAOpen,
   onAssetBOpen,
@@ -33,11 +29,14 @@ export const CreateXYKPoolForm = ({
 
   const { assets } = useRpcProvider()
 
-  const assetAMeta = assets.getAsset(assetA ?? "")
-  const assetBMeta = assets.getAsset(assetB ?? "")
+  const assetAId = form.watch("assetAId")
+  const assetBId = form.watch("assetBId")
 
   const assetAValue = BigNumber(form.watch("assetAAmount"))
   const assetBValue = BigNumber(form.watch("assetBAmount"))
+
+  const assetAMeta = assets.getAsset(assetAId)
+  const assetBMeta = assets.getAsset(assetBId)
 
   const [rateReversed, setRateReversed] = useState(false)
 
@@ -84,7 +83,7 @@ export const CreateXYKPoolForm = ({
             name={name}
             value={value}
             title={t("liquidity.pool.xyk.amountA")}
-            asset={assetA}
+            asset={assetAId}
             onAssetOpen={onAssetAOpen}
             error={error?.message}
             onChange={onChange}
@@ -109,7 +108,7 @@ export const CreateXYKPoolForm = ({
             name={name}
             value={value}
             title={t("liquidity.pool.xyk.amountB")}
-            asset={assetB}
+            asset={assetBId}
             onAssetOpen={onAssetBOpen}
             error={error?.message}
             onChange={onChange}

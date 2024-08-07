@@ -64,60 +64,65 @@ export const useCrossChainTransaction = ({
   const { t } = useTranslation()
   const { createTransaction } = useStore()
 
-  return useMutation(async (values: TransferProps & { amount: number }) => {
-    const srcChain = chainsMap.get(values.srcChain)
-    const dstChain = chainsMap.get(values.dstChain)
+  return useMutation(
+    async (values: TransferProps & { amount: number | string }) => {
+      const srcChain = chainsMap.get(values.srcChain)
+      const dstChain = chainsMap.get(values.dstChain)
 
-    if (!srcChain) throw new Error(`Chain ${values.srcChain} not found`)
-    if (!dstChain) throw new Error(`Chain ${values.dstChain} not found`)
-    if (!isAnyParachain(srcChain))
-      throw new Error(`Chain ${values.srcChain} is not a parachain`)
+      if (!srcChain) throw new Error(`Chain ${values.srcChain} not found`)
+      if (!dstChain) throw new Error(`Chain ${values.dstChain} not found`)
+      if (!isAnyParachain(srcChain))
+        throw new Error(`Chain ${values.srcChain} is not a parachain`)
 
-    const apiPool = SubstrateApis.getInstance()
-    const api = await apiPool.api(srcChain.ws)
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api(srcChain.ws)
 
-    const xTransfer = await wallet.transfer(
-      values.asset,
-      values.srcAddr,
-      values.srcChain,
-      values.dstAddr,
-      values.dstChain,
-    )
+      const xTransfer = await wallet.transfer(
+        values.asset,
+        values.srcAddr,
+        values.srcChain,
+        values.dstAddr,
+        values.dstChain,
+      )
 
-    const { balance, srcFee, dstFee } = xTransfer
+      const { balance, srcFee, dstFee, srcFeeBalance } = xTransfer
 
-    const call = await xTransfer.buildCall(values.amount)
+      const call = await xTransfer.buildCall(values.amount)
 
-    return await createTransaction(
-      {
-        title: t("xcm.transfer.reviewTransaction.modal.title", {
-          srcChain: srcChain.name,
-          dstChain: dstChain.name,
-        }),
-        tx: api.tx(call.data),
-        xcallMeta: {
-          srcChain: values.srcChain,
-          srcChainFee: srcFee.toDecimal(dstFee.decimals),
-          srcChainFeeBalance: balance.toDecimal(balance.decimals),
-          srcChainFeeSymbol: srcFee.originSymbol,
-          dstChain: values.dstChain,
-          dstChainFee: dstFee.toDecimal(dstFee.decimals),
-          dstChainFeeSymbol: dstFee.originSymbol,
-        },
-      },
-      {
-        steps,
-        toast: createToastMessages("xcm.transfer.toast", {
-          t,
-          tOptions: {
+      return await createTransaction(
+        {
+          title: t("xcm.transfer.reviewTransaction.modal.title"),
+          description: t("xcm.transfer.reviewTransaction.modal.description", {
             amount: values.amount,
             symbol: balance.symbol,
             srcChain: srcChain.name,
             dstChain: dstChain.name,
+          }),
+          tx: api.tx(call.data),
+          xcallMeta: {
+            srcChain: values.srcChain,
+            srcChainFee: srcFee.toDecimal(dstFee.decimals),
+            srcChainFeeBalance: balance.toDecimal(srcFeeBalance.decimals),
+            srcChainFeeSymbol: srcFee.originSymbol,
+            dstChain: values.dstChain,
+            dstChainFee: dstFee.toDecimal(dstFee.decimals),
+            dstChainFeeSymbol: dstFee.originSymbol,
           },
-          components: ["span.highlight"],
-        }),
-      },
-    )
-  })
+        },
+        {
+          steps,
+          toast: createToastMessages("xcm.transfer.toast", {
+            t,
+            tOptions: {
+              amount: values.amount,
+              symbol: balance.symbol,
+              srcChain: srcChain.name,
+              dstChain: dstChain.name,
+            },
+            components: ["span.highlight"],
+          }),
+        },
+      )
+    },
+  )
 }

@@ -178,7 +178,13 @@ export const useCreateXYKPool = ({
 
     return await createTransaction(
       {
-        title: t("liquidity.pool.xyk.create"),
+        title: t("liquidity.pool.xyk.create.modal.title"),
+        description: t("liquidity.pool.xyk.create.modal.description", {
+          assetAAmount: data.assetA.amount,
+          assetASymbol: assetAMeta.symbol,
+          assetBAmount: data.assetB.amount,
+          assetBSymbol: assetBMeta.symbol,
+        }),
         tx: createXYKpool(api, data.assetA, data.assetB),
       },
       {
