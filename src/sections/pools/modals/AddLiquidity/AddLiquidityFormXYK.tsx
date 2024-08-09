@@ -20,7 +20,6 @@ import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { useXYKConsts } from "api/xyk"
 import { TShareToken } from "api/assetDetails"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
@@ -43,6 +42,8 @@ type FromValues = {
   assetA: string
   assetB: string
   lastUpdated: "assetA" | "assetB"
+  shares: string
+  ratio: string
 }
 
 const opposite = (value: "assetA" | "assetB") =>
@@ -58,20 +59,21 @@ export const AddLiquidityFormXYK = ({
   const queryClient = useQueryClient()
   const { assets } = useRpcProvider()
   const { account } = useAccount()
-  const { data: xykConsts } = useXYKConsts()
   const { t } = useTranslation()
   const refetch = useRefetchAccountNFTPositions()
 
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
   const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
 
-  const zodSchema = useXYKZodSchema(assetA.id, assetB.id)
+  const zodSchema = useXYKZodSchema(assetA.id, assetB.id, shareTokenMeta, farms)
   const form = useForm<FromValues>({
     mode: "onChange",
     defaultValues: {
       assetA: "",
       assetB: "",
       lastUpdated: "assetA",
+      shares: "",
+      ratio: "",
     },
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
@@ -83,7 +85,12 @@ export const AddLiquidityFormXYK = ({
   )
 
   const lastUpdated = form.watch("lastUpdated")
-  const [assetValueA, assetValueB] = form.watch(["assetA", "assetB"])
+  const [assetValueA, assetValueB, shares, ratio] = form.watch([
+    "assetA",
+    "assetB",
+    "shares",
+    "ratio",
+  ])
 
   const assetValues = useMemo(() => {
     return {
@@ -99,52 +106,6 @@ export const AddLiquidityFormXYK = ({
       },
     }
   }, [assetA, assetAReserve, assetB, assetBReserve, assetValueA, assetValueB])
-
-  const { calculatedShares, calculatedRatio } = useMemo(() => {
-    const { totalShare } = pool.shareTokenIssuance ?? {}
-
-    if (totalShare && assetValues.assetA.reserves && assetValues.assetA) {
-      const calculatedShares = BigNumber(
-        xyk.calculate_shares(
-          assetValues.assetA.reserves.balance.toString(),
-          scale(
-            assetValues.assetA.value,
-            assetValues.assetA.meta.decimals,
-          ).toFixed(),
-          totalShare.toString(),
-        ),
-      )
-      const calculatedRatio = getXYKPoolShare(totalShare, calculatedShares)
-
-      return { calculatedShares, calculatedRatio }
-    }
-
-    return {}
-  }, [pool, assetValues])
-
-  const minAddLiquidityValidation = useMemo(() => {
-    const minTradingLimit = BigNumber(xykConsts?.minTradingLimit ?? 0)
-    const minPoolLiquidity = BigNumber(xykConsts?.minPoolLiquidity ?? 0)
-
-    if (!assetValues.assetA || !assetValues.assetB || !calculatedShares)
-      return false
-
-    const minAssetATradingLimit = scale(
-      assetValues.assetA.value,
-      assetValues.assetA.meta.decimals,
-    ).gt(minTradingLimit)
-    const minAssetBTradingLimit = scale(
-      assetValues.assetB.value,
-      assetValues.assetB.meta.decimals,
-    ).gt(minTradingLimit)
-
-    const isMinPoolLiquidity = calculatedShares.gt(minPoolLiquidity)
-
-    const isMinAddLiqudity =
-      !minAssetATradingLimit || !minAssetBTradingLimit || !isMinPoolLiquidity
-
-    return isMinAddLiqudity
-  }, [assetValues, xykConsts, calculatedShares])
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -174,7 +135,7 @@ export const AddLiquidityFormXYK = ({
           t={t}
           i18nKey={`liquidity.add.modal.xyk.toast.${msType}`}
           tOptions={{
-            shares: calculatedShares,
+            shares: shares,
             fixedPointScale: shareTokenMeta.decimals,
           }}
         >
@@ -239,10 +200,42 @@ export const AddLiquidityFormXYK = ({
           shouldTouch: true,
         })
         form.setValue("lastUpdated", name)
+
+        const { totalShare } = pool.shareTokenIssuance ?? {}
+
+        if (assetAReserve && totalShare) {
+          const shares = xyk.calculate_shares(
+            assetAReserve.balance.toString(),
+            scale(form.getValues("assetA"), assetA.decimals).toFixed(),
+            totalShare.toString(),
+          )
+
+          const ratio = getXYKPoolShare(
+            totalShare,
+            BigNumber(shares),
+          ).toString()
+
+          form.setValue("shares", shares, { shouldValidate: true })
+          form.setValue("ratio", ratio)
+        }
       }
     },
-    [assetValues, form],
+    [
+      assetA.decimals,
+      assetAReserve,
+      assetValues,
+      form,
+      pool.shareTokenIssuance,
+    ],
   )
+
+  const minAddLiquidityValidation =
+    form.formState.errors.shares?.message === "minAddLiquidity"
+  const customErrors = form.formState.errors.shares as unknown as
+    | {
+        farm?: { message: string }
+      }
+    | undefined
 
   return (
     <form
@@ -266,6 +259,7 @@ export const AddLiquidityFormXYK = ({
               onChange={(value) => handleChange(value, name)}
               asset={assetA.id}
               error={error?.message}
+              disabled={!assetAReserve}
             />
           )}
         />
@@ -287,6 +281,7 @@ export const AddLiquidityFormXYK = ({
               onChange={(value) => handleChange(value, name)}
               asset={assetB.id}
               error={error?.message}
+              disabled={!assetBReserve}
             />
           )}
         />
@@ -305,7 +300,7 @@ export const AddLiquidityFormXYK = ({
         <SummaryRow
           label="Share of pool:"
           content={t("value.percentage", {
-            value: calculatedRatio,
+            value: ratio,
             type: "token",
           })}
         />
@@ -313,7 +308,7 @@ export const AddLiquidityFormXYK = ({
         <SummaryRow
           label="Received amount of Pool Shares:"
           content={t("value.token", {
-            value: calculatedShares,
+            value: shares,
             fixedPointScale: shareTokenMeta.decimals,
           })}
         />
@@ -321,6 +316,11 @@ export const AddLiquidityFormXYK = ({
         {minAddLiquidityValidation && (
           <Alert variant="warning" css={{ marginBottom: 8 }}>
             {t("liquidity.xyk.addLiquidity.warning")}
+          </Alert>
+        )}
+        {customErrors?.farm && (
+          <Alert variant="error" css={{ margin: "20px 0" }}>
+            {customErrors.farm.message}
           </Alert>
         )}
         <PoolAddLiquidityInformationCard />
@@ -337,7 +337,10 @@ export const AddLiquidityFormXYK = ({
       <Button
         variant="primary"
         type="submit"
-        disabled={!form.formState.isValid || minAddLiquidityValidation}
+        disabled={
+          !!Object.keys(form.formState.errors).length ||
+          minAddLiquidityValidation
+        }
       >
         {t("confirm")}
       </Button>

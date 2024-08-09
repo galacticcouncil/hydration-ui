@@ -644,7 +644,7 @@
   "farms.modal.join.rest": "Join rest Farms",
   "farms.modal.join.rest.loading": "Joining rest farms",
   "farms.modal.join.rest.title": "Entering rest farms",
-  "farms.modal.join.minDeposit": "Minimal value of liquidity position for entering this farm is {{ value, bignumber(type: 'token') }} {{symbol}}",
+  "farms.modal.join.minDeposit": "Minimal value of liquidity position for entering farms is {{ value, bignumber(type: 'token') }} {{symbol}}",
   "farms.modal.footer.title": "Current value",
   "farms.modal.details.title": "Farm details",
   "farms.modal.details.loyaltyRewards.label": "Loyalty rewards",

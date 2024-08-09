@@ -240,7 +240,6 @@ export const AddLiquidityForm = ({
         variant="primary"
         type="submit"
         disabled={!!Object.keys(form.formState.errors).length || !zodSchema}
-        //onClick={onSubmitted}
       >
         {t("liquidity.add.modal.confirmButton")}
       </Button>

@@ -26,6 +26,8 @@ import { Farm, useOraclePrice } from "api/farms"
 import { BN_0, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
+import { TAsset } from "api/assetDetails"
+import { useXYKConsts } from "api/xyk"
 
 export const getFeeTx = (api: ApiPromise, farms: Farm[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
@@ -306,10 +308,13 @@ export const useZodSchema = (assetId: string, farms: Farm[]) => {
 export const useXYKZodSchema = (
   assetAId: string,
   assetBId: string,
+  meta: TAsset,
   farms: Farm[],
 ) => {
   const { account } = useAccount()
   const { assets } = useRpcProvider()
+  const { t } = useTranslation()
+  const { data: xykConsts } = useXYKConsts()
 
   const [{ data: assetABalance }, { data: assetBBalance }] = useTokensBalances(
     [assetAId, assetBId],
@@ -318,38 +323,85 @@ export const useXYKZodSchema = (
 
   const [assetAMeta, assetBMeta] = assets.getAssets([assetAId, assetBId])
 
+  const minDeposit = useMemo(() => {
+    return farms.reduce<{ value: BigNumber; assetId?: string }>(
+      (acc, farm) => {
+        const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+
+        return minDeposit.gt(acc.value)
+          ? {
+              value: minDeposit,
+              assetId: farm.globalFarm.incentivizedAsset.toString(),
+            }
+          : acc
+      },
+      { value: BN_0, assetId: undefined },
+    )
+  }, [farms])
+
   if (assetABalance === undefined || assetBBalance === undefined)
     return undefined
 
-  // .refine(
-  //   (value) => {
-  //     return scale(value, meta.decimals).gte(minDeposit.value)
-  //   },
-  //   t("farms.modal.join.minDeposit", {
-  //     value: scaleHuman(
-  //       isXyk ? minDeposit.value : omnipoolMinDepositValue,
-  //       meta.decimals,
-  //     ).times(1.02),
-  //     symbol: meta.symbol,
-  //   }),
-  // )
+  return z
+    .object({
+      assetA: required
+        .pipe(positive)
+        .pipe(maxBalance(assetABalance.balance, assetAMeta.decimals)),
 
-  return z.object({
-    assetA: required
-      .pipe(positive)
-      .pipe(maxBalance(assetABalance.balance, assetAMeta.decimals)),
+      assetB: required
+        .pipe(positive)
+        .pipe(maxBalance(assetBBalance.balance, assetBMeta.decimals)),
+      shares: z.string().refine(
+        (value) => {
+          if (minDeposit.value.isZero()) return true
 
-    assetB: required
-      .pipe(positive)
-      .pipe(maxBalance(assetBBalance.balance, assetBMeta.decimals)),
-  })
+          return BigNumber(value).gte(minDeposit.value)
+        },
+        () => {
+          return {
+            message: t("farms.modal.join.minDeposit", {
+              value: scaleHuman(minDeposit.value, meta.decimals).times(1.02),
+              symbol: meta.symbol,
+            }),
+            path: ["farm"],
+          }
+        },
+      ),
+    })
+    .refine(
+      ({ assetA, assetB, shares }) => {
+        if (assetA.length && assetB.length && shares.length) {
+          const minTradingLimit = BigNumber(xykConsts?.minTradingLimit ?? 0)
+          const minPoolLiquidity = BigNumber(xykConsts?.minPoolLiquidity ?? 0)
+
+          const minAssetATradingLimit = scale(assetA, assetAMeta.decimals).gt(
+            minTradingLimit,
+          )
+          const minAssetBTradingLimit = scale(assetB, assetBMeta.decimals).gt(
+            minTradingLimit,
+          )
+
+          const isMinPoolLiquidity = BigNumber(shares).gt(minPoolLiquidity)
+
+          const isMinAddLiqudity =
+            !minAssetATradingLimit ||
+            !minAssetBTradingLimit ||
+            !isMinPoolLiquidity
+
+          return !isMinAddLiqudity
+        }
+
+        return false
+      },
+      () => {
+        return {
+          message: "minAddLiquidity",
+          path: ["shares"],
+        }
+      },
+    )
 }
 
-export const getXYKPoolShare = (
-  total: BigNumber | undefined,
-  add: BigNumber | undefined,
-) => {
-  if (!total || !add) return undefined
-
+export const getXYKPoolShare = (total: BigNumber, add: BigNumber) => {
   return add.div(total.plus(add)).multipliedBy(100)
 }
