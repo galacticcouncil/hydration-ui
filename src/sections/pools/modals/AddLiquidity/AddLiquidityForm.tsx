@@ -13,14 +13,17 @@ import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
 import { scale } from "utils/balance"
-import { getFeeTx, useAddLiquidity, useZodSchema } from "./AddLiquidity.utils"
+import {
+  getAddToOmnipoolFee,
+  useAddLiquidity,
+  useAddToOmnipoolZod,
+} from "./AddLiquidity.utils"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEstimatedFees } from "api/transaction"
 import { Farm } from "api/farms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert } from "components/Alert/Alert"
-import { useRefetchAccountNFTPositions } from "api/deposits"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
@@ -50,9 +53,8 @@ export const AddLiquidityForm = ({
     assets: { native },
   } = useRpcProvider()
   const { createTransaction } = useStore()
-  const refetch = useRefetchAccountNFTPositions()
 
-  const zodSchema = useZodSchema(assetId, farms)
+  const zodSchema = useAddToOmnipoolZod(assetId, farms)
   const form = useForm<{ amount: string }>({
     mode: "onChange",
     defaultValues: { amount: initialAmount },
@@ -64,7 +66,7 @@ export const AddLiquidityForm = ({
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, debouncedAmount)
 
-  const estimatedFees = useEstimatedFees(getFeeTx(api, farms))
+  const estimatedFees = useEstimatedFees(getAddToOmnipoolFee(api, farms))
 
   const balance = assetBalance?.balance ?? BN_0
   const balanceMax =
@@ -103,7 +105,6 @@ export const AddLiquidityForm = ({
       {
         onSuccess: (result) => {
           onSuccess(result, amount)
-          refetch()
         },
         onSubmitted: () => {
           !farms.length && onClose()

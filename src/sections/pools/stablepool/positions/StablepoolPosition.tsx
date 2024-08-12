@@ -27,6 +27,7 @@ import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.s
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useFarms } from "api/farms"
 
 type Props = {
   pool: TPoolFullData
@@ -42,7 +43,11 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
   const refetchPositions = useRefetchAccountNFTPositions()
   const queryClient = useQueryClient()
 
-  const [transferOpen, setTransferOpen] = useState<Page>()
+  const farms = useFarms([pool.id])
+
+  const [transferOpen, setTransferOpen] = useState<number | undefined>(
+    undefined,
+  )
 
   const meta = assets.getAsset(pool.id) as TStableSwap
 
@@ -184,9 +189,9 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
       {transferOpen !== undefined && (
         <TransferModal
           pool={pool}
-          isOpen
           defaultPage={transferOpen}
           onClose={() => setTransferOpen(undefined)}
+          farms={farms.data}
         />
       )}
     </SPoolDetailsContainer>

@@ -291,9 +291,9 @@ export const PoolDetails = ({
       {addLiquidityStablepool !== undefined && !ixXYKPool && (
         <TransferModal
           pool={pool}
-          isOpen
           defaultPage={addLiquidityStablepool}
           onClose={() => setLiquidityStablepool(undefined)}
+          farms={farms.data}
         />
       )}
     </>

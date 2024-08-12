@@ -80,7 +80,7 @@ export const Stepper = ({ steps }: StepperProps) => {
 
   if (isDesktop) {
     return (
-      <SStepperContainer>
+      <SStepperContainer width={steps.length * 100}>
         {steps.map((step, index) => (
           <Fragment key={index}>
             <Step {...step} />

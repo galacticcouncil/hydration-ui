@@ -12,6 +12,7 @@ import { getStepState, LoadgingPage, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"
+import { useRefetchAccountNFTPositions } from "api/deposits"
 
 export enum Page {
   ADD_LIQUIDITY,
@@ -30,6 +31,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { page, direction, back, paginateTo } = useModalPagination()
+  const refetch = useRefetchAccountNFTPositions()
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
@@ -63,6 +65,7 @@ export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
         }
       }
     }
+    refetch()
   }
 
   const onXykSuccess = async (result: ISubmittableResult) => {

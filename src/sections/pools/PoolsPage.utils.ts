@@ -280,8 +280,7 @@ export const usePoolDetails = (assetId: string) => {
   )
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
 
-  const isInitialLoading =
-    omnipoolPositions.isInitialLoading || stablePoolBalance.isInitialLoading
+  const isInitialLoading = stablePoolBalance.isInitialLoading
 
   const data = useMemo(() => {
     const omnipoolNftPositions = omnipoolPositions.data.filter(

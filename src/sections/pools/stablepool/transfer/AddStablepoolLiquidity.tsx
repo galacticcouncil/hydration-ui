@@ -7,7 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { useStore } from "state/store"
+import { ToastMessage, useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
@@ -24,6 +24,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { BN_0 } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
+import { TOAST_MESSAGES } from "state/toasts"
+import {
+  getAddToOmnipoolFee,
+  useAddToOmnipoolZod,
+} from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
+import { Farm } from "api/farms"
+import { scale } from "utils/balance"
+import { Alert } from "components/Alert/Alert"
 
 type Props = {
   poolId: string
@@ -36,11 +44,12 @@ type Props = {
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
+  farms: Farm[]
 }
 
 const createFormSchema = (balance: BigNumber, decimals: number) =>
   z.object({
-    amount: required.pipe(maxBalance(balance, decimals)),
+    value: required.pipe(maxBalance(balance, decimals)),
   })
 
 export const AddStablepoolLiquidity = ({
@@ -54,6 +63,7 @@ export const AddStablepoolLiquidity = ({
   reserves,
   fee,
   isStablepoolOnly,
+  farms,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -63,11 +73,13 @@ export const AddStablepoolLiquidity = ({
   const { account } = useAccount()
   const walletBalance = useTokenBalance(asset.id, account?.address)
 
+  const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
+
   const estimationTxs = [
     api.tx.stableswap.addLiquidity(poolId, [
       { assetId: asset.id, amount: "1" },
     ]),
-    ...(!isStablepoolOnly ? [api.tx.omnipool.addLiquidity(poolId, "1")] : []),
+    ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, farms) : []),
   ]
 
   const estimatedFees = useEstimatedFees(estimationTxs)
@@ -80,82 +92,87 @@ export const AddStablepoolLiquidity = ({
           .minus(asset.existentialDeposit)
       : balance
 
-  const form = useForm<{ amount: string }>({
+  const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
+
+  const form = useForm<{ value: string; amount: string }>({
     mode: "onChange",
-    resolver: zodResolver(createFormSchema(balanceMax, asset?.decimals)),
+    resolver: zodResolver(
+      !isStablepoolOnly && omnipoolZod
+        ? omnipoolZod.merge(stablepoolZod)
+        : stablepoolZod,
+    ),
   })
   const displayPrice = useDisplayPrice(asset.id)
 
-  const amountIn = form.watch("amount")
+  const shares = form.watch("amount")
 
-  const { shares, assets } = useStablepoolShares({
+  const getShares = useStablepoolShares({
     poolId,
-    asset: { id: asset.id, decimals: asset.decimals, amount: amountIn },
+    asset,
     reserves,
   })
+
+  const handleShares = (value: string) => {
+    const shares = getShares(value)
+
+    if (shares) {
+      form.setValue("amount", shares, { shouldValidate: true })
+    }
+  }
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (asset.decimals == null) {
       throw new Error("Missing asset meta")
     }
 
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`liquidity.add.modal.toast.${msType}`}
+          tOptions={{
+            value: values.value,
+            symbol: asset.symbol,
+            where: "Stablepool",
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
+
     return await createTransaction(
-      { tx: api.tx.stableswap.addLiquidity(poolId, assets) },
       {
-        onSuccess,
+        tx: api.tx.stableswap.addLiquidity(poolId, [
+          {
+            assetId: asset.id,
+            amount: scale(values.value, asset.decimals).toString(),
+          },
+        ]),
+      },
+      {
+        onSuccess: (result) => onSuccess(result),
         onSubmitted: () => {
           onSubmitted(shares)
           form.reset()
         },
         onClose,
         onBack: () => {},
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: asset.symbol,
-                where: "Stablepool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onSuccess"
-              tOptions={{
-                value: values.amount,
-                symbol: asset.symbol,
-                where: "Stablepool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onError: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: asset.symbol,
-                where: "Stablepool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast,
       },
     )
   }
+
+  const customErrors = form.formState.errors.amount as unknown as
+    | {
+        cap?: { message: string }
+        circuitBreaker?: { message: string }
+        farm?: { message: string }
+      }
+    | undefined
 
   return (
     <form
@@ -169,7 +186,7 @@ export const AddStablepoolLiquidity = ({
     >
       <div sx={{ flex: "column" }}>
         <Controller
-          name="amount"
+          name="value"
           control={form.control}
           render={({
             field: { name, value, onChange },
@@ -179,7 +196,10 @@ export const AddStablepoolLiquidity = ({
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
-              onChange={onChange}
+              onChange={(v) => {
+                onChange(v)
+                handleShares(v)
+              }}
               balance={balance}
               balanceMax={balanceMax}
               asset={asset.id}
@@ -227,6 +247,22 @@ export const AddStablepoolLiquidity = ({
             },
           ]}
         />
+        {customErrors?.cap ? (
+          <Alert variant="warning" css={{ marginBottom: 8 }}>
+            {customErrors.cap.message}
+          </Alert>
+        ) : null}
+        {customErrors?.circuitBreaker ? (
+          <Alert variant="warning" css={{ marginBottom: 8 }}>
+            {customErrors.circuitBreaker.message}
+          </Alert>
+        ) : null}
+
+        {customErrors?.farm && (
+          <Alert variant="error" css={{ margin: "20px 0" }}>
+            {customErrors.farm.message}
+          </Alert>
+        )}
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>
@@ -244,8 +280,7 @@ export const AddStablepoolLiquidity = ({
         <Button
           sx={{ width: "300px" }}
           variant="primary"
-          type="submit"
-          disabled={!form.formState.isValid}
+          disabled={!!Object.keys(form.formState.errors).length}
         >
           {t("confirm")}
         </Button>

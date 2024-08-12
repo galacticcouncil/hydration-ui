@@ -1,14 +1,15 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SStepperContainer = styled.div`
+export const SStepperContainer = styled.div<{ width: number }>`
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 
   @media (${theme.viewport.gte.sm}) {
-    width: 400px;
+    width: ${({ width }) => width}px;
+    min-width: 300px;
   }
 `
 

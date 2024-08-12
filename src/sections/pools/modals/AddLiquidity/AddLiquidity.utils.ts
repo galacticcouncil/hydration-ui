@@ -29,7 +29,7 @@ import { ApiPromise } from "@polkadot/api"
 import { TAsset } from "api/assetDetails"
 import { useXYKConsts } from "api/xyk"
 
-export const getFeeTx = (api: ApiPromise, farms: Farm[]) => {
+export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
   const [firstFarm, ...restFarm] = farms
 
@@ -125,7 +125,11 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   }
 }
 
-export const useZodSchema = (assetId: string, farms: Farm[]) => {
+export const useAddToOmnipoolZod = (
+  assetId: string,
+  farms: Farm[],
+  isStablepool?: boolean,
+) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets } = useRpcProvider()
@@ -196,7 +200,9 @@ export const useZodSchema = (assetId: string, farms: Farm[]) => {
 
   const rules = required
     .pipe(positive)
-    .pipe(maxBalance(assetBalance.balance, decimals))
+    .pipe(
+      isStablepool ? z.string() : maxBalance(assetBalance.balance, decimals),
+    )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
       {
@@ -249,7 +255,6 @@ export const useZodSchema = (assetId: string, farms: Farm[]) => {
           (value) => {
             if (!value || !BigNumber(value).isPositive()) return true
             const scaledValue = scale(value, decimals)
-
             // position.amount * n/d (from oracle) > globalFarm.minDeposit
             const valueInIncentivizedAsset = scaledValue
               .times(oraclePrice.data?.price?.n ?? 1)
@@ -402,6 +407,5 @@ export const useXYKZodSchema = (
     )
 }
 
-export const getXYKPoolShare = (total: BigNumber, add: BigNumber) => {
-  return add.div(total.plus(add)).multipliedBy(100)
-}
+export const getXYKPoolShare = (total: BigNumber, add: BigNumber) =>
+  add.div(total.plus(add)).multipliedBy(100)

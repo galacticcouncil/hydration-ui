@@ -132,7 +132,6 @@ export const ReviewTransaction = (props: Transaction) => {
             xcallMeta={props.xcallMeta}
             isProxy={props.isProxy}
             overrides={props.overrides}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()
