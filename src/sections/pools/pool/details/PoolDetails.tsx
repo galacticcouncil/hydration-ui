@@ -108,7 +108,9 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              !pool.canAddLiquidity || account?.isExternalWalletConnected
+              !pool.canAddLiquidity ||
+              account?.isExternalWalletConnected ||
+              assets.native.id === pool.id
             }
             onClick={() => setOpen(true)}
           >

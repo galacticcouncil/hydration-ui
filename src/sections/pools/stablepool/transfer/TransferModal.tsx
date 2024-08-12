@@ -16,6 +16,9 @@ import { Spinner } from "components/Spinner/Spinner"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useRefetchAccountPositions } from "api/deposits"
+import { useQueryClient } from "@tanstack/react-query"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export enum Page {
   OPTIONS,
@@ -34,7 +37,9 @@ type Props = {
 export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
   const { getAssetWithFallback } = useAssets()
   const { pool } = usePoolData()
-  const refetcgPositions = useRefetchAccountPositions()
+  const refetchPositions = useRefetchAccountPositions()
+  const queryClient = useQueryClient()
+  const { account } = useAccount()
 
   const {
     id: poolId,
@@ -161,7 +166,10 @@ export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
                 }}
                 onSuccess={() => {
                   if (isStablepool) {
-                    return refetcgPositions()
+                    queryClient.invalidateQueries(
+                      QUERY_KEYS.tokenBalance(pool.id, account?.address),
+                    )
+                    return refetchPositions()
                   }
 
                   paginateTo(Page.MOVE_TO_OMNIPOOL)

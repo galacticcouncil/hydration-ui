@@ -174,6 +174,8 @@ export const useRemoveLiquidity = (
 
   const mutation = useMutation(async () => {
     if (isPositionMultiple) {
+      if (!values) return null
+
       const toast = TOAST_MESSAGES.reduce((memo, type) => {
         const msType = type === "onError" ? "onLoading" : type
         memo[type] = (
@@ -189,6 +191,7 @@ export const useRemoveLiquidity = (
         onBack: () => null,
         onClose,
         onSuccess,
+        onSubmitted: () => onSubmit(values.tokensToGet.toString()),
       }
 
       const txs = position.map((position) =>

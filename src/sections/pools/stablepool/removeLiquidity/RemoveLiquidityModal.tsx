@@ -31,7 +31,7 @@ type RemoveStableSwapAssetProps = {
   onClose: () => void
   onSuccess: () => void
   pool: TPoolFullData
-  position?: TLPData
+  position?: TLPData | TLPData[]
 }
 
 export const RemoveLiquidityModal = ({
@@ -61,6 +61,7 @@ export const RemoveLiquidityModal = ({
   const [assetId, setAssetId] = useState<string | undefined>(assets[0])
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
   const [sharesAmount, setSharesAmount] = useState<string>()
+  const [removeAll, setRemoveAll] = useState(false)
 
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
@@ -157,12 +158,19 @@ export const RemoveLiquidityModal = ({
                 position={position}
                 onSubmitted={(shares) => {
                   if (selectedOption === "STABLE") {
-                    setSharesAmount(shares)
+                    if (stablepoolPositionAmount.isZero()) {
+                      setRemoveAll(true)
+                      setSharesAmount(shares)
+                    } else {
+                      setSharesAmount(shares)
+                    }
+
                     paginateTo(RemoveStablepoolLiquidityPage.WAIT)
                   }
                 }}
                 onSuccess={() => {
                   if (selectedOption === "STABLE") {
+                    stablepoolPosition.refetch()
                     paginateTo(
                       RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
                     )
@@ -205,9 +213,10 @@ export const RemoveLiquidityModal = ({
                   reserves: pool.reserves,
                   fee: pool.stablepoolFee,
                   poolId: pool.id,
-                  amount: isRemovingOmnipoolPosition
-                    ? BigNumber(sharesAmount ?? 0)
-                    : stablepoolPositionAmount,
+                  amount:
+                    isRemovingOmnipoolPosition && !removeAll
+                      ? BigNumber(sharesAmount ?? 0)
+                      : stablepoolPositionAmount,
                 }}
                 onSuccess={() => {
                   onSuccess()
