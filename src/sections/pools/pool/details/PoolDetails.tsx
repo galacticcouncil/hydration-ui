@@ -33,7 +33,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const PoolDetails = () => {
@@ -41,6 +41,7 @@ export const PoolDetails = () => {
   const { account } = useAccount()
   const { pool } = usePoolData()
   const ixXYKPool = isXYKPoolType(pool)
+  const { native } = useAssets()
 
   const [isOpen, setOpen] = useState(false)
 
@@ -110,7 +111,7 @@ export const PoolDetails = () => {
             disabled={
               !pool.canAddLiquidity ||
               account?.isExternalWalletConnected ||
-              assets.native.id === pool.id
+              native.id === pool.id
             }
             onClick={() => setOpen(true)}
           >
