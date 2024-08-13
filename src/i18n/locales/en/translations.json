@@ -1019,6 +1019,7 @@
   "memepad.form.spinner.xyk.description": "An isolated pool is being created. This may take a while, don't close the tab.",
   "memepad.form.spinner.fundCheck.title": "Waiting for funds...",
   "memepad.form.spinner.fundCheck.description": "The liquidity is still on its way to Hydration. This may take a while, don't close the tab.",
+  "memepad.form.spinner.wait": "It can take up to 30 sec.",
   "memepad.form.error.maxTransferable": "The maximum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
   "memepad.form.error.minTransferable": "The minimum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
   "memepad.form.error.balance": "You'll need to have at least {{ value, bignumber(type: 'token') }} {{ symbol }} on Asset Hub to cover creation and transaction fees.",

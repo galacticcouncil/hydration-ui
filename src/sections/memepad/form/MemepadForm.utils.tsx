@@ -27,7 +27,7 @@ import {
 } from "api/xcm"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useCreateXYKPool } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
@@ -77,7 +77,11 @@ export type MemepadAlert = {
   variant: "warning" | "error" | "info"
 }
 
-export const useMemepadForm = () => {
+export const useMemepadForm = ({
+  validationDisabled,
+}: {
+  validationDisabled?: boolean
+} = {}) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { assets, isLoaded } = useRpcProvider()
@@ -120,6 +124,10 @@ export const useMemepadForm = () => {
     mode: "onChange",
     resolver: (...args) => {
       const [values] = args
+
+      if (validationDisabled) {
+        return zodResolver(z.object({}))(...args)
+      }
 
       const gt = createSupplyValidator("gt")
       const gte = createSupplyValidator("gte")
@@ -221,11 +229,14 @@ export const useMemepad = () => {
   const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
   const [alerts, setAlerts] = useState<MemepadAlert[]>([])
   const [supplyPerc, setSupplyPerc] = useState(50)
+  const dotTransferredRef = useRef(false)
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
 
-  const form = useMemepadForm()
+  const form = useMemepadForm({
+    validationDisabled: step !== MemepadStep.CREATE_TOKEN,
+  })
 
   const { steps, getSteps } = useMemepadSteps(step)
 
@@ -264,10 +275,15 @@ export const useMemepad = () => {
   const formValues = form.getValues()
 
   const submit = () => {
-    return form.handleSubmit(async (values) => {
+    return form.handleSubmit(async (submittedValues) => {
+      const values = {
+        ...formValues,
+        ...submittedValues,
+      }
+
       let currentStep = step
-      let internalId = formValues?.internalId ?? ""
-      const nextId = formValues?.id || (await getNextAssetHubId())
+      let internalId = values?.internalId ?? ""
+      const nextId = values?.id || (await getNextAssetHubId())
       const id = nextId.toString()
       const token = {
         ...values,
@@ -316,14 +332,18 @@ export const useMemepad = () => {
 
       if (currentStep === 2) {
         // Transfer DOT from AH to Hydration
-        await xTransfer.mutateAsync({
-          amount: token.xykPoolSupply,
-          asset: "dot",
-          srcAddr: values?.account ?? "",
-          srcChain: MEMEPAD_XCM_RELAY_CHAIN,
-          dstAddr: values?.account ?? "",
-          dstChain: MEMEPAD_XCM_DST_CHAIN,
-        })
+        if (!dotTransferredRef.current) {
+          await xTransfer.mutateAsync({
+            amount: token.xykPoolSupply,
+            asset: "dot",
+            srcAddr: values?.account ?? "",
+            srcChain: MEMEPAD_XCM_RELAY_CHAIN,
+            dstAddr: values?.account ?? "",
+            dstChain: MEMEPAD_XCM_DST_CHAIN,
+          })
+
+          dotTransferredRef.current = true
+        }
 
         // Transfer created token to Hydration
         const xcmAssetKey = createXcmAssetKey(id, values.symbol)

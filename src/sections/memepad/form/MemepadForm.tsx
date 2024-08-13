@@ -3,52 +3,49 @@ import { useTranslation } from "react-i18next"
 import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
 import { MemepadFormAlerts } from "sections/memepad/form/MemepadFormAlerts"
 import { useMemepadFormContext } from "./MemepadFormContext"
+import { useInterval } from "react-use"
+import { useState } from "react"
 
-const useSpinnerPropsByStep = () => {
-  const { step } = useMemepadFormContext()
+const MEME_TEXTS = [
+  "Your memecoins are getting cooked...",
+  "Steady lads. Deploying more memes...",
+  "Doge might not make it, but this meme will!",
+  "This meme is a 1/1, unlike your JPEGs.",
+  "Minting memes, one coin at a time.",
+  "Patience, memecoins take time to marinate.",
+  "Creating a memecoin: 1% coding, 99% memes.",
+  "In the lab, brewing up the next meme sensation.",
+  "Almost there… just need to avoid a rug pull.",
+  "Engineering a memecoin that won't get REKT",
+]
+
+function getRandomText() {
+  return MEME_TEXTS[Math.floor(Math.random() * MEME_TEXTS.length)]
+}
+
+const RandomMemeSpinner = () => {
   const { t } = useTranslation()
 
-  if (step === 0) {
-    return {
-      title: t("memepad.form.spinner.create.title"),
-      description: t("memepad.form.spinner.create.description"),
-    }
-  }
+  const [title, setTitle] = useState(getRandomText())
+  useInterval(() => {
+    setTitle(getRandomText())
+  }, 10000)
 
-  if (step === 1) {
-    return {
-      title: t("memepad.form.spinner.register.title"),
-      description: t("memepad.form.spinner.register.description"),
-    }
-  }
-
-  if (step === 2) {
-    return {
-      title: t("memepad.form.spinner.transfer.title"),
-      description: t("memepad.form.spinner.transfer.description"),
-    }
-  }
-
-  if (step === 3) {
-    return {
-      title: t("memepad.form.spinner.xyk.title"),
-      description: t("memepad.form.spinner.xyk.description"),
-    }
-  }
-
-  return {}
+  return (
+    <MemepadSpinner
+      title={title}
+      description={t("memepad.form.spinner.wait")}
+    />
+  )
 }
 
 export const MemepadForm = () => {
-  const spinnerProps = useSpinnerPropsByStep()
   const { formComponent, isLoading, steps } = useMemepadFormContext()
 
   return (
     <div sx={{ flex: "column", gap: [20] }}>
       <Stepper steps={steps} sx={{ mb: [0, 60] }} />
-      <div>
-        {isLoading ? <MemepadSpinner {...spinnerProps} /> : formComponent}
-      </div>
+      <div>{isLoading ? <RandomMemeSpinner /> : formComponent}</div>
       <MemepadFormAlerts />
     </div>
   )
