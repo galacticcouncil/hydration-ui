@@ -301,11 +301,11 @@
   "liquidity.reviewTransaction.modal.detail.lifetime": "Transaction expiration:",
   "liquidity.reviewTransaction.modal.detail.lifetime.tooltip": "If the transaction is not included by this time, it will be cancelled.",
   "liquidity.reviewTransaction.modal.detail.nonce": "Nonce:",
-  "liquidity.reviewTransaction.modal.detail.tip":"Tip the block author:",
-  "liquidity.reviewTransaction.modal.detail.tip.name":"Display user tip",
-  "liquidity.reviewTransaction.modal.detail.amount":"Transfer amount:",
-  "liquidity.reviewTransaction.modal.detail.srcChainFee":"Source chain fee:",
-  "liquidity.reviewTransaction.modal.detail.dstChainFee":"Destination chain fee:",
+  "liquidity.reviewTransaction.modal.detail.tip": "Tip the block author:",
+  "liquidity.reviewTransaction.modal.detail.tip.name": "Display user tip",
+  "liquidity.reviewTransaction.modal.detail.amount": "Transfer amount:",
+  "liquidity.reviewTransaction.modal.detail.srcChainFee": "Source chain fee:",
+  "liquidity.reviewTransaction.modal.detail.dstChainFee": "Destination chain fee:",
   "liquidity.reviewTransaction.modal.confirmButton": "Sign transaction",
   "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance": "Change fee payment asset",
   "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance.msg": "Not enough fee payment asset.",
@@ -566,7 +566,7 @@
   "wallet.addToken.form.button.register.update": "Update asset details",
   "wallet.addToken.form.button.register.acceptRisk": "I understand the risk",
   "wallet.addToken.form.info": {
-    "title":"Asset details:",
+    "title": "Asset details:",
     "registered": "Asset registered on Hydration",
     "masterAccount": "Admin rights revoked",
     "masterAccount.tooltip": "If the asset creator has not revoked their admin rights, they can still tamper with the supply. Proceed at your own risk.",
@@ -779,8 +779,8 @@
   "staking.dashboard.rewards.allocatedRewards": "of allocated rewards",
   "staking.dashboard.rewards.button": "Claim",
   "staking.dashboard.stats.chart.label": "Staked HDX",
-  "staking.dashboard.stats.available": "Your balance (stakeable)",
-  "staking.dashboard.stats.staked": "Your stake",
+  "staking.dashboard.stats.available": "Available HDX Balance",
+  "staking.dashboard.stats.staked": "Staked balance",
   "staking.dashboard.stats.rewardBoost": "Your rewards boost",
   "staking.dashboard.stats.rewardBoost.tooltip": "The pace at which you unlock rewards. Collect action points by voting in referenda.",
   "staking.dashboard.stats.aprWithPos.tooltip": "Estimated rewards based on your staked HDX balance.<0>This is a rough estimate subject to continuous change.<0/><br/>It is determined by your share in the stake pool, as well as variable rewards streams.",
@@ -955,7 +955,7 @@
   "migration.import.confirm.description": "Do you want to import new app settings?",
   "migration.import.confirm.button": "Yes, import settings",
   "migration.warning.text": "You can transfer Your app settings from HydraDX to Hydration",
-  "submitTransaction":{
+  "submitTransaction": {
     "title": "Submit Transaction",
     "validation": "Invalid hex",
     "warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
@@ -964,6 +964,5 @@
       "onSuccess": "Extrinsic successful",
       "onLoading": "Extrinsic submitted"
     }
-    
   }
 }
