@@ -210,7 +210,7 @@ export const useGetNextAssetHubId = () => {
     if (!api) throw new Error("Asset Hub is not connected")
     const ids = await getAssetHubAssetsIds(api)
 
-    let smallestId = 1
+    let smallestId = 22_222_000
 
     for (let i = 0; i < ids.length; i++) {
       if (ids[i] === smallestId) {
