@@ -12,7 +12,12 @@ import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Transaction, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
-import { BN_0, BN_1, BN_NAN } from "utils/constants"
+import {
+  BN_0,
+  BN_1,
+  BN_NAN,
+  HYDRATION_PARACHAIN_ADDRESS,
+} from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
@@ -321,6 +326,7 @@ export function getCreateAssetCalls(
       values.decimals,
     ),
     api.tx.assets.mint(values.id, values.account, supply),
+    api.tx.assets.touchOther(values.id, HYDRATION_PARACHAIN_ADDRESS),
   ]
 }
 
