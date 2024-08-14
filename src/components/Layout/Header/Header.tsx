@@ -1,4 +1,3 @@
-import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { SHeader } from "components/Layout/Header/Header.styled"
 import { useVisibleElements } from "hooks/useVisibleElements"
@@ -8,6 +7,7 @@ import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { Suspense, lazy } from "react"
 import HydraLogo from "assets/icons/HydraLogo.svg?react"
+import { HydrationLogo } from "components/HydrationLogo"
 
 const HeaderBanners = lazy(async () => ({
   default: (await import("components/Layout/Header/banners/HeaderBanners"))
@@ -54,7 +54,7 @@ export const Header = () => {
                 sx={{ color: "white" }}
                 icon={
                   !isMediumMedia ? (
-                    <HydraLogoFull />
+                    <HydrationLogo />
                   ) : (
                     <Icon size={24} icon={<HydraLogo />} />
                   )
