@@ -1,9 +1,6 @@
-import { useTokenBalance } from "api/balances"
 import {
-  assethub,
   assethubNativeToken,
   useAssetHubNativeBalance,
-  useAssetHubTokenBalance,
 } from "api/external/assethub"
 import { useSpotPrice } from "api/spotPrice"
 import BN from "bignumber.js"
@@ -22,14 +19,13 @@ import { useMemepadFormContext } from "sections/memepad/form/MemepadFormContext"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import {
+  DOT_RELAY_CHAIN_ED,
+  DOT_TRANSFER_FEE_BUFFER,
   HYDRA_USDT_ASSET_ID,
   MemepadFormValues,
-  DOT_TRANSFER_FEE_BUFFER,
   useMemepadDryRun,
 } from "./MemepadForm.utils"
-
-const DISPLAY_DEBUG_BALANCES = false
-const AH_USDT_ASSET = assethub.assetsData.get("usdt")
+import Skeleton from "react-loading-skeleton"
 
 type MemepadFormFieldsProps = {
   form: UseFormReturn<MemepadFormValues>
@@ -49,18 +45,9 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
   const xykPoolSupply = form.watch("xykPoolSupply")
   const allocatedSupply = form.watch("allocatedSupply")
 
-  const { data: usdtBalance } = useTokenBalance(
-    HYDRA_USDT_ASSET_ID,
-    account?.address,
-  )
-
-  const { data: fees } = useMemepadDryRun()
+  const { data: fees, isLoading: isFeesLoading } = useMemepadDryRun()
   const { data: spotPrice } = useSpotPrice(xykPoolAssetId, HYDRA_USDT_ASSET_ID)
   const { data: ahNativeBalance } = useAssetHubNativeBalance(account?.address)
-  const { data: ahUsdtBalance } = useAssetHubTokenBalance(
-    AH_USDT_ASSET?.id?.toString() ?? "",
-    account?.address ?? "",
-  )
 
   const dotBalance = ahNativeBalance?.balance ?? BN_0
 
@@ -198,67 +185,31 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
         <div>
           <SRowItem>
             <Text fs={14} color="basic400">
-              Asset creation cost:
+              {t("memepad.fee.creation")}:
             </Text>
             <Text fs={14}>
-              {t("value.tokenWithSymbol", {
-                value: BN(fees?.feeBuffer.amount.toString() ?? "0"),
-                symbol: fees?.feeBuffer.symbol,
-                fixedPointScale: fees?.feeBuffer.decimals,
-              })}
+              {isFeesLoading ? (
+                <Skeleton width={50} height={12} />
+              ) : (
+                t("value.tokenWithSymbol", {
+                  value: BN(fees?.feeBuffer.amount.toString() ?? "0"),
+                  symbol: fees?.feeBuffer.symbol,
+                  fixedPointScale: fees?.feeBuffer.decimals,
+                })
+              )}
             </Text>
           </SRowItem>
           <SRowItem>
             <Text fs={14} color="basic400">
-              Transfer cost:
+              {t("memepad.fee.transfer")}:
             </Text>
             <Text fs={14}>
               {t("value.tokenWithSymbol", {
-                value: DOT_TRANSFER_FEE_BUFFER,
+                value: DOT_RELAY_CHAIN_ED + DOT_TRANSFER_FEE_BUFFER,
                 symbol: assethubNativeToken?.asset.originSymbol,
               })}
             </Text>
           </SRowItem>
-          {DISPLAY_DEBUG_BALANCES && (
-            <>
-              <SRowItem>
-                <Text fs={14} color="basic400">
-                  Asset Hub DOT
-                </Text>
-                <Text fs={14}>
-                  {t("value.tokenWithSymbol", {
-                    value: ahNativeBalance?.balance,
-                    symbol: assethubNativeToken?.asset.originSymbol,
-                    fixedPointScale: assethubNativeToken.decimals,
-                  })}
-                </Text>
-              </SRowItem>
-              <SRowItem>
-                <Text fs={14} color="basic400">
-                  Asset Hub USDT
-                </Text>
-                <Text fs={14}>
-                  {t("value.tokenWithSymbol", {
-                    value: ahUsdtBalance?.balance,
-                    symbol: AH_USDT_ASSET?.asset.originSymbol,
-                    fixedPointScale: AH_USDT_ASSET?.decimals,
-                  })}
-                </Text>
-              </SRowItem>
-              <SRowItem css={{ border: "none" }}>
-                <Text fs={14} color="basic400">
-                  Hydration USDT
-                </Text>
-                <Text fs={14}>
-                  {t("value.tokenWithSymbol", {
-                    value: usdtBalance?.balance,
-                    symbol: AH_USDT_ASSET?.asset.originSymbol,
-                    fixedPointScale: AH_USDT_ASSET?.decimals,
-                  })}
-                </Text>
-              </SRowItem>
-            </>
-          )}
         </div>
       </div>
     </form>

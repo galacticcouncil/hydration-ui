@@ -52,7 +52,8 @@ export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
 export const HYDRA_DOT_ASSET_ID = "5"
 export const HYDRA_USDT_ASSET_ID = "10"
 
-export const DOT_TRANSFER_FEE_BUFFER = 1.1
+export const DOT_RELAY_CHAIN_ED = 1
+export const DOT_TRANSFER_FEE_BUFFER = 0.1
 
 const MAX_NAME_LENGTH = 20
 const MAX_SYMBOL_LENGTH = 6
@@ -105,6 +106,7 @@ export const useMemepadForm = ({
   const feeBufferTotal = BN(fees?.feeBuffer.amount.toString() ?? 0)
     .shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
     .plus(DOT_TRANSFER_FEE_BUFFER)
+    .plus(DOT_RELAY_CHAIN_ED)
 
   return useForm<MemepadFormValues>({
     defaultValues: {
@@ -304,6 +306,7 @@ export const useMemepad = () => {
           dotAmount: BN(token.xykPoolSupply)
             .plus(creationFeeBuffer)
             .plus(DOT_TRANSFER_FEE_BUFFER)
+            .plus(DOT_RELAY_CHAIN_ED)
             .toString(),
         })
         await waitForBalance(api, values.account, HYDRA_USDT_ASSET_ID)
@@ -334,7 +337,7 @@ export const useMemepad = () => {
         // Transfer DOT from AH to Hydration
         if (!dotTransferredRef.current) {
           await xTransfer.mutateAsync({
-            amount: token.xykPoolSupply,
+            amount: Number(token.xykPoolSupply) + DOT_TRANSFER_FEE_BUFFER,
             asset: "dot",
             srcAddr: values?.account ?? "",
             srcChain: MEMEPAD_XCM_RELAY_CHAIN,
@@ -449,12 +452,9 @@ export const useMemepadDryRun = (
   const nativeAssetId = isLoaded ? assets.native.id : ""
   const { feePaymentAssetId } = feePaymentAssets
 
-  const { data: feeSpotPrice, ...feeSpotPriceQuery } = useSpotPrice(
-    nativeAssetId,
-    feePaymentAssetId,
-  )
+  const { data: feeSpotPrice } = useSpotPrice(nativeAssetId, feePaymentAssetId)
 
-  const { data: dotSpotPrice, ...dotSpotPriceQuery } = useSpotPrice(
+  const { data: dotSpotPrice } = useSpotPrice(
     HYDRA_USDT_ASSET_ID,
     HYDRA_DOT_ASSET_ID,
   )
@@ -579,8 +579,8 @@ export const useMemepadDryRun = (
       !!assethubApi &&
       !!address &&
       feePaymentAssets.isSuccess &&
-      feeSpotPriceQuery.isSuccess &&
-      dotSpotPriceQuery.isSuccess,
+      !hydraFeeSpotPrice.isNaN() &&
+      !usdtDotSpotPrice.isNaN(),
     retry: false,
     ...options,
   })
