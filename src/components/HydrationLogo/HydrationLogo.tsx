@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import {
   SLogoBadge,
   SLogoBadgeContainer,
@@ -86,7 +86,10 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
             animate={{
               rotate: degenMode ? 180 : 0,
             }}
-            transition={{ duration: 0.4, ease: "backOut" }}
+            transition={{
+              duration: 0.4,
+              ease: "backOut",
+            }}
             d="M19.2797 12.3981C19.5148 12.163 19.8169 11.8608 20.1181 11.5607C20.7886 10.8913 20.7886 9.80421 20.1181 9.13371L19.4077 8.42334C16.8653 10.9658 13.0616 11.4757 10.0123 9.95636C12.0731 10.3372 14.2095 10.0403 16.1024 9.02248C17.3689 8.34149 17.6092 6.62484 16.5925 5.60808L12.4005 1.41614C11.4635 0.479124 9.94518 0.479124 9.00921 1.41614L4.49094 5.93441C7.46674 4.67001 11.0406 5.25656 13.4603 7.69303C9.7689 5.90083 5.19502 6.5367 2.13003 9.60169C1.89498 9.83673 1.59174 10.14 1.29164 10.4401C0.622188 11.1106 0.622188 12.1966 1.29164 12.866L2.00096 13.5754C4.5434 11.0329 8.3471 10.523 11.3964 12.0424C9.33554 11.6615 7.19917 11.9584 5.30624 12.9762C4.03974 13.6572 3.79945 15.3739 4.81622 16.3906L9.00816 20.5826C9.94518 21.5196 11.4635 21.5196 12.3995 20.5826L16.9177 16.0643C13.9419 17.3287 10.368 16.7421 7.94837 14.3057C11.6398 16.0979 16.2137 15.462 19.2787 12.397L19.2797 12.3981Z"
             fill="url(#hydration-logo-gradient)"
           />
@@ -106,7 +109,10 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
         <SLogoBadge
           initial={{ y: "-100%" }}
           animate={{ y: degenMode ? "0" : "-100%" }}
-          transition={{ duration: 0.4, ease: "backOut" }}
+          transition={{
+            duration: 0.4,
+            ease: "backOut",
+          }}
         >
           {t("header.settings.degenMode.title")}
         </SLogoBadge>
@@ -117,22 +123,36 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
 
 export const HydrationLogo = () => {
   const { degenMode } = useSettingsStore()
+  const [delayedDegenMode, setDelayedDegenMode] = useState(degenMode)
 
   const isDesktop = useMedia(theme.viewport.gte.md)
+
+  useEffect(() => {
+    const id = setTimeout(
+      () => {
+        setDelayedDegenMode(degenMode)
+      },
+      degenMode ? 500 : 0,
+    )
+
+    return () => {
+      clearTimeout(id)
+    }
+  }, [degenMode])
 
   return (
     <LazyMotion features={domAnimation}>
       <SContainer>
         {isDesktop ? (
-          <HyderationLogoDesktop degenMode={degenMode} />
+          <HyderationLogoDesktop degenMode={delayedDegenMode} />
         ) : (
-          <HydrationLogoMobile degenMode={degenMode} />
+          <HydrationLogoMobile degenMode={delayedDegenMode} />
         )}
       </SContainer>
       <svg width={0} height={0} sx={{ opacity: 0 }}>
         <defs>
           <motion.linearGradient id="hydration-logo-gradient">
-            {degenMode ? (
+            {delayedDegenMode ? (
               <>
                 <stop stop-color={theme.colors.pink600} />
                 <stop offset="1" stop-color={theme.colors.brightBlue600} />
