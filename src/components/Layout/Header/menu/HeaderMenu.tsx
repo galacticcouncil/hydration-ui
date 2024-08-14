@@ -1,6 +1,10 @@
 import { Link, Search, useSearch } from "@tanstack/react-location"
-import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
-import { useTranslation } from "react-i18next"
+import {
+  SItem,
+  SList,
+  SNoFunBadge,
+} from "components/Layout/Header/menu/HeaderMenu.styled"
+import { Trans, useTranslation } from "react-i18next"
 import { LINKS, MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
@@ -8,7 +12,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAccountNFTPositions } from "api/deposits"
 import { useAccountBalances } from "api/accountBalances"
-import { SBadge } from "components/Layout/SubNavigation/SubNavigation.styled"
 
 export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation()
@@ -60,7 +63,15 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
               <SItem isActive={isActive}>
                 {t(`header.${item.key}`)}
                 {LINKS.memepad === item.href && (
-                  <SBadge css={{ right: 5, top: -8 }}>{t("beta")}</SBadge>
+                  <SNoFunBadge
+                    css={{ position: "absolute" }}
+                    sx={{ top: 0, right: 0 }}
+                  >
+                    <Trans t={t} i18nKey="memepad.badge.nofun">
+                      <span />
+                      <span />
+                    </Trans>
+                  </SNoFunBadge>
                 )}
               </SItem>
             )}

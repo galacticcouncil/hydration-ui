@@ -112,3 +112,37 @@ export const SSubMenuItem = styled(ButtonTransparent)`
     }
   }
 `
+export const SNoFunBadge = styled.span`
+  position: relative;
+
+  font-size: 8px;
+  line-height: 9px;
+  font-weight: 800;
+  font-family: "GeistSemiBold";
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 2px;
+
+  span {
+    padding: 1px 2px;
+    background: ${theme.colors.white};
+    color: ${theme.colors.black};
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
+
+  span {
+    &:nth-child(1) {
+      color: ${theme.colors.white};
+      border-radius: 0;
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+      background: #ff1f1f;
+    }
+  }
+`

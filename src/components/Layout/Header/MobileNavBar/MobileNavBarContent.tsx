@@ -2,14 +2,14 @@ import { Link, useSearch } from "@tanstack/react-location"
 import { Icon } from "components/Icon/Icon"
 import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { LINKS, MENU_ITEMS, TabItem, resetSearchParams } from "utils/navigation"
 import { SNavBarItemHidden } from "./MobileNavBar.styled"
 import { MobileNavBarItem } from "./MobileNavBarItem"
 import { MoreButton } from "./MoreButton"
-import { SBadge } from "components/Layout/SubNavigation/SubNavigation.styled"
+import { SNoFunBadge } from "components/Layout/Header/menu/HeaderMenu.styled"
 
 export const MobileNavBarContent = () => {
   const { t } = useTranslation()
@@ -36,7 +36,14 @@ export const MobileNavBarContent = () => {
     >
       <Icon size={20} icon={<hiddenTab.Icon />} />
       {t(`header.${hiddenTab.key}`)}
-      {LINKS.memepad === hiddenTab.href && <SBadge>{t("beta")}</SBadge>}
+      {LINKS.memepad === hiddenTab.href && (
+        <SNoFunBadge>
+          <Trans t={t} i18nKey="memepad.badge.nofun">
+            <span />
+            <span />
+          </Trans>
+        </SNoFunBadge>
+      )}
     </SNavBarItemHidden>
   ))
 

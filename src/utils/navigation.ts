@@ -43,7 +43,7 @@ export const LINKS = {
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
-  memepad: "/memepad",
+  memepad: "/create",
   submitTransaction: "/submit-transaction",
 }
 

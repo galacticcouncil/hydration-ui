@@ -120,7 +120,7 @@
   "header.stats": "Stats",
   "header.staking": "Staking",
   "header.referrals": "Referrals",
-  "header.memepad": "Memepad",
+  "header.memepad": "Create",
   "header.documentation.tooltip": "Documentation",
   "header.notification.pending.tooltip": "{{number}} Pending Transactions",
   "header.notification.tooltip": "Notifications",
@@ -978,6 +978,7 @@
       "onLoading": "Extrinsic submitted"
     }
   },
+  "memepad.badge.nofun": "<0>NO</0> <1>FUN</1>",
   "memepad.modal.routeBlock.title": "Cancel transaction",
   "memepad.modal.routeBlock.description": "Are you sure you want to cancel? All progress will be lost.",
   "memepad.modal.routeBlock.accept": "Yes, cancel.",
