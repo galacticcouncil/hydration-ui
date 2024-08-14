@@ -1,12 +1,8 @@
-import { Icon } from "components/Icon/Icon"
 import { SHeader } from "components/Layout/Header/Header.styled"
 import { useVisibleElements } from "hooks/useVisibleElements"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { Suspense, lazy } from "react"
-import HydraLogo from "assets/icons/HydraLogo.svg?react"
 import { HydrationLogo } from "components/HydrationLogo"
 
 const HeaderBanners = lazy(async () => ({
@@ -28,8 +24,6 @@ export const Header = () => {
   const search = useSearch()
   const matchRoute = useMatchRoute()
 
-  const isMediumMedia = useMedia(theme.viewport.lt.md)
-
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
   const isSubmitTransactionPath = matchRoute({ to: LINKS.submitTransaction })
@@ -50,16 +44,7 @@ export const Header = () => {
               }
               search={resetSearchParams(search)}
             >
-              <Icon
-                sx={{ color: "white" }}
-                icon={
-                  !isMediumMedia ? (
-                    <HydrationLogo />
-                  ) : (
-                    <Icon size={24} icon={<HydraLogo />} />
-                  )
-                }
-              />
+              <HydrationLogo />
             </Link>
             {!isSubmitTransactionPath && (
               <Suspense>
