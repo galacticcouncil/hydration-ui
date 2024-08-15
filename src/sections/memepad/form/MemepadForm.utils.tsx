@@ -38,7 +38,7 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0, BN_1, HYDRATION_PARACHAIN_ADDRESS } from "utils/constants"
 import { getParachainInputData } from "utils/externalAssets"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { noWhitespace, positive, required } from "utils/validators"
@@ -429,7 +429,10 @@ export const useMemepadDryRun = (
   const feePaymentAssets = useAccountFeePaymentAssets()
 
   const nativeAssetId = isLoaded ? assets.native.id : ""
-  const { feePaymentAssetId } = feePaymentAssets
+  const feePaymentAssetId =
+    account && feePaymentAssets?.feePaymentAssetId
+      ? feePaymentAssets.feePaymentAssetId
+      : nativeAssetId
 
   const { data: feeSpotPrice } = useSpotPrice(nativeAssetId, feePaymentAssetId)
 
@@ -441,12 +444,11 @@ export const useMemepadDryRun = (
   const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_1
   const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_1
 
-  const address = account?.address ?? ""
+  const address = account?.address || HYDRATION_PARACHAIN_ADDRESS
 
   async function dryRun(): Promise<MemepadDryRunResult> {
     if (!api) throw new Error("API is not connected")
     if (!assethubApi) throw new Error("Asset Hub is not connected")
-    if (!address) throw new Error("Missing account address")
 
     const hydraNativeAsset = assets.getAsset(nativeAssetId)
     const hydraFeePaymentAsset = assets.getAsset(
@@ -563,7 +565,6 @@ export const useMemepadDryRun = (
       !!api &&
       !!assethubApi &&
       !!address &&
-      feePaymentAssets.isSuccess &&
       !hydraFeeSpotPrice.isNaN() &&
       !usdtDotSpotPrice.isNaN(),
     retry: false,
