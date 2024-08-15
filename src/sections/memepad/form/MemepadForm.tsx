@@ -5,30 +5,31 @@ import { useMemepadFormContext } from "./MemepadFormContext"
 import { useInterval } from "react-use"
 import { useState } from "react"
 
-const MEME_TEXTS = [
-  "Your memecoins are getting cooked...",
-  "Steady lads. Deploying more memes...",
-  "Doge might not make it, but this meme will!",
-  "This meme is a 1/1, unlike your JPEGs.",
-  "Minting memes, one coin at a time.",
-  "Patience, memecoins take time to marinate.",
-  "Creating a memecoin: 1% coding, 99% memes.",
-  "In the lab, brewing up the next meme sensation.",
-  "Almost there… just need to avoid a rug pull.",
-  "Engineering a memecoin that won't get REKT",
-]
-
-function getRandomText() {
-  return MEME_TEXTS[Math.floor(Math.random() * MEME_TEXTS.length)]
-}
-
 const RandomMemeSpinner = () => {
   const { t } = useTranslation()
 
+  const texts = [
+    t("memepad.form.spinner.meme.1"),
+    t("memepad.form.spinner.meme.2"),
+    t("memepad.form.spinner.meme.3"),
+    t("memepad.form.spinner.meme.4"),
+    t("memepad.form.spinner.meme.5"),
+    t("memepad.form.spinner.meme.6"),
+    t("memepad.form.spinner.meme.7"),
+    t("memepad.form.spinner.meme.8"),
+    t("memepad.form.spinner.meme.9"),
+    t("memepad.form.spinner.meme.10"),
+  ]
+
   const [title, setTitle] = useState(getRandomText())
+
   useInterval(() => {
     setTitle(getRandomText())
   }, 10000)
+
+  function getRandomText() {
+    return texts[Math.floor(Math.random() * texts.length)]
+  }
 
   return (
     <MemepadSpinner

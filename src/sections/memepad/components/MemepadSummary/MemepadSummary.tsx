@@ -56,7 +56,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
     internalId,
   } = values || {}
 
-  const xykAssetAMeta = internalId ? assets.getAsset?.(internalId) : null
+  const xykAssetAMeta = internalId ? assets.getAsset(internalId) : null
   const xykAssetBMeta = xykPoolAssetId
     ? assets.getAsset?.(xykPoolAssetId)
     : null
