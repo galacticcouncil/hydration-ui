@@ -8,7 +8,11 @@ export const SContainer = styled.div`
 
   margin-top: 20px;
 
-  @media ${theme.viewport.gte.sm} {
+  button {
+    min-width: 100%;
+  }
+
+  @media ${theme.viewport.gte.sm} and (max-height: 1400px) {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -18,5 +22,9 @@ export const SContainer = styled.div`
     margin-top: 0;
 
     background: rgba(0, 0, 0, 0.3);
+
+    button {
+      min-width: 200px;
+    }
   }
 `

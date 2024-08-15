@@ -56,7 +56,6 @@ export const getTokenBalance =
 export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
-  options: { refetchInterval?: number } = {},
 ) => {
   const { api, isLoaded } = useRpcProvider()
 
@@ -65,7 +64,7 @@ export const useTokenBalance = (
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
     enabled ? getTokenBalance(api, address, id) : undefinedNoop,
-    { enabled, ...options },
+    { enabled },
   )
 }
 

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 
-export const SBottlecapSPinner = styled.img`
+export const SBottlecapSpinner = styled.img`
   display: flex;
   margin: 0 auto;
 
@@ -8,6 +8,8 @@ export const SBottlecapSPinner = styled.img`
   height: 160px;
 
   animation: spin 4s linear infinite;
+
+  transform-origin: center;
 
   @keyframes spin {
     0% {

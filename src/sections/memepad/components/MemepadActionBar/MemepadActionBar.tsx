@@ -22,7 +22,6 @@ export const MemepadActionBar: React.FC<MemepadActionBarProps> = ({
         disabled={disabled || isLoading}
         isLoading={isLoading}
         variant="primary"
-        sx={{ minWidth: ["100%", 200] }}
         onClick={onSubmit}
       >
         {step === 0 && t("memepad.form.submit.create")}

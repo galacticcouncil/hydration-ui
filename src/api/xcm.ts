@@ -30,11 +30,7 @@ export const wallet = new Wallet({
 })
 
 export const createXcmAssetKey = (id: string, symbol: string) => {
-  if (id && symbol) {
-    return `${symbol?.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
-  }
-
-  return ""
+  return `${symbol.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
 }
 
 export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
