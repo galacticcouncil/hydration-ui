@@ -27,7 +27,7 @@ import {
 } from "api/xcm"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useCreateXYKPool } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolForm.utils"
@@ -70,12 +70,6 @@ export type MemepadFormValues = CreateTokenValues & {
   xykPoolSupply: string
   origin: number
   allocatedSupply: string
-}
-
-export type MemepadAlert = {
-  key: string
-  text: string
-  variant: "warning" | "error" | "info"
 }
 
 export const useMemepadForm = ({
@@ -229,7 +223,6 @@ const useMemepadSteps = (step: MemepadStep) => {
 export const useMemepad = () => {
   const { api } = useRpcProvider()
   const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
-  const [alerts, setAlerts] = useState<MemepadAlert[]>([])
   const [supplyPerc, setSupplyPerc] = useState(50)
   const dotTransferredRef = useRef(false)
 
@@ -384,16 +377,6 @@ export const useMemepad = () => {
     form.reset()
   }
 
-  const setAlert = useCallback((alert: MemepadAlert) => {
-    setAlerts((prev) =>
-      prev.some(({ key }) => key === alert.key) ? prev : [...prev, alert],
-    )
-  }, [])
-
-  const clearAlert = useCallback((key: string) => {
-    setAlerts((prev) => prev.filter((alert) => alert.key !== key))
-  }, [])
-
   const formComponent = <MemepadFormFields form={form} />
   const isFinalized = step === MemepadStep.SUMMARY
 
@@ -414,9 +397,6 @@ export const useMemepad = () => {
     setSupplyPerc,
     submit,
     reset,
-    alerts,
-    setAlert,
-    clearAlert,
     isLoading,
   }
 }

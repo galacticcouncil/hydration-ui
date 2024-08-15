@@ -18,16 +18,19 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal"
+import { useEffect, useRef, useState } from "react"
+import { useSettingsStore } from "state/store"
 
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
 
-  const { step, submit, isFinalized, isLoading, form, reset, alerts } =
+  const { step, submit, isFinalized, isLoading, form, reset } =
     useMemepadFormContext()
 
   const { isLoading: isDryRunLoading } = useMemepadDryRun()
 
-  const submitDisabled = !isLoaded || isDryRunLoading || alerts.length > 0
+  const submitDisabled = !isLoaded || isDryRunLoading
 
   return (
     <>
@@ -54,37 +57,57 @@ export const MemepadPage = () => {
   const { account } = useAccount()
   const { disconnect } = useWeb3ConnectStore()
 
-  if (!account) {
-    return (
-      <MemepadLayout>
-        <Web3ConnectModalButton sx={{ width: "100%" }} />
-      </MemepadLayout>
-    )
+  const [degenModalOpen, setDegenModalOpen] = useState(false)
+  const { degenMode, toggleDegenMode } = useSettingsStore()
+  const initialDegenModeState = useRef(degenMode)
+
+  const onDegenModalClose = () => setDegenModalOpen(false)
+  const onDegenModalAccept = () => {
+    setDegenModalOpen(false)
+    toggleDegenMode()
   }
 
-  if (isEvmAccount(account.address)) {
-    return (
-      <MemepadLayout>
-        <Alert variant="warning">
-          <div sx={{ flex: ["column", "row"], gap: 10 }}>
-            <Text>{t("memepad.alert.evmAccount")}</Text>
-            <Button
-              variant="outline"
-              size="small"
-              onClick={disconnect}
-              css={{ borderColor: "white" }}
-            >
-              {t("walletConnect.logout")}
-            </Button>
-          </div>
-        </Alert>
-      </MemepadLayout>
-    )
-  }
+  useEffect(() => {
+    if (!initialDegenModeState.current) {
+      setDegenModalOpen(true)
+    }
+  }, [])
 
   return (
-    <MemepadFormProvider key={account.address}>
-      <MemepadPageContent />
-    </MemepadFormProvider>
+    <>
+      {!account ? (
+        <MemepadLayout>
+          <Web3ConnectModalButton sx={{ width: "100%" }} />
+        </MemepadLayout>
+      ) : isEvmAccount(account.address) ? (
+        <MemepadLayout>
+          <Alert variant="warning">
+            <div sx={{ flex: ["column", "row"], gap: 10 }}>
+              <Text>{t("memepad.alert.evmAccount")}</Text>
+              <Button
+                variant="outline"
+                size="small"
+                onClick={disconnect}
+                css={{ borderColor: "white" }}
+              >
+                {t("walletConnect.logout")}
+              </Button>
+            </div>
+          </Alert>
+        </MemepadLayout>
+      ) : (
+        <MemepadFormProvider key={account.address}>
+          <MemepadPageContent />
+        </MemepadFormProvider>
+      )}
+
+      {degenModalOpen && (
+        <DegenModeModal
+          open={degenModalOpen}
+          onClose={onDegenModalClose}
+          onAccept={onDegenModalAccept}
+        />
+      )}
+    </>
   )
 }
