@@ -19,6 +19,7 @@ import { useMemepadFormContext } from "sections/memepad/form/MemepadFormContext"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import {
+  DOT_HYDRATION_FEE_BUFFER,
   DOT_RELAY_CHAIN_ED,
   DOT_RELAY_FEE_BUFFER,
   HYDRA_USDT_ASSET_ID,
@@ -205,7 +206,10 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
             </Text>
             <Text fs={14}>
               {t("value.tokenWithSymbol", {
-                value: DOT_RELAY_CHAIN_ED + DOT_RELAY_FEE_BUFFER,
+                value:
+                  DOT_RELAY_CHAIN_ED +
+                  DOT_RELAY_FEE_BUFFER +
+                  DOT_HYDRATION_FEE_BUFFER,
                 symbol: assethubNativeToken?.asset.originSymbol,
               })}
             </Text>

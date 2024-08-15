@@ -55,6 +55,8 @@ export const HYDRA_USDT_ASSET_ID = "10"
 export const DOT_RELAY_CHAIN_ED = 1
 export const DOT_RELAY_FEE_BUFFER = 0.1
 
+export const DOT_AH_FEE_BUFFER = 0.7
+
 export const DOT_HYDRATION_FEE_BUFFER = 0.01
 
 const MAX_NAME_LENGTH = 20
@@ -103,6 +105,7 @@ export const useMemepadForm = ({
     .shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
     .plus(DOT_RELAY_FEE_BUFFER)
     .plus(DOT_RELAY_CHAIN_ED)
+    .plus(DOT_HYDRATION_FEE_BUFFER)
 
   return useForm<MemepadFormValues>({
     defaultValues: {
@@ -523,15 +526,21 @@ export const useMemepadDryRun = (
     })
 
     const feeBufferUsdtAmount = BN(0.5)
-    const feeBufferSlippage = BN(1.05) // 5%
+    const feeBufferSlippage = BN(1.1) // 10%
     const feeBufferAmount = feeBufferUsdtAmount
       .times(usdtDotSpotPrice)
       .times(feeBufferSlippage)
-      .shiftedBy(assethubNativeToken.decimals ?? 0)
-      .decimalPlaces(0)
+      .plus(DOT_AH_FEE_BUFFER)
+      .times(1.1) // 10%
+      .decimalPlaces(1, BN.ROUND_UP)
 
     const feeBuffer = new AssetAmount({
-      amount: BigInt(feeBufferAmount.plus(7000000000).toString()),
+      amount: BigInt(
+        feeBufferAmount
+          .shiftedBy(assethubNativeToken.decimals ?? 0)
+          .decimalPlaces(0)
+          .toString(),
+      ),
       decimals: assethubNativeToken.decimals ?? 0,
       symbol: assethubNativeToken.asset.originSymbol,
       key: assethubNativeToken.asset.key,
