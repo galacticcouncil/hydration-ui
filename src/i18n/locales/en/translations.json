@@ -984,7 +984,7 @@
   "memepad.modal.routeBlock.description": "Are you sure you want to cancel? All progress will be lost.",
   "memepad.modal.routeBlock.accept": "Yes, cancel.",
   "memepad.alert.evmAccount": "EVM wallets are not supported at this time. Please connect with a Substrate wallet.",
-  "memepad.header.title": "Launch your <br> <0>Polkadot memecoin</0>",
+  "memepad.header.title": "Launch your <0>memecoin</0>",
   "memepad.header.description": "The fastest memecoin creator on Polkadot, without hidden fees.",
   "memepad.form.name": "Asset name",
   "memepad.form.symbol": "Symbol",
