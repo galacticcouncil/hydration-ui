@@ -3,14 +3,13 @@ import { RouteBlockModal } from "./modal/RouteBlockModal"
 import { MemepadSummary } from "sections/memepad/components/MemepadSummary"
 import { useRpcProvider } from "providers/rpcProvider"
 import { MemepadForm } from "./form/MemepadForm"
-import { MemepadSpinner } from "./components/MemepadSpinner"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { MemepadLayout } from "./components/MemepadLayout"
 import {
   MemepadFormProvider,
   useMemepadFormContext,
 } from "./form/MemepadFormContext"
-import { useMemepadDryRun } from "./form/MemepadForm.utils"
+import { useMemepadEstimatedFees } from "./form/MemepadForm.utils"
 import { isEvmAccount } from "utils/evm"
 import { Alert } from "components/Alert/Alert"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -30,9 +29,9 @@ const MemepadPageContent = () => {
   const { step, submit, isFinalized, isLoading, form, reset } =
     useMemepadFormContext()
 
-  const { isLoading: isDryRunLoading } = useMemepadDryRun()
+  const { isLoading: isFeesLoading } = useMemepadEstimatedFees()
 
-  const submitDisabled = !isLoaded || isDryRunLoading
+  const submitDisabled = !isLoaded || isFeesLoading
 
   return (
     <>
@@ -55,7 +54,7 @@ const MemepadPageContent = () => {
               </div>
             </Alert>
           )}
-          {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
+          <MemepadForm />
           <MemepadActionBar
             step={step}
             disabled={submitDisabled}
