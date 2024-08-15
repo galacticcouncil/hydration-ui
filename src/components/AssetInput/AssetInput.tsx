@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import React, { FC } from "react"
+import React, { forwardRef } from "react"
 import { formatAssetValue } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import {
@@ -26,38 +26,41 @@ export type AssetInputProps = {
   disabled?: boolean
 }
 
-export const AssetInput: FC<AssetInputProps> = (props) => {
-  return (
-    <div
-      className={props.className}
-      css={{ position: "relative", width: "100%" }}
-    >
-      <SLabelWrapper error={props.error}>
-        <SInputWrapper>
-          <SInput
-            onBlur={() => props.onBlur?.(props.value ?? "")}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              if (e.target.validity.valid) {
-                props.onChange(
-                  e.target.value.replace(/\s+/g, "").replace(/,/g, "."),
-                )
-              }
-            }}
-            value={formatAssetValue(props.value ?? "")}
-            id={props.name}
-            type={props.type}
-            placeholder={props.placeholder}
-            disabled={props.disabled}
-          />
+export const AssetInput = forwardRef<HTMLInputElement, AssetInputProps>(
+  (props, ref) => {
+    return (
+      <div
+        className={props.className}
+        css={{ position: "relative", width: "100%" }}
+      >
+        <SLabelWrapper error={props.error}>
+          <SInputWrapper>
+            <SInput
+              ref={ref}
+              onBlur={() => props.onBlur?.(props.value ?? "")}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (e.target.validity.valid) {
+                  props.onChange(
+                    e.target.value.replace(/\s+/g, "").replace(/,/g, "."),
+                  )
+                }
+              }}
+              value={formatAssetValue(props.value ?? "")}
+              id={props.name}
+              type={props.type}
+              placeholder={props.placeholder}
+              disabled={props.disabled}
+            />
 
-          {props.unit && <SUnit>{props.unit}</SUnit>}
-        </SInputWrapper>
-        {props.displayValue != null ? (
-          <SDollars>
-            ≈ <DisplayValue value={props.displayValue} />
-          </SDollars>
-        ) : null}
-      </SLabelWrapper>
-    </div>
-  )
-}
+            {props.unit && <SUnit>{props.unit}</SUnit>}
+          </SInputWrapper>
+          {props.displayValue != null ? (
+            <SDollars>
+              ≈ <DisplayValue value={props.displayValue} />
+            </SDollars>
+          ) : null}
+        </SLabelWrapper>
+      </div>
+    )
+  },
+)
