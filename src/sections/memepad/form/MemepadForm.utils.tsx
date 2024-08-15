@@ -535,7 +535,7 @@ export const useMemepadDryRun = (
       .decimalPlaces(0)
 
     const feeBuffer = new AssetAmount({
-      amount: BigInt(feeBufferAmount.plus(400000000).toString()),
+      amount: BigInt(feeBufferAmount.plus(4000000000).toString()),
       decimals: assethubNativeToken.decimals ?? 0,
       symbol: assethubNativeToken.asset.originSymbol,
       key: assethubNativeToken.asset.key,
