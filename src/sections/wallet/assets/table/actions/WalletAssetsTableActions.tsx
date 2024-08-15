@@ -39,7 +39,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
-  const { featureFlags, assets } = useRpcProvider()
+  const { featureFlags } = useRpcProvider()
   const rugCheck = useExternalTokensRugCheck()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
@@ -55,7 +55,9 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const hasRugCheckWarnings = !!rugCheck.tokensMap.get(id)?.warnings?.length
+  const rugCheckData = rugCheck.tokensMap.get(id)
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
@@ -157,7 +159,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             }),
         }
       : null,
-    assets.isExternal(props.asset.meta)
+    hasRugCheckData
       ? {
           key: "checkData",
           icon: <InfoIcon width={18} height={18} />,
