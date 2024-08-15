@@ -26,6 +26,7 @@ import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain
 import { useSpotPrice } from "api/spotPrice"
 import { wallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
+import { Buffer } from "buffer"
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -35,18 +36,6 @@ export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get(
   "dot",
 ) as ParachainAssetsData
-
-// TEMP CHOPSTICKS SETUP
-if (window.location.hostname === "localhost") {
-  //@ts-ignore
-  assethub.ws = "ws://172.25.126.217:8000"
-  const hydradx = chainsMap.get("hydradx") as Parachain
-  //@ts-ignore
-  hydradx.ws = "ws://172.25.126.217:8001"
-  const polkadot = chainsMap.get("polkadot") as Parachain
-  //@ts-ignore
-  polkadot.ws = "ws://172.25.126.217:8002"
-}
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -72,7 +61,8 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
         id,
         decimals: data.decimals.toNumber(),
         symbol: data.symbol.toHuman() as string,
-        name: data.name.toHuman() as string,
+        // decode from hex because of non-standard characters
+        name: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
         supply,
         origin: assethub.parachainId,
         isWhiteListed,

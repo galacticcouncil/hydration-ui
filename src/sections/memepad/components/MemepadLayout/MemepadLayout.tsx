@@ -20,7 +20,7 @@ export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
       <SContent>
         <div>{children}</div>
         {isDesktop ? (
-          <MemepadBottlecaps animmated variant="a" sx={{ mt: -200, ml: 80 }} />
+          <MemepadBottlecaps animmated variant="a" sx={{ mt: -160, ml: 80 }} />
         ) : (
           <MemepadBottlecapsMobile
             sx={{
