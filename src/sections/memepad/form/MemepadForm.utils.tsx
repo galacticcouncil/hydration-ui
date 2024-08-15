@@ -529,14 +529,13 @@ export const useMemepadDryRun = (
     const feeBufferUsdtAmount = BN(0.5)
     const feeBufferSlippage = BN(1.05) // 5%
     const feeBufferAmount = feeBufferUsdtAmount
-      .plus(0.4)
       .times(usdtDotSpotPrice)
       .times(feeBufferSlippage)
       .shiftedBy(assethubNativeToken.decimals ?? 0)
       .decimalPlaces(0)
 
     const feeBuffer = new AssetAmount({
-      amount: BigInt(feeBufferAmount.toString()),
+      amount: BigInt(feeBufferAmount.plus(400000000).toString()),
       decimals: assethubNativeToken.decimals ?? 0,
       symbol: assethubNativeToken.asset.originSymbol,
       key: assethubNativeToken.asset.key,
