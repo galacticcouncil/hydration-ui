@@ -529,6 +529,7 @@ export const useMemepadDryRun = (
     const feeBufferUsdtAmount = BN(0.5)
     const feeBufferSlippage = BN(1.05) // 5%
     const feeBufferAmount = feeBufferUsdtAmount
+      .plus(0.4)
       .times(usdtDotSpotPrice)
       .times(feeBufferSlippage)
       .shiftedBy(assethubNativeToken.decimals ?? 0)
