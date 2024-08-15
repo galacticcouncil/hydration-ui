@@ -32,7 +32,7 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0, BN_1, HYDRATION_PARACHAIN_ADDRESS } from "utils/constants"
+import { BN_0, BN_NAN, HYDRATION_PARACHAIN_ADDRESS } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
@@ -417,8 +417,8 @@ export const useMemepadEstimatedFees = (
     HYDRA_DOT_ASSET_ID,
   )
 
-  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_1
-  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_1
+  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_NAN
+  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_NAN
 
   const address = account?.address || HYDRATION_PARACHAIN_ADDRESS
 
