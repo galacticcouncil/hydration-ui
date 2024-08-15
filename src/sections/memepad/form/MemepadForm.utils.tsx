@@ -53,7 +53,9 @@ export const HYDRA_DOT_ASSET_ID = "5"
 export const HYDRA_USDT_ASSET_ID = "10"
 
 export const DOT_RELAY_CHAIN_ED = 1
-export const DOT_TRANSFER_FEE_BUFFER = 0.1
+export const DOT_RELAY_FEE_BUFFER = 0.1
+
+export const DOT_HYDRATION_FEE_BUFFER = 0.01
 
 const MAX_NAME_LENGTH = 20
 const MAX_SYMBOL_LENGTH = 6
@@ -99,7 +101,7 @@ export const useMemepadForm = ({
 
   const feeBufferTotal = BN(fees?.feeBuffer.amount.toString() ?? 0)
     .shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
-    .plus(DOT_TRANSFER_FEE_BUFFER)
+    .plus(DOT_RELAY_FEE_BUFFER)
     .plus(DOT_RELAY_CHAIN_ED)
 
   return useForm<MemepadFormValues>({
@@ -255,11 +257,6 @@ export const useMemepad = () => {
 
   const { getNextAssetHubId } = useGetNextAssetHubId()
 
-  const { data: fees } = useMemepadDryRun()
-  const creationFeeBuffer = BN(
-    fees?.feeBuffer.amount.toString() ?? 0,
-  ).shiftedBy(-(fees?.feeBuffer.decimals ?? 0))
-
   const isDirty = form.formState.isDirty
   const isSubmitting = form.formState.isSubmitting
 
@@ -297,8 +294,7 @@ export const useMemepad = () => {
           decimals: token.decimals,
           account: token.account,
           dotAmount: BN(token.xykPoolSupply)
-            .plus(creationFeeBuffer)
-            .plus(DOT_TRANSFER_FEE_BUFFER)
+            .plus(DOT_RELAY_FEE_BUFFER)
             .plus(DOT_RELAY_CHAIN_ED)
             .toString(),
         })
@@ -330,7 +326,7 @@ export const useMemepad = () => {
         // Transfer DOT from AH to Hydration
         if (!dotTransferredRef.current) {
           await xTransfer.mutateAsync({
-            amount: Number(token.xykPoolSupply) + DOT_TRANSFER_FEE_BUFFER,
+            amount: Number(token.xykPoolSupply) + DOT_HYDRATION_FEE_BUFFER,
             asset: "dot",
             srcAddr: values?.account ?? "",
             srcChain: MEMEPAD_XCM_RELAY_CHAIN,
@@ -535,7 +531,7 @@ export const useMemepadDryRun = (
       .decimalPlaces(0)
 
     const feeBuffer = new AssetAmount({
-      amount: BigInt(feeBufferAmount.plus(4000000000).toString()),
+      amount: BigInt(feeBufferAmount.plus(7000000000).toString()),
       decimals: assethubNativeToken.decimals ?? 0,
       symbol: assethubNativeToken.asset.originSymbol,
       key: assethubNativeToken.asset.key,
