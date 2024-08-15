@@ -5,7 +5,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { MemepadForm } from "./form/MemepadForm"
 import { MemepadSpinner } from "./components/MemepadSpinner"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { MemepadLayout } from "./components/MemepadLayout"
 import {
   MemepadFormProvider,
@@ -24,6 +23,9 @@ import { useSettingsStore } from "state/store"
 
 const MemepadPageContent = () => {
   const { isLoaded } = useRpcProvider()
+  const { t } = useTranslation()
+  const { account } = useAccount()
+  const { disconnect } = useWeb3ConnectStore()
 
   const { step, submit, isFinalized, isLoading, form, reset } =
     useMemepadFormContext()
@@ -38,6 +40,21 @@ const MemepadPageContent = () => {
         <MemepadSummary values={form.getValues()} onReset={reset} />
       ) : (
         <MemepadLayout>
+          {isEvmAccount(account?.address) && (
+            <Alert variant="warning" sx={{ mb: 30 }}>
+              <div sx={{ flex: ["column", "row"], gap: 10 }}>
+                <Text>{t("memepad.alert.evmAccount")}</Text>
+                <Button
+                  variant="outline"
+                  size="small"
+                  onClick={disconnect}
+                  css={{ borderColor: "white" }}
+                >
+                  {t("walletConnect.logout")}
+                </Button>
+              </div>
+            </Alert>
+          )}
           {isLoaded ? <MemepadForm /> : <MemepadSpinner />}
           <MemepadActionBar
             step={step}
@@ -53,9 +70,7 @@ const MemepadPageContent = () => {
 }
 
 export const MemepadPage = () => {
-  const { t } = useTranslation()
   const { account } = useAccount()
-  const { disconnect } = useWeb3ConnectStore()
 
   const [degenModalOpen, setDegenModalOpen] = useState(false)
   const { degenMode, toggleDegenMode } = useSettingsStore()
@@ -75,31 +90,9 @@ export const MemepadPage = () => {
 
   return (
     <>
-      {!account ? (
-        <MemepadLayout>
-          <Web3ConnectModalButton sx={{ width: "100%" }} />
-        </MemepadLayout>
-      ) : isEvmAccount(account.address) ? (
-        <MemepadLayout>
-          <Alert variant="warning">
-            <div sx={{ flex: ["column", "row"], gap: 10 }}>
-              <Text>{t("memepad.alert.evmAccount")}</Text>
-              <Button
-                variant="outline"
-                size="small"
-                onClick={disconnect}
-                css={{ borderColor: "white" }}
-              >
-                {t("walletConnect.logout")}
-              </Button>
-            </div>
-          </Alert>
-        </MemepadLayout>
-      ) : (
-        <MemepadFormProvider key={account.address}>
-          <MemepadPageContent />
-        </MemepadFormProvider>
-      )}
+      <MemepadFormProvider key={account?.address}>
+        <MemepadPageContent />
+      </MemepadFormProvider>
 
       {degenModalOpen && (
         <DegenModeModal
