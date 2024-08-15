@@ -7,11 +7,31 @@ import {
 } from "sections/memepad/components/MemepadBottlecaps"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal"
+import { useEffect, useRef, useState } from "react"
+import { useSettingsStore } from "state/store"
 
 export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const isDesktop = useMedia(theme.viewport.gte.md)
+
+  const [degenModalOpen, setDegenModalOpen] = useState(false)
+  const onDegenModalClose = () => setDegenModalOpen(false)
+  const onDegenModalAccept = () => {
+    setDegenModalOpen(false)
+    toggleDegenMode()
+  }
+
+  const { degenMode, toggleDegenMode } = useSettingsStore()
+  const initialDegenModeState = useRef(degenMode)
+
+  useEffect(() => {
+    if (!initialDegenModeState.current) {
+      setDegenModalOpen(true)
+    }
+  }, [toggleDegenMode])
+
   return (
     <>
       <MemepadHeader />
@@ -31,6 +51,13 @@ export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
           />
         )}
       </SContent>
+      {degenModalOpen && (
+        <DegenModeModal
+          open={degenModalOpen}
+          onClose={onDegenModalClose}
+          onAccept={onDegenModalAccept}
+        />
+      )}
     </>
   )
 }
