@@ -20,6 +20,7 @@ import { useSettingsStore } from "state/store"
 import { Separator } from "components/Separator/Separator"
 import { DegenModeModal } from "components/Layout/Header/DegenMode/DegenModeModal"
 import { Root as DialogRoot } from "@radix-ui/react-dialog"
+import { SIndicator, SMaskContainer } from "./Settings.styled"
 
 const DISPLAY_ASSET_ENABLED =
   import.meta.env.VITE_FF_DISPLAY_ASSET_ENABLED === "true"
@@ -43,10 +44,13 @@ export const Settings = () => {
         <InfoTooltip text={t("header.settings.title")} type="black" asChild>
           <div>
             <SToolbarButton as={Trigger}>
-              <SToolbarIcon
-                as={SettingsIcon}
-                aria-label={t("header.settings.title")}
-              />
+              <SMaskContainer cropped={degenMode}>
+                <SToolbarIcon
+                  as={SettingsIcon}
+                  aria-label={t("header.settings.title")}
+                />
+              </SMaskContainer>
+              {degenMode && <SIndicator />}
             </SToolbarButton>
           </div>
         </InfoTooltip>
