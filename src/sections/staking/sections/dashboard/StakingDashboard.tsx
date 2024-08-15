@@ -44,7 +44,7 @@ export const StakingData = () => {
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         {showGuide && <StakingGuide />}
         <Stats data={staking.data} loading={staking.isLoading} />
-        <ReferendaWrapper />
+        {account && staking.data?.positionId && <AvailableRewards />}
       </div>
 
       <div
@@ -52,7 +52,7 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {account && staking.data?.positionId && <AvailableRewards />}
+        <ReferendaWrapper />
       </div>
     </div>
   )

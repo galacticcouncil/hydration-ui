@@ -39,6 +39,7 @@ export const LoyaltyGraph = ({
             labelX={t("farms.modal.details.loyalty.x")}
             labelY={t("farms.modal.details.loyalty.y")}
             data={rates.data}
+            offset={{ top: 0, right: 0, bottom: 16, left: 16 }}
           />
         ) : (
           <Spinner size={64} />

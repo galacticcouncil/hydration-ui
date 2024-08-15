@@ -42,11 +42,7 @@ export const Referenda = ({ data, loading }: ReferendaProps) => {
         <ReferendumCardSkeleton type="staking" />
       ) : data?.length ? (
         <div sx={{ flex: "column", gap: 16 }}>
-          <Text
-            lh={22}
-            css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
-            sx={{ width: ["auto", "60%"] }}
-          >
+          <Text lh={22} css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}>
             {t("stats.overview.referenda.desc")}
           </Text>
           {data.map((referendum) =>

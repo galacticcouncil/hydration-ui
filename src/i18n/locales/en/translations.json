@@ -777,6 +777,8 @@
   "staking.dashboard.rewards.available": "Available rewards:",
   "staking.dashboard.rewards.desc": "Don't claim rewards too early. Claiming resets your boost and forfeits {{value, bignumber(type: token)}} unclaimable HDX rewards.",
   "staking.dashboard.rewards.allocatedRewards": "of allocated rewards",
+  "staking.dashboard.graph.axisY": "Paylable Percentage",
+  "staking.dashboard.graph.axisX": "Days",
   "staking.dashboard.rewards.button": "Claim",
   "staking.dashboard.stats.chart.label": "Staked HDX",
   "staking.dashboard.stats.available": "Available HDX Balance",
