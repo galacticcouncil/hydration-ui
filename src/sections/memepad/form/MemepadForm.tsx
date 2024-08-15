@@ -44,7 +44,7 @@ export const MemepadForm = () => {
   return (
     <div sx={{ flex: "column", gap: [20] }}>
       <Stepper steps={steps} sx={{ mb: [0, 60] }} />
-      <div>{!isLoading ? <RandomMemeSpinner /> : formComponent}</div>
+      <div>{isLoading ? <RandomMemeSpinner /> : formComponent}</div>
     </div>
   )
 }
