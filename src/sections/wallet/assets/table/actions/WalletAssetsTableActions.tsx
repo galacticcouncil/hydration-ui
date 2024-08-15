@@ -55,7 +55,12 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const hasRugCheckWarnings = !!rugCheck.tokensMap.get(id)?.warnings?.length
+  const rugCheckData = rugCheck.tokensMap.get(id)
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings =
+    assets.isExternal(props.asset.meta) &&
+    hasRugCheckData &&
+    rugCheckData?.warnings?.length
 
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
@@ -157,7 +162,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             }),
         }
       : null,
-    assets.isExternal(props.asset.meta)
+    hasRugCheckData
       ? {
           key: "checkData",
           icon: <InfoIcon width={18} height={18} />,
