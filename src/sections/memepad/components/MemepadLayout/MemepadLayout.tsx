@@ -30,7 +30,7 @@ export const MemepadLayout: React.FC<React.PropsWithChildren> = ({
     if (!initialDegenModeState.current) {
       setDegenModalOpen(true)
     }
-  }, [toggleDegenMode])
+  }, [])
 
   return (
     <>
