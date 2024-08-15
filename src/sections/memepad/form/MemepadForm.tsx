@@ -1,7 +1,6 @@
 import { Stepper } from "components/Stepper/Stepper"
 import { useTranslation } from "react-i18next"
 import { MemepadSpinner } from "sections/memepad/components/MemepadSpinner"
-import { MemepadFormAlerts } from "sections/memepad/form/MemepadFormAlerts"
 import { useMemepadFormContext } from "./MemepadFormContext"
 import { useInterval } from "react-use"
 import { useState } from "react"
@@ -45,8 +44,7 @@ export const MemepadForm = () => {
   return (
     <div sx={{ flex: "column", gap: [20] }}>
       <Stepper steps={steps} sx={{ mb: [0, 60] }} />
-      <div>{isLoading ? <RandomMemeSpinner /> : formComponent}</div>
-      <MemepadFormAlerts />
+      <div>{!isLoading ? <RandomMemeSpinner /> : formComponent}</div>
     </div>
   )
 }
