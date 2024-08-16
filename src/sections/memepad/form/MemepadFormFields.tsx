@@ -100,6 +100,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           render={({ field, fieldState: { error } }) => (
             <InputBox
               label={t("memepad.form.name")}
+              placeholder={t("memepad.form.name.placeholder")}
               withLabel
               error={error?.message}
               {...field}
@@ -112,6 +113,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           render={({ field, fieldState: { error } }) => (
             <InputBox
               label={t("memepad.form.symbol")}
+              placeholder={t("memepad.form.symbol.placeholder")}
               withLabel
               error={error?.message}
               {...field}
@@ -124,6 +126,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           render={({ field, fieldState: { error } }) => (
             <InputBox
               label={t("memepad.form.supply")}
+              placeholder={t("memepad.form.supply.placeholder")}
               withLabel
               error={error?.message}
               {...field}
