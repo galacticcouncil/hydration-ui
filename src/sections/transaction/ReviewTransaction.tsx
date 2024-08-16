@@ -110,7 +110,11 @@ export const ReviewTransaction = (props: Transaction) => {
         onBack={onBack}
         onClose={onClose}
         disableCloseOutside
-        topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
+        topContent={
+          props.steps ? (
+            <Stepper sx={{ px: [10] }} width={420} steps={props.steps} />
+          ) : undefined
+        }
         {...modalProps}
       >
         {isLoading ? (
@@ -151,7 +155,6 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()
