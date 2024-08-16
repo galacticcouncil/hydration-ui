@@ -1,16 +1,11 @@
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ApiPromise } from "@polkadot/api"
-import { Option } from "@polkadot/types"
-import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup"
 import { useQuery } from "@tanstack/react-query"
-import { TAsset } from "api/assetDetails"
-import { useExternalApi } from "api/external"
 import {
   assethub,
   assethubNativeToken,
   CreateTokenValues,
-  getCreateAssetCalls,
   useAssetHubAssetRegistry,
   useAssetHubNativeBalance,
   useCreateAssetHubToken,
@@ -23,7 +18,6 @@ import {
   createXcmAssetKey,
   syncAssethubXcmConfig,
   useCrossChainTransaction,
-  wallet,
 } from "api/xcm"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -38,8 +32,7 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { externalAssetToRegisteredAsset } from "sections/wallet/addToken/modal/AddTokenFormModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0, BN_1 } from "utils/constants"
-import { getParachainInputData } from "utils/externalAssets"
+import { BN_0, BN_NAN, HYDRATION_PARACHAIN_ADDRESS } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
@@ -86,7 +79,7 @@ export const useMemepadForm = ({
   const { assets, isLoaded } = useRpcProvider()
 
   const { data: ahRegistry } = useAssetHubAssetRegistry()
-  const { data: fees } = useMemepadDryRun()
+  const { data: fees } = useMemepadEstimatedFees()
 
   const { symbols, names } = useMemo(() => {
     const assets = ahRegistry?.size ? [...ahRegistry.values()] : []
@@ -400,36 +393,22 @@ export const useMemepad = () => {
   }
 }
 
-export type MemepadDryRunResult = {
-  xcmDstFeeED: AssetAmount
-  xcmSrcFee: AssetAmount
-  xcmDstFee: AssetAmount
-  createTokenFee: AssetAmount
-  registerTokenFee: AssetAmount
-  createXYKPoolFee: AssetAmount
+export type MemepadEstimatedFeesResult = {
   feeBuffer: AssetAmount
 }
 
-const MEMEPAD_DRY_RUN_VALUES = {
-  name: "DryRunToken",
-  symbol: "DRT",
-  deposit: "1",
-  supply: "1000000",
-  decimals: 12,
-  origin: 1000,
-  id: "1",
-}
-
-export const useMemepadDryRun = (
-  options: { onSuccess?: (data: MemepadDryRunResult) => void } = {},
+export const useMemepadEstimatedFees = (
+  options: { onSuccess?: (data: MemepadEstimatedFeesResult) => void } = {},
 ) => {
-  const { isLoaded, api, assets } = useRpcProvider()
-  const { data: assethubApi } = useExternalApi("assethub")
+  const { isLoaded, assets } = useRpcProvider()
   const { account } = useAccount()
   const feePaymentAssets = useAccountFeePaymentAssets()
 
   const nativeAssetId = isLoaded ? assets.native.id : ""
-  const { feePaymentAssetId } = feePaymentAssets
+  const feePaymentAssetId =
+    account && feePaymentAssets?.feePaymentAssetId
+      ? feePaymentAssets.feePaymentAssetId
+      : nativeAssetId
 
   const { data: feeSpotPrice } = useSpotPrice(nativeAssetId, feePaymentAssetId)
 
@@ -438,93 +417,12 @@ export const useMemepadDryRun = (
     HYDRA_DOT_ASSET_ID,
   )
 
-  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_1
-  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_1
+  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_NAN
+  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_NAN
 
-  const address = account?.address ?? ""
+  const address = account?.address || HYDRATION_PARACHAIN_ADDRESS
 
-  async function dryRun(): Promise<MemepadDryRunResult> {
-    if (!api) throw new Error("API is not connected")
-    if (!assethubApi) throw new Error("Asset Hub is not connected")
-    if (!address) throw new Error("Missing account address")
-
-    const hydraNativeAsset = assets.getAsset(nativeAssetId)
-    const hydraFeePaymentAsset = assets.getAsset(
-      feePaymentAssetId ?? nativeAssetId,
-    )
-
-    const token = {
-      ...MEMEPAD_DRY_RUN_VALUES,
-      account: address,
-    }
-
-    const createTokenTx = assethubApi.tx.utility.batchAll(
-      getCreateAssetCalls(assethubApi, token),
-    )
-    const createTokenPaymentInfo = await createTokenTx.paymentInfo(address)
-
-    const createTokenFee = new AssetAmount({
-      amount: createTokenPaymentInfo.partialFee.toBigInt(),
-      decimals: assethubNativeToken.decimals ?? 0,
-      symbol: assethubNativeToken.asset.originSymbol,
-      key: assethubNativeToken.asset.key,
-      originSymbol: assethubNativeToken.asset.originSymbol,
-    })
-
-    const registerTokenTx = api.tx.assetRegistry.registerExternal(
-      getParachainInputData({
-        ...token,
-        isWhiteListed: false,
-      }),
-    )
-
-    const registerTokenPaymentInfo = await registerTokenTx.paymentInfo(address)
-
-    const registerTokenFee = convertFeeToPaymentAsset({
-      amount: registerTokenPaymentInfo.partialFee.toBigNumber(),
-      nativeAsset: hydraNativeAsset,
-      feePaymentAsset: hydraFeePaymentAsset,
-      spotPrice: hydraFeeSpotPrice,
-    })
-
-    const xcmTransfer = await wallet.transfer(
-      "ded",
-      address,
-      MEMEPAD_XCM_SRC_CHAIN,
-      address,
-      MEMEPAD_XCM_DST_CHAIN,
-    )
-
-    const xcmSrcFee = await xcmTransfer.estimateFee(1)
-
-    const xcmDstChainFeeAssetId = xcmTransfer?.dstFee
-      ? assethub.getAssetId(xcmTransfer.dstFee)
-      : ""
-
-    const xcmDstFeeEDResponse = await assethubApi.query.assets.asset<
-      Option<PalletAssetsAssetDetails>
-    >(xcmDstChainFeeAssetId)
-
-    const xcmDstFeeEDAmount = xcmDstFeeEDResponse.unwrap().minBalance
-
-    const xcmDstFeeED = new AssetAmount({
-      amount: xcmDstFeeEDAmount.toBigInt(),
-      decimals: xcmTransfer?.dstFee.decimals,
-      symbol: xcmTransfer?.dstFee.symbol,
-      key: xcmTransfer?.dstFee.key,
-      originSymbol: xcmTransfer?.dstFee.symbol,
-    })
-
-    const createXYKPoolTx = api.tx.xyk.createPool("0", "1", "5", "1")
-    const createXYKPoolPaymentInfo = await createXYKPoolTx.paymentInfo(address)
-
-    const createXYKPoolFee = convertFeeToPaymentAsset({
-      amount: createXYKPoolPaymentInfo.partialFee.toBigNumber(),
-      nativeAsset: hydraNativeAsset,
-      feePaymentAsset: hydraFeePaymentAsset,
-      spotPrice: hydraFeeSpotPrice,
-    })
-
+  async function dryRun(): Promise<MemepadEstimatedFeesResult> {
     const feeBufferUsdtAmount = BN(0.5)
     const feeBufferSlippage = BN(1.1) // 10%
     const feeBufferAmount = feeBufferUsdtAmount
@@ -548,55 +446,18 @@ export const useMemepadDryRun = (
     })
 
     return {
-      xcmDstFeeED,
-      xcmSrcFee,
-      xcmDstFee: xcmTransfer.dstFee,
-      createTokenFee,
-      registerTokenFee,
-      createXYKPoolFee,
       feeBuffer,
     }
   }
 
   return useQuery(QUERY_KEYS.memepadDryRun(address), dryRun, {
     enabled:
-      !!api &&
-      !!assethubApi &&
+      isLoaded &&
       !!address &&
-      feePaymentAssets.isSuccess &&
       !hydraFeeSpotPrice.isNaN() &&
       !usdtDotSpotPrice.isNaN(),
     retry: false,
     ...options,
-  })
-}
-
-function convertFeeToPaymentAsset({
-  amount,
-  nativeAsset,
-  feePaymentAsset,
-  spotPrice,
-}: {
-  amount: BN
-  nativeAsset: TAsset
-  feePaymentAsset: TAsset
-  spotPrice: BN
-}) {
-  const paymentFeeNative = BN(amount).shiftedBy(-nativeAsset.decimals)
-  const paymentAsset =
-    nativeAsset.id === feePaymentAsset.id ? nativeAsset : feePaymentAsset
-
-  const amountFmt = paymentFeeNative
-    .multipliedBy(spotPrice)
-    .shiftedBy(paymentAsset.decimals)
-    .decimalPlaces(0)
-
-  return new AssetAmount({
-    amount: BigInt(amountFmt.toString()),
-    decimals: paymentAsset.decimals,
-    symbol: paymentAsset.symbol,
-    key: paymentAsset.id,
-    originSymbol: paymentAsset.symbol,
   })
 }
 

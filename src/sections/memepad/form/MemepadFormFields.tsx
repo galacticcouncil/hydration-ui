@@ -24,9 +24,10 @@ import {
   DOT_RELAY_FEE_BUFFER,
   HYDRA_USDT_ASSET_ID,
   MemepadFormValues,
-  useMemepadDryRun,
+  useMemepadEstimatedFees,
 } from "./MemepadForm.utils"
 import Skeleton from "react-loading-skeleton"
+import { SInputBoxContainer } from "components/Input/Input.styled"
 
 type MemepadFormFieldsProps = {
   form: UseFormReturn<MemepadFormValues>
@@ -34,7 +35,7 @@ type MemepadFormFieldsProps = {
 
 export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { assets, isLoaded } = useRpcProvider()
 
   const { step } = useMemepadFormContext()
 
@@ -46,7 +47,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
   const xykPoolSupply = form.watch("xykPoolSupply")
   const allocatedSupply = form.watch("allocatedSupply")
 
-  const { data: fees, isLoading: isFeesLoading } = useMemepadDryRun()
+  const { data: fees, isLoading: isFeesLoading } = useMemepadEstimatedFees()
   const { data: spotPrice } = useSpotPrice(xykPoolAssetId, HYDRA_USDT_ASSET_ID)
   const { data: ahNativeBalance } = useAssetHubNativeBalance(account?.address)
 
@@ -168,17 +169,49 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           control={form.control}
           render={({ field, fieldState: { error } }) => (
             <div sx={{ flex: "column" }}>
-              <AssetSelect
-                id={xykPoolAssetId}
-                title={t("memepad.form.xykPoolSupply", {
-                  symbol: assets.getAsset(xykPoolAssetId)?.symbol,
-                })}
-                balance={dotBalance}
-                withoutMaxBtn
-                balanceLabel={t("memepad.form.balance.label.assethub")}
-                error={error?.message}
-                {...field}
-              />
+              {isLoaded ? (
+                <AssetSelect
+                  id={xykPoolAssetId}
+                  title={t("memepad.form.xykPoolSupply", {
+                    symbol: assets.getAsset(xykPoolAssetId)?.symbol,
+                  })}
+                  balance={dotBalance}
+                  withoutMaxBtn
+                  balanceLabel={t("memepad.form.balance.label.assethub")}
+                  error={error?.message}
+                  {...field}
+                />
+              ) : (
+                <SInputBoxContainer as="div" sx={{ height: 101 }}>
+                  <div sx={{ flex: "row", justify: "space-between", mb: 16 }}>
+                    <Skeleton width={100} height={14} />
+                    <Skeleton width={100} height={14} />
+                  </div>
+                  <div
+                    sx={{
+                      flex: "row",
+                      align: "center",
+                      justify: "space-between",
+                    }}
+                  >
+                    <div sx={{ flex: "row", align: "center", gap: 10 }}>
+                      <Skeleton
+                        css={{ borderRadius: "9999px!important" }}
+                        width={30}
+                        height={30}
+                      />
+                      <div sx={{ flex: "column" }}>
+                        <Skeleton width={40} height={16} />
+                        <Skeleton width={80} height={12} />
+                      </div>
+                    </div>
+                    <div sx={{ flex: "column", align: "flex-end" }}>
+                      <Skeleton width={80} height={16} />
+                      <Skeleton width={40} height={12} />
+                    </div>
+                  </div>
+                </SInputBoxContainer>
+              )}
             </div>
           )}
         />

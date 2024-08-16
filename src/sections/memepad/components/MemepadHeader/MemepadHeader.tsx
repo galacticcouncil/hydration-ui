@@ -11,7 +11,7 @@ export const MemepadHeader = () => {
           <span />
         </Trans>
       </SHeading>
-      <Text>{t("memepad.header.description")}</Text>
+      <Text sx={{ pr: [50, 0] }}>{t("memepad.header.description")}</Text>
     </SContainer>
   )
 }
