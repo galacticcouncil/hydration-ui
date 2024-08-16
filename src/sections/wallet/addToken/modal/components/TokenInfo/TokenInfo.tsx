@@ -18,6 +18,7 @@ import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInf
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
 import {
   useAssetHubAssetAdminRights,
+  useAssetHubAssetRegistry,
   useAssetHubRevokeAdminRights,
 } from "api/external/assethub"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -43,6 +44,7 @@ export const TokenInfo = ({
   const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
+  const { refetch: refetchAssetHub } = useAssetHubAssetRegistry()
 
   const isChainStored = !!chainStoredAsset
 
@@ -54,14 +56,16 @@ export const TokenInfo = ({
         safeConvertAddressSS58(account.address, 0)
       : false
 
-  const { mutate: revokeAdminRights } = useAssetHubRevokeAdminRights({
-    onSuccess: () => {
-      if (chainStoredAsset) {
-        setIsWhiteListed(chainStoredAsset.id, true)
-        refetchProvider()
-      }
-    },
-  })
+  const { mutate: revokeAdminRights, isSuccess: isRevoking } =
+    useAssetHubRevokeAdminRights({
+      onSuccess: () => {
+        if (chainStoredAsset) {
+          setIsWhiteListed(chainStoredAsset.id, true)
+          refetchProvider()
+          refetchAssetHub()
+        }
+      },
+    })
 
   const { isXYKPool, pools } = useMemo(() => {
     if (!isChainStored || !xykPools.data)
@@ -237,6 +241,7 @@ export const TokenInfo = ({
                       type="button"
                       variant="warning"
                       size="micro"
+                      disabled={isRevoking}
                       sx={{
                         ml: 6,
                         mt: -2,

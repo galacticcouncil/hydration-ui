@@ -314,7 +314,7 @@ export const useUserExternalTokenStore = create<Store>()(
         set((store) => {
           const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
-          const latest = {
+          return {
             tokens: {
               ...store.tokens,
               [dataEnv]: store.tokens[dataEnv].map((token) => {
@@ -325,12 +325,6 @@ export const useUserExternalTokenStore = create<Store>()(
               }),
             },
           }
-
-          ExternalAssetCursor.reset({
-            state: { tokens: latest.tokens },
-            version,
-          })
-          return latest
         })
       },
     }),

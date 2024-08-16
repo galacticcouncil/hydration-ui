@@ -33,6 +33,7 @@ export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 export const ASSETHUB_ID_BLACKLIST = [
+  "0",
   /*  "34",
   "41",
   "43",
