@@ -515,12 +515,6 @@ const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
       admin,
       owner,
     }
-
-    /* const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
-
-    const supply = asset?.[1].unwrap().supply.toString()
-    const admin = asset?.[1].unwrap().admin.toString()
-    const owner = asset?.[1].unwrap().owner.toString() */
   } catch (e) {
     return { admin: "", owner: "" }
   }
