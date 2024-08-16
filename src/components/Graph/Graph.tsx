@@ -54,7 +54,7 @@ const CustomizedDot = ({
   }
 
   if (payload.currentSecondary) {
-    return <CurrentLoyaltyFactor x={cx - 10} y={cy - 10} color="yellow" />
+    return <CurrentLoyaltyFactor x={cx - 10} y={cy - 10} color="#F0DA73" />
   }
   return null
 }
@@ -125,7 +125,7 @@ export const Graph: FC<Props> = memo(
             stroke="url(#lineGradient)"
             strokeLinecap="round"
             strokeWidth={4}
-            dot={(props) => <CustomizedDot {...props} />}
+            dot={(props) => <CustomizedDot {...props} key={props.key} />}
           />
           {withoutReferencedLine ? null : (
             <>

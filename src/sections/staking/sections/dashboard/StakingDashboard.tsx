@@ -20,7 +20,6 @@ export const StakingSkeleton = () => {
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <Stats loading />
-        <Referenda loading />
       </div>
 
       <div
@@ -28,6 +27,7 @@ export const StakingSkeleton = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection loading />
+        <Referenda loading />
       </div>
     </div>
   )

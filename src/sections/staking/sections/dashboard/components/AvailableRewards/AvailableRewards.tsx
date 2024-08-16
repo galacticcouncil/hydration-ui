@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import RewardIcon from "assets/icons/StakingRewardIcon.svg?react"
-
+import LegendaCircle from "assets/icons/LegendaCircle.svg?react"
 import {
   SRewardCardContainer,
   SRewartCardHeader,
@@ -23,6 +23,8 @@ import { useProcessedVotesIds } from "api/staking"
 import { BN_0 } from "utils/constants"
 import { Graph } from "components/Graph/Graph"
 import { XAxis, YAxis } from "recharts"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export const AvailableRewards = () => {
   const { api, assets } = useRpcProvider()
@@ -76,6 +78,10 @@ export const AvailableRewards = () => {
     )
   }
 
+  const isGraphSecondaryPoint = reward.data?.chartValues?.some(
+    (value) => value.currentSecondary,
+  )
+
   return (
     <SRewardCardContainer>
       <SRewartCardHeader>
@@ -122,7 +128,7 @@ export const AvailableRewards = () => {
           sx={{
             flex: ["column", "row"],
             px: 25,
-            gap: [24, 4],
+            gap: [24, 40],
           }}
         >
           <div
@@ -185,9 +191,43 @@ export const AvailableRewards = () => {
               </Text>
             </div>
           </div>
-          <div sx={{ flexGrow: 2, minWidth: 300, height: 180 }}>
+          <div
+            sx={{
+              flexGrow: 2,
+              minWidth: 300,
+              height: 200,
+              flex: "column",
+              gap: 20,
+            }}
+          >
             {reward.data?.chartValues && (
               <RewardsGraph data={reward.data.chartValues} />
+            )}
+            {isGraphSecondaryPoint && (
+              <div sx={{ flex: "row", gap: 20, justify: "center" }}>
+                <div sx={{ flex: "row", gap: 4, align: "center" }}>
+                  <Icon sx={{ color: "white" }} icon={<LegendaCircle />} />
+                  <Text fs={12} color="white" sx={{ opacity: 0.6 }}>
+                    {t("staking.dashboard.rewards.legend.current")}
+                  </Text>
+                </div>
+                (
+                <div sx={{ flex: "row", gap: 4, align: "center" }}>
+                  <Icon
+                    sx={{ color: "warningYellow300" }}
+                    icon={<LegendaCircle />}
+                  />
+                  <Text fs={12} color="white" sx={{ opacity: 0.6 }}>
+                    {t("staking.dashboard.rewards.legend.future")}
+                  </Text>
+                  <InfoTooltip
+                    text={t("staking.dashboard.rewards.legend.tooltip")}
+                  >
+                    <SInfoIcon />
+                  </InfoTooltip>
+                </div>
+                )
+              </div>
             )}
           </div>
         </div>
@@ -209,7 +249,11 @@ export const AvailableRewards = () => {
           <Button
             size="small"
             variant="primary"
-            disabled={!reward.data || reward.data.rewards.isZero()}
+            disabled={
+              !reward.data ||
+              reward.data.rewards.isZero() ||
+              account?.isExternalWalletConnected
+            }
             onClick={onClaimRewards}
             sx={{ width: 130 }}
           >

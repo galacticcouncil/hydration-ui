@@ -19,11 +19,13 @@ export const StakingValue = ({
   title,
   value,
   tooltip,
+  className,
 }: {
   logo: JSX.Element
   title: string
   value: string | JSX.Element
   tooltip?: string | JSX.Element
+  className?: string
 }) => {
   return (
     <div
@@ -34,6 +36,7 @@ export const StakingValue = ({
         minWidth: 120,
       }}
       css={{ flex: "1 1 50%" }}
+      className={className}
     >
       {logo}
 

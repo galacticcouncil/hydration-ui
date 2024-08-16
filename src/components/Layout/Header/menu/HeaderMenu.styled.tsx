@@ -137,7 +137,7 @@ export const SNoFunBadge = styled.span`
   }
 
   span {
-    &:nth-child(1) {
+    &:nth-of-type(1) {
       color: ${theme.colors.white};
       border-radius: 0;
       border-top-left-radius: 2px;

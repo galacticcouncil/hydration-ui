@@ -530,7 +530,7 @@ export const useClaimReward = () => {
     )
 
     let extraPayablePercentageHuman: string | undefined
-    if (referendums) {
+    if (referendums?.length) {
       const voteActionPoints = getVoteActionPoints(
         stakePosition.stake,
         referendums.length,

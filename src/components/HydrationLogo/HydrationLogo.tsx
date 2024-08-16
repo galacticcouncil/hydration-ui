@@ -158,7 +158,7 @@ export const HydrationLogo = () => {
                 <stop offset="1" stopColor={theme.colors.brightBlue600} />
               </>
             ) : (
-              <stop stop-color="#ffffff" />
+              <stop stopColor="#ffffff" />
             )}
           </motion.linearGradient>
         </defs>
