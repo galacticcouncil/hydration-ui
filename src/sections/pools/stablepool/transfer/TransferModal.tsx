@@ -215,7 +215,6 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
         isVisibleStepper ? (
           <Stepper
             sx={{ px: [10] }}
-            width={420}
             steps={steps.map((step, idx) => ({
               label: step.label,
               state: getStepState(idx, currentStep),

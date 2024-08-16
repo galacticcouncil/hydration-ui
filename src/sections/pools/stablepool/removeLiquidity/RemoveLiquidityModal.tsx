@@ -109,7 +109,6 @@ export const RemoveLiquidityModal = ({
         page && selectedOption === "STABLE" ? (
           <Stepper
             sx={{ px: [10] }}
-            width={420}
             steps={steps.map((step, idx) => ({
               label: step,
               state: getStepState(idx),
