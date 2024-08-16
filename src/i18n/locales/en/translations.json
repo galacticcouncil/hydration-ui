@@ -502,6 +502,7 @@
   "wallet.assets.table.toggle": "Show all assets",
   "wallet.assets.table.addToken": "Add new asset",
   "wallet.assets.table.updateToken": "Review changes",
+  "wallet.assets.table.assetDetails": "Asset details",
   "wallet.assets.table.addToken.unknown": "This is an unknown asset. To see its details, add it to your wallet.",
   "wallet.assets.table.addToken.changed": "The details of this asset have changed. Please review the changes.",
   "wallet.assets.table.placeholder": "Connect your wallet to continue.",
