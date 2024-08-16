@@ -233,6 +233,7 @@ type Store = {
   addToken: (TokensConversion: TRegisteredAsset) => void
   getTokenByInternalId: (interlanlId: string) => TRegisteredAsset | undefined
   isAdded: (id: string | undefined) => boolean
+  setIsWhiteListed: (internalId: string, isWhiteListed: boolean) => void
 }
 
 export const useUserExternalTokenStore = create<Store>()(
@@ -308,6 +309,29 @@ export const useUserExternalTokenStore = create<Store>()(
         return id
           ? get().tokens[dataEnv].some((token) => token.id === id)
           : false
+      },
+      setIsWhiteListed: (internalId, isWhiteListed) => {
+        set((store) => {
+          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
+          const latest = {
+            tokens: {
+              ...store.tokens,
+              [dataEnv]: store.tokens[dataEnv].map((token) => {
+                if (token.internalId === internalId) {
+                  return { ...token, isWhiteListed }
+                }
+                return token
+              }),
+            },
+          }
+
+          ExternalAssetCursor.reset({
+            state: { tokens: latest.tokens },
+            version,
+          })
+          return latest
+        })
       },
     }),
 

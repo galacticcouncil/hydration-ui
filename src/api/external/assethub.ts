@@ -48,9 +48,11 @@ export const ASSETHUB_ID_BLACKLIST = [
   "92",
   "92",
   "97",
-  "22222004",
-  "22222003",
+  "22222000",
+  "22222001",
   "22222002",
+  "22222003",
+  "22222004",
 ]
 
 export const assethub = chainsMap.get("assethub") as Parachain
@@ -483,6 +485,7 @@ export const useAssetHubRevokeAdminRights = ({
 
     return createTransaction(
       {
+        title: t("memepad.summary.adminRights.burn"),
         tx,
         xcallMeta: {
           srcChain: assethub.key,
@@ -498,6 +501,36 @@ export const useAssetHubRevokeAdminRights = ({
         onSuccess,
       },
     )
+  })
+}
+
+const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
+  try {
+    const asset = await api.query.assets.asset(id)
+
+    const admin = asset.unwrap().admin.toString()
+    const owner = asset.unwrap().owner.toString()
+
+    return {
+      admin,
+      owner,
+    }
+
+    /* const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+
+    const supply = asset?.[1].unwrap().supply.toString()
+    const admin = asset?.[1].unwrap().admin.toString()
+    const owner = asset?.[1].unwrap().owner.toString() */
+  } catch (e) {
+    return { admin: "", owner: "" }
+  }
+}
+
+export const useAssetHubAssetAdminRights = (id: string) => {
+  const { data: api } = useExternalApi("assethub")
+  return useQuery(["assethubadminrights", id], async () => {
+    if (!api) throw new Error("Asset Hub is not connected")
+    return getAssetHubAssetAdminRights(api, id)
   })
 }
 

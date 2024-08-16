@@ -16,6 +16,15 @@ import BN from "bignumber.js"
 import { TExternal } from "api/assetDetails"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
+import {
+  useAssetHubAssetAdminRights,
+  useAssetHubRevokeAdminRights,
+} from "api/external/assethub"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Button } from "components/Button/Button"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { useRefetchProviderData } from "api/provider"
 
 export const TokenInfo = ({
   externalAsset,
@@ -26,13 +35,33 @@ export const TokenInfo = ({
   chainStoredAsset?: TExternal
   rugCheckData?: TRugCheckData
 }) => {
+  const { account } = useAccount()
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
+  const { setIsWhiteListed } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
 
   const isChainStored = !!chainStoredAsset
+
+  const { data: adminRights } = useAssetHubAssetAdminRights(externalAsset.id)
+
+  const isAdmin =
+    adminRights?.admin && adminRights?.owner && account
+      ? safeConvertAddressSS58(adminRights.owner, 0) ===
+        safeConvertAddressSS58(account.address, 0)
+      : false
+
+  const { mutate: revokeAdminRights } = useAssetHubRevokeAdminRights({
+    onSuccess: () => {
+      if (chainStoredAsset) {
+        setIsWhiteListed(chainStoredAsset.id, true)
+        refetchProvider()
+      }
+    },
+  })
 
   const { isXYKPool, pools } = useMemo(() => {
     if (!isChainStored || !xykPools.data)
@@ -203,6 +232,23 @@ export const TokenInfo = ({
                     sx={{ color: "red500" }}
                     icon={<WarningIcon />}
                   />
+                  {isAdmin && (
+                    <Button
+                      type="button"
+                      variant="warning"
+                      size="micro"
+                      sx={{
+                        ml: 6,
+                        mt: -2,
+                        py: 0,
+                        px: 4,
+                        fontSize: 9,
+                      }}
+                      onClick={() => revokeAdminRights(externalAsset.id)}
+                    >
+                      {t("memepad.summary.adminRights.burn")}
+                    </Button>
+                  )}
                 </>
               )}
             </div>
