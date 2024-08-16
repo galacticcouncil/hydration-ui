@@ -33,7 +33,7 @@ export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
 export const ASSETHUB_ID_BLACKLIST = [
-  "34",
+  /*  "34",
   "41",
   "43",
   "47",
@@ -52,7 +52,7 @@ export const ASSETHUB_ID_BLACKLIST = [
   "22222001",
   "22222002",
   "22222003",
-  "22222004",
+  "22222004", */
 ]
 
 export const assethub = chainsMap.get("assethub") as Parachain
