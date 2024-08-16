@@ -1,7 +1,10 @@
 import { Farm } from "api/farms"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { ModalContents } from "components/Modal/contents/ModalContents"
+import {
+  LoadgingPage,
+  ModalContents,
+} from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +16,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TLPData } from "utils/omnipool"
 import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { JoinFarmsForm } from "./JoinFarmsForm"
-import { getStepState, LoadgingPage, Stepper } from "components/Stepper/Stepper"
+import { getStepState, Stepper } from "components/Stepper/Stepper"
 
 type JoinFarmModalProps = {
   onClose: () => void

@@ -1,6 +1,9 @@
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { ModalContents } from "components/Modal/contents/ModalContents"
+import {
+  LoadgingPage,
+  ModalContents,
+} from "components/Modal/contents/ModalContents"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -8,7 +11,7 @@ import { AddLiquidityForm } from "./AddLiquidityForm"
 import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 import { Farm } from "api/farms"
-import { getStepState, LoadgingPage, Stepper } from "components/Stepper/Stepper"
+import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"

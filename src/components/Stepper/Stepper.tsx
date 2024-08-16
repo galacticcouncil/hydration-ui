@@ -11,7 +11,6 @@ import {
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
-import { Spinner } from "components/Spinner/Spinner"
 
 const STEP_STATES = ["active", "done", "todo"] as const
 
@@ -35,21 +34,6 @@ export const getStepState = (stepPage: number, currentStep: number) => {
 
   return currentStep > stepPage ? ("done" as const) : ("todo" as const)
 }
-
-export const LoadgingPage = ({ title }: { title: string }) => (
-  <div
-    sx={{
-      flex: "column",
-      gap: 50,
-      align: "center",
-      justify: "center",
-      height: 240,
-    }}
-  >
-    <Spinner size={50} />
-    <Text color="whiteish500">{title}</Text>
-  </div>
-)
 
 const Step = ({ label, state }: StepProps) => {
   const isDone = state === "done"

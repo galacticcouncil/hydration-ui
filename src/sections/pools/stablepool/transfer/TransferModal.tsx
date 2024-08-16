@@ -1,12 +1,15 @@
 import { Modal } from "components/Modal/Modal"
-import { ModalContents } from "components/Modal/contents/ModalContents"
+import {
+  LoadgingPage,
+  ModalContents,
+} from "components/Modal/contents/ModalContents"
 import { TransferOptions, Option } from "./TransferOptions"
 import { useState } from "react"
 import { Button } from "components/Button/Button"
 import { Trans, useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { getStepState, LoadgingPage, Stepper } from "components/Stepper/Stepper"
+import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
