@@ -211,7 +211,7 @@ export const AvailableRewards = () => {
                     {t("staking.dashboard.rewards.legend.current")}
                   </Text>
                 </div>
-                (
+
                 <div sx={{ flex: "row", gap: 4, align: "center" }}>
                   <Icon
                     sx={{ color: "warningYellow300" }}
@@ -226,7 +226,6 @@ export const AvailableRewards = () => {
                     <SInfoIcon />
                   </InfoTooltip>
                 </div>
-                )
               </div>
             )}
           </div>
