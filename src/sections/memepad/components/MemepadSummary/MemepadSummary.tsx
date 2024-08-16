@@ -20,9 +20,14 @@ import IconGithub from "assets/icons/IconGithub.svg?react"
 import { qs } from "utils/formatting"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useAssetHubRevokeAdminRights } from "api/external/assethub"
+import {
+  useAssetHubAssetRegistry,
+  useAssetHubRevokeAdminRights,
+} from "api/external/assethub"
 import { useState } from "react"
 import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { useRefetchProviderData } from "api/provider"
 
 type MemepadSummaryProps = {
   values: MemepadFormValues
@@ -39,9 +44,24 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.md)
+  const { setIsWhiteListed } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
+  const { refetch: refetchAssetHub } = useAssetHubAssetRegistry()
   const [adminRightsRevoked, setAdminRightsRevoked] = useState(false)
+
+  const chainStoredAsset = values?.internalId
+    ? assets.getAsset(values.internalId)
+    : null
+
   const { mutate: revokeAdminRights } = useAssetHubRevokeAdminRights({
-    onSuccess: () => setAdminRightsRevoked(true),
+    onSuccess: () => {
+      if (chainStoredAsset) {
+        setIsWhiteListed(chainStoredAsset.id, true)
+        refetchProvider()
+        refetchAssetHub()
+        setAdminRightsRevoked(true)
+      }
+    },
   })
 
   if (!values) return null
@@ -193,7 +213,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
               </InfoTooltip>
             </Text>
             {adminRightsRevoked ? (
-              <Text fs={14} color="green400">
+              <Text fs={14} lh={26} color="green400">
                 <SuccessIcon sx={{ mr: 4 }} />
                 {t("memepad.summary.adminRights.burned")}
               </Text>
@@ -201,7 +221,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
               <Button
                 variant="warning"
                 size="micro"
-                sx={{ height: "auto", ml: ["initial", "auto"], py: 4 }}
+                sx={{ height: "auto", ml: ["initial", 26], py: 4 }}
                 onClick={() => revokeAdminRights(values.id)}
               >
                 {t("memepad.summary.adminRights.burn")}
