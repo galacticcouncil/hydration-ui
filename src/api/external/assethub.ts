@@ -522,7 +522,7 @@ const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
 
 export const useAssetHubAssetAdminRights = (id: string) => {
   const { data: api } = useExternalApi("assethub")
-  return useQuery(["assethubadminrights", id], async () => {
+  return useQuery(QUERY_KEYS.assetHubAssetAdminRights(id), async () => {
     if (!api) throw new Error("Asset Hub is not connected")
     return getAssetHubAssetAdminRights(api, id)
   })
