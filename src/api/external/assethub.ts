@@ -32,6 +32,27 @@ export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
+export const ASSETHUB_ID_BLACKLIST = [
+  "34",
+  "41",
+  "43",
+  "47",
+  "49",
+  "52",
+  "53",
+  "54",
+  "65",
+  "73",
+  "74",
+  "75",
+  "92",
+  "92",
+  "97",
+  "22222004",
+  "22222003",
+  "22222002",
+]
+
 export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get(
   "dot",
@@ -105,7 +126,13 @@ export const useAssetHubAssetRegistry = (enabled = true) => {
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      select: (data) => arrayToMap("id", data),
+      select: (data) => {
+        const assets = data ?? []
+        const filteredAssets = assets.filter(
+          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
+        )
+        return arrayToMap("id", filteredAssets)
+      },
     },
   )
 }

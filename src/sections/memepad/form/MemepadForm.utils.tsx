@@ -425,11 +425,12 @@ export const useMemepadEstimatedFees = (
   async function dryRun(): Promise<MemepadEstimatedFeesResult> {
     const feeBufferUsdtAmount = BN(0.5)
     const feeBufferSlippage = BN(1.1) // 10%
+    const feeBufferSafetyPerc = BN(1.1) // 10%
     const feeBufferAmount = feeBufferUsdtAmount
       .times(usdtDotSpotPrice)
       .times(feeBufferSlippage)
       .plus(DOT_AH_FEE_BUFFER)
-      .times(1.1) // 10%
+      .times(feeBufferSafetyPerc)
       .decimalPlaces(1, BN.ROUND_UP)
 
     const feeBuffer = new AssetAmount({
