@@ -322,7 +322,9 @@ export const useMemepad = () => {
         // Transfer DOT from AH to Hydration
         if (!dotTransferredRef.current) {
           await xTransfer.mutateAsync({
-            amount: Number(token.xykPoolSupply) + DOT_HYDRATION_FEE_BUFFER,
+            amount: BN(token.xykPoolSupply)
+              .plus(DOT_HYDRATION_FEE_BUFFER)
+              .toString(),
             asset: "dot",
             srcAddr: values?.account ?? "",
             srcChain: MEMEPAD_XCM_RELAY_CHAIN,
@@ -336,7 +338,7 @@ export const useMemepad = () => {
         // Transfer created token to Hydration
         const xcmAssetKey = createXcmAssetKey(id, values.symbol)
         await xTransfer.mutateAsync({
-          amount: Number(values.supply) - Number(values.deposit),
+          amount: BN(values.supply).minus(values.deposit).toString(),
           asset: xcmAssetKey,
           srcAddr: values?.account ?? "",
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
