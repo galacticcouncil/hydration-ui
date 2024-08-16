@@ -32,6 +32,29 @@ export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
+export const ASSETHUB_ID_BLACKLIST = [
+  "34",
+  "41",
+  "43",
+  "47",
+  "49",
+  "52",
+  "53",
+  "54",
+  "65",
+  "73",
+  "74",
+  "75",
+  "92",
+  "92",
+  "97",
+  "22222000",
+  "22222001",
+  "22222002",
+  "22222003",
+  "22222004",
+]
+
 export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get(
   "dot",
@@ -105,7 +128,13 @@ export const useAssetHubAssetRegistry = (enabled = true) => {
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      select: (data) => arrayToMap("id", data),
+      select: (data) => {
+        const assets = data ?? []
+        const filteredAssets = assets.filter(
+          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
+        )
+        return arrayToMap("id", filteredAssets)
+      },
     },
   )
 }
@@ -456,6 +485,7 @@ export const useAssetHubRevokeAdminRights = ({
 
     return createTransaction(
       {
+        title: t("memepad.summary.adminRights.burn"),
         tx,
         xcallMeta: {
           srcChain: assethub.key,
@@ -471,6 +501,30 @@ export const useAssetHubRevokeAdminRights = ({
         onSuccess,
       },
     )
+  })
+}
+
+const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
+  try {
+    const asset = await api.query.assets.asset(id)
+
+    const admin = asset.unwrap().admin.toString()
+    const owner = asset.unwrap().owner.toString()
+
+    return {
+      admin,
+      owner,
+    }
+  } catch (e) {
+    return { admin: "", owner: "" }
+  }
+}
+
+export const useAssetHubAssetAdminRights = (id: string) => {
+  const { data: api } = useExternalApi("assethub")
+  return useQuery(QUERY_KEYS.assetHubAssetAdminRights(id), async () => {
+    if (!api) throw new Error("Asset Hub is not connected")
+    return getAssetHubAssetAdminRights(api, id)
   })
 }
 
