@@ -133,7 +133,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   ) => {
     refetch()
     if (isFarms) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep((step) => step + 1)
 
       for (const record of result.events) {
         if (api.events.omnipool.PositionCreated.is(record.event)) {
@@ -203,7 +203,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
     }
 
     paginateTo(page - 1)
-    setCurrentStep(currentStep - 1)
+    setCurrentStep((step) => step - 1)
   }
 
   return (
@@ -287,7 +287,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                     return
                   }
 
-                  setCurrentStep(currentStep + 1)
+                  setCurrentStep((step) => step + 1)
                   onAddToStablepoolSuccess(result)
                   paginateTo(Page.WAIT)
                 }}

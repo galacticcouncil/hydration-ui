@@ -75,7 +75,7 @@ export const Stepper = ({ steps, className, width }: StepperProps) => {
   const width_ = width ?? steps.length * 100
 
   return (
-    <div sx={{ width: width_ }} className={className}>
+    <div sx={{ width: width_, minWidth: 300 }} className={className}>
       <SStepperContainer width={width_}>
         {steps.map((step, index) => (
           <Fragment key={index}>
