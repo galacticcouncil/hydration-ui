@@ -26,15 +26,16 @@ export const HeaderDropdown: React.FC<HeaderDropdownProps> = ({
               className={className}
             >
               <SContent
-                initial={{ opacity: 0, height: 50, x: 200 }}
-                animate={{ opacity: 1, height: "auto", x: 0 }}
-                exit={{ opacity: 0, height: 50, x: 200, pointerEvents: "none" }}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  y: -6,
+                  pointerEvents: "none",
+                }}
                 transition={{
-                  type: "spring",
-                  mass: 1,
-                  stiffness: 300,
-                  damping: 20,
                   duration: 0.2,
+                  ease: "easeOut",
                 }}
               >
                 {children}

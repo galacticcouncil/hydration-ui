@@ -16,11 +16,14 @@ export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
         return { asset, balance }
       })
     : []
-  if (accountBalances.data?.native)
-    tokenBalances.unshift({
-      balance: accountBalances.data.native,
-      asset: native,
-    })
+  if (accountBalances.data?.native?.balance.gt(0))
+    return [
+      ...tokenBalances,
+      {
+        balance: accountBalances.data.native,
+        asset: native,
+      },
+    ]
 
   return tokenBalances
 }

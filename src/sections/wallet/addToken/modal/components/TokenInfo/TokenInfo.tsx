@@ -1,8 +1,4 @@
-import {
-  PENDULUM_ID,
-  TRugCheckData,
-  useParachainAmount,
-} from "api/externalAssetRegistry"
+import { assethub, TRugCheckData, useParachainAmount } from "api/external"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -19,6 +15,16 @@ import BN from "bignumber.js"
 import { TExternal, useAssets } from "providers/assets"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
+import {
+  useAssetHubAssetAdminRights,
+  useAssetHubAssetRegistry,
+  useAssetHubRevokeAdminRights,
+} from "api/external/assethub"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Button } from "components/Button/Button"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { useRefetchProviderData } from "api/provider"
 
 export const TokenInfo = ({
   externalAsset,
@@ -30,12 +36,35 @@ export const TokenInfo = ({
   rugCheckData?: TRugCheckData
 }) => {
   const { getExternalByExternalId } = useAssets()
+  const { account } = useAccount()
   const { t } = useTranslation()
+  const { setIsWhiteListed } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
+  const { refetch: refetchAssetHub } = useAssetHubAssetRegistry()
 
   const isChainStored = !!chainStoredAsset
+
+  const { data: adminRights } = useAssetHubAssetAdminRights(externalAsset.id)
+
+  const isAdmin =
+    adminRights?.admin && adminRights?.owner && account
+      ? safeConvertAddressSS58(adminRights.owner, 0) ===
+        safeConvertAddressSS58(account.address, 0)
+      : false
+
+  const { mutate: revokeAdminRights, isSuccess: isRevoking } =
+    useAssetHubRevokeAdminRights({
+      onSuccess: () => {
+        if (chainStoredAsset) {
+          setIsWhiteListed(chainStoredAsset.id, true)
+          refetchProvider()
+          refetchAssetHub()
+        }
+      },
+    })
 
   const { isXYKPool, pools } = useMemo(() => {
     if (!isChainStored || !xykPools.data)
@@ -184,7 +213,7 @@ export const TokenInfo = ({
         }
       />
       <Separator opacity={0.3} color="darkBlue400" />
-      {externalAsset.origin !== PENDULUM_ID && (
+      {externalAsset.origin === assethub.parachainId && (
         <TokenInfoRow
           tooltip={t("wallet.addToken.form.info.masterAccount.tooltip")}
           label={t("wallet.addToken.form.info.masterAccount")}
@@ -204,6 +233,24 @@ export const TokenInfo = ({
                     sx={{ color: "red500" }}
                     icon={<WarningIcon />}
                   />
+                  {isAdmin && (
+                    <Button
+                      type="button"
+                      variant="warning"
+                      size="micro"
+                      disabled={isRevoking}
+                      sx={{
+                        ml: 6,
+                        mt: -2,
+                        py: 0,
+                        px: 4,
+                        fontSize: 9,
+                      }}
+                      onClick={() => revokeAdminRights(externalAsset.id)}
+                    >
+                      {t("memepad.summary.adminRights.burn")}
+                    </Button>
+                  )}
                 </>
               )}
             </div>

@@ -16,7 +16,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Icon } from "components/Icon/Icon"
 import { ResponsiveValue } from "utils/responsive"
 import { useAssets } from "providers/assets"
-import { useExternalAssetsWhiteList } from "api/externalAssetRegistry"
+import { useExternalAssetsWhiteList } from "api/external"
 
 const chains = Array.from(chainsMap.values())
 

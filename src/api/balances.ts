@@ -57,14 +57,14 @@ export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+
+  const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    address != null && id != null
-      ? getTokenBalance(api, address, id)
-      : undefinedNoop,
-    { enabled: address != null && id != null },
+    enabled ? getTokenBalance(api, address, id) : undefinedNoop,
+    { enabled },
   )
 }
 
@@ -73,16 +73,15 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
-      queryFn:
-        address != null ? getTokenBalance(api, address, id) : undefinedNoop,
-      enabled: !!id && !!address,
+      queryFn: address ? getTokenBalance(api, address, id) : undefinedNoop,
+      enabled: !!id && !!address && isLoaded,
     })),
   })
 }

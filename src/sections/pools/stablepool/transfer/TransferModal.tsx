@@ -105,6 +105,8 @@ export const TransferModal = ({ isOpen, onClose, defaultPage }: Props) => {
       topContent={
         !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page) ? (
           <Stepper
+            sx={{ px: [10] }}
+            width={420}
             steps={steps.map((step, idx) => ({
               label: step,
               state: getStepState(idx),

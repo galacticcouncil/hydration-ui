@@ -35,7 +35,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
   const { native } = useAssets()
 
   return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
-    enabled: isLoaded,
+    enabled: isLoaded && ids.length > 0,
     select: (assets) => {
       return ids.map((id) => {
         const response = assets.find((asset) => asset.id === id)

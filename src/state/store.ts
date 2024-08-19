@@ -26,6 +26,7 @@ export interface Account {
 
 export interface TransactionInput {
   title?: string
+  description?: string
   tx?: SubmittableExtrinsic
   xcall?: XCallEvm
   xcallMeta?: Record<string, string>

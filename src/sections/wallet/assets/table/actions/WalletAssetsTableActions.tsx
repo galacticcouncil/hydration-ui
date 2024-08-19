@@ -25,9 +25,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { useState } from "react"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import { useExternalTokensRugCheck } from "api/external"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
-import { useAssets } from "providers/assets"
 
 type Props = {
   toggleExpanded: () => void
@@ -42,7 +41,6 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
   const rugCheck = useExternalTokensRugCheck()
-  const { isExternal } = useAssets()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   const navigate = useNavigate()
@@ -57,7 +55,9 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const hasRugCheckWarnings = !!rugCheck.tokensMap.get(id)?.warnings?.length
+  const rugCheckData = rugCheck.tokensMap.get(id)
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
@@ -159,7 +159,7 @@ export const WalletAssetsTableActions = (props: Props) => {
             }),
         }
       : null,
-    isExternal(props.asset.meta)
+    hasRugCheckData
       ? {
           key: "checkData",
           icon: <InfoIcon width={18} height={18} />,

@@ -15,10 +15,12 @@ export const useSpotPrice = (
   const tokenIn = assetA?.toString() ?? ""
   const tokenOut = assetB?.toString() ?? ""
 
+  const routerInitialized = Object.keys(tradeRouter).length > 0
+
   return useQuery(
     QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
     getSpotPrice(tradeRouter, tokenIn, tokenOut),
-    { enabled: !!tokenIn && !!tokenOut && isLoaded },
+    { enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded },
   )
 }
 
@@ -35,13 +37,15 @@ export const useSpotPrices = (
 
   const tokenOut = assetOut?.toString() ?? ""
 
+  const routerInitialized = Object.keys(tradeRouter).length > 0
+
   return useQueries({
     queries: Array.from(assets).map((tokenIn) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.spotPrice(tokenIn, tokenOut)
         : QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
       queryFn: getSpotPrice(tradeRouter, tokenIn, tokenOut),
-      enabled: !!tokenIn && !!tokenOut && isLoaded,
+      enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded,
     })),
   })
 }

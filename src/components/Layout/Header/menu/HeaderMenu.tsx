@@ -1,6 +1,10 @@
 import { Link, Search, useSearch } from "@tanstack/react-location"
-import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
-import { useTranslation } from "react-i18next"
+import {
+  SItem,
+  SList,
+  SNoFunBadge,
+} from "components/Layout/Header/menu/HeaderMenu.styled"
+import { Trans, useTranslation } from "react-i18next"
 import { LINKS, MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { HeaderSubMenu } from "./HeaderSubMenu"
 import { forwardRef } from "react"
@@ -56,7 +60,20 @@ export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
             data-intersect={item.key}
           >
             {({ isActive }) => (
-              <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>
+              <SItem isActive={isActive}>
+                {t(`header.${item.key}`)}
+                {LINKS.memepad === item.href && (
+                  <SNoFunBadge
+                    css={{ position: "absolute" }}
+                    sx={{ top: 0, right: 0 }}
+                  >
+                    <Trans t={t} i18nKey="memepad.badge.nofun">
+                      <span />
+                      <span />
+                    </Trans>
+                  </SNoFunBadge>
+                )}
+              </SItem>
             )}
           </Link>
         )

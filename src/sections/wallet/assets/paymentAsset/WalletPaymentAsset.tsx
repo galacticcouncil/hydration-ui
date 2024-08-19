@@ -3,8 +3,10 @@ import { useAccountCurrency, useAccountFeePaymentAssets } from "api/payments"
 import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Button } from "components/Button/Button"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 import { useEditFeePaymentAsset } from "sections/transaction/ReviewTransactionForm.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -32,11 +34,11 @@ export const WalletPaymentAsset = () => {
     ? accountCurrencyMeta.iconId
     : accountCurrencyId
 
-  const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
-
   if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
     return null
   }
+  const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
+  const EditButtonWrapper = isFeePaymentAssetEditable ? Fragment : InfoTooltip
 
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
@@ -49,18 +51,18 @@ export const WalletPaymentAsset = () => {
           {accountCurrencyMeta?.symbol}
         </Text>
       </div>
-      {isFeePaymentAssetEditable && (
-        <>
-          <Button
-            sx={{ py: 6, px: 8 }}
-            size="compact"
-            onClick={openEditFeePaymentAssetModal}
-          >
-            <SettingsIcon width={12} height={12} />
-          </Button>
-          {isOpenEditFeePaymentAssetModal && editFeePaymentAssetModal}
-        </>
-      )}
+
+      <EditButtonWrapper text={t("wallet.header.feePaymentAsset.noAssets")}>
+        <Button
+          sx={{ py: 6, px: 8 }}
+          size="compact"
+          onClick={openEditFeePaymentAssetModal}
+          disabled={!isFeePaymentAssetEditable}
+        >
+          <SettingsIcon width={12} height={12} />
+        </Button>
+      </EditButtonWrapper>
+      {isOpenEditFeePaymentAssetModal && editFeePaymentAssetModal}
     </div>
   )
 }

@@ -33,8 +33,8 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useExternalTokensRugCheck } from "api/external"
 import { useAssets } from "providers/assets"
-import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
 
 type Props = {
   row?: AssetsTableData
