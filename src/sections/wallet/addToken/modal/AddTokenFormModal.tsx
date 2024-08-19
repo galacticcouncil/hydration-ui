@@ -18,6 +18,7 @@ import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
 import { useExternalTokensRugCheck } from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 import { TExternalAssetWithLocation } from "utils/externalAssets"
+import { useSettingsStore } from "state/store"
 
 export const UigcAssetId = createComponent({
   tagName: "uigc-asset-id",
@@ -47,6 +48,7 @@ enum TokenState {
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
   const { assets } = useRpcProvider()
+  const { degenMode } = useSettingsStore()
 
   const { getTokenByInternalId } = useUserExternalTokenStore()
 
@@ -85,8 +87,10 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
       return TokenState.UpdateRequired
     }
 
-    return userStored ? TokenState.NoActionRequired : TokenState.Registered
-  }, [userStored, chainStored, rugCheckData?.warnings])
+    return userStored || degenMode
+      ? TokenState.NoActionRequired
+      : TokenState.Registered
+  }, [degenMode, userStored, chainStored, rugCheckData?.warnings])
 
   const onSubmit = async () => {
     if (chainStored) {
@@ -168,28 +172,37 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
             rugCheckData={rugCheckData}
           />
           <Spacer size={8} />
-          <Button variant="primary" sx={{ mt: "auto" }} type="submit">
-            {tokenState === TokenState.NotRegistered && (
-              <DropletIcon width={18} height={18} />
-            )}
-            {tokenState === TokenState.Registered && (
-              <PlusIcon width={18} height={18} />
-            )}
+          {tokenState === TokenState.NoActionRequired ? (
+            <Button
+              variant="primary"
+              sx={{ mt: "auto" }}
+              type="button"
+              onClick={onClose}
+            >
+              {t("close")}
+            </Button>
+          ) : (
+            <Button variant="primary" sx={{ mt: "auto" }} type="submit">
+              {tokenState === TokenState.NotRegistered && (
+                <DropletIcon width={18} height={18} />
+              )}
+              {tokenState === TokenState.Registered && (
+                <PlusIcon width={18} height={18} />
+              )}
 
-            {tokenState === TokenState.NotRegistered &&
-              t("wallet.addToken.form.button.register.hydra")}
+              {tokenState === TokenState.NotRegistered &&
+                t("wallet.addToken.form.button.register.hydra")}
 
-            {tokenState === TokenState.Registered &&
-              t("wallet.addToken.form.button.register.forMe")}
+              {tokenState === TokenState.Registered &&
+                t("wallet.addToken.form.button.register.forMe")}
 
-            {tokenState === TokenState.UpdateRequired &&
-              t("wallet.addToken.form.button.register.update")}
+              {tokenState === TokenState.UpdateRequired &&
+                t("wallet.addToken.form.button.register.update")}
 
-            {tokenState === TokenState.RiskConsentRequired &&
-              t("wallet.addToken.form.button.register.acceptRisk")}
-
-            {tokenState === TokenState.NoActionRequired && t("close")}
-          </Button>
+              {tokenState === TokenState.RiskConsentRequired &&
+                t("wallet.addToken.form.button.register.acceptRisk")}
+            </Button>
+          )}
         </div>
       </form>
     </>

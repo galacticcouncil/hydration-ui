@@ -17,6 +17,7 @@ import { pendulum } from "./external"
 import { getGeneralIndex, getGeneralKey } from "utils/externalAssets"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useSettingsStore } from "state/store"
+import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
 
 export const useAcountAssets = (address: Maybe<AccountId32 | string>) => {
   const { assets } = useRpcProvider()
@@ -436,7 +437,12 @@ export const getAssets = async (api: ApiPromise) => {
             : {}),
         }
 
-        external.push(asset)
+        if (
+          asset.externalId &&
+          !ASSETHUB_ID_BLACKLIST.includes(asset.externalId)
+        ) {
+          external.push(asset)
+        }
       }
     }
   }
