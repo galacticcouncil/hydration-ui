@@ -171,7 +171,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
     result: ISubmittableResult,
     calculatedShares: string,
   ) => {
-    let shares: string | undefined
+    let shares = ""
 
     if (!isEvm) {
       for (const record of result.events) {
