@@ -11,7 +11,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { shortenAccountAddress } from "utils/formatting"
 import { MemepadBottlecaps } from "sections/memepad/components/MemepadBottlecaps"
-import { useRpcProvider } from "providers/rpcProvider"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { theme } from "theme"
@@ -28,6 +27,7 @@ import { useState } from "react"
 import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useRefetchProviderData } from "api/provider"
+import { useAssets } from "providers/assets"
 
 type MemepadSummaryProps = {
   values: MemepadFormValues
@@ -41,7 +41,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   values,
   onReset,
 }) => {
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.md)
   const { setIsWhiteListed } = useUserExternalTokenStore()
@@ -50,7 +50,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   const [adminRightsRevoked, setAdminRightsRevoked] = useState(false)
 
   const chainStoredAsset = values?.internalId
-    ? assets.getAsset(values.internalId)
+    ? getAsset(values.internalId)
     : null
 
   const { mutate: revokeAdminRights } = useAssetHubRevokeAdminRights({
@@ -76,10 +76,8 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
     internalId,
   } = values || {}
 
-  const xykAssetAMeta = internalId ? assets.getAsset(internalId) : null
-  const xykAssetBMeta = xykPoolAssetId
-    ? assets.getAsset?.(xykPoolAssetId)
-    : null
+  const xykAssetAMeta = internalId ? getAsset(internalId) : null
+  const xykAssetBMeta = xykPoolAssetId ? getAsset?.(xykPoolAssetId) : null
 
   const onGithubOpen = () => {
     const url = `${GITHUB_ISSUE_URL}${qs({

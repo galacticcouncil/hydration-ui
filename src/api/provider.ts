@@ -19,6 +19,7 @@ import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
+import { pendulum } from "./external/pendulum"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -179,7 +180,7 @@ export const useProviderAssets = () => {
                   decimals: asset.decimals ?? 0,
                   name: asset.name ?? "",
                   externalId:
-                    asset.origin === PENDULUM_ID &&
+                    asset.origin === pendulum.parachainId &&
                     typeof asset.externalId === "object"
                       ? getPendulumAssetIdFromGeneralKey(asset.externalId)
                       : asset.externalId?.toString(),
