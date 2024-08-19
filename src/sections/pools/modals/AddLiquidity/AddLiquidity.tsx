@@ -16,6 +16,9 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"
 import { useRefetchAccountNFTPositions } from "api/deposits"
+import { isEvmAccount } from "utils/evm"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { scaleHuman } from "utils/balance"
 
 export enum Page {
   ADD_LIQUIDITY,
@@ -31,10 +34,12 @@ type Props = {
 }
 
 export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { page, direction, back, paginateTo } = useModalPagination()
   const refetch = useRefetchAccountNFTPositions()
+  const isEvm = isEvmAccount(account?.address)
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
@@ -59,29 +64,73 @@ export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
 
   const onSuccess = async (result: ISubmittableResult, value: string) => {
     if (isFarms) {
-      setCurrentStep(1)
+      let positionId: string | undefined
 
-      for (const record of result.events) {
-        if (api.events.omnipool.PositionCreated.is(record.event)) {
-          const positionId = record.event.data.positionId.toString()
-          joinFarms({ positionId, value })
+      if (isEvm) {
+        const nftId = await api.consts.omnipool.nftCollectionId.toString()
+        const positions = await api.query.uniques.account.entries(
+          account?.address,
+          nftId,
+        )
+
+        positionId = positions
+          .map((position) => position[0].args[2].toNumber())
+          .sort((a, b) => b - a)[0]
+          .toString()
+      } else {
+        for (const record of result.events) {
+          if (api.events.omnipool.PositionCreated.is(record.event)) {
+            positionId = record.event.data.positionId.toString()
+          }
         }
+      }
+
+      if (positionId) {
+        setCurrentStep(1)
+        joinFarms({ positionId, value })
       }
     }
     refetch()
   }
 
-  const onXykSuccess = async (result: ISubmittableResult) => {
+  const onXykSuccess = async (
+    result: ISubmittableResult,
+    calculatedShares: string,
+  ) => {
     if (isFarms) {
       setCurrentStep(1)
 
-      for (const record of result.events) {
-        if (api.events.tokens.Deposited.is(record.event)) {
-          if (record.event.data.currencyId.toString() === pool.id) {
-            const shares = record.event.data.amount.toString()
-            joinFarms({ shares })
+      let shares = ""
+
+      if (!isEvm) {
+        for (const record of result.events) {
+          if (api.events.tokens.Deposited.is(record.event)) {
+            if (record.event.data.currencyId.toString() === pool.id) {
+              shares = record.event.data.amount.toString()
+            }
           }
         }
+      } else {
+        const balance = await api.query.tokens.accounts(
+          account?.address ?? "",
+          pool.id,
+        )
+        const meta = assets.getAsset(pool.id)
+        const free = balance.free.toBigNumber()
+        const diff = scaleHuman(free, meta.decimals)
+          .minus(scaleHuman(calculatedShares, meta.decimals))
+          .abs()
+
+        // go with the whole balance
+        if (diff.lt(0.1)) {
+          shares = free.toString()
+        } else {
+          shares = calculatedShares
+        }
+      }
+
+      if (shares) {
+        joinFarms({ shares })
       }
     }
   }

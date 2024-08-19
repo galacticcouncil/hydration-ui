@@ -33,7 +33,7 @@ import { useRefetchAccountNFTPositions } from "api/deposits"
 type Props = {
   onClose: () => void
   pool: TXYKPool
-  onSuccess: (result: ISubmittableResult) => void
+  onSuccess: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
   farms: Farm[]
 }
@@ -161,7 +161,7 @@ export const AddLiquidityFormXYK = ({
           queryClient.refetchQueries(
             QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
           )
-          onSuccess(result)
+          onSuccess(result, scale(shares, shareTokenMeta.decimals).toString())
         },
         onSubmitted: () => {
           !farms.length && onClose()
