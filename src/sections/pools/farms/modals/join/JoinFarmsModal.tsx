@@ -2,7 +2,7 @@ import { Farm } from "api/farms"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import {
-  LoadgingPage,
+  LoadingPage,
   ModalContents,
 } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
@@ -167,7 +167,7 @@ export const JoinFarmModal = ({
           {
             title: steps[currentStep].label,
             headerVariant: "gradient",
-            content: <LoadgingPage title={steps[currentStep].loadingLabel} />,
+            content: <LoadingPage title={steps[currentStep].loadingLabel} />,
           },
         ]}
       />

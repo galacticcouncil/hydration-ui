@@ -1,6 +1,6 @@
 import { Modal } from "components/Modal/Modal"
 import {
-  LoadgingPage,
+  LoadingPage,
   ModalContents,
 } from "components/Modal/contents/ModalContents"
 import { TransferOptions, Option } from "./TransferOptions"
@@ -350,7 +350,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
           {
             title: steps[currentStep].label,
             headerVariant: "gradient",
-            content: <LoadgingPage title={steps[currentStep].loadingLabel} />,
+            content: <LoadingPage title={steps[currentStep].loadingLabel} />,
           },
           {
             title: t("liquidity.stablepool.addToOmnipool"),

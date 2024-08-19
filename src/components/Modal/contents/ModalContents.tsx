@@ -160,7 +160,7 @@ const motionProps = {
   variants,
 }
 
-export const LoadgingPage = ({ title }: { title: string }) => (
+export const LoadingPage = ({ title }: { title: string }) => (
   <div
     sx={{
       flex: "column",

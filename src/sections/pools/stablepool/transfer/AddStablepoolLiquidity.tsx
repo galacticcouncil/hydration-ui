@@ -7,7 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { ToastMessage, useStore } from "state/store"
+import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
-import { TOAST_MESSAGES } from "state/toasts"
+import { createToastMessages } from "state/toasts"
 import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
@@ -125,24 +125,15 @@ export const AddStablepoolLiquidity = ({
       throw new Error("Missing asset meta")
     }
 
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`liquidity.add.modal.toast.${msType}`}
-          tOptions={{
-            value: values.value,
-            symbol: asset.symbol,
-            where: "Stablepool",
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
+    const toast = createToastMessages("liquidity.add.modal.toast", {
+      t,
+      tOptions: {
+        value: values.value,
+        symbol: asset.symbol,
+        where: "Stablepool",
+      },
+      components: ["span", "span.highlight"],
+    })
 
     return await createTransaction(
       {
