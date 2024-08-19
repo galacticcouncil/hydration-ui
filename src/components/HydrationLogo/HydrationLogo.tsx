@@ -107,8 +107,8 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
       </svg>
       <SLogoBadgeContainer>
         <SLogoBadge
-          initial={{ y: "-100%" }}
-          animate={{ y: degenMode ? "0" : "-100%" }}
+          initial={{ y: "-100%", opacity: 0 }}
+          animate={{ y: degenMode ? "0" : "-100%", opacity: degenMode ? 1 : 0 }}
           transition={{
             duration: 0.4,
             ease: "backOut",

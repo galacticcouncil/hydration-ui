@@ -39,7 +39,9 @@ export const SItem = styled.span<{ isActive?: boolean }>`
   position: relative;
 
   border-radius: 4px;
-  transition: ${theme.transitions.slow};
+  transition:
+    color ${theme.transitions.slow},
+    background ${theme.transitions.slow};
 
   &:hover {
     color: ${theme.colors.white};
