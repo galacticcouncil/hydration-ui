@@ -158,6 +158,7 @@ const MenuItem = ({
 
   return (
     <Link
+      to={item.href}
       onClick={(e) => {
         if (moreButton) {
           e.preventDefault()
