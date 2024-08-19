@@ -13,6 +13,7 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { BN_0 } from "utils/constants"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
 
 const bannedAssets = ["1000042"]
 
@@ -165,9 +166,12 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
             (token) => token.internalId === asset.id,
           )?.id
 
-          if (externalId) {
+          if (externalId && !ASSETHUB_ID_BLACKLIST.includes(externalId)) {
             acc.external.push({ ...asset, externalId })
-          } else if (asset.externalId) {
+          } else if (
+            asset.externalId &&
+            !ASSETHUB_ID_BLACKLIST.includes(asset.externalId)
+          ) {
             acc.external.push(asset as TExternal)
             acc.externalInvalid.push(asset as TExternal)
           }

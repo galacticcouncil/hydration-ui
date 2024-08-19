@@ -18,7 +18,6 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { PENDULUM_ID } from "./externalAssetRegistry"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 
 export type TEnv = "testnet" | "mainnet"
