@@ -14,7 +14,7 @@ import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidit
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
-import { BN_0 } from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { TStableSwap } from "api/assetDetails"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -26,6 +26,7 @@ import { useRefetchAccountNFTPositions } from "api/deposits"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { scaleHuman } from "utils/balance"
+import { isEvmAccount } from "utils/evm"
 
 export enum Page {
   OPTIONS,
@@ -51,6 +52,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   const queryClient = useQueryClient()
   const refetch = useRefetchAccountNFTPositions()
   const { createTransaction } = useStore()
+  const isEvm = isEvmAccount(account?.address)
 
   const { id: poolId, reserves, stablepoolFee: fee, canAddLiquidity } = pool
 
@@ -82,9 +84,11 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       onSuccess: () => {
         setCurrentStep(currentStep + 1)
       },
+      onError: () => onClose(),
     },
     redeposit: {
       onClose,
+      onError: () => onClose(),
     },
   })
 
@@ -133,63 +137,108 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   ) => {
     refetch()
     if (isFarms) {
-      setCurrentStep((step) => step + 1)
+      let positionId: string | undefined
 
-      for (const record of result.events) {
-        if (api.events.omnipool.PositionCreated.is(record.event)) {
-          const positionId = record.event.data.positionId.toString()
-          joinFarms({ positionId, value })
+      if (isEvm) {
+        const nftId = await api.consts.omnipool.nftCollectionId.toString()
+        const positions = await api.query.uniques.account.entries(
+          account?.address,
+          nftId,
+        )
+
+        positionId = positions
+          .map((position) => position[0].args[2].toNumber())
+          .sort((a, b) => b - a)[0]
+          .toString()
+      } else {
+        for (const record of result.events) {
+          if (api.events.omnipool.PositionCreated.is(record.event)) {
+            positionId = record.event.data.positionId.toString()
+          }
         }
+      }
+
+      if (positionId) {
+        setCurrentStep((step) => step + 1)
+        joinFarms({ positionId, value })
+      } else {
+        onClose()
       }
     }
   }
 
-  const onAddToStablepoolSuccess = async (result: ISubmittableResult) => {
-    for (const record of result.events) {
-      if (api.events.tokens.Deposited.is(record.event)) {
-        if (record.event.data.currencyId.toString() === pool.id) {
-          const shares = record.event.data.amount.toString()
+  const onAddToStablepoolSuccess = async (
+    result: ISubmittableResult,
+    calculatedShares: string,
+  ) => {
+    let shares: string | undefined
 
-          const toast = TOAST_MESSAGES.reduce((memo, type) => {
-            const msType = type === "onError" ? "onLoading" : type
-            memo[type] = (
-              <Trans
-                t={t}
-                i18nKey={`liquidity.add.modal.toast.${msType}`}
-                tOptions={{
-                  value: scaleHuman(shares, meta.decimals),
-                  symbol: meta.symbol,
-                  where: "Omnipool",
-                }}
-              >
-                <span />
-                <span className="highlight" />
-              </Trans>
-            )
-            return memo
-          }, {} as ToastMessage)
-
-          await createTransaction(
-            {
-              tx: api.tx.omnipool.addLiquidity(pool.id, shares),
-              title: t("liquidity.stablepool.transfer.move"),
-            },
-            {
-              onSuccess: (result) => {
-                onAddToOmnipoolSuccess(result, shares)
-              },
-              onSubmitted: () => {
-                !isFarms && onClose()
-              },
-              onClose,
-              disableAutoClose: !!isFarms,
-              toast,
-            },
-          )
-
-          return
+    if (!isEvm) {
+      for (const record of result.events) {
+        if (api.events.tokens.Deposited.is(record.event)) {
+          if (record.event.data.currencyId.toString() === pool.id) {
+            shares = record.event.data.amount.toString()
+          }
         }
       }
+    } else {
+      const balance = await api.query.tokens.accounts(
+        account?.address ?? "",
+        pool.id,
+      )
+      const free = balance.free.toBigNumber()
+      const diff = scaleHuman(free, STABLEPOOL_TOKEN_DECIMALS)
+        .minus(scaleHuman(calculatedShares, STABLEPOOL_TOKEN_DECIMALS))
+        .abs()
+
+      // go with the whole balance
+      if (diff.lt(0.1)) {
+        shares = free.toString()
+      } else {
+        shares = calculatedShares
+      }
+    }
+
+    if (shares) {
+      const toast = TOAST_MESSAGES.reduce((memo, type) => {
+        const msType = type === "onError" ? "onLoading" : type
+        memo[type] = (
+          <Trans
+            t={t}
+            i18nKey={`liquidity.add.modal.toast.${msType}`}
+            tOptions={{
+              value: scaleHuman(shares, meta.decimals),
+              symbol: meta.symbol,
+              where: "Omnipool",
+            }}
+          >
+            <span />
+            <span className="highlight" />
+          </Trans>
+        )
+        return memo
+      }, {} as ToastMessage)
+
+      await createTransaction(
+        {
+          tx: api.tx.omnipool.addLiquidity(pool.id, shares),
+          title: t("liquidity.stablepool.transfer.move"),
+        },
+        {
+          onSuccess: (result) => {
+            onAddToOmnipoolSuccess(result, shares)
+          },
+          onSubmitted: () => {
+            !isFarms && onClose()
+          },
+          onError: () => onClose(),
+          onClose,
+          disableAutoClose: !!isFarms,
+          toast,
+        },
+      )
+    } else {
+      onClose()
     }
   }
 
@@ -278,7 +327,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                   setSharesAmount(shares)
                   paginateTo(Page.WAIT)
                 }}
-                onSuccess={(result) => {
+                onSuccess={(result, shares) => {
                   if (isOnlyStablepool) {
                     queryClient.invalidateQueries(
                       QUERY_KEYS.tokenBalance(pool.id, account?.address),
@@ -288,7 +337,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                   }
 
                   setCurrentStep((step) => step + 1)
-                  onAddToStablepoolSuccess(result)
+                  onAddToStablepoolSuccess(result, shares)
                   paginateTo(Page.WAIT)
                 }}
                 reserves={reserves}

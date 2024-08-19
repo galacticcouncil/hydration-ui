@@ -22,7 +22,7 @@ import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyR
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BN_0 } from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { TOAST_MESSAGES } from "state/toasts"
 import {
@@ -37,7 +37,7 @@ type Props = {
   poolId: string
   fee: BigNumber
   asset: TAsset
-  onSuccess: (result: ISubmittableResult) => void
+  onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
   onCancel: () => void
   onAssetOpen: () => void
@@ -154,7 +154,11 @@ export const AddStablepoolLiquidity = ({
         ]),
       },
       {
-        onSuccess: (result) => onSuccess(result),
+        onSuccess: (result) =>
+          onSuccess(
+            result,
+            scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
+          ),
         onSubmitted: () => {
           onSubmitted(shares)
           form.reset()

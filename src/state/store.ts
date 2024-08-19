@@ -56,6 +56,7 @@ export type TransactionOptions = {
   steps?: Array<StepProps>
   onBack?: () => void
   onClose?: () => void
+  onError?: () => void
   disableAutoClose?: boolean
 }
 
@@ -99,7 +100,10 @@ export const useStore = create<Store>((set) => ({
                 resolve(value)
                 options?.onSuccess?.(value)
               },
-              onError: () => reject(new Error("Transaction rejected")),
+              onError: () => {
+                options?.onError?.()
+                reject(new Error("Transaction rejected"))
+              },
               isProxy: !!options?.isProxy,
               steps: options?.steps,
               onBack: options?.onBack,

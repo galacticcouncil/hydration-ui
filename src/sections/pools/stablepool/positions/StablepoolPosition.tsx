@@ -105,7 +105,7 @@ export const StablepoolPosition = ({ pool, amount, amountPrice }: Props) => {
                     {t("value.token", {
                       value: amount,
                       fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                      numberSuffix: ` ${t(
+                      numberSuffix: `${t(
                         "liquidity.stablepool.position.token",
                       )}`,
                     })}
