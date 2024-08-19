@@ -322,7 +322,9 @@ export const useMemepad = () => {
         // Transfer DOT from AH to Hydration
         if (!dotTransferredRef.current) {
           await xTransfer.mutateAsync({
-            amount: Number(token.xykPoolSupply) + DOT_HYDRATION_FEE_BUFFER,
+            amount: BN(token.xykPoolSupply)
+              .plus(DOT_HYDRATION_FEE_BUFFER)
+              .toString(),
             asset: "dot",
             srcAddr: values?.account ?? "",
             srcChain: MEMEPAD_XCM_RELAY_CHAIN,
@@ -336,7 +338,7 @@ export const useMemepad = () => {
         // Transfer created token to Hydration
         const xcmAssetKey = createXcmAssetKey(id, values.symbol)
         await xTransfer.mutateAsync({
-          amount: values.allocatedSupply,
+          amount: BN(values.supply).minus(values.deposit).toString(),
           asset: xcmAssetKey,
           srcAddr: values?.account ?? "",
           srcChain: MEMEPAD_XCM_SRC_CHAIN,
@@ -425,11 +427,12 @@ export const useMemepadEstimatedFees = (
   async function dryRun(): Promise<MemepadEstimatedFeesResult> {
     const feeBufferUsdtAmount = BN(0.5)
     const feeBufferSlippage = BN(1.1) // 10%
+    const feeBufferSafetyPerc = BN(1.1) // 10%
     const feeBufferAmount = feeBufferUsdtAmount
       .times(usdtDotSpotPrice)
       .times(feeBufferSlippage)
       .plus(DOT_AH_FEE_BUFFER)
-      .times(1.1) // 10%
+      .times(feeBufferSafetyPerc)
       .decimalPlaces(1, BN.ROUND_UP)
 
     const feeBuffer = new AssetAmount({
