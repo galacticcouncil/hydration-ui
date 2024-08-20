@@ -4,7 +4,7 @@ import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import React, { FC, Fragment, useMemo, useState } from "react"
+import React, { FC, Fragment, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMeasure } from "react-use"
 import {
@@ -23,6 +23,7 @@ import {
 } from "./ReviewTransactionData.styled"
 import { Button } from "components/Button/Button"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
 import { Dropdown } from "components/Dropdown/Dropdown"
 import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
@@ -141,14 +142,31 @@ export const ReviewTransactionData: FC<Props> = ({
   address = "",
 }) => {
   const { t } = useTranslation()
-  const [, copy] = useCopyToClipboard()
+  const [, copyToClipboard] = useCopyToClipboard()
+  const [copied, setCopied] = useState(false)
 
   const isEVM = isEvmAccount(address) || isEvmAddress(address)
   const json = tx ? getTransactionJSON(tx) : null
   const decodedEvmData = isEVM && xcallEvm ? decodeXCallEvm(xcallEvm) : null
 
+  useEffect(() => {
+    if (!copied) return
+    const id = setTimeout(() => {
+      setCopied(false)
+    }, 2000)
+
+    return () => {
+      clearTimeout(id)
+    }
+  }, [copied])
+
   const dropdownItems = useMemo(() => {
     const items = []
+
+    function copy(str: string) {
+      copyToClipboard(str)
+      setCopied(true)
+    }
 
     if (xcallEvm && decodedEvmData) {
       items.push({
@@ -215,7 +233,7 @@ export const ReviewTransactionData: FC<Props> = ({
     }
 
     return items
-  }, [copy, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
+  }, [copyToClipboard, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
 
   return (
     <SContainer>
@@ -250,7 +268,11 @@ export const ReviewTransactionData: FC<Props> = ({
           sx={{ p: 4 }}
           css={{ position: "absolute", top: 6, right: 12 }}
         >
-          <CopyIcon width={18} height={18} />
+          {copied ? (
+            <SuccessIcon width={18} height={18} css={{ scale: "75%" }} />
+          ) : (
+            <CopyIcon width={18} height={18} />
+          )}
         </Button>
       </Dropdown>
     </SContainer>
