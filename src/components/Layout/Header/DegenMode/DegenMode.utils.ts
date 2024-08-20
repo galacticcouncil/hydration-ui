@@ -31,7 +31,7 @@ export const useDegenModeSubscription = () => {
       }
     }
 
-    const data = [...external,...externalInvalid].reduce((acc, asset) => {
+    const data = [...external, ...externalInvalid].reduce((acc, asset) => {
       const externalAsset = externalAssets[
         Number(asset.parachainId)
       ]?.data?.get(asset.externalId ?? "")

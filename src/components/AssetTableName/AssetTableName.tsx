@@ -18,11 +18,9 @@ export const AssetTableName = ({
 
   const asset = getAsset(id)
   const getExternalMeta = useExternalTokenMeta()
-  const meta = (asset?.isExternal ? getExternalMeta(id) : asset) 
-
+  const meta = asset?.isExternal ? getExternalMeta(id) : asset
 
   if (!asset || !meta) return null
-
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>

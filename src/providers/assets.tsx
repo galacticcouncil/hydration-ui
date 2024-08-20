@@ -263,8 +263,10 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getExternalByExternalId = useCallback(
     (externalId: string) =>
-      [...external, ...externalInvalid].find((token) => token.externalId === externalId),
-    [external],
+      [...external, ...externalInvalid].find(
+        (token) => token.externalId === externalId,
+      ),
+    [external, externalInvalid],
   )
   const getBond = useCallback(
     (id: string) => bonds.find((token) => token.id === id),
