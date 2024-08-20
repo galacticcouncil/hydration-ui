@@ -18,11 +18,11 @@ export const AssetTableName = ({
 
   const asset = getAsset(id)
   const getExternalMeta = useExternalTokenMeta()
-  const externalMeta = getExternalMeta(id)
+  const meta = (asset?.isExternal ? getExternalMeta(id) : asset) 
 
-  if (!asset) return null
 
-  const iconIds = externalMeta?.id ?? asset?.iconId ?? ""
+  if (!asset || !meta) return null
+
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -33,7 +33,7 @@ export const AssetTableName = ({
           e.stopPropagation()
         }}
       >
-        <MultipleAssetLogo size={[large ? 28 : 26, 26]} iconId={iconIds} />
+        <MultipleAssetLogo size={[large ? 28 : 26, 26]} iconId={meta.iconId} />
 
         <div sx={{ flex: "column", width: "100%", gap: [0, 2] }}>
           <Text
@@ -42,7 +42,7 @@ export const AssetTableName = ({
             font="GeistMedium"
             color="white"
           >
-            {externalMeta?.symbol ?? asset.symbol}
+            {meta.symbol}
           </Text>
           <Text
             fs={large ? 14 : 12}

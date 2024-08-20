@@ -172,7 +172,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
             asset.externalId &&
             !ASSETHUB_ID_BLACKLIST.includes(asset.externalId)
           ) {
-            acc.external.push(asset as TExternal)
             acc.externalInvalid.push(asset as TExternal)
           }
         }
@@ -264,7 +263,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getExternalByExternalId = useCallback(
     (externalId: string) =>
-      external.find((token) => token.externalId === externalId),
+      [...external, ...externalInvalid].find((token) => token.externalId === externalId),
     [external],
   )
   const getBond = useCallback(

@@ -10,7 +10,7 @@ import { useSettingsStore } from "state/store"
 import { useAssets } from "providers/assets"
 
 export const useDegenModeSubscription = () => {
-  const { external } = useAssets()
+  const { external, externalInvalid } = useAssets()
   const { degenMode } = useSettingsStore()
   const externalAssets = useExternalAssetRegistry(degenMode)
   const { getDataEnv } = useProviderRpcUrlStore()
@@ -31,7 +31,7 @@ export const useDegenModeSubscription = () => {
       }
     }
 
-    const data = external.reduce((acc, asset) => {
+    const data = [...external,...externalInvalid].reduce((acc, asset) => {
       const externalAsset = externalAssets[
         Number(asset.parachainId)
       ]?.data?.get(asset.externalId ?? "")
