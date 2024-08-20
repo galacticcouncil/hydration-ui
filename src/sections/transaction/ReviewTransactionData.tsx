@@ -167,17 +167,15 @@ export const ReviewTransactionData: FC<Props> = ({
       })
     }
 
-    if (json) {
+    if (tx) {
       items.push({
         key: "json",
         label: t("liquidity.reviewTransaction.dropdown.json"),
         onSelect: () => {
-          copy(JSON.stringify(json, null, 2))
+          copy(JSON.stringify(tx.method.toHuman(), null, 2))
         },
       })
-    }
 
-    if (tx) {
       items.push({
         key: "calldata",
         label: t("liquidity.reviewTransaction.dropdown.calldata"),
@@ -217,7 +215,7 @@ export const ReviewTransactionData: FC<Props> = ({
     }
 
     return items
-  }, [copy, decodedEvmData, json, t, tx, xcallEvm, xcallMeta?.srcChain])
+  }, [copy, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
 
   return (
     <SContainer>
