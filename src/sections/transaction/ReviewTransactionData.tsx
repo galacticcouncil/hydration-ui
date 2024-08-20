@@ -127,7 +127,7 @@ const TransactionExpander: FC<{
               <ChevronDownSmallIcon />
               {t("liquidity.reviewTransaction.calldata.encodedHash")}
             </SExpandButton>
-            {encodedExpanded && <div>{encodedCallHash}</div>}
+            {encodedHashExpanded && <div>{encodedCallHash}</div>}
           </div>
         </>
       )}
