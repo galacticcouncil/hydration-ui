@@ -83,7 +83,11 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <ReviewTransactionData address={account?.address} xcall={xcall} />
+          <ReviewTransactionData
+            address={account?.address}
+            xcallEvm={xcall}
+            xcallMeta={xcallMeta}
+          />
         }
         footer={
           <>
