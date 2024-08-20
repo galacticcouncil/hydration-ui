@@ -6,6 +6,7 @@ import MetamaskLogo from "assets/icons/MetaMask.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
+import InfoIcon from "assets/icons/InfoIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown, TDropdownItem } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
@@ -24,8 +25,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { useState } from "react"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-
-import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import { useExternalTokensRugCheck } from "api/external"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 
 type Props = {
@@ -41,6 +41,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
   const rugCheck = useExternalTokensRugCheck()
+  const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -54,7 +55,9 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const hasRugCheckWarnings = !!rugCheck.tokensMap.get(id)?.warnings?.length
+  const rugCheckData = rugCheck.tokensMap.get(id)
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
@@ -156,6 +159,14 @@ export const WalletAssetsTableActions = (props: Props) => {
             }),
         }
       : null,
+    hasRugCheckData
+      ? {
+          key: "checkData",
+          icon: <InfoIcon width={18} height={18} />,
+          label: t("wallet.assets.table.actions.checkExternal"),
+          onSelect: () => setAssetCheckModalOpen(true),
+        }
+      : null,
   ].filter(isNotNil)
 
   return (
@@ -224,6 +235,15 @@ export const WalletAssetsTableActions = (props: Props) => {
       >
         <ChevronDownIcon />
       </ButtonTransparent>
+      {assetCheckModalOpen && (
+        <ExternalAssetUpdateModal
+          open={assetCheckModalOpen}
+          assetId={id}
+          onClose={() => {
+            setAssetCheckModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }

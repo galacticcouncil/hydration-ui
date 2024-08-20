@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
+import { useAssetHubAssetRegistry } from "api/external/assethub"
 import { useProviderRpcUrlStore } from "api/provider"
 import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
@@ -121,7 +121,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
             (spotPrice) => spotPrice?.tokenIn === asset,
           )?.spotPrice
 
-          if (!sum || !spotPrice) return acc
+          if (!sum || !spotPrice) return BN_NAN
           const sumScale = sum.shiftedBy(-decimals)
 
           return acc.plus(sumScale.multipliedBy(spotPrice))

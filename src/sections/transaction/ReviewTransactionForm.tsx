@@ -162,6 +162,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           signer: wallet.signer,
           // defer to polkadot/api to handle nonce w/ regard to mempool
           nonce: customNonce ? parseInt(customNonce) : -1,
+          withSignedTransaction: true,
         })
 
         return props.onSigned(signature, props.xcallMeta)
@@ -222,11 +223,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   return (
     <>
-      {props.title && (
-        <Text color="basic400" fw={400} sx={{ mb: 16 }}>
-          {props.title}
-        </Text>
-      )}
       <ModalScrollableContent
         sx={{
           mx: "calc(-1 * var(--modal-content-padding))",

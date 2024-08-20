@@ -17,11 +17,14 @@ import { useMedia } from "react-use"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import BN from "bignumber.js"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
+import { TLPData } from "utils/omnipool"
 
 export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const [openRemove, setOpenRemove] = useState(false)
+  const [openRemove, setOpenRemove] = useState<TLPData | TLPData[] | undefined>(
+    undefined,
+  )
   const refetchPositions = useRefetchAccountNFTPositions()
 
   const positions = pool.omnipoolNftPositions
@@ -45,8 +48,6 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
     return { value: BN_0, hub: BN_0, display: BN_0, totalValue: BN_0 }
   }, [positions, positionsNumber])
 
-  if (!positionsNumber) return null
-
   const isHubValue = total.hub.gt(0)
 
   const positionsData = positions.reduce<{
@@ -65,6 +66,7 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
             position={position}
             index={i + 1}
             onSuccess={refetchPositions}
+            onRemovePosition={() => setOpenRemove(position)}
             pool={pool}
           />
         ),
@@ -82,86 +84,103 @@ export const LiquidityPositionWrapper = ({ pool }: { pool: TPoolFullData }) => {
   )
 
   return (
-    <SPoolDetailsContainer
-      css={{ background: "transparent" }}
-      sx={{ pb: [0, 0] }}
-    >
-      <div
-        sx={{ flex: "row", justify: "space-between", align: "center", mb: 12 }}
-      >
-        <div sx={{ flex: "row", align: "center", gap: 8 }}>
-          <Icon size={18} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
-          <Text fs={[16, 16]} color="pink600">
-            {t("liquidity.asset.liquidityPositions.title")}
-          </Text>
-        </div>
-
-        <Button
-          variant="error"
-          size="compact"
-          onClick={() => setOpenRemove(true)}
+    <>
+      {positionsNumber && (
+        <SPoolDetailsContainer
+          css={{ background: "transparent" }}
+          sx={{ pb: [0, 0] }}
         >
-          <Icon size={12} icon={<TrashIcon />} />
-          {t("liquidity.pool.positions.removeAll.btn")}
-        </Button>
-      </div>
-
-      <div
-        sx={{ flex: "row", justify: "space-between", align: "center", py: 12 }}
-      >
-        <div sx={{ flex: "column", gap: 2 }}>
-          <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
-            {t("liquidity.pool.positions.liq")}
-          </Text>
-          <div sx={{ flex: "row", align: "center", gap: 4 }}>
-            <Text color="white" fs={[14, 16]}>
-              {t("value.tokenWithSymbol", {
-                value: total.totalValue,
-                symbol: pool.symbol,
-              })}
-            </Text>
-            {isHubValue && (
-              <LrnaPositionTooltip
-                assetId={pool.id}
-                tokenPosition={total.value}
-                lrnaPosition={total.hub}
+          <div
+            sx={{
+              flex: "row",
+              justify: "space-between",
+              align: "center",
+              mb: 12,
+            }}
+          >
+            <div sx={{ flex: "row", align: "center", gap: 8 }}>
+              <Icon
+                size={18}
+                sx={{ color: "pink600" }}
+                icon={<LiquidityIcon />}
               />
-            )}
+              <Text fs={[16, 16]} color="pink600">
+                {t("liquidity.asset.liquidityPositions.title")}
+              </Text>
+            </div>
+
+            <Button
+              variant="error"
+              size="compact"
+              onClick={() => setOpenRemove(positions)}
+            >
+              <Icon size={12} icon={<TrashIcon />} />
+              {t("liquidity.pool.positions.removeAll.btn")}
+            </Button>
           </div>
 
-          <Text color="basic500" fs={12}>
-            {t("value.usd", { amount: total.display })}
-          </Text>
-        </div>
+          <div
+            sx={{
+              flex: "row",
+              justify: "space-between",
+              align: "center",
+              py: 12,
+            }}
+          >
+            <div sx={{ flex: "column", gap: 2 }}>
+              <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
+                {t("liquidity.pool.positions.liq")}
+              </Text>
+              <div sx={{ flex: "row", align: "center", gap: 4 }}>
+                <Text color="white" fs={[14, 16]}>
+                  {t("value.tokenWithSymbol", {
+                    value: total.totalValue,
+                    symbol: pool.symbol,
+                  })}
+                </Text>
+                {isHubValue && (
+                  <LrnaPositionTooltip
+                    assetId={pool.id}
+                    tokenPosition={total.value}
+                    lrnaPosition={total.hub}
+                  />
+                )}
+              </div>
 
-        <Separator
-          orientation="vertical"
-          color="white"
-          opacity={0.06}
-          sx={{ height: 45 }}
-        />
+              <Text color="basic500" fs={12}>
+                {t("value.usd", { amount: total.display })}
+              </Text>
+            </div>
 
-        <div sx={{ flex: "column", gap: 2 }}>
-          <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
-            {t("liquidity.pool.positions.liq.number")}
-          </Text>
-          <Text color="white" fs={[14, 16]}>
-            {positionsNumber}
-          </Text>
-        </div>
-      </div>
+            <Separator
+              orientation="vertical"
+              color="white"
+              opacity={0.06}
+              sx={{ height: 45 }}
+            />
 
-      <CollapsedPositionsList positions={positionsData.positions} />
+            <div sx={{ flex: "column", gap: 2 }}>
+              <Text color="basic400" fs={[12, 13]} sx={{ mb: 2 }}>
+                {t("liquidity.pool.positions.liq.number")}
+              </Text>
+              <Text color="white" fs={[14, 16]}>
+                {positionsNumber}
+              </Text>
+            </div>
+          </div>
 
+          <CollapsedPositionsList positions={positionsData.positions} />
+        </SPoolDetailsContainer>
+      )}
       {openRemove && (
         <RemoveLiquidity
           pool={pool}
-          position={positions}
+          position={openRemove}
           isOpen
-          onClose={() => setOpenRemove(false)}
+          onClose={() => setOpenRemove(undefined)}
           onSuccess={refetchPositions}
         />
       )}
-    </SPoolDetailsContainer>
+    </>
   )
 }

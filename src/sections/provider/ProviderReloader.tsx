@@ -27,9 +27,10 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
     const shouldReset = curr > prev
 
     if (shouldReset) {
-      queryClient.clear()
       queryClient.resetQueries().then(() => {
         setVersion((prev) => prev + 1)
+        queryClient.invalidateQueries(["provider"])
+        queryClient.refetchQueries(["provider"])
       })
     }
   }, [prevRpcVersion, queryClient, rpcVersion])

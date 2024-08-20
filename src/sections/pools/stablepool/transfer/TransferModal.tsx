@@ -110,6 +110,8 @@ export const TransferModal = ({
       topContent={
         !defaultPage && ![Page.OPTIONS, Page.ASSETS].includes(page) ? (
           <Stepper
+            sx={{ px: [10] }}
+            width={420}
             steps={steps.map((step, idx) => ({
               label: step,
               state: getStepState(idx),
@@ -153,6 +155,7 @@ export const TransferModal = ({
             headerVariant: "gradient",
             content: (
               <AddStablepoolLiquidity
+                isStablepoolOnly={isStablepool}
                 poolId={poolId}
                 onCancel={onClose}
                 onClose={() => {
@@ -170,6 +173,9 @@ export const TransferModal = ({
                 }}
                 onSuccess={() => {
                   if (isStablepool) {
+                    queryClient.invalidateQueries(
+                      QUERY_KEYS.tokenBalance(pool.id, account?.address),
+                    )
                     return refetchPositions()
                   }
 
