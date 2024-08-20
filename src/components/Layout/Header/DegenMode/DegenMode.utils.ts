@@ -50,7 +50,7 @@ export const useDegenModeSubscription = () => {
       data,
       isSuccess,
     }
-  }, [external, externalAssets, isLoaded])
+  }, [external, externalAssets, isLoaded, externalInvalid])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {
