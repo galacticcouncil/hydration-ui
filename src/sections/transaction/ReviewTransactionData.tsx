@@ -273,6 +273,7 @@ export const ReviewTransactionData: FC<Props> = ({
           ) : (
             <CopyIcon width={18} height={18} />
           )}
+          {t("copy")}
         </Button>
       </Dropdown>
     </SContainer>
