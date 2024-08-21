@@ -1,11 +1,7 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  usePools,
-  useXYKPools,
-  XYK_TVL_VISIBILITY,
-} from "sections/pools/PoolsPage.utils"
+import { usePools, useXYKPools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
@@ -22,7 +18,6 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
-import { Switch } from "components/Switch/Switch"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -91,7 +86,6 @@ const AllPoolsData = () => {
 
   const pools = usePools()
   const xylPools = useXYKPools()
-  const [showAllXyk, setShowAllXyk] = useState(false)
 
   const omnipoolTotal = useMemo(
     () =>
@@ -126,16 +120,6 @@ const AllPoolsData = () => {
         ? arraySearch(xylPools.data, search, ["symbol", "name"])
         : xylPools.data) ?? [],
     [search, xylPools.data],
-  )
-
-  const visibleXykPools = useMemo(
-    () =>
-      showAllXyk
-        ? filteredXYKPools
-        : filteredXYKPools.filter((pool) =>
-            pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
-          ),
-    [filteredXYKPools, showAllXyk],
   )
 
   if (id != null) {
@@ -229,14 +213,6 @@ const AllPoolsData = () => {
                 css={{ whiteSpace: "nowrap" }}
               >
                 <TableLabel label={t("liquidity.section.xyk")} />
-                <Switch
-                  value={showAllXyk}
-                  onCheckedChange={(value) => setShowAllXyk(value)}
-                  size="small"
-                  name="showAll"
-                  label={t("liquidity.section.xyk.toggle")}
-                  sx={{ pb: 20 }}
-                />
               </div>
 
               <CreateXYKPoolModalButton
@@ -247,7 +223,7 @@ const AllPoolsData = () => {
             {xylPools.isInitialLoading ? (
               <PoolsTableSkeleton isXyk />
             ) : (
-              <PoolsTable data={visibleXykPools} isXyk />
+              <PoolsTable data={filteredXYKPools} isXyk paginated />
             )}
           </div>
         ) : null}

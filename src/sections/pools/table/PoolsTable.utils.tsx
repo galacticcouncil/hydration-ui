@@ -3,6 +3,7 @@ import {
   VisibilityState,
   createColumnHelper,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
@@ -31,6 +32,7 @@ import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { useAssets } from "providers/assets"
+import { useTablePagination } from "components/Table/TablePagination"
 
 const NonClickableContainer = ({
   children,
@@ -259,11 +261,13 @@ export const usePoolTable = (
   data: TPool[] | TXYKPool[],
   isXyk: boolean,
   onRowSelect: (id: string) => void,
+  paginated?: boolean,
 ) => {
   const { t } = useTranslation()
 
   const { accessor, display } = createColumnHelper<TPool | TXYKPool>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useTablePagination()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -404,9 +408,17 @@ export const usePoolTable = (
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
+    state: { sorting, columnVisibility, pagination },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+
+    ...(paginated
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          onPaginationChange: setPagination,
+          autoResetPageIndex: false,
+        }
+      : {}),
   })
 }

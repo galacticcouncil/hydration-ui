@@ -14,6 +14,8 @@ import { useNavigate, useSearch } from "@tanstack/react-location"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { theme } from "theme"
 import { css } from "@emotion/react"
+import { TablePagination } from "components/Table/TablePagination"
+import { useEffect } from "react"
 
 const styles = css`
   @media ${theme.viewport.gte.sm} {
@@ -27,9 +29,11 @@ const styles = css`
 export const PoolsTable = ({
   data,
   isXyk = false,
+  paginated,
 }: {
   data: TPool[] | TXYKPool[]
   isXyk?: boolean
+  paginated?: boolean
 }) => {
   const navigate = useNavigate()
   const search = useSearch()
@@ -39,7 +43,12 @@ export const PoolsTable = ({
       search: { ...search, id },
     })
 
-  const table = usePoolTable(data, isXyk, onRowSelect)
+  useEffect(() => {
+    table.setPageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
+
+  const table = usePoolTable(data, isXyk, onRowSelect, paginated)
 
   return (
     <>
@@ -84,6 +93,7 @@ export const PoolsTable = ({
             ))}
           </TableBodyContent>
         </Table>
+        {paginated && <TablePagination table={table} />}
       </TableContainer>
     </>
   )
