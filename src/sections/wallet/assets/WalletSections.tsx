@@ -75,6 +75,7 @@ export const AllAssets = () => {
           data={assetsTable.data}
           showAll={showAll}
           setShowAll={setShowAll}
+          search={search}
         />
       )}
       {isLoadingBonds ? (
@@ -134,6 +135,7 @@ export const Assets = () => {
           data={assetsTable.data}
           showAll={showAll}
           setShowAll={setShowAll}
+          search={search}
         />
       )}
       {isLoading ? (

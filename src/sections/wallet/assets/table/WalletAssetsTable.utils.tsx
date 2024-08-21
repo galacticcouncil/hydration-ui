@@ -1,6 +1,7 @@
 import {
   createColumnHelper,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -17,6 +18,7 @@ import { ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
+import { useTablePagination } from "components/Table/TablePagination"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -25,6 +27,7 @@ export const useAssetsTable = (
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<AssetsTableData>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useTablePagination()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const columnVisibility: VisibilityState = {
@@ -110,9 +113,12 @@ export const useAssetsTable = (
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
+    state: { sorting, columnVisibility, pagination },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange: setPagination,
+    autoResetPageIndex: false,
   })
 }
