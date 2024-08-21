@@ -141,6 +141,13 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
                 : assetRaw.id,
         }
 
+        if (
+          asset?.externalId &&
+          ASSETHUB_ID_BLACKLIST.includes(asset.externalId)
+        ) {
+          return acc
+        }
+
         acc.all.set(asset.id, asset)
 
         if (asset.isTradable) {
@@ -166,12 +173,9 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
             (token) => token.internalId === asset.id,
           )?.id
 
-          if (externalId && !ASSETHUB_ID_BLACKLIST.includes(externalId)) {
+          if (externalId) {
             acc.external.push({ ...asset, externalId })
-          } else if (
-            asset.externalId &&
-            !ASSETHUB_ID_BLACKLIST.includes(asset.externalId)
-          ) {
+          } else if (asset.externalId) {
             acc.externalInvalid.push(asset as TExternal)
           }
         }
