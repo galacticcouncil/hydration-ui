@@ -215,6 +215,8 @@ export const TableFooter = styled.div`
   aligh-items: center;
   justify-content: center;
   gap: 5px;
+
+  border-top: 1px solid rgba(32, 33, 53, 1);
 `
 
 export const ButtonPagination = styled(ButtonTransparent)<{ active?: boolean }>`
