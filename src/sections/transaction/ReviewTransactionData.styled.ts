@@ -3,6 +3,18 @@ import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
+  position: relative;
+  margin: calc(-1 * var(--modal-content-padding));
+`
+
+export const SScrollableContent = styled.div`
+  position: relative;
+  max-height: 280px;
+  overflow: auto;
+  padding: var(--modal-content-padding);
+`
+
+export const SExpandableContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: start;
@@ -36,7 +48,7 @@ export const SShowMoreButton = styled(ButtonTransparent)`
 
   width: 100%;
 
-  padding: 6px 0 0;
+  padding: 16px 0 0;
 
   color: ${theme.colors.brightBlue300};
 
@@ -51,7 +63,7 @@ export const SShowMoreButton = styled(ButtonTransparent)`
   }
 `
 
-export const SRawCallData = styled.div`
+export const SRawData = styled.div`
   font-size: 12px;
 
   margin-top: 10px;
