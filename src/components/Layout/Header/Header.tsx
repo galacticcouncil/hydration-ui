@@ -1,5 +1,4 @@
 import { SHeader } from "components/Layout/Header/Header.styled"
-import { useVisibleElements } from "hooks/useVisibleElements"
 import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
 import { Suspense, lazy } from "react"
@@ -24,8 +23,6 @@ export const Header = () => {
   const search = useSearch()
   const matchRoute = useMatchRoute()
 
-  const { hiddenElementsKeys, observe } = useVisibleElements()
-
   const isSubmitTransactionPath = matchRoute({ to: LINKS.submitTransaction })
 
   return (
@@ -48,12 +45,12 @@ export const Header = () => {
             </Link>
             {!isSubmitTransactionPath && (
               <Suspense>
-                <HeaderMenu ref={observe} />
+                <HeaderMenu />
               </Suspense>
             )}
           </div>
           <Suspense>
-            <HeaderToolbar menuItems={hiddenElementsKeys} />
+            <HeaderToolbar />
           </Suspense>
         </div>
       </SHeader>
