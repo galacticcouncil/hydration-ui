@@ -55,10 +55,10 @@ export const RemoveLiquidityForm = ({
       ? values.tokensToGetShifted
       : BN(0)
 
-  // If the tokensToGet rounds to zero, allow only 100% withdrawal,
+  // If the tokensToGet rounded to zero, allow only 100% withdrawal,
   // else, check if remaining value is below minimum allowed pool liquidity
   const isBelowMinimum = tokensToGet.isZero()
-    ? value !== 100
+    ? value > 0 && value !== 100
     : remainingValue.gt(0) &&
       remainingValue
         .shiftedBy(decimals)
@@ -171,7 +171,12 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={tokensToGet.isNaN() || isFeeExceeded || isBelowMinimum}
+          disabled={
+            tokensToGet.isNaN() ||
+            tokensToGet.isZero() ||
+            isFeeExceeded ||
+            isBelowMinimum
+          }
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>

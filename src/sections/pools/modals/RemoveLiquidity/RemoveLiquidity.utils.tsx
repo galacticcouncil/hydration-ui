@@ -81,15 +81,16 @@ export const useRemoveLiquidity = (
       }
 
       const totalShares = position.shares
-      const removeValue = position.totalValueShifted.div(100).times(percentage)
+      const removeValue = position.totalValue.div(100).times(percentage)
+      const remainingValue = position.totalValue.minus(removeValue)
 
       return {
         totalValue: position.totalValueShifted,
-        removeValue,
-        remainingValue: position.totalValueShifted.minus(removeValue),
+        removeValue: removeValue.shiftedBy(-meta.decimals),
+        remainingValue: remainingValue.shiftedBy(-meta.decimals),
         removeShares: totalShares.div(100).times(percentage),
       }
-    }, [isPositionMultiple, position, percentage])
+    }, [meta, isPositionMultiple, position, percentage])
 
   const calculateLiquidityValues = useCallback(
     (position: TLPData, removeSharesValue: BN) => {
