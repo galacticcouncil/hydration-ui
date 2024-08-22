@@ -1,4 +1,4 @@
-import { useExternalTokensRugCheck } from "api/externalAssetRegistry"
+import { useExternalTokensRugCheck } from "api/external"
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { useTranslation } from "react-i18next"
@@ -29,7 +29,9 @@ export const ExternalAssetUpdateModal: React.FC<Props> = ({
         onClose={onClose}
         contents={[
           {
-            title: t("wallet.assets.table.updateToken"),
+            title: rugCheckData?.warnings?.length
+              ? t("wallet.assets.table.updateToken")
+              : t("wallet.assets.table.assetDetails"),
             headerVariant: "GeistMono",
             content: <AddTokenFormModal asset={asset} onClose={onClose} />,
           },
