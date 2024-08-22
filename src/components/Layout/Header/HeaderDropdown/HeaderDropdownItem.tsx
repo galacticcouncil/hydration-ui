@@ -50,7 +50,7 @@ export const HeaderDropdownItem: React.FC<HeaderDropdownItemProps> = ({
           icon={icon}
         />
       )}
-      <div sx={{ flex: "column", gap: 3 }}>
+      <div sx={{ flex: "column", gap: 3 }} css={{ position: "relative" }}>
         <Text
           fs={14}
           lh={14}

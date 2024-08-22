@@ -142,7 +142,10 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       api: {} as TProviderContext["api"],
       assets: {} as TProviderContext["assets"],
       tradeRouter: {} as TradeRouter,
-      featureFlags: {} as TProviderContext["featureFlags"],
+      featureFlags: {
+        referrals: true,
+        dispatchPermit: true,
+      } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
   }, [preference._hasHydrated, providerData.data])
