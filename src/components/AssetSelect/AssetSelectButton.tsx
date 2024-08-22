@@ -36,7 +36,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
         onClick?.()
       }}
     >
-      <MultipleAssetLogo iconId={asset?.iconId} />
+      <MultipleAssetLogo size={30} iconId={asset?.iconId} />
 
       {isAssetFound && (
         <div sx={{ flex: "column", justify: "space-between", minWidth: 0 }}>

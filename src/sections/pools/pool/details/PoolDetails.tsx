@@ -270,8 +270,8 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
 
   if (!prices) return null
 
-  const displayPriceA = prices.priceA.times(usdPriceA.data?.spotPrice ?? 1)
-  const displayPriceB = prices.priceB.times(usdPriceB.data?.spotPrice ?? 1)
+  const displayPriceA = prices.priceA.times(usdPriceB.data?.spotPrice ?? 1)
+  const displayPriceB = prices.priceB.times(usdPriceA.data?.spotPrice ?? 1)
 
   return (
     <>

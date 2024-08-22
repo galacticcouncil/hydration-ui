@@ -49,7 +49,7 @@ export const AddTokenListModal: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
-  const { tokens, external } = useAssets()
+  const { tokens, external, externalInvalid } = useAssets()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -73,7 +73,7 @@ export const AddTokenListModal: React.FC<Props> = ({
     )
 
     const registeredAssets =
-      external.filter(
+      [...external, ...externalInvalid].filter(
         (asset) => asset.parachainId === parachainId.toString(),
       ) ?? []
 
@@ -85,7 +85,7 @@ export const AddTokenListModal: React.FC<Props> = ({
       registeredAssetsMap,
       internalAssetsMap,
     }
-  }, [external, parachainId, tokens])
+  }, [external, externalInvalid, parachainId, tokens])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"

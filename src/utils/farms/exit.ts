@@ -31,7 +31,7 @@ export const useFarmExitAllMutation = (
                 ? api.tx.xykLiquidityMining.withdrawShares(
                     record.id,
                     entry.yieldFarmId,
-                    { assetIn: meta.assets[0], assetOut: meta.assets[1] },
+                    { assetIn: meta.assets[0].id, assetOut: meta.assets[1].id },
                   )
                 : api.tx.omnipoolLiquidityMining.withdrawShares(
                     record.id,

@@ -129,7 +129,7 @@ export type TRugCheckData = ReturnType<
 >["tokens"][number]
 
 export const useExternalTokensRugCheck = (ids?: string[]) => {
-  const { external, getAssetWithFallback } = useAssets()
+  const { external, externalInvalid, getAssetWithFallback } = useAssets()
   const { isLoaded } = useRpcProvider()
   const { getTokenByInternalId, isRiskConsentAdded } =
     useUserExternalTokenStore()
@@ -138,16 +138,18 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const { internalIds } = useMemo(() => {
+    const allExternal = [...external, ...externalInvalid]
+
     const externalAssets = isLoaded
       ? ids?.length
-        ? external.filter((a) => ids?.some((id) => a.id === id))
-        : external.filter(({ name, symbol }) => !!name && !!symbol)
+        ? allExternal.filter((a) => ids?.some((id) => a.id === id))
+        : allExternal.filter(({ name, symbol }) => !!name && !!symbol)
       : []
 
     const internalIds = externalAssets.map(({ id }) => id)
 
     return { externalAssets, internalIds }
-  }, [external, ids, isLoaded])
+  }, [external, externalInvalid, ids, isLoaded])
 
   const issuanceQueries = useTotalIssuances(internalIds)
 
