@@ -314,11 +314,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                 poolId={poolId}
                 onCancel={onClose}
                 farms={farms}
-                onClose={() => {
-                  if (isOnlyStablepool) {
-                    onClose()
-                  }
-                }}
+                onClose={onClose}
                 onSubmitted={(shares) => {
                   if (isOnlyStablepool) {
                     onClose()

@@ -154,7 +154,11 @@ export const AddStablepoolLiquidity = ({
           onSubmitted(shares)
           form.reset()
         },
+        onError: () => {
+          onClose()
+        },
         onClose,
+        disableAutoClose: !isStablepoolOnly,
         onBack: () => {},
         toast,
       },
