@@ -12,6 +12,10 @@ import { theme } from "theme"
 import ApeIcon from "assets/icons/ApeIcon.svg?react"
 import { useTranslation } from "react-i18next"
 
+const hostname = window.location.hostname
+const DEPLOY_PREVIEW_NAME =
+  hostname.includes("deploy-preview") && hostname.match(/--([^-\s]+)-/)?.[1]
+
 const HydrationLogoMobile: React.FC<{ degenMode: boolean }> = ({
   degenMode,
 }) => (
@@ -24,6 +28,13 @@ const HydrationLogoMobile: React.FC<{ degenMode: boolean }> = ({
         />
       </svg>
     </SMobileLogoMask>
+    {DEPLOY_PREVIEW_NAME && (
+      <div css={{ position: "absolute" }} sx={{ left: "100%" }}>
+        <SLogoBadge sx={{ ml: 4, color: "white", bg: "pink700" }}>
+          {DEPLOY_PREVIEW_NAME}
+        </SLogoBadge>
+      </div>
+    )}
     {degenMode && (
       <ApeIcon
         width={12}
@@ -105,6 +116,7 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
           </clipPath>
         </defs>
       </svg>
+
       <SLogoBadgeContainer>
         <SLogoBadge
           initial={{ y: "-100%", opacity: 0 }}
@@ -116,6 +128,11 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
         >
           {t("header.settings.degenMode.title")}
         </SLogoBadge>
+        {DEPLOY_PREVIEW_NAME && (
+          <SLogoBadge sx={{ ml: 2, color: "white", bg: "pink700" }}>
+            {DEPLOY_PREVIEW_NAME}
+          </SLogoBadge>
+        )}
       </SLogoBadgeContainer>
     </>
   )
