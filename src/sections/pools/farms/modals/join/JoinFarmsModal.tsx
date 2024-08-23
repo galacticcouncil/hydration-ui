@@ -58,9 +58,11 @@ export const JoinFarmModal = ({
       disableAutoClose: isMultipleFarms,
       onSuccess: () => setCurrentStep(1),
       onSubmitted: () => (isMultipleFarms ? paginateTo(Page.WAIT) : null),
+      onError: onClose,
     },
     redeposit: {
       onClose,
+      onError: onClose,
     },
   })
 
