@@ -56,9 +56,11 @@ export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
       onSuccess: () => {
         setCurrentStep(2)
       },
+      onError: onClose,
     },
     redeposit: {
       onClose,
+      onError: onClose,
     },
   })
 

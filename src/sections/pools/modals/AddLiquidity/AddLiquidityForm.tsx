@@ -115,6 +115,7 @@ export const AddLiquidityForm = ({
         disableAutoClose: !!farms.length,
         onBack: () => {},
         toast,
+        onError: onClose,
       },
     )
   }
