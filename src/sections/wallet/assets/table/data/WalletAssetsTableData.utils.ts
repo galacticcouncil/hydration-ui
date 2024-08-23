@@ -128,46 +128,48 @@ export const useAssetsData = ({
     })
 
     const rows = isAllAssets
-      ? allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
-          const { id, symbol, name, isExternal } = meta
-          const tokenWithBalance = rowsWithBalance.find((row) => row.id === id)
+      ? [
+          ...rowsWithBalance,
+          ...allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
+            const { id, symbol, name, isExternal } = meta
+            const isWithBalance = rowsWithBalance.some((row) => row.id === id)
 
-          if (tokenWithBalance) {
-            acc.push(tokenWithBalance)
-          } else {
-            const inTradeRouter = tradable.some(
-              (tradeAsset) => tradeAsset.id === id,
-            )
+            if (!isWithBalance) {
+              const inTradeRouter = tradable.some(
+                (tradeAsset) => tradeAsset.id === id,
+              )
 
-            const tradability = {
-              canBuy: inTradeRouter,
-              canSell: inTradeRouter,
-              inTradeRouter,
+              const tradability = {
+                canBuy: inTradeRouter,
+                canSell: inTradeRouter,
+                inTradeRouter,
+              }
+
+              const isExternalInvalid = isExternal && !symbol
+
+              const asset = {
+                id,
+                symbol,
+                name,
+                meta,
+                isPaymentFee: false,
+                couldBeSetAsPaymentFee: false,
+                reserved: BN_0,
+                reservedDisplay: BN_0,
+                total: BN_0,
+                totalDisplay: BN_0,
+                transferable: BN_0,
+                transferableDisplay: BN_0,
+                tradability,
+                isExternalInvalid,
+              }
+
+              acc.push(asset)
             }
 
-            const isExternalInvalid = isExternal && !symbol
-
-            const asset = {
-              id,
-              symbol,
-              name,
-              meta,
-              isPaymentFee: false,
-              couldBeSetAsPaymentFee: false,
-              reserved: BN_0,
-              reservedDisplay: BN_0,
-              total: BN_0,
-              totalDisplay: BN_0,
-              transferable: BN_0,
-              transferableDisplay: BN_0,
-              tradability,
-              isExternalInvalid,
-            }
-
-            acc.push(asset)
-          }
-          return acc
-        }, [])
+            return acc
+          }, []),
+        ]
       : rowsWithBalance
 
     const sortedAssets = sortAssets(
