@@ -73,7 +73,7 @@ export const useAssetsData = ({
   )
 
   const data = useMemo(() => {
-    if (!tokensWithBalance.length || !spotPrices.data) return []
+    if (balances.isInitialLoading || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
       const asset = getAssetWithFallback(balance.id)
       const isExternalInvalid = asset.isExternal && !asset.symbol
@@ -192,6 +192,7 @@ export const useAssetsData = ({
     tradable,
     acceptedCurrencies.data,
     currencyId,
+    balances.isInitialLoading,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
