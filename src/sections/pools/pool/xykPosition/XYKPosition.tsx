@@ -105,7 +105,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
               sx={{ flex: ["column", "row"], gap: 8, justify: "space-between" }}
             >
               <div sx={{ flex: "row", gap: 7, align: "center" }}>
-                <MultipleAssetLogo iconId={pool.meta.iconId} />
+                <MultipleAssetLogo iconId={pool.meta.iconId} size={28} />
 
                 <Text fs={[14, 18]} color={["white", "basic100"]}>
                   {t("liquidity.xyk.asset.position.title", {

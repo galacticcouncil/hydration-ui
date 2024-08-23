@@ -54,7 +54,7 @@ export const useFarmRedepositMutation = (
             ? api.tx.xykLiquidityMining.redepositShares(
                 farm.globalFarm.id,
                 farm.yieldFarm.id,
-                { assetIn: meta.assets[0], assetOut: meta.assets[1] },
+                { assetIn: meta.assets[0].id, assetOut: meta.assets[1].id },
                 depositNft.id,
               )
             : api.tx.omnipoolLiquidityMining.redepositShares(
