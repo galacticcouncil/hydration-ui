@@ -50,6 +50,10 @@ import { useUserDeposits } from "api/deposits"
 
 export const XYK_TVL_VISIBILITY = 5000
 
+export const INVALID_ISOLATED_POOLS = [
+  "7MCEZkdG2wt5tjmjPzeUYgtb1kLWNdvLBo26eEfDFEq1ppCf",
+]
+
 export const useAssetsTradability = () => {
   const {
     assets: { hub },
@@ -490,7 +494,12 @@ export const useXYKPools = (withPositions?: boolean) => {
             pool.miningPositions.length
           : true,
       )
-      .sort((a, b) => b.tvlDisplay.minus(a.tvlDisplay).toNumber())
+      .sort((a, b) => {
+        if (INVALID_ISOLATED_POOLS.includes(a.poolAddress)) return 1
+        if (INVALID_ISOLATED_POOLS.includes(b.poolAddress)) return -1
+
+        return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
+      })
   }, [
     assets,
     fee,

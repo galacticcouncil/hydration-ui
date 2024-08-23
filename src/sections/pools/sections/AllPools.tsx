@@ -2,6 +2,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  INVALID_ISOLATED_POOLS,
   usePools,
   useXYKPools,
   XYK_TVL_VISIBILITY,
@@ -109,7 +110,12 @@ const AllPoolsData = () => {
   const xykTotal = useMemo(() => {
     if (xylPools.data) {
       return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        return acc.plus(
+          !xykPool.tvlDisplay.isNaN() &&
+            !INVALID_ISOLATED_POOLS.includes(xykPool.poolAddress)
+            ? xykPool.tvlDisplay
+            : BN_0,
+        )
       }, BN_0)
     }
     return BN_0
@@ -132,8 +138,10 @@ const AllPoolsData = () => {
     () =>
       showAllXyk
         ? filteredXYKPools
-        : filteredXYKPools.filter((pool) =>
-            pool.tvlDisplay.gte(XYK_TVL_VISIBILITY),
+        : filteredXYKPools.filter(
+            (pool) =>
+              pool.tvlDisplay.gte(XYK_TVL_VISIBILITY) &&
+              !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
           ),
     [filteredXYKPools, showAllXyk],
   )

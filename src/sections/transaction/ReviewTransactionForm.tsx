@@ -229,7 +229,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={<ReviewTransactionData address={account?.address} tx={tx} />}
+        content={
+          <ReviewTransactionData
+            address={account?.address}
+            tx={tx}
+            xcallMeta={props.xcallMeta}
+          />
+        }
         footer={
           <>
             <div sx={{ mt: 15 }}>
