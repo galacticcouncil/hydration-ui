@@ -1,7 +1,11 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { usePools, useXYKPools } from "sections/pools/PoolsPage.utils"
+import {
+  INVALID_ISOLATED_POOLS,
+  usePools,
+  useXYKPools,
+} from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { BN_0 } from "utils/constants"
@@ -103,7 +107,12 @@ const AllPoolsData = () => {
   const xykTotal = useMemo(() => {
     if (xylPools.data) {
       return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        return acc.plus(
+          !xykPool.tvlDisplay.isNaN() &&
+            !INVALID_ISOLATED_POOLS.includes(xykPool.poolAddress)
+            ? xykPool.tvlDisplay
+            : BN_0,
+        )
       }, BN_0)
     }
     return BN_0

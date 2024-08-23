@@ -2,7 +2,10 @@ import { useGetXYKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import { usePools } from "sections/pools/PoolsPage.utils"
+import {
+  INVALID_ISOLATED_POOLS,
+  usePools,
+} from "sections/pools/PoolsPage.utils"
 import { useAssets } from "providers/assets"
 
 export const AllPoolsVolumeTotal = () => {
@@ -10,7 +13,11 @@ export const AllPoolsVolumeTotal = () => {
   const xykPools = useGetXYKPools()
   const poolsAddress =
     xykPools.data
-      ?.filter((pool) => getAssets(pool.assets).every((asset) => asset?.symbol))
+      ?.filter(
+        (pool) =>
+          getAssets(pool.assets).every((asset) => asset?.symbol) &&
+          !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
+      )
       .map((pool) => pool.poolAddress) ?? []
 
   const xykVolumes = useXYKPoolTradeVolumes(poolsAddress)
@@ -51,7 +58,11 @@ export const XYKVolumeTotal = () => {
   const pools = useGetXYKPools()
   const poolsAddress =
     pools.data
-      ?.filter((pool) => getAssets(pool.assets).every((asset) => asset?.symbol))
+      ?.filter(
+        (pool) =>
+          getAssets(pool.assets).every((asset) => asset?.symbol) &&
+          !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
+      )
       .map((pool) => pool.poolAddress) ?? []
   const xykVolumes = useXYKPoolTradeVolumes(poolsAddress)
 

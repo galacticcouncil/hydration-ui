@@ -1,5 +1,8 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { useXYKPools } from "sections/pools/PoolsPage.utils"
+import {
+  INVALID_ISOLATED_POOLS,
+  useXYKPools,
+} from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
@@ -70,7 +73,12 @@ const IsolatedPoolsData = () => {
   const totalLocked = useMemo(() => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
-        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        return acc.plus(
+          !xykPool.tvlDisplay.isNaN() &&
+            !INVALID_ISOLATED_POOLS.includes(xykPool.poolAddress)
+            ? xykPool.tvlDisplay
+            : BN_0,
+        )
       }, BN_0)
     }
     return BN_0

@@ -85,7 +85,10 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       isLoaded: false,
       api: {} as TProviderContext["api"],
       tradeRouter: {} as TradeRouter,
-      featureFlags: {} as TProviderContext["featureFlags"],
+      featureFlags: {
+        referrals: true,
+        dispatchPermit: true,
+      } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
