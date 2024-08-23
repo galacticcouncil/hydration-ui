@@ -47,11 +47,11 @@ enum TokenState {
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
-  const { externalInvalid } = useAssets()
+  const { externalInvalid, external } = useAssets()
   const { getTokenByInternalId } = useUserExternalTokenStore()
   const { degenMode } = useSettingsStore()
 
-  const chainStored = externalInvalid.find(
+  const chainStored = [...external, ...externalInvalid].find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
