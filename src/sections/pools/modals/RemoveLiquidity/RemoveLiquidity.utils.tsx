@@ -245,6 +245,7 @@ export const useRemoveLiquidity = (
           onClose,
           onSuccess,
           onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+          onError: onClose,
         },
       )
     }
