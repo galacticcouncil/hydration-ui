@@ -301,6 +301,18 @@ export const useEditFeePaymentAsset = (
   }
 }
 
+export const createPolkadotJSTxUrl = (
+  rpcUrl: string,
+  tx: SubmittableExtrinsic<"promise">,
+) => {
+  let url = ""
+  try {
+    url = `https://polkadot.js.org/apps/?rpc=${rpcUrl}#/extrinsics/decode/${tx.method.toHex()}`
+  } catch (e) {}
+
+  return url
+}
+
 export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   const provider = useProviderRpcUrlStore()
 
@@ -309,8 +321,6 @@ export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   )
 
   return useMemo(() => {
-    return tx
-      ? `https://polkadot.js.org/apps/?rpc=${rpcUrl}#/extrinsics/decode/${tx.method.toHex()}`
-      : ""
+    return createPolkadotJSTxUrl(rpcUrl, tx)
   }, [rpcUrl, tx])
 }

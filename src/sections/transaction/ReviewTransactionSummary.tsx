@@ -129,7 +129,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
             content: (
               <Text fs={14} sx={{ flex: "row", gap: 4, align: "center" }}>
                 {era?.isLoading ? (
-                  <Skeleton width={100} height={16} />
+                  <Skeleton width={100} height={14} />
                 ) : era?.deathDate ? (
                   <>
                     {t("transaction.mortal.expire", {
