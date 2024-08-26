@@ -22,7 +22,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0, BN_1, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
@@ -316,7 +316,13 @@ export const usePoolTable = (
         cell: ({ row }) => (
           <NonClickableContainer>
             <Text color="white" fs={14}>
-              <DisplayValue value={row.original.tvlDisplay} />
+              <DisplayValue
+                value={
+                  isXYKPoolType(row.original) && row.original.isInvalid
+                    ? BN_NAN
+                    : row.original.tvlDisplay
+                }
+              />
             </Text>
           </NonClickableContainer>
         ),
@@ -387,7 +393,11 @@ export const usePoolTable = (
               }}
             >
               <Text color="white" fs={14}>
-                <DisplayValue value={pool.volume} />
+                <DisplayValue
+                  value={
+                    isXYKPoolType(pool) && pool.isInvalid ? BN_NAN : pool.volume
+                  }
+                />
               </Text>
 
               <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
