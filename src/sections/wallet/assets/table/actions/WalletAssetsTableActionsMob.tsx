@@ -34,6 +34,9 @@ import { BN_0 } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useExternalTokensRugCheck } from "api/external"
+import { useState } from "react"
+import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
+import InfoIcon from "assets/icons/InfoIcon.svg?react"
 
 type Props = {
   row?: AssetsTableData
@@ -54,6 +57,7 @@ export const WalletAssetsTableActionsMob = ({
   const setFeeAsPayment = useSetAsFeePayment()
   const { featureFlags } = useRpcProvider()
   const rugCheck = useExternalTokensRugCheck()
+  const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   if (!row) return null
 
@@ -63,8 +67,11 @@ export const WalletAssetsTableActionsMob = ({
     ? featureFlags.dispatchPermit
     : true
 
-  const isUnknownExternalAsset = row.meta.isExternal && !row.name
-  const hasWarnings = !!rugCheck.tokensMap.get(row.id)?.warnings.length
+  const isUnknownExternalAsset = row.isExternalInvalid
+
+  const rugCheckData = rugCheck.tokensMap.get(row.id)
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
   return (
     <Modal open={!!row} isDrawer onClose={onClose} title="">
@@ -83,7 +90,7 @@ export const WalletAssetsTableActionsMob = ({
             flexWrap: "wrap",
           }}
         >
-          {hasWarnings ? (
+          {hasRugCheckWarnings ? (
             <>
               <Text fs={13} color="warningOrange200" sx={{ p: 8 }}>
                 {t("wallet.assets.table.addToken.changed")}
@@ -122,7 +129,7 @@ export const WalletAssetsTableActionsMob = ({
           )}
         </div>
         <SActionButtonsContainer>
-          {hasWarnings ? (
+          {hasRugCheckWarnings ? (
             <UpdateTokenDataAction
               id={row.id}
               css={{ width: "100%", marginTop: 20 }}
@@ -197,6 +204,28 @@ export const WalletAssetsTableActionsMob = ({
                     {t("wallet.assets.table.actions.deposit")}
                   </Button>
                 </Link>
+
+                {hasRugCheckData && (
+                  <>
+                    <Button
+                      sx={{ width: "100%" }}
+                      size="small"
+                      onClick={() => setAssetCheckModalOpen(true)}
+                    >
+                      <InfoIcon width={18} height={18} />
+                      {t("wallet.assets.table.actions.checkExternal")}
+                    </Button>
+                    {assetCheckModalOpen && (
+                      <ExternalAssetUpdateModal
+                        open={assetCheckModalOpen}
+                        assetId={row.id}
+                        onClose={() => {
+                          setAssetCheckModalOpen(false)
+                        }}
+                      />
+                    )}
+                  </>
+                )}
 
                 {displayFeePaymentAssetButton && (
                   <Button
