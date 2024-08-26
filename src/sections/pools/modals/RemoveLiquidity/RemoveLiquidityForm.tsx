@@ -17,6 +17,7 @@ import {
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
 import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const RemoveLiquidityForm = ({
   onClose,
@@ -25,6 +26,7 @@ export const RemoveLiquidityForm = ({
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
+  const { api } = useRpcProvider()
   const { hub } = useAssets()
   const isPositionMultiple = Array.isArray(position)
 
@@ -44,15 +46,25 @@ export const RemoveLiquidityForm = ({
     values,
     removeValue,
     totalValue,
+    remainingValue,
     isFeeExceeded,
     mutation,
-    meta: { id, symbol, name },
+    meta: { id, symbol, name, decimals },
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
 
   const tokensToGet =
     values && values?.tokensToGetShifted.gt(0)
       ? values.tokensToGetShifted
       : BN(0)
+
+  // If the tokensToGet rounded to zero, allow only 100% withdrawal,
+  // else, check if remaining value is below minimum allowed pool liquidity
+  const isBelowMinimum = tokensToGet.isZero()
+    ? value > 0 && value !== 100
+    : remainingValue.gt(0) &&
+      remainingValue
+        .shiftedBy(decimals)
+        .lt(api.consts.omnipool.minimumPoolLiquidity.toBigNumber())
 
   return (
     <form
@@ -132,7 +144,7 @@ export const RemoveLiquidityForm = ({
         assetSymbol={symbol}
       />
 
-      {isFeeExceeded && (
+      {(isFeeExceeded || isBelowMinimum) && (
         <div
           sx={{
             flex: "row",
@@ -150,7 +162,8 @@ export const RemoveLiquidityForm = ({
           <Icon size={24} icon={<IconWarning />} />
 
           <Text color="white" fs={13} fw={400}>
-            {t("liquidity.remove.modal.fee.warning")}
+            {isFeeExceeded && t("liquidity.remove.modal.fee.warning")}
+            {isBelowMinimum && t("liquidity.remove.modal.remaining.warning")}
           </Text>
         </div>
       )}
@@ -160,7 +173,12 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={tokensToGet.isZero() || isFeeExceeded}
+          disabled={
+            tokensToGet.isNaN() ||
+            tokensToGet.isZero() ||
+            isFeeExceeded ||
+            isBelowMinimum
+          }
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>

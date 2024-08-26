@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
-import { BN_1 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -27,6 +27,7 @@ import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
 import { useXYKConsts } from "api/xyk"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useEstimatedFees } from "api/transaction"
 
 type Props = {
   assetId: string
@@ -149,6 +150,26 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+
+  const estimatedFees = useEstimatedFees([
+    api.tx.xyk.addLiquidity(assetA.id, assetB.id, "1", "1"),
+  ])
+
+  const feeWithBuffer = estimatedFees.accountCurrencyFee
+    .times(1.03) // 3%
+    .decimalPlaces(0)
+
+  const balanceA = assetABalance?.balance ?? BN_0
+  const balanceAMax =
+    estimatedFees.accountCurrencyId === assetA.id
+      ? balanceA.minus(feeWithBuffer).minus(assetA.existentialDeposit)
+      : balanceA
+
+  const balanceB = assetBBalance?.balance ?? BN_0
+  const balanceBMax =
+    estimatedFees.accountCurrencyId === assetB.id
+      ? balanceB.minus(feeWithBuffer).minus(assetB.existentialDeposit)
+      : balanceB
 
   const onSubmit = async () => {
     const inputData = {
@@ -303,7 +324,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               maxBalance: (value) => {
                 try {
                   if (
-                    assetABalance?.balance.gte(
+                    balanceAMax.gte(
                       BigNumber(value).shiftedBy(formAssets.assetA.decimals),
                     )
                   )
@@ -318,6 +339,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
+              balance={balanceA}
+              balanceMax={balanceAMax}
               onChange={(value) => {
                 handleChange(value, name)
               }}
@@ -354,7 +377,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               maxBalance: (value) => {
                 try {
                   if (
-                    assetBBalance?.balance.gte(
+                    balanceBMax.gte(
                       BigNumber(value).shiftedBy(formAssets.assetB.decimals),
                     )
                   )
@@ -369,6 +392,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
+              balance={balanceB}
+              balanceMax={balanceBMax}
               onChange={(value) => {
                 handleChange(value, name)
               }}

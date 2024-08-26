@@ -93,7 +93,9 @@ export const useAssetsData = ({
       const total = balance.total.shiftedBy(-decimals)
       const totalDisplay = total.times(spotPrice)
 
-      const transferable = balance.balance.shiftedBy(-decimals)
+      const transferable = isExternalInvalid
+        ? BN_NAN
+        : balance.balance.shiftedBy(-decimals)
       const transferableDisplay = transferable.times(spotPrice)
 
       const isAcceptedCurrency = !!acceptedCurrencies.data?.find(
