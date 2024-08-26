@@ -189,7 +189,7 @@ export const useRemoveLiquidity = (
         onClose,
         onSuccess,
         onSubmitted: () => onSubmit(values.tokensToGet.toString()),
-        onError: () => onClose(),
+        onError,
       }
 
       const txs = position.map((position) =>
