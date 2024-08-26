@@ -8,7 +8,7 @@ import {
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { useState } from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -26,7 +26,6 @@ type Props = { item: TabItemWithSubItems }
 
 export const HeaderSubMenu = ({ item }: Props) => {
   const { t } = useTranslation()
-  const search = useSearch()
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -64,43 +63,70 @@ export const HeaderSubMenu = ({ item }: Props) => {
           <MobileNavBarItem item={item} isActive={open || isActive} />
         )}
       </Trigger>
-      <Portal>
-        <SSubMenuContainer
-          side="bottom"
-          align="start"
-          sideOffset={isTablet ? 4 : 16}
-          alignOffset={-40}
-          collisionPadding={16}
-        >
-          <SSubMenu>
-            {filteredItems.map((subItem) => (
-              <Link
-                key={subItem.key}
-                to={subItem.href}
-                search={resetSearchParams(search)}
-                onClick={() => setOpen(false)}
-              >
-                <SSubMenuItem>
-                  <subItem.Icon
-                    sx={{ color: "brightBlue300", width: 24, height: 24 }}
-                  />
-                  <div>
-                    <Text fs={15} lh={15}>
-                      {t(`header.${key}.${subItem.key}.title`)}
-                    </Text>
-                    <Text fs={12} lh={16} color="basic500">
-                      {t(`header.${key}.${subItem.key}.subtitle`)}
-                    </Text>
-                  </div>
-                  <SArrow>
-                    <IconArrow />
-                  </SArrow>
-                </SSubMenuItem>
-              </Link>
-            ))}
-          </SSubMenu>
-        </SSubMenuContainer>
-      </Portal>
+      <HeaderSubMenuContents
+        items={filteredItems.map((subItem) => ({
+          ...subItem,
+          title: t(`header.${key}.${subItem.key}.title`),
+          subtitle: t(`header.${key}.${subItem.key}.subtitle`),
+        }))}
+        onItemClick={() => setOpen(false)}
+      />
     </Root>
+  )
+}
+
+type HeaderSubMenuContentsProps = {
+  items: {
+    key: string
+    title: React.ReactNode
+    subtitle?: string
+    href: string
+    Icon: React.FC
+  }[]
+  onItemClick?: () => void
+}
+
+export const HeaderSubMenuContents: React.FC<HeaderSubMenuContentsProps> = ({
+  items,
+  onItemClick,
+}) => {
+  const isTablet = useMedia(theme.viewport.gte.sm)
+  const search = useSearch()
+  return (
+    <Portal>
+      <SSubMenuContainer
+        side="bottom"
+        align="start"
+        sideOffset={isTablet ? 4 : 16}
+        alignOffset={-40}
+        collisionPadding={16}
+      >
+        <SSubMenu>
+          {items.map(({ key, title, subtitle, href, Icon }) => (
+            <Link
+              key={key}
+              to={href}
+              search={resetSearchParams(search)}
+              onClick={onItemClick}
+            >
+              <SSubMenuItem>
+                <Icon sx={{ color: "brightBlue300", width: 24, height: 24 }} />
+                <div>
+                  <Text fs={15} lh={15}>
+                    {title}
+                  </Text>
+                  <Text fs={12} lh={16} color="basic500">
+                    {subtitle}
+                  </Text>
+                </div>
+                <SArrow>
+                  <IconArrow />
+                </SArrow>
+              </SSubMenuItem>
+            </Link>
+          ))}
+        </SSubMenu>
+      </SSubMenuContainer>
+    </Portal>
   )
 }

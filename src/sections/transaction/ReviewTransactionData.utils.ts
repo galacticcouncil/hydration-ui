@@ -1,4 +1,6 @@
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { Result as AbiDecoderResult } from "ethers/lib/utils"
+import { utils } from "ethers"
 
 /**
  * Splits a hex string by consecutive zeroes.
@@ -32,4 +34,21 @@ export function decodedResultToJson(result: AbiDecoderResult) {
  */
 export function hexDataSlice(data: string, start: number, end?: number) {
   return `0x${data.substring(start, end)}`
+}
+
+/**
+ * Decodes the XCallEvm data to JSON format and returns the method name.
+ */
+export function decodeXCallEvm(xcallEvm: XCallEvm) {
+  if (!xcallEvm?.abi) return
+  try {
+    const iface = new utils.Interface(xcallEvm.abi)
+    const decodedArgs = iface.decodeFunctionData(
+      xcallEvm.data.slice(0, 10),
+      xcallEvm.data,
+    )
+    const method = iface.getFunction(xcallEvm.data.slice(0, 10)).name
+
+    return { data: decodedResultToJson(decodedArgs), method }
+  } catch (error) {}
 }
