@@ -52,6 +52,7 @@ export const XYK_TVL_VISIBILITY = 5000
 
 export const INVALID_ISOLATED_POOLS = [
   "7MCEZkdG2wt5tjmjPzeUYgtb1kLWNdvLBo26eEfDFEq1ppCf",
+  "7P7gPHswkLiUUtwLMPpyvo6rdJRRUM7LD9unq4Dm3ByBGifs",
 ]
 
 export const useAssetsTradability = () => {

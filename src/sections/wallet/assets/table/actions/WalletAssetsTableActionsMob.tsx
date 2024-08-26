@@ -67,7 +67,7 @@ export const WalletAssetsTableActionsMob = ({
     ? featureFlags.dispatchPermit
     : true
 
-  const isUnknownExternalAsset = row.meta.isExternal && !row.name
+  const isUnknownExternalAsset = row.isExternalInvalid
 
   const rugCheckData = rugCheck.tokensMap.get(row.id)
   const hasRugCheckData = !!rugCheckData
