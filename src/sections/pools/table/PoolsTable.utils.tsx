@@ -313,19 +313,29 @@ export const usePoolTable = (
         size: 220,
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
-        cell: ({ row }) => (
-          <NonClickableContainer>
-            <Text color="white" fs={14}>
-              <DisplayValue
-                value={
-                  isXYKPoolType(row.original) && row.original.isInvalid
-                    ? BN_NAN
-                    : row.original.tvlDisplay
-                }
-              />
-            </Text>
-          </NonClickableContainer>
-        ),
+        cell: ({ row }) => {
+          const isInvalid =
+            isXYKPoolType(row.original) && row.original.isInvalid
+          return (
+            <NonClickableContainer
+              sx={{
+                flex: "row",
+                gap: 4,
+              }}
+            >
+              <Text color="white" fs={14}>
+                <DisplayValue
+                  value={isInvalid ? BN_NAN : row.original.tvlDisplay}
+                />
+              </Text>
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
+            </NonClickableContainer>
+          )
+        },
       }),
       ...(!isXyk
         ? [
@@ -380,6 +390,7 @@ export const usePoolTable = (
         sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
           const pool = row.original
+          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
 
           if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
           return (
@@ -393,12 +404,14 @@ export const usePoolTable = (
               }}
             >
               <Text color="white" fs={14}>
-                <DisplayValue
-                  value={
-                    isXYKPoolType(pool) && pool.isInvalid ? BN_NAN : pool.volume
-                  }
-                />
+                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
               </Text>
+
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
 
               <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
                 <Icon
