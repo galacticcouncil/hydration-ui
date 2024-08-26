@@ -161,6 +161,7 @@ export const RemoveLiquidityModal = ({
                   onSuccess()
                   onClose()
                 }}
+                onError={onClose}
                 position={position}
                 onSubmitted={(shares) => {
                   if (selectedOption === "STABLE") {

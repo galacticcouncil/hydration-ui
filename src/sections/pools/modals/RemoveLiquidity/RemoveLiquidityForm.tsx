@@ -22,6 +22,7 @@ export const RemoveLiquidityForm = ({
   onClose,
   onSuccess,
   onSubmitted,
+  onError,
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
@@ -47,7 +48,7 @@ export const RemoveLiquidityForm = ({
     isFeeExceeded,
     mutation,
     meta: { id, symbol, name },
-  } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
+  } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit, onError)
 
   const tokensToGet =
     values && values?.tokensToGetShifted.gt(0)
