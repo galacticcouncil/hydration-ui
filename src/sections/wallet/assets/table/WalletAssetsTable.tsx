@@ -33,6 +33,7 @@ import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { LINKS } from "utils/navigation"
 import { useExternalTokensRugCheck } from "api/external"
 import { TablePagination } from "components/Table/TablePagination"
+import { useSettingsStore } from "state/store"
 
 type Props = {
   data: AssetsTableData[]
@@ -54,6 +55,7 @@ export const WalletAssetsTable = ({
   const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
   const rugCheck = useExternalTokensRugCheck()
+  const { degenMode } = useSettingsStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -64,7 +66,7 @@ export const WalletAssetsTable = ({
   useEffect(() => {
     table.setPageIndex(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search])
+  }, [search, degenMode])
 
   const button = (
     <Button

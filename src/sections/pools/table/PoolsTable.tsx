@@ -16,6 +16,7 @@ import { theme } from "theme"
 import { css } from "@emotion/react"
 import { TablePagination } from "components/Table/TablePagination"
 import { useEffect } from "react"
+import { useSettingsStore } from "state/store"
 
 const styles = css`
   @media ${theme.viewport.gte.sm} {
@@ -37,6 +38,7 @@ export const PoolsTable = ({
 }) => {
   const navigate = useNavigate()
   const search = useSearch()
+  const { degenMode } = useSettingsStore()
 
   const onRowSelect = (id: string) =>
     navigate({
@@ -44,9 +46,9 @@ export const PoolsTable = ({
     })
 
   useEffect(() => {
-    table.setPageIndex(0)
+    if (paginated) table.setPageIndex(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search])
+  }, [search, degenMode])
 
   const table = usePoolTable(data, isXyk, onRowSelect, paginated)
 
