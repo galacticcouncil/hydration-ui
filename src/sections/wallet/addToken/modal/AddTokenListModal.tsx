@@ -150,11 +150,9 @@ export const AddTokenListModal: React.FC<Props> = ({
                       <Icon
                         icon={
                           <UigcAssetId
-                            symbol={
-                              registeredAssetsMap.get(asset.id)
-                                ? asset.symbol
-                                : ""
-                            }
+                            ecosystem="polkadot"
+                            asset={asset.id}
+                            chain={asset.origin.toString()}
                           />
                         }
                         size={24}
