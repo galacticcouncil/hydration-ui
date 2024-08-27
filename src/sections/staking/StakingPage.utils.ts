@@ -584,7 +584,7 @@ export const useClaimReward = () => {
     })
 
     if (BN(currentPeriod).minus(enteredAt).lte(unclaimablePeriods)) {
-      return { rewards: BN_0, unlockedRewards: BN_0, positionId }
+      return { rewards: BN_0, unlockedRewards: BN_0, positionId, chartValues }
     }
 
     const userRewards = BN(
