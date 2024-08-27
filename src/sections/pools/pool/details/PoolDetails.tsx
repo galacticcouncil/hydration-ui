@@ -62,7 +62,7 @@ export const PoolDetails = () => {
 
   return (
     <>
-      <SPoolDetailsContainer sx={{ width: ["auto", "fit-content"] }}>
+      <SPoolDetailsContainer>
         <GradientText
           gradient="pinkLightBlue"
           font="GeistMonoSemiBold"
