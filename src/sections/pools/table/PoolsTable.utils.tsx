@@ -21,7 +21,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0, BN_1, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
@@ -295,13 +295,29 @@ export const usePoolTable = (
         size: 220,
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
-        cell: ({ row }) => (
-          <NonClickableContainer>
-            <Text color="white" fs={14}>
-              <DisplayValue value={row.original.tvlDisplay} />
-            </Text>
-          </NonClickableContainer>
-        ),
+        cell: ({ row }) => {
+          const isInvalid =
+            isXYKPoolType(row.original) && row.original.isInvalid
+          return (
+            <NonClickableContainer
+              sx={{
+                flex: "row",
+                gap: 4,
+              }}
+            >
+              <Text color="white" fs={14}>
+                <DisplayValue
+                  value={isInvalid ? BN_NAN : row.original.tvlDisplay}
+                />
+              </Text>
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
+            </NonClickableContainer>
+          )
+        },
       }),
       ...(!isXyk
         ? [
@@ -356,6 +372,7 @@ export const usePoolTable = (
         sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
           const pool = row.original
+          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
 
           if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
           return (
@@ -369,8 +386,14 @@ export const usePoolTable = (
               }}
             >
               <Text color="white" fs={14}>
-                <DisplayValue value={pool.volume} />
+                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
               </Text>
+
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
 
               <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
                 <Icon
