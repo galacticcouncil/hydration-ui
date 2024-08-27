@@ -65,7 +65,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
             el.setAttribute("chainOrigin", details.parachainId)
           el && el.setAttribute("fit", "")
         }}
-        ecosystem={"polkadot"}
+        ecosystem="polkadot"
         asset={id}
         chain={HYDRADX_PARACHAIN_ID.toString()}
         chainOrigin={details.parachainId}
@@ -86,6 +86,40 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       ref={(el) => el && el.setAttribute("fit", "")}
       slot="placeholder"
     />
+  )
+}
+
+export const ExternalAssetLogo = ({
+  id,
+  parachainId,
+  originHidden,
+  children,
+}: {
+  id: string
+  parachainId: number
+  originHidden?: boolean
+  children?: React.ReactNode
+}) => {
+  return (
+    <UigcAssetId
+      css={{ "& uigc-logo-chain": { display: "none" } }}
+      ref={(el) => {
+        if (el) {
+          el.setAttribute("fit", "")
+          if (parachainId && !originHidden)
+            el.setAttribute("chainOrigin", parachainId.toString())
+          el.shadowRoot
+            ?.querySelector("uigc-logo-asset")
+            ?.setAttribute("style", "width:100%;height:100%;")
+        }
+      }}
+      ecosystem="polkadot"
+      asset={id}
+      chain={parachainId.toString()}
+      chainOrigin={!originHidden ? parachainId.toString() : undefined}
+    >
+      {children}
+    </UigcAssetId>
   )
 }
 

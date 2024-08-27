@@ -1,5 +1,3 @@
-import * as React from "react"
-import { AssetId } from "@galacticcouncil/ui"
 import { Button } from "components/Button/Button"
 import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -12,19 +10,12 @@ import { Spacer } from "components/Spacer/Spacer"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { omit } from "utils/rx"
-import { createComponent } from "@lit-labs/react"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
 import { useExternalTokensRugCheck } from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 import { TExternalAssetWithLocation } from "utils/externalAssets"
 import { useSettingsStore } from "state/store"
-
-export const UigcAssetId = createComponent({
-  tagName: "uigc-asset-id",
-  elementClass: AssetId,
-  react: React,
-})
 
 type Props = {
   asset: TExternalAssetWithLocation
