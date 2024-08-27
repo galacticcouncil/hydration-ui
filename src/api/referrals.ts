@@ -57,12 +57,12 @@ export const useReferralCodeLength = () => {
 }
 
 export const useUserReferrer = (accountAddress?: string) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.userReferrer(accountAddress),
     !!accountAddress ? getUserReferrer(api, accountAddress) : undefinedNoop,
     {
-      enabled: !!accountAddress,
+      enabled: !!accountAddress && isLoaded,
     },
   )
 }
@@ -70,7 +70,6 @@ export const useUserReferrer = (accountAddress?: string) => {
 const getUserReferrer =
   (api: ApiPromise, accountAddress: string) => async () => {
     const rawData = await api.query.referrals.linkedAccounts(accountAddress)
-    //@ts-ignore
     const data = rawData.unwrapOr(null)
 
     return (data?.toString() as string) || null

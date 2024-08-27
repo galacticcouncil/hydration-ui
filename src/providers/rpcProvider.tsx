@@ -1,6 +1,6 @@
 import { type TradeRouter, type PoolService } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import { useProviderAssets, useProviderData } from "api/provider"
+import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
@@ -13,7 +13,7 @@ type TProviderContext = {
   tradeRouter: TradeRouter
   poolService: PoolService
   isLoaded: boolean
-  featureFlags: any
+  featureFlags: TFeatureFlags
 }
 const ProviderContext = createContext<TProviderContext>({
   isLoaded: false,

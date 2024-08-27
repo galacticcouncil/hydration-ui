@@ -31,6 +31,11 @@ export type ProviderProps = {
   dataEnv: TEnv
 }
 
+export type TFeatureFlags = {
+  referrals: boolean
+  dispatchPermit: boolean
+}
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
@@ -258,7 +263,7 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-        },
+        } as TFeatureFlags,
       }
     },
     {
