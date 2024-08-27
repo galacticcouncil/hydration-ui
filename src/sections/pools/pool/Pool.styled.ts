@@ -20,7 +20,9 @@ export const SPoolContainer = styled.div`
   @media ${theme.viewport.gte.sm} {
     margin: 0 auto;
 
-    width: 730px;
+    width: fit-content;
+    min-width: 730px;
+
     height: auto;
 
     border-radius: ${theme.borderRadius.medium}px;

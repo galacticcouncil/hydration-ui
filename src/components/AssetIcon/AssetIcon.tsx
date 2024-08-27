@@ -51,14 +51,23 @@ export const MultipleAssetLogo = ({
   iconId: string | string[] | undefined
   size?: ResponsiveValue<number>
 }) => {
+  const { getAssetWithFallback } = useAssets()
   if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
+  const allIconIds = Array.isArray(iconId)
+    ? iconId
+        .map((id) => {
+          const { iconId } = getAssetWithFallback(id)
 
-  return typeof iconId === "string" ? (
-    <Icon size={size} icon={<AssetLogo id={iconId} />} />
+          return iconId
+        })
+        .flat()
+    : iconId
+  return typeof allIconIds === "string" ? (
+    <Icon size={size} icon={<AssetLogo id={allIconIds} />} />
   ) : (
     <MultipleIcons
       size={size}
-      icons={iconId.map((id) => ({
+      icons={allIconIds.map((id) => ({
         icon: <AssetLogo key={id} id={id} />,
       }))}
     />

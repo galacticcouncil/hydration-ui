@@ -62,7 +62,7 @@ export const PoolDetails = () => {
 
   return (
     <>
-      <SPoolDetailsContainer>
+      <SPoolDetailsContainer sx={{ width: ["auto", "fit-content"] }}>
         <GradientText
           gradient="pinkLightBlue"
           font="GeistMonoSemiBold"
@@ -87,11 +87,12 @@ export const PoolDetails = () => {
               justify: "space-between",
               align: ["start", "center"],
               gap: 12,
+              flexWrap: "wrap",
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
               <MultipleAssetLogo iconId={meta.iconId} size={26} />
-              <div sx={{ flex: "column", gap: 0 }}>
+              <div sx={{ flex: "column", gap: 0, width: "max-content" }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
                   {meta.symbol}
                 </Text>
@@ -317,7 +318,7 @@ export const XYKRateWrapper = ({ pool }: { pool: TXYKPoolFullData }) => {
   if (!prices) return null
 
   return (
-    <div sx={{ flex: "row", gap: 6, flexWrap: "wrap" }}>
+    <div sx={{ flex: ["row", "column"], gap: 6, flexWrap: "wrap" }}>
       <XYKRate
         assetA={prices.assetA}
         assetB={prices.assetB}
