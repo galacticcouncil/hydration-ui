@@ -29,7 +29,6 @@ import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Farm } from "api/farms"
 import { useRefetchAccountNFTPositions } from "api/deposits"
-import { useEstimatedFees } from "api/transaction"
 
 type Props = {
   onClose: () => void
@@ -66,7 +65,8 @@ export const AddLiquidityFormXYK = ({
   const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
   const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
 
-  const zodSchema = useXYKZodSchema(assetA.id, assetB.id, shareTokenMeta, farms)
+  const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
+    useXYKZodSchema(assetA, assetB, shareTokenMeta, farms)
   const form = useForm<FromValues>({
     mode: "onChange",
     defaultValues: {
@@ -110,26 +110,6 @@ export const AddLiquidityFormXYK = ({
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-
-  const estimatedFees = useEstimatedFees([
-    api.tx.xyk.addLiquidity(assetA.id, assetB.id, "1", "1"),
-  ])
-
-  const feeWithBuffer = estimatedFees.accountCurrencyFee
-    .times(1.03) // 3%
-    .decimalPlaces(0)
-
-  // const balanceA = assetABalance?.balance ?? BN_0
-  // const balanceAMax =
-  //   estimatedFees.accountCurrencyId === assetA.id
-  //     ? balanceA.minus(feeWithBuffer).minus(assetA.existentialDeposit)
-  //     : balanceA
-
-  // const balanceB = assetBBalance?.balance ?? BN_0
-  // const balanceBMax =
-  //   estimatedFees.accountCurrencyId === assetB.id
-  //     ? balanceB.minus(feeWithBuffer).minus(assetB.existentialDeposit)
-  //     : balanceB
 
   const onSubmit = async () => {
     const inputData = {
@@ -281,6 +261,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetA.id}
               error={error?.message}
               disabled={!assetAReserve}
+              balance={balanceA}
+              balanceMax={balanceAMax}
             />
           )}
         />
@@ -303,6 +285,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetB.id}
               error={error?.message}
               disabled={!assetBReserve}
+              balance={balanceB}
+              balanceMax={balanceBMax}
             />
           )}
         />

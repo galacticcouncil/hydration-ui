@@ -28,6 +28,7 @@ import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { TAsset } from "api/assetDetails"
 import { useXYKConsts } from "api/xyk"
+import { useEstimatedFees } from "api/transaction"
 
 export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
@@ -311,22 +312,42 @@ export const useAddToOmnipoolZod = (
 }
 
 export const useXYKZodSchema = (
-  assetAId: string,
-  assetBId: string,
+  assetAMeta: TAsset,
+  assetBMeta: TAsset,
   meta: TAsset,
   farms: Farm[],
 ) => {
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { data: xykConsts } = useXYKConsts()
 
-  const [{ data: assetABalance }, { data: assetBBalance }] = useTokensBalances(
-    [assetAId, assetBId],
-    account?.address,
-  )
+  const assetAId = assetAMeta.id
+  const assetBId = assetBMeta.id
 
-  const [assetAMeta, assetBMeta] = assets.getAssets([assetAId, assetBId])
+  const estimatedFees = useEstimatedFees([
+    api.tx.xyk.addLiquidity(assetAId, assetBId, "1", "1"),
+  ])
+
+  const feeWithBuffer = estimatedFees.accountCurrencyFee
+    .times(1.03) // 3%
+    .decimalPlaces(0)
+
+  const [{ data: assetABalances }, { data: assetBBalances }] =
+    useTokensBalances([assetAId, assetBId], account?.address)
+
+  const balanceA = assetABalances?.balance ?? BN_0
+  const balanceB = assetBBalances?.balance ?? BN_0
+
+  const balanceAMax =
+    estimatedFees.accountCurrencyId === assetAId
+      ? balanceA.minus(feeWithBuffer).minus(assetAMeta.existentialDeposit)
+      : balanceA
+
+  const balanceBMax =
+    estimatedFees.accountCurrencyId === assetBId
+      ? balanceB.minus(feeWithBuffer).minus(assetBMeta.existentialDeposit)
+      : balanceB
 
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(
@@ -344,18 +365,17 @@ export const useXYKZodSchema = (
     )
   }, [farms])
 
-  if (assetABalance === undefined || assetBBalance === undefined)
-    return undefined
+  if (balanceA === undefined || balanceB === undefined) return {}
 
-  return z
+  const zodSchema = z
     .object({
       assetA: required
         .pipe(positive)
-        .pipe(maxBalance(assetABalance.balance, assetAMeta.decimals)),
+        .pipe(maxBalance(balanceAMax, assetAMeta.decimals)),
 
       assetB: required
         .pipe(positive)
-        .pipe(maxBalance(assetBBalance.balance, assetBMeta.decimals)),
+        .pipe(maxBalance(balanceBMax, assetBMeta.decimals)),
       shares: z.string().refine(
         (value) => {
           if (minDeposit.value.isZero()) return true
@@ -405,6 +425,8 @@ export const useXYKZodSchema = (
         }
       },
     )
+
+  return { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB }
 }
 
 export const getXYKPoolShare = (total: BigNumber, add: BigNumber) =>
