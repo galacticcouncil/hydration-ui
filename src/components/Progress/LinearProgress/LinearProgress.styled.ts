@@ -76,22 +76,31 @@ export const SBarContainer = styled.div<{ size: BarSize }>`
   ${({ size }) => getBarSize(size || "medium")}
 `
 
-export const SBar = styled.div<{ colorStart: ColorType; colorEnd?: ColorType }>`
+export const SBar = styled.div<{
+  colorStart: ColorType
+  colorEnd?: ColorType
+  percentage: number
+  colorCustom?: string
+}>`
   height: 100%;
   border-radius: 9999px;
 
   -webkit-mask: linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0);
+  width: ${({ percentage }) => percentage}%;
 
-  &:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    ${({ colorStart, colorEnd }) => getBarColorStyle(colorStart, colorEnd)}
-  }
+  ${({ percentage, colorStart, colorEnd, colorCustom }) =>
+    percentage > 0
+      ? `&:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  ${colorCustom ? `background: ${colorCustom};` : getBarColorStyle(colorStart, colorEnd).styles}
+}`
+      : undefined}
 `
 
 export const SText = styled.span<{

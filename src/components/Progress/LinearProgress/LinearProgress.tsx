@@ -10,6 +10,8 @@ export type LinearProgressProps = {
   size?: BarSize
   color?: ColorType
   colorEnd?: ColorType
+  colorCustom?: string
+  withoutLabel?: boolean
   labelPosition?: LabelPosition
   labelColor?: ColorType
   children?: React.ReactNode
@@ -23,9 +25,11 @@ export const LinearProgress = ({
   children,
   color = "pink700",
   colorEnd,
+  colorCustom,
   labelPosition = "end",
   size = "medium",
   labelColor = "white",
+  withoutLabel,
   ...props
 }: LinearProgressProps) => {
   return (
@@ -34,12 +38,15 @@ export const LinearProgress = ({
         <SBar
           colorStart={color}
           colorEnd={colorEnd}
-          sx={{ width: `${Math.max(0, Math.min(percent, 100))}%` }}
+          colorCustom={colorCustom}
+          percentage={Math.max(0, Math.min(percent, 100))}
         />
       </SBarContainer>
-      <SText position={labelPosition} size={size} color={labelColor}>
-        {children || `${percent.toFixed(2)}%`}
-      </SText>
+      {!withoutLabel && (
+        <SText position={labelPosition} size={size} color={labelColor}>
+          {children || `${percent.toFixed(2)}%`}
+        </SText>
+      )}
     </SContainer>
   )
 }

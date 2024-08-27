@@ -7,10 +7,12 @@ import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
-import { SBar, SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
+import { SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
 import { Icon } from "components/Icon/Icon"
 import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 type Props = {
   id: string
@@ -112,17 +114,34 @@ export const ReferendumCardRococo = ({
 
       <div sx={{ flex: "row", gap: 8 }}>
         {isNoVotes ? (
-          <SBar variant="neutral" percentage={100} />
+          <LinearProgress
+            size="small"
+            withoutLabel
+            percent={100}
+            colorCustom={`rgba(${theme.rgbColors.darkBlue300}, 0.5)`}
+          />
         ) : (
           <>
             {/*zero value of progress bar should be visible*/}
-            <SBar
-              variant="aye"
-              percentage={votes.percAyes.eq(0) ? 2 : votes.percAyes.toNumber()}
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={votes.percAyes.eq(0) ? 2 : votes.percAyes.toNumber()}
+              colorCustom={`linear-gradient(
+            270deg,
+            ${theme.colors.green600} 50%,
+            transparent 100%
+          )`}
             />
-            <SBar
-              variant="nay"
-              percentage={votes.percNays.eq(0) ? 2 : votes.percNays.toNumber()}
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={votes.percNays.eq(0) ? 2 : votes.percNays.toNumber()}
+              colorCustom={`linear-gradient(
+              90deg,
+              ${theme.colors.pink700} 50%,
+              transparent 100%
+            )`}
             />
           </>
         )}
