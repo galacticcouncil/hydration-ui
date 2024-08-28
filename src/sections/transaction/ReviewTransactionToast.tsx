@@ -61,6 +61,8 @@ export function ReviewTransactionToast(props: {
             <p>{t("liquidity.reviewTransaction.toast.error")}</p>
           ),
         })
+
+        closeRef.current?.()
       }
     }
 

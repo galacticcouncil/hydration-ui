@@ -1,6 +1,5 @@
 import { useTokenBalance } from "api/balances"
 import { Text } from "components/Typography/Text/Text"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
@@ -22,46 +21,36 @@ import {
 import { LazyMotion, domAnimation } from "framer-motion"
 
 export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const { t } = useTranslation()
-  const meta = assets.getAsset(pool.id)
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
     account?.address,
   )
 
-  const spotPrice = pool.spotPrice
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
-  const stablepoolAmountPrice = spotPrice
-    ? stablepoolAmount.shiftedBy(-meta.decimals).multipliedBy(spotPrice)
-    : BN_0
 
-  if (
-    !pool.miningNftPositions.length &&
-    !pool.omnipoolNftPositions.length &&
-    !stablepoolBalance.data?.freeBalance.gt(0)
-  )
-    return null
+  const isPositions =
+    !!pool.miningNftPositions.length ||
+    !!pool.omnipoolNftPositions.length ||
+    stablepoolBalance.data?.freeBalance.gt(0)
 
   return (
     <>
-      <Text
-        fs={18}
-        font="GeistMono"
-        tTransform="uppercase"
-        sx={{ px: 30, pt: 12 }}
-      >
-        {t("liquidity.pool.positions.title")}
-      </Text>
+      {isPositions && (
+        <Text
+          fs={18}
+          font="GeistMono"
+          tTransform="uppercase"
+          sx={{ px: 30, pt: 12 }}
+        >
+          {t("liquidity.pool.positions.title")}
+        </Text>
+      )}
 
       {pool.isStablePool && (
-        <StablepoolPosition
-          pool={pool}
-          amount={stablepoolAmount}
-          amountPrice={stablepoolAmountPrice}
-        />
+        <StablepoolPosition pool={pool} amount={stablepoolAmount} />
       )}
       <LiquidityPositionWrapper pool={pool} />
       <FarmingPositionWrapper pool={pool} />
