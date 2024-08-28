@@ -97,7 +97,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
         />
         <FileUploader
           maxSize={30 * 1024} // 30KB
-          minDimensions="48x48"
+          minDimensions="128x128"
           maxDimensions="128x128"
         />
         <Controller
