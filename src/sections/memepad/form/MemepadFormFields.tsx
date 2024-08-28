@@ -28,6 +28,7 @@ import {
 } from "./MemepadForm.utils"
 import Skeleton from "react-loading-skeleton"
 import { SInputBoxContainer } from "components/Input/Input.styled"
+import { FileUploader } from "components/FileUploader"
 
 type MemepadFormFieldsProps = {
   form: UseFormReturn<MemepadFormValues>
@@ -93,6 +94,11 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
         <input
           type="hidden"
           {...form.register("decimals", { valueAsNumber: true })}
+        />
+        <FileUploader
+          maxSize={30 * 1024} // 30KB
+          minDimensions="48x48"
+          maxDimensions="128x128"
         />
         <Controller
           name="name"
