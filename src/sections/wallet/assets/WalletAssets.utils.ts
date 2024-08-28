@@ -57,11 +57,11 @@ export const useWalletAssetsTotals = ({
   const shareTokenIds = shareTokens.map((shareToken) => shareToken.id) ?? []
 
   const shareTokenBalances = balances.data?.balances.filter((token) =>
-    shareTokenIds.find((shareTokenId) => shareTokenId === token.accountId),
+    shareTokenIds.find((shareTokenId) => shareTokenId === token.id),
   )
 
   const spotPrices = useDisplayShareTokenPrice(
-    shareTokenBalances?.map((token) => token.accountId) ?? [],
+    shareTokenBalances?.map((token) => token.id) ?? [],
   )
 
   const assetsTotal = useMemo(() => {
@@ -88,7 +88,7 @@ export const useWalletAssetsTotals = ({
     if (!shareTokenBalances || !spotPrices.data) return BN_0
     return shareTokenBalances.reduce<BN>((acc, shareTokenBalance) => {
       const shareToken = shareTokens.find(
-        (shareToken) => shareToken.id === shareTokenBalance.accountId,
+        (shareToken) => shareToken.id === shareTokenBalance.id,
       )
       if (
         shareTokenBalance &&
