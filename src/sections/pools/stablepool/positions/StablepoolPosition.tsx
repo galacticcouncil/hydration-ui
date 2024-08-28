@@ -27,11 +27,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useFarms } from "api/farms"
 import { useQueryClient } from "@tanstack/react-query"
 
-type Props = {
-  amount: BN
-}
-
-export const StablepoolPosition = ({ amount }: Props) => {
+export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)

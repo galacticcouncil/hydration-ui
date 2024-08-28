@@ -21,9 +21,10 @@ import {
 import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
 
-export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
+export const MyPositions = () => {
   const { account } = useAccount()
   const { t } = useTranslation()
+  const { pool } = usePoolData() as { pool: TPoolFullData }
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
