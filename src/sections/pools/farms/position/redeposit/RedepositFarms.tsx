@@ -6,13 +6,11 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
 import { Farm } from "api/farms"
-import { useFarmRedepositMutation } from "utils/farms/redeposit"
 import {
   isXYKDeposit,
   TDepositData,
 } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
-import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 
 type RedepositFarmsProps = {
@@ -27,16 +25,8 @@ export const RedepositFarms = ({
   depositData,
 }: RedepositFarmsProps) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
-
-  const redeposit = useFarmRedepositMutation(
-    availableYieldFarms,
-    depositNft,
-    pool.id,
-    () => setJoinFarm(false),
-  )
 
   if (!availableYieldFarms.length) return null
 
@@ -73,7 +63,6 @@ export const RedepositFarms = ({
           }
           onClose={() => setJoinFarm(false)}
           depositNft={depositNft}
-          mutation={redeposit}
         />
       )}
     </SContainer>

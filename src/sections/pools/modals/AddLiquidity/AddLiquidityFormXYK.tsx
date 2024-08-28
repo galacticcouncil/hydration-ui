@@ -9,13 +9,9 @@ import { Trans, useTranslation } from "react-i18next"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
-import {
-  getFixedPointAmount,
-  getFloatingPointAmount,
-  scale,
-} from "utils/balance"
-import { useStore } from "state/store"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { scale, scaleHuman } from "utils/balance"
+import { ToastMessage, useStore } from "state/store"
+import { useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -23,171 +19,131 @@ import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
-import IconWarning from "assets/icons/WarningIcon.svg?react"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { useXYKConsts } from "api/xyk"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useEstimatedFees } from "api/transaction"
+import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { TOAST_MESSAGES } from "state/toasts"
+import { Alert } from "components/Alert/Alert"
+import { ISubmittableResult } from "@polkadot/types/types"
+import { Farm } from "api/farms"
+import { useRefetchAccountPositions } from "api/deposits"
 
 type Props = {
-  assetId: string
-  initialAmount?: string
   onClose: () => void
-  onAssetOpen?: () => void
   pool: TXYKPool
+  onSuccess: (result: ISubmittableResult, shares: string) => void
+  onSubmitted?: () => void
+  farms: Farm[]
+}
+
+type FromValues = {
+  assetA: string
+  assetB: string
+  lastUpdated: "assetA" | "assetB"
+  shares: string
+  ratio: string
 }
 
 const opposite = (value: "assetA" | "assetB") =>
   value === "assetA" ? "assetB" : "assetA"
 
-export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
+export const AddLiquidityFormXYK = ({
+  pool,
+  onClose,
+  onSuccess,
+  onSubmitted,
+  farms,
+}: Props) => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
-  const xykConsts = useXYKConsts()
   const { t } = useTranslation()
+  const refetch = useRefetchAccountPositions()
 
   const { assets, decimals } = pool.meta
   const [assetA, assetB] = assets
 
-  const [formAssets] = useState({
-    assetA,
-    assetB,
-  })
-
-  const form = useForm<{
-    assetA: string
-    assetB: string
-    lastUpdated: "assetA" | "assetB"
-    amount: string
-  }>({
+  const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
+    useXYKZodSchema(assetA, assetB, pool.meta, farms)
+  const form = useForm<FromValues>({
     mode: "onChange",
     defaultValues: {
       assetA: "",
       assetB: "",
       lastUpdated: "assetA",
-      amount: "0",
+      shares: "",
+      ratio: "",
     },
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const spotPrice = useSpotPrice(formAssets.assetA.id, formAssets.assetB.id)
-
+  const spotPrice = useSpotPrice(assetA.id, assetB.id)
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
-    [formAssets.assetA.id, formAssets.assetB.id],
+    [assetA.id, assetB.id],
     pool.poolAddress,
   )
 
-  const [{ data: assetABalance }, { data: assetBBalance }] = useTokensBalances(
-    [formAssets.assetA.id, formAssets.assetB.id],
-    account?.address,
-  )
   const lastUpdated = form.watch("lastUpdated")
+  const [assetValueA, assetValueB, shares, ratio] = form.watch([
+    "assetA",
+    "assetB",
+    "shares",
+    "ratio",
+  ])
 
-  const reserves = useMemo(
-    () => ({
-      assetA: assetAReserve,
-      assetB: assetBReserve,
-    }),
-    [assetAReserve, assetBReserve],
-  )
-
-  const [assetValueA, assetValueB] = form.watch(["assetA", "assetB"])
-
-  const assetValues = useMemo(
-    () => ({ assetA: assetValueA, assetB: assetValueB }),
-    [assetValueA, assetValueB],
-  )
-
-  const calculatedShares = useMemo(() => {
-    if (
-      pool.shareTokenIssuance?.totalShare &&
-      reserves.assetA &&
-      assetValues.assetA
-    ) {
-      return new BigNumber(
-        xyk.calculate_shares(
-          reserves.assetA.balance.toString(),
-          new BigNumber(assetValues.assetA)
-            .shiftedBy(formAssets.assetA.decimals)
-            .toFixed(),
-          pool.shareTokenIssuance.totalShare.toString(),
-        ),
-      )
+  const assetValues = useMemo(() => {
+    return {
+      assetA: {
+        value: assetValueA,
+        meta: assetA,
+        reserves: assetAReserve,
+      },
+      assetB: {
+        value: assetValueB,
+        meta: assetB,
+        reserves: assetBReserve,
+      },
     }
-
-    return null
-  }, [pool, reserves.assetA, assetValues.assetA, formAssets.assetA.decimals])
-
-  const minAddLiquidityValidation = useMemo(() => {
-    const minTradingLimit = BigNumber(xykConsts.data?.minTradingLimit ?? 0)
-    const minPoolLiquidity = BigNumber(xykConsts.data?.minPoolLiquidity ?? 0)
-
-    if (!assetValues.assetA || !assetValues.assetB || !calculatedShares)
-      return false
-
-    const minAssetATradingLimit = scale(
-      assetValues.assetA,
-      formAssets.assetA.decimals,
-    ).gt(minTradingLimit)
-    const minAssetBTradingLimit = scale(
-      assetValues.assetB,
-      formAssets.assetB.decimals,
-    ).gt(minTradingLimit)
-
-    const isMinPoolLiquidity = calculatedShares.gt(minPoolLiquidity)
-
-    const isMinAddLiqudity =
-      !minAssetATradingLimit || !minAssetBTradingLimit || !isMinPoolLiquidity
-
-    return isMinAddLiqudity
-  }, [assetValues, formAssets, xykConsts.data, calculatedShares])
-
-  let calculatedRatio =
-    pool.shareTokenIssuance?.myPoolShare &&
-    calculatedShares &&
-    calculatedShares
-      .div(pool.shareTokenIssuance.totalShare?.plus(calculatedShares) ?? 1)
-      .multipliedBy(100)
+  }, [assetA, assetAReserve, assetB, assetBReserve, assetValueA, assetValueB])
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
-  const estimatedFees = useEstimatedFees([
-    api.tx.xyk.addLiquidity(assetA.id, assetB.id, "1", "1"),
-  ])
-
-  const feeWithBuffer = estimatedFees.accountCurrencyFee
-    .times(1.03) // 3%
-    .decimalPlaces(0)
-
-  const balanceA = assetABalance?.balance ?? BN_0
-  const balanceAMax =
-    estimatedFees.accountCurrencyId === assetA.id
-      ? balanceA.minus(feeWithBuffer).minus(assetA.existentialDeposit)
-      : balanceA
-
-  const balanceB = assetBBalance?.balance ?? BN_0
-  const balanceBMax =
-    estimatedFees.accountCurrencyId === assetB.id
-      ? balanceB.minus(feeWithBuffer).minus(assetB.existentialDeposit)
-      : balanceB
-
   const onSubmit = async () => {
     const inputData = {
       assetA: {
-        id: formAssets[lastUpdated].id,
-        amount: getFixedPointAmount(
-          new BigNumber(assetValues[lastUpdated]),
-          formAssets[lastUpdated].decimals.toString(),
+        id: assetValues[lastUpdated].meta.id,
+        amount: scale(
+          assetValues[lastUpdated].value,
+          assetValues[lastUpdated].meta.decimals,
         ),
       },
       assetB: {
-        id: formAssets[opposite(lastUpdated)].id,
-        amount: getFixedPointAmount(
-          new BigNumber(assetValues[opposite(lastUpdated)]),
-          formAssets[opposite(lastUpdated)].decimals.toString(),
+        id: assetValues[opposite(lastUpdated)].meta.id,
+        amount: scale(
+          assetValues[opposite(lastUpdated)].value,
+          assetValues[opposite(lastUpdated)].meta.decimals,
         ).decimalPlaces(0),
       },
     }
+
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`liquidity.add.modal.xyk.toast.${msType}`}
+          tOptions={{
+            shares: shares,
+            fixedPointScale: decimals,
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
 
     return await createTransaction(
       {
@@ -199,84 +155,42 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         ),
       },
       {
-        onSuccess: () => {
-          queryClient.refetchQueries(
-            QUERY_KEYS.accountPositions(account?.address),
-          )
+        onSuccess: (result) => {
+          refetch()
           queryClient.refetchQueries(
             QUERY_KEYS.tokenBalance(pool.id, account?.address),
           )
+          onSuccess(result, scale(shares, decimals).toString())
         },
         onSubmitted: () => {
-          onClose()
+          !farms.length && onClose()
           form.reset()
+          onSubmitted?.()
         },
         onClose,
+        disableAutoClose: !!farms.length,
         onBack: () => {},
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onError: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.xyk.toast.onLoading"
-              tOptions={{
-                shares: calculatedShares,
-                fixedPointScale: decimals,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast,
       },
     )
   }
 
   const handleChange = useCallback(
     (value: string, name: "assetA" | "assetB") => {
-      const assetDecimals = formAssets[name].decimals
-      const pairAssetDecimals = formAssets[opposite(name)].decimals
+      const assetDecimals = assetValues[name].meta.decimals
+      const pairAssetDecimals = assetValues[opposite(name)].meta.decimals
 
-      const currReserves = reserves[name]
-      const nextReserves = reserves[opposite(name)]
+      const currReserves = assetValues[name].reserves
+      const nextReserves = assetValues[opposite(name)].reserves
 
-      if (currReserves && nextReserves && xyk) {
-        const pairTokenValue = getFloatingPointAmount(
+      if (currReserves && nextReserves) {
+        const pairTokenValue = scaleHuman(
           xyk.calculate_liquidity_in(
             currReserves.balance.toFixed(),
             nextReserves.balance.toFixed(),
-            getFixedPointAmount(
-              new BigNumber(value),
-              assetDecimals.toString(),
-            ).toFixed(),
+            scale(value, assetDecimals).toFixed(),
           ),
-          pairAssetDecimals.toString(),
+          pairAssetDecimals,
         ).toString()
 
         form.setValue(name, value, { shouldValidate: true, shouldTouch: true })
@@ -285,16 +199,42 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
           shouldTouch: true,
         })
         form.setValue("lastUpdated", name)
+
+        const { totalShare } = pool.shareTokenIssuance ?? {}
+
+        if (assetAReserve && totalShare) {
+          const shares = xyk.calculate_shares(
+            assetAReserve.balance.toString(),
+            scale(form.getValues("assetA"), assetA.decimals).toFixed(),
+            totalShare.toString(),
+          )
+
+          const ratio = getXYKPoolShare(
+            totalShare,
+            BigNumber(shares),
+          ).toString()
+
+          form.setValue("shares", shares, { shouldValidate: true })
+          form.setValue("ratio", ratio)
+        }
       }
     },
-    [formAssets, reserves, form],
+    [
+      assetA.decimals,
+      assetAReserve,
+      assetValues,
+      form,
+      pool.shareTokenIssuance,
+    ],
   )
 
-  useEffect(() => {
-    return () => {
-      form.reset()
-    }
-  }, [form, form.reset])
+  const minAddLiquidityValidation =
+    form.formState.errors.shares?.message === "minAddLiquidity"
+  const customErrors = form.formState.errors.shares as unknown as
+    | {
+        farm?: { message: string }
+      }
+    | undefined
 
   return (
     <form
@@ -310,95 +250,41 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         <Controller
           name="assetA"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validNumber: (value) => {
-                try {
-                  if (!new BigNumber(value).isNaN()) return true
-                } catch {}
-                return t("error.validNumber")
-              },
-              positive: (value) =>
-                new BigNumber(value).gt(0) || t("error.positive"),
-              maxBalance: (value) => {
-                try {
-                  if (
-                    balanceAMax.gte(
-                      BigNumber(value).shiftedBy(formAssets.assetA.decimals),
-                    )
-                  )
-                    return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
-            },
-          }}
           render={({ field: { name, value }, fieldState: { error } }) => (
             <WalletTransferAssetSelect
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
-              balance={balanceA}
-              balanceMax={balanceAMax}
-              onChange={(value) => {
-                handleChange(value, name)
-              }}
+              onChange={(value) => handleChange(value, name)}
               asset={assetA.id}
               error={error?.message}
+              disabled={!assetAReserve}
+              balance={balanceA}
+              balanceMax={balanceAMax}
             />
           )}
         />
         <TokensConversion
-          firstValue={{ amount: BN_1, symbol: formAssets.assetA.symbol }}
-          secondValue={
-            spotPrice.data?.spotPrice
-              ? {
-                  amount: spotPrice.data?.spotPrice,
-                  symbol: formAssets.assetB.symbol,
-                }
-              : undefined
-          }
+          firstValue={{ amount: BN_1, symbol: assetValues.assetA.meta.symbol }}
+          secondValue={{
+            amount: spotPrice.data?.spotPrice ?? BN_0,
+            symbol: assetValues.assetB.meta.symbol,
+          }}
         />
         <Controller
           name="assetB"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validNumber: (value) => {
-                try {
-                  if (!new BigNumber(value).isNaN()) return true
-                } catch {}
-                return t("error.validNumber")
-              },
-              positive: (value) =>
-                new BigNumber(value).gt(0) || t("error.positive"),
-              maxBalance: (value) => {
-                try {
-                  if (
-                    balanceBMax.gte(
-                      BigNumber(value).shiftedBy(formAssets.assetB.decimals),
-                    )
-                  )
-                    return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
-            },
-          }}
           render={({ field: { name, value }, fieldState: { error } }) => (
             <WalletTransferAssetSelect
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
-              balance={balanceB}
-              balanceMax={balanceBMax}
-              onChange={(value) => {
-                handleChange(value, name)
-              }}
+              onChange={(value) => handleChange(value, name)}
               asset={assetB.id}
               error={error?.message}
+              disabled={!assetBReserve}
+              balance={balanceB}
+              balanceMax={balanceBMax}
             />
           )}
         />
@@ -417,7 +303,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         <SummaryRow
           label="Share of pool:"
           content={t("value.percentage", {
-            value: calculatedRatio,
+            value: ratio,
             type: "token",
           })}
         />
@@ -425,28 +311,20 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
         <SummaryRow
           label="Received amount of Pool Shares:"
           content={t("value.token", {
-            value: calculatedShares,
+            value: shares,
             fixedPointScale: decimals,
           })}
         />
 
         {minAddLiquidityValidation && (
-          <div
-            sx={{
-              flex: "row",
-              align: "center",
-              gap: 8,
-              height: 50,
-              p: "12px 14px",
-              my: 8,
-            }}
-            css={{ borderRadius: 2, background: "rgba(245, 168, 85, 0.3)" }}
-          >
-            <IconWarning />
-            <Text color="white" fs={13} fw={400}>
-              {t("liquidity.xyk.addLiquidity.warning")}
-            </Text>
-          </div>
+          <Alert variant="warning" css={{ marginBottom: 8 }}>
+            {t("liquidity.xyk.addLiquidity.warning")}
+          </Alert>
+        )}
+        {customErrors?.farm && (
+          <Alert variant="error" css={{ margin: "20px 0" }}>
+            {customErrors.farm.message}
+          </Alert>
         )}
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
@@ -462,7 +340,10 @@ export const AddLiquidityFormXYK = ({ pool, onClose }: Props) => {
       <Button
         variant="primary"
         type="submit"
-        disabled={!form.formState.isValid || minAddLiquidityValidation}
+        disabled={
+          !!Object.keys(form.formState.errors).length ||
+          minAddLiquidityValidation
+        }
       >
         {t("confirm")}
       </Button>

@@ -47,21 +47,26 @@ export interface Transaction extends TransactionInput {
   steps?: Array<StepProps>
   onBack?: () => void
   onClose?: () => void
+  disableAutoClose?: boolean
+}
+
+export type TransactionOptions = {
+  onSuccess?: (result: ISubmittableResult) => void
+  onSubmitted?: () => void
+  toast?: ToastMessage
+  isProxy?: boolean
+  steps?: Array<StepProps>
+  onBack?: () => void
+  onClose?: () => void
+  onError?: () => void
+  disableAutoClose?: boolean
 }
 
 interface Store {
   transactions?: Transaction[]
   createTransaction: (
     transaction: TransactionInput,
-    options?: {
-      onSuccess?: (result: ISubmittableResult) => void
-      onSubmitted?: () => void
-      toast?: ToastMessage
-      isProxy?: boolean
-      steps?: Array<StepProps>
-      onBack?: () => void
-      onClose?: () => void
-    },
+    options?: TransactionOptions,
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
 }
@@ -97,11 +102,15 @@ export const useStore = create<Store>((set) => ({
                 resolve(value)
                 options?.onSuccess?.(value)
               },
-              onError: () => reject(new Error("Transaction rejected")),
+              onError: () => {
+                options?.onError?.()
+                reject(new Error("Transaction rejected"))
+              },
               isProxy: !!options?.isProxy,
               steps: options?.steps,
               onBack: options?.onBack,
               onClose: options?.onClose,
+              disableAutoClose: options?.disableAutoClose,
             },
             ...(store.transactions ?? []),
           ],

@@ -21,10 +21,9 @@ import {
 import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
 
-export const MyPositions = () => {
+export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
-  const pool = usePoolData().pool as TPoolFullData
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
@@ -33,23 +32,23 @@ export const MyPositions = () => {
 
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
 
-  if (
-    !pool.miningPositions.length &&
-    !pool.omnipoolPositions.length &&
-    !stablepoolAmount.gt(0)
-  )
-    return null
+  const isPositions =
+    !!pool.miningPositions.length ||
+    !!pool.omnipoolPositions.length ||
+    stablepoolBalance.data?.freeBalance.gt(0)
 
   return (
     <>
-      <Text
-        fs={18}
-        font="GeistMono"
-        tTransform="uppercase"
-        sx={{ px: 30, pt: 12 }}
-      >
-        {t("liquidity.pool.positions.title")}
-      </Text>
+      {isPositions && (
+        <Text
+          fs={18}
+          font="GeistMono"
+          tTransform="uppercase"
+          sx={{ px: 30, pt: 12 }}
+        >
+          {t("liquidity.pool.positions.title")}
+        </Text>
+      )}
 
       {pool.isStablePool && <StablepoolPosition amount={stablepoolAmount} />}
       <LiquidityPositionWrapper />

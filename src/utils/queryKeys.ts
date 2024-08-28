@@ -62,6 +62,7 @@ export const QUERY_KEYS = {
     "omnipoolDeposits",
     ids.join("."),
   ],
+  omnipoolMinLiquidity: ["omnipoolMinLiquidity"],
   xykDeposits: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "xykDeposits",

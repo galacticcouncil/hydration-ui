@@ -8,6 +8,10 @@ import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
 import { TAsset, useAssets } from "providers/assets"
 
+export type TOmnipoolAsset = NonNullable<
+  ReturnType<typeof useOmnipoolAssets>["data"]
+>[number]
+
 export const useOmnipoolAssets = (noRefresh?: boolean) => {
   const { api, isLoaded } = useRpcProvider()
   const { getAsset } = useAssets()
@@ -144,4 +148,15 @@ export const useAllLiquidityPositions = () => {
     },
     enabled: isLoaded,
   })
+}
+
+export const useOmnipoolMinLiquidity = () => {
+  const { api } = useRpcProvider()
+  return useQuery(QUERY_KEYS.omnipoolMinLiquidity, getOmnipoolMinLiquidity(api))
+}
+
+const getOmnipoolMinLiquidity = (api: ApiPromise) => async () => {
+  const data = await api.consts.omnipool.minimumPoolLiquidity
+
+  return data.toBigNumber()
 }

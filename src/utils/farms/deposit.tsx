@@ -1,162 +1,241 @@
-import { useMutation } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { Farm } from "api/farms"
-import { StepProps } from "components/Stepper/Stepper"
-import { Trans, useTranslation } from "react-i18next"
-import { ToastMessage, useStore } from "state/store"
+import { Trans } from "react-i18next"
+import { ToastMessage, TransactionOptions, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TOAST_MESSAGES } from "state/toasts"
-import { scale } from "utils/balance"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
-import { useAssets } from "providers/assets"
+import { ApiPromise } from "@polkadot/api"
+import { t } from "i18next"
+import BN from "bignumber.js"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { scaleHuman } from "utils/balance"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { TShareToken, useAssets } from "providers/assets"
+import { useRefetchAccountPositions } from "api/deposits"
 
-export type FarmDepositMutationType = ReturnType<typeof useFarmDepositMutation>
+type XYKInput = { shares: string; depositId?: string }
+type OmnipoolInput = { positionId: string; value: string; depositId?: string }
 
-export const useFarmDepositMutation = (
-  poolId: string,
-  positionId: string,
-  farms: Farm[],
-  onClose: () => void,
-  onSuccess: () => void,
-) => {
-  const { createTransaction } = useStore()
+export type TJoinFarmsInput = XYKInput | OmnipoolInput
+
+const isXYKData = (data: TJoinFarmsInput): data is XYKInput => {
+  return (data as XYKInput).shares !== undefined
+}
+
+export const xykDepositTx = (
+  api: ApiPromise,
+  farm: Farm,
+  shares: string,
+  { assetIn, assetOut }: { assetIn: string; assetOut: string },
+) =>
+  api.tx.xykLiquidityMining.depositShares(
+    farm.globalFarm.id,
+    farm.yieldFarm.id,
+    {
+      assetIn,
+      assetOut,
+    },
+    shares,
+  )
+
+export const depositTx = (api: ApiPromise, farm: Farm, positionId: string) =>
+  api.tx.omnipoolLiquidityMining.depositShares(
+    farm.globalFarm.id,
+    farm.yieldFarm.id,
+    positionId,
+  )
+
+export const xykRedepositTx = (
+  api: ApiPromise,
+  farm: Farm,
+  depositId: string,
+  { assetIn, assetOut }: { assetIn: string; assetOut: string },
+) =>
+  api.tx.xykLiquidityMining.redepositShares(
+    farm.globalFarm.id,
+    farm.yieldFarm.id,
+    {
+      assetIn,
+      assetOut,
+    },
+    depositId,
+  )
+
+export const redepositTx = (api: ApiPromise, farm: Farm, depositId: string) =>
+  api.tx.omnipoolLiquidityMining.redepositShares(
+    farm.globalFarm.id,
+    farm.yieldFarm.id,
+    depositId,
+  )
+
+export const getToasts = (value: BN, symbol: string) =>
+  TOAST_MESSAGES.reduce((memo, type) => {
+    const msType = type === "onError" ? "onLoading" : type
+    memo[type] = (
+      <Trans
+        t={t}
+        i18nKey={`farms.modal.join.toast.${msType}`}
+        tOptions={{
+          amount: value,
+          symbol: symbol,
+        }}
+      >
+        <span />
+        <span className="highlight" />
+      </Trans>
+    )
+    return memo
+  }, {} as ToastMessage)
+
+type TArgs = {
+  poolId: string
+  farms: Farm[]
+  deposit?: TransactionOptions
+  redeposit?: TransactionOptions
+}
+
+export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
   const { api } = useRpcProvider()
-  const { t } = useTranslation()
   const { account } = useAccount()
-  const { getAsset, isShareToken } = useAssets()
+  const queryClient = useQueryClient()
   const isEvm = isEvmAccount(account?.address)
+  const refetch = useRefetchAccountPositions()
+  const { getAsset } = useAssets()
+
+  const { createTransaction } = useStore()
 
   const meta = getAsset(poolId)
-  const isXYK = isShareToken(meta)
 
-  return useMutation(
-    async ({ shares, value }: { shares: string; value: string }) => {
-      const [firstFarm, ...restFarm] = farms ?? []
+  const getDepositId = async (nftId: string) => {
+    const positions = await api.query.uniques.account.entries(
+      account?.address,
+      nftId,
+    )
 
-      if (firstFarm == null) throw new Error("Missing farm")
-      if (!meta) throw new Error("Missing asset meta")
+    return positions
+      .map((position) => position[0].args[2].toNumber())
+      .sort((a, b) => b - a)[0]
+      .toString()
+  }
 
-      const toast = TOAST_MESSAGES.reduce((memo, type) => {
-        const msType = type === "onError" ? "onLoading" : type
-        memo[type] = (
-          <Trans
-            t={t}
-            i18nKey={`farms.modal.join.toast.${msType}`}
-            tOptions={{
-              amount: value,
-              symbol: meta.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
+  return async (data: TJoinFarmsInput) => {
+    if (!farms.length) throw new Error("There are no farms to join")
+    if (!meta) throw new Error("Missing asset meta")
+
+    const isXyk = isXYKData(data)
+    const [firstFarm, ...restFarms] = farms
+
+    const isRestFarms = restFarms?.length
+    const depositId = data.depositId
+
+    const toast = getToasts(
+      scaleHuman(isXyk ? data.shares : data.value, meta.decimals),
+      meta.symbol,
+    )
+
+    const executeRedeposit = async (depositId: string, farms: Farm[]) => {
+      let txs: SubmittableExtrinsic[]
+
+      if (isXyk) {
+        const { assets } = meta as TShareToken
+        txs = farms.map((farm) =>
+          xykRedepositTx(api, farm, depositId, {
+            assetIn: assets[0].id,
+            assetOut: assets[1].id,
+          }),
         )
-        return memo
-      }, {} as ToastMessage)
+      } else {
+        txs = farms.map((farm) => redepositTx(api, farm, depositId))
+      }
 
-      const firstStep: StepProps[] = [
+      await createTransaction(
         {
-          label: t("farms.modal.join.step", { number: 1 }),
-          state: "active",
-        },
-        {
-          label: t("farms.modal.join.step", { number: 2 }),
-          state: "todo",
-        },
-      ]
-
-      const firstDeposit = await createTransaction(
-        {
-          tx: isXYK
-            ? api.tx.xykLiquidityMining.depositShares(
-                firstFarm.globalFarm.id,
-                firstFarm.yieldFarm.id,
-                { assetIn: meta.assets[0].id, assetOut: meta.assets[1].id },
-                scale(shares, meta.decimals).toString(),
-              )
-            : api.tx.omnipoolLiquidityMining.depositShares(
-                firstFarm.globalFarm.id,
-                firstFarm.yieldFarm.id,
-                positionId,
-              ),
+          tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
+          title: t("farms.modal.join.rest.title"),
         },
         {
           toast,
-          steps: restFarm.length ? firstStep : undefined,
-          onSubmitted: onClose,
-          onClose,
-          onBack: () => {},
+          ...redeposit,
+          onSuccess: (result) => {
+            if (isXyk)
+              queryClient.refetchQueries(
+                QUERY_KEYS.tokenBalance(poolId, account?.address),
+              )
+
+            refetch()
+
+            redeposit?.onSuccess?.(result)
+          },
         },
       )
+    }
 
-      const executeSecondMutation = async (depositId: string) => {
-        const secondStep: StepProps[] = [
-          {
-            label: t("farms.modal.join.step", { number: 1 }),
-            state: "done",
-          },
-          {
-            label: t("farms.modal.join.step", { number: 2 }),
-            state: "active",
-          },
-        ]
+    if (!depositId) {
+      let tx: SubmittableExtrinsic
 
-        const txs = restFarm.map((farm) =>
-          isXYK
-            ? api.tx.xykLiquidityMining.redepositShares(
-                farm.globalFarm.id,
-                farm.yieldFarm.id,
-                { assetIn: meta.assets[0].id, assetOut: meta.assets[1].id },
-                depositId,
-              )
-            : api.tx.omnipoolLiquidityMining.redepositShares(
-                farm.globalFarm.id,
-                farm.yieldFarm.id,
-                depositId,
-              ),
-        )
+      if (isXyk) {
+        const { assets } = meta as TShareToken
 
-        if (txs.length > 0) {
-          await createTransaction(
-            {
-              tx: txs.length > 1 ? api.tx.utility.batch(txs) : txs[0],
-            },
-            { toast, steps: secondStep },
-          )
-        }
-      }
-
-      if (isEvm) {
-        const nftId = isXYK
-          ? await api.consts.xykLiquidityMining.nftCollectionId
-          : await api.consts.omnipoolLiquidityMining.nftCollectionId
-
-        const positions = await api.query.uniques.account.entries(
-          account?.address,
-          nftId,
-        )
-
-        const depositId = positions
-          .map((position) => position[0].args[2].toNumber())
-          .sort((a, b) => b - a)[0]
-          .toString()
-
-        if (depositId) await executeSecondMutation(depositId)
+        tx = xykDepositTx(api, firstFarm, data.shares, {
+          assetIn: assets[0].id,
+          assetOut: assets[1].id,
+        })
       } else {
-        for (const record of firstDeposit.events) {
-          if (
-            api.events.omnipoolLiquidityMining.SharesDeposited.is(
-              record.event,
-            ) ||
-            api.events.xykLiquidityMining.SharesDeposited.is(record.event)
-          ) {
-            const depositId = record.event.data.depositId.toString()
-
-            await executeSecondMutation(depositId)
-          }
-        }
+        tx = depositTx(api, firstFarm, data.positionId)
       }
-    },
-    { onSuccess },
-  )
+      const rewardCurrencySymbol = getAsset(
+        firstFarm.globalFarm.rewardCurrency.toString(),
+      )?.symbol
+
+      await createTransaction(
+        {
+          tx,
+          title: t("farms.modal.join.first.title", {
+            symbol: rewardCurrencySymbol,
+          }),
+        },
+        {
+          toast,
+          ...deposit,
+          onSuccess: async (result) => {
+            if (isXyk)
+              queryClient.refetchQueries(
+                QUERY_KEYS.tokenBalance(poolId, account?.address),
+              )
+
+            refetch()
+            deposit?.onSuccess?.(result)
+
+            if (isRestFarms) {
+              let depositId: string | undefined = undefined
+
+              const pallet = isXyk
+                ? "xykLiquidityMining"
+                : "omnipoolLiquidityMining"
+
+              if (isEvm) {
+                const nftId =
+                  await api.consts[pallet].nftCollectionId.toString()
+                depositId = await getDepositId(nftId)
+              } else {
+                for (const record of result.events) {
+                  if (api.events[pallet].SharesDeposited.is(record.event)) {
+                    depositId = record.event.data.depositId.toString()
+                  }
+                }
+              }
+
+              if (depositId) {
+                await executeRedeposit(depositId, restFarms)
+              }
+            }
+          },
+        },
+      )
+    } else {
+      await executeRedeposit(depositId, farms)
+    }
+  }
 }

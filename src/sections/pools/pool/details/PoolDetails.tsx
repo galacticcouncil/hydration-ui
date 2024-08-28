@@ -35,6 +35,7 @@ import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useFarms } from "api/farms"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -48,15 +49,18 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
+  const farms = useFarms([pool.id])
+  const isFarms = farms.data.length
+
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        isOpen
         defaultPage={Page.OPTIONS}
         onClose={() => setOpen(false)}
+        farms={farms.data}
       />
     ) : (
-      <AddLiquidity isOpen onClose={() => setOpen(false)} />
+      <AddLiquidity isOpen onClose={() => setOpen(false)} farms={farms.data} />
     )
   ) : null
 
@@ -125,7 +129,9 @@ export const PoolDetails = () => {
               }}
             >
               <Icon icon={<PlusIcon />} sx={{ mr: 8, height: 16 }} />
-              {t("liquidity.asset.actions.addLiquidity")}
+              {t(
+                `liquidity.asset.actions.addLiquidity${isFarms ? ".farms" : ""}`,
+              )}
             </div>
           </Button>
         </div>

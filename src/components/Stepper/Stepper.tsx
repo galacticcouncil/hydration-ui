@@ -27,6 +27,14 @@ export type StepProps = {
   state: StepState
 }
 
+export const getStepState = (stepPage: number, currentStep: number) => {
+  if (stepPage === currentStep) {
+    return "active" as const
+  }
+
+  return currentStep > stepPage ? ("done" as const) : ("todo" as const)
+}
+
 const Step = ({ label, state }: StepProps) => {
   const isDone = state === "done"
   const isTodo = state === "todo"
@@ -57,16 +65,18 @@ const Step = ({ label, state }: StepProps) => {
   )
 }
 
-export const Stepper = ({ steps, className, width = "100%" }: StepperProps) => {
+export const Stepper = ({ steps, className, width }: StepperProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
 
   const activeIndex = steps.findIndex((step) => step.state === "active")
   const activeStep = steps[activeIndex]
 
+  const width_ = width ?? steps.length * 100
+
   return (
-    <div sx={{ width }} className={className}>
-      <SStepperContainer width={width}>
+    <div sx={{ width: width_, minWidth: 300 }} className={className}>
+      <SStepperContainer width={width_}>
         {steps.map((step, index) => (
           <Fragment key={index}>
             <Step {...step} label={isDesktop ? step.label : ""} />

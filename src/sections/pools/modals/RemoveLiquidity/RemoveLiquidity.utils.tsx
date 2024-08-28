@@ -24,6 +24,7 @@ export type RemoveLiquidityProps = {
   position: TLPData | TLPData[]
   onSuccess: () => void
   onSubmitted?: (tokensToGet: string) => void
+  onError?: () => void
 }
 
 const defaultValues = {
@@ -42,6 +43,7 @@ export const useRemoveLiquidity = (
   onClose: () => void,
   onSuccess: () => void,
   onSubmit: (value: string) => void,
+  onError?: () => void,
 ) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
@@ -197,6 +199,7 @@ export const useRemoveLiquidity = (
         onClose,
         onSuccess,
         onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+        onError,
       }
 
       const txs = position.map((position) =>
@@ -255,6 +258,7 @@ export const useRemoveLiquidity = (
           onClose,
           onSuccess,
           onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+          onError,
         },
       )
     }

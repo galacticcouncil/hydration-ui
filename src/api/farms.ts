@@ -180,7 +180,7 @@ export const useFarms = (poolIds: Array<string>) => {
     .flat(2)
 
   const accountResolver = getAccountResolver(api.registry)
-  const globalFarmPotAddresses = farmIds?.map((farm) => {
+  const globalFarmPotAddresses = farmIds.map((farm) => {
     const isXyk = getAssetWithFallback(farm.poolId).isShareToken
     const potAddresss = accountResolver(
       Number(farm.globalFarmId),
