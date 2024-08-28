@@ -323,7 +323,7 @@ export const useExternalAssetsWhiteList = () => {
 
       return {
         asset: null,
-        isWhitelisted: false,
+        isWhiteListed: false,
         badge: "" as ExternalAssetBadgeVariant,
       }
     },

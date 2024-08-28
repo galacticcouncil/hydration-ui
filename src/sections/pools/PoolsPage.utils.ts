@@ -47,13 +47,9 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { useUserDeposits } from "api/deposits"
+import { MetadataStore } from "@galacticcouncil/ui"
 
 export const XYK_TVL_VISIBILITY = 5000
-
-export const INVALID_ISOLATED_POOLS = [
-  "7MCEZkdG2wt5tjmjPzeUYgtb1kLWNdvLBo26eEfDFEq1ppCf",
-  "7P7gPHswkLiUUtwLMPpyvo6rdJRRUM7LD9unq4Dm3ByBGifs",
-]
 
 export const useAssetsTradability = () => {
   const {
@@ -429,6 +425,11 @@ export const useXYKPools = (withPositions?: boolean) => {
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
+  const whitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
+
   const data = useMemo(() => {
     if (
       !pools.data ||
@@ -457,6 +458,10 @@ export const useXYKPools = (withPositions?: boolean) => {
         const shareTokenSpotPrice = shareTokeSpotPrices.data.find(
           (shareTokeSpotPrice) => shareTokeSpotPrice.tokenIn === shareTokenId,
         )
+
+        let isInvalid = !assets
+          .getAssets(shareTokenMeta.assets)
+          .some((asset) => asset.isSufficient || whitelist.includes(asset.id))
 
         const tvlDisplay =
           shareTokenIssuance?.totalShare
@@ -487,6 +492,7 @@ export const useXYKPools = (withPositions?: boolean) => {
           volume,
           isVolumeLoading: volumes.isLoading,
           miningPositions,
+          isInvalid,
         }
       })
       .filter(isNotNil)
@@ -497,8 +503,8 @@ export const useXYKPools = (withPositions?: boolean) => {
           : true,
       )
       .sort((a, b) => {
-        if (INVALID_ISOLATED_POOLS.includes(a.poolAddress)) return 1
-        if (INVALID_ISOLATED_POOLS.includes(b.poolAddress)) return -1
+        if (a.isInvalid) return 1
+        if (b.isInvalid) return -1
 
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
@@ -512,6 +518,7 @@ export const useXYKPools = (withPositions?: boolean) => {
     withPositions,
     volumes,
     deposits,
+    whitelist,
   ])
 
   return { data, isInitialLoading }

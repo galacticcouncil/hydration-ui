@@ -1,9 +1,5 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import {
-  INVALID_ISOLATED_POOLS,
-  useXYKPools,
-  XYK_TVL_VISIBILITY,
-} from "sections/pools/PoolsPage.utils"
+import { useXYKPools, XYK_TVL_VISIBILITY } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
@@ -77,8 +73,7 @@ const IsolatedPoolsData = () => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
         return acc.plus(
-          !xykPool.tvlDisplay.isNaN() &&
-            !INVALID_ISOLATED_POOLS.includes(xykPool.poolAddress)
+          !xykPool.tvlDisplay.isNaN() && !xykPool.isInvalid
             ? xykPool.tvlDisplay
             : BN_0,
         )
@@ -101,8 +96,7 @@ const IsolatedPoolsData = () => {
         ? filteredPools
         : filteredPools.filter(
             (pool) =>
-              pool.tvlDisplay.gte(XYK_TVL_VISIBILITY) &&
-              !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
+              pool.tvlDisplay.gte(XYK_TVL_VISIBILITY) && !pool.isInvalid,
           ),
     [filteredPools, showAllXyk],
   )
