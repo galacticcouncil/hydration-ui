@@ -17,22 +17,35 @@ import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTabl
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { HydraPositionsDetailsMob } from "./details/HydraPositionsDetailsMob"
-import { TXYKPosition } from "./data/WalletAssetsHydraPositionsData.utils"
+import {
+  isXYKPosition,
+  TXYKPosition,
+} from "./data/WalletAssetsHydraPositionsData.utils"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/EmptyStateLPIcon.svg?react"
 import { LINKS } from "utils/navigation"
 import { TLPData } from "utils/omnipool"
+import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
+import { WalletTransferPositionModal } from "sections/wallet/transfer/WalletTransferPositionModal"
 
 type Props = { data: (TLPData | TXYKPosition)[] }
 
 export const WalletAssetsHydraPositions = ({ data }: Props) => {
   const { t } = useTranslation()
 
+  const [transferPosition, setTransferPosition] = useState<
+    TLPData | TXYKPosition | null
+  >(null)
+
   const [row, setRow] = useState<TLPData | TXYKPosition | undefined>(undefined)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const table = useHydraPositionsTable(data)
+  const table = useHydraPositionsTable(data, {
+    onTransfer: setTransferPosition,
+  })
+
+  const onClose = () => setTransferPosition(null)
 
   return (
     <>
@@ -111,8 +124,26 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
         </Table>
       </TableContainer>
       {!isDesktop && (
-        <HydraPositionsDetailsMob row={row} onClose={() => setRow(undefined)} />
+        <HydraPositionsDetailsMob
+          row={row}
+          onClose={() => setRow(undefined)}
+          onTransfer={setTransferPosition}
+        />
       )}
+      {transferPosition ? (
+        !isXYKPosition(transferPosition) ? (
+          <WalletTransferPositionModal
+            position={transferPosition}
+            onClose={onClose}
+          />
+        ) : (
+          <WalletTransferModal
+            open
+            initialAsset={transferPosition.assetId}
+            onClose={onClose}
+          />
+        )
+      ) : null}
     </>
   )
 }

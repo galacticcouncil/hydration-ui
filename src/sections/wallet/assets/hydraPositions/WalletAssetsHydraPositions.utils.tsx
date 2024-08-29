@@ -21,10 +21,17 @@ import {
   TXYKPosition,
 } from "./data/WalletAssetsHydraPositionsData.utils"
 import { TLPData } from "utils/omnipool"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import { TableAction } from "components/Table/Table"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
+export const useHydraPositionsTable = (
+  data: (TLPData | TXYKPosition)[],
+  actions: { onTransfer: (position: TLPData | TXYKPosition) => void },
+) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<TLPData | TXYKPosition>()
+  const { account } = useAccount()
+  const { accessor, display } = createColumnHelper<TLPData | TXYKPosition>()
   const [sorting, setSorting] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -33,6 +40,7 @@ export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
     symbol: true,
     amount: isDesktop,
     valueDisplay: true,
+    actions: isDesktop,
   }
 
   const columns = useMemo(
@@ -102,6 +110,20 @@ export const useHydraPositionsTable = (data: (TLPData | TXYKPosition)[]) => {
               </ButtonTransparent>
             )}
           </div>
+        ),
+      }),
+      display({
+        id: "actions",
+        size: 38,
+        cell: ({ row }) => (
+          <TableAction
+            icon={<TransferIcon />}
+            onClick={() => actions.onTransfer(row.original)}
+            sx={{ mr: 16 }}
+            disabled={account?.isExternalWalletConnected}
+          >
+            {t("transfer")}
+          </TableAction>
         ),
       }),
     ],
