@@ -12,7 +12,10 @@ import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { omit } from "utils/rx"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
-import { useExternalTokensRugCheck } from "api/external"
+import {
+  useExternalAssetRegistry,
+  useExternalTokensRugCheck,
+} from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 import { TExternalAssetWithLocation } from "utils/externalAssets"
 import { useSettingsStore } from "state/store"
@@ -41,6 +44,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { assets } = useRpcProvider()
   const { degenMode } = useSettingsStore()
 
+  const externalAssetRegistry = useExternalAssetRegistry()
   const { getTokenByInternalId } = useUserExternalTokenStore()
 
   const chainStored = assets.external.find(
@@ -54,6 +58,13 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
   const rugCheck = useExternalTokensRugCheck(rugCheckIds)
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
+
+  const externalMeta = !chainStored
+    ? externalAssetRegistry[asset.origin].data?.get(asset.id)
+    : null
+
+  const isWhiteListed =
+    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -104,8 +115,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     <>
       <TokenInfoHeader
         asset={asset}
-        internalId={chainStored?.id}
-        badge={rugCheckData?.badge}
+        badge={rugCheckData?.badge || (isWhiteListed ? "warning" : "danger")}
         severity={rugCheckData?.severity}
       />
       <Separator sx={{ my: 10 }} color="darkBlue401" />

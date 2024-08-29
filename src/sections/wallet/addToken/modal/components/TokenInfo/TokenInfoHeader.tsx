@@ -18,14 +18,12 @@ export const UigcAssetBadge = createComponent({
 
 export type TokenHeaderProps = {
   asset: TExternalAsset
-  internalId?: string
   severity?: RugSeverityLevel
   badge?: ExternalAssetBadgeVariant
 }
 
 export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   asset,
-  internalId,
   severity,
   badge,
 }) => {
