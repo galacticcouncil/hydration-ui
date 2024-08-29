@@ -84,7 +84,9 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
         id,
         decimals: data.decimals.toNumber(),
         // decode from hex because of non-standard characters
-        symbol: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
+        symbol: Buffer.from(data.symbol.toHex().slice(2), "hex").toString(
+          "utf8",
+        ),
         name: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
         supply,
         origin: assethub.parachainId,
