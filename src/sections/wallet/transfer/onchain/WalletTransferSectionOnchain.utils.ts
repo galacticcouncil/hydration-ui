@@ -49,12 +49,9 @@ export const getDestZodSchema = (currentAddress?: string) =>
   z.object({
     dest: required
       .refine(
-        (value) => {
-          return (
-            safeConvertAddressSS58(value, 0) != null ||
-            safeConvertAddressH160(value) !== null
-          )
-        },
+        (value) =>
+          !!safeConvertAddressSS58(value, 0) || !!safeConvertAddressH160(value),
+
         {
           message: t("wallet.assets.transfer.error.validAddress"),
         },
@@ -72,7 +69,7 @@ export const getDestZodSchema = (currentAddress?: string) =>
             const from = safeConvertAddressSS58(currentAddress.toString(), 0)
             const to = safeConvertAddressSS58(value, 0)
 
-            if (from != null && to != null && from === to) {
+            if (from && to && from === to) {
               return false
             }
 
