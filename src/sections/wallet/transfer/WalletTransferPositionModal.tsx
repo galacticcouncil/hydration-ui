@@ -31,6 +31,10 @@ import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { createToastMessages } from "state/toasts"
 import { useRefetchAccountNFTPositions } from "api/deposits"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 
 enum ModalPage {
   Transfer,
@@ -58,6 +62,14 @@ export const WalletTransferPositionModal = ({
     resolver: zodResolver(getDestZodSchema(account?.address)),
   })
 
+  const { lrnaShifted, valueShifted, meta, valueDisplay, totalValueShifted } =
+    position
+
+  const tKey =
+    lrnaShifted && !lrnaShifted.isNaN() && lrnaShifted.gt(0)
+      ? "wallet.assets.hydraPositions.data.valueLrna"
+      : "wallet.assets.hydraPositions.data.value"
+
   const onSubmit = async (values: FormValues<typeof form>) => {
     const normalizedDest =
       safeConvertAddressH160(values.dest) !== null
@@ -67,7 +79,14 @@ export const WalletTransferPositionModal = ({
     const toast = createToastMessages("wallet.assets.transfer.position.toast", {
       t,
       tOptions: {
-        address: normalizedDest,
+        value: t("wallet.assets.hydraPositions.data.value", {
+          value: totalValueShifted,
+          symbol: meta?.symbol,
+        }),
+        address: shortenAccountAddress(
+          getChainSpecificAddress(normalizedDest),
+          12,
+        ),
       },
       components: ["span.highlight"],
     })
@@ -79,13 +98,6 @@ export const WalletTransferPositionModal = ({
       { onClose, onBack: () => {}, toast, onSuccess: refetch },
     )
   }
-
-  const { lrnaShifted, valueShifted, meta, valueDisplay } = position
-
-  const tKey =
-    lrnaShifted && !lrnaShifted.isNaN() && lrnaShifted.gt(0)
-      ? "wallet.assets.hydraPositions.data.valueLrna"
-      : "wallet.assets.hydraPositions.data.value"
 
   return (
     <Modal open onClose={onClose} disableClose={!isDesktop}>
