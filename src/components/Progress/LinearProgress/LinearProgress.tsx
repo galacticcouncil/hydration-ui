@@ -1,5 +1,11 @@
 import { theme } from "theme"
-import { SBar, SBarContainer, SContainer, SText } from "./LinearProgress.styled"
+import {
+  Filler,
+  SBar,
+  SBarContainer,
+  SContainer,
+  SText,
+} from "./LinearProgress.styled"
 
 export type ColorType = keyof typeof theme.colors
 export type BarSize = "small" | "medium" | "large"
@@ -32,15 +38,19 @@ export const LinearProgress = ({
   withoutLabel,
   ...props
 }: LinearProgressProps) => {
+  const percentage = Math.max(0, Math.min(percent, 100))
+
   return (
     <SContainer {...props}>
       <SBarContainer size={size}>
-        <SBar
-          colorStart={color}
-          colorEnd={colorEnd}
-          colorCustom={colorCustom}
-          percentage={Math.max(0, Math.min(percent, 100))}
-        />
+        <Filler percentage={percentage}>
+          <SBar
+            colorStart={color}
+            colorEnd={colorEnd}
+            colorCustom={colorCustom}
+            percentage={percentage}
+          />
+        </Filler>
       </SBarContainer>
       {!withoutLabel && (
         <SText position={labelPosition} size={size} color={labelColor}>
