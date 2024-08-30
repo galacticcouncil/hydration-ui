@@ -141,6 +141,7 @@ export const WalletAssetsHydraPositions = ({ data }: Props) => {
             open
             initialAsset={transferPosition.assetId}
             onClose={onClose}
+            staticAsset
           />
         )
       ) : null}

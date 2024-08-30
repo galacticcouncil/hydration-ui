@@ -38,12 +38,14 @@ export function WalletTransferSectionOnchain({
   onClose,
   openAssets,
   openAddressBook,
+  staticAsset,
 }: {
   asset: string
   form: UseFormReturn<{ dest: string; amount: string }>
   onClose: () => void
   openAssets?: () => void
   openAddressBook: () => void
+  staticAsset: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccount()
@@ -267,7 +269,7 @@ export function WalletTransferSectionOnchain({
               onChange={onChange}
               asset={asset}
               error={error?.message}
-              onAssetOpen={openAssets}
+              onAssetOpen={staticAsset ? undefined : openAssets}
             />
           )}
         />

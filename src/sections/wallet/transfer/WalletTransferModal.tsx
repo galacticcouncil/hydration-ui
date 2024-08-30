@@ -23,6 +23,7 @@ export function WalletTransferModal(props: {
   onClose: () => void
   initialAsset: string
   initialRecipient?: string
+  staticAsset?: boolean
 }) {
   const { t } = useTranslation()
 
@@ -64,6 +65,7 @@ export function WalletTransferModal(props: {
                 openAssets={openAssets}
                 openAddressBook={openAddressBook}
                 onClose={props.onClose}
+                staticAsset={!!props.staticAsset}
               />
             ),
           },
