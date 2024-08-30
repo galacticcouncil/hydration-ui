@@ -88,7 +88,7 @@ export const WalletTransferPositionModal = ({
           12,
         ),
       },
-      components: ["span.highlight"],
+      components: ["span", "span.highlight"],
     })
 
     return await createTransaction(
