@@ -10,6 +10,11 @@ export const SStepperContainer = styled.div<{ width?: number | string }>`
   width: 100%;
   margin: 0 auto;
 
+  @media (${theme.viewport.gte.sm}) {
+    width: ${({ width }) => width}px;
+    min-width: 300px;
+  }
+
   & > div {
     position: relative;
   }

@@ -1,4 +1,4 @@
-import { AssetId, AssetBadge } from "@galacticcouncil/ui"
+import { AssetBadge } from "@galacticcouncil/ui"
 import { createComponent } from "@lit-labs/react"
 import { ExternalAssetBadgeVariant, RugSeverityLevel } from "api/external"
 import { Icon } from "components/Icon/Icon"
@@ -8,12 +8,7 @@ import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { SBadgeCointainer, SLogoContainer } from "./TokenInfo.styled"
 import { useTranslation } from "react-i18next"
 import SkullIcon from "assets/icons/SkullIcon.svg?react"
-
-export const UigcAssetId = createComponent({
-  tagName: "uigc-asset-id",
-  elementClass: AssetId,
-  react: React,
-})
+import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
 
 export const UigcAssetBadge = createComponent({
   tagName: "uigc-asset-badge",
@@ -23,14 +18,12 @@ export const UigcAssetBadge = createComponent({
 
 export type TokenHeaderProps = {
   asset: TExternalAsset
-  internalId?: string
   severity?: RugSeverityLevel
   badge?: ExternalAssetBadgeVariant
 }
 
 export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   asset,
-  internalId,
   severity,
   badge,
 }) => {
@@ -45,13 +38,10 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
           sx={{ flexShrink: 0 }}
           size={46}
           icon={
-            <UigcAssetId
-              symbol={internalId ? asset.symbol : ""}
-              ref={(e) =>
-                e?.shadowRoot
-                  ?.querySelector("uigc-logo-asset")
-                  ?.setAttribute("style", "width:100%;height:100%;")
-              }
+            <ExternalAssetLogo
+              id={asset.id}
+              parachainId={asset.origin}
+              originHidden
             >
               {isHighSeverity ? (
                 <SBadgeCointainer slot="badge">
@@ -64,7 +54,7 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
                   text={t(`wallet.addToken.tooltip.${badge}`)}
                 />
               ) : null}
-            </UigcAssetId>
+            </ExternalAssetLogo>
           }
         />
       </SLogoContainer>

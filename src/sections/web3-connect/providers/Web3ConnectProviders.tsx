@@ -36,12 +36,24 @@ import { Chip } from "components/Chip"
 import { Separator } from "components/Separator/Separator"
 import { AccordionAnimation } from "components/Accordion/Accordion"
 import { MetadataStore } from "@galacticcouncil/ui"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+
 import { pick } from "utils/rx"
+import { EvmChain } from "@galacticcouncil/xcm-core"
 
 const getModeIcon = (mode: WalletMode) => {
   try {
-    const key = mode === WalletMode.EVM ? "eth" : "dot"
-    return MetadataStore.getInstance().asset(key)
+    if (mode === WalletMode.EVM) {
+      const chain = chainsMap.get("ethereum") as EvmChain
+      const asset = chain.getAsset("weth")!
+      const address = chain.getAssetId(asset)
+      return MetadataStore.getInstance().asset(
+        "ethereum",
+        chain.defEvm.id.toString(),
+        address.toString(),
+      )
+    }
+    return MetadataStore.getInstance().asset("polkadot", "0", "0")
   } catch (e) {}
 }
 

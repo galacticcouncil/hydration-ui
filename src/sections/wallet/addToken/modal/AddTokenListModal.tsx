@@ -1,6 +1,3 @@
-import * as React from "react"
-import { AssetId } from "@galacticcouncil/ui"
-import { createComponent } from "@lit-labs/react"
 import { useMemo } from "react"
 import { useExternalAssetRegistry } from "api/external"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
@@ -22,12 +19,7 @@ import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { useSettingsStore } from "state/store"
 import { theme } from "theme"
-
-export const UigcAssetId = createComponent({
-  tagName: "uigc-asset-id",
-  elementClass: AssetId,
-  react: React,
-})
+import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -143,18 +135,16 @@ export const AddTokenListModal: React.FC<Props> = ({
                   {filteredExternalAssets.map((asset) => (
                     <AssetRow
                       key={asset.id}
-                      onClick={() =>
+                      onClick={() => {
                         onAssetSelect?.({ ...asset, origin: parachainId })
-                      }
+                      }}
                     >
                       <Icon
                         icon={
-                          <UigcAssetId
-                            symbol={
-                              registeredAssetsMap.get(asset.id)
-                                ? asset.symbol
-                                : ""
-                            }
+                          <ExternalAssetLogo
+                            id={asset.id}
+                            parachainId={asset.origin}
+                            originHidden
                           />
                         }
                         size={24}

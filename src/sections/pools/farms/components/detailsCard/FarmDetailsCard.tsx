@@ -2,7 +2,6 @@ import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { SIcon, SRow, SContainer } from "./FarmDetailsCard.styled"
-import { FillBar } from "components/FillBar/FillBar"
 import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
@@ -21,6 +20,8 @@ import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 type FarmDetailsCardProps = {
   poolId: string
@@ -123,8 +124,11 @@ export const FarmDetailsCard = ({
           {compact ? (
             <Icon sx={{ color: "darkBlue200" }} icon={<Distribution />} />
           ) : (
-            <FillBar
-              percentage={apr.data.distributedRewards
+            <LinearProgress
+              size="small"
+              color="brightBlue500"
+              withoutLabel
+              percent={apr.data.distributedRewards
                 .div(apr.data.maxRewards)
                 .times(100)
                 .toNumber()}
@@ -152,9 +156,15 @@ export const FarmDetailsCard = ({
           {compact ? (
             <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
           ) : (
-            <FillBar
-              percentage={fullness.toNumber()}
-              variant={isFull ? "full" : "secondary"}
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={fullness.toNumber()}
+              colorCustom={
+                true
+                  ? theme.gradients.pinkDarkPink
+                  : theme.gradients.lightGreenOrange
+              }
             />
           )}
 

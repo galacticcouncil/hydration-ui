@@ -30,21 +30,17 @@ export const LoyaltyGraph = ({
   )
 
   return (
-    <div sx={{ flex: "column", gap: 32 }}>
-      <div
-        sx={{ height: 300, flex: "row", align: "center", justify: "center" }}
-      >
-        {rates.data ? (
-          <Graph
-            labelX={t("farms.modal.details.loyalty.x")}
-            labelY={t("farms.modal.details.loyalty.y")}
-            data={rates.data}
-            offset={{ top: 0, right: 0, bottom: 16, left: 16 }}
-          />
-        ) : (
-          <Spinner size={64} />
-        )}
-      </div>
+    <div sx={{ height: 300, flex: "row", align: "center", justify: "center" }}>
+      {rates.data ? (
+        <Graph
+          labelX={t("farms.modal.details.loyalty.x")}
+          labelY={t("farms.modal.details.loyalty.y")}
+          data={rates.data}
+          offset={{ top: 0, right: 0, bottom: 16, left: 16 }}
+        />
+      ) : (
+        <Spinner size={64} />
+      )}
     </div>
   )
 }

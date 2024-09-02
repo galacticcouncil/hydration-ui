@@ -27,7 +27,7 @@ export const useOmnipoolPositionsData = ({
 
   const { getData } = useLiquidityPositionData(positionIds)
 
-  const isLoading = positions.some((q) => q.isLoading)
+  const isLoading = positions.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
     if (positions.some((q) => !q.data)) return []
