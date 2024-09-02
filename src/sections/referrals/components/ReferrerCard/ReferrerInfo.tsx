@@ -8,10 +8,7 @@ import {
   useReferrerTierData,
 } from "sections/referrals/ReferralsPage.utils"
 import Skeleton from "react-loading-skeleton"
-import {
-  SBar,
-  SBarContainer,
-} from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
+import { LinearProgress } from "components/Progress"
 
 export const ReferrerInfo = ({
   referrerAddress,
@@ -81,9 +78,13 @@ export const ReferrerInfo = ({
           referrerInfo.isLoading ? (
             <Skeleton width={140} height={40} />
           ) : (
-            <SBarContainer>
-              <SBar percentage={tierProgress?.toNumber() ?? 0} variant="pink" />
-            </SBarContainer>
+            <LinearProgress
+              withoutLabel
+              size="small"
+              percent={tierProgress?.toNumber() ?? 0}
+              color="brightBlue600"
+              colorEnd="pink600"
+            />
           )
         }
       />

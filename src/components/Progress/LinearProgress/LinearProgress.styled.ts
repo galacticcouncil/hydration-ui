@@ -65,33 +65,38 @@ export const SContainer = styled.div`
 `
 
 export const SBarContainer = styled.div<{ size: BarSize }>`
-  position: relative;
   order: 1;
 
-  width: 100%;
-  border-radius: 9999px;
-
   background-color: rgba(${theme.rgbColors.primaryA0}, 0.35);
+  border-radius: 9999px;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
 
-  ${({ size }) => getBarSize(size || "medium")}
+  ${({ size }) => getBarSize(size || "medium")};
 `
 
-export const SBar = styled.div<{ colorStart: ColorType; colorEnd?: ColorType }>`
-  height: 100%;
-  border-radius: 9999px;
+export const Filler = styled.div<{ percentage: number }>`
+  transition: width 2s ease-i-out;
+  height: inherit;
+  border-radius: inherit;
+  overflow: hidden;
+  width: ${({ percentage }) => percentage}%;
+`
 
-  -webkit-mask: linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0);
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    ${({ colorStart, colorEnd }) => getBarColorStyle(colorStart, colorEnd)}
-  }
+export const SBar = styled.div<{
+  colorStart: ColorType
+  colorEnd?: ColorType
+  percentage: number
+  colorCustom?: string
+}>`
+  height: inherit;
+  transition: width 2s ease-i-out;
+  width: ${({ percentage }) => (100 / percentage) * 100}%;
+  ${({ colorStart, colorEnd, colorCustom }) =>
+    colorCustom
+      ? `background: ${colorCustom};`
+      : getBarColorStyle(colorStart, colorEnd).styles}
 `
 
 export const SText = styled.span<{
