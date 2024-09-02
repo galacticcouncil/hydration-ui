@@ -67,6 +67,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   if (!values) return null
 
   const {
+    file,
     symbol,
     name,
     decimals,
@@ -127,6 +128,19 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
           <Text sx={{ mb: 12 }} color="brightBlue300" font="GeistMono">
             {t("memepad.summary.yourSummary")}:
           </Text>
+          {file instanceof File && (
+            <SRowItem>
+              <Text fs={14} color="basic400">
+                Logo
+              </Text>
+              <img
+                alt={name}
+                src={URL.createObjectURL(file)}
+                width={30}
+                height={30}
+              />
+            </SRowItem>
+          )}
           <SRowItem>
             <Text fs={14} color="basic400">
               {t("memepad.form.name")}
@@ -189,7 +203,16 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
             </Text>
             <div sx={{ flex: "row", align: "center", gap: 4 }}>
               <div sx={{ flex: "row" }}>
-                <Icon size={20} icon={<AssetLogo id={xykAssetAMeta?.id} />} />
+                <Icon
+                  size={20}
+                  icon={
+                    file instanceof File ? (
+                      <img alt={name} src={URL.createObjectURL(file)} />
+                    ) : (
+                      <AssetLogo id={xykAssetAMeta?.id} />
+                    )
+                  }
+                />
                 <Icon
                   size={20}
                   icon={<AssetLogo id={xykAssetBMeta?.id} />}

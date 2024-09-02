@@ -37,6 +37,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
+import { useUploadPendingFiles } from "components/FileUploader"
 
 export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
@@ -61,7 +62,10 @@ const DEFAULT_DECIMALS_COUNT = 12
 const DEFAULT_EXISTENTIAL_DEPOSIT = 1
 const DEFAULT_DOT_SUPPLY = 10
 
+const APILLON_BUCKET_UUID = import.meta.env.VITE_MEMEPAD_APILLON_BUCKET_UUID
+
 export type MemepadFormValues = CreateTokenValues & {
+  file: File | null
   internalId: string
   xykPoolAssetId: string
   xykPoolSupply: string
@@ -105,6 +109,7 @@ export const useMemepadForm = ({
       id: "",
       name: "",
       symbol: "",
+      file: null,
       deposit: DEFAULT_EXISTENTIAL_DEPOSIT.toString(),
       supply: "",
       allocatedSupply: "",
@@ -223,6 +228,7 @@ export const useMemepad = () => {
   const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
   const [supplyPerc, setSupplyPerc] = useState(50)
   const dotTransferredRef = useRef(false)
+  const uploadPendingFiles = useUploadPendingFiles()
 
   const { addToken } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
@@ -314,6 +320,20 @@ export const useMemepad = () => {
         syncAssethubXcmConfig(registeredAsset)
 
         form.setValue("internalId", internalId)
+
+        if (formValues.file instanceof File) {
+          const fileExt = formValues.file.name.split(".").pop()
+          const fileName = `${formValues.origin}_${id}_${internalId}.${fileExt}`
+          await uploadPendingFiles({
+            destination: {
+              url: `http://localhost:3000/api/apillon/bucket/${APILLON_BUCKET_UUID}/upload`,
+              params: {
+                fileName,
+              },
+            },
+          })
+        }
+
         setNextStep()
         currentStep++
       }

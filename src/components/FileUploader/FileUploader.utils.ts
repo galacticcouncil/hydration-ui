@@ -1,5 +1,11 @@
-import { FileFilterMethod } from "@rpldy/uploady"
-import { useMemo } from "react"
+import {
+  Batch,
+  FileFilterMethod,
+  UPLOADER_EVENTS,
+  UploadOptions,
+  useUploady,
+} from "@rpldy/uploady"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export const ALL_FILE_TYPES = ["png", "jpg", "svg", "webp"] as const
@@ -85,7 +91,7 @@ const isFileSizeValid = (file: File, maxSize: number = DEFAULT_MAX_SIZE) => {
   return false
 }
 
-const isFileDimensionsValid = async (
+const isImageDimensionsValid = async (
   file: File,
   {
     minWidth = DEFAULT_MIN_WIDTH,
@@ -95,6 +101,9 @@ const isFileDimensionsValid = async (
   },
 ) => {
   if (file instanceof File) {
+    // skip of MIME type is not an image
+    if (!file.type.startsWith("image/")) return true
+
     const dimensions = await getFileDimensions(file)
     if (!dimensions) return false
 
@@ -141,7 +150,7 @@ export const createFileFilter = ({
       }
 
       if (
-        !(await isFileDimensionsValid(file, {
+        !(await isImageDimensionsValid(file, {
           minWidth,
           maxWidth,
           minHeight,
@@ -205,6 +214,33 @@ export const useFileErrorMessage = (
   ])
 }
 
+export const useUploadPendingFiles = () => {
+  const uploady = useUploady()
+
+  return useCallback(
+    async (options: UploadOptions) => {
+      return new Promise<void>((resolve, reject) => {
+        uploady.processPending(options)
+
+        const onProgress = (batch: Batch) => {
+          if (batch.completed === 100) {
+            resolve()
+          }
+        }
+
+        uploady.on(UPLOADER_EVENTS.BATCH_PROGRESS, onProgress)
+        uploady.on(UPLOADER_EVENTS.BATCH_ERROR, reject)
+
+        uploady.once(UPLOADER_EVENTS.BATCH_FINALIZE, () => {
+          uploady.off(UPLOADER_EVENTS.BATCH_PROGRESS, onProgress)
+          uploady.off(UPLOADER_EVENTS.BATCH_ERROR, reject)
+        })
+      })
+    },
+    [uploady],
+  )
+}
+
 export const parseDimensions = (dimensions: string) => {
   try {
     const [width, height] = dimensions.toLowerCase().split("x").map(Number)
@@ -221,3 +257,5 @@ export const formatBytes = (bytes: number) => {
   const i = Math.floor(Math.log(bytes) / Math.log(1024))
   return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`
 }
+
+export const isFile = (value: unknown): value is File => value instanceof File

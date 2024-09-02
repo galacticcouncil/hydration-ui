@@ -95,10 +95,21 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           type="hidden"
           {...form.register("decimals", { valueAsNumber: true })}
         />
-        <FileUploader
-          maxSize={30 * 1024} // 30KB
-          minDimensions="128x128"
-          maxDimensions="128x128"
+        <Controller
+          name="file"
+          control={form.control}
+          render={({ field }) => (
+            <FileUploader
+              maxSize={30 * 1024} // 30KB
+              minDimensions="128x128"
+              maxDimensions="128x128"
+              allowedTypes={["png", "jpg", "svg", "webp"]}
+              onChange={(files) => {
+                const file = files?.[0] || null
+                field.onChange(file)
+              }}
+            />
+          )}
         />
         <Controller
           name="name"

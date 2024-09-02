@@ -1,9 +1,15 @@
 import { asUploadButton } from "@rpldy/upload-button"
 import UploadDropZone from "@rpldy/upload-drop-zone"
-import UploadPreview, { PreviewMethods } from "@rpldy/upload-preview"
-import Uploady, { BatchItem, UPLOADER_EVENTS, useUploady } from "@rpldy/uploady"
+import Uploady, { Batch, UPLOADER_EVENTS, useUploady } from "@rpldy/uploady"
+import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import React, { forwardRef, useEffect, useMemo, useRef, useState } from "react"
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
   SClearButton,
@@ -21,9 +27,11 @@ import {
   DEFAULT_MIN_WIDTH,
   FileError,
   FileType,
+  isFile,
   parseDimensions,
   useFileErrorMessage,
 } from "./FileUploader.utils"
+import { usePrevious } from "react-use"
 
 export type FileUploaderProps = {
   placeholder?: string
@@ -31,7 +39,10 @@ export type FileUploaderProps = {
   maxDimensions?: string
   maxSize?: number
   allowedTypes?: readonly FileType[]
+  onChange?: (files: File[]) => void
 }
+
+export const FileUploaderProvider = Uploady
 
 const UploadButton = asUploadButton(
   forwardRef<HTMLDivElement>((props, ref) => {
@@ -39,49 +50,102 @@ const UploadButton = asUploadButton(
   }),
 )
 
-type UploaderWrapperProps = Partial<FileUploaderProps> & {
-  file: BatchItem | null
-  error?: string
-  onFileAdded?: (item: BatchItem) => void
-  onFileRemoved?: () => void
-  previewMethodsRef: React.MutableRefObject<PreviewMethods | null>
-}
-
-const UploaderWrapper: React.FC<UploaderWrapperProps> = ({
+export const FileUploader: React.FC<FileUploaderProps> = ({
   placeholder,
-  error,
-  file,
-  allowedTypes,
-  onFileAdded,
-  onFileRemoved,
-  previewMethodsRef,
+  minDimensions = `${DEFAULT_MIN_WIDTH}x${DEFAULT_MIN_HEIGHT}`,
+  maxDimensions = `${DEFAULT_MAX_WIDTH}x${DEFAULT_MAX_HEIGHT}`,
+  maxSize = DEFAULT_MAX_SIZE,
+  allowedTypes = ALL_FILE_TYPES,
+  onChange,
 }) => {
-  const uploady = useUploady()
+  const { t } = useTranslation()
+
+  const { abortBatch, clearPending, ...uploady } = useUploady()
+
+  const [batch, setBatch] = useState<Batch | null>(null)
+  const [errorCode, setErrorCode] = useState<FileError | null>(null)
+  const prevBatch = usePrevious(batch)
+
+  const [minWidth, minHeight] = parseDimensions(minDimensions)
+  const [maxWidth, maxHeight] = parseDimensions(maxDimensions)
+
+  const fileFilter = useMemo(() => {
+    return createFileFilter({
+      maxSize,
+      minWidth,
+      minHeight,
+      maxWidth,
+      maxHeight,
+      allowedTypes,
+      onError: (error) => {
+        if (batch) abortBatch(batch.id)
+        setErrorCode(error.code)
+      },
+    })
+  }, [
+    abortBatch,
+    allowedTypes,
+    batch,
+    maxHeight,
+    maxSize,
+    maxWidth,
+    minHeight,
+    minWidth,
+  ])
+
+  const onBatchAdded = useCallback(
+    (batch: Batch) => {
+      if (prevBatch) abortBatch(prevBatch.id)
+      setBatch(batch)
+      setErrorCode(null)
+
+      const files = batch.items.map(({ file }) => file).filter(isFile)
+      onChange?.(files)
+    },
+    [abortBatch, onChange, prevBatch],
+  )
+
+  const onBatchAborted = useCallback(() => {
+    setBatch?.(null)
+    onChange?.([])
+  }, [onChange])
 
   useEffect(() => {
-    const handleItemStart = (item: BatchItem) => onFileAdded?.(item)
-    uploady.on(UPLOADER_EVENTS.ITEM_START, handleItemStart)
+    uploady.on(UPLOADER_EVENTS.BATCH_ADD, onBatchAdded)
+    uploady.on(UPLOADER_EVENTS.BATCH_ABORT, onBatchAborted)
+    uploady.on(UPLOADER_EVENTS.BATCH_CANCEL, onBatchAborted)
+
     return () => {
-      uploady.off(UPLOADER_EVENTS.ITEM_START, handleItemStart)
+      uploady.off(UPLOADER_EVENTS.BATCH_ADD, onBatchAdded)
+      uploady.off(UPLOADER_EVENTS.BATCH_ABORT, onBatchAborted)
+      uploady.off(UPLOADER_EVENTS.BATCH_CANCEL, onBatchAborted)
     }
-  }, [onFileAdded, uploady])
+  }, [onBatchAborted, onBatchAdded, uploady])
 
-  function clearPreview() {
-    previewMethodsRef.current?.clear()
-    onFileRemoved?.()
-  }
+  const error = useFileErrorMessage(errorCode, {
+    maxSize,
+    minWidth,
+    minHeight,
+    maxWidth,
+    maxHeight,
+    allowedTypes,
+  })
 
-  const hasFile = !!file
+  const files = batch?.items
+    ? batch.items.map(({ file }) => file).filter(isFile)
+    : []
+
+  console.log({ batch })
 
   return (
     <SContainer error={!!error}>
-      <UploadDropZone onDragOverClassName="drag-over">
-        <UploadButton>
+      <UploadDropZone onDragOverClassName="drag-over" fileFilter={fileFilter}>
+        <UploadButton fileFilter={fileFilter}>
           <>
-            {!hasFile && (
+            {!batch && (
               <>
                 <Text fs={12} lh={16} color="basic400">
-                  {placeholder}
+                  {placeholder ?? t("fileUploader.placeholder")}
                 </Text>
                 {!error && allowedTypes && (
                   <Text fs={12} lh={16} color="basic400">
@@ -97,74 +161,17 @@ const UploaderWrapper: React.FC<UploaderWrapperProps> = ({
             )}
           </>
         </UploadButton>
-        <SUploadPreview>
-          <UploadPreview previewMethodsRef={previewMethodsRef} />
-          {hasFile && (
-            <SClearButton type="button" onClick={clearPreview}>
-              x
+        <SUploadPreview sx={{ color: "white" }}>
+          {files.map((file) => (
+            <img alt="" src={URL.createObjectURL(file)} />
+          ))}
+          {batch && (
+            <SClearButton type="button" onClick={() => abortBatch(batch.id)}>
+              <CrossIcon />
             </SClearButton>
           )}
         </SUploadPreview>
       </UploadDropZone>
     </SContainer>
-  )
-}
-
-export const FileUploader: React.FC<FileUploaderProps> = ({
-  placeholder,
-  minDimensions = `${DEFAULT_MIN_WIDTH}x${DEFAULT_MIN_HEIGHT}`,
-  maxDimensions = `${DEFAULT_MAX_WIDTH}x${DEFAULT_MAX_HEIGHT}`,
-  maxSize = DEFAULT_MAX_SIZE,
-  allowedTypes = ALL_FILE_TYPES,
-}) => {
-  const { t } = useTranslation()
-
-  const [file, setFile] = useState<BatchItem | null>(null)
-  const [errorCode, setErrorCode] = useState<FileError | null>(null)
-  const previewMethodsRef = useRef<PreviewMethods>(null)
-
-  const [minWidth, minHeight] = parseDimensions(minDimensions)
-  const [maxWidth, maxHeight] = parseDimensions(maxDimensions)
-
-  const fileFilter = useMemo(() => {
-    return createFileFilter({
-      maxSize,
-      minWidth,
-      minHeight,
-      maxWidth,
-      maxHeight,
-      allowedTypes,
-      onError: (error) => {
-        setErrorCode(error.code)
-        setFile(null)
-        previewMethodsRef.current?.clear()
-      },
-    })
-  }, [allowedTypes, maxHeight, maxSize, maxWidth, minHeight, minWidth])
-
-  const error = useFileErrorMessage(errorCode, {
-    maxSize,
-    minWidth,
-    minHeight,
-    maxWidth,
-    maxHeight,
-    allowedTypes,
-  })
-
-  return (
-    <Uploady fileFilter={fileFilter}>
-      <UploaderWrapper
-        file={file}
-        placeholder={placeholder ?? t("fileUploader.placeholder")}
-        allowedTypes={allowedTypes}
-        error={error}
-        onFileAdded={(file) => {
-          setFile(file)
-          setErrorCode(null)
-        }}
-        onFileRemoved={() => setFile(null)}
-        previewMethodsRef={previewMethodsRef}
-      />
-    </Uploady>
   )
 }

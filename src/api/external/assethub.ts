@@ -60,6 +60,18 @@ export const assethubNativeToken = assethub.assetsData.get(
   "dot",
 ) as ParachainAssetsData
 
+// TEMP CHOPSTICKS SETUP
+if (window.location.hostname === "localhost") {
+  //@ts-ignore
+  assethub.ws = "ws://172.25.126.217:8000"
+  const hydradx = chainsMap.get("hydradx") as Parachain
+  //@ts-ignore
+  hydradx.ws = "ws://172.25.126.217:8001"
+  const polkadot = chainsMap.get("polkadot") as Parachain
+  //@ts-ignore
+  polkadot.ws = "ws://172.25.126.217:8002"
+}
+
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
     const [dataRaw, assetsRaw] = await Promise.all([

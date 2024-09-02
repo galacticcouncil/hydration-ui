@@ -17,6 +17,10 @@ export const SContainer = styled.div<{ error?: boolean }>`
       ${({ error }) => (error ? theme.colors.red400 : theme.colors.basic600)};
     border-radius: ${theme.borderRadius.default}px;
 
+    &:hover {
+      border-color: ${theme.colors.brightBlue300};
+    }
+
     &.drag-over {
       border-color: ${theme.colors.brightBlue300};
       background-color: ${theme.colors.darkBlue401};
@@ -46,15 +50,25 @@ export const SUploadPreview = styled.div`
 `
 
 export const SClearButton = styled.button`
-  background-color: ${theme.colors.basic800};
-  border: none;
   position: absolute;
   top: 4px;
   right: 4px;
-  color: ${theme.colors.basic400};
-  cursor: pointer;
 
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+
+  color: ${theme.colors.basic400};
+  background-color: ${theme.colors.basic800};
+
+  border: none;
   border-radius: ${theme.borderRadius.default}px;
+
+  cursor: pointer;
 
   :hover,
   :focus {
