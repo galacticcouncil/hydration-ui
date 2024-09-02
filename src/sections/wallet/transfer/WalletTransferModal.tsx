@@ -9,6 +9,8 @@ import { useMedia } from "react-use"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/WalletTransferSectionOnchain"
 import { theme } from "theme"
+import { useTransferZodSchema } from "./onchain/WalletTransferSectionOnchain.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 enum ModalPage {
   Transfer,
@@ -21,18 +23,22 @@ export function WalletTransferModal(props: {
   onClose: () => void
   initialAsset: string
   initialRecipient?: string
+  staticAsset?: boolean
 }) {
   const { t } = useTranslation()
 
   const [asset, setAsset] = useState(props.initialAsset)
 
-  const form = useForm<{ dest: string; amount: string }>(
-    props.initialRecipient
+  const zodSchema = useTransferZodSchema(asset)
+
+  const form = useForm<{ dest: string; amount: string }>({
+    ...(props.initialRecipient
       ? {
           values: { dest: props.initialRecipient, amount: "" },
         }
-      : {},
-  )
+      : {}),
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
+  })
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { page, direction, paginateTo } = useModalPagination()
@@ -59,6 +65,7 @@ export function WalletTransferModal(props: {
                 openAssets={openAssets}
                 openAddressBook={openAddressBook}
                 onClose={props.onClose}
+                staticAsset={!!props.staticAsset}
               />
             ),
           },
