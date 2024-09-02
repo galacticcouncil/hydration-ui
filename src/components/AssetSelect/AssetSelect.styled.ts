@@ -17,7 +17,7 @@ export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
   margin-right: calc(var(--modal-content-padding) * -1);
 
   @media ${theme.viewport.gte.sm} {
-    padding: 12px;
+    padding: 12px 16px;
     margin-left: 0;
     margin-right: 0;
   }

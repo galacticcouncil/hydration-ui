@@ -16,7 +16,6 @@ import { theme } from "theme"
 import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
   getChainSpecificAddress,
-  safeConvertAddressSS58,
   shortenAccountAddress,
 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
@@ -27,7 +26,7 @@ import {
 } from "./WalletTransferSectionOnchain.styled"
 import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
+import { H160, safeConvertAddressH160 } from "utils/evm"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
@@ -40,12 +39,14 @@ export function WalletTransferSectionOnchain({
   onClose,
   openAssets,
   openAddressBook,
+  staticAsset,
 }: {
   asset: string
   form: UseFormReturn<{ dest: string; amount: string }>
   onClose: () => void
-  openAssets: () => void
+  openAssets?: () => void
   openAddressBook: () => void
+  staticAsset: boolean
 }) {
   const { t } = useTranslation()
   const { account } = useAccount()
@@ -215,35 +216,6 @@ export function WalletTransferSectionOnchain({
         <Controller
           name="dest"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validAddress: (value) =>
-                safeConvertAddressSS58(value, 0) != null ||
-                safeConvertAddressH160(value) !== null ||
-                t("wallet.assets.transfer.error.validAddress"),
-              notSame: (value) => {
-                if (!account?.address) return true
-                if (isEvmAddress(safeConvertAddressH160(value) ?? "")) {
-                  return account?.address &&
-                    value &&
-                    H160.fromAccount(account.address).toLowerCase() ===
-                      value.toLowerCase()
-                    ? t("wallet.assets.transfer.error.notSame")
-                    : true
-                }
-                const from = safeConvertAddressSS58(
-                  account.address.toString(),
-                  0,
-                )
-                const to = safeConvertAddressSS58(value, 0)
-                if (from != null && to != null && from === to) {
-                  return t("wallet.assets.transfer.error.notSame")
-                }
-                return true
-              },
-            },
-          }}
           render={({
             field: { name, onChange, value, onBlur },
             fieldState: { error },
@@ -282,34 +254,6 @@ export function WalletTransferSectionOnchain({
         <Controller
           name="amount"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validNumber: (value) => {
-                try {
-                  if (!new BigNumber(value).isNaN()) return true
-                } catch {}
-                return t("error.validNumber")
-              },
-              maxBalance: (value) => {
-                try {
-                  if (assetMeta.decimals == null)
-                    throw new Error("Missing asset meta")
-                  if (
-                    balance?.gte(
-                      BigNumber(value).multipliedBy(
-                        BN_10.pow(assetMeta.decimals),
-                      ),
-                    )
-                  )
-                    return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
-              positive: (value) =>
-                new BigNumber(value).gt(0) || t("error.positive"),
-            },
-          }}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -327,7 +271,7 @@ export function WalletTransferSectionOnchain({
               onChange={onChange}
               asset={asset}
               error={error?.message}
-              onAssetOpen={openAssets}
+              onAssetOpen={staticAsset ? undefined : openAssets}
             />
           )}
         />
