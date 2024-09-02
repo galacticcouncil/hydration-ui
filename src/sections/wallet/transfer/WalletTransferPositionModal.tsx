@@ -30,7 +30,7 @@ import { Button } from "components/Button/Button"
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { createToastMessages } from "state/toasts"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
@@ -51,7 +51,7 @@ export const WalletTransferPositionModal = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { api } = useRpcProvider()
-  const refetch = useRefetchAccountNFTPositions()
+  const refetch = useRefetchAccountPositions()
 
   const { createTransaction } = useStore()
 
