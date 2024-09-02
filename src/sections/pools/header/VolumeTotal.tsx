@@ -2,22 +2,32 @@ import { useGetXYKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.utils"
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import {
-  INVALID_ISOLATED_POOLS,
-  usePools,
-} from "sections/pools/PoolsPage.utils"
+import { usePools } from "sections/pools/PoolsPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useMemo } from "react"
+import { MetadataStore } from "@galacticcouncil/ui"
 
 export const AllPoolsVolumeTotal = () => {
   const { assets } = useRpcProvider()
   const xykPools = useGetXYKPools()
+
+  const whitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
+
   const poolsAddress =
     xykPools.data
-      ?.filter(
-        (pool) =>
-          assets.getAssets(pool.assets).every((asset) => asset.symbol) &&
-          !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
-      )
+      ?.filter((pool) => {
+        const assetsMeta = assets.getAssets(pool.assets)
+
+        return (
+          assetsMeta.every((asset) => asset.symbol) &&
+          assetsMeta.some(
+            (asset) => asset.isSufficient || whitelist.includes(asset.id),
+          )
+        )
+      })
       .map((pool) => pool.poolAddress) ?? []
 
   const xykVolumes = useXYKPoolTradeVolumes(poolsAddress)
@@ -56,13 +66,23 @@ export const AllPoolsVolumeTotal = () => {
 export const XYKVolumeTotal = () => {
   const { assets } = useRpcProvider()
   const pools = useGetXYKPools()
+
+  const whitelist = useMemo(
+    () => MetadataStore.getInstance().externalWhitelist(),
+    [],
+  )
   const poolsAddress =
     pools.data
-      ?.filter(
-        (pool) =>
-          assets.getAssets(pool.assets).every((asset) => asset.symbol) &&
-          !INVALID_ISOLATED_POOLS.includes(pool.poolAddress),
-      )
+      ?.filter((pool) => {
+        const assetsMeta = assets.getAssets(pool.assets)
+
+        return (
+          assetsMeta.every((asset) => asset.symbol) &&
+          assetsMeta.some(
+            (asset) => asset.isSufficient || whitelist.includes(asset.id),
+          )
+        )
+      })
       .map((pool) => pool.poolAddress) ?? []
   const xykVolumes = useXYKPoolTradeVolumes(poolsAddress)
 

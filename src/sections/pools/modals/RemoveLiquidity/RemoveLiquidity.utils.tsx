@@ -22,6 +22,7 @@ export type RemoveLiquidityProps = {
   position: TLPData | TLPData[]
   onSuccess: () => void
   onSubmitted?: (tokensToGet: string) => void
+  onError?: () => void
 }
 
 const defaultValues = {
@@ -40,6 +41,7 @@ export const useRemoveLiquidity = (
   onClose: () => void,
   onSuccess: () => void,
   onSubmit: (value: string) => void,
+  onError?: () => void,
 ) => {
   const { createTransaction } = useStore()
   const { assets, api } = useRpcProvider()
@@ -60,32 +62,37 @@ export const useRemoveLiquidity = (
     (omnipoolAsset) => omnipoolAsset.id === assetId,
   )
 
-  const { removeShares, totalValue, removeValue } = useMemo(() => {
-    if (isPositionMultiple) {
-      const totalShares = position.reduce(
-        (acc, pos) => acc.plus(pos.shares),
-        BN_0,
-      )
+  const { removeShares, totalValue, remainingValue, removeValue } =
+    useMemo(() => {
+      if (isPositionMultiple) {
+        const totalShares = position.reduce(
+          (acc, pos) => acc.plus(pos.shares),
+          BN_0,
+        )
 
-      const totalRemoveValue = position.reduce(
-        (acc, pos) => acc.plus(pos.totalValueShifted),
-        BN_0,
-      )
-      return {
-        removeShares: totalShares,
-        removeValue: totalRemoveValue,
-        totalValue: totalRemoveValue,
+        const totalRemoveValue = position.reduce(
+          (acc, pos) => acc.plus(pos.totalValueShifted),
+          BN_0,
+        )
+        return {
+          removeShares: totalShares,
+          removeValue: totalRemoveValue,
+          totalValue: totalRemoveValue,
+          remainingValue: BN_0,
+        }
       }
-    }
 
-    const totalShares = position.shares
+      const totalShares = position.shares
+      const removeValue = position.totalValue.div(100).times(percentage)
+      const remainingValue = position.totalValue.minus(removeValue)
 
-    return {
-      totalValue: position.totalValueShifted,
-      removeValue: position.totalValueShifted.div(100).times(percentage),
-      removeShares: totalShares.div(100).times(percentage),
-    }
-  }, [isPositionMultiple, position, percentage])
+      return {
+        totalValue: position.totalValueShifted,
+        removeValue: removeValue.shiftedBy(-meta.decimals),
+        remainingValue: remainingValue.shiftedBy(-meta.decimals),
+        removeShares: totalShares.div(100).times(percentage),
+      }
+    }, [meta, isPositionMultiple, position, percentage])
 
   const calculateLiquidityValues = useCallback(
     (position: TLPData, removeSharesValue: BN) => {
@@ -187,6 +194,7 @@ export const useRemoveLiquidity = (
         onClose,
         onSuccess,
         onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+        onError,
       }
 
       const txs = position.map((position) =>
@@ -245,6 +253,7 @@ export const useRemoveLiquidity = (
           onClose,
           onSuccess,
           onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+          onError,
         },
       )
     }
@@ -256,6 +265,7 @@ export const useRemoveLiquidity = (
     values,
     totalValue,
     removeValue,
+    remainingValue,
     isFeeExceeded,
     meta,
     mutation,
