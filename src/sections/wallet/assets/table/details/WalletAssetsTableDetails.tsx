@@ -253,7 +253,7 @@ const AssetDetails = ({
     if (!chain) return undefined
 
     return {
-      chain: chain.key,
+      chain: chain.parachainId,
       name: chain.name,
       symbol: assetDetails.symbol,
     }
@@ -267,7 +267,7 @@ const AssetDetails = ({
             {t("wallet.assets.table.details.origin")}
           </Text>
           <div sx={{ flex: "row", gap: 4, mt: 12 }}>
-            <Icon size={18} icon={<ChainLogo symbol={origin.chain} />} />
+            <Icon size={18} icon={<ChainLogo id={origin.chain} />} />
             <Text fs={14} color="white">
               {origin.name}
             </Text>

@@ -37,7 +37,11 @@ export const SourceFilter: FC<Props> = ({ className, value, onChange }) => {
           key={key}
           onClick={() => onChange?.(parachainId)}
         >
-          <Icon sx={{ ml: -4 }} icon={<ChainLogo symbol={key} />} size={20} />
+          <Icon
+            sx={{ ml: -4 }}
+            icon={<ChainLogo id={parachainId} />}
+            size={20}
+          />
           {name}
         </Chip>
       ))}
