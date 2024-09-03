@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -11,7 +11,7 @@ import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { scale, scaleHuman } from "utils/balance"
 import { ToastMessage, useStore } from "state/store"
-import { useCallback, useMemo } from "react"
+import { BaseSyntheticEvent, useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -36,9 +36,10 @@ type Props = {
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
   farms: Farm[]
+  setIsJoinFarms: (value: boolean) => void
 }
 
-type FromValues = {
+type FormValues = {
   assetA: string
   assetB: string
   lastUpdated: "assetA" | "assetB"
@@ -55,6 +56,7 @@ export const AddLiquidityFormXYK = ({
   onSuccess,
   onSubmitted,
   farms,
+  setIsJoinFarms,
 }: Props) => {
   const queryClient = useQueryClient()
   const { assets } = useRpcProvider()
@@ -67,7 +69,7 @@ export const AddLiquidityFormXYK = ({
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, shareTokenMeta, farms)
-  const form = useForm<FromValues>({
+  const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
       assetA: "",
@@ -78,6 +80,8 @@ export const AddLiquidityFormXYK = ({
     },
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
+
+  const { formState } = form
 
   const spotPrice = useSpotPrice(assetA.id, assetB.id)
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
@@ -111,7 +115,11 @@ export const AddLiquidityFormXYK = ({
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
-  const onSubmit = async () => {
+  const onSubmit = async (_: FormValues, e?: BaseSyntheticEvent) => {
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+    const isJoiningFarms = submitAction?.name === "joinFarms"
+
     const inputData = {
       assetA: {
         id: assetValues[lastUpdated].meta.id,
@@ -165,16 +173,31 @@ export const AddLiquidityFormXYK = ({
           onSuccess(result, scale(shares, shareTokenMeta.decimals).toString())
         },
         onSubmitted: () => {
-          !farms.length && onClose()
+          !farms.length && !isJoiningFarms && onClose()
           form.reset()
           onSubmitted?.()
         },
         onClose,
-        disableAutoClose: !!farms.length,
+        disableAutoClose: !!farms.length && isJoiningFarms,
         onBack: () => {},
         toast,
       },
     )
+  }
+
+  const onInvalidSubmit = (
+    errors: FieldErrors<FormValues>,
+    e?: BaseSyntheticEvent,
+  ) => {
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    if (
+      submitAction?.name === "addLiquidity" &&
+      (errors.shares as { farm?: { message: string } }).farm
+    ) {
+      onSubmit({} as FormValues, e)
+    }
   }
 
   const handleChange = useCallback(
@@ -238,9 +261,15 @@ export const AddLiquidityFormXYK = ({
       }
     | undefined
 
+  const isAddOnlyLiquidityDisabled =
+    !!Object.keys(formState.errors.shares ?? {}).filter((key) => key !== "farm")
+      .length ||
+    !!formState.errors.assetA ||
+    !!formState.errors.assetB
+
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
@@ -324,7 +353,7 @@ export const AddLiquidityFormXYK = ({
           </Alert>
         )}
         {customErrors?.farm && (
-          <Alert variant="error" css={{ margin: "20px 0" }}>
+          <Alert variant="warning" css={{ margin: "20px 0" }}>
             {customErrors.farm.message}
           </Alert>
         )}
@@ -339,16 +368,36 @@ export const AddLiquidityFormXYK = ({
           width: "auto",
         }}
       />
-      <Button
-        variant="primary"
-        type="submit"
-        disabled={
-          !!Object.keys(form.formState.errors).length ||
-          minAddLiquidityValidation
-        }
-      >
-        {t("confirm")}
-      </Button>
+      {farms.length ? (
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Button
+            variant="secondary"
+            name="addLiquidity"
+            onClick={() => setIsJoinFarms(false)}
+            disabled={isAddOnlyLiquidityDisabled || minAddLiquidityValidation}
+          >
+            {t("liquidity.add.modal.onlyAddLiquidity")}
+          </Button>
+          <Button
+            variant="primary"
+            name="joinFarms"
+            onClick={() => setIsJoinFarms(true)}
+            disabled={
+              !!Object.keys(formState.errors).length ||
+              minAddLiquidityValidation
+            }
+          >
+            {t("liquidity.add.modal.joinFarms")}
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="primary"
+          disabled={!!Object.keys(formState.errors).length || !zodSchema}
+        >
+          {t("liquidity.add.modal.confirmButton")}
+        </Button>
+      )}
     </form>
   )
 }
