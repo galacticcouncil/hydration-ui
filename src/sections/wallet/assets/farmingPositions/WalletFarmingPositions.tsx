@@ -23,14 +23,19 @@ import { theme } from "theme"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/FarmsEmpty.svg?react"
 import { LINKS } from "utils/navigation"
+import { WalletTransferPositionModal } from "sections/wallet/transfer/WalletTransferPositionModal"
 
 type Props = { data: FarmingTablePosition[] }
 
 export const WalletFarmingPositions = ({ data }: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<FarmingTablePosition | undefined>(undefined)
+  const [transferPosition, setTransferPosition] =
+    useState<FarmingTablePosition | null>(null)
 
-  const table = useFarmingPositionsTable(data)
+  const table = useFarmingPositionsTable(data, {
+    onTransfer: setTransferPosition,
+  })
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -114,6 +119,18 @@ export const WalletFarmingPositions = ({ data }: Props) => {
         <FarmingPositionsDetailsMob
           row={row}
           onClose={() => setRow(undefined)}
+          onTransfer={setTransferPosition}
+        />
+      )}
+
+      {transferPosition && (
+        <WalletTransferPositionModal
+          position={{
+            ...transferPosition.position,
+            id: transferPosition.id,
+          }}
+          onClose={() => setTransferPosition(null)}
+          isFarmingPosition
         />
       )}
     </>
