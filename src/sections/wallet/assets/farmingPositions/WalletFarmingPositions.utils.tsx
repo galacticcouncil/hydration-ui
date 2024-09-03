@@ -28,11 +28,18 @@ import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { TLPData } from "utils/omnipool"
+import { TableAction } from "components/Table/Table"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
 
-export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
+export const useFarmingPositionsTable = (
+  data: FarmingTablePosition[],
+  actions: { onTransfer: (position: FarmingTablePosition) => void },
+) => {
   const { t } = useTranslation()
-  const { accessor } = createColumnHelper<FarmingTablePosition>()
+  const { account } = useAccount()
+  const { accessor, display } = createColumnHelper<FarmingTablePosition>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -41,6 +48,7 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
     date: isDesktop,
     shares: isDesktop,
     position: true,
+    actions: isDesktop,
   }
 
   const columns = useMemo(
@@ -138,6 +146,20 @@ export const useFarmingPositionsTable = (data: FarmingTablePosition[]) => {
           )
         },
       }),
+      display({
+        id: "actions",
+        size: 38,
+        cell: ({ row }) => (
+          <TableAction
+            icon={<TransferIcon />}
+            onClick={() => actions.onTransfer(row.original)}
+            sx={{ mr: 16 }}
+            disabled={account?.isExternalWalletConnected}
+          >
+            {t("transfer")}
+          </TableAction>
+        ),
+      }),
     ],
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,20 +229,24 @@ export const useFarmingPositionsData = ({
           )
 
           if (values?.amountUSD) {
-            const { assetA, assetB, amountUSD } = values
+            const { assetA, assetB, amountUSD, depositId, assetId } = values
 
             position = {
               balances: [
                 {
+                  id: assetA.id,
                   amount: assetA.amount,
                   symbol: assetA.symbol,
                 },
                 {
+                  id: assetB.id,
                   amount: assetB.amount,
                   symbol: assetB.symbol,
                 },
               ],
               valueDisplay: amountUSD,
+              id: depositId,
+              assetId,
             }
           } else {
             return undefined
@@ -271,9 +297,11 @@ export const isXYKPosition = (
   position: XYKPosition | TLPData,
 ): position is XYKPosition => !!(position as XYKPosition).balances
 
-type XYKPosition = {
+export type XYKPosition = {
   valueDisplay: BN
-  balances: { amount: BN; symbol: string }[]
+  balances: { amount: BN; symbol: string; id: string }[]
+  id: string
+  assetId: string
 }
 
 export type FarmingTablePosition = {
