@@ -266,7 +266,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        isVisibleStepper ? (
+        isVisibleStepper && steps.length > 1 ? (
           <Stepper
             sx={{ px: [10] }}
             steps={steps.map((step, idx) => ({
