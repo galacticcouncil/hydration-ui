@@ -2275,14 +2275,14 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-3.3.0.tgz#7d80654c5b4480a008dc95c7ed377316a0b1a2a8"
-  integrity sha512-yti75PEOscGrsiDsSaqq9QtRldYBbZhhK1hoXmullhDdJ/dP2gjhrIEX8XCD0qfBXrwbeDLSOxzlypq4uXVuZA==
+"@galacticcouncil/xcm-cfg@^3.4.1":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-3.4.1.tgz#32000ebd6a514c8344af258e69baab5c2b64d96b"
+  integrity sha512-0tF5Z+XKR3t9wxnWTYGDcDJ+OzIG5i14yooOaC582KYkTHXqsntpVmP+RgILeog9pNpaVF3FB16aS2suSo939A==
   dependencies:
-    "@galacticcouncil/xcm-core" "^2.2.0"
+    "@galacticcouncil/xcm-core" "^3.0.0"
 
-"@galacticcouncil/xcm-core@^2.1.0", "@galacticcouncil/xcm-core@^2.2.0":
+"@galacticcouncil/xcm-core@^2.2.0", "@galacticcouncil/xcm-core@^3.0.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-2.2.0.tgz#c442ce53f478e9fcb49e3d50e1bfb0c24eb900dd"
   integrity sha512-VOPREACtK7+Faz/9bJwn09kebFljKDry4ch5/p8RZnAABm2kd+CZDYNs/9cll8d7HJKXDuaNUWGJNGWsn0uTGg==
@@ -2294,12 +2294,12 @@
     big.js "^6.2.1"
     buffer "^6.0.3"
 
-"@galacticcouncil/xcm-sdk@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-4.2.0.tgz#2fb40f1ca686f94264d2ee1c6ab7beabf2bfe56f"
-  integrity sha512-F7Xy3IMfEc6r+RPmI4/Skhf5pHg3TMICFZdOdCmoczzmQGO9Nrlb6J96fXmhym0SrOjgm//AjFNDuoMZis+ldw==
+"@galacticcouncil/xcm-sdk@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-4.3.0.tgz#da8be553cf63ed2509155fc5512dffe7dd92512b"
+  integrity sha512-1YmPlynCPmnDAK60eQcouhX00izzoJBnvOnL8KaGzsJe/sckEArCxPLYvaPs7NyfBoeGc8mhx/0zaEM5RVKYDg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^2.1.0"
+    "@galacticcouncil/xcm-core" "^3.0.0"
 
 "@graphql-typed-document-node/core@^3.2.0":
   version "3.2.0"
@@ -8566,10 +8566,10 @@ ethereum-blockies-base64@^1.0.2:
   dependencies:
     pnglib "0.0.1"
 
-ethers-decode-error@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ethers-decode-error/-/ethers-decode-error-1.0.0.tgz#85f044a74173914a1d4b5f9bac6a132c9bfd51af"
-  integrity sha512-wWB9g3XZZ/sQwNhzo+/IVtiyH3s1I5bPi0wH7Hp7XTPJEN0Tx2+LwXDNBgspxCHV5T8aok3D0LTnC062ZNnceA==
+ethers-decode-error@^2.0.0:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/ethers-decode-error/-/ethers-decode-error-2.1.3.tgz#ed0c81a400e9b66bba8c3ce356a4e52eab878e3f"
+  integrity sha512-x27u04XC/s8MRpuqiylIXbj4KMrt/5clYS2nle1b0bgbWFuoUZocDzjfXEfc5KzVmCQuITD9elqyO2VyxTGwdw==
 
 ethers@5.7.0:
   version "5.7.0"
@@ -10447,6 +10447,11 @@ lru-cache@^10.2.0:
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.3.0.tgz#4a4aaf10c84658ab70f79a85a9a3f1e1fb11196b"
   integrity sha512-CQl19J/g+Hbjbv4Y3mFNNXFEL/5t/KCg8POCuUqd4rMKjGG+j1ybER83hxV58zL+dFI1PTkt3GNFSHRt+d8qEQ==
+
+lru-cache@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.0.0.tgz#15d93a196f189034d7166caf9fe55e7384c98a21"
+  integrity sha512-Qv32eSV1RSCfhY3fpPE2GNZ8jgM9X7rdAfemLWqTUxwiyIC4jJ6Sy0fZ8H+oLWevO6i4/bizg7c8d8i6bxrzbA==
 
 lru-cache@^5.1.1:
   version "5.1.1"
