@@ -1,5 +1,5 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, EvmChain, Parachain } from "@galacticcouncil/xcm-core"
+import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
 import { useAccountIdentity } from "api/stats"
 import { ChainLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
