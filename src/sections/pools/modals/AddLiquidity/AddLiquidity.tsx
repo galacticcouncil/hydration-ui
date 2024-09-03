@@ -44,9 +44,10 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
+  const [isJoinFarms, setIsJoinFarms] = useState(false)
 
   const isXYK = isXYKPoolType(pool)
-  const isFarms = farms.length
+  const willJoinFarms = farms.length && isJoinFarms
 
   const joinFarms = useJoinFarms({
     poolId: pool.id,
@@ -66,7 +67,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
   })
 
   const onSuccess = async (result: ISubmittableResult, value: string) => {
-    if (isFarms) {
+    if (willJoinFarms) {
       let positionId: string | undefined
 
       if (isEvm) {
@@ -100,7 +101,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
     result: ISubmittableResult,
     calculatedShares: string,
   ) => {
-    if (isFarms) {
+    if (willJoinFarms) {
       setCurrentStep(1)
 
       let shares = ""
@@ -166,7 +167,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
       disableCloseOutside
       onClose={onClose}
       topContent={
-        isFarms ? (
+        willJoinFarms ? (
           <Stepper
             steps={steps.map((step) => ({
               label: step.label,
@@ -191,6 +192,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
                 farms={farms}
                 onSuccess={onXykSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ) : (
               <AddLiquidityForm
@@ -200,6 +202,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
                 farms={farms}
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 onSuccess={onSuccess}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ),
           },

@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -27,6 +27,7 @@ import { Alert } from "components/Alert/Alert"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { BaseSyntheticEvent } from "react"
 import { useAssets } from "providers/assets"
 
 type Props = {
@@ -37,6 +38,7 @@ type Props = {
   onSubmitted?: () => void
   onSuccess: (result: ISubmittableResult, value: string) => void
   farms: Farm[]
+  setIsJoinFarms: (value: boolean) => void
 }
 
 export const AddLiquidityForm = ({
@@ -47,6 +49,7 @@ export const AddLiquidityForm = ({
   onSuccess,
   initialAmount,
   farms,
+  setIsJoinFarms,
 }: Props) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -54,13 +57,17 @@ export const AddLiquidityForm = ({
   const { createTransaction } = useStore()
 
   const zodSchema = useAddToOmnipoolZod(assetId, farms)
-  const form = useForm<{ amount: string }>({
+  const form = useForm<{
+    amount: string
+  }>({
     mode: "onChange",
     defaultValues: { amount: initialAmount },
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 300)
+  const { handleSubmit, watch, reset, control, formState } = form
+
+  const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, debouncedAmount)
@@ -75,8 +82,16 @@ export const AddLiquidityForm = ({
           .minus(assetMeta.existentialDeposit)
       : balance
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
+  const onSubmit = async (
+    values: FormValues<typeof form>,
+    e?: BaseSyntheticEvent,
+  ) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
+
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    const isJoinFarms = submitAction?.name === "joinFarms"
 
     const amount = scale(values.amount, assetMeta.decimals).toString()
 
@@ -106,12 +121,12 @@ export const AddLiquidityForm = ({
           onSuccess(result, amount)
         },
         onSubmitted: () => {
-          !farms.length && onClose()
-          form.reset()
+          !farms.length && !isJoinFarms && onClose()
+          reset()
           onSubmitted?.()
         },
         onClose,
-        disableAutoClose: !!farms.length,
+        disableAutoClose: !!farms.length && isJoinFarms,
         onBack: () => {},
         toast,
         onError: onClose,
@@ -119,7 +134,22 @@ export const AddLiquidityForm = ({
     )
   }
 
-  const customErrors = form.formState.errors.amount as unknown as
+  const onInvalidSubmit = (
+    errors: FieldErrors<FormValues<typeof form>>,
+    e?: BaseSyntheticEvent,
+  ) => {
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    if (
+      submitAction?.name === "addLiquidity" &&
+      (errors.amount as { farm?: { message: string } }).farm
+    ) {
+      onSubmit(form.getValues())
+    }
+  }
+
+  const customErrors = formState.errors.amount as unknown as
     | {
         cap?: { message: string }
         circuitBreaker?: { message: string }
@@ -127,9 +157,13 @@ export const AddLiquidityForm = ({
       }
     | undefined
 
+  const isAddOnlyLiquidityDisabled = !!Object.keys(
+    formState.errors.amount ?? {},
+  ).filter((key) => key !== "farm").length
+
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
@@ -140,7 +174,7 @@ export const AddLiquidityForm = ({
       <div sx={{ flex: "column" }}>
         <Controller
           name="amount"
-          control={form.control}
+          control={control}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -222,7 +256,7 @@ export const AddLiquidityForm = ({
         ) : null}
 
         {customErrors?.farm && (
-          <Alert variant="error" css={{ margin: "20px 0" }}>
+          <Alert variant="warning" css={{ margin: "20px 0" }}>
             {customErrors.farm.message}
           </Alert>
         )}
@@ -237,13 +271,39 @@ export const AddLiquidityForm = ({
           width: "auto",
         }}
       />
-      <Button
-        variant="primary"
-        type="submit"
-        disabled={!!Object.keys(form.formState.errors).length || !zodSchema}
-      >
-        {t("liquidity.add.modal.confirmButton")}
-      </Button>
+      {farms.length ? (
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Button
+            variant="secondary"
+            name="addLiquidity"
+            onClick={() => setIsJoinFarms(false)}
+            disabled={
+              isAddOnlyLiquidityDisabled || !zodSchema || !formState.isDirty
+            }
+          >
+            {t("liquidity.add.modal.onlyAddLiquidity")}
+          </Button>
+          <Button
+            variant="primary"
+            name="joinFarms"
+            onClick={() => setIsJoinFarms(true)}
+            disabled={
+              !!Object.keys(formState.errors).length ||
+              !zodSchema ||
+              !formState.isDirty
+            }
+          >
+            {t("liquidity.add.modal.joinFarms")}
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="primary"
+          disabled={!!Object.keys(formState.errors).length || !zodSchema}
+        >
+          {t("liquidity.add.modal.confirmButton")}
+        </Button>
+      )}
     </form>
   )
 }
