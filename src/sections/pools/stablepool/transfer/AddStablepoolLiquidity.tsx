@@ -281,7 +281,7 @@ export const AddStablepoolLiquidity = ({
         ) : null}
 
         {customErrors?.farm && (
-          <Alert variant="error" css={{ margin: "20px 0" }}>
+          <Alert variant="warning" css={{ margin: "20px 0" }}>
             {customErrors.farm.message}
           </Alert>
         )}
