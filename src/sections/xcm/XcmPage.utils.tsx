@@ -1,5 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { isEvmAccount } from "utils/evm"
+//import { isEvmAccount } from "utils/evm"
 import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
@@ -13,7 +13,8 @@ export const DEFAULT_EVM_CHAIN = "ethereum"
 export const DEFAULT_DEST_CHAIN = HYDRADX_CHAIN_KEY
 
 export function getDefaultSrcChain(address?: string) {
-  return isEvmAccount(address) ? DEFAULT_EVM_CHAIN : DEFAULT_NATIVE_CHAIN
+  return DEFAULT_NATIVE_CHAIN
+  //return isEvmAccount(address) ? DEFAULT_EVM_CHAIN : DEFAULT_NATIVE_CHAIN
 }
 
 export async function getSubmittableExtrinsic(txInfo: TxInfo) {
