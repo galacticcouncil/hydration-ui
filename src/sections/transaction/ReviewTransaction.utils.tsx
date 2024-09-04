@@ -12,7 +12,7 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
 import { TExternal } from "api/assetDetails"
 import { useNextEvmPermitNonce } from "api/transaction"
-import { decodeError } from "ethers-decode-error"
+import { ErrorDecoder, DecodedError } from "ethers-decode-error"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useRef, useState } from "react"
@@ -26,6 +26,8 @@ import { useToast } from "state/toasts"
 import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
 import { isAnyParachain } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
+
+const errorDecoder = ErrorDecoder.create()
 
 type TxMethod = AnyJson & {
   method: string
@@ -190,8 +192,8 @@ export const useSendEvmTransactionMutation = (
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
-        const { error } = decodeError(err)
-        reject(new Error(error))
+        const decodedError: DecodedError = await errorDecoder.decode(err)
+        reject(new Error(decodedError.reason))
       } finally {
         clearTimeout(timeout)
       }
