@@ -6,12 +6,10 @@ import Skeleton from "react-loading-skeleton"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getChainSpecificAddress } from "utils/formatting"
-import {
-  SBar,
-  SBarContainer,
-} from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
 import { Icon } from "components/Icon/Icon"
 import LevelUp from "assets/icons/LevelUp.svg?react"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 export const TierStats = () => {
   const { t } = useTranslation()
@@ -103,12 +101,12 @@ export const TierStats = () => {
             )
           }
           title={
-            <SBarContainer>
-              <SBar
-                percentage={tierProgress?.toNumber() ?? 0}
-                variant="green"
-              />
-            </SBarContainer>
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={tierProgress?.toNumber() ?? 0}
+              colorCustom={`linear-gradient(270deg,${theme.colors.green600} 50%,transparent 100%)`}
+            />
           }
         />
       </div>

@@ -1,5 +1,11 @@
 import { theme } from "theme"
-import { SBar, SBarContainer, SContainer, SText } from "./LinearProgress.styled"
+import {
+  Filler,
+  SBar,
+  SBarContainer,
+  SContainer,
+  SText,
+} from "./LinearProgress.styled"
 
 export type ColorType = keyof typeof theme.colors
 export type BarSize = "small" | "medium" | "large"
@@ -10,6 +16,8 @@ export type LinearProgressProps = {
   size?: BarSize
   color?: ColorType
   colorEnd?: ColorType
+  colorCustom?: string
+  withoutLabel?: boolean
   labelPosition?: LabelPosition
   labelColor?: ColorType
   children?: React.ReactNode
@@ -23,23 +31,32 @@ export const LinearProgress = ({
   children,
   color = "pink700",
   colorEnd,
+  colorCustom,
   labelPosition = "end",
   size = "medium",
   labelColor = "white",
+  withoutLabel,
   ...props
 }: LinearProgressProps) => {
+  const percentage = Math.max(0, Math.min(percent, 100))
+
   return (
     <SContainer {...props}>
       <SBarContainer size={size}>
-        <SBar
-          colorStart={color}
-          colorEnd={colorEnd}
-          sx={{ width: `${Math.max(0, Math.min(percent, 100))}%` }}
-        />
+        <Filler percentage={percentage}>
+          <SBar
+            colorStart={color}
+            colorEnd={colorEnd}
+            colorCustom={colorCustom}
+            percentage={percentage}
+          />
+        </Filler>
       </SBarContainer>
-      <SText position={labelPosition} size={size} color={labelColor}>
-        {children || `${percent.toFixed(2)}%`}
-      </SText>
+      {!withoutLabel && (
+        <SText position={labelPosition} size={size} color={labelColor}>
+          {children || `${percent.toFixed(2)}%`}
+        </SText>
+      )}
     </SContainer>
   )
 }

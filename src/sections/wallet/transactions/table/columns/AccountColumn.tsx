@@ -1,4 +1,5 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { AnyChain, EvmChain, Parachain } from "@galacticcouncil/xcm-core"
 import { useAccountIdentity } from "api/stats"
 import { ChainLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
@@ -33,6 +34,13 @@ type Props = {
   color?: keyof typeof theme.colors
 }
 
+const getChainId = (chain: AnyChain) => {
+  if (chain instanceof Parachain) {
+    return chain.parachainId
+  }
+  return undefined
+}
+
 export const AccountColumn: FC<Props> = ({
   isCrossChain,
   chain,
@@ -54,7 +62,7 @@ export const AccountColumn: FC<Props> = ({
             height: 16,
           }}
         >
-          <ChainLogo symbol={chain.key} />
+          <ChainLogo id={getChainId(chain)} />
         </span>
       )}
       {address && (

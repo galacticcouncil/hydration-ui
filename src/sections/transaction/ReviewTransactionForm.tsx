@@ -42,7 +42,6 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 }
 
 type Props = TxProps & {
-  title?: string
   onCancel: () => void
   onPermitDispatched: ({
     permit,
