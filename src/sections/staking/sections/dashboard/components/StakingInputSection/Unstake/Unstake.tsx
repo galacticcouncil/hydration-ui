@@ -153,7 +153,9 @@ export const Unstake = ({
           <Button
             variant="blue"
             type="submit"
-            disabled={loading || staked.isZero()}
+            disabled={
+              loading || staked.isZero() || account?.isExternalWalletConnected
+            }
           >
             {t("staking.dashboard.form.unstake.button")}
           </Button>

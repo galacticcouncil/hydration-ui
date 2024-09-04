@@ -28,7 +28,7 @@ export const SRewartCardHeader = styled.div`
 
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
 
   border-bottom: 1px solid #55394e;
 `

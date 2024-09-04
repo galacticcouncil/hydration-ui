@@ -27,14 +27,14 @@ export const worker = {
       const denom = tauAddTauMulInitialRewardPercentage + 1
 
       const rate = Math.min(1, num / denom) * 100
-      const currentLoyalty = periodsInFarm
+      const current = periodsInFarm
         ? periods === periodsInFarm ||
           (periods === plannedYieldingPeriods && periods < periodsInFarm)
         : false
 
       result.push({
         rate,
-        currentLoyalty,
+        current,
       })
     }
 
