@@ -35,23 +35,36 @@ import {
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
+import {
+  isXYKPosition,
+  XYKPosition,
+} from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
+import { ReactElement } from "react"
 
 enum ModalPage {
   Transfer,
   AddressBook,
 }
 
+const LP_COLLECTION_ID = "1337"
+const FARM_COLLECTION_ID = "2584"
+const XYK_FARM_COLLECTION_ID = "5389"
+
 export const WalletTransferPositionModal = ({
   position,
   onClose,
+  isFarmingPosition,
 }: {
-  position: TLPData
+  position: TLPData | XYKPosition
   onClose: () => void
+  isFarmingPosition?: boolean
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { api } = useRpcProvider()
+  const { api, assets } = useRpcProvider()
   const refetch = useRefetchAccountNFTPositions()
+
+  const isXyk = isXYKPosition(position)
 
   const { createTransaction } = useStore()
 
@@ -62,13 +75,49 @@ export const WalletTransferPositionModal = ({
     resolver: zodResolver(getDestZodSchema(account?.address)),
   })
 
-  const { lrnaShifted, valueShifted, meta, valueDisplay, totalValueShifted } =
-    position
+  const iconIds = isXyk
+    ? [position.balances[0].id, position.balances[1].id]
+    : position.meta.iconId
 
-  const tKey =
-    lrnaShifted && !lrnaShifted.isNaN() && lrnaShifted.gt(0)
-      ? "wallet.assets.hydraPositions.data.valueLrna"
-      : "wallet.assets.hydraPositions.data.value"
+  let displayedValueComp: ReactElement | undefined = undefined
+
+  if (isXyk) {
+    displayedValueComp = (
+      <div sx={{ flex: "row", gap: 4 }}>
+        <Text fs={14} lh={14} fw={500} color="white" tAlign={["right", "left"]}>
+          {position.balances
+            .map((balance) =>
+              t("value.tokenWithSymbol", {
+                value: balance.amount,
+                symbol: balance.symbol,
+              }),
+            )
+            .join(" | ")}
+        </Text>
+      </div>
+    )
+  } else {
+    const { lrnaShifted, valueShifted, meta } = position
+
+    const tKey =
+      lrnaShifted && !lrnaShifted.isNaN() && lrnaShifted.gt(0)
+        ? "wallet.assets.hydraPositions.data.valueLrna"
+        : "wallet.assets.hydraPositions.data.value"
+
+    displayedValueComp = (
+      <Trans
+        i18nKey={tKey}
+        tOptions={{
+          value: valueShifted,
+          symbol: meta?.symbol,
+          lrna: lrnaShifted,
+          type: "token",
+        }}
+      >
+        <br sx={{ display: ["initial", "none"] }} />
+      </Trans>
+    )
+  }
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const normalizedDest =
@@ -79,10 +128,19 @@ export const WalletTransferPositionModal = ({
     const toast = createToastMessages("wallet.assets.transfer.position.toast", {
       t,
       tOptions: {
-        value: t("wallet.assets.hydraPositions.data.value", {
-          value: totalValueShifted,
-          symbol: meta?.symbol,
-        }),
+        value: isXyk
+          ? position.balances
+              .map((balance) =>
+                t("value.tokenWithSymbol", {
+                  value: balance.amount,
+                  symbol: balance.symbol,
+                }),
+              )
+              .join(" | ")
+          : t("wallet.assets.hydraPositions.data.value", {
+              value: position.totalValueShifted,
+              symbol: position.meta?.symbol,
+            }),
         address: shortenAccountAddress(
           getChainSpecificAddress(normalizedDest),
           12,
@@ -93,7 +151,15 @@ export const WalletTransferPositionModal = ({
 
     return await createTransaction(
       {
-        tx: api.tx.uniques.transfer("1337", position.id, normalizedDest),
+        tx: api.tx.uniques.transfer(
+          isFarmingPosition
+            ? isXyk
+              ? XYK_FARM_COLLECTION_ID
+              : FARM_COLLECTION_ID
+            : LP_COLLECTION_ID,
+          position.id,
+          normalizedDest,
+        ),
       },
       { onClose, onBack: () => {}, toast, onSuccess: refetch },
     )
@@ -184,39 +250,28 @@ export const WalletTransferPositionModal = ({
                       }}
                     >
                       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-                        {typeof position.meta.iconId === "string" ? (
-                          <Icon
-                            icon={<AssetLogo id={position.meta.iconId} />}
-                            size={30}
-                          />
+                        {typeof iconIds === "string" ? (
+                          <Icon icon={<AssetLogo id={iconIds} />} size={30} />
                         ) : (
                           <MultipleIcons
-                            icons={position.meta.iconId.map((asset) => ({
+                            icons={iconIds.map((asset) => ({
                               icon: <AssetLogo key={asset} id={asset} />,
                             }))}
                           />
                         )}
                         <Text fs={14} tTransform="uppercase" color="white">
-                          {meta.symbol}
+                          {isXyk
+                            ? assets.getAsset(position.assetId).symbol
+                            : position.meta.symbol}
                         </Text>
                       </div>
 
                       <div sx={{ flex: "column", gap: 2, align: "end" }}>
                         <Text fs={16} tTransform="uppercase" color="white">
-                          <Trans
-                            i18nKey={tKey}
-                            tOptions={{
-                              value: valueShifted,
-                              symbol: meta?.symbol,
-                              lrna: lrnaShifted,
-                              type: "token",
-                            }}
-                          >
-                            <br sx={{ display: ["initial", "none"] }} />
-                          </Trans>
+                          {displayedValueComp}
                         </Text>
                         <SDollars>
-                          ≈ <DisplayValue value={valueDisplay} />
+                          ≈ <DisplayValue value={position.valueDisplay} />
                         </SDollars>
                       </div>
                     </div>

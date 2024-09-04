@@ -267,6 +267,8 @@
   "liquidity.add.modal.provideLiquidity.loading": "Providing liquidity",
   "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "liquidity.add.modal.confirmButton": "Mint liquidity position",
+  "liquidity.add.modal.onlyAddLiquidity": "Only Add Liquidity",
+  "liquidity.add.modal.joinFarms": "Add & Join Farms",
   "liquidity.add.modal.positionDetails": "Position details",
   "liquidity.add.modal.lpFee": "LP fee:",
   "liquidity.add.modal.poolTradeFee": "Pool trade fee:",

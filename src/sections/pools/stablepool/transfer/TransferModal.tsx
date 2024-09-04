@@ -53,6 +53,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   const refetch = useRefetchAccountNFTPositions()
   const { createTransaction } = useStore()
   const isEvm = isEvmAccount(account?.address)
+  const [isJoinFarms, setIsJoinFarms] = useState(false)
 
   const { id: poolId, reserves, stablepoolFee: fee, canAddLiquidity } = pool
 
@@ -72,7 +73,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   const isOnlyStablepool = selectedOption === "STABLEPOOL"
   const isAddingToOmnipool = defaultPage === Page.MOVE_TO_OMNIPOOL
   const isVisibleStepper = farms.length || !isAddingToOmnipool
-  const isFarms = farms.length
+  const willJoinFarms = farms.length && isJoinFarms
   const isMultipleFarms = farms.length > 1
 
   const joinFarms = useJoinFarms({
@@ -127,7 +128,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
             label: t("liquidity.stablepool.transfer.move"),
             loadingLabel: t("liquidity.stablepool.transfer.adding"),
           },
-          ...(isFarms ? farmSteps : []),
+          ...(willJoinFarms ? farmSteps : []),
         ]),
   ]
 
@@ -136,7 +137,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
     value: string,
   ) => {
     refetch()
-    if (isFarms) {
+    if (willJoinFarms) {
       let positionId: string | undefined
 
       if (isEvm) {
@@ -164,6 +165,10 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       } else {
         onClose()
       }
+    } else {
+      queryClient.invalidateQueries(
+        QUERY_KEYS.tokenBalance(pool.id, account?.address),
+      )
     }
   }
 
@@ -229,11 +234,11 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
             onAddToOmnipoolSuccess(result, shares)
           },
           onSubmitted: () => {
-            !isFarms && onClose()
+            !willJoinFarms && onClose()
           },
           onError: () => onClose(),
           onClose,
-          disableAutoClose: !!isFarms,
+          disableAutoClose: !!willJoinFarms,
           toast,
         },
       )
@@ -261,7 +266,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        isVisibleStepper ? (
+        isVisibleStepper && steps.length > 1 ? (
           <Stepper
             sx={{ px: [10] }}
             steps={steps.map((step, idx) => ({
@@ -340,6 +345,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
                 asset={assets.getAsset(assetId ?? poolId)}
                 fee={fee ?? BN_0}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ),
           },
@@ -359,6 +365,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                 farms={farms}
                 onSuccess={onAddToOmnipoolSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ),
           },
