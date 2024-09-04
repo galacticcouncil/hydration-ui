@@ -182,7 +182,7 @@ export const AvailableRewards = () => {
                   css={{ whiteSpace: "nowrap" }}
                 >
                   {t("value.percentage", {
-                    value: reward.data.payablePercentage,
+                    value: reward.data.allocatedRewardsPercentage,
                   })}
                 </Text>
               )}

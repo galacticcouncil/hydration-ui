@@ -606,6 +606,9 @@ export const useClaimReward = () => {
       actionPoints,
       payablePercentage: payablePercentageHuman,
       chartValues,
+      allocatedRewardsPercentage: availabeRewards
+        .div(totalRewards)
+        .multipliedBy(100),
     }
   }, [bestNumber.data, potBalance.data, stake, stakingConsts, referendums])
 
