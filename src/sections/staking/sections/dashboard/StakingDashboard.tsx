@@ -6,6 +6,8 @@ import { Stats } from "./components/Stats/Stats"
 import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
 import { useStakeData } from "sections/staking/StakingPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const StakingDashboard = () => {
   const { isLoaded } = useRpcProvider()
@@ -16,10 +18,13 @@ export const StakingDashboard = () => {
 }
 
 export const StakingSkeleton = () => {
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <Stats loading />
+        {!isDesktop && <Referenda loading />}
       </div>
 
       <div
@@ -27,7 +32,7 @@ export const StakingSkeleton = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection loading />
-        <Referenda loading />
+        {isDesktop && <Referenda loading />}
       </div>
     </div>
   )
@@ -36,6 +41,7 @@ export const StakingSkeleton = () => {
 export const StakingData = () => {
   const { account } = useAccount()
   const staking = useStakeData()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const showGuide = staking.data && !staking.data.stakePosition
 
@@ -45,6 +51,7 @@ export const StakingData = () => {
         {showGuide && <StakingGuide />}
         {account && staking.data?.positionId && <AvailableRewards />}
         <Stats data={staking.data} loading={staking.isLoading} />
+        {!isDesktop && <ReferendaWrapper />}
       </div>
 
       <div
@@ -52,7 +59,7 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        <ReferendaWrapper />
+        {isDesktop && <ReferendaWrapper />}
       </div>
     </div>
   )
