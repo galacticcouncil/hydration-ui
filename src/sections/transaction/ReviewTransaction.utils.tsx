@@ -12,7 +12,6 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
 import { useAssets } from "providers/assets"
 import { useNextEvmPermitNonce } from "api/transaction"
-import { decodeError } from "ethers-decode-error"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useRef, useState } from "react"
@@ -190,8 +189,7 @@ export const useSendEvmTransactionMutation = (
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
-        const { error } = decodeError(err)
-        reject(new Error(error))
+        reject(err?.toString() ?? "Unknown error")
       } finally {
         clearTimeout(timeout)
       }
