@@ -138,8 +138,9 @@ export const useOrdersTable = (
           </div>
         ),
 
-        cell: ({ row }) =>
-          row.original.accepting.initial && row.original.partiallyFillable ? (
+        cell: ({ row }) => {
+          return row.original.accepting.initial &&
+            row.original.partiallyFillable ? (
             <OrderCapacity
               total={row.original.accepting.initial}
               free={row.original.accepting.amount}
@@ -149,7 +150,8 @@ export const useOrdersTable = (
             <Text fs={12} fw={400} color="basic400" tAlign={"center"} as="div">
               N / A
             </Text>
-          ),
+          )
+        },
       }),
       display({
         id: "actions",

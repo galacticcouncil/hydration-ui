@@ -1,5 +1,5 @@
 import { Trans, useTranslation } from "react-i18next"
-import { ProgressBarContainer, SBar, SFill } from "./BondProgressBar.styled"
+import { ProgressBarContainer } from "./BondProgressBar.styled"
 import { Text } from "components/Typography/Text/Text"
 import {
   useBondEvents,
@@ -10,6 +10,8 @@ import { BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 export const BondProgreesBar = ({
   bondId,
@@ -84,9 +86,12 @@ export const BondProgreesBar = ({
         )}
       </div>
 
-      <SBar>
-        <SFill percentage={percentage.toNumber()} />
-      </SBar>
+      <LinearProgress
+        size="small"
+        withoutLabel
+        percent={percentage.toNumber()}
+        colorCustom={theme.gradients.pinkLightBlue}
+      />
     </ProgressBarContainer>
   )
 }

@@ -7,6 +7,8 @@ import {
   ModalHeaderVariant,
 } from "components/Modal/header/ModalHeader"
 import { SContainer, SContent } from "./ModalContents.styled"
+import { Spinner } from "components/Spinner/Spinner"
+import { Text } from "components/Typography/Text/Text"
 
 export type ModalContentProps = {
   title?: string
@@ -157,3 +159,18 @@ const motionProps = {
   transition: { duration: 0.3, ease: "easeInOut" },
   variants,
 }
+
+export const LoadingPage = ({ title }: { title: string }) => (
+  <div
+    sx={{
+      flex: "column",
+      gap: 50,
+      align: "center",
+      justify: "center",
+      height: 240,
+    }}
+  >
+    <Spinner size={50} />
+    <Text color="whiteish500">{title}</Text>
+  </div>
+)
