@@ -43,8 +43,8 @@ export const StakingData = () => {
     <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         {showGuide && <StakingGuide />}
-        <Stats data={staking.data} loading={staking.isLoading} />
         {account && staking.data?.positionId && <AvailableRewards />}
+        <Stats data={staking.data} loading={staking.isLoading} />
       </div>
 
       <div
