@@ -129,7 +129,7 @@ export const FarmDetailsCard = ({
               color="brightBlue500"
               withoutLabel
               percent={apr.data.distributedRewards
-                .div(apr.data.maxRewards)
+                .div(apr.data.potMaxRewards)
                 .times(100)
                 .toNumber()}
             />
