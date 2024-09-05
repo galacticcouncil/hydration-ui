@@ -162,46 +162,45 @@ export const useProviderAssets = () => {
           const { tokens: externalTokens } = degenMode
             ? ExternalAssetCursor.deref().state
             : useUserExternalTokenStore.getState()
-          const { sync } = useAssetRegistry.getState()
 
           const assetClient = new AssetClient(provider.api)
 
-          const [tradeAssets, sdkAssets] = await Promise.all([
+          return await Promise.all([
             provider.tradeRouter.getAllAssets(),
             assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
-            provider.api.query.assetRegistry.assets.entries(),
           ])
-
-          if (sdkAssets.length) {
-            sync(
-              sdkAssets.map((asset) => {
-                const isTradable = tradeAssets.some(
-                  (tradeAsset) => tradeAsset.id === asset.id,
-                )
-
-                return {
-                  ...omit(["externalId"], asset),
-                  symbol: asset.symbol ?? "",
-                  decimals: asset.decimals ?? 0,
-                  name: asset.name ?? "",
-                  externalId:
-                    asset.origin === pendulum.parachainId &&
-                    typeof asset.externalId === "object"
-                      ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                      : asset.externalId?.toString(),
-                  isTradable,
-                }
-              }),
-            )
-          }
-
-          return sdkAssets
         }
       : undefinedNoop,
     {
       enabled: !!provider,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
+      onSuccess: (data) => {
+        const [tradeAssets, sdkAssets] = data ?? []
+        if (sdkAssets?.length && tradeAssets?.length) {
+          const { sync } = useAssetRegistry.getState()
+
+          sync(
+            sdkAssets.map((asset) => {
+              const isTradable = tradeAssets.some(
+                (tradeAsset) => tradeAsset.id === asset.id,
+              )
+              return {
+                ...omit(["externalId"], asset),
+                symbol: asset.symbol ?? "",
+                decimals: asset.decimals ?? 0,
+                name: asset.name ?? "",
+                externalId:
+                  asset.origin === pendulum.parachainId &&
+                  typeof asset.externalId === "object"
+                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
+                    : asset.externalId?.toString(),
+                isTradable,
+              }
+            }),
+          )
+        }
+      },
     },
   )
 }

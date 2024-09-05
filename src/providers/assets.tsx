@@ -252,12 +252,18 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     (id: string) => getAsset(id) ?? fallbackAsset,
     [getAsset],
   )
-  const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
+  const getAssets = useCallback(
+    (ids: string[]) => ids.map((id) => getAsset(id)),
+    [getAsset],
+  )
   const getShareToken = useCallback(
     (id: string) => shareTokensMap.get(id),
     [shareTokensMap],
   )
-  const getShareTokens = (ids: string[]) => ids.map((id) => getShareToken(id))
+  const getShareTokens = useCallback(
+    (ids: string[]) => ids.map((id) => getShareToken(id)),
+    [getShareToken],
+  )
 
   const getShareTokenByAddress = useCallback(
     (poolAddress: string) =>

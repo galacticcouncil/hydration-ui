@@ -32,7 +32,10 @@ import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { useAssets } from "providers/assets"
-import { useTablePagination } from "components/Table/TablePagination"
+import {
+  defaultPaginationState,
+  useTablePagination,
+} from "components/Table/TablePagination"
 
 const NonClickableContainer = ({
   children,
@@ -432,7 +435,10 @@ export const usePoolTable = (
     data,
     columns,
     state: { sorting, columnVisibility, pagination },
-    onSortingChange: setSorting,
+    onSortingChange: (data) => {
+      setSorting(data)
+      paginated && setPagination(defaultPaginationState)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
 

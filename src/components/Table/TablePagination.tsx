@@ -105,9 +105,11 @@ export const TablePagination = <T,>({ table }: PaginationProps<T>) => {
   )
 }
 
+export const defaultPaginationState = {
+  pageIndex: 0,
+  pageSize: 10,
+}
+
 export const useTablePagination = () => {
-  return useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  })
+  return useState<PaginationState>(defaultPaginationState)
 }
