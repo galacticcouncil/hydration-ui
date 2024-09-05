@@ -2,11 +2,8 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import LiquidityIcon from "assets/icons/WaterRippleIcon.svg?react"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
-import { TAsset, TShareToken } from "api/assetDetails"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
@@ -22,22 +19,20 @@ import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
+import { useRefetchAccountPositions } from "api/deposits"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const queryClient = useQueryClient()
-
+  const refetchPositions = useRefetchAccountPositions()
   const [openRemove, setOpenRemove] = useState(false)
-
-  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
-  const assetsMeta = assets.getAssets(shareTokenMeta.assets)
+  const assetsMeta = pool.meta.assets
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
@@ -87,9 +82,9 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
 
   const onSuccess = () => {
     queryClient.refetchQueries(
-      QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+      QUERY_KEYS.tokenBalance(pool.id, account?.address),
     )
-    queryClient.refetchQueries(QUERY_KEYS.accountNFTPositions(account?.address))
+    refetchPositions()
   }
 
   return (
@@ -106,18 +101,11 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
         </div>
         <SPositionContainer>
           <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
-            <div sx={{ flex: "row", justify: "space-between" }}>
+            <div
+              sx={{ flex: ["column", "row"], gap: 8, justify: "space-between" }}
+            >
               <div sx={{ flex: "row", gap: 7, align: "center" }}>
-                <MultipleIcons
-                  icons={assetsMeta.map((asset: TAsset) => {
-                    const isBond = assets.isBond(asset)
-                    const id = isBond ? asset.assetId : asset.id
-
-                    return {
-                      icon: <AssetLogo key={id} id={id} />,
-                    }
-                  })}
-                />
+                <MultipleAssetLogo iconId={pool.meta.iconId} size={28} />
 
                 <Text fs={[14, 18]} color={["white", "basic100"]}>
                   {t("liquidity.xyk.asset.position.title", {
@@ -159,7 +147,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: shareTokensBalance.data?.balance,
-                      fixedPointScale: shareTokenMeta.decimals,
+                      fixedPointScale: pool.meta.decimals,
                     })}
                   </Text>
                 </div>

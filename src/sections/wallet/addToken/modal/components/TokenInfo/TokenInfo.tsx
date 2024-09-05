@@ -8,7 +8,6 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useGetXYKPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -18,7 +17,7 @@ import Skeleton from "react-loading-skeleton"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
-import { TExternal } from "api/assetDetails"
+import { TExternal, useAssets } from "providers/assets"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
 import {
@@ -40,8 +39,8 @@ export const TokenInfo = ({
   chainStoredAsset?: TExternal
   rugCheckData?: TRugCheckData
 }) => {
+  const { getExternalByExternalId } = useAssets()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const { setIsWhiteListed } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
@@ -76,9 +75,7 @@ export const TokenInfo = ({
     if (!isChainStored || !xykPools.data)
       return { isXYKPool: false, pools: undefined }
 
-    const chainAsset = assets.external.find(
-      (external) => external.externalId === externalAsset.id,
-    )
+    const chainAsset = getExternalByExternalId(externalAsset.id)
 
     if (chainAsset) {
       const filteredXykPools = xykPools.data.filter((shareToken) =>
@@ -93,7 +90,7 @@ export const TokenInfo = ({
     }
 
     return { isXYKPool: false, pools: undefined }
-  }, [externalAsset.id, assets.external, isChainStored, xykPools])
+  }, [externalAsset.id, getExternalByExternalId, isChainStored, xykPools.data])
 
   const warningFlags = Object.fromEntries(
     rugCheckData?.warnings.map(({ type, diff }) => {

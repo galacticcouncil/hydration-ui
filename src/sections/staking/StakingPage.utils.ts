@@ -23,8 +23,8 @@ import {
 } from "utils/constants"
 import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
-import { useRpcProvider } from "providers/rpcProvider"
 import { scaleHuman } from "utils/balance"
+import { useAssets } from "providers/assets"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -92,9 +92,7 @@ const getCurrentActionPoints = (
 }
 
 export const useStakeData = () => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
@@ -253,9 +251,7 @@ export const useStakeData = () => {
 }
 
 export const useStakeARP = (availableUserBalance: BN | undefined) => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
@@ -443,9 +439,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 }
 
 export const useClaimReward = () => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)

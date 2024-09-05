@@ -37,6 +37,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
+import { useAssets } from "providers/assets"
 
 export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
@@ -76,7 +77,8 @@ export const useMemepadForm = ({
 } = {}) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const { data: ahRegistry } = useAssetHubAssetRegistry()
   const { data: fees } = useMemepadEstimatedFees()
@@ -89,7 +91,7 @@ export const useMemepadForm = ({
     }
   }, [ahRegistry])
 
-  const dotMeta = isLoaded ? assets.getAsset(HYDRA_DOT_ASSET_ID) : null
+  const dotMeta = isLoaded ? getAsset(HYDRA_DOT_ASSET_ID) : null
   const { data: dotBalanceData } = useAssetHubNativeBalance(account?.address)
   const dotBalance = dotBalanceData?.balance ?? BN_0
   const dotBalanceShifted = dotBalance.shiftedBy(-(dotMeta?.decimals ?? 10))
@@ -402,11 +404,12 @@ export type MemepadEstimatedFeesResult = {
 export const useMemepadEstimatedFees = (
   options: { onSuccess?: (data: MemepadEstimatedFeesResult) => void } = {},
 ) => {
-  const { isLoaded, assets } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const feePaymentAssets = useAccountFeePaymentAssets()
 
-  const nativeAssetId = isLoaded ? assets.native.id : ""
+  const nativeAssetId = isLoaded ? native.id : ""
   const feePaymentAssetId =
     account && feePaymentAssets?.feePaymentAssetId
       ? feePaymentAssets.feePaymentAssetId

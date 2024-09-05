@@ -11,7 +11,7 @@ import {
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
@@ -32,27 +32,41 @@ import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { LINKS } from "utils/navigation"
 import { useExternalTokensRugCheck } from "api/external"
+import { TablePagination } from "components/Table/TablePagination"
+import { useSettingsStore } from "state/store"
 
 type Props = {
   data: AssetsTableData[]
   showAll: boolean
   setShowAll: (value: boolean) => void
+  search: string
 }
 
 const addTokenEnabled = import.meta.env.VITE_FF_ADD_TOKEN === "true"
 
-export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
+export const WalletAssetsTable = ({
+  data,
+  setShowAll,
+  showAll,
+  search,
+}: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
   const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
   const rugCheck = useExternalTokensRugCheck()
+  const { degenMode } = useSettingsStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const table = useAssetsTable(data, {
     onTransfer: setTransferAsset,
   })
+
+  useEffect(() => {
+    table.setPageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, degenMode])
 
   const button = (
     <Button
@@ -87,7 +101,10 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             {addTokenEnabled && isDesktop && button}
             <Switch
               value={showAll}
-              onCheckedChange={(value) => setShowAll(value)}
+              onCheckedChange={(value) => {
+                table.setPageIndex(0)
+                setShowAll(value)
+              }}
               size="small"
               name="showAll"
               label={t("wallet.assets.table.toggle")}
@@ -208,6 +225,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             )}
           </TableBodyContent>
         </Table>
+        <TablePagination table={table} />
 
         {transferAsset && (
           <WalletTransferModal

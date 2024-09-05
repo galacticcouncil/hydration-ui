@@ -37,6 +37,7 @@ import { useExternalTokensRugCheck } from "api/external"
 import { useState } from "react"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 import InfoIcon from "assets/icons/InfoIcon.svg?react"
+import { useAssets } from "providers/assets"
 
 type Props = {
   row?: AssetsTableData
@@ -50,9 +51,7 @@ export const WalletAssetsTableActionsMob = ({
   onTransferClick,
 }: Props) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const setFeeAsPayment = useSetAsFeePayment()
   const { featureFlags } = useRpcProvider()

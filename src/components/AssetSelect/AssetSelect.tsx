@@ -10,11 +10,10 @@ import { getFloatingPointAmount } from "utils/balance"
 import { useDisplayPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { AssetSelectButton } from "./AssetSelectButton"
 import { useMedia } from "react-use"
-import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
+import { useAssets } from "providers/assets"
 
 type AssetSelectProps = {
   name: string
@@ -40,8 +39,8 @@ type AssetSelectProps = {
 export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
   (props, ref) => {
     const { t } = useTranslation()
-    const { assets } = useRpcProvider()
-    const asset = assets.getAsset(props.id)
+    const { isBond, getAssetWithFallback } = useAssets()
+    const asset = getAssetWithFallback(props.id)
     const { decimals, symbol } = asset
 
     const isAssetFound = !!asset?.id
@@ -49,19 +48,11 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
     const isTablet = useMedia(theme.viewport.gte.sm)
 
     const spotPriceId =
-      assets.isBond(asset) && !asset.isTradable ? asset.assetId : asset.id
-    const isShareToken = asset.isShareToken
+      isBond(asset) && !asset.isTradable ? asset.underlyingAssetId : asset.id
 
-    const spotPriceAsset = useDisplayPrice(
-      isShareToken ? undefined : spotPriceId,
-    )
-    const spotPriceShareToken = useDisplayShareTokenPrice(
-      isShareToken ? [spotPriceId] : [],
-    )
+    const spotPriceAsset = useDisplayPrice(spotPriceId)
 
-    const spotPrice = isShareToken
-      ? spotPriceShareToken.data?.[0]
-      : spotPriceAsset.data
+    const spotPrice = spotPriceAsset.data
 
     const displayValue = useMemo(() => {
       if (!props.value) return 0

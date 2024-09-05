@@ -30,7 +30,7 @@ import { Button } from "components/Button/Button"
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { createToastMessages } from "state/toasts"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
@@ -40,6 +40,7 @@ import {
   XYKPosition,
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 import { ReactElement } from "react"
+import { useAssets } from "providers/assets"
 
 enum ModalPage {
   Transfer,
@@ -61,8 +62,9 @@ export const WalletTransferPositionModal = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { api, assets } = useRpcProvider()
-  const refetch = useRefetchAccountNFTPositions()
+  const { api } = useRpcProvider()
+  const refetch = useRefetchAccountPositions()
+  const { getAsset } = useAssets()
 
   const isXyk = isXYKPosition(position)
 
@@ -261,7 +263,7 @@ export const WalletTransferPositionModal = ({
                         )}
                         <Text fs={14} tTransform="uppercase" color="white">
                           {isXyk
-                            ? assets.getAsset(position.assetId).symbol
+                            ? getAsset(position.assetId)?.symbol
                             : position.meta.symbol}
                         </Text>
                       </div>

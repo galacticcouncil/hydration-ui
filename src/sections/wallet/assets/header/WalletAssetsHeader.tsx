@@ -2,13 +2,14 @@ import { useTranslation } from "react-i18next"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
-import { BN_0 } from "utils/constants"
+import BN from "bignumber.js"
 
 type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
-
+  const { isLoading, balanceTotal, assetsTotal, farmsTotal, lpTotal } =
+    useWalletAssetsTotals()
   return (
     <HeaderValues
       skeletonHeight={[19, 38]}
@@ -19,8 +20,9 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           disconnected: disconnected,
           content: (
             <WalletAssetsHeaderDisplay
+              isLoading={isLoading}
               fontSize={[19, 30]}
-              type="balanceTotal"
+              value={balanceTotal}
             />
           ),
         },
@@ -28,21 +30,33 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           label: t("wallet.assets.header.assetsBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="assetsTotal" />
+            <WalletAssetsHeaderDisplay
+              isLoading={isLoading}
+              fontSize={[19, 30]}
+              value={assetsTotal}
+            />
           ),
         },
         {
           label: t("wallet.assets.header.liquidityBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="lpTotal" />
+            <WalletAssetsHeaderDisplay
+              isLoading={isLoading}
+              fontSize={[19, 30]}
+              value={lpTotal}
+            />
           ),
         },
         {
           label: t("wallet.assets.header.farmsBalance"),
           disconnected: disconnected,
           content: (
-            <WalletAssetsHeaderDisplay fontSize={[19, 30]} type="farmsTotal" />
+            <WalletAssetsHeaderDisplay
+              isLoading={isLoading}
+              fontSize={[19, 30]}
+              value={farmsTotal}
+            />
           ),
         },
       ]}
@@ -52,16 +66,17 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
 
 const WalletAssetsHeaderDisplay = ({
   fontSize,
-  type,
+  isLoading,
+  value,
 }: {
+  isLoading: boolean
   fontSize?: [number, number]
-  type: "balanceTotal" | "assetsTotal" | "lpTotal" | "farmsTotal"
+  value: BN
 }) => {
-  const { isLoading, ...totals } = useWalletAssetsTotals()
   return (
     <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
       <HeaderTotalData
-        value={totals[type] ?? BN_0}
+        value={value}
         isLoading={isLoading}
         fontSize={fontSize}
       />

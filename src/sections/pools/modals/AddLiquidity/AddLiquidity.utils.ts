@@ -26,9 +26,10 @@ import { Farm, useOraclePrice } from "api/farms"
 import { BN_0, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { TAsset } from "api/assetDetails"
 import { useXYKConsts } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
+import { usePoolData } from "sections/pools/pool/Pool"
+import { TAsset, useAssets } from "providers/assets"
 
 export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
@@ -87,12 +88,11 @@ const getSharesToGet = (omnipoolAsset: TOmnipoolAsset, amount: string) => {
 }
 
 export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
-  const { assets } = useRpcProvider()
   const omnipoolAssets = useOmnipoolAssets()
+  const { pool } = usePoolData()
   const ommipoolAsset = omnipoolAssets.data?.find(
     (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
   )
-  const assetMeta = assets.getAsset(assetId.toString())
 
   const { data: spotPrice } = useDisplayPrice(assetId)
 
@@ -102,10 +102,10 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
   const { data: assetBalance } = useTokenBalance(assetId, account?.address)
 
   const poolShare = useMemo(() => {
-    if (ommipoolAsset && assetValue && assetMeta) {
+    if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
-        scale(assetValue, assetMeta.decimals).toString(),
+        scale(assetValue, pool.meta.decimals).toString(),
       )
 
       const totalShares = ommipoolAsset.data.shares
@@ -115,13 +115,13 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
 
       return poolShare
     }
-  }, [assetValue, ommipoolAsset, assetMeta])
+  }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
     poolShare,
     spotPrice,
     omnipoolFee,
-    assetMeta,
+    assetMeta: pool.meta,
     assetBalance,
   }
 }
@@ -133,9 +133,10 @@ export const useAddToOmnipoolZod = (
 ) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+  const { pool } = usePoolData()
+  const { hub } = useAssets()
 
-  const { decimals, symbol } = assets.getAsset(assetId)
+  const { decimals, symbol } = pool.meta
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
@@ -146,10 +147,7 @@ export const useAddToOmnipoolZod = (
     (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
   )
 
-  const { data: hubBalance } = useTokenBalance(
-    assets.hub.id,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
+  const { data: hubBalance } = useTokenBalance(hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
   const { data: poolBalance } = useTokenBalance(
     assetId,
     OMNIPOOL_ACCOUNT_ADDRESS,

@@ -20,7 +20,6 @@ import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { TShareToken } from "api/assetDetails"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -28,7 +27,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Farm } from "api/farms"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 
 type Props = {
   onClose: () => void
@@ -59,16 +58,15 @@ export const AddLiquidityFormXYK = ({
   setIsJoinFarms,
 }: Props) => {
   const queryClient = useQueryClient()
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
   const { t } = useTranslation()
-  const refetch = useRefetchAccountNFTPositions()
+  const refetch = useRefetchAccountPositions()
 
-  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
-  const [assetA, assetB] = assets.getAssets(shareTokenMeta.assets)
+  const { assets, decimals } = pool.meta
+  const [assetA, assetB] = assets
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
-    useXYKZodSchema(assetA, assetB, shareTokenMeta, farms)
+    useXYKZodSchema(assetA, assetB, pool.meta, farms)
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
@@ -145,7 +143,7 @@ export const AddLiquidityFormXYK = ({
           i18nKey={`liquidity.add.modal.xyk.toast.${msType}`}
           tOptions={{
             shares: shares,
-            fixedPointScale: shareTokenMeta.decimals,
+            fixedPointScale: decimals,
           }}
         >
           <span />
@@ -168,9 +166,9 @@ export const AddLiquidityFormXYK = ({
         onSuccess: (result) => {
           refetch()
           queryClient.refetchQueries(
-            QUERY_KEYS.tokenBalance(shareTokenMeta.id, account?.address),
+            QUERY_KEYS.tokenBalance(pool.id, account?.address),
           )
-          onSuccess(result, scale(shares, shareTokenMeta.decimals).toString())
+          onSuccess(result, scale(shares, decimals).toString())
         },
         onSubmitted: () => {
           !farms.length && !isJoiningFarms && onClose()
@@ -343,7 +341,7 @@ export const AddLiquidityFormXYK = ({
           label="Received amount of Pool Shares:"
           content={t("value.token", {
             value: shares,
-            fixedPointScale: shareTokenMeta.decimals,
+            fixedPointScale: decimals,
           })}
         />
 

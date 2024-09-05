@@ -4,42 +4,35 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import {
   Page,
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { useState } from "react"
-import { TStableSwap } from "api/assetDetails"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import BN from "bignumber.js"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
-import { useQueryClient } from "@tanstack/react-query"
+import { usePoolData } from "sections/pools/pool/Pool"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useFarms } from "api/farms"
+import { useQueryClient } from "@tanstack/react-query"
 
-type Props = {
-  pool: TPoolFullData
-  amount: BN
-}
-
-export const StablepoolPosition = ({ pool, amount }: Props) => {
+export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const refetchPositions = useRefetchAccountNFTPositions()
+  const pool = usePoolData().pool as TPoolFullData
+  const refetchPositions = useRefetchAccountPositions()
   const queryClient = useQueryClient()
 
   const farms = useFarms([pool.id])
@@ -48,12 +41,11 @@ export const StablepoolPosition = ({ pool, amount }: Props) => {
     undefined,
   )
 
-  const meta = assets.getAsset(pool.id) as TStableSwap
+  const meta = pool.meta
+  const assets = Object.keys(meta.meta ?? {})
 
-  const spotPrice = pool.spotPrice
-
-  const amountPrice = spotPrice
-    ? amount.shiftedBy(-meta.decimals).multipliedBy(spotPrice)
+  const amountPrice = pool.spotPrice
+    ? amount.shiftedBy(-meta.decimals).multipliedBy(pool.spotPrice)
     : BN_0
 
   return (
@@ -85,14 +77,7 @@ export const StablepoolPosition = ({ pool, amount }: Props) => {
             <SContainer sx={{ height: ["auto", "auto"] }}>
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
-                  {meta.assets && (
-                    <MultipleIcons
-                      size={26}
-                      icons={meta.assets.map((assetId) => ({
-                        icon: <AssetLogo key={assetId} id={assetId} />,
-                      }))}
-                    />
-                  )}
+                  <MultipleAssetLogo iconId={assets} size={26} />
                 </div>
                 <div
                   sx={{
@@ -203,7 +188,6 @@ export const StablepoolPosition = ({ pool, amount }: Props) => {
       )}
       {transferOpen !== undefined && (
         <TransferModal
-          pool={pool}
           defaultPage={transferOpen}
           onClose={() => setTransferOpen(undefined)}
           farms={farms.data}
