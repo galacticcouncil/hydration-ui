@@ -8,7 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
+import { PROVIDERS, useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -65,11 +65,14 @@ export function SwapPage() {
   const [addToken, setAddToken] = useState(false)
   const [tokenCheck, setTokenCheck] = useState<Asset | null>(null)
 
-  const isEvm = isEvmAccount(account?.address)
-  const version = useRemount([isEvm])
-
   const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
+  const isTestnet =
+    PROVIDERS.find((provider) => provider.url === rpcUrlList[0])?.dataEnv ===
+    "testnet"
+
+  const isEvm = isEvmAccount(account?.address)
+  const version = useRemount([isEvm])
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
@@ -149,7 +152,7 @@ export function SwapPage() {
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
         onCheckAssetDataClick={(e) => setTokenCheck(e.detail)}
-        isTestnet={activeProvider.dataEnv === "testnet"}
+        isTestnet={isTestnet}
       />
       {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {isLoaded && tokenCheck && (

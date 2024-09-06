@@ -85,6 +85,7 @@ export const AddLiquidityFormXYK = ({
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
     [assetA.id, assetB.id],
     pool.poolAddress,
+    true,
   )
 
   const lastUpdated = form.watch("lastUpdated")

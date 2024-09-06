@@ -64,23 +64,25 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
     (pool) => pool.shareToken.poolAddress,
   )
 
-  const totalIssuances = useTotalIssuances(shareTokensId)
+  const totalIssuances = useTotalIssuances()
   const poolBalances = useAccountsBalances(shareTokensAddresses)
   const spotPrices = useDisplayShareTokenPrice(shareTokensId)
 
   const isLoading =
-    totalIssuances.some((totalIssuance) => totalIssuance.isInitialLoading) ||
+    totalIssuances.isInitialLoading ||
     poolBalances.isInitialLoading ||
     spotPrices.isInitialLoading
 
   const data = useMemo(() => {
-    if (!accountShareTokens.length || !totalIssuances || !poolBalances.data)
+    if (
+      !accountShareTokens.length ||
+      !totalIssuances.data ||
+      !poolBalances.data
+    )
       return []
 
     const rows = accountShareTokens.map((myPool) => {
-      const totalIssuance = totalIssuances.find(
-        (totalIssuance) => totalIssuance.data?.token === myPool.shareToken.id,
-      )?.data?.total
+      const totalIssuance = totalIssuances.data.get(myPool.shareToken.id)
 
       const poolBalance = poolBalances.data?.find(
         (poolBalance) =>

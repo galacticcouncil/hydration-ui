@@ -15,6 +15,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
+import { useExternalTokensRugCheck } from "api/external"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -36,6 +37,8 @@ export const useAssetsData = ({
     getAssetWithFallback,
   } = useAssets()
   const address = givenAddress ?? account?.address
+
+  const rugCheck = useExternalTokensRugCheck()
 
   const balances = useAccountBalances(address, true)
   const getExternalMeta = useExternalTokenMeta()
@@ -80,6 +83,10 @@ export const useAssetsData = ({
       const meta = isExternalInvalid
         ? getExternalMeta(asset.id) ?? asset
         : asset
+
+      const rugCheckData = asset.isExternal
+        ? rugCheck.tokensMap.get(asset.id)
+        : undefined
 
       const { decimals, id, name, symbol } = meta
       const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
@@ -126,6 +133,7 @@ export const useAssetsData = ({
         transferableDisplay,
         tradability,
         isExternalInvalid,
+        rugCheckData,
       }
     })
 
@@ -164,6 +172,7 @@ export const useAssetsData = ({
                 transferableDisplay: BN_0,
                 tradability,
                 isExternalInvalid,
+                rugCheckData: undefined,
               }
 
               acc.push(asset)
@@ -195,6 +204,7 @@ export const useAssetsData = ({
     acceptedCurrencies.data,
     currencyId,
     balances.isInitialLoading,
+    rugCheck.tokensMap,
   ])
 
   return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }

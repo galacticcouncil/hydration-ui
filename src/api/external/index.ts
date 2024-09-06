@@ -129,51 +129,52 @@ export type TRugCheckData = ReturnType<
 >["tokens"][number]
 
 export const useExternalTokensRugCheck = (ids?: string[]) => {
-  const { external, externalInvalid, getAssetWithFallback } = useAssets()
   const { isLoaded } = useRpcProvider()
+  const { external, externalInvalid, getAssetWithFallback } = useAssets()
   const { getTokenByInternalId, isRiskConsentAdded } =
     useUserExternalTokenStore()
 
   const assetRegistry = useExternalAssetRegistry()
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
+  const { data: issuanceData } = useTotalIssuances()
+
   const { internalIds } = useMemo(() => {
     const allExternal = [...external, ...externalInvalid]
 
     const externalAssets = isLoaded
       ? ids?.length
-        ? allExternal.filter((a) => ids?.some((id) => a.id === id))
-        : allExternal.filter(({ name, symbol }) => !!name && !!symbol)
+        ? ids.map((id) => allExternal.find((external) => external.id === id))
+        : external
       : []
 
-    const internalIds = externalAssets.map(({ id }) => id)
+    const internalIds = externalAssets.reduce<string[]>((acc, asset) => {
+      if (asset) acc.push(asset.id)
+
+      return acc
+    }, [])
 
     return { externalAssets, internalIds }
   }, [external, externalInvalid, ids, isLoaded])
 
-  const issuanceQueries = useTotalIssuances(internalIds)
-
   const tokens = useMemo(() => {
-    if (issuanceQueries.some(({ data }) => !data)) {
-      return []
-    }
+    if (!issuanceData) return []
 
-    const issuanceData = issuanceQueries.map((q) => q.data)
-
-    return issuanceData
-      .map((issuance) => {
-        if (!issuance?.token) return null
-
-        const internalToken = getAssetWithFallback(issuance.token.toString())
-        const storedToken = getTokenByInternalId(issuance.token.toString())
+    return internalIds
+      .map((tokenId) => {
+        const internalToken = getAssetWithFallback(tokenId)
+        const storedToken = getTokenByInternalId(tokenId)
         const shouldIgnoreRugCheck = isRiskConsentAdded(internalToken.id)
 
         const externalAssetRegistry = internalToken.parachainId
           ? assetRegistry[+internalToken.parachainId]
           : null
+
         const externalToken = externalAssetRegistry?.data?.get(
           internalToken.externalId ?? "",
         )
+
+        const issuance = issuanceData.get(tokenId)
 
         if (!externalToken) return null
 
@@ -183,7 +184,7 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
             : null
 
         const totalSupplyInternal =
-          !shouldIgnoreRugCheck && issuance?.total ? BN(issuance.total) : null
+          !shouldIgnoreRugCheck && issuance ? BN(issuance) : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -219,8 +220,9 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
     getAssetWithFallback,
     getIsWhiteListed,
     getTokenByInternalId,
+    internalIds,
     isRiskConsentAdded,
-    issuanceQueries,
+    issuanceData,
   ])
 
   const tokensMap = useMemo(() => {

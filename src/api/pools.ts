@@ -1,59 +1,46 @@
 import { useMemo } from "react"
 import { useTotalIssuances } from "./totalIssuance"
-import { useTokensBalances } from "./balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccountBalances } from "./accountBalances"
 
 export const useShareOfPools = (assets: string[]) => {
   const { account } = useAccount()
 
-  const totalIssuances = useTotalIssuances(assets)
-  const totalBalances = useTokensBalances(assets, account?.address)
+  const totalIssuances = useTotalIssuances()
+  const accountBalances = useAccountBalances(account?.address, true)
+  const balances = accountBalances.data?.balances.filter((balance) =>
+    assets.includes(balance.id),
+  )
 
-  const queries = [...totalIssuances, ...totalBalances]
+  const queries = [totalIssuances, accountBalances]
   const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!!totalIssuances.length && !!totalBalances.length) {
+    if (!!totalIssuances.data && balances) {
       return assets.map((asset) => {
-        const totalBalance = totalBalances.find(
-          (balance) => balance.data?.assetId === asset,
-        )
-        const totalIssuance = totalIssuances.find(
-          (issuance) => issuance.data?.token === asset,
-        )
+        const totalBalance = balances.find((balance) => balance.id === asset)
+        const totalIssuance = totalIssuances.data.get(asset)
 
         const calculateTotalShare = () => {
-          if (totalBalance?.data && totalIssuance?.data) {
-            return totalBalance.data.total
-              .div(totalIssuance.data.total)
-              .multipliedBy(100)
-          }
-          return null
-        }
-
-        const calculateTransferableShare = () => {
-          if (totalBalance?.data && totalIssuance?.data) {
-            return totalBalance.data.balance
-              .div(totalIssuance.data.total)
-              .multipliedBy(100)
+          if (totalBalance && totalIssuance) {
+            return totalBalance.total.div(totalIssuance).multipliedBy(100)
           }
           return null
         }
 
         return {
           asset,
-          totalShare: totalIssuance?.data?.total,
+          totalShare: totalIssuance,
           myPoolShare: calculateTotalShare(),
-          transferableShare: calculateTransferableShare(),
         }
       })
     }
 
     return null
-  }, [assets, totalIssuances, totalBalances])
+  }, [assets, balances, totalIssuances.data])
 
   return { isLoading, isInitialLoading: isLoading, data }
 }

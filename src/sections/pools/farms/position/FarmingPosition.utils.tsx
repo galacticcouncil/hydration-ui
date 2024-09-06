@@ -3,10 +3,11 @@ import { TDeposit, useAccountPositions } from "api/deposits"
 import { useMemo } from "react"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { BN_0 } from "utils/constants"
-import { useSDKPools, useShareOfPools } from "api/pools"
+import { useSDKPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import { scaleHuman } from "utils/balance"
+import { useTotalIssuances } from "api/totalIssuance"
 
 type TokenAmount = {
   id: string
@@ -85,13 +86,13 @@ export const useAllXYKDeposits = (address?: string) => {
   const uniqAssetIds = [
     ...new Set(depositNftsData.map((deposit) => deposit.asset.id)),
   ]
-  const totalIssuances = useShareOfPools(uniqAssetIds)
+  const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
   const pools = useSDKPools()
 
   const isLoading =
     pools.isInitialLoading ||
-    totalIssuances.isInitialLoading ||
+    issuances.isInitialLoading ||
     shareTokeSpotPrices.isInitialLoading
 
   const data = useMemo(
@@ -99,9 +100,7 @@ export const useAllXYKDeposits = (address?: string) => {
       depositNftsData.reduce<Record<string, Array<TXYKDepositData>>>(
         (acc, deposit) => {
           const { asset, depositNft } = deposit
-          const shareTokenIssuance = totalIssuances.data?.find(
-            (totalIssuance) => totalIssuance.asset === asset.id,
-          )?.totalShare
+          const shareTokenIssuance = issuances.data?.get(asset.id)
 
           const pool = pools.data?.find(
             (pool) => pool.address === asset.poolAddress,
@@ -145,12 +144,7 @@ export const useAllXYKDeposits = (address?: string) => {
         },
         {},
       ),
-    [
-      depositNftsData,
-      pools.data,
-      shareTokeSpotPrices.data,
-      totalIssuances.data,
-    ],
+    [depositNftsData, issuances.data, pools.data, shareTokeSpotPrices.data],
   )
 
   return { data, isLoading }

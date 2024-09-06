@@ -35,6 +35,7 @@ export const WhyBonds = () => {
   const balances = useTokensBalances(
     isLoaded ? pluck("id", bonds) : [],
     account?.address,
+    true,
   )
 
   const hasBonds =

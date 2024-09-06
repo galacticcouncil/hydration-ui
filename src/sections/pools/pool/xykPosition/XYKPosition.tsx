@@ -39,6 +39,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
     [assetMetaA.id, assetMetaB.id],
     pool.poolAddress,
+    true,
   )
   const spotPrices = useDisplayPrices(assetsMeta.map((asset) => asset.id))
 

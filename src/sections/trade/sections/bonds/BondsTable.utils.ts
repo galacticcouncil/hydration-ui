@@ -28,7 +28,11 @@ export const useBondsTableData = ({
   const lbpPools = useLbpPool()
   const bondsData = (id ? bonds.filter((bond) => bond.id === id) : bonds) ?? []
 
-  const balances = useTokensBalances(pluck("id", bondsData), account?.address)
+  const balances = useTokensBalances(
+    pluck("id", bondsData),
+    account?.address,
+    true,
+  )
 
   const bondsBalances = balances.filter((balance) => balance.data?.total.gt(0))
 

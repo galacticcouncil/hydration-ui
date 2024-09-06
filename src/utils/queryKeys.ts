@@ -1,4 +1,3 @@
-import { AnyNumber } from "@polkadot/types-codec/types"
 import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
@@ -101,11 +100,7 @@ export const QUERY_KEYS = {
     "totalLiquidity",
     id?.toString(),
   ],
-  totalIssuance: (lpToken: Maybe<u32 | string | AnyNumber>) => [
-    QUERY_KEY_PREFIX,
-    "totalIssuance",
-    lpToken?.toString(),
-  ],
+  totalIssuances: ["totalIssuances"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -232,7 +227,6 @@ export const QUERY_KEYS = {
   metadataVersion: ["metadataVersion"],
   acceptedCurrencies: ["acceptedCurrencies"],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "accountCurrency",
     address,
   ],
@@ -247,7 +241,6 @@ export const QUERY_KEYS = {
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
   referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
-    QUERY_KEY_PREFIX,
     "referendums",
     accountAddress,
     type,

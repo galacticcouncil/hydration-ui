@@ -9,8 +9,8 @@ import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
 import { useAccountsBalances } from "api/accountBalances"
 import { isNotNil } from "./helpers"
-import { useShareOfPools } from "api/pools"
 import { TShareToken, useAssets } from "providers/assets"
+import { useTotalIssuances } from "api/totalIssuance"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -63,7 +63,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
   const poolsAddress = pools.map((pool) => pool?.poolAddress) ?? []
 
   const poolBalances = useAccountsBalances(poolsAddress)
-  const totalIssuances = useShareOfPools(ids)
+  const issuances = useTotalIssuances()
 
   const shareTokensTvl = useMemo(() => {
     return !pools
@@ -100,7 +100,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
     shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
   )
 
-  const queries = [totalIssuances, poolBalances, spotPrices]
+  const queries = [issuances, poolBalances, spotPrices]
   const isLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
@@ -114,16 +114,14 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
           spotPrice?.spotPrice ?? 1,
         )
 
-        const totalIssuance = totalIssuances.data?.find(
-          (totalIssuance) => totalIssuance.asset === shareTokenTvl.shareTokenId,
-        )
+        const totalIssuance = issuances.data?.get(shareTokenTvl.shareTokenId)
 
         const shareTokenMeta = getAssetWithFallback(shareTokenTvl.shareTokenId)
 
-        if (!totalIssuance?.totalShare || !spotPrice?.tokenOut) return undefined
+        if (!totalIssuance || !spotPrice?.tokenOut) return undefined
 
         const shareTokenDisplay = tvlDisplay.div(
-          totalIssuance.totalShare.shiftedBy(-shareTokenMeta.decimals),
+          totalIssuance.shiftedBy(-shareTokenMeta.decimals),
         )
 
         return {
@@ -133,12 +131,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
         }
       })
       .filter(isNotNil)
-  }, [
-    getAssetWithFallback,
-    shareTokensTvl,
-    spotPrices.data,
-    totalIssuances.data,
-  ])
+  }, [getAssetWithFallback, issuances.data, shareTokensTvl, spotPrices.data])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
