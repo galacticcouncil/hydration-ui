@@ -332,7 +332,7 @@ export const useXYKZodSchema = (
     .decimalPlaces(0)
 
   const [{ data: assetABalances }, { data: assetBBalances }] =
-    useTokensBalances([assetAId, assetBId], account?.address)
+    useTokensBalances([assetAId, assetBId], account?.address, true)
 
   const balanceA = assetABalances?.balance ?? BN_0
   const balanceB = assetBBalances?.balance ?? BN_0

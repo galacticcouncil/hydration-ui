@@ -4,7 +4,7 @@ import {
 } from "@galacticcouncil/math-stableswap"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
-import { useTotalIssuance } from "api/totalIssuance"
+import { useTotalIssuances } from "api/totalIssuance"
 import { scale } from "utils/balance"
 import { BN_0, BN_MILL, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BigNumber from "bignumber.js"
@@ -21,15 +21,12 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
   const pool = useStableswapPool(poolId)
   const bestNumber = useBestNumber()
   const currentBlock = bestNumber.data?.relaychainBlockNumber
-  const shareIssuance = useTotalIssuance(poolId)
+
+  const { data: issuances } = useTotalIssuances()
+  const shareIssuance = issuances?.get(poolId)
 
   return (amount: string) => {
-    if (
-      !pool.data ||
-      !currentBlock ||
-      !shareIssuance?.data ||
-      !asset?.decimals
-    ) {
+    if (!pool.data || !currentBlock || !shareIssuance || !asset?.decimals) {
       return undefined
     }
 
@@ -52,7 +49,7 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
       JSON.stringify(reserves),
       JSON.stringify(assets),
       amplification,
-      shareIssuance.data.total.toString(),
+      shareIssuance.toString(),
       new BigNumber(pool.data.fee.toString()).div(BN_MILL).toString(),
     )
 

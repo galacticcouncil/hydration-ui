@@ -31,7 +31,6 @@ import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { LINKS } from "utils/navigation"
-import { useExternalTokensRugCheck } from "api/external"
 import { TablePagination } from "components/Table/TablePagination"
 import { useSettingsStore } from "state/store"
 
@@ -54,7 +53,6 @@ export const WalletAssetsTable = ({
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
   const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
-  const rugCheck = useExternalTokensRugCheck()
   const { degenMode } = useSettingsStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -152,7 +150,7 @@ export const WalletAssetsTable = ({
                     </TableRow>
                   )
 
-                const rugCheckData = rugCheck.tokensMap.get(row.original.id)
+                const rugCheckData = row.original.rugCheckData
 
                 if (rugCheckData?.warnings.length) {
                   return (
