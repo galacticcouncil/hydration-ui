@@ -6,7 +6,6 @@ import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
-import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
@@ -56,12 +55,13 @@ export const useSetAsFeePayment = () => {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
-  const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.currencies.transfer("", native.id, "0"),
-  )
 
   return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!(tokenId && paymentInfoData)) return
+    if (!tokenId) return
+
+    const paymentInfoData = await api.tx.currencies
+      .transfer("", native.id, "0")
+      .paymentInfo(account?.address ?? "")
 
     const transaction = await createTransaction(
       {
