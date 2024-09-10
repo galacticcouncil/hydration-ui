@@ -202,9 +202,6 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  omnipoolAssets: ["omnipoolAssets"],
-  omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
-  hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: ["omnipoolFee"],
   omnipoolAsset: (id?: u32 | string) => [
@@ -273,8 +270,8 @@ export const QUERY_KEYS = {
     "positionBalances",
     positionId,
   ],
-  stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
-  stableswapPool: (id?: string) => [QUERY_KEY_PREFIX, "stableswapPool", id],
+  stableswapPools: ["stableswapPools"],
+  stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
     "bondEvents",

@@ -1,10 +1,10 @@
-import { useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT } from "utils/api"
-import { getFloatingPointAmount } from "utils/balance"
-import { BN_0, BN_NAN, BN_QUINTILL } from "utils/constants"
+import { getFloatingPointAmount, scaleHuman } from "utils/balance"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useFee, useTVL } from "api/stats"
@@ -16,9 +16,9 @@ import { useAccountPositions } from "api/deposits"
 const withoutRefresh = true
 
 export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const accountPositions = useAccountPositions(HYDRA_TREASURE_ACCOUNT)
-  const omnipoolAssets = useOmnipoolAssets(withoutRefresh)
+  const omnipoolAssets = useOmnipoolDataObserver()
   const { getData } = useLiquidityPositionData()
   const displayAsset = useDisplayAssetStore()
 
@@ -66,18 +66,16 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
       const omnipoolAssetId = omnipoolAsset.id
-      const shares = omnipoolAsset.data.shares.toString()
-      const protocolShares = omnipoolAsset.data.protocolShares.toBigNumber()
+      const shares = omnipoolAsset.shares
+      const protocolShares = BN(omnipoolAsset.protocolShares)
 
-      const meta = omnipoolAsset.meta
+      const meta = getAssetWithFallback(omnipoolAsset.id)
 
       const spotPrice = spotPrices.find(
         (sp) => sp?.data?.tokenIn === omnipoolAssetId,
       )?.data?.spotPrice
 
-      const omnipoolAssetCap = omnipoolAsset.data.cap
-        .toBigNumber()
-        .div(BN_QUINTILL)
+      const omnipoolAssetCap = scaleHuman(omnipoolAsset.cap, "q")
 
       if (!meta || !spotPrice) return null
 
@@ -133,6 +131,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   }, [
     fees?.data,
     fees?.isInitialLoading,
+    getAssetWithFallback,
     getData,
     native.id,
     omnipoolAssets.data,
