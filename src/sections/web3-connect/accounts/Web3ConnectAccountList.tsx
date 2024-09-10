@@ -2,9 +2,12 @@ import { FC, Fragment, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useAccount,
-  useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  Account,
+  useWeb3ConnectStore,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   SAccountsContainer,
   SAccountsScrollableContainer,
@@ -24,6 +27,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
+import { useShallow } from "hooks/useShallow"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -42,8 +47,7 @@ const AccountComponent: FC<
     setBalanceMap: React.Dispatch<React.SetStateAction<Record<string, BN>>>
   }
 > = ({ setBalanceMap, isReady, ...account }) => {
-  const { type } = useWallet()
-  const Component = getAccountComponentByType(type)
+  const Component = getAccountComponentByType(account.provider)
 
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
     address: account.address,
@@ -72,12 +76,19 @@ export const Web3ConnectAccountList: FC<{
   const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
 
+  const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
+
   const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
 
   const isReady = accounts.every(({ address }) => address in balanceMap)
 
   const [searchVal, setSearchVal] = useState("")
   const [filter, setFilter] = useState("")
+
+  const [selectedMode, setSelectedMode] = useState<WalletMode>(
+    WalletMode.Default,
+  )
+
   useDebounce(
     () => {
       setFilter(searchVal ?? "")
@@ -96,32 +107,59 @@ export const Web3ConnectAccountList: FC<{
         ])
       : accounts
 
-    return filtered.sort((a, b) => {
-      if (a.address === account?.address) return -1
-      if (b.address === account?.address) return 1
+    return filtered
+      .filter(({ provider }) => {
+        if (selectedMode === WalletMode.Default) return true
 
-      const aBalance = balanceMap[a.address]
-      const bBalance = balanceMap[b.address]
-      if (!aBalance || !bBalance) return 0
-      return bBalance.comparedTo(aBalance)
-    })
-  }, [isReady, accounts, filter, account?.address, balanceMap])
+        return selectedMode === WalletMode.EVM
+          ? EVM_PROVIDERS.includes(provider)
+          : !EVM_PROVIDERS.includes(provider)
+      })
+      .sort((a, b) => {
+        if (
+          a.address === account?.address &&
+          a.provider === account?.provider
+        ) {
+          return -1
+        }
+        if (
+          b.address === account?.address &&
+          b.provider === account?.provider
+        ) {
+          return 1
+        }
+
+        const aBalance = balanceMap[a.address]
+        const bBalance = balanceMap[b.address]
+        if (!aBalance || !bBalance) return 0
+        return bBalance.comparedTo(aBalance)
+      })
+  }, [account, accounts, balanceMap, filter, isReady, selectedMode])
 
   const noResults = accountList.length === 0
 
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
-        <Search
-          value={searchVal}
-          setValue={setSearchVal}
-          placeholder={t("walletconnect.accountSelect.search.placeholder")}
-          sx={{ mb: [4, 8] }}
-        />
+        <div sx={{ flex: "column", mb: [4, 8], gap: [12, 16] }}>
+          <Search
+            value={searchVal}
+            setValue={setSearchVal}
+            placeholder={t("walletconnect.accountSelect.search.placeholder")}
+          />
+          {mode === WalletMode.Default && (
+            <Web3ConnectModeFilter
+              includeAll
+              active={selectedMode}
+              onSetActive={(mode) => setSelectedMode(mode)}
+            />
+          )}
+        </div>
       )}
+
       {noResults && (
         <>
-          {filter ? (
+          {filter || selectedMode !== WalletMode.Default ? (
             <div
               sx={{
                 color: "basic500",
@@ -147,7 +185,7 @@ export const Web3ConnectAccountList: FC<{
 
       <SAccountsScrollableContainer>
         {accountList?.map((account) => (
-          <Fragment key={account.address}>
+          <Fragment key={`${account.provider}-${account.address}`}>
             {isLoaded ? (
               <AccountComponent
                 {...account}

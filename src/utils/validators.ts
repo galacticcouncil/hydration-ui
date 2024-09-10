@@ -1,5 +1,7 @@
 import BigNumber from "bignumber.js"
 import i18n from "i18next"
+import { safeConvertAddressH160 } from "utils/evm"
+import { safeConvertAddressSS58 } from "utils/formatting"
 import { z } from "zod"
 
 export const required = z.string().trim().min(1, i18n.t("error.required"))
@@ -28,3 +30,15 @@ export const maxBalance = (balance: BigNumber, decimals: number) => {
 export const noWhitespace = z
   .string()
   .refine((s) => !/\s/gi.test(s), i18n.t("error.whitespace"))
+
+export const validH160Address = required.refine(
+  (value) => !!safeConvertAddressH160(value),
+  i18n.t("error.validAddress"),
+)
+
+export const validSS58Address = required.refine(
+  (value) => !!safeConvertAddressSS58(value, 0),
+  i18n.t("error.validAddress"),
+)
+
+export const validAddress = validSS58Address.or(validH160Address)

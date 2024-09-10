@@ -15,47 +15,54 @@ import {
 import {
   WalletProviderType,
   getWalletProviderByType,
-  useWallet,
+  useConnectedProvider,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
 import { H160, safeConvertAddressH160 } from "utils/evm"
-import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
+import { getAddressVariants } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 
-type ExternalWalletConnectModalProps = {
+type Web3ConnectExternalFormProps = {
   form: UseFormReturn<{
     address: string
     delegates: boolean
   }>
   onClose: () => void
   onSelect: () => void
+  onDisconnect: () => void
   onOpenAddressBook?: () => void
 }
 
-export const Web3ConnectExternalModal = ({
+export const Web3ConnectExternalForm = ({
   form,
   onClose,
   onSelect,
+  onDisconnect,
   onOpenAddressBook,
-}: ExternalWalletConnectModalProps) => {
+}: Web3ConnectExternalFormProps) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const { setAccount } = useWeb3ConnectStore()
+  const { getStatus, setAccount, disconnect } = useWeb3ConnectStore()
 
-  const { wallet: activeWallet } = useWallet()
-  const externalWallet =
-    activeWallet instanceof ExternalWallet ? activeWallet : null
+  const { wallet: externalWallet } = useConnectedProvider(
+    WalletProviderType.ExternalWallet,
+  )
+
+  const isConnected =
+    externalWallet instanceof ExternalWallet &&
+    !!externalWallet?.account?.address &&
+    getStatus(WalletProviderType.ExternalWallet) === "connected"
 
   // means that a user already knows that he doesn't have delegates
   const isDelegatesError = form.formState.errors.delegates
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (!externalWallet) return
+    if (!(externalWallet instanceof ExternalWallet)) return
 
     const isEvm = safeConvertAddressH160(values.address) !== null
     const address = isEvm
@@ -74,7 +81,6 @@ export const Web3ConnectExternalModal = ({
       if (proxyWallet?.installed) {
         await proxyWallet?.enable(POLKADOT_APP_NAME)
         const accounts = await proxyWallet?.getAccounts()
-
         isDelegate = accounts?.some((account) =>
           delegates.find(
             (delegate) =>
@@ -129,15 +135,6 @@ export const Web3ConnectExternalModal = ({
       <Controller
         name="address"
         control={form.control}
-        rules={{
-          required: t("wallet.assets.transfer.error.required"),
-          validate: {
-            validAddress: (value) =>
-              safeConvertAddressSS58(value, 0) !== null ||
-              safeConvertAddressH160(value) !== null ||
-              t("wallet.assets.transfer.error.validAddress"),
-          },
-        }}
         render={({
           field: { name, value, onChange },
           fieldState: { error },
@@ -199,16 +196,34 @@ export const Web3ConnectExternalModal = ({
       />
 
       <Spacer size={35} />
-      <Button
-        disabled={!!form.formState.errors.address}
-        variant="primary"
-        type="submit"
-        sx={{ mt: "auto" }}
-      >
-        {form.formState.errors.delegates
-          ? t("walletConnect.accountSelect.viewAsWallet")
-          : t("confirm")}
-      </Button>
+      <div sx={{ mt: "auto", flex: "row", gap: 12 }}>
+        {isConnected && (
+          <Button
+            variant="outline"
+            type="button"
+            fullWidth
+            onClick={() => {
+              form.reset({
+                address: "",
+              })
+              disconnect(WalletProviderType.ExternalWallet)
+              onDisconnect()
+            }}
+          >
+            {t("walletConnect.provider.disconnect")}
+          </Button>
+        )}
+        <Button
+          disabled={!form.formState.isValid}
+          variant="primary"
+          type="submit"
+          fullWidth
+        >
+          {form.formState.errors.delegates
+            ? t("walletConnect.accountSelect.viewAsWallet")
+            : t("confirm")}
+        </Button>
+      </div>
     </form>
   )
 }

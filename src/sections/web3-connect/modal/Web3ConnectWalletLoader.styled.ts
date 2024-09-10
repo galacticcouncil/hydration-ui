@@ -18,3 +18,11 @@ export const SContent = styled.div`
     grid-row: 1;
   }
 `
+
+export const SInnerContent = styled.div`
+  max-width: 70px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+`

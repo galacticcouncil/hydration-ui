@@ -1,11 +1,10 @@
 import ChevronDownSmall from "assets/icons/ChevronDownSmall.svg?react"
 import WalletIcon from "assets/icons/Wallet.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { ButtonProps } from "components/Button/Button"
+import { Button, ButtonProps } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
   useWeb3ConnectStore,
@@ -16,6 +15,8 @@ import {
   SContainer,
   SLoginButton,
 } from "./Web3ConnectModalButton.styled"
+import { useShallow } from "hooks/useShallow"
+import { pick } from "utils/rx"
 
 const Web3ConnectActiveButton: FC<{
   onOpen: () => void
@@ -71,6 +72,25 @@ const Web3ConnectActiveButton: FC<{
   )
 }
 
+export const Web3AccountButton: FC<{
+  onOpen: () => void
+  className?: string
+  size?: ButtonProps["size"]
+}> = (props) => {
+  const { t } = useTranslation("translation")
+  return (
+    <Button
+      size={props.size}
+      variant="secondary"
+      onClick={props.onOpen}
+      className={props.className}
+      type="button"
+    >
+      {t("walletConnect.accountSelect.title")}
+    </Button>
+  )
+}
+
 export const Web3ConnectInactiveButton: FC<{
   onOpen: () => void
   className?: string
@@ -96,15 +116,25 @@ export const Web3ConnectModalButton: FC<{
   className?: string
   size?: ButtonProps["size"]
 }> = (props) => {
-  const { toggle } = useWeb3ConnectStore()
-  const { account } = useAccount()
+  const { providers, account, toggle } = useWeb3ConnectStore(
+    useShallow((state) => pick(state, ["providers", "account", "toggle"])),
+  )
+
+  const isConnected = providers.length > 0
+  const hasAccount = !!account
 
   return (
     <>
-      {account ? (
+      {hasAccount ? (
         <Web3ConnectActiveButton
           className={props.className}
           account={account}
+          onOpen={toggle}
+        />
+      ) : isConnected ? (
+        <Web3AccountButton
+          size={props.size}
+          className={props.className}
           onOpen={toggle}
         />
       ) : (

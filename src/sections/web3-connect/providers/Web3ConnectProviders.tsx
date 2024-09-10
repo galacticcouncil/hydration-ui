@@ -1,12 +1,13 @@
 import { Text } from "components/Typography/Text/Text"
 import { useShallow } from "hooks/useShallow"
-import { useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
   WalletProvider,
   WalletProviderType,
   getSupportedWallets,
+  useConnectedProviders,
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   ALTERNATIVE_PROVIDERS,
@@ -28,34 +29,16 @@ import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnec
 import { theme } from "theme"
 import {
   SExpandButton,
+  SProviderButton,
   SProviderContainer,
 } from "./Web3ConnectProviders.styled"
 import { Icon } from "components/Icon/Icon"
 import ChevronDownIcon from "assets/icons/ChevronDown.svg?react"
-import { Chip } from "components/Chip"
 import { Separator } from "components/Separator/Separator"
 import { AccordionAnimation } from "components/Accordion/Accordion"
-import { MetadataStore } from "@galacticcouncil/ui"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-
 import { pick } from "utils/rx"
-import { EvmChain } from "@galacticcouncil/xcm-core"
-
-const getModeIcon = (mode: WalletMode) => {
-  try {
-    if (mode === WalletMode.EVM) {
-      const chain = chainsMap.get("ethereum") as EvmChain
-      const asset = chain.getAsset("weth")!
-      const address = chain.getAssetId(asset)
-      return MetadataStore.getInstance().asset(
-        "ethereum",
-        chain.defEvm.id.toString(),
-        address.toString(),
-      )
-    }
-    return MetadataStore.getInstance().asset("polkadot", "0", "0")
-  } catch (e) {}
-}
+import { Web3ConnectProviderIcons } from "sections/web3-connect/providers/Web3ConnectProviderIcons"
+import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -132,12 +115,20 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
   }, [isDesktop, mode, chain])
 }
 
-export const Web3ConnectProviders = () => {
+type Web3ConnectProvidersProps = {
+  onAccountSelect: () => void
+}
+
+export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
+  onAccountSelect,
+}) => {
   const { t } = useTranslation()
 
   const { mode, meta, recentProvider } = useWeb3ConnectStore(
     useShallow((state) => pick(state, ["mode", "meta", "recentProvider"])),
   )
+
+  const providers = useConnectedProviders()
 
   const isRecentEvmProvider =
     recentProvider &&
@@ -164,8 +155,6 @@ export const Web3ConnectProviders = () => {
 
   const [expanded, setExpanded] = useState(installedCountWithoutWC === 0)
 
-  const modes = [WalletMode.Substrate, WalletMode.EVM] as const
-
   return (
     <>
       {isFilterable && (
@@ -174,27 +163,10 @@ export const Web3ConnectProviders = () => {
             <Text color="basic500" fs={14}>
               {t("walletConnect.provider.mode.title")}:
             </Text>
-            <div sx={{ flex: "row", align: "center", gap: 10 }}>
-              {modes.map((mode) => (
-                <Chip
-                  key={mode}
-                  active={selectedMode === mode}
-                  onClick={() => setSelectedMode(mode)}
-                >
-                  <Icon
-                    size={20}
-                    sx={{ ml: -4 }}
-                    icon={
-                      <img
-                        src={getModeIcon(mode)}
-                        alt={t(`walletConnect.provider.mode.${mode}`)}
-                      />
-                    }
-                  />
-                  {t(`walletConnect.provider.mode.${mode}`)}
-                </Chip>
-              ))}
-            </div>
+            <Web3ConnectModeFilter
+              active={selectedMode}
+              onSetActive={(mode) => setSelectedMode(mode)}
+            />
             <div sx={{ display: ["none", "block"], ml: "auto" }}>
               {alternativeProviders.map((provider) => (
                 <Web3ConnectAltProviderButton {...provider} key={provider.type}>
@@ -219,6 +191,16 @@ export const Web3ConnectProviders = () => {
       </Text>
       {installedProviders.length > 0 ? (
         <SProviderContainer>
+          {providers.length > 0 && mode === WalletMode.Default && (
+            <SProviderButton onClick={onAccountSelect}>
+              <Web3ConnectProviderIcons
+                providers={providers.map((p) => p.type)}
+              />
+              <Text fs={[12, 14]} sx={{ mt: 8 }} tAlign="center">
+                {t("walletConnect.provider.lastConnected")}
+              </Text>
+            </SProviderButton>
+          )}
           {installedProviders.map((provider) => (
             <Web3ConnectProviderButton
               key={provider.type}
@@ -233,7 +215,7 @@ export const Web3ConnectProviders = () => {
         </Text>
       )}
 
-      <div sx={{ display: ["block", "none"], mt: 20 }}>
+      <div sx={{ display: ["block", "none"], mt: 8 }}>
         {alternativeProviders.map((provider) => (
           <Web3ConnectAltProviderButton {...provider} key={provider.type}>
             {t("walletConnect.accountSelect.viewAsWallet")}

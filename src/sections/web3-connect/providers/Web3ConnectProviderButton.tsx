@@ -1,15 +1,19 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
   WalletProviderType,
   useEnableWallet,
+  useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import {
+  SAccountIndicator,
   SAltProviderButton,
+  SConnectionIndicator,
   SProviderButton,
 } from "./Web3ConnectProviders.styled"
 import {
@@ -19,7 +23,10 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 type Props = WalletProvider & {
-  children?: (props: { onClick: () => void }) => JSX.Element
+  children?: (props: {
+    onClick: () => void
+    isConnected: boolean
+  }) => JSX.Element
   mode?: WalletMode
 }
 
@@ -31,7 +38,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { setStatus, setError } = useWeb3ConnectStore()
+  const { setStatus, setError, disconnect, getStatus } = useWeb3ConnectStore()
 
   const { logo, title, installed, installUrl } = wallet
 
@@ -46,16 +53,28 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     },
   })
 
-  function onClick() {
+  const { data: accounts } = useWalletAccounts(type)
+  const accountsCount = accounts?.length || 0
+
+  const isConnected = getStatus(type) === WalletProviderStatus.Connected
+
+  const onClick = useCallback(() => {
+    if (type === WalletProviderType.ExternalWallet) {
+      return enable()
+    }
+
+    if (isConnected) {
+      return disconnect(type)
+    }
     if (type === WalletProviderType.WalletConnect) {
       enable(mode === WalletMode.EVM ? "eip155" : "polkadot")
     } else {
       installed ? enable() : openInstallUrl(installUrl)
     }
-  }
+  }, [disconnect, enable, installUrl, installed, isConnected, mode, type])
 
   if (typeof children === "function") {
-    return children({ onClick })
+    return children({ onClick, isConnected })
   }
 
   return (
@@ -67,15 +86,20 @@ export const Web3ConnectProviderButton: FC<Props> = ({
         width={32}
         height={32}
       />
-      <Text fs={[12, 14]} sx={{ mt: 8 }}>
+      <Text fs={[12, 14]} sx={{ mt: 8 }} tAlign="center">
         {title}
       </Text>
       <Text
-        color="brightBlue300"
+        color={isConnected ? "basic500" : "brightBlue300"}
         fs={[12, 13]}
         sx={{ flex: "row", align: "center" }}
       >
-        {installed ? (
+        {isConnected ? (
+          <>
+            {t("walletConnect.provider.disconnect")}
+            <LogoutIcon width={18} height={18} />
+          </>
+        ) : installed ? (
           <>
             {t("walletConnect.provider.continue")}
             <ChevronRight width={18} height={18} />
@@ -87,6 +111,10 @@ export const Web3ConnectProviderButton: FC<Props> = ({
           </>
         )}
       </Text>
+      {isConnected && <SConnectionIndicator />}
+      {isConnected && accountsCount > 0 && (
+        <SAccountIndicator>+{accountsCount}</SAccountIndicator>
+      )}
     </SProviderButton>
   )
 }

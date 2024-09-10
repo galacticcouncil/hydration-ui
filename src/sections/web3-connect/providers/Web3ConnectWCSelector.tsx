@@ -20,12 +20,14 @@ const getWalletConnect = () => {
 }
 
 export const Web3ConnectWCSelector = () => {
-  const { setStatus, setError, provider, status, account, mode } =
+  const { setStatus, setError, recentProvider, account, mode, getStatus } =
     useWeb3ConnectStore()
 
   const isDefaultMode = mode === "default"
   const isEvmMode = mode === "evm"
   const isSubstrateMode = mode === "substrate"
+
+  const status = getStatus(walletConnectType)
 
   const { enable, isLoading } = useEnableWallet(walletConnectType, {
     onSuccess: () =>
@@ -42,7 +44,7 @@ export const Web3ConnectWCSelector = () => {
 
   const isConnectedToWc =
     !!account?.address &&
-    provider === walletConnectType &&
+    recentProvider === walletConnectType &&
     status === WalletProviderStatus.Connected
 
   const isSessionActive = !!wallet?._session

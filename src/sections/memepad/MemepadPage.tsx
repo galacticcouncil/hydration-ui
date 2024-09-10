@@ -46,7 +46,7 @@ const MemepadPageContent = () => {
                 <Button
                   variant="outline"
                   size="small"
-                  onClick={disconnect}
+                  onClick={() => disconnect()}
                   css={{ borderColor: "white" }}
                 >
                   {t("walletConnect.logout")}
