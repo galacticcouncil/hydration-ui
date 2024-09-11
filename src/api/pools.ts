@@ -19,9 +19,11 @@ export const useShareOfPools = (assets: string[]) => {
   const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!!totalIssuances.data && balances) {
+    if (!!totalIssuances.data) {
       return assets.map((asset) => {
-        const totalBalance = balances.find((balance) => balance.id === asset)
+        const totalBalance = (balances ?? []).find(
+          (balance) => balance.id === asset,
+        )
         const totalIssuance = totalIssuances.data.get(asset)
 
         const calculateTotalShare = () => {
