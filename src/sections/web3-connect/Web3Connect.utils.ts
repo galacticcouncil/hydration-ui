@@ -8,7 +8,6 @@ import {
 import { useShallow } from "hooks/useShallow"
 import { useEffect, useMemo, useRef } from "react"
 import { usePrevious } from "react-use"
-
 import {
   NamespaceType,
   WalletConnect,
@@ -47,6 +46,8 @@ import {
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
+import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
+import { Talisman } from "sections/web3-connect/wallets/Talisman"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -101,14 +102,18 @@ export const useEvmAccount = () => {
 }
 
 export const useConnectedProviders = () => {
-  const { providers, mode, getActiveProviders } = useWeb3ConnectStore()
-  const activeProviders =
-    mode !== WalletMode.Default ? getActiveProviders() : providers
+  const { getConnectedProviders } = useWeb3ConnectStore()
+
+  const providers = getConnectedProviders()
+
   return useMemo(() => {
-    return activeProviders
+    return providers
       .map(({ type }) => getWalletProviderByType(type))
-      .filter(({ wallet }) => !!wallet?.extension) as WalletProvider[]
-  }, [activeProviders])
+      .filter(
+        (provider): provider is WalletProvider =>
+          !!provider.wallet && !!provider.type,
+      )
+  }, [providers])
 }
 
 export const useConnectedProvider = (type: WalletProviderType | null) => {
@@ -128,18 +133,22 @@ export const useWalletAccounts = (
   type?: WalletProviderType | null,
   options?: QueryObserverOptions<WalletAccount[], unknown, Account[]>,
 ) => {
+  const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
   const connectedProviders = useConnectedProviders()
 
   return useQuery<WalletAccount[], unknown, Account[]>(
     QUERY_KEYS.providerAccounts(
-      connectedProviders.map(({ type }) => getProviderQueryKey(type)).join("-"),
+      connectedProviders
+        .map(({ type }) => getProviderQueryKey(type, mode))
+        .join("-"),
     ),
     async () => {
       const accounts = (
         await Promise.all(
-          connectedProviders.map(async ({ wallet }) =>
-            wallet ? await wallet.getAccounts() : [],
-          ),
+          connectedProviders.map(async ({ wallet }) => {
+            if (!wallet) return []
+            return await wallet.getAccounts()
+          }),
         )
       ).flat()
       return accounts
@@ -184,7 +193,7 @@ export const useWeb3ConnectEagerEnable = () => {
     }
   }>()
 
-  const providers = useConnectedProviders()
+  const providers = useWeb3ConnectStore(useShallow((store) => store.providers))
   const prevProviders = usePrevious(providers)
 
   const externalAddressRef = useRef(search?.account)
@@ -235,7 +244,7 @@ export const useWeb3ConnectEagerEnable = () => {
       // disconnect on missing WalletConnect session
       if (wallet instanceof WalletConnect && !wallet._session) {
         wallet.disconnect()
-        state.disconnect()
+        state.disconnect(WalletProviderType.WalletConnect)
         return
       }
 
@@ -244,8 +253,9 @@ export const useWeb3ConnectEagerEnable = () => {
   }, [])
 
   useEffect(() => {
-    prevProviders?.forEach(({ wallet, type }) => {
+    prevProviders?.forEach(({ type }) => {
       const hasWalletDisconnected = !providers.find((p) => p.type === type)
+      const { wallet } = getWalletProviderByType(type)
       if (wallet && hasWalletDisconnected) {
         cleanUp(wallet)
       }
@@ -443,7 +453,10 @@ export function getWalletProviderByType(type?: WalletProviderType | null) {
   )
 }
 
-function getProviderQueryKey(type: WalletProviderType | null) {
+function getProviderQueryKey(
+  type: WalletProviderType | null,
+  mode: WalletMode,
+) {
   const { wallet } = getWalletProviderByType(type)
 
   if (wallet?.signer instanceof PolkadotSigner) {
@@ -456,6 +469,10 @@ function getProviderQueryKey(type: WalletProviderType | null) {
 
   if (wallet instanceof ExternalWallet) {
     return [type, wallet.account?.address].filter(Boolean).join("-")
+  }
+
+  if (wallet instanceof SubWallet || wallet instanceof Talisman) {
+    return [type, mode].filter(Boolean).join("-")
   }
 
   return type ?? ""

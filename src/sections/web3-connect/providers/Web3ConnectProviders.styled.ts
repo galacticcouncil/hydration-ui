@@ -94,6 +94,7 @@ export const SConnectionIndicator = styled.div`
 
 export const SAccountIndicator = styled.div`
   font-size: 11px;
+  font-family: "GeistSemiBold";
   color: ${theme.colors.white};
 
   border-radius: ${theme.borderRadius.default}px;
@@ -103,7 +104,7 @@ export const SAccountIndicator = styled.div`
   top: 8px;
   right: 8px;
 
-  padding: 2px 4px;
+  padding: 3px 5px;
 
   border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.12);
 `

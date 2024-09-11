@@ -46,11 +46,18 @@ export const Web3ConnectContent: React.FC<Props> = ({
   ...props
 }) => {
   const { t } = useTranslation()
-  const { recentProvider, providers, mode, disconnect, error, meta } =
-    useWeb3ConnectStore()
+  const {
+    recentProvider,
+    mode,
+    disconnect,
+    error,
+    meta,
+    getConnectedProviders,
+  } = useWeb3ConnectStore()
 
   const { data: accounts, isLoading } = useWalletAccounts()
 
+  const providers = getConnectedProviders()
   const isConnecting =
     isLoading || providers.some(({ status }) => status === "pending")
 

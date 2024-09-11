@@ -57,7 +57,7 @@ type WalletProviderStore = WalletProviderState & {
     status: WalletProviderStatus,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
-  getActiveProviders: () => WalletProviderEntry[]
+  getConnectedProviders: () => WalletProviderEntry[]
   setError: (error: string) => void
   disconnect: (provider?: WalletProviderType) => void
 }
@@ -106,8 +106,13 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
         const foundProvider = get().providers.find((p) => p.type === provider)
         return foundProvider?.status ?? WalletProviderStatus.Disconnected
       },
-      getActiveProviders: () => {
+      getConnectedProviders: () => {
         const { mode, providers } = get()
+
+        if (mode === WalletMode.Default) {
+          return providers
+        }
+
         return providers.filter(({ type }) => {
           if (mode === WalletMode.EVM) {
             return EVM_PROVIDERS.includes(type)
@@ -138,6 +143,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
             ? state.providers.filter((p) => p.type !== provider)
             : [],
           recentProvider: null,
+          mode: state.mode,
           open: state.open,
         }))
       },

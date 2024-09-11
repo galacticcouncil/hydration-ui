@@ -29,6 +29,7 @@ import { Alert } from "components/Alert/Alert"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
+import { create } from "zustand"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -41,13 +42,25 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
   return Web3ConnectSubstrateAccount
 }
 
+const useAccountBalanceMap = create<{
+  balanceMap: Map<string, BN>
+  setBalanceMap: (address: string, balance: BN) => void
+}>((set) => ({
+  balanceMap: new Map(),
+  setBalanceMap: (address, balance) => {
+    set(({ balanceMap }) => ({
+      balanceMap: new Map(balanceMap).set(address, balance),
+    }))
+  },
+}))
+
 const AccountComponent: FC<
   Account & {
     isReady: boolean
-    setBalanceMap: React.Dispatch<React.SetStateAction<Record<string, BN>>>
   }
-> = ({ setBalanceMap, isReady, ...account }) => {
+> = ({ isReady, ...account }) => {
   const Component = getAccountComponentByType(account.provider)
+  const { setBalanceMap } = useAccountBalanceMap()
 
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
     address: account.address,
@@ -55,10 +68,7 @@ const AccountComponent: FC<
 
   useShallowCompareEffect(() => {
     if (!isLoading) {
-      setBalanceMap((prev) => ({
-        ...prev,
-        [account.address]: balanceTotal,
-      }))
+      setBalanceMap(account.address, balanceTotal)
     }
   }, [{ isLoading }])
 
@@ -78,9 +88,9 @@ export const Web3ConnectAccountList: FC<{
 
   const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
 
-  const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
+  const { balanceMap } = useAccountBalanceMap()
 
-  const isReady = accounts.every(({ address }) => address in balanceMap)
+  const isReady = accounts.every(({ address }) => balanceMap.has(address))
 
   const [searchVal, setSearchVal] = useState("")
   const [filter, setFilter] = useState("")
@@ -104,6 +114,7 @@ export const Web3ConnectAccountList: FC<{
           "name",
           "address",
           "displayAddress",
+          "provider",
         ])
       : accounts
 
@@ -129,8 +140,8 @@ export const Web3ConnectAccountList: FC<{
           return 1
         }
 
-        const aBalance = balanceMap[a.address]
-        const bBalance = balanceMap[b.address]
+        const aBalance = balanceMap.get(a.address)
+        const bBalance = balanceMap.get(b.address)
         if (!aBalance || !bBalance) return 0
         return bBalance.comparedTo(aBalance)
       })
@@ -187,11 +198,7 @@ export const Web3ConnectAccountList: FC<{
         {accountList?.map((account) => (
           <Fragment key={`${account.provider}-${account.address}`}>
             {isLoaded ? (
-              <AccountComponent
-                {...account}
-                isReady={isReady}
-                setBalanceMap={setBalanceMap}
-              />
+              <AccountComponent {...account} isReady={isReady} />
             ) : (
               <Web3ConnectAccountPlaceholder />
             )}

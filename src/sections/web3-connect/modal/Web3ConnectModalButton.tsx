@@ -120,8 +120,8 @@ export const Web3ConnectModalButton: FC<{
     useShallow((state) => pick(state, ["providers", "account", "toggle"])),
   )
 
-  const isConnected = providers.length > 0
   const hasAccount = !!account
+  const isConnectedWithoutAccount = providers.length > 0 && !hasAccount
 
   return (
     <>
@@ -131,7 +131,7 @@ export const Web3ConnectModalButton: FC<{
           account={account}
           onOpen={toggle}
         />
-      ) : isConnected ? (
+      ) : isConnectedWithoutAccount ? (
         <Web3AccountButton
           size={props.size}
           className={props.className}

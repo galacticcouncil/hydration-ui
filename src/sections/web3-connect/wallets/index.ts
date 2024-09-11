@@ -76,7 +76,7 @@ const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
       const state = useWeb3ConnectStore.getState()
-      state.disconnect()
+      state.disconnect(WalletProviderType.WalletConnect)
       if (state.open) {
         state.toggle()
       }
@@ -84,7 +84,7 @@ const walletConnect: Wallet = new WalletConnect({
   },
   onSesssionDelete: () => {
     const state = useWeb3ConnectStore.getState()
-    state.disconnect()
+    state.disconnect(WalletProviderType.WalletConnect)
   },
 })
 

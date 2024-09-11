@@ -4,10 +4,7 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { useEffect } from "react"
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectContent } from "sections/web3-connect/modal/Web3ConnectContent"
-import {
-  WalletMode,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 enum ModalPage {
   ProviderSelect,
@@ -18,24 +15,13 @@ enum ModalPage {
 }
 
 export const Web3ConnectModal = () => {
-  const {
-    account,
-    disconnect,
-    mode,
-    open,
-    providers,
-    toggle,
-    getActiveProviders,
-  } = useWeb3ConnectStore()
+  const { account, disconnect, open, toggle, getConnectedProviders } =
+    useWeb3ConnectStore()
 
-  const shouldShowAccountSelect =
-    mode === WalletMode.Default
-      ? providers.length > 0
-      : getActiveProviders().length > 0
-
-  const initialPage = shouldShowAccountSelect
-    ? ModalPage.AccountSelect
-    : ModalPage.ProviderSelect
+  const initialPage =
+    getConnectedProviders().length > 0
+      ? ModalPage.AccountSelect
+      : ModalPage.ProviderSelect
 
   const { page, direction, paginateTo } = useModalPagination(initialPage)
 
