@@ -1,5 +1,5 @@
 import { BN } from "@polkadot/util"
-import { BN_10, QUINTILL, TRILL } from "./constants"
+import { BN_10, BN_NAN, QUINTILL, TRILL } from "./constants"
 import BigNumber from "bignumber.js"
 import {
   BigNumberFormatOptionsSchema,
@@ -51,9 +51,11 @@ export const getFixedPointAmount = (
  * eg.: 1.23456789 => 123456789
  */
 export const scale = (
-  amount: BigNumberLikeType,
+  amount: BigNumberLikeType | undefined,
   decimals: number | "t" | "q",
 ) => {
+  if (!amount) return BN_NAN
+
   const _decimals =
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 
@@ -68,9 +70,11 @@ export const scale = (
  * eg.: 123456789 => 1.23456789
  */
 export const scaleHuman = (
-  amount: BigNumberLikeType,
+  amount: BigNumberLikeType | undefined,
   decimals: number | "t" | "q",
 ) => {
+  if (!amount) return BN_NAN
+
   const _decimals =
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 

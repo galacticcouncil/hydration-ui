@@ -7,32 +7,35 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { DEPOSIT_CLASS_ID } from "utils/api"
-import { scaleHuman } from "utils/balance"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
-import { useRpcProvider } from "providers/rpcProvider"
+
 import {
   RemoveLiquidityProps,
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
+import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const RemoveLiquidityForm = ({
   onClose,
   onSuccess,
   onSubmitted,
+  onError,
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { hub } = useAssets()
   const isPositionMultiple = Array.isArray(position)
 
   const form = useForm<{ value: number }>({
     defaultValues: { value: isPositionMultiple ? 100 : 25 },
   })
 
-  const lrnaMeta = assets.hub
+  const lrnaMeta = hub
   const value = form.watch("value")
 
   const onSubmit = (value: string) => {
@@ -42,15 +45,27 @@ export const RemoveLiquidityForm = ({
 
   const {
     values,
-    removeShares,
-    totalShares,
+    removeValue,
+    totalValue,
+    remainingValue,
     isFeeExceeded,
     mutation,
     meta: { id, symbol, name, decimals },
-  } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit)
+  } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit, onError)
 
   const tokensToGet =
-    values && BN(values?.tokensToGet).gt(0) ? values.tokensToGet : BN(0)
+    values && values?.tokensToGetShifted.gt(0)
+      ? values.tokensToGetShifted
+      : BN(0)
+
+  // If the tokensToGet rounded to zero, allow only 100% withdrawal,
+  // else, check if remaining value is below minimum allowed pool liquidity
+  const isBelowMinimum = tokensToGet.isZero()
+    ? value > 0 && value !== 100
+    : remainingValue.gt(0) &&
+      remainingValue
+        .shiftedBy(decimals)
+        .lt(api.consts.omnipool.minimumPoolLiquidity.toBigNumber())
 
   return (
     <form
@@ -63,12 +78,13 @@ export const RemoveLiquidityForm = ({
       }}
     >
       <div>
-        <Text fs={32} font="FontOver" sx={{ mt: 24 }}>
-          {t("liquidity.remove.modal.value", {
-            value: scaleHuman(removeShares, decimals),
-          })}
-        </Text>
-        <Text fs={18} font="FontOver" color="pink500" sx={{ mb: 20 }}>
+        <div sx={{ flex: "row", align: "center", gap: 8, mt: 8 }}>
+          <Text fs={32}>
+            {t("value.tokenWithSymbol", { value: removeValue, symbol })}
+          </Text>
+        </div>
+
+        <Text fs={18} color="pink500" sx={{ mb: 20 }}>
           {t("value.percentage", { value })}
         </Text>
         {!isPositionMultiple && (
@@ -79,8 +95,9 @@ export const RemoveLiquidityForm = ({
               <RemoveLiquidityInput
                 value={field.value}
                 onChange={field.onChange}
-                balance={t("liquidity.remove.modal.shares", {
-                  shares: scaleHuman(totalShares, decimals),
+                balance={t("value.tokenWithSymbol", {
+                  value: totalValue,
+                  symbol,
                 })}
               />
             )}
@@ -95,10 +112,8 @@ export const RemoveLiquidityForm = ({
             id={id}
             name={name}
             symbol={symbol}
-            amount={t("value", {
+            amount={t("value.token", {
               value: tokensToGet,
-              fixedPointScale: decimals,
-              type: "token",
             })}
           />
           {values && BN(values.lrnaToGet).gt(0) && (
@@ -106,10 +121,8 @@ export const RemoveLiquidityForm = ({
               id={DEPOSIT_CLASS_ID}
               name={lrnaMeta.name}
               symbol={lrnaMeta.symbol}
-              amount={t("value", {
+              amount={t("value.token", {
                 value: values.lrnaToGet,
-                fixedPointScale: lrnaMeta.decimals,
-                type: "token",
               })}
             />
           )}
@@ -123,18 +136,16 @@ export const RemoveLiquidityForm = ({
           !BN(values?.lrnaPayWith ?? 0).isZero()
             ? t("value.token", {
                 value: values?.lrnaPayWith,
-                fixedPointScale: lrnaMeta.decimals,
               })
             : undefined
         }
         assetFeeValue={t("value.token", {
           value: values?.tokensPayWith,
-          fixedPointScale: decimals,
         })}
         assetSymbol={symbol}
       />
 
-      {isFeeExceeded && (
+      {(isFeeExceeded || isBelowMinimum) && (
         <div
           sx={{
             flex: "row",
@@ -152,7 +163,8 @@ export const RemoveLiquidityForm = ({
           <Icon size={24} icon={<IconWarning />} />
 
           <Text color="white" fs={13} fw={400}>
-            {t("liquidity.remove.modal.fee.warning")}
+            {isFeeExceeded && t("liquidity.remove.modal.fee.warning")}
+            {isBelowMinimum && t("liquidity.remove.modal.remaining.warning")}
           </Text>
         </div>
       )}
@@ -162,7 +174,12 @@ export const RemoveLiquidityForm = ({
         <Button
           fullWidth
           variant="primary"
-          disabled={tokensToGet.decimalPlaces(0).isZero() || isFeeExceeded}
+          disabled={
+            tokensToGet.isNaN() ||
+            tokensToGet.isZero() ||
+            isFeeExceeded ||
+            isBelowMinimum
+          }
         >
           {t("liquidity.remove.modal.confirm")}
         </Button>

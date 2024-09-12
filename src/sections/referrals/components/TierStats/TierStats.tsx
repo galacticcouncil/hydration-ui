@@ -6,12 +6,10 @@ import Skeleton from "react-loading-skeleton"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getChainSpecificAddress } from "utils/formatting"
-import {
-  SBar,
-  SBarContainer,
-} from "sections/referrals/components/PreviewReferrer/PreviewReferrer.styled"
 import { Icon } from "components/Icon/Icon"
 import LevelUp from "assets/icons/LevelUp.svg?react"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 export const TierStats = () => {
   const { t } = useTranslation()
@@ -38,7 +36,7 @@ export const TierStats = () => {
             referrerInfo.isLoading ? (
               <Skeleton height={19} width={50} />
             ) : (
-              <Text font="FontOver" fs={19} css={{ whiteSpace: "nowrap" }}>
+              <Text font="GeistMono" fs={19} css={{ whiteSpace: "nowrap" }}>
                 {t("referrals.tiers.tier", {
                   tier: referrerInfo.data?.tier?.toString(),
                 })}
@@ -54,7 +52,7 @@ export const TierStats = () => {
             </Text>
           }
           title={
-            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+            <Text font="GeistMono" tAlign={["left", "right"]} fs={16}>
               {currentTierData
                 ? t("value.percentage", {
                     value: currentTierData.referrer,
@@ -71,7 +69,7 @@ export const TierStats = () => {
             </Text>
           }
           title={
-            <Text font="FontOver" tAlign={["left", "right"]} fs={16}>
+            <Text font="GeistMono" tAlign={["left", "right"]} fs={16}>
               {currentTierData
                 ? t("value.percentage", {
                     value: currentTierData.user,
@@ -94,7 +92,7 @@ export const TierStats = () => {
                   css={{ whiteSpace: "nowrap" }}
                   color="green500"
                   fs={14}
-                  font="FontOver"
+                  font="GeistMono"
                 >
                   {t("referrals.referrer.levelup")}
                 </Text>
@@ -103,12 +101,12 @@ export const TierStats = () => {
             )
           }
           title={
-            <SBarContainer>
-              <SBar
-                percentage={tierProgress?.toNumber() ?? 0}
-                variant="green"
-              />
-            </SBarContainer>
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={tierProgress?.toNumber() ?? 0}
+              colorCustom={`linear-gradient(270deg,${theme.colors.green600} 50%,transparent 100%)`}
+            />
           }
         />
       </div>

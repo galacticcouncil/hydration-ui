@@ -5,7 +5,7 @@ import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
-import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "providers/assets"
 
 type InputProps = {
   onBlur?: () => void
@@ -24,10 +24,7 @@ type InputProps = {
 
 export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
   (props, ref) => {
-    const {
-      assets: { native },
-    } = useRpcProvider()
-
+    const { native } = useAssets()
     const { t } = useTranslation()
 
     const nativeAddress = safeConvertAddressSS58(
@@ -37,7 +34,12 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <SInputWrapper disabled={props.disabled} className={props.className}>
-        <div sx={{ flex: "column", width: "calc(100% - 34px)" }}>
+        <div
+          sx={{
+            flex: "column",
+            width: props.rightIcon ? "calc(100% - 50px)" : "100%",
+          }}
+        >
           <SInput
             ref={ref}
             onChange={(e) => props.onChange?.(e.target.value)}
@@ -55,7 +57,12 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
               color="brightBlue300"
               fs={12}
               lh={16}
-              css={{ wordWrap: "break-word" }}
+              css={{
+                wordWrap: "break-word",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
               {t("address.input.native", {
                 symbol: native.symbol,

@@ -10,7 +10,7 @@ export const SHeader = styled.header`
 
   width: 100%;
 
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(27px);
   background: rgba(9, 9, 9, 0.11);
 
   padding: 8px;

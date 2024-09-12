@@ -26,7 +26,7 @@ export const WalletAssetsTableBalance = (props: {
         e.stopPropagation()
       }}
     >
-      <Text fs={14} lh={16} fw={500} color="white">
+      <Text fs={14} lh={16} fw={500} color="white" font="GeistMedium">
         {t("value.token", { value: props.balance })}
       </Text>
 

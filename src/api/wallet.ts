@@ -15,12 +15,14 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { H160, isEvmAccount, isEvmAddress } from "utils/evm"
 import { EIP1559Transaction } from "@polkadot/types/interfaces/eth"
-import { Maybe } from "utils/helpers"
+import { isAnyParachain, Maybe } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { Parachain } from "@galacticcouncil/xcm-core"
+import { TAsset, useAssets } from "providers/assets"
 
 export type TransactionType = "deposit" | "withdraw"
 
@@ -113,7 +115,11 @@ type TransferEvent = {
 const chains = Array.from(chainsMap.values())
 
 const getChainById = (id: Maybe<number | string>) =>
-  id ? chains.find((chain) => chain.parachainId === Number(id)) : null
+  id
+    ? chains.find(
+        (chain) => isAnyParachain(chain) && chain.parachainId === Number(id),
+      )
+    : null
 
 const isParachainTransfer = (
   dest: string | TransferParachainDest | TransferPolkadotDest,
@@ -178,7 +184,9 @@ const addressToDisplayAddress = (
   address: string,
   chainKey = HYDRADX_CHAIN_KEY,
 ) => {
-  const chain = chainKey ? chainsMap.get(chainKey) : null
+  const chain = chainKey
+    ? (chainsMap.get(chainKey) as Parachain | undefined)
+    : null
 
   const isEvmChain = chain?.isEvmParachain() || chainKey === HYDRADX_CHAIN_KEY
 
@@ -262,8 +270,8 @@ const getDataFromXcmEvmTx = (api: ApiPromise, tx: EIP1559Transaction) => {
     dest = accountId32
       ? getAddressVariants(accountId32).hydraAddress
       : accountKey20 && isEvmAddress(accountKey20)
-      ? new H160(accountKey20).toAccount()
-      : ""
+        ? new H160(accountKey20).toAccount()
+        : ""
     amount = BN(data.method.args.amount)
   } catch {}
 
@@ -404,28 +412,20 @@ function getTransferDisplayProps({
   }
 }
 
-function getTransferAssetProps(
-  assets: ReturnType<typeof useRpcProvider>["assets"],
-  assetId: string,
-) {
-  const asset = assets.getAsset(assetId)
-  const assetIconIds =
-    asset && assets.isStableSwap(asset)
-      ? asset.assets
-      : [asset?.id].filter(Boolean)
-
+function getTransferAssetProps(asset: TAsset) {
   return {
     assetName: asset.name,
     assetSymbol: asset.symbol,
     assetDecimals: asset.decimals,
-    assetIconIds,
+    assetIconIds: asset.iconId,
   }
 }
 
 export function useAccountTransfers(address: string, noRefresh?: boolean) {
   const indexerUrl = useIndexerUrl()
 
-  const { assets, isLoaded, api } = useRpcProvider()
+  const { isLoaded, api } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
   const hydraAddress = address ? getAddressVariants(address).hydraAddress : ""
   const accountHash = address ? u8aToHex(decodeAddress(address)) : ""
@@ -495,7 +495,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
             const date = new Date(block.timestamp)
 
-            const assetProps = getTransferAssetProps(assets, currencyId)
+            const assetProps = getTransferAssetProps(
+              getAssetWithFallback(currencyId),
+            )
             const displayProps = getTransferDisplayProps({
               amount,
               decimals: assetProps.assetDecimals,
@@ -547,7 +549,9 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
           const date = new Date(block.timestamp)
 
           const assetId = args?.currencyId?.toString() || NATIVE_ASSET_ID
-          const assetProps = getTransferAssetProps(assets, assetId)
+          const assetProps = getTransferAssetProps(
+            getAssetWithFallback(assetId),
+          )
           const displayProps = getTransferDisplayProps({
             amount,
             decimals: assetProps.assetDecimals,

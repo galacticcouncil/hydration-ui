@@ -46,6 +46,7 @@ export const Stats = ({
             <>
               <Spacer size={32} />
               <StakingValue
+                css={{ flex: "auto" }}
                 logo={
                   <Icon
                     size={24}

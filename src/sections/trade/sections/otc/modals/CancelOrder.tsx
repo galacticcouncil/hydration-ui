@@ -73,7 +73,7 @@ export const CancelOrder = ({
         <Text
           fs={24}
           color="white"
-          font="FontOver"
+          font="GeistMono"
           as="div"
           sx={{ mt: 10, mb: 10, textAlign: "center" }}
         >

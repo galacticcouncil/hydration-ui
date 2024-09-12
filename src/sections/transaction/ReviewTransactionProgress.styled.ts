@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 
 export const SProgressContainer = styled.div`
   position: absolute;

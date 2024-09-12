@@ -1,6 +1,7 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { ButtonTransparent } from "components/Button/Button"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SHeader = styled.div`
@@ -56,4 +57,40 @@ export const SItem = styled(ButtonTransparent)`
   &:hover {
     color: rgba(133, 209, 255, 0.4);
   }
+`
+export const SMaskContainer = styled.div<{ cropped: boolean }>`
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ${({ cropped }) =>
+    cropped &&
+    css`
+      -webkit-mask: radial-gradient(
+        40% 40% at 65% 35%,
+        transparent 25%,
+        white 25%
+      );
+      mask: radial-gradient(40% 40% at 65% 35%, transparent 25%, white 25%);
+    `}
+`
+
+export const SIndicator = styled.div`
+  width: 5px;
+  height: 5px;
+
+  position: absolute;
+  top: 11px;
+  right: 11px;
+
+  background: ${theme.colors.primaryA15};
+  border-radius: 9999px;
 `

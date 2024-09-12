@@ -12,6 +12,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import Skeleton from "react-loading-skeleton"
 import { WalletPaymentAsset } from "sections/wallet/assets/paymentAsset/WalletPaymentAsset"
 import { Search } from "components/Search/Search"
+import { Text } from "components/Typography/Text/Text"
 
 const filters = [
   {
@@ -74,7 +75,9 @@ export const WalletAssetsFilters = () => {
               onClick={() => setFilter({ category: id })}
             >
               <Icon size={14} icon={icon} />
-              {t(`wallet.header.${id}`)}
+              <Text font="Geist" fs={13}>
+                {t(`wallet.header.${id}`)}
+              </Text>
             </SButton>
           ))}
         </SButtonContainer>

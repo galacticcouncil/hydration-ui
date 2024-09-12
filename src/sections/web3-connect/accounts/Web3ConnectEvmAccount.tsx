@@ -1,7 +1,5 @@
 import { useNavigate } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Text } from "components/Typography/Text/Text"
 import { ComponentPropsWithoutRef, FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useWallet } from "sections/web3-connect/Web3Connect.utils"
@@ -9,22 +7,27 @@ import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAc
 import { SAccountItem } from "sections/web3-connect/accounts/Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "sections/web3-connect/accounts/Web3ConnectAccountSelect"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { isMetaMask, isTalisman, requestAccounts } from "utils/metamask"
+import { isMetaMask, isMetaMaskLike, requestAccounts } from "utils/metamask"
 
 export const Web3ConnectEvmAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
 > = ({ balance, ...account }) => {
   const { t } = useTranslation()
-  const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
+  const {
+    account: currentAccount,
+    setAccount,
+    toggle,
+    provider,
+  } = useWeb3ConnectStore()
   const { wallet } = useWallet()
   const navigate = useNavigate()
 
   const isActive = currentAccount?.address === account.address
 
   // Allow account changing for MetaMask wallets,
-  // but disable for Talisman as it doesn't provide a way to open the account selection programmatically
+  // but disable for MetaMask-like as it doesn't provide a way to open the account selection programmatically
   const shouldAllowAccountChange =
-    isMetaMask(wallet?.extension) && !isTalisman(wallet?.extension)
+    isMetaMask(wallet?.extension) && !isMetaMaskLike(wallet?.extension)
 
   return (
     <>
@@ -36,24 +39,12 @@ export const Web3ConnectEvmAccount: FC<
           navigate({ search: { account: undefined } })
         }}
       >
-        <div
-          sx={{
-            flex: "row",
-            align: "center",
-            justify: "space-between",
-            mb: 12,
-          }}
-        >
-          <Text font="ChakraPetchBold">{account.name}</Text>
-          <div sx={{ flex: "row", align: "end", gap: 2, height: 20 }}>
-            <Text color="basic200" fw={400}>
-              <DisplayValue value={balance} />
-            </Text>
-          </div>
-        </div>
         <Web3ConnectAccountSelect
           address={account.displayAddress ?? ""}
-          name=""
+          balance={balance}
+          provider={provider}
+          name={account.name}
+          isActive={isActive}
         />
       </SAccountItem>
       {shouldAllowAccountChange && (

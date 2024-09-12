@@ -12,25 +12,23 @@ import { makePercent } from "./Distribution.utils"
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
 import { DEPOSIT_CLASS_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
-import { useApiIds } from "api/consts"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useTotalIssuance } from "api/totalIssuance"
+import { useTotalIssuances } from "api/totalIssuance"
 import { useTokenBalance } from "api/balances"
 import { BN_0 } from "utils/constants"
+import { useAssets } from "providers/assets"
 
 export const Distribution = () => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { hub } = useAssets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const apiIds = useApiIds()
 
-  const meta = apiIds.data?.hubId
-    ? assets.getAsset(apiIds.data.hubId)
-    : undefined
+  const meta = hub
 
-  const totalIssuanceQuery = useTotalIssuance(apiIds.data?.hubId)
+  const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
+  const issuance = issuances?.get(meta.id)
+
   const omnipoolBalanceQuery = useTokenBalance(
-    apiIds.data?.hubId,
+    meta.id,
     OMNIPOOL_ACCOUNT_ADDRESS,
   )
 
@@ -40,29 +38,25 @@ export const Distribution = () => {
     "overview",
   )
 
-  const isLoading =
-    totalIssuanceQuery.isLoading || omnipoolBalanceQuery.isLoading
+  const isLoading = omnipoolBalanceQuery.isLoading
 
   const outsideOmnipool =
-    totalIssuanceQuery.data && omnipoolBalanceQuery.data
-      ? totalIssuanceQuery.data.total.minus(omnipoolBalanceQuery.data.total)
+    issuance && omnipoolBalanceQuery.data
+      ? issuance.minus(omnipoolBalanceQuery.data.total)
       : undefined
 
-  const outsidePercent = makePercent(
-    outsideOmnipool,
-    totalIssuanceQuery.data?.total ?? BN_0,
-  )
+  const outsidePercent = makePercent(outsideOmnipool, issuance ?? BN_0)
   const insidePercent = makePercent(
     omnipoolBalanceQuery.data?.total ?? BN_0,
-    totalIssuanceQuery.data?.total ?? BN_0,
+    issuance ?? BN_0,
   )
 
   const pieChartValues = (
     <div sx={{ flex: "column", gap: 20 }}>
       <TotalValue
         title={t("stats.lrna.pie.values.total")}
-        data={totalIssuanceQuery.data?.total}
-        isLoading={totalIssuanceQuery.isLoading}
+        data={issuance}
+        isLoading={isIssuanceLoading}
       />
       <div
         sx={{

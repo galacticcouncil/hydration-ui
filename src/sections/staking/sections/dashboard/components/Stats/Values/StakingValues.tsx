@@ -1,14 +1,9 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import AvailableBalance from "assets/icons/HydraLogo.svg?react"
 import StakedBalance from "assets/icons/StakedBalanceIcon.svg?react"
-import StakedMultiplier from "assets/icons/StakedMultiplier.svg?react"
 import ProjectedRewardsIcon from "assets/icons/ProjectedRewardsIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
-import { Separator } from "components/Separator/Separator"
 import { SStakingValuesContainer } from "./StakingValues.styled"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
@@ -23,14 +18,25 @@ export const StakingValue = ({
   title,
   value,
   tooltip,
+  className,
 }: {
   logo: JSX.Element
   title: string
   value: string | JSX.Element
   tooltip?: string | JSX.Element
+  className?: string
 }) => {
   return (
-    <div sx={{ flex: ["row", "column"], align: ["start", "center"], gap: 6 }}>
+    <div
+      sx={{
+        flex: ["row", "column"],
+        align: ["start", "center"],
+        gap: 6,
+        minWidth: 120,
+      }}
+      css={{ flex: "1 1 50%" }}
+      className={className}
+    >
       {logo}
 
       <div
@@ -52,7 +58,7 @@ export const StakingValue = ({
           )}
         </div>
         {typeof value === "string" ? (
-          <Text fs={[19]} color="white" font="FontOver">
+          <Text fs={[19]} color="white">
             {value}
           </Text>
         ) : (
@@ -73,42 +79,7 @@ export const StakingValues = ({
   isStakingPosition: boolean
 }) => {
   const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
   const { api } = useRpcProvider()
-
-  const availableBalanceValue = (
-    <StakingValue
-      logo={
-        <Icon
-          size={24}
-          sx={{ color: "brightBlue300" }}
-          icon={<AvailableBalance />}
-        />
-      }
-      title={t("staking.dashboard.stats.available")}
-      value={
-        loading ? (
-          <div sx={{ flex: "column", gap: 2 }}>
-            <Skeleton width={100} height={24} />
-            <Skeleton width={100} height={14} />
-          </div>
-        ) : (
-          <div sx={{ flex: "column", align: ["start", "center"] }}>
-            <Text fs={[19]} lh={[19]} color="white" font="FontOver">
-              {t("value.tokenWithSymbol", {
-                value: data?.availableBalance,
-                symbol: "HDX",
-                fixedPointScale: 12,
-              })}
-            </Text>
-            <Text fs={14} color="darkBlue200">
-              <DisplayValue value={data?.availableBalanceDollar} />
-            </Text>
-          </div>
-        )
-      }
-    />
-  )
 
   const projectedRewards = (
     <StakingValue
@@ -150,22 +121,12 @@ export const StakingValues = ({
         sx={{ flex: ["column", "row"], justify: "space-between" }}
         css={{ rowGap: 28 }}
       >
-        {availableBalanceValue}
-        <Separator
-          orientation={isDesktop ? "vertical" : "horizontal"}
-          sx={{ height: [1, 35], m: "auto" }}
-        />
         {projectedRewards}
       </div>
     )
 
   return (
     <SStakingValuesContainer>
-      {availableBalanceValue}
-      <Separator
-        orientation={isDesktop ? "vertical" : "horizontal"}
-        sx={{ height: [1, 35], m: "auto" }}
-      />
       <StakingValue
         logo={
           <Icon
@@ -183,7 +144,7 @@ export const StakingValues = ({
             </div>
           ) : (
             <div sx={{ flex: "column", align: ["start", "center"] }}>
-              <Text fs={[19]} lh={[19]} color="white" font="FontOver">
+              <Text fs={[19]} lh={[19]} color="white">
                 {t("value.tokenWithSymbol", {
                   value: data?.stakePosition?.stake,
                   symbol: "HDX",
@@ -196,38 +157,6 @@ export const StakingValues = ({
             </div>
           )
         }
-      />
-
-      <Separator
-        orientation="horizontal"
-        sx={{ height: 1, m: "auto", display: ["inherit", "none"] }}
-      />
-
-      <StakingValue
-        logo={
-          <Icon
-            size={18}
-            sx={{ color: "brightBlue300", m: 3 }}
-            icon={<StakedMultiplier />}
-          />
-        }
-        tooltip={t("staking.dashboard.stats.rewardBoost.tooltip")}
-        title={t("staking.dashboard.stats.rewardBoost")}
-        value={
-          loading ? (
-            <div sx={{ flex: "column", gap: 2 }}>
-              <Skeleton width={100} height={24} />
-            </div>
-          ) : (
-            t("value.percentage", {
-              value: data?.stakePosition?.rewardBoostPersentage,
-            })
-          )
-        }
-      />
-      <Separator
-        orientation={isDesktop ? "vertical" : "horizontal"}
-        sx={{ height: [1, 35], m: "auto" }}
       />
 
       {projectedRewards}
@@ -244,7 +173,7 @@ export const AprStatValue = ({
   const stakeApr = useStakeARP(availableBalance)
 
   return (
-    <Text fs={[19]} color="white" font="FontOver">
+    <Text fs={[19]} color="white">
       {stakeApr.isLoading ? (
         <Skeleton width={100} height={24} />
       ) : (

@@ -58,36 +58,6 @@ export const SHeader = styled.div`
   justify-content: space-between;
 `
 
-export const SBar = styled.div<{
-  variant: "aye" | "nay" | "neutral"
-  percentage: number
-}>`
-  height: 4px;
-  width: ${({ percentage }) => percentage}%;
-
-  border-radius: 4px;
-  ${({ variant }) =>
-    variant === "aye"
-      ? css`
-          background: linear-gradient(
-            270deg,
-            ${theme.colors.green600} 50%,
-            transparent 100%
-          );
-        `
-      : variant === "nay"
-      ? css`
-          background: linear-gradient(
-            90deg,
-            ${theme.colors.pink700} 50%,
-            transparent 100%
-          );
-        `
-      : css`
-          background: rgba(${theme.rgbColors.darkBlue300}, 0.5);
-        `}
-`
-
 export const SVotedBage = styled.div`
   display: flex;
   gap: 4px;
@@ -99,7 +69,7 @@ export const SVotedBage = styled.div`
   text-transform: uppercase;
   font-size: 13px;
   line-height: normal;
-  font-family: ChakraPetchSemiBold;
+  font-family: GeistSemiBold;
 
   border-radius: 2px;
 

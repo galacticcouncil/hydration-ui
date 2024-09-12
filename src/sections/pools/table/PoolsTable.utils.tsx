@@ -3,6 +3,7 @@ import {
   VisibilityState,
   createColumnHelper,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
@@ -13,16 +14,14 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useRpcProvider } from "providers/rpcProvider"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0, BN_1, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
@@ -31,6 +30,12 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
+import { LazyMotion, domAnimation } from "framer-motion"
+import { useAssets } from "providers/assets"
+import {
+  defaultPaginationState,
+  useTablePagination,
+} from "components/Table/TablePagination"
 
 const NonClickableContainer = ({
   children,
@@ -55,34 +60,13 @@ const NonClickableContainer = ({
   )
 }
 
-const AssetTableName = ({ id }: { id: string }) => {
-  const { assets } = useRpcProvider()
-  const asset = assets.getAsset(id)
-
-  const farms = useFarms([id])
-  const iconIds = asset.iconId
+const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
+  const asset = pool.meta
+  const farms = useFarms([asset.id])
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
-      {typeof iconIds === "string" ? (
-        <Icon
-          size={26}
-          icon={<AssetLogo id={iconIds} />}
-          css={{ flex: "1 0 auto" }}
-        />
-      ) : (
-        <MultipleIcons
-          size={26}
-          icons={iconIds.map((asset) => {
-            const meta = assets.getAsset(asset)
-            const isBond = assets.isBond(meta)
-            return {
-              icon: <AssetLogo id={isBond ? meta.assetId : asset} />,
-            }
-          })}
-        />
-      )}
-
+      <MultipleAssetLogo size={26} iconId={asset.iconId} />
       <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
         <div sx={{ flex: "row", gap: 4, width: "fit-content" }}>
           <Text
@@ -90,33 +74,40 @@ const AssetTableName = ({ id }: { id: string }) => {
             lh={16}
             fw={700}
             color="white"
+            font="GeistMedium"
             css={{ whiteSpace: "nowrap" }}
           >
             {asset.symbol}
           </Text>
-          {asset.isStableSwap && (
+          {asset?.isStableSwap && (
             <div css={{ position: "relative" }}>
-              <SStablepoolBadge
-                whileHover={{ width: "unset" }}
-                css={{
-                  width: 14,
-                  overflow: "hidden",
-                  position: "absolute",
-                }}
-                transition={{
-                  type: "spring",
-                  mass: 1,
-                  stiffness: 300,
-                  damping: 20,
-                  duration: 0.2,
-                }}
-              />
+              <LazyMotion features={domAnimation}>
+                <SStablepoolBadge
+                  whileHover={{ width: "unset" }}
+                  css={{
+                    width: 14,
+                    overflow: "hidden",
+                    position: "absolute",
+                  }}
+                  transition={{
+                    type: "spring",
+                    mass: 1,
+                    stiffness: 300,
+                    damping: 20,
+                    duration: 0.2,
+                  }}
+                />
+              </LazyMotion>
             </div>
           )}
         </div>
 
-        {asset.isStableSwap && (
-          <Text fs={11} color="white" css={{ opacity: 0.61 }}>
+        {asset?.isStableSwap && (
+          <Text
+            fs={11}
+            color="white"
+            css={{ opacity: 0.61, whiteSpace: "nowrap" }}
+          >
             {asset.name}
           </Text>
         )}
@@ -135,31 +126,30 @@ const AddLiqduidityButton = ({
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
 
   const isXykPool = isXYKPoolType(pool)
 
-  const assetMeta = assets.getAsset(pool.id)
-  const isStablePool = assets.isStableSwap(assetMeta)
+  const assetMeta = pool.meta
+  const isStablePool = assetMeta.isStableSwap
 
   const userStablePoolBalance = useTokenBalance(
     isStablePool ? pool.id : undefined,
     account?.address,
   )
 
-  const isPosition =
-    userStablePoolBalance.data?.freeBalance.gt(0) ||
-    (isXykPool ? pool.shareTokenIssuance?.myPoolShare?.gt(0) : pool.isPositions)
+  let positionsAmount: BN = BN_0
 
-  const positionsAmount = isPosition
-    ? !isXykPool
-      ? BN(pool.omnipoolPositions.length)
-          .plus(pool.miningPositions.length)
-          .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
-      : pool.shareTokenIssuance?.myPoolShare?.gt(0)
-      ? BN_1
-      : undefined
-    : undefined
+  if (isXykPool) {
+    positionsAmount = BN(pool.miningPositions.length).plus(
+      pool.shareTokenIssuance?.myPoolShare?.gt(0) ? 1 : 0,
+    )
+  } else {
+    positionsAmount = BN(pool.omnipoolPositions.length)
+      .plus(pool.miningPositions.length)
+      .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
+  }
+
+  const isPositions = positionsAmount.gt(0)
 
   const onClick = () => onRowSelect(pool.id)
 
@@ -185,10 +175,10 @@ const AddLiqduidityButton = ({
         }}
         onClick={onClick}
       >
-        {isPosition ? <Icon icon={<ManageIcon />} size={12} /> : null}
-        {isPosition ? t("manage") : t("details")}
+        {isPositions ? <Icon icon={<ManageIcon />} size={12} /> : null}
+        {isPositions ? t("manage") : t("details")}
       </Button>
-      {positionsAmount?.gt(0) && (
+      {isPositions && (
         <Text
           fs={9}
           css={{
@@ -253,12 +243,10 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const farms = useFarms([assetId])
 
-  if (isLoading || farms.isInitialLoading) return <CellSkeleton />
+  if (isLoading || farms.isLoading) return <CellSkeleton />
 
   if (farms.data?.length)
     return <APYFarming farms={farms.data} apy={fee.toNumber()} />
@@ -276,11 +264,13 @@ export const usePoolTable = (
   data: TPool[] | TXYKPool[],
   isXyk: boolean,
   onRowSelect: (id: string) => void,
+  paginated?: boolean,
 ) => {
   const { t } = useTranslation()
 
   const { accessor, display } = createColumnHelper<TPool | TXYKPool>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useTablePagination()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -300,7 +290,7 @@ export const usePoolTable = (
         id: "name",
         header: t("liquidity.table.header.poolAsset"),
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-        cell: ({ row }) => <AssetTableName id={row.original.id} />,
+        cell: ({ row }) => <AssetTableName pool={row.original} />,
       }),
       accessor("tvlDisplay", {
         id: "tvlDisplay",
@@ -308,13 +298,29 @@ export const usePoolTable = (
         size: 220,
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
-        cell: ({ row }) => (
-          <NonClickableContainer>
-            <Text color="white" fs={14}>
-              <DisplayValue value={row.original.tvlDisplay} />
-            </Text>
-          </NonClickableContainer>
-        ),
+        cell: ({ row }) => {
+          const isInvalid =
+            isXYKPoolType(row.original) && row.original.isInvalid
+          return (
+            <NonClickableContainer
+              sx={{
+                flex: "row",
+                gap: 4,
+              }}
+            >
+              <Text color="white" fs={14}>
+                <DisplayValue
+                  value={isInvalid ? BN_NAN : row.original.tvlDisplay}
+                />
+              </Text>
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
+            </NonClickableContainer>
+          )
+        },
       }),
       ...(!isXyk
         ? [
@@ -346,43 +352,30 @@ export const usePoolTable = (
                   />
                 ) : null,
             }),
+            accessor("spotPrice", {
+              id: "spotPrice",
+              header: t("liquidity.table.header.price"),
+              sortingFn: (a, b) =>
+                (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
+                  ? 1
+                  : -1,
+              cell: ({ row }) => (
+                <NonClickableContainer>
+                  <Text color="white" fs={14}>
+                    <DisplayValue value={row.original.spotPrice} type="token" />
+                  </Text>
+                </NonClickableContainer>
+              ),
+            }),
           ]
         : []),
-      isXyk
-        ? accessor("fee", {
-            id: "fee",
-            header: t("fee"),
-            sortingFn: (a, b) => (a.original.fee.gt(b.original.fee) ? 1 : -1),
-            cell: ({ row }) => (
-              <NonClickableContainer>
-                <Text color="white" fs={14}>
-                  {t("value.percentage", { value: row.original.fee })}
-                </Text>
-              </NonClickableContainer>
-            ),
-          })
-        : accessor("spotPrice", {
-            id: "spotPrice",
-            header: t("liquidity.table.header.price"),
-            sortingFn: (a, b) =>
-              (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
-                ? 1
-                : -1,
-            cell: ({ row }) => (
-              <NonClickableContainer>
-                <Text color="white" fs={14}>
-                  <DisplayValue value={row.original.spotPrice} type="token" />
-                </Text>
-              </NonClickableContainer>
-            ),
-          }),
-
       accessor("id", {
         id: "volumeDisplay",
         header: t("liquidity.table.header.volume"),
         sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
           const pool = row.original
+          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
 
           if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
           return (
@@ -396,8 +389,14 @@ export const usePoolTable = (
               }}
             >
               <Text color="white" fs={14}>
-                <DisplayValue value={pool.volume} />
+                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
               </Text>
+
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
 
               <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
                 <Icon
@@ -435,9 +434,20 @@ export const usePoolTable = (
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
-    onSortingChange: setSorting,
+    state: { sorting, columnVisibility, pagination },
+    onSortingChange: (data) => {
+      setSorting(data)
+      paginated && setPagination(defaultPaginationState)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+
+    ...(paginated
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          onPaginationChange: setPagination,
+          autoResetPageIndex: false,
+        }
+      : {}),
   })
 }

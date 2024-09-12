@@ -16,7 +16,7 @@ import {
   TTransactionsTableData,
 } from "./data/TransactionsTableData.utils"
 import { useTranslation } from "react-i18next"
-import { getSubscanLinkByType } from "utils/formatting"
+import { createSubscanLink } from "utils/formatting"
 import { Fragment, useRef, useState } from "react"
 import { isSameDay, startOfDay } from "date-fns"
 import { TransactionsTypeFilter } from "sections/wallet/transactions/filter/TransactionsTypeFilter"
@@ -48,7 +48,7 @@ export const TransactionsTable = ({
   const table = useTransactionsTable(filteredData)
 
   const openSubscanLink = (hash: string) => {
-    window.open(`${getSubscanLinkByType("extrinsic")}/${hash}`, "_blank")
+    window.open(createSubscanLink("extrinsic", hash), "_blank")
   }
 
   const [row, setRow] = useState<TTransactionRow | undefined>(undefined)
@@ -59,7 +59,7 @@ export const TransactionsTable = ({
         <Text
           fs={[15, 20]}
           lh={[20, 26]}
-          css={{ fontFamily: "FontOver" }}
+          font="GeistMono"
           fw={500}
           color="white"
         >

@@ -16,11 +16,23 @@ const STEP_STATES = ["active", "done", "todo"] as const
 
 type StepState = (typeof STEP_STATES)[number]
 
-type StepperProps = { steps: Array<StepProps> }
+type StepperProps = {
+  steps: Array<StepProps>
+  width?: number | string
+  className?: string
+}
 
 export type StepProps = {
   label: string
   state: StepState
+}
+
+export const getStepState = (stepPage: number, currentStep: number) => {
+  if (stepPage === currentStep) {
+    return "active" as const
+  }
+
+  return currentStep > stepPage ? ("done" as const) : ("todo" as const)
 }
 
 const Step = ({ label, state }: StepProps) => {
@@ -39,8 +51,13 @@ const Step = ({ label, state }: StepProps) => {
       </SCircle>
       <Text
         fs={12}
+        lh={18}
         color={state === "active" ? "brightBlue600" : "basic500"}
-        css={{ position: "absolute", bottom: 0, whiteSpace: "nowrap" }}
+        css={{
+          position: "absolute",
+          top: "100%",
+          whiteSpace: "nowrap",
+        }}
       >
         {label}
       </Text>
@@ -48,31 +65,44 @@ const Step = ({ label, state }: StepProps) => {
   )
 }
 
-export const Stepper = ({ steps }: StepperProps) => {
+export const Stepper = ({ steps, className, width }: StepperProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { t } = useTranslation()
 
-  const active = steps.findIndex((step) => step.state === "active")
+  const activeIndex = steps.findIndex((step) => step.state === "active")
+  const activeStep = steps[activeIndex]
 
-  if (isDesktop) {
-    return (
-      <SStepperContainer>
+  const width_ = width ?? steps.length * 100
+
+  return (
+    <div sx={{ width: width_, minWidth: 300 }} className={className}>
+      <SStepperContainer width={width_}>
         {steps.map((step, index) => (
           <Fragment key={index}>
-            <Step {...step} />
+            <Step {...step} label={isDesktop ? step.label : ""} />
             {index < steps.length - 1 && <SStepperLine />}
           </Fragment>
         ))}
       </SStepperContainer>
-    )
-  }
+      <div
+        sx={{
+          display: ["flex", "none"],
+          justify: "space-between",
+          gap: 4,
+          mt: 4,
+        }}
+      >
+        <Text color="brightBlue600" fs={12}>
+          {activeStep.label}
+        </Text>
 
-  return (
-    <Text color="whiteish500">
-      {t("stepper.title", {
-        current: active + 1,
-        total: steps.length,
-      })}
-    </Text>
+        <Text color="whiteish500" fs={12}>
+          {t("stepper.title", {
+            current: activeIndex + 1,
+            total: steps.length,
+          })}
+        </Text>
+      </div>
+    </div>
   )
 }

@@ -29,7 +29,7 @@ export const Transactions = ({
   return (
     <>
       <TableTitle>
-        <Text fs={16} fw={500}>
+        <Text fs={16} fw={500} font="GeistMono">
           {t("bonds.transactions.table.pastTransactions")}
         </Text>
       </TableTitle>

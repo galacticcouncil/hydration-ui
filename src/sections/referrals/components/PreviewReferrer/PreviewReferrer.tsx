@@ -1,11 +1,12 @@
 import { Text } from "components/Typography/Text/Text"
-import { SBar, SBarContainer, SContainer } from "./PreviewReferrer.styled"
+import { SContainer } from "./PreviewReferrer.styled"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { ReactElement } from "react"
 import { useTranslation } from "react-i18next"
 import { ReferrerAddress } from "sections/referrals/components/ReferrerCard/ReferrerAddress"
 import Skeleton from "react-loading-skeleton"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
+import { LinearProgress } from "components/Progress"
 
 const Option = ({
   label,
@@ -88,7 +89,7 @@ export const PreviewReferrer = ({
                   css={{ verticalAlign: "middle" }}
                 />
               ) : (
-                <Text font="FontOver" fs={12}>
+                <Text font="GeistMono" fs={12}>
                   {currentTierData
                     ? t("value.percentage", {
                         value: currentTierData.user,
@@ -109,7 +110,7 @@ export const PreviewReferrer = ({
                   css={{ verticalAlign: "middle" }}
                 />
               ) : (
-                <Text font="FontOver" fs={12}>
+                <Text font="GeistMono" fs={12}>
                   {referrerInfo.data?.tier ?? "-"}
                 </Text>
               )}
@@ -126,12 +127,13 @@ export const PreviewReferrer = ({
                   css={{ verticalAlign: "middle" }}
                 />
               ) : (
-                <SBarContainer>
-                  <SBar
-                    percentage={tierProgress?.toNumber() ?? 0}
-                    variant="pink"
-                  />
-                </SBarContainer>
+                <LinearProgress
+                  withoutLabel
+                  size="small"
+                  percent={tierProgress?.toNumber() ?? 0}
+                  color="brightBlue600"
+                  colorEnd="pink600"
+                />
               )}
             </Option>
           </div>

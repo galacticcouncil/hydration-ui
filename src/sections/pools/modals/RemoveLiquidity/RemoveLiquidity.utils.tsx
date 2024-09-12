@@ -1,35 +1,35 @@
-import { useTokenBalance } from "api/balances"
 import { useOraclePrice } from "api/farms"
-import { useOmnipoolAsset } from "api/omnipool"
+import { useOmnipoolAssets } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
-import { scale, scaleHuman } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { useMinWithdrawalFee } from "api/consts"
 import { useMutation } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Trans, useTranslation } from "react-i18next"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
+import { useAssets } from "providers/assets"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
-  position: HydraPositionsTableData | HydraPositionsTableData[]
+  position: TLPData | TLPData[]
   onSuccess: () => void
   onSubmitted?: (tokensToGet: string) => void
+  onError?: () => void
 }
 
 const defaultValues = {
   tokensToGet: BN_0,
+  tokensToGetShifted: BN_0,
   lrnaToGet: BN_0,
   lrnaPayWith: BN_0,
   tokensPayWith: BN_0,
@@ -38,59 +38,75 @@ const defaultValues = {
 }
 
 export const useRemoveLiquidity = (
-  position: HydraPositionsTableData | HydraPositionsTableData[],
+  position: TLPData | TLPData[],
   percentage: number,
   onClose: () => void,
   onSuccess: () => void,
   onSubmit: (value: string) => void,
+  onError?: () => void,
 ) => {
-  const { createTransaction } = useStore()
-  const { assets, api } = useRpcProvider()
   const { t } = useTranslation()
+  const { createTransaction } = useStore()
+  const { api } = useRpcProvider()
+  const { hub } = useAssets()
+  const { pool } = usePoolData()
+
   const isPositionMultiple = Array.isArray(position)
 
-  const { assetId } = isPositionMultiple ? position[0] : position
+  const assetId = pool.id
 
-  const meta = assets.getAsset(assetId)
-  const hubMeta = assets.hub
+  const meta = pool.meta
+  const hubMeta = hub
 
   const spotPrice = useSpotPrice(hubMeta.id, assetId)
   const oracle = useOraclePrice(assetId, hubMeta.id)
   const minlFeeQuery = useMinWithdrawalFee()
-  const omnipoolAsset = useOmnipoolAsset(assetId)
-  const omnipoolBalance = useTokenBalance(assetId, OMNIPOOL_ACCOUNT_ADDRESS)
+  const { getData } = useLiquidityPositionData([assetId])
+  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAsset = omnipoolAssets.data?.find(
+    (omnipoolAsset) => omnipoolAsset.id === assetId,
+  )
 
-  const { removeShares, totalShares } = useMemo(() => {
-    if (isPositionMultiple) {
-      const totalShares = position.reduce(
-        (acc, pos) => acc.plus(pos.shares),
-        BN_0,
-      )
-      return { removeShares: totalShares, totalShares }
-    }
+  const { removeShares, totalValue, remainingValue, removeValue } =
+    useMemo(() => {
+      if (isPositionMultiple) {
+        const totalShares = position.reduce(
+          (acc, pos) => acc.plus(pos.shares),
+          BN_0,
+        )
 
-    const totalShares = position.shares
-    return {
-      totalShares,
-      removeShares: totalShares.div(100).times(percentage),
-    }
-  }, [isPositionMultiple, position, percentage])
+        const totalRemoveValue = position.reduce(
+          (acc, pos) => acc.plus(pos.totalValueShifted),
+          BN_0,
+        )
+        return {
+          removeShares: totalShares,
+          removeValue: totalRemoveValue,
+          totalValue: totalRemoveValue,
+          remainingValue: BN_0,
+        }
+      }
+
+      const totalShares = position.shares
+      const removeValue = position.totalValue.div(100).times(percentage)
+      const remainingValue = position.totalValue.minus(removeValue)
+
+      return {
+        totalValue: position.totalValueShifted,
+        removeValue: removeValue.shiftedBy(-meta.decimals),
+        remainingValue: remainingValue.shiftedBy(-meta.decimals),
+        removeShares: totalShares.div(100).times(percentage),
+      }
+    }, [meta, isPositionMultiple, position, percentage])
 
   const calculateLiquidityValues = useCallback(
-    (position: HydraPositionsTableData, removeSharesValue: BN) => {
-      if (
-        omnipoolBalance.data &&
-        omnipoolAsset?.data &&
-        spotPrice.data &&
-        oracle.data &&
-        minlFeeQuery.data
-      ) {
-        const positionPrice = scale(position.price, "q")
-        const oraclePrice = oracle.data.oraclePrice
+    (position: TLPData, removeSharesValue: BN) => {
+      if (omnipoolAsset && spotPrice.data && oracle.data && minlFeeQuery.data) {
+        const oraclePrice = oracle.data.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery.data
 
         const lrnaSpotPrice = calculate_lrna_spot_price(
-          omnipoolBalance.data.balance.toString(),
+          omnipoolAsset.balance.toString(),
           omnipoolAsset.data.hubReserve.toString(),
         )
 
@@ -108,58 +124,33 @@ export const useRemoveLiquidity = (
           }
         }
 
-        const paramsWithFee: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.providedAmount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          removeSharesValue.toFixed(0),
-          withdrawalFee,
-        ]
+        const valueWithFee = getData(position, {
+          fee: withdrawalFee,
+          sharesValue: removeSharesValue.toFixed(0),
+        })
 
-        const paramsWithoutFee: Parameters<typeof calculate_liquidity_out> = [
-          omnipoolBalance.data.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
-          omnipoolAsset.data.shares.toString(),
-          position.providedAmount.toString(),
-          position.shares.toString(),
-          positionPrice.toFixed(0),
-          removeSharesValue.toFixed(0),
-          "0",
-        ]
+        const valueWithoutFee = getData(position, {
+          sharesValue: removeSharesValue.toFixed(0),
+        })
 
-        const tokensToGet = BN(
-          calculate_liquidity_out.apply(this, paramsWithFee),
-        )
-        const tokensPayWith = BN(
-          calculate_liquidity_out.apply(this, paramsWithoutFee),
-        ).minus(tokensToGet)
-        const lrnaToGet = BN(
-          calculate_liquidity_lrna_out.apply(this, paramsWithFee),
-        )
-        const lrnaPayWith = BN(
-          calculate_liquidity_lrna_out.apply(this, paramsWithoutFee),
-        ).minus(lrnaToGet)
+        if (!valueWithFee || !valueWithoutFee) return undefined
 
         return {
-          tokensToGet,
-          lrnaToGet,
-          lrnaPayWith,
-          tokensPayWith,
+          tokensToGet: valueWithFee.value,
+          tokensToGetShifted: valueWithFee.valueShifted,
+          lrnaToGet: valueWithFee.lrnaShifted,
+          lrnaPayWith: valueWithoutFee.lrnaShifted.minus(
+            valueWithFee.lrnaShifted,
+          ),
+          tokensPayWith: valueWithoutFee.valueShifted.minus(
+            valueWithFee.valueShifted,
+          ),
           withdrawalFee: scaleHuman(withdrawalFee, "q").multipliedBy(100),
           minWithdrawalFee,
         }
       }
     },
-    [
-      minlFeeQuery.data,
-      omnipoolAsset?.data,
-      omnipoolBalance.data,
-      oracle.data,
-      spotPrice.data,
-    ],
+    [getData, minlFeeQuery.data, omnipoolAsset, oracle.data, spotPrice.data],
   )
 
   const values = useMemo(() => {
@@ -170,6 +161,9 @@ export const useRemoveLiquidity = (
         if (values) {
           return {
             tokensToGet: acc.tokensToGet.plus(values.tokensToGet),
+            tokensToGetShifted: acc.tokensToGetShifted.plus(
+              values.tokensToGetShifted,
+            ),
             lrnaToGet: acc.lrnaToGet.plus(values.lrnaToGet),
             lrnaPayWith: acc.lrnaPayWith.plus(values.lrnaPayWith),
             tokensPayWith: acc.tokensPayWith.plus(values.tokensPayWith),
@@ -187,6 +181,8 @@ export const useRemoveLiquidity = (
 
   const mutation = useMutation(async () => {
     if (isPositionMultiple) {
+      if (!values) return null
+
       const toast = TOAST_MESSAGES.reduce((memo, type) => {
         const msType = type === "onError" ? "onLoading" : type
         memo[type] = (
@@ -202,6 +198,8 @@ export const useRemoveLiquidity = (
         onBack: () => null,
         onClose,
         onSuccess,
+        onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+        onError,
       }
 
       const txs = position.map((position) =>
@@ -223,13 +221,11 @@ export const useRemoveLiquidity = (
       if (!values) return null
 
       const tOptions = {
-        amount: values.tokensToGet,
-        fixedPointScale: meta.decimals,
+        amount: values.tokensToGetShifted,
         symbol: meta.symbol,
         withLrna: values.lrnaToGet.isGreaterThan(0)
           ? t("liquidity.remove.modal.toast.withLrna", {
               lrna: values.lrnaToGet,
-              fixedPointScale: hubMeta.decimals,
             })
           : "",
       }
@@ -262,6 +258,7 @@ export const useRemoveLiquidity = (
           onClose,
           onSuccess,
           onSubmitted: () => onSubmit(values.tokensToGet.toString()),
+          onError,
         },
       )
     }
@@ -269,5 +266,13 @@ export const useRemoveLiquidity = (
 
   const isFeeExceeded = values?.withdrawalFee?.gte(1)
 
-  return { values, removeShares, totalShares, isFeeExceeded, meta, mutation }
+  return {
+    values,
+    totalValue,
+    removeValue,
+    remainingValue,
+    isFeeExceeded,
+    meta,
+    mutation,
+  }
 }

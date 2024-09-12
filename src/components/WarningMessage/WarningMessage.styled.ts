@@ -1,8 +1,28 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SWarningMessageContainer = styled.div`
-  background: linear-gradient(90deg, #ff1f7a 41.09%, #57b3eb 100%);
+type WarningMessageVariant = "pink" | "gradient"
+
+const getStylesByVariant = (variant: WarningMessageVariant) => {
+  switch (variant) {
+    case "pink":
+      return css`
+        background: #dfb1f3;
+        color: #240e32;
+      `
+    case "gradient":
+      return css`
+        background: linear-gradient(90deg, #ff1f7a 41.09%, #57b3eb 100%);
+        color: ${theme.colors.white};
+      `
+  }
+}
+
+export const SWarningMessageContainer = styled.div<{
+  variant?: WarningMessageVariant
+}>`
+  ${({ variant = "gradient" }) => getStylesByVariant(variant)}
 
   width: 100%;
   cursor: pointer;
@@ -14,8 +34,6 @@ export const SWarningMessageContainer = styled.div`
 
   padding: 8px;
   z-index: ${theme.zIndices.header};
-
-  color: ${theme.colors.white};
 `
 
 export const SWarningMessageContent = styled.div`

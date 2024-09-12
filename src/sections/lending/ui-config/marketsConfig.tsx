@@ -114,10 +114,11 @@ export enum CustomMarket {
   // permissioned_market = 'permissioned_market',
 }
 
+// @ts-ignore
 export const marketsData: {
   [key in keyof typeof CustomMarket]: MarketDataType
 } = {
-  [CustomMarket.proto_mainnet_v3]: {
+  /* [CustomMarket.proto_mainnet_v3]: {
     marketTitle: "Ethereum",
     market: CustomMarket.proto_mainnet_v3,
     chainId: ChainId.mainnet,
@@ -153,7 +154,7 @@ export const marketsData: {
       URL: "https://app.hal.xyz/recipes/aave-v3-track-health-factor",
       marketName: "aavev3",
     },
-  },
+  }, */
   [CustomMarket.proto_mainnet]: {
     marketTitle: "Ethereum",
     market: CustomMarket.proto_mainnet,
@@ -209,7 +210,7 @@ export const marketsData: {
   //     PERMISSION_MANAGER: '<address here>',
   //   },
   // },
-  [CustomMarket.amm_mainnet]: {
+  /* [CustomMarket.amm_mainnet]: {
     marketTitle: "Ethereum AMM",
     market: CustomMarket.amm_mainnet,
     chainId: ChainId.mainnet,
@@ -224,8 +225,8 @@ export const marketsData: {
       COLLECTOR: AaveV2EthereumAMM.COLLECTOR,
       V3_MIGRATOR: AaveV2EthereumAMM.MIGRATION_HELPER,
     },
-  },
-  [CustomMarket.proto_polygon]: {
+  }, */
+  /* [CustomMarket.proto_polygon]: {
     marketTitle: "Polygon",
     market: CustomMarket.proto_polygon,
     chainId: ChainId.polygon,
@@ -286,9 +287,9 @@ export const marketsData: {
       URL: "https://app.hal.xyz/recipes/aave-track-your-health-factor",
       marketName: "aaveavalanche",
     },
-  },
+  }, */
   // v3
-  [CustomMarket.proto_sepolia_v3]: {
+  /*   [CustomMarket.proto_sepolia_v3]: {
     marketTitle: "Ethereum Sepolia",
     market: CustomMarket.proto_sepolia_v3,
     v3: true,
@@ -339,7 +340,6 @@ export const marketsData: {
       DEBT_SWITCH_ADAPTER: AaveV3Base.DEBT_SWAP_ADAPTER,
     },
   },
-
   [CustomMarket.proto_arbitrum_v3]: {
     marketTitle: "Arbitrum",
     market: CustomMarket.proto_arbitrum_v3,
@@ -651,7 +651,7 @@ export const marketsData: {
       UI_INCENTIVE_DATA_PROVIDER: AaveV3Mumbai.UI_INCENTIVE_DATA_PROVIDER,
     },
     v3: true,
-  },
+  }, */
   [CustomMarket.proto_goerli]: {
     marketTitle: "Ethereum Görli",
     market: CustomMarket.proto_goerli,
@@ -671,7 +671,7 @@ export const marketsData: {
       FAUCET: AaveV2Goerli.FAUCET,
     },
   },
-  [CustomMarket.proto_mumbai]: {
+  /*  [CustomMarket.proto_mumbai]: {
     marketTitle: "Polygon Mumbai",
     market: CustomMarket.proto_mumbai,
     chainId: ChainId.mumbai,
@@ -777,5 +777,5 @@ export const marketsData: {
       DEBT_SWITCH_ADAPTER: AaveV3BNB.DEBT_SWAP_ADAPTER,
       WITHDRAW_SWITCH_ADAPTER: AaveV3BNB.WITHDRAW_SWAP_ADAPTER,
     },
-  },
+  }, */
 } as const

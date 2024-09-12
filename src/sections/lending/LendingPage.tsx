@@ -6,11 +6,7 @@ import { ROUTES } from "sections/lending/components/primitives/Link"
 import { LendingPageProviders } from "sections/lending/providers/LendingPageProviders"
 import { Navigation } from "sections/lending/ui/navigation/Navigation"
 
-export const LendingPage = () => {
-  const { underlyingAsset } = useSearch()
-
-  return (
-    <Page
+/* <Page
       subHeader={
         underlyingAsset ? (
           <BackSubHeader label={`Back to markets`} to={ROUTES.markets} />
@@ -18,10 +14,14 @@ export const LendingPage = () => {
           <Navigation />
         )
       }
-    >
-      <LendingPageProviders>
-        <Outlet />
-      </LendingPageProviders>
-    </Page>
+    > */
+
+export const LendingPage = () => {
+  const { underlyingAsset } = useSearch()
+
+  return (
+    <LendingPageProviders>
+      <Outlet />
+    </LendingPageProviders>
   )
 }

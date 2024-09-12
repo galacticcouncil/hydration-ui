@@ -1,13 +1,13 @@
-//@ts-nocheck
 import { ApiPromise } from "@polkadot/api"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { getUniques } from "./uniques"
 import { getReferendumInfoOf } from "./democracy"
 import request, { gql } from "graphql-request"
-import { PROVIDERS, useProviderRpcUrlStore } from "./provider"
+import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { undefinedNoop } from "utils/helpers"
 
 interface ISubscanData {
   code: number
@@ -59,9 +59,23 @@ export const useCirculatingSupply = () => {
 }
 
 const getCirculatingSupply = () => async () => {
-  const res = await fetch("https://hydradx.api.subscan.io/api/scan/token")
+  const res = await fetch("https://hydration.api.subscan.io/api/scan/token")
 
   const data: Promise<ISubscanData> = res.json()
+
+  return data
+}
+
+const getUniques = async (
+  api: ApiPromise,
+  address?: string,
+  collectionId?: string,
+) => {
+  const res = await api.query.uniques.account.entries(address, collectionId)
+  const data = res.map(([key]) => {
+    const [address, collectionId, itemId] = key.args
+    return { address, collectionId, itemId }
+  })
 
   return data
 }
@@ -72,13 +86,13 @@ export const useStake = (address: string | undefined) => {
 }
 
 const getStake = (api: ApiPromise, address: string | undefined) => async () => {
-  const staking = await api.query.staking.staking()
-
-  const minStake = await api.consts.staking.minStake
-
   const collectionId = await api.consts.staking.nftCollectionId
 
-  const uniques = await getUniques(api, address, collectionId.toString())()
+  const [staking, minStake, uniques] = await Promise.all([
+    api.query.staking.staking(),
+    api.consts.staking.minStake,
+    getUniques(api, address, collectionId.toString()),
+  ])
 
   const stakePositionId = uniques.find((nfts) => nfts)?.itemId.toNumber()
 
@@ -115,7 +129,9 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const conviction = data.conviction.toString()
 
     const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.unwrapOr(null).isFinished
+    const isFinished = referendaInfo.isNone
+      ? true
+      : referendaInfo.unwrap().isFinished
 
     if (isFinished) {
       prevAcc.push({
@@ -126,7 +142,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     }
 
     return prevAcc
-  }, Promise.resolve([]))
+  }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
 
   return {
     stake: positionData.stake.toBigNumber() as BN,
@@ -218,12 +234,7 @@ export type TAccumulatedRpsUpdated = StakeEventBase & {
 }
 
 export const useStakingEvents = () => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(QUERY_KEYS.stakingEvents, async () => {
     const [accumulatedRpsUpdated, stakingInitialized] = await Promise.all([
@@ -240,17 +251,14 @@ export const useStakingEvents = () => {
   })
 }
 
-export const useStakingPositionBalances = (positionId: Maybe<string>) => {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-  const selectedProvider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
+export const useStakingPositionBalances = (positionId?: string) => {
+  const { indexerUrl } = useActiveProvider()
 
   return useQuery(
     QUERY_KEYS.stakingPositionBalances(positionId),
-    getStakingPositionBalances(indexerUrl, positionId),
+    positionId
+      ? getStakingPositionBalances(indexerUrl, positionId)
+      : undefinedNoop,
     { enabled: !!positionId },
   )
 }
@@ -327,3 +335,39 @@ const getStakingPositionBalances =
       )),
     }
   }
+
+export const useProcessedVotesIds = () => {
+  const { account } = useAccount()
+  const { api } = useRpcProvider()
+
+  return useMutation(async () => {
+    if (!account) {
+      return []
+    }
+
+    const processedVotesRes = await api.query.staking.processedVotes.entries(
+      account.address,
+    )
+
+    const ids = processedVotesRes.map(([processedVote]) => {
+      const [, id] = processedVote.toHuman() as string[]
+
+      return id
+    })
+
+    return ids
+  })
+}
+
+export const usePositionVotesIds = () => {
+  const { api } = useRpcProvider()
+
+  return useMutation(async (positionId: number) => {
+    const positionVotesRes = await api.query.staking.positionVotes(positionId)
+    const positionVotesIds = positionVotesRes.votes.map(([position]) =>
+      position.toString(),
+    )
+
+    return positionVotesIds
+  })
+}

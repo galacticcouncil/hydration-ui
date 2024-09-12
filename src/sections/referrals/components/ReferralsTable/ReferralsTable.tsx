@@ -15,16 +15,14 @@ import { TReferralsTableData } from "./data/ReferralsTableData.utils"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
-import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "providers/assets"
 
 type Props = {
   data: TReferralsTableData
 }
 
 export const ReferralsTable = ({ data }: Props) => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const { t } = useTranslation()
   const [recipientAddress, setRecipientAddress] = useState<string | null>(null)
 
@@ -34,7 +32,7 @@ export const ReferralsTable = ({ data }: Props) => {
     <>
       <StatsTableContainer>
         <StatsTableTitle>
-          <Text fs={15} lh={20} color="white" font="FontOver">
+          <Text fs={15} lh={20} color="white" font="GeistMono">
             {t("referrals.table.header.title")}
           </Text>
         </StatsTableTitle>

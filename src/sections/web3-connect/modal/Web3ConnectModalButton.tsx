@@ -28,19 +28,14 @@ const Web3ConnectActiveButton: FC<{
     ? shortenAccountAddress(displayAddress)
     : ""
 
-  const shouldHideAddress = account.name === shortenedAddress?.toLowerCase()
+  const shouldHideAddress =
+    account.name?.toLowerCase() === shortenedAddress?.toLowerCase()
 
   return (
     <SContainer className={className} onClick={onOpen}>
       <div sx={{ flex: "row", gap: 10, align: "center", justify: "center" }}>
         <div sx={{ flex: "column", gap: 4 }}>
-          <Text
-            color="basic100"
-            fs={13}
-            lh={13}
-            fw={600}
-            font="ChakraPetchBold"
-          >
+          <Text color="basic100" fs={13} lh={13} fw={600} font="GeistMedium">
             {account.name}
           </Text>
           {!shouldHideAddress && (

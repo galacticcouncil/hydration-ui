@@ -34,7 +34,7 @@ export const TransactionCode = forwardRef<HTMLDivElement, ReactJsonViewProps>(
         {...props}
         style={{
           fontVariant: "tabular-nums",
-          fontFamily: "ChakraPetch",
+          fontFamily: "Geist",
           fontSize: "12px",
           position: "relative",
         }}

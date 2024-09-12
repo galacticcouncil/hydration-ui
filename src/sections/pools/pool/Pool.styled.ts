@@ -1,16 +1,18 @@
 import styled from "@emotion/styled"
-import { motion } from "framer-motion"
+import { m as motion } from "framer-motion"
 import { theme } from "theme"
 
 export const SPoolContainer = styled.div`
-  width: calc(100% + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
-  border: 1px solid rgba(152, 176, 214, 0.27);
-  background-color: ${theme.colors.darkBlue700};
+  width: calc(100% + 24px);
 
   overflow: hidden;
 
   margin: 0 -12px;
+  margin-top: -22px;
 
   position: relative;
   height: 100%;
@@ -18,7 +20,9 @@ export const SPoolContainer = styled.div`
   @media ${theme.viewport.gte.sm} {
     margin: 0 auto;
 
-    width: 730px;
+    width: fit-content;
+    min-width: 730px;
+
     height: auto;
 
     border-radius: ${theme.borderRadius.medium}px;
@@ -38,7 +42,7 @@ export const SStablepoolBadge = styled(motion.div)`
   color: ${theme.colors.basic900};
   text-transform: uppercase;
   font-weight: 700;
-  font-family: ChakraPetchBold;
+  font-family: GeistMedium;
   line-height: normal;
 
   cursor: pointer;

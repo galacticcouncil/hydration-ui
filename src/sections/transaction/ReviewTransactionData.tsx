@@ -1,68 +1,75 @@
-import { XCall } from "@galacticcouncil/xcm-sdk"
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
-import { utils } from "ethers"
-import { FC, Fragment, useMemo, useState } from "react"
+import React, { FC, Fragment, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMeasure } from "react-use"
+import { useCopyToClipboard, useMeasure } from "react-use"
 import {
-  hexDataSlice,
   splitHexByZeroes,
-  decodedResultToJson,
+  decodeXCallEvm,
 } from "sections/transaction/ReviewTransactionData.utils"
 import { isEvmAccount, isEvmAddress } from "utils/evm"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import {
   SContainer,
+  SExpandableContainer,
   SExpandButton,
-  SRawCallData,
+  SRawData,
+  SScrollableContent,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
-import { TransactionRequest } from "@ethersproject/providers"
+import { Button } from "components/Button/Button"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import { Dropdown } from "components/Dropdown/Dropdown"
+import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { isAnyParachain } from "utils/helpers"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
   address?: string
   tx?: SubmittableExtrinsic
-  evmTx?: {
-    data: TransactionRequest
-    abi?: string
-  }
-  xcall?: XCall
+  xcallEvm?: XCallEvm
+  xcallMeta?: Record<string, string>
 }
 
-const ExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
-  if (!tx) return null
-  const json = getTransactionJSON(tx)
-  if (!json) return null
-  return <TransactionCode name={json.method} src={json.args} />
+const TransactionData: FC<{ data: string }> = ({ data }) => {
+  return (
+    <SRawData>
+      <span>0x</span>
+      {splitHexByZeroes(data).map((str, index) => (
+        <Fragment key={index}>
+          {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
+        </Fragment>
+      ))}
+    </SRawData>
+  )
 }
 
-const EvmExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
+const TransactionExpander: FC<{
+  decodedCall: React.ReactNode
+  encodedCall: React.ReactNode
+  encodedCallHash?: React.ReactNode
+}> = ({ decodedCall, encodedCall, encodedCallHash }) => {
   const { t } = useTranslation()
-
   const [ref, { height }] = useMeasure<HTMLDivElement>()
 
-  const [encodedExpanded, setEncodedExpanded] = useState(true)
   const [decodedExpanded, setDecodedExpanded] = useState(true)
+  const [encodedExpanded, setEncodedExpanded] = useState(true)
+  const [encodedHashExpanded, setEncodedHashExpanded] = useState(true)
 
   const [decodedFullyExpanded, setDecodedFullyExpanded] = useState(false)
 
   const allowDecodedFullExpand =
     !decodedFullyExpanded && height > MAX_DECODED_HEIGHT
 
-  if (!tx) return null
-
-  const json = getTransactionJSON(tx)
-
-  if (!json) return null
-
   return (
-    <SContainer>
+    <SExpandableContainer>
       <div>
         <SExpandButton
           onClick={() => setDecodedExpanded((prev) => !prev)}
@@ -83,7 +90,7 @@ const EvmExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
               overflow: "hidden",
             }}
           >
-            <TransactionCode ref={ref} name={json.method} src={json.args} />
+            <div ref={ref}>{decodedCall}</div>
             {allowDecodedFullExpand && (
               <SShowMoreButton
                 onClick={() => setDecodedFullyExpanded(true)}
@@ -107,147 +114,168 @@ const EvmExtrinsicData: FC<Pick<Props, "tx">> = ({ tx }) => {
           <ChevronDownSmallIcon />
           {t("liquidity.reviewTransaction.calldata.encoded")}
         </SExpandButton>
-        {encodedExpanded && (
-          <SRawCallData>
-            <span>0x</span>
-            {splitHexByZeroes(tx.method.toHex()).map((str, index, arr) => (
-              <Fragment key={index}>
-                {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
-              </Fragment>
-            ))}
-          </SRawCallData>
-        )}
+        {encodedExpanded && <div>{encodedCall}</div>}
       </div>
-    </SContainer>
-  )
-}
-
-const EvmTxData: FC<{ method?: string; abi?: string; data?: string }> = ({
-  data,
-  method,
-  abi,
-}) => {
-  const { t } = useTranslation()
-
-  const [ref, { height }] = useMeasure<HTMLDivElement>()
-
-  const [encodedExpanded, setEncodedExpanded] = useState(true)
-  const [decodedExpanded, setDecodedExpanded] = useState(true)
-
-  const [decodedFullyExpanded, setDecodedFullyExpanded] = useState(false)
-
-  const allowDecodedFullExpand =
-    !decodedFullyExpanded && height > MAX_DECODED_HEIGHT
-
-  const parsedAbi = useMemo(() => (abi ? JSON.parse(abi) : []) as any[], [abi])
-  const methodName = method ?? parsedAbi[0]?.name
-
-  const decodedData = useMemo(() => {
-    if (parsedAbi && data) {
-      try {
-        const types = parsedAbi.find((f) => f.name === methodName)?.inputs ?? []
-        const decoded = utils.defaultAbiCoder.decode(
-          types,
-          hexDataSlice(data, 10),
-        )
-
-        return decodedResultToJson(decoded)
-      } catch (error) {
-        console.log(error)
-      }
-    }
-  }, [data, methodName, parsedAbi])
-
-  console.log({ decodedData, data, methodName, parsedAbi, abi })
-
-  if (!decodedData) return null
-  if (!data) return null
-
-  const hasAbiInputs = parsedAbi?.length > 0
-
-  return (
-    <SContainer>
-      {hasAbiInputs && (
+      {encodedCallHash && (
         <>
+          <Separator sx={{ my: 12 }} />
           <div>
             <SExpandButton
-              onClick={() => setDecodedExpanded((prev) => !prev)}
-              expanded={decodedExpanded}
+              onClick={() => setEncodedHashExpanded((prev) => !prev)}
+              expanded={encodedHashExpanded}
             >
               <ChevronDownSmallIcon />
-              {t("liquidity.reviewTransaction.calldata.decoded")}
+              {t("liquidity.reviewTransaction.calldata.encodedHash")}
             </SExpandButton>
-            {decodedExpanded && (
-              <div
-                sx={{
-                  mt: 10,
-                  pl: 16,
-                }}
-                css={{
-                  position: "relative",
-                  height: allowDecodedFullExpand ? MAX_DECODED_HEIGHT : "auto",
-                  overflow: "hidden",
-                }}
-              >
-                <TransactionCode
-                  ref={ref}
-                  name={methodName}
-                  src={decodedData}
-                />
-                {allowDecodedFullExpand && (
-                  <SShowMoreButton
-                    onClick={() => setDecodedFullyExpanded(true)}
-                    css={{
-                      position: "absolute",
-                      bottom: 0,
-                    }}
-                  >
-                    Show more <ChevronDown width={16} height={16} />
-                  </SShowMoreButton>
-                )}
-              </div>
-            )}
+            {encodedHashExpanded && <div>{encodedCallHash}</div>}
           </div>
-          <Separator sx={{ my: 12 }} />
         </>
       )}
-      <div>
-        <SExpandButton
-          onClick={() => setEncodedExpanded((prev) => !prev)}
-          expanded={encodedExpanded}
-          css={{ pointerEvents: hasAbiInputs ? "auto" : "none" }}
-        >
-          {hasAbiInputs && <ChevronDownSmallIcon />}
-          {t("liquidity.reviewTransaction.calldata.encoded")}
-        </SExpandButton>
-        {encodedExpanded && (
-          <SRawCallData>
-            <span>0x</span>
-            {splitHexByZeroes(data).map((str, index) => (
-              <Fragment key={index}>
-                {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
-              </Fragment>
-            ))}
-          </SRawCallData>
-        )}
-      </div>
-    </SContainer>
+    </SExpandableContainer>
   )
 }
 
 export const ReviewTransactionData: FC<Props> = ({
   tx,
-  evmTx,
-  xcall,
+  xcallEvm,
+  xcallMeta,
   address = "",
 }) => {
-  const isEVM = isEvmAccount(address) || isEvmAddress(address)
+  const { t } = useTranslation()
+  const [, copyToClipboard] = useCopyToClipboard()
+  const [copied, setCopied] = useState(false)
 
-  if (!isEVM && tx) return <ExtrinsicData tx={tx} />
-  if (isEVM && tx) return <EvmExtrinsicData tx={tx} />
-  if (isEVM && xcall)
-    return <EvmTxData method="transfer" data={xcall?.data} abi={xcall?.abi} />
-  if (evmTx)
-    return <EvmTxData data={evmTx?.data?.data?.toString()} abi={evmTx?.abi} />
-  return null
+  const isEVM = isEvmAccount(address) || isEvmAddress(address)
+  const json = tx ? getTransactionJSON(tx) : null
+  const decodedEvmData = isEVM && xcallEvm ? decodeXCallEvm(xcallEvm) : null
+
+  useEffect(() => {
+    if (!copied) return
+    const id = setTimeout(() => {
+      setCopied(false)
+    }, 2000)
+
+    return () => {
+      clearTimeout(id)
+    }
+  }, [copied])
+
+  const dropdownItems = useMemo(() => {
+    const items = []
+
+    function copy(str: string) {
+      copyToClipboard(str)
+      setCopied(true)
+    }
+
+    if (xcallEvm && decodedEvmData) {
+      items.push({
+        key: "json-evm",
+        label: t("liquidity.reviewTransaction.dropdown.json"),
+        onSelect: () => {
+          copy(JSON.stringify(decodedEvmData.data, null, 2))
+        },
+      })
+      items.push({
+        key: "calldata-evm",
+        label: t("liquidity.reviewTransaction.dropdown.calldata"),
+        onSelect: () => {
+          copy(xcallEvm.data)
+        },
+      })
+    }
+
+    if (tx) {
+      items.push({
+        key: "json",
+        label: t("liquidity.reviewTransaction.dropdown.json"),
+        onSelect: () => {
+          copy(JSON.stringify(tx.method.toHuman(), null, 2))
+        },
+      })
+
+      items.push({
+        key: "calldata",
+        label: t("liquidity.reviewTransaction.dropdown.calldata"),
+        onSelect: () => {
+          copy(tx.method.toHex())
+        },
+      })
+      items.push({
+        key: "callhash",
+        label: t("liquidity.reviewTransaction.dropdown.callhash"),
+
+        onSelect: () => {
+          copy(tx.method.hash.toHex())
+        },
+      })
+
+      const chain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+      const url =
+        chain && isAnyParachain(chain) && chain?.ws
+          ? createPolkadotJSTxUrl(
+              Array.isArray(chain.ws) ? chain.ws[0] : chain.ws,
+              tx,
+            )
+          : ""
+
+      if (url) {
+        items.push({
+          key: "polkadotjs",
+          label: t(
+            "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
+          ),
+          onSelect: () => {
+            window.open(url, "_blank")
+          },
+        })
+      }
+    }
+
+    return items
+  }, [copyToClipboard, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
+
+  return (
+    <SContainer>
+      <SScrollableContent>
+        {isEVM && xcallEvm && decodedEvmData ? (
+          <TransactionExpander
+            decodedCall={
+              <TransactionCode
+                name={decodedEvmData.method}
+                src={decodedEvmData.data}
+              />
+            }
+            encodedCall={<TransactionData data={xcallEvm.data} />}
+          />
+        ) : json && tx ? (
+          <TransactionExpander
+            decodedCall={<TransactionCode name={json.method} src={json.args} />}
+            encodedCall={<TransactionData data={tx.method.toHex()} />}
+            encodedCallHash={<TransactionData data={tx.method.hash.toHex()} />}
+          />
+        ) : null}
+      </SScrollableContent>
+      <Dropdown
+        asChild
+        align="end"
+        items={dropdownItems}
+        onSelect={(item) => item.onSelect?.()}
+      >
+        <Button
+          size="micro"
+          variant="outline"
+          sx={{ p: 4 }}
+          css={{ position: "absolute", top: 6, right: 12 }}
+        >
+          {copied ? (
+            <SuccessIcon width={18} height={18} css={{ scale: "75%" }} />
+          ) : (
+            <CopyIcon width={18} height={18} />
+          )}
+          {t("copy")}
+        </Button>
+      </Dropdown>
+    </SContainer>
+  )
 }

@@ -30,7 +30,7 @@ export const SNameContainer = styled.div`
 
 export const SName = styled(Text)`
   font-weight: 700;
-  font-family: "ChakraPetchBold";
+  font-family: "GeistMedium";
   font-size: 14px;
 
   overflow: hidden;

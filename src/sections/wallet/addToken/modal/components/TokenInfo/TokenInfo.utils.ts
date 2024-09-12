@@ -1,46 +1,54 @@
 import { useQuery } from "@tanstack/react-query"
-import { useAssetHubAssetRegistry } from "api/externalAssetRegistry"
+import { useAssetHubAssetRegistry } from "api/external/assethub"
+import { TExternal, useAssets } from "providers/assets"
+import { useProviderRpcUrlStore } from "api/provider"
 import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 
 const useMissingExternalAssets = (ids: string[]) => {
-  const { assets } = useRpcProvider()
+  const { tradable, getAsset } = useAssets()
   const externalAssets = useAssetHubAssetRegistry()
 
   const missingExternalAssets = useMemo(() => {
     if (externalAssets.data) {
       const invalidTokensId = ids.filter(
-        (assetId) =>
-          !assets.tradeAssets.some((tradeAsset) => tradeAsset.id === assetId),
+        (assetId) => !tradable.some((tradeAsset) => tradeAsset.id === assetId),
       )
 
       return invalidTokensId
         .map((tokenId) => {
-          const externalId = assets.external.find(
-            (external) => external.id === tokenId,
-          )?.generalIndex
+          const externalId = getAsset(tokenId)?.externalId
 
-          return externalAssets.data?.find(
-            (externalAsset) => externalAsset.id === externalId,
-          )
+          const meta = externalId
+            ? externalAssets.data?.get(externalId)
+            : undefined
+          return meta
+            ? {
+                ...meta,
+                internalId: tokenId,
+              }
+            : undefined
         })
         .filter(isNotNil)
     }
 
     return []
-  }, [assets.external, assets.tradeAssets, externalAssets.data, ids])
+  }, [externalAssets.data, getAsset, ids, tradable])
 
   return missingExternalAssets
 }
 
 export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const [valid, setValid] = useState(false)
-  const { assets, poolService } = useRpcProvider()
+  const { poolService } = useRpcProvider()
+  const { getAsset } = useAssets()
+  const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
   const volumes = useXYKTradeVolumes(poolsAddress)
 
@@ -73,7 +81,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
     ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
     async () => {
       await poolService.syncRegistry([
-        ...externalTokensStored,
+        ...externalTokensStored[dataEnv],
         ...missingAssets,
       ])
 
@@ -99,11 +107,13 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
       .map((value) => {
         if (!value) return undefined
         const volume = value.assets.reduce((acc, asset) => {
-          const assetMeta = assets.getAsset(asset)
+          const assetMeta = getAsset(asset)
+          if (!assetMeta) return acc
           const decimals = assetMeta.symbol
             ? assetMeta.decimals
             : missingAssets.find(
-                (missingAsset) => missingAsset.id === assetMeta.generalIndex,
+                (missingAsset) =>
+                  missingAsset.id === (assetMeta as TExternal).externalId,
               )?.decimals ?? 0
 
           const sum = value.sums[assetMeta.id]
@@ -112,7 +122,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
             (spotPrice) => spotPrice?.tokenIn === asset,
           )?.spotPrice
 
-          if (!sum || !spotPrice) return acc
+          if (!sum || !spotPrice) return BN_NAN
           const sumScale = sum.shiftedBy(-decimals)
 
           return acc.plus(sumScale.multipliedBy(spotPrice))
@@ -123,7 +133,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
       .filter(isNotNil)
 
     return data
-  }, [assets, missingAssets, spotPrices.data, values, volumes])
+  }, [getAsset, missingAssets, spotPrices.data, values, volumes])
 
   return { data, isLoading }
 }

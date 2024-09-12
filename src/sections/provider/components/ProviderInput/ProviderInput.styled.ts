@@ -2,10 +2,8 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.label<{ error?: boolean }>`
-  padding: 12px 18px 20px 18px;
+  padding: 12px;
   margin-top: 10px;
-  margin-left: -10px;
-  margin-right: -10px;
 
   display: flex;
   align-items: center;
@@ -14,7 +12,7 @@ export const SContainer = styled.label<{ error?: boolean }>`
   transition: ${theme.transitions.default};
 
   background: rgba(${theme.rgbColors.alpha0}, 0.06);
-  border-radius: 2px;
+  border-radius: ${theme.borderRadius.default}px;
   border-bottom: 1px solid
     ${(p) => (p.error ? theme.colors.error : theme.colors.darkBlue400)};
 
@@ -33,8 +31,9 @@ export const SContainer = styled.label<{ error?: boolean }>`
         error ? theme.colors.error : theme.colors.brightBlue600};
   }
 
-  @media ${theme.viewport.gte.sm} {
-    padding: 8px;
+  button {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 `
 

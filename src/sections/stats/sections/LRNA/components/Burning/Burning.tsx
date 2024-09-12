@@ -12,17 +12,13 @@ import { BN_0 } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useSpotPrice } from "api/spotPrice"
 import { BlockSkeleton } from "./BlockSkeleton"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useApiIds } from "api/consts"
+import { useAssets } from "providers/assets"
 
 export const Burning = () => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const apiIds = useApiIds()
+  const { hub } = useAssets()
 
-  const meta = apiIds.data?.hubId
-    ? assets.getAsset(apiIds.data.hubId)
-    : undefined
+  const meta = hub
 
   const symbol = meta?.symbol
 
@@ -69,7 +65,7 @@ export const Burning = () => {
           <BlockSkeleton />
         ) : (
           <>
-            <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
+            <Text fs={[20, 30]} lh={[20, 30]}>
               {t("value.tokenWithSymbol", {
                 value: formatValue(imbalance, meta?.decimals),
                 symbol,
@@ -95,7 +91,7 @@ export const Burning = () => {
           <BlockSkeleton />
         ) : (
           <>
-            <Text fs={[20, 30]} lh={[20, 30]} font="FontOver">
+            <Text fs={[20, 30]} lh={[20, 30]}>
               {t("value.tokenWithSymbol", {
                 value: formatValue(fees, meta?.decimals),
                 symbol,

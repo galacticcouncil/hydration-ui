@@ -1,52 +1,57 @@
-import HydraLogo from "assets/icons/HydraLogo.svg?react"
-import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
-import { Icon } from "components/Icon/Icon"
 import { SHeader } from "components/Layout/Header/Header.styled"
-import { HeaderMenu } from "components/Layout/Header/menu/HeaderMenu"
-import { WarningMessage } from "components/WarningMessage/WarningMessage"
-import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
-import { useVisibleElements } from "hooks/useVisibleElements"
-import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { HeaderToolbar } from "./toolbar/HeaderToolbar"
-import { Link, useSearch } from "@tanstack/react-location"
+import { Link, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { LINKS, resetSearchParams } from "utils/navigation"
-import { NewFarmsBanner } from "sections/pools/components/NewFarmsBanner"
-import { useRpcProvider } from "providers/rpcProvider"
+import { Suspense, lazy } from "react"
+import { HydrationLogo } from "components/HydrationLogo"
+
+const HeaderBanners = lazy(async () => ({
+  default: (await import("components/Layout/Header/banners/HeaderBanners"))
+    .HeaderBanners,
+}))
+
+const HeaderMenu = lazy(async () => ({
+  default: (await import("components/Layout/Header/menu/HeaderMenu"))
+    .HeaderMenu,
+}))
+
+const HeaderToolbar = lazy(async () => ({
+  default: (await import("components/Layout/Header/toolbar/HeaderToolbar"))
+    .HeaderToolbar,
+}))
 
 export const Header = () => {
-  const { t } = useTranslation()
-  const { isLoaded } = useRpcProvider()
-
-  const isMediumMedia = useMedia(theme.viewport.lt.md)
-
-  const warnings = useWarningsStore()
   const search = useSearch()
+  const matchRoute = useMatchRoute()
 
-  const { hiddenElementsKeys, observe } = useVisibleElements()
+  const isSubmitTransactionPath = matchRoute({ to: LINKS.submitTransaction })
 
   return (
     <div css={{ position: "sticky", top: 0, zIndex: 5 }}>
-      {warnings.warnings.hdxLiquidity.visible && (
-        <WarningMessage
-          text={t("warningMessage.hdxLiquidity.title")}
-          type="hdxLiquidity"
-        />
+      {!isSubmitTransactionPath && (
+        <Suspense>
+          <HeaderBanners />
+        </Suspense>
       )}
-      {isLoaded && <NewFarmsBanner />}
       <SHeader>
         <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
           <div sx={{ flex: "row", align: "center", gap: 40 }}>
-            <Link to={LINKS.swap} search={resetSearchParams(search)}>
-              <Icon
-                sx={{ color: "white" }}
-                icon={!isMediumMedia ? <HydraLogoFull /> : <HydraLogo />}
-              />
+            <Link
+              to={
+                isSubmitTransactionPath ? LINKS.submitTransaction : LINKS.swap
+              }
+              search={resetSearchParams(search)}
+            >
+              <HydrationLogo />
             </Link>
-            <HeaderMenu ref={observe} />
+            {!isSubmitTransactionPath && (
+              <Suspense>
+                <HeaderMenu />
+              </Suspense>
+            )}
           </div>
-          <HeaderToolbar menuItems={hiddenElementsKeys} />
+          <Suspense>
+            <HeaderToolbar />
+          </Suspense>
         </div>
       </SHeader>
     </div>

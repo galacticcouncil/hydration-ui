@@ -17,7 +17,7 @@ import {
   REFERRAL_PARAM_NAME,
   REFERRAL_PROD_HOST,
   getShareUrl,
-} from "sections/referrals/ReferralsPage.utils"
+} from "./CorePreview.utils"
 
 type Props = {
   code?: string

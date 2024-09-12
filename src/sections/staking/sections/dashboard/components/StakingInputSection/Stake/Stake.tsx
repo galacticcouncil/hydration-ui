@@ -16,6 +16,8 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { useProcessedVotesIds } from "api/staking"
+import { useAssets } from "providers/assets"
 
 export const Stake = ({
   loading,
@@ -30,11 +32,13 @@ export const Stake = ({
 }) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-
-  const { api, assets } = useRpcProvider()
+  const { native } = useAssets()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const form = useForm<{ amount: string }>()
+
+  const processedVotes = useProcessedVotesIds()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
@@ -62,9 +66,18 @@ export const Stake = ({
     }, {} as ToastMessage)
 
     if (isStakePosition) {
+      const processedVoteIds = await processedVotes.mutateAsync()
+
       transaction = await createTransaction(
         {
-          tx: api.tx.staking.increaseStake(positionId, amount),
+          tx: processedVoteIds.length
+            ? api.tx.utility.batchAll([
+                ...processedVoteIds.map((id) =>
+                  api.tx.democracy.removeVote(id),
+                ),
+                api.tx.staking.increaseStake(positionId, amount),
+              ])
+            : api.tx.staking.increaseStake(positionId, amount),
         },
         { toast },
       )
@@ -84,7 +97,7 @@ export const Stake = ({
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
+      QUERY_KEYS.tokenBalance(native.id, account?.address),
     )
   }
 
@@ -93,7 +106,7 @@ export const Stake = ({
       <GradientText
         gradient="pinkLightBlue"
         fs={19}
-        sx={{ width: "fit-content" }}
+        sx={{ width: "fit-content", py: 16 }}
       >
         {t("staking.dashboard.form.stake.title")}
       </GradientText>
@@ -157,7 +170,7 @@ export const Stake = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                asset={assets.native.id}
+                asset={native.id}
                 error={error?.message}
                 withoutMaxBtn
               />

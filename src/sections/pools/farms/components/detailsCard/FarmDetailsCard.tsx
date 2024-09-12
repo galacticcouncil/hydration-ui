@@ -1,12 +1,13 @@
 import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
-import { SContainer, SIcon, SRow } from "./FarmDetailsCard.styled"
-import { FillBar } from "components/FillBar/FillBar"
-import { getFloatingPointAmount } from "utils/balance"
+import { SIcon, SRow, SContainer } from "./FarmDetailsCard.styled"
+import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
-import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
+import Distribution from "assets/icons/Distribution.svg?react"
+import Hydrated from "assets/icons/Hydrated.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm, useFarmApr } from "api/farms"
 import { useBestNumber } from "api/chain"
@@ -14,38 +15,46 @@ import { BLOCK_TIME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+} from "sections/pools/farms/position/FarmingPosition.utils"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssets } from "providers/assets"
+import { TDeposit } from "api/deposits"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 type FarmDetailsCardProps = {
-  poolId: string
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
+  depositData?: TDepositData
   farm: Farm
   onSelect?: () => void
+  compact?: boolean
 }
 
-export type CardVariant = "button" | "div"
-
 export const FarmDetailsCard = ({
-  poolId,
   depositNft,
+  depositData,
   farm,
   onSelect,
+  compact,
 }: FarmDetailsCardProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
-  const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
+  const asset = getAssetWithFallback(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
-  const assetMeta = assets.getAsset(poolId.toString())
 
-  const variant = onSelect ? "button" : "div"
+  const { relaychainBlockNumber } = useBestNumber().data ?? {}
 
-  const bestNumber = useBestNumber()
+  const isClickable = !!onSelect
+
   const secondsDurationToEnd =
-    bestNumber.data != null
+    relaychainBlockNumber != null
       ? apr.data?.estimatedEndBlock
-          .minus(bestNumber.data?.relaychainBlockNumber.toBigNumber())
+          .minus(relaychainBlockNumber.toBigNumber())
           .times(BLOCK_TIME)
           .toNumber()
       : undefined
@@ -74,57 +83,72 @@ export const FarmDetailsCard = ({
   if (apr.data == null) return null
 
   const fullness = apr.data.fullness
+  const isFull = fullness.gte(100)
 
   return (
     <SContainer
-      as={variant}
-      variant={variant}
+      isClickable={isClickable}
       onClick={() => onSelect?.()}
       isJoined={!!depositNft}
     >
-      {depositNft && (
-        <div css={{ gridArea: "tag" }}>
-          <Tag>{t("farms.details.card.tag.label")}</Tag>
-        </div>
-      )}
       <div
         sx={{
-          flex: ["row", "column"],
-          justify: ["space-between", "start"],
-          gap: 32,
+          flex: "column",
+          justify: "space-between",
+          gap: 12,
         }}
-        css={{ gridArea: "apr" }}
       >
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={24} icon={<AssetLogo id={asset.id} />} />
-          <Text fs={[18, 16]} font="ChakraPetchBold">
-            {asset.symbol}
+        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            justify: "space-between",
+          }}
+          css={{ flex: 1 }}
+        >
+          <div sx={{ flex: "row", align: "center", gap: 6 }}>
+            <Icon size={24} icon={<AssetLogo id={asset.id} />} />
+            <Text fs={[18, 16]} font="GeistMedium">
+              {asset.symbol}
+            </Text>
+          </div>
+          <Text fs={18} lh={18} fw={400} css={{ whiteSpace: "nowrap" }}>
+            {apr.data.minApr && apr.data?.apr.gt(0)
+              ? t("value.upToAPR", {
+                  maxApr: apr.data?.apr,
+                })
+              : t("value.APR", { apr: apr.data?.apr })}
           </Text>
         </div>
-        <Text fs={19} lh={28} fw={400} font="FontOver">
-          {apr.data.minApr && apr.data?.apr.gt(0)
-            ? t("value.APR.range", { from: apr.data.minApr, to: apr.data?.apr })
-            : t("value.APR", { apr: apr.data?.apr })}
-        </Text>
       </div>
-      <div sx={{ flex: "column" }} css={{ gridArea: "details" }}>
-        <SRow>
-          <FillBar
-            percentage={apr.data.distributedRewards
-              .div(apr.data.maxRewards)
-              .times(100)
-              .toNumber()}
-          />
-          <Text tAlign="right">
+
+      <div sx={{ flex: "column", flexGrow: 1, width: "100%" }}>
+        <SRow compact={compact}>
+          {compact ? (
+            <Icon sx={{ color: "darkBlue200" }} icon={<Distribution />} />
+          ) : (
+            <LinearProgress
+              size="small"
+              color="brightBlue500"
+              withoutLabel
+              percent={apr.data.distributedRewards
+                .div(apr.data.potMaxRewards)
+                .times(100)
+                .toNumber()}
+            />
+          )}
+
+          <Text tAlign={compact ? "left" : "right"}>
             <Trans
               t={t}
               i18nKey="farms.details.card.distribution"
               tOptions={{
-                distributed: getFloatingPointAmount(
+                distributed: scaleHuman(
                   apr.data.distributedRewards,
-                  12,
+                  asset.decimals,
                 ),
-                max: getFloatingPointAmount(apr.data.maxRewards, 12),
+                max: scaleHuman(apr.data.potMaxRewards, asset.decimals),
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -132,65 +156,118 @@ export const FarmDetailsCard = ({
             </Trans>
           </Text>
         </SRow>
-        <SRow css={{ border: depositNft ? undefined : "none" }}>
-          <FillBar percentage={fullness.toNumber()} variant="secondary" />
-          <Text fs={14} color="basic100" tAlign="right">
-            {t("farms.details.card.capacity", {
-              capacity: fullness,
-            })}
-          </Text>
+        <SRow compact={compact}>
+          {compact ? (
+            <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
+          ) : (
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={fullness.toNumber()}
+              colorCustom={
+                true
+                  ? theme.gradients.pinkDarkPink
+                  : theme.gradients.lightGreenOrange
+              }
+            />
+          )}
+
+          <div
+            sx={{ flex: "row", gap: 2, align: "center" }}
+            css={{ justifySelf: compact ? "start" : "end" }}
+          >
+            <Text fs={14} color="basic100">
+              {t("farms.details.card.capacity", {
+                capacity: fullness,
+              })}
+            </Text>
+            {isFull && (
+              <InfoTooltip text={t("farms.details.card.capacity.desc")}>
+                <SInfoIcon />
+              </InfoTooltip>
+            )}
+          </div>
         </SRow>
-        {depositNft && (
+        {depositData && (
           <>
-            <SRow>
+            <SRow compact={compact}>
               <Text fs={14} lh={18}>
-                {t("farms.details.card.lockedShares.label")}
+                {t("farms.details.card.locked.label")}
               </Text>
-              <GradientText
-                fs={14}
-                tAlign="right"
-                font="ChakraPetchBold"
-                gradient="pinkLightBlue"
-                sx={{ width: "fit-content" }}
-                css={{ justifySelf: "end" }}
-              >
-                {t("farms.details.card.lockedShares.value", {
-                  value: getFloatingPointAmount(
-                    depositNft.data.shares,
-                    assetMeta.decimals,
-                  ),
-                })}
-              </GradientText>
+              <LockedValue depositData={depositData} />
             </SRow>
 
-            <div sx={{ flex: "row", justify: "space-between", mb: 9 }}>
+            <SRow compact={compact}>
               <Text fs={14} lh={18}>
                 {t("farms.details.card.currentApr.label")}
               </Text>
               <GradientText
                 fs={14}
-                font="ChakraPetchBold"
+                font="GeistMedium"
                 gradient="pinkLightBlue"
+                tAlign="right"
+                sx={{ width: "fit-content" }}
+                css={{ justifySelf: "end" }}
               >
                 {t("value.APR", { apr: currentApr })}
               </GradientText>
-            </div>
+            </SRow>
           </>
         )}
-        <Text fs={12} lh={16} fw={400} color="basic500">
-          {secondsDurationToEnd != null &&
-            t("farms.details.card.end.value", {
-              end: addSeconds(new Date(), secondsDurationToEnd),
-            })}
-        </Text>
+        <SRow compact={compact} sx={{ pb: 0, flex: "row" }}>
+          <Text fs={12} lh={16} fw={400} color="basic500">
+            {secondsDurationToEnd != null &&
+              t("farms.details.card.end.value", {
+                end: addSeconds(new Date(), secondsDurationToEnd),
+              })}
+          </Text>
+        </SRow>
       </div>
       {onSelect && (
         <SIcon
-          sx={{ color: "iconGray", height: "100%", align: "center" }}
-          icon={<ChevronDown />}
-          css={{ gridArea: "icon" }}
+          sx={{
+            color: "brightBlue300",
+            height: "100%",
+            align: "center",
+            pr: 3,
+          }}
+          icon={<ChevronRightIcon />}
         />
       )}
     </SContainer>
+  )
+}
+
+const LockedValue = ({ depositData }: { depositData: TDepositData }) => {
+  const { t } = useTranslation()
+
+  return (
+    <GradientText
+      fs={14}
+      tAlign="right"
+      font="GeistMedium"
+      gradient="pinkLightBlue"
+      sx={{ width: "fit-content" }}
+      css={{ justifySelf: "end" }}
+    >
+      {isXYKDeposit(depositData) ? (
+        <>
+          {t("value.tokenWithSymbol", {
+            value: depositData.assetA.amount,
+            symbol: depositData.assetA.symbol,
+          })}{" "}
+          |{" "}
+          {t("value.tokenWithSymbol", {
+            value: depositData.assetB.amount,
+            symbol: depositData.assetB.symbol,
+          })}
+        </>
+      ) : (
+        t("value.tokenWithSymbol", {
+          value: depositData.totalValueShifted,
+          symbol: depositData.meta.symbol,
+        })
+      )}
+    </GradientText>
   )
 }

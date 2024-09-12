@@ -18,14 +18,14 @@ export const EmptySearchState = ({ className }: { className?: string }) => {
       className={className}
     >
       <Icon icon={<EmptyStateIcon />} />
-      <Text font="FontOver" color="white" css={{ opacity: 0.6 }}>
+      <Text font="GeistMono" color="white" css={{ opacity: 0.6 }}>
         {t("searchFilter.empty.title")}
       </Text>
       <div sx={{ flex: "row", gap: 2, flexWrap: "wrap", justify: "center" }}>
         <Text color="darkBlue100" fs={14}>
           {t("searchFilter.empty.desc")}
         </Text>
-        <a href="https://t.me/hydradx" target="blank" rel="noreferrer">
+        <a href="https://t.me/hydration_net" target="blank" rel="noreferrer">
           <Text
             fs={14}
             color="brightBlue100"

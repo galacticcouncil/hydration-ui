@@ -5,28 +5,33 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useSpotPrice } from "api/spotPrice"
-import { BN_0, BN_1 } from "utils/constants"
 import {
   TXYKPosition,
   isXYKPosition,
 } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
+import { TLPData } from "utils/omnipool"
+import { useAssets } from "providers/assets"
+import { Button } from "components/Button/Button"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 
 type Props = {
-  row?: HydraPositionsTableData | TXYKPosition
+  row?: TLPData | TXYKPosition
   onClose: () => void
+  onTransfer: (position: TLPData | TXYKPosition) => void
 }
 
-export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
+export const HydraPositionsDetailsMob = ({
+  row,
+  onClose,
+  onTransfer,
+}: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
 
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
-  const meta = row?.assetId ? assets.getAsset(row.assetId) : undefined
-
-  const lrnaSpotPrice = useSpotPrice(assets.getAsset("1").id, row?.assetId)
+  const meta = row?.assetId ? getAsset(row.assetId) : undefined
 
   if (!row) return null
 
@@ -40,7 +45,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           {row.balances
             ?.map((balance) =>
               t("value.tokenWithSymbol", {
-                value: balance.balanceHuman,
+                value: balance.amount,
                 symbol: balance.symbol,
               }),
             )
@@ -64,12 +69,15 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
       </div>
     )
   } else {
-    const lrnaPositionPrice =
-      row.lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+    const {
+      symbol,
+      lrnaShifted,
+      amountShifted,
+      valueShifted,
+      totalValueShifted,
+    } = row
 
-    const { symbol, lrna, providedAmountShifted: amount, value } = row
-
-    const tKey = lrna?.gt(0)
+    const tKey = lrnaShifted?.gt(0)
       ? "wallet.assets.hydraPositions.data.valueLrna"
       : "wallet.assets.hydraPositions.data.value"
 
@@ -77,12 +85,12 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
       <>
         <Text fs={14} lh={14} fw={500} color="white">
           {t("value.tokenWithSymbol", {
-            value: lrnaPositionPrice.plus(value ?? BN_0),
+            value: totalValueShifted,
             symbol: meta?.symbol,
           })}
         </Text>
 
-        {lrnaPositionPrice.gt(0) && (
+        {lrnaShifted.gt(0) && (
           <Text
             fs={14}
             lh={14}
@@ -94,9 +102,9 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
             <Trans
               i18nKey={tKey}
               tOptions={{
-                value,
+                value: valueShifted,
                 symbol,
-                lrna,
+                lrna: lrnaShifted,
                 type: "token",
               }}
             >
@@ -113,7 +121,7 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           {t("wallet.assets.hydraPositions.header.providedAmount")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.tokenWithSymbol", { value: amount, symbol })}
+          {t("value.tokenWithSymbol", { value: amountShifted, symbol })}
         </Text>
       </div>
     )
@@ -155,6 +163,16 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
 
           {secondRow}
+
+          <Button
+            sx={{ width: "100%", mt: 8 }}
+            size="small"
+            disabled={account?.isExternalWalletConnected}
+            onClick={() => onTransfer(row)}
+          >
+            <TransferIcon />
+            {t("wallet.assets.table.actions.transfer")}
+          </Button>
         </div>
       </div>
     </Modal>

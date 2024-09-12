@@ -30,13 +30,13 @@ export const Card: FC<Props> = ({
                   variant === "primary"
                     ? "pink600"
                     : variant === "green"
-                    ? "white"
-                    : "brightBlue300",
+                      ? "white"
+                      : "brightBlue300",
               }}
               icon={icon}
             />
           )}
-          <Text fs={15} color="white" font="FontOver" tTransform="uppercase">
+          <Text fs={15} color="white" font="GeistMono" tTransform="uppercase">
             {title}
           </Text>
         </SHeader>

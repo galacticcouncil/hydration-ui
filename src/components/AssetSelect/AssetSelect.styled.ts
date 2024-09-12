@@ -17,7 +17,7 @@ export const SContainer = styled.label<{ error?: boolean; disabled?: boolean }>`
   margin-right: calc(var(--modal-content-padding) * -1);
 
   @media ${theme.viewport.gte.sm} {
-    padding: 12px;
+    padding: 12px 16px;
     margin-left: 0;
     margin-right: 0;
   }
@@ -77,5 +77,9 @@ export const SSelectAssetButton = styled(Button)`
     margin-right: 20px;
     cursor: pointer;
     background: rgba(${theme.rgbColors.white}, 0.06);
+  }
+
+  & > span {
+    min-width: 0;
   }
 `

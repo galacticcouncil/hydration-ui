@@ -42,7 +42,7 @@ export const Switch = ({
     label={label ?? ""}
     withLabel={!!label}
     sx={{ fontSize: fs, flex: "row", align: "center" }}
-    css={getLabelPositionCss(labelPosition)}
+    css={{ ...getLabelPositionCss(labelPosition), whiteSpace: "nowrap" }}
     className={className}
   >
     <SSwitch

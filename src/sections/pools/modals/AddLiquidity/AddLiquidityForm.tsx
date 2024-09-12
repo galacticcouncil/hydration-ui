@@ -1,6 +1,6 @@
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -8,142 +8,162 @@ import { Text } from "components/Typography/Text/Text"
 import { Summary } from "components/Summary/Summary"
 import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { AddLiquidityLimitWarning } from "./AddLiquidityLimitWarning"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
-import { getFixedPointAmount } from "utils/balance"
-import { useAddLiquidity, useVerifyLimits } from "./AddLiquidity.utils"
-import { useStore } from "state/store"
-import { useEffect, useState } from "react"
+import { scale } from "utils/balance"
+import {
+  getAddToOmnipoolFee,
+  useAddLiquidity,
+  useAddToOmnipoolZod,
+} from "./AddLiquidity.utils"
+import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useDebounce } from "react-use"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useEstimatedFees } from "api/transaction"
+import { Farm } from "api/farms"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Alert } from "components/Alert/Alert"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
+import { TOAST_MESSAGES } from "state/toasts"
+import { ISubmittableResult } from "@polkadot/types/types"
+import { BaseSyntheticEvent } from "react"
+import { useAssets } from "providers/assets"
 
 type Props = {
   assetId: string
   initialAmount?: string
   onClose: () => void
   onAssetOpen?: () => void
+  onSubmitted?: () => void
+  onSuccess: (result: ISubmittableResult, value: string) => void
+  farms: Farm[]
+  setIsJoinFarms: (value: boolean) => void
 }
 
 export const AddLiquidityForm = ({
   assetId,
   onClose,
   onAssetOpen,
+  onSubmitted,
+  onSuccess,
   initialAmount,
+  farms,
+  setIsJoinFarms,
 }: Props) => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
   const { t } = useTranslation()
-  const [assetValue, setAssetValue] = useState("")
-
-  const form = useForm<{ amount: string }>({
-    mode: "onChange",
-    defaultValues: { amount: initialAmount },
-  })
-
-  const amountIn = form.watch("amount")
-
-  const [, cancel] = useDebounce(() => setAssetValue(amountIn), 300, [amountIn])
-
-  useEffect(() => {
-    return () => {
-      cancel()
-    }
-  }, [cancel])
-
-  const { calculatedShares, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, assetValue)
-
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { native } = useAssets()
   const { createTransaction } = useStore()
 
-  const { data: limits } = useVerifyLimits({
-    assetId: assetId.toString(),
-    amount: amountIn,
-    decimals: assetMeta.decimals,
+  const zodSchema = useAddToOmnipoolZod(assetId, farms)
+  const form = useForm<{
+    amount: string
+  }>({
+    mode: "onChange",
+    defaultValues: { amount: initialAmount },
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
+  const { handleSubmit, watch, reset, control, formState } = form
+
+  const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
+
+  const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
+    useAddLiquidity(assetId, debouncedAmount)
+
+  const estimatedFees = useEstimatedFees(getAddToOmnipoolFee(api, farms))
+
+  const balance = assetBalance?.balance ?? BN_0
+  const balanceMax =
+    estimatedFees.accountCurrencyId === assetMeta.id
+      ? balance
+          .minus(estimatedFees.accountCurrencyFee)
+          .minus(assetMeta.existentialDeposit)
+      : balance
+
+  const onSubmit = async (
+    values: FormValues<typeof form>,
+    e?: BaseSyntheticEvent,
+  ) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
-    const amount = getFixedPointAmount(
-      values.amount,
-      assetMeta.decimals,
-    ).toString()
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    const isJoinFarms = submitAction?.name === "joinFarms"
+
+    const amount = scale(values.amount, assetMeta.decimals).toString()
+
+    const toast = TOAST_MESSAGES.reduce((memo, type) => {
+      const msType = type === "onError" ? "onLoading" : type
+      memo[type] = (
+        <Trans
+          t={t}
+          i18nKey={`liquidity.add.modal.toast.${msType}`}
+          tOptions={{
+            value: values.amount,
+            symbol: assetMeta?.symbol,
+            where: "Omnipool",
+          }}
+        >
+          <span />
+          <span className="highlight" />
+        </Trans>
+      )
+      return memo
+    }, {} as ToastMessage)
 
     return await createTransaction(
       { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
       {
-        onSuccess: () => {
-          queryClient.refetchQueries(
-            QUERY_KEYS.accountOmnipoolPositions(account?.address),
-          )
+        onSuccess: (result) => {
+          onSuccess(result, amount)
         },
         onSubmitted: () => {
-          onClose()
-          form.reset()
+          !farms.length && !isJoinFarms && onClose()
+          reset()
+          onSubmitted?.()
         },
         onClose,
+        disableAutoClose: !!farms.length && isJoinFarms,
         onBack: () => {},
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta?.symbol,
-                where: "Omnipool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onSuccess"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta?.symbol,
-                where: "Omnipool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onError: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.add.modal.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta?.symbol,
-                where: "Omnipool",
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast,
+        onError: onClose,
       },
     )
   }
 
+  const onInvalidSubmit = (
+    errors: FieldErrors<FormValues<typeof form>>,
+    e?: BaseSyntheticEvent,
+  ) => {
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    if (
+      submitAction?.name === "addLiquidity" &&
+      (errors.amount as { farm?: { message: string } }).farm
+    ) {
+      onSubmit(form.getValues())
+    }
+  }
+
+  const customErrors = formState.errors.amount as unknown as
+    | {
+        cap?: { message: string }
+        circuitBreaker?: { message: string }
+        farm?: { message: string }
+      }
+    | undefined
+
+  const isAddOnlyLiquidityDisabled = !!Object.keys(
+    formState.errors.amount ?? {},
+  ).filter((key) => key !== "farm").length
+
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
@@ -154,51 +174,7 @@ export const AddLiquidityForm = ({
       <div sx={{ flex: "column" }}>
         <Controller
           name="amount"
-          control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validNumber: (value) => {
-                try {
-                  if (!new BigNumber(value).isNaN()) return true
-                } catch {}
-                return t("error.validNumber")
-              },
-              positive: (value) =>
-                new BigNumber(value).gt(0) || t("error.positive"),
-              maxBalance: (value) => {
-                try {
-                  if (assetMeta?.decimals == null)
-                    throw new Error("Missing asset meta")
-                  if (
-                    assetBalance?.balance.gte(
-                      BigNumber(value).multipliedBy(
-                        BN_10.pow(assetMeta?.decimals),
-                      ),
-                    )
-                  )
-                    return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
-              minPoolLiquidity: (value) => {
-                try {
-                  if (assetMeta?.decimals == null)
-                    throw new Error("Missing asset meta")
-
-                  const minimumPoolLiquidity =
-                    api.consts.omnipool.minimumPoolLiquidity.toBigNumber()
-
-                  const amount = BigNumber(value).multipliedBy(
-                    BN_10.pow(assetMeta?.decimals),
-                  )
-
-                  if (amount.gte(minimumPoolLiquidity)) return true
-                } catch {}
-                return t("liquidity.add.modal.validation.minPoolLiquidity")
-              },
-            },
-          }}
+          control={control}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -207,9 +183,11 @@ export const AddLiquidityForm = ({
               title={t("wallet.assets.transfer.asset.label_mob")}
               name={name}
               value={value}
-              onBlur={setAssetValue}
+              onBlur={onChange}
               onChange={onChange}
               asset={assetId}
+              balance={balance}
+              balanceMax={balanceMax}
               error={error?.message}
               onAssetOpen={onAssetOpen}
             />
@@ -227,7 +205,7 @@ export const AddLiquidityForm = ({
           }
         />
         <Spacer size={24} />
-        <Text color="pink500" fs={15} font="FontOver" tTransform="uppercase">
+        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
         <Summary
@@ -250,12 +228,15 @@ export const AddLiquidityForm = ({
               ),
             },
             {
-              label: t("liquidity.add.modal.receive"),
-              content: t("value", {
-                value: calculatedShares,
-                fixedPointScale: assetMeta?.decimals.toString(),
-                type: "token",
-              }),
+              label: t("liquidity.add.modal.shareOfPool"),
+              content: poolShare?.gte(0.01)
+                ? t("value.percentage", {
+                    value: poolShare,
+                  })
+                : t("value.percentage", {
+                    numberPrefix: "<",
+                    value: BigNumber(0.01),
+                  }),
             },
           ]}
         />
@@ -263,17 +244,22 @@ export const AddLiquidityForm = ({
           {t("liquidity.add.modal.warning")}
         </Text>
 
-        {limits?.cap === false ? (
-          <AddLiquidityLimitWarning type="cap" />
-        ) : limits?.circuitBreaker.isWithinLimit === false ? (
-          <AddLiquidityLimitWarning
-            type="circuitBreaker"
-            limit={{
-              value: limits?.circuitBreaker.maxValue,
-              symbol: assetMeta?.symbol,
-            }}
-          />
+        {customErrors?.cap ? (
+          <Alert variant="warning" css={{ marginBottom: 8 }}>
+            {customErrors.cap.message}
+          </Alert>
         ) : null}
+        {customErrors?.circuitBreaker ? (
+          <Alert variant="warning" css={{ marginBottom: 8 }}>
+            {customErrors.circuitBreaker.message}
+          </Alert>
+        ) : null}
+
+        {customErrors?.farm && (
+          <Alert variant="warning" css={{ margin: "20px 0" }}>
+            {customErrors.farm.message}
+          </Alert>
+        )}
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>
@@ -285,17 +271,39 @@ export const AddLiquidityForm = ({
           width: "auto",
         }}
       />
-      <Button
-        variant="primary"
-        type="submit"
-        disabled={
-          limits?.cap === false ||
-          !form.formState.isValid ||
-          !limits?.circuitBreaker.isWithinLimit
-        }
-      >
-        {t("liquidity.add.modal.confirmButton")}
-      </Button>
+      {farms.length ? (
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Button
+            variant="secondary"
+            name="addLiquidity"
+            onClick={() => setIsJoinFarms(false)}
+            disabled={
+              isAddOnlyLiquidityDisabled || !zodSchema || !formState.isDirty
+            }
+          >
+            {t("liquidity.add.modal.onlyAddLiquidity")}
+          </Button>
+          <Button
+            variant="primary"
+            name="joinFarms"
+            onClick={() => setIsJoinFarms(true)}
+            disabled={
+              !!Object.keys(formState.errors).length ||
+              !zodSchema ||
+              !formState.isDirty
+            }
+          >
+            {t("liquidity.add.modal.joinFarms")}
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="primary"
+          disabled={!!Object.keys(formState.errors).length || !zodSchema}
+        >
+          {t("liquidity.add.modal.confirmButton")}
+        </Button>
+      )}
     </form>
   )
 }

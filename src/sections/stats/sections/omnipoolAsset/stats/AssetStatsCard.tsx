@@ -33,7 +33,7 @@ export const AssetStatsCard = ({
       {loading || !value ? (
         <Skeleton width={150} height={isDesktop ? 34 : 14} />
       ) : (
-        <Text fs={[14, 34]} font="FontOver" css={{ whiteSpace: "nowrap" }}>
+        <Text fs={[14, 34]} css={{ whiteSpace: "nowrap" }}>
           {value}
         </Text>
       )}

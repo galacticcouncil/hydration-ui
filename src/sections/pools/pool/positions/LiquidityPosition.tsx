@@ -1,144 +1,50 @@
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
-import { Trans, useTranslation } from "react-i18next"
-import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { WalletAssetsHydraPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData"
+import { useTranslation } from "react-i18next"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
-import { useState } from "react"
-import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 import { Button } from "components/Button/Button"
-import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
-import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { useFarms } from "api/farms"
-import { useFarmDepositMutation } from "utils/farms/deposit"
-import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
-import { useRpcProvider } from "providers/rpcProvider"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
+import { TLPData } from "utils/omnipool"
 
 type Props = {
-  position: HydraPositionsTableData
+  position: TLPData
   index: number
   pool: TPoolFullData
   onSuccess: () => void
+  onRemovePosition: () => void
 }
 
-function LiquidityPositionJoinFarmButton(props: {
-  poolId: string
-  position: HydraPositionsTableData
-  onSuccess: () => void
+export function LiquidityPositionRemoveLiquidity(props: {
+  pool: TXYKPool | TPoolFullData
+  onRemovePosition: () => void
 }) {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
   const { account } = useAccount()
-  const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.poolId])
-  const meta = assets.getAsset(props.poolId.toString())
-
-  const toast = TOAST_MESSAGES.reduce((memo, type) => {
-    const msType = type === "onError" ? "onLoading" : type
-    memo[type] = (
-      <Trans
-        t={t}
-        i18nKey={`farms.modal.join.toast.${msType}`}
-        tOptions={{
-          amount: props.position.shares,
-          fixedPointScale: meta.decimals,
-        }}
-      >
-        <span />
-        <span className="highlight" />
-      </Trans>
-    )
-    return memo
-  }, {} as ToastMessage)
-
-  const joinFarmMutation = useFarmDepositMutation(
-    props.poolId,
-    props.position.id,
-    toast,
-    () => setJoinFarm(false),
-    props.onSuccess,
-  )
 
   return (
-    <>
-      <Button
-        variant="primary"
-        size="compact"
-        fullWidth
-        disabled={!farms.data?.length || account?.isExternalWalletConnected}
-        onClick={() => setJoinFarm(true)}
-      >
-        <Icon size={12} icon={<FPIcon />} />
-        {t("liquidity.asset.actions.joinFarms")}
-      </Button>
-
-      {joinFarm && farms.data && (
-        <JoinFarmModal
-          farms={farms.data}
-          isOpen={joinFarm}
-          poolId={props.poolId}
-          shares={props.position.shares}
-          onClose={() => setJoinFarm(false)}
-          mutation={joinFarmMutation}
-        />
-      )}
-    </>
-  )
-}
-
-export function LiquidityPositionRemoveLiquidity(
-  props:
-    | {
-        pool: TPoolFullData
-        position: HydraPositionsTableData
-        onSuccess: () => void
+    <Button
+      variant="error"
+      size="compact"
+      onClick={props.onRemovePosition}
+      disabled={
+        account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
       }
-    | {
-        pool: TXYKPool
-        position?: never
-        onSuccess: () => void
-      },
-) {
-  const { t } = useTranslation()
-  const { account } = useAccount()
-  const [openRemove, setOpenRemove] = useState(false)
-  return (
-    <>
-      <Button
-        variant="error"
-        size="compact"
-        onClick={() => setOpenRemove(true)}
-        disabled={
-          account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
-        }
-      >
-        <div sx={{ flex: "row", align: "center", justify: "center" }}>
-          <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
-          {t("remove")}
-        </div>
-      </Button>
-      {openRemove && (
-        <RemoveLiquidity
-          pool={props.pool}
-          isOpen={openRemove}
-          onClose={() => setOpenRemove(false)}
-          position={props.position}
-          onSuccess={props.onSuccess}
-        />
-      )}
-    </>
+      css={{ flex: "1 0 0" }}
+    >
+      <div sx={{ flex: "row", align: "center", justify: "center" }}>
+        <Icon size={12} icon={<TrashIcon />} sx={{ mr: 4 }} />
+        {t("remove")}
+      </div>
+    </Button>
   )
 }
 
@@ -147,27 +53,26 @@ export const LiquidityPosition = ({
   index,
   onSuccess,
   pool,
+  onRemovePosition,
 }: Props) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const meta = assets.getAsset(position.assetId)
+  const meta = pool.meta
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <SContainer>
+    <>
       <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: [6, 0],
+            justify: "space-between",
+          }}
+        >
           <div sx={{ flex: "row", gap: 7, align: "center" }}>
-            {assets.isStableSwap(meta) ? (
-              <MultipleIcons
-                icons={meta.assets.map((asset: string) => ({
-                  icon: <AssetLogo id={asset} />,
-                }))}
-              />
-            ) : (
-              <Icon size={18} icon={<AssetLogo id={position.assetId} />} />
-            )}
-            <Text fs={[14, 18]} color={["white", "basic100"]}>
+            <MultipleAssetLogo size={24} iconId={pool.meta.iconId} />
+
+            <Text fs={14} color={["white", "basic100"]}>
               {t("liquidity.asset.positions.position.title", { index })}
             </Text>
           </div>
@@ -177,17 +82,14 @@ export const LiquidityPosition = ({
               gap: 12,
             }}
           >
-            {!meta.isStableSwap && (
-              <LiquidityPositionJoinFarmButton
-                poolId={pool.id}
-                position={position}
-                onSuccess={onSuccess}
-              />
-            )}
-            <LiquidityPositionRemoveLiquidity
+            <JoinFarmsButton
+              poolId={pool.id}
               position={position}
               onSuccess={onSuccess}
+            />
+            <LiquidityPositionRemoveLiquidity
               pool={pool}
+              onRemovePosition={onRemovePosition}
             />
           </div>
         </div>
@@ -214,8 +116,7 @@ export const LiquidityPosition = ({
             <div sx={{ flex: "column", align: ["end", "start"] }}>
               <Text fs={[13, 16]}>
                 {t("value.token", {
-                  value: position.providedAmount,
-                  fixedPointScale: meta.decimals,
+                  value: position.amountShifted,
                   numberSuffix: ` ${meta.symbol}`,
                 })}
               </Text>
@@ -239,17 +140,17 @@ export const LiquidityPosition = ({
               </Text>
               <LrnaPositionTooltip
                 assetId={position.assetId}
-                tokenPosition={position.value}
-                lrnaPosition={position.lrna}
+                tokenPosition={position.valueShifted}
+                lrnaPosition={position.lrnaShifted}
               />
             </div>
             <div sx={{ flex: "column", align: ["end", "start"] }}>
-              <WalletAssetsHydraPositionsData
-                assetId={position.assetId}
-                value={position.value}
-                lrna={position.lrna}
-                fontSize={[13, 16]}
-              />
+              <Text fs={[13, 16]}>
+                {t("value.token", {
+                  value: position.totalValueShifted,
+                  numberSuffix: ` ${meta.symbol}`,
+                })}
+              </Text>
               <DollarAssetValue
                 value={position.valueDisplay}
                 wrapper={(children) => (
@@ -264,6 +165,6 @@ export const LiquidityPosition = ({
           </div>
         </div>
       </div>
-    </SContainer>
+    </>
   )
 }

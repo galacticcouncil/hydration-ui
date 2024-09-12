@@ -1,14 +1,22 @@
-import { format, Locale } from "date-fns"
+import {
+  addMilliseconds,
+  differenceInDays,
+  format,
+  formatDistanceToNowStrict,
+  isBefore,
+  Locale,
+} from "date-fns"
 import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "./constants"
-import { Maybe } from "utils/helpers"
+import { isAnyParachain, Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { H160, isEvmAccount } from "utils/evm"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 export const formatNum = (
   number?: number | string,
@@ -313,6 +321,21 @@ export const customFormatDuration = ({
   }
 }
 
+export const durationInDaysAndHoursFromNow = (milliseconds: number) => {
+  const now = new Date()
+  const end = addMilliseconds(now, milliseconds)
+
+  if (isBefore(end, now)) return undefined
+
+  if (differenceInDays(end, now))
+    return formatDistanceToNowStrict(end, {
+      unit: "day",
+      roundingMethod: "floor",
+    })
+
+  return customFormatDuration({ end: milliseconds }).duration
+}
+
 export const qs = (
   query: Record<string, any>,
   { preppendPrefix = true, prefix = "?" } = {},
@@ -347,17 +370,32 @@ export const qs = (
   return preppendPrefix ? `${prefix}${querystring}` : querystring
 }
 
-export const getSubscanLinkByType = (
-  type: "account" | "extrinsic",
-  params: {
-    blockNumber?: string
-    txIndex?: string | number
-  } = {},
-) => {
-  const extrinsicPath =
-    type === "extrinsic" && params?.blockNumber && params?.txIndex
-      ? `/${[params?.blockNumber, params?.txIndex].join("-")}`
-      : ""
+const SUBSCAN_PATHS = {
+  address: "account",
+  block: "block",
+  bounty: "bounty",
+  council: "council",
+  democracyProposal: "democracy_proposal",
+  democracyReferendum: "referenda",
+  extrinsic: "extrinsic",
+  fellowshipReferenda: "fellowship",
+  referenda: "referenda_v2",
+  techcomm: "tech",
+  tip: "treasury_tip",
+  treasury: "treasury",
+  validator: "validator",
+}
 
-  return `https://hydradx.subscan.io/${type}${extrinsicPath}`
+export function createSubscanLink(
+  path: keyof typeof SUBSCAN_PATHS,
+  data: BigNumber | number | string,
+  chainKey: string = "hydradx",
+) {
+  const chain = chainsMap.get(chainKey)
+
+  if (chain && isAnyParachain(chain) && chain.explorer) {
+    return `${chain.explorer}/${path}/${data.toString()}`
+  } else {
+    return ""
+  }
 }

@@ -18,7 +18,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
 
   const columnVisibility: VisibilityState = {
     symbol: true,
-    providedAmount: isDesktop,
+    amount: isDesktop,
     valueDisplay: true,
   }
 
@@ -45,7 +45,7 @@ export const useHydraPositionsTableSkeleton = (enableAnimation = true) => {
         ),
       }),
       display({
-        id: "providedAmount",
+        id: "amount",
         header: t("wallet.assets.hydraPositions.header.providedAmount"),
         cell: () => (
           <div

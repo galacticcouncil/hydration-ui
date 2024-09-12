@@ -3,15 +3,47 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { undefinedNoop } from "utils/helpers"
+import { PalletDemocracyVoteAccountVote } from "@polkadot/types/lookup"
+import BN from "bignumber.js"
+import { BN_0 } from "utils/constants"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
+
+const CONVICTIONS_BLOCKS: { [key: string]: number } = {
+  none: 0,
+  locked1x: 50400,
+  locked2x: 100800,
+  locked3x: 201600,
+  locked4x: 403200,
+  locked5x: 806400,
+  locked6x: 1612800,
+}
+
+const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
+  if (vote?.isStandard) {
+    return vote.asStandard?.vote.conviction.toString()
+  } else {
+    return "None"
+  }
+}
+
+const voteAmount = (vote?: PalletDemocracyVoteAccountVote) => {
+  if (vote?.isSplit) {
+    return vote.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
+  } else if (vote?.isStandard) {
+    return vote.asStandard.balance.toBigNumber()
+  } else {
+    return BN_0
+  }
+}
 
 export const useReferendums = (type?: "ongoing" | "finished") => {
   const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
 
   return useQuery(
-    QUERY_KEYS.referendums(account?.address),
+    QUERY_KEYS.referendums(account?.address, type),
     getReferendums(api, account?.address),
     {
       enabled: isLoaded,
@@ -53,8 +85,8 @@ export const getReferendums =
         id: key.args[0].toString(),
         referendum: codec.unwrap(),
         voted: !!vote,
-        amount: vote?.[1].asStandard?.balance.toBigNumber(),
-        conviction: vote?.[1].asStandard?.vote.conviction.toString(),
+        amount: voteAmount(vote?.[1]),
+        conviction: voteConviction(vote?.[1]),
         isDelegating,
       }
     })
@@ -94,3 +126,105 @@ export type Referendum = {
 
 export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>
   await api.query.democracy.referendumInfoOf(id)
+
+export const useAccountVotes = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  return useQuery(
+    QUERY_KEYS.referendumVotes(account?.address),
+    account ? getAccountUnlockedVotes(api, account.address) : undefinedNoop,
+    {
+      enabled: isLoaded && !!account,
+    },
+  )
+}
+
+export const getAccountUnlockedVotes =
+  (api: ApiPromise, accountId: string) => async () => {
+    const [votesRaw, currentBlock] = await Promise.all([
+      api.query.democracy.votingOf(accountId),
+      api.derive.chain.bestNumber(),
+    ])
+
+    if (!votesRaw || votesRaw.isDelegating) return undefined
+
+    const votes = votesRaw.asDirect.votes.map(([id, dataRaw]) => {
+      return {
+        id: id.toString(),
+        balance: voteAmount(dataRaw),
+        conviction: voteConviction(dataRaw),
+      }
+    })
+
+    const votedAmounts = await Promise.all(
+      votes.map(async (vote) => {
+        const voteId = vote.id
+        const referendumRaw = await api.query.democracy.referendumInfoOf(voteId)
+
+        if (!referendumRaw.isNone) {
+          const referendum = referendumRaw.unwrap()
+          const isFinished = referendum.isFinished
+
+          const endBlock = isFinished
+            ? referendum.asFinished.end.toBigNumber()
+            : referendum.asOngoing.end.toBigNumber()
+          const convictionBlock =
+            CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
+          const unlockBlockNumber = endBlock.plus(convictionBlock)
+          const isUnlocked = isFinished
+            ? unlockBlockNumber.lte(currentBlock.toNumber())
+            : false
+
+          return {
+            isUnlocked,
+            amount: vote.balance,
+            id: voteId,
+            endDiff: unlockBlockNumber.minus(currentBlock.toNumber()),
+          }
+        }
+
+        return {
+          isUnlocked: true,
+          amount: vote.balance,
+          id: voteId,
+          endDiff: BN_0,
+        }
+      }),
+    )
+
+    const unlockedVotes = votedAmounts.reduce<{
+      maxUnlockedValue: BN
+      maxLockedValue: BN
+      maxLockedBlock: BN
+      ids: string[]
+    }>(
+      (acc, votedAmount) => {
+        if (votedAmount.isUnlocked)
+          return {
+            maxUnlockedValue: BN.maximum(
+              acc.maxUnlockedValue,
+              votedAmount.amount,
+            ),
+            maxLockedValue: acc.maxLockedValue,
+            maxLockedBlock: BN.maximum(votedAmount.endDiff, acc.maxLockedBlock),
+            ids: [...acc.ids, votedAmount.id],
+          }
+
+        return {
+          maxLockedValue: BN.maximum(acc.maxLockedValue, votedAmount.amount),
+          maxUnlockedValue: acc.maxUnlockedValue,
+          maxLockedBlock: BN.maximum(votedAmount.endDiff, acc.maxLockedBlock),
+          ids: acc.ids,
+        }
+      },
+      {
+        maxUnlockedValue: BN_0,
+        maxLockedValue: BN_0,
+        ids: [],
+        maxLockedBlock: BN_0,
+      },
+    )
+
+    return unlockedVotes
+  }

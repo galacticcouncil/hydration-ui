@@ -8,12 +8,12 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
+// import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
 import { theme } from "theme"
 
 type Props = {
@@ -42,7 +42,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
     if (!wallet) throw new Error("Missing wallet")
     if (!wallet.signer) throw new Error("Missing signer")
 
-    if (wallet?.signer instanceof MetaMaskSigner) {
+    if (wallet?.signer instanceof EthereumSigner) {
       const evmTx = await wallet.signer.sendTransaction(tx.data)
       onEvmSigned({ evmTx })
     }
@@ -63,7 +63,9 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <ReviewTransactionData address={account?.address} evmTx={tx} />
+          <>
+            {/* <ReviewTransactionData address={account?.address} evmTx={tx} /> */}
+          </>
         }
         footer={
           <div sx={{ mt: 15 }}>

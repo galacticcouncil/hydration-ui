@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
 export const TableContainer = styled.div`
@@ -7,7 +8,7 @@ export const TableContainer = styled.div`
   overflow: hidden;
   position: relative;
 
-  margin: 0 -15px;
+  margin: 0 -12px;
 
   border-top: 1px solid rgba(152, 176, 214, 0.27);
 
@@ -154,7 +155,7 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 
   font-size: 11px;
   line-height: 14px;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "Geist";
 
   text-transform: uppercase;
   text-align: start;
@@ -170,8 +171,8 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
   @media ${theme.viewport.gte.sm} {
     padding: 24px 32px;
 
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 11px;
+    line-height: 14px;
     font-weight: 600;
   }
 `
@@ -179,16 +180,17 @@ export const TableHeader = styled.th<{ canSort?: boolean }>`
 export const TableData = styled.td<{
   isExpanded?: boolean
   isSkeleton?: boolean
+  sub?: boolean
 }>`
   height: 56px;
 
-  ${({ isExpanded }) => (isExpanded ? `padding: 16px` : "padding: 0 16px")};
+  padding: 0 16px;
 
   ${({ isSkeleton }) => !isSkeleton && "padding-right: 0px;"}
   text-align: start;
 
   ${({ isExpanded }) =>
-    isExpanded && `background: rgba(${theme.rgbColors.white}, 0.06);`}
+    isExpanded && `background: rgba(${theme.rgbColors.white}, 0.03);`}
 
   &:last-of-type {
     width: 1px;
@@ -196,13 +198,53 @@ export const TableData = styled.td<{
   }
 
   @media ${theme.viewport.gte.sm} {
-    height: 68px;
+    height: 82px;
 
-    ${({ isExpanded }) =>
-      isExpanded ? `padding: 24px 32px` : "padding: 0 32px"};
+    ${({ sub }) => (sub ? `padding: 24px 32px` : "padding: 0 32px")};
 
     &:last-of-type {
       padding-right: 10px;
     }
+  }
+`
+
+export const TableFooter = styled.div`
+  padding: 12px 0;
+
+  display: flex;
+  aligh-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  border-top: 1px solid rgba(32, 33, 53, 1);
+`
+
+export const ButtonPagination = styled(ButtonTransparent)<{ active?: boolean }>`
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  minwidth: 22px;
+  height: 22px;
+
+  border-radius: ${theme.borderRadius.default}px;
+  background: ${({ active }) =>
+    active
+      ? `rgba(${theme.rgbColors.alpha0}, 0.15)`
+      : `rgba(${theme.rgbColors.alpha0}, 0.06)`};
+  color: ${theme.colors.white};
+
+  font-size: 13px;
+
+  &:hover {
+    background: rgba(${theme.rgbColors.alpha0}, 0.1);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    box-shadow: unset;
+    transform: none;
+
+    color: ${theme.colors.basic800};
+    background: transparent;
   }
 `

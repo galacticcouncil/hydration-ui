@@ -8,6 +8,7 @@ export type ButtonVariant =
   | "mutedSecondary"
   | "error"
   | "mutedError"
+  | "warning"
   | "gradient"
   | "outline"
   | "transparent"
@@ -26,20 +27,19 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   fullWidth?: boolean
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  variant = "secondary",
-  size = "medium",
-  ...props
-}) => {
+export const Button: React.FC<ButtonProps> = forwardRef<
+  HTMLButtonElement,
+  ButtonProps
+>(({ variant = "secondary", size = "medium", ...props }, ref) => {
   return (
-    <SButton variant={variant} size={size} {...props}>
+    <SButton variant={variant} size={size} {...props} ref={ref}>
       <SContent size={size}>
-        {props.isLoading && <Spinner size={16} />}
+        {props.isLoading && <Spinner size={size === "small" ? 12 : 16} />}
         {props.text || props.children}
       </SContent>
     </SButton>
   )
-}
+})
 
 export const ButtonTransparent = forwardRef<
   HTMLButtonElement,

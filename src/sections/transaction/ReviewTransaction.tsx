@@ -10,11 +10,13 @@ import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
+import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
-import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
+  const { isLoaded } = useRpcProvider()
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
   const [signError, setSignError] = useState<unknown>()
@@ -22,6 +24,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const {
     sendTx,
     sendEvmTx,
+    sendPermitTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -30,7 +33,10 @@ export const ReviewTransaction = (props: Transaction) => {
     txState,
     reset,
     txLink,
+    bridge,
   } = useSendTx()
+
+  if (!isLoaded) return null
 
   const isError = isSendError || !!signError
   const error = sendError || signError
@@ -43,8 +49,9 @@ export const ReviewTransaction = (props: Transaction) => {
           disableClose: isLoading,
         }
       : {
-          title: t("liquidity.reviewTransaction.modal.title"),
-          description: t("liquidity.reviewTransaction.modal.desc"),
+          title: props.title ?? t("liquidity.reviewTransaction.modal.title"),
+          description:
+            props.description ?? t("liquidity.reviewTransaction.modal.desc"),
         }
 
   const handleTxOnClose = () => {
@@ -63,6 +70,11 @@ export const ReviewTransaction = (props: Transaction) => {
   const onClose = () => {
     handleTxOnClose()
     props.onClose?.()
+  }
+
+  const onMinimizeModal = () => {
+    handleTxOnClose()
+    if (!props.disableAutoClose) props.onClose?.()
   }
 
   const onBack = props.onBack
@@ -88,8 +100,9 @@ export const ReviewTransaction = (props: Transaction) => {
           error={error}
           link={txLink}
           onReview={onReview}
-          onClose={onClose}
+          onClose={onMinimizeModal}
           toastMessage={props.toastMessage}
+          bridge={bridge}
         />
       )}
 
@@ -98,16 +111,23 @@ export const ReviewTransaction = (props: Transaction) => {
         onBack={onBack}
         onClose={onClose}
         disableCloseOutside
-        topContent={props.steps ? <Stepper steps={props.steps} /> : undefined}
+        topContent={
+          props.steps ? (
+            <Stepper sx={{ px: [10] }} width={420} steps={props.steps} />
+          ) : undefined
+        }
         {...modalProps}
       >
         {isLoading ? (
-          <ReviewTransactionPending txState={txState} onClose={onClose} />
+          <ReviewTransactionPending
+            txState={txState}
+            onClose={onMinimizeModal}
+          />
         ) : isSuccess ? (
-          <ReviewTransactionSuccess onClose={onClose} />
+          <ReviewTransactionSuccess onClose={onMinimizeModal} />
         ) : isError ? (
           <ReviewTransactionError
-            onClose={onClose}
+            onClose={onMinimizeModal}
             onReview={onReview}
             error={error}
           />
@@ -117,15 +137,18 @@ export const ReviewTransaction = (props: Transaction) => {
             xcallMeta={props.xcallMeta}
             isProxy={props.isProxy}
             overrides={props.overrides}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
-            onSigned={(signed) => {
+            onSigned={(tx, xcallMeta) => {
               props.onSubmitted?.()
-              sendTx(signed)
+              sendTx({ tx, xcallMeta })
+            }}
+            onPermitDispatched={(permit) => {
+              props.onSubmitted?.()
+              sendPermitTx(permit)
             }}
             onSignError={setSignError}
           />
@@ -142,7 +165,6 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
-            title={props.title}
             onCancel={onClose}
             onEvmSigned={(data) => {
               props.onSubmitted?.()

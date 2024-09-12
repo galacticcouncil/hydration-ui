@@ -23,7 +23,6 @@ export const SInput = styled.input`
   all: unset;
 
   color: ${theme.colors.white} !important;
-  font-family: "ChakraPetch", sans-serif;
   font-size: 12px;
   font-weight: 400;
 `

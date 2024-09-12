@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
-import { MIN_WITHDRAWAL_FEE } from "utils/constants"
-import { isApiLoaded } from "utils/helpers"
+import { BN_NAN, MIN_WITHDRAWAL_FEE } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { scaleHuman } from "utils/balance"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -13,32 +12,8 @@ import {
   safeConvertAddressH160,
 } from "utils/evm"
 import { useTokenBalance } from "./balances"
-
-export const useApiIds = () => {
-  const { api } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.apiIds, getApiIds(api), {
-    enabled: !!isApiLoaded(api),
-  })
-}
-
-export const getApiIds = (api: ApiPromise) => async () => {
-  const apiIds = await Promise.all([
-    api.consts.omnipool.hdxAssetId,
-    api.consts.omnipool.hubAssetId,
-    api.consts.omnipool.nftCollectionId,
-  ])
-
-  const [nativeId, hubId, omnipoolCollectionId] = apiIds.map((c) =>
-    c.toString(),
-  )
-
-  return {
-    nativeId,
-    hubId,
-    omnipoolCollectionId,
-  }
-}
+import { useAssets } from "providers/assets"
+import { Permill } from "@polkadot/types/interfaces"
 
 export const useMinWithdrawalFee = () => {
   const { api } = useRpcProvider()
@@ -69,8 +44,9 @@ const getMaxAddLiquidityLimit = (api: ApiPromise) => async () => {
 }
 
 export const useInsufficientFee = (assetId: string, address: string) => {
-  const { api, assets } = useRpcProvider()
-  const { isSufficient } = assets.getAsset(assetId)
+  const { api } = useRpcProvider()
+  const { native, getAssetWithFallback } = useAssets()
+  const { isSufficient } = getAssetWithFallback(assetId)
 
   const isValidAddress =
     safeConvertAddressSS58(address, 0) != null ||
@@ -108,8 +84,29 @@ export const useInsufficientFee = (assetId: string, address: string) => {
   return fee
     ? {
         value: fee,
-        displayValue: scaleHuman(fee, assets.native.decimals),
-        symbol: assets.native.symbol,
+        displayValue: scaleHuman(fee, native.decimals),
+        symbol: native.symbol,
       }
     : undefined
+}
+
+export const useOTCfee = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.otcFee,
+    async () => {
+      const fee = (await api.consts.otc.fee) as Permill
+
+      if (!fee) return BN_NAN
+
+      return fee.toBigNumber().div(1000000)
+    },
+    {
+      enabled: isLoaded,
+      retry: 0,
+      cacheTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 1,
+    },
+  )
 }

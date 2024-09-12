@@ -103,7 +103,11 @@ const AllPoolsData = () => {
   const xykTotal = useMemo(() => {
     if (xylPools.data) {
       return xylPools.data.reduce((acc, xykPool) => {
-        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        return acc.plus(
+          !xykPool.tvlDisplay.isNaN() && !xykPool.isInvalid
+            ? xykPool.tvlDisplay
+            : BN_0,
+        )
       }, BN_0)
     }
     return BN_0
@@ -114,10 +118,13 @@ const AllPoolsData = () => {
       ? arraySearch(pools.data, search, ["symbol", "name"])
       : pools.data) ?? []
 
-  const filteredXYKPools =
-    (search && xylPools.data
-      ? arraySearch(xylPools.data, search, ["symbol", "name"])
-      : xylPools.data) ?? []
+  const filteredXYKPools = useMemo(
+    () =>
+      (search && xylPools.data
+        ? arraySearch(xylPools.data, search, ["symbol", "name"])
+        : xylPools.data) ?? [],
+    [search, xylPools.data],
+  )
 
   if (id != null) {
     const pool = [...(pools.data ?? []), ...(xylPools.data ?? [])].find(
@@ -198,7 +205,20 @@ const AllPoolsData = () => {
                 align: ["flex-start", "flex-end"],
               }}
             >
-              <TableLabel label={t("liquidity.section.xyk")} />
+              <div
+                sx={{
+                  flex: "row",
+                  gap: [4, 40],
+                  align: "baseline",
+                  width: "100%",
+                  justify: ["space-between", "start"],
+                  flexWrap: "wrap",
+                }}
+                css={{ whiteSpace: "nowrap" }}
+              >
+                <TableLabel label={t("liquidity.section.xyk")} />
+              </div>
+
               <CreateXYKPoolModalButton
                 disabled={xylPools.isInitialLoading}
                 sx={{ mb: 14, width: ["100%", "auto"] }}
@@ -207,7 +227,7 @@ const AllPoolsData = () => {
             {xylPools.isInitialLoading ? (
               <PoolsTableSkeleton isXyk />
             ) : (
-              <PoolsTable data={filteredXYKPools} isXyk />
+              <PoolsTable data={filteredXYKPools} isXyk paginated />
             )}
           </div>
         ) : null}

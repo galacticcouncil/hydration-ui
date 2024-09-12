@@ -1,3 +1,4 @@
+import { Title } from "@radix-ui/react-dialog"
 import ChevronIcon from "assets/icons/ChevronRight.svg?react"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
@@ -30,8 +31,8 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
       switch (variant) {
         case "simple":
           return <Text>{title}</Text>
-        case "FontOver":
-          return <Text font="FontOver">{title}</Text>
+        case "GeistMono":
+          return <Text font="GeistMono">{title}</Text>
         case "gradient":
         default:
           return <STitleGradient>{title}</STitleGradient>
@@ -39,21 +40,23 @@ export const ModalHeaderTitle = forwardRef<HTMLDivElement, TitleProps>(
     }, [title, variant])
 
     return (
-      <SContainer
-        key={`title-${page}`}
-        ref={ref}
-        variant={variant}
-        centered={canBack}
-        custom={{ direction }}
-        {...(!disableAnimation ? motionProps : {})}
-      >
-        {content}
-        {description && (
-          <Text fs={16} lh={22} fw={400} color="basic400">
-            {description}
-          </Text>
-        )}
-      </SContainer>
+      <Title asChild>
+        <SContainer
+          key={`title-${page}`}
+          ref={ref}
+          variant={variant}
+          centered={canBack}
+          custom={{ direction }}
+          {...(!disableAnimation ? motionProps : {})}
+        >
+          {content}
+          {description && (
+            <Text fs={[14, 15]} lh={[18, 26]} fw={400} color="basic400">
+              {description}
+            </Text>
+          )}
+        </SContainer>
+      </Title>
     )
   },
 )
@@ -114,4 +117,4 @@ const motionProps = {
   variants,
 }
 
-export type ModalHeaderVariant = "gradient" | "FontOver" | "simple"
+export type ModalHeaderVariant = "gradient" | "GeistMono" | "simple"

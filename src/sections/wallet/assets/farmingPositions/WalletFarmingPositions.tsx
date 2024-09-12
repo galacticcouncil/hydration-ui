@@ -12,7 +12,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  FarmingPositionsTableData,
+  FarmingTablePosition,
   useFarmingPositionsTable,
 } from "./WalletFarmingPositions.utils"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
@@ -23,16 +23,19 @@ import { theme } from "theme"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/FarmsEmpty.svg?react"
 import { LINKS } from "utils/navigation"
+import { WalletTransferPositionModal } from "sections/wallet/transfer/WalletTransferPositionModal"
 
-type Props = { data: FarmingPositionsTableData[] }
+type Props = { data: FarmingTablePosition[] }
 
 export const WalletFarmingPositions = ({ data }: Props) => {
   const { t } = useTranslation()
-  const [row, setRow] = useState<FarmingPositionsTableData | undefined>(
-    undefined,
-  )
+  const [row, setRow] = useState<FarmingTablePosition | undefined>(undefined)
+  const [transferPosition, setTransferPosition] =
+    useState<FarmingTablePosition | null>(null)
 
-  const table = useFarmingPositionsTable(data)
+  const table = useFarmingPositionsTable(data, {
+    onTransfer: setTransferPosition,
+  })
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -43,7 +46,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           <Text
             fs={[16, 20]}
             lh={[20, 26]}
-            css={{ fontFamily: "FontOver" }}
+            font="GeistMono"
             fw={500}
             color="white"
           >
@@ -53,7 +56,7 @@ export const WalletFarmingPositions = ({ data }: Props) => {
         <Table>
           <TableHeaderContent>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} header>
                 {hg.headers.map((header) => (
                   <TableSortHeader
                     key={header.id}
@@ -112,10 +115,22 @@ export const WalletFarmingPositions = ({ data }: Props) => {
           </TableBodyContent>
         </Table>
       </TableContainer>
-      {!isDesktop && (
+      {!isDesktop && row && (
         <FarmingPositionsDetailsMob
           row={row}
           onClose={() => setRow(undefined)}
+          onTransfer={setTransferPosition}
+        />
+      )}
+
+      {transferPosition && (
+        <WalletTransferPositionModal
+          position={{
+            ...transferPosition.position,
+            id: transferPosition.id,
+          }}
+          onClose={() => setTransferPosition(null)}
+          isFarmingPosition
         />
       )}
     </>

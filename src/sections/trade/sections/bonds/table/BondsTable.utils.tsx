@@ -22,8 +22,11 @@ import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Transaction } from "./transactions/Transactions.utils"
+import { useDisplayPrice } from "utils/displayAsset"
+import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { useAssets } from "providers/assets"
 
 export type BondTableItem = {
   assetId: string
@@ -48,8 +51,8 @@ export type Config = {
 }
 
 export const BondCell = ({ bondId }: { bondId: string }) => {
-  const { assets } = useRpcProvider()
-  const bond = assets.getBond(bondId)
+  const { getBond } = useAssets()
+  const bond = getBond(bondId)
 
   if (!bond) return null
 
@@ -62,13 +65,13 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
       }}
     >
       <Icon
-        icon={<AssetLogo id={bond.assetId} />}
+        icon={<AssetLogo id={bond.underlyingAssetId} />}
         size={[24, 27]}
         sx={{ flexShrink: 0 }}
         css={{ width: "min-content" }}
       />
       <div sx={{ flex: "column" }}>
-        <Text fs={14} sx={{ mt: 3 }} font="ChakraPetchSemiBold">
+        <Text fs={14} sx={{ mt: 3 }} font="GeistSemiBold">
           {bond.symbol}
         </Text>
         <Text fs={13} sx={{ mt: 3 }} color="whiteish500">
@@ -82,7 +85,7 @@ export const BondCell = ({ bondId }: { bondId: string }) => {
 export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
   const { t } = useTranslation()
   const { accessor, display } = createColumnHelper<BondTableItem>()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const claim = useClaimBond()
   const navigate = useNavigate()
@@ -124,29 +127,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
         header: () => (
           <div sx={{ textAlign: "center" }}>{t("bonds.table.balance")}</div>
         ),
-        cell: ({ getValue }) => (
-          <div
-            sx={{
-              flex: "row",
-              gap: 1,
-              align: "center",
-              justify: ["end", "center"],
-              textAlign: "center",
-            }}
-          >
-            <Text fs={14} color="white" tAlign="center">
-              {t("value.token", { value: getValue() })}
-            </Text>
-            {!isDesktop && (
-              <ButtonTransparent css={{ color: theme.colors.iconGray }}>
-                <Icon
-                  sx={{ color: "darkBlue300" }}
-                  icon={<ChevronRightIcon />}
-                />
-              </ButtonTransparent>
-            )}
-          </div>
-        ),
+        cell: ({ row }) => <BondBalance bond={row.original} />,
       }),
       accessor("averagePrice", {
         header: () => (
@@ -157,7 +138,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
         cell: ({ getValue, row }) => {
           const accumulatedAssetId = row.original.assetIn
           const meta = accumulatedAssetId
-            ? assets.getAsset(accumulatedAssetId)
+            ? getAsset(accumulatedAssetId)
             : undefined
 
           return (
@@ -248,4 +229,56 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   })
+}
+
+const BondBalance = ({ bond }: { bond: BondTableItem }) => {
+  const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const displayPrice = useDisplayPrice(bond.bondId)
+  const usdValue =
+    displayPrice.data?.spotPrice.isPositive() && bond.balanceHuman
+      ? displayPrice.data?.spotPrice.times(bond.balanceHuman)
+      : undefined
+
+  return (
+    <div
+      sx={{
+        flex: "row",
+        gap: 1,
+        align: "center",
+        justify: ["end", "center"],
+        textAlign: "center",
+      }}
+    >
+      <div sx={{ flex: "column", gap: 2 }}>
+        <Text fs={14} color="white" tAlign="center">
+          {t("value.token", { value: bond.balanceHuman })}
+        </Text>
+        {usdValue && (
+          <DollarAssetValue
+            value={usdValue}
+            wrapper={(children) => (
+              <Text
+                fs={13}
+                lh={13}
+                fw={500}
+                css={{ color: `rgba(${theme.rgbColors.paleBlue}, 0.61)` }}
+              >
+                {children}
+              </Text>
+            )}
+          >
+            <DisplayValue value={usdValue} />
+          </DollarAssetValue>
+        )}
+      </div>
+
+      {!isDesktop && (
+        <ButtonTransparent css={{ color: theme.colors.iconGray }}>
+          <Icon sx={{ color: "darkBlue300" }} icon={<ChevronRightIcon />} />
+        </ButtonTransparent>
+      )}
+    </div>
+  )
 }

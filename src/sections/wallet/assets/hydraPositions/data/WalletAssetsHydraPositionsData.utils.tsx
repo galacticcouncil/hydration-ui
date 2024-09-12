@@ -1,116 +1,40 @@
-import { useTokensBalances } from "api/balances"
-import { useOmnipoolAssets, useOmnipoolPositions } from "api/omnipool"
-import BN from "bignumber.js"
 import { useMemo } from "react"
-import { HydraPositionsTableData } from "sections/wallet/assets/hydraPositions/WalletAssetsHydraPositions.utils"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useDisplayPrices } from "utils/displayAsset"
 import { arraySearch, isNotNil } from "utils/helpers"
-import { useRpcProvider } from "providers/rpcProvider"
-import { calculatePositionLiquidity } from "utils/omnipool"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
-import { useShareTokens } from "api/xyk"
+import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAccountsBalances } from "api/accountBalances"
-import { useShareOfPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
-import { TShareToken } from "api/assetDetails"
+import { useAssets } from "providers/assets"
+import { useAccountPositions } from "api/deposits"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useTotalIssuances } from "api/totalIssuance"
+import { useAcountAssets } from "api/assetDetails"
 
 export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
-  const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions(address)
-  const positions = useOmnipoolPositions(
-    accountPositions.data?.omnipoolNfts.map((nft) => nft.instanceId) ?? [],
+  const accountPositionsQuery = useAccountPositions(address)
+  const positions = useMemo(
+    () => accountPositionsQuery.data?.liquidityPositions ?? [],
+    [accountPositionsQuery.data?.liquidityPositions],
   )
 
-  const positionIds =
-    positions
-      .map((position) => position.data?.assetId.toString())
-      .filter(isNotNil) ?? []
+  const positionIds = positions.map((position) => position.assetId)
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolBalances = useTokensBalances(
-    positionIds,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
-  const spotPrices = useDisplayPrices([assets.hub.id, ...positionIds])
+  const { getData } = useLiquidityPositionData(positionIds)
 
-  const queries = [
-    omnipoolAssets,
-    spotPrices,
-    ...positions,
-    ...omnipoolBalances,
-  ]
-  const isLoading = queries.some((q) => q.isLoading)
+  const isLoading = accountPositionsQuery.isInitialLoading
 
   const data = useMemo(() => {
-    if (
-      !omnipoolAssets.data ||
-      !spotPrices.data ||
-      positions.some((q) => !q.data) ||
-      omnipoolBalances.some((q) => !q.data)
-    )
-      return []
-
-    const rows: HydraPositionsTableData[] = positions
-      .map((query) => {
-        const position = query.data
-        if (!position) return null
-
-        const assetId = position.assetId.toString()
-        const meta = assets.getAsset(assetId)
-        const lrnaMeta = assets.hub
-        const omnipoolAsset = omnipoolAssets.data.find(
-          (a) => a.id.toString() === assetId,
-        )
-        const omnipoolBalance = omnipoolBalances.find(
-          (b) => b.data?.assetId.toString() === assetId,
-        )
-
-        const symbol = meta.symbol
-        const name = meta.name
-
-        const lrnaSp = spotPrices.data?.find(
-          (sp) => sp?.tokenIn === lrnaMeta.id,
-        )
-
-        const valueSp = spotPrices.data?.find((sp) => sp?.tokenIn === assetId)
-
-        const liquidityValues = calculatePositionLiquidity({
-          position,
-          omnipoolBalance: omnipoolBalance?.data?.balance ?? BN(0),
-          omnipoolHubReserve: omnipoolAsset?.data.hubReserve,
-          omnipoolShares: omnipoolAsset?.data.shares,
-          lrnaSpotPrice: lrnaSp?.spotPrice ?? BN(0),
-          valueSpotPrice: valueSp?.spotPrice ?? BN(0),
-          lrnaDecimals: lrnaMeta.decimals,
-          assetDecimals: meta.decimals,
-        })
-
-        const result = {
-          id: position.id.toString(),
-          assetId,
-          symbol,
-          name,
-          ...liquidityValues,
-        }
-
-        return result
-      })
-      .filter((x): x is HydraPositionsTableData => x !== null)
+    const rows = positions.reduce<TLPData[]>((acc, position) => {
+      const data = getData(position)
+      if (data) acc.push(data)
+      return acc
+    }, [])
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [
-    omnipoolAssets.data,
-    spotPrices.data,
-    positions,
-    omnipoolBalances,
-    search,
-    assets,
-  ])
+  }, [getData, positions, search])
 
   return {
     data,
@@ -120,97 +44,73 @@ export const useOmnipoolPositionsData = ({
 }
 
 export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
-  const { assets } = useRpcProvider()
-  const shareTokens = useShareTokens()
+  const { native, shareTokens } = useAssets()
+  const { account } = useAccount()
+  const accountBalances = useAcountAssets(account?.address)
 
-  const shareTokensId =
-    shareTokens.data?.map((shareToken) => shareToken.shareTokenId) ?? []
+  const accountShareTokens = accountBalances
+    .map((accountBalance) => {
+      const shareToken = shareTokens.find(
+        (shareToken) => shareToken.id === accountBalance.asset.id,
+      )
 
-  const totalIssuances = useShareOfPools(shareTokensId)
+      if (shareToken) return { ...accountBalance, shareToken }
+      return undefined
+    })
+    .filter(isNotNil)
 
-  const myShareTokens = useMemo(
-    () =>
-      totalIssuances.data?.filter(
-        (totalIssuance) => totalIssuance.myPoolShare?.gt(0),
-      ) ?? [],
-    [totalIssuances.data],
+  const shareTokensId = accountShareTokens.map((pool) => pool.asset.id)
+  const shareTokensAddresses = accountShareTokens.map(
+    (pool) => pool.shareToken.poolAddress,
   )
 
-  const myPools = useMemo(
-    () =>
-      shareTokens.data?.filter((pool) =>
-        myShareTokens.some(
-          (myShareToken) => myShareToken.asset === pool.shareTokenId,
-        ),
-      ) ?? [],
-    [myShareTokens, shareTokens.data],
-  )
-
-  const poolBalances = useAccountsBalances(
-    myPools?.map((myPool) => myPool.poolAddress) ?? [],
-  )
-
-  const spotPrices = useDisplayShareTokenPrice(
-    myPools?.map((myPool) => myPool.shareTokenId) ?? [],
-  )
+  const totalIssuances = useTotalIssuances()
+  const poolBalances = useAccountsBalances(shareTokensAddresses)
+  const spotPrices = useDisplayShareTokenPrice(shareTokensId)
 
   const isLoading =
-    shareTokens.isInitialLoading ||
     totalIssuances.isInitialLoading ||
     poolBalances.isInitialLoading ||
     spotPrices.isInitialLoading
 
   const data = useMemo(() => {
-    if (!myPools.length || !totalIssuances.data || !poolBalances.data) return []
+    if (
+      !accountShareTokens.length ||
+      !totalIssuances.data ||
+      !poolBalances.data
+    )
+      return []
 
-    const rows = myPools.map((myPool) => {
-      const meta = assets.getAsset(myPool.shareTokenId) as TShareToken
-
-      const totalIssuance = totalIssuances.data?.find(
-        (totalIssuance) => totalIssuance.asset === myPool.shareTokenId,
-      )
+    const rows = accountShareTokens.map((myPool) => {
+      const totalIssuance = totalIssuances.data.get(myPool.shareToken.id)
 
       const poolBalance = poolBalances.data?.find(
         (poolBalance) =>
-          poolBalance.accountId.toString() === myPool.poolAddress,
+          poolBalance.accountId.toString() === myPool.shareToken.poolAddress,
       )
+      const balances = myPool.shareToken.assets.map((asset) => {
+        const balance =
+          asset.id === native.id
+            ? poolBalance?.native.freeBalance
+            : poolBalance?.balances.find((balance) => balance.id === asset.id)
+                ?.freeBalance
 
-      const balances =
-        poolBalance?.balances.map((balance) => {
-          const balanceMeta = assets.getAsset(balance.id.toString())
+        const myShare = myPool.balance.total.div(totalIssuance ?? 1)
 
-          const balanceHuman = balance.freeBalance
-            .shiftedBy(-balanceMeta.decimals)
-            .multipliedBy(totalIssuance?.myPoolShare ?? 1)
-            .div(100)
-
-          return { balanceHuman, symbol: balanceMeta.symbol }
-        }) ?? []
-
-      if (meta.assets.includes(assets.native.id)) {
         const balanceHuman =
-          poolBalance?.native.freeBalance
-            .shiftedBy(-assets.native.decimals)
-            .multipliedBy(totalIssuance?.myPoolShare ?? 1)
-            .div(100) ?? BN_NAN
+          balance?.shiftedBy(-asset.decimals).multipliedBy(myShare) ?? BN_NAN
 
-        // order of the HDX in a share token pair
-        if (meta.assets[0] === assets.native.id) {
-          balances.unshift({ balanceHuman, symbol: assets.native.symbol })
-        } else {
-          balances.push({ balanceHuman, symbol: assets.native.symbol })
-        }
-      }
+        return { amount: balanceHuman, symbol: asset.symbol }
+      })
 
       const spotPrice = spotPrices.data.find(
-        (spotPrice) => spotPrice.tokenIn === myPool.shareTokenId,
+        (spotPrice) => spotPrice.tokenIn === myPool.shareToken.id,
       )
 
       const amount =
-        totalIssuance?.totalShare
-          ?.multipliedBy(totalIssuance.myPoolShare ?? 1)
-          .div(100)
-          .shiftedBy(-meta.decimals) ?? BN_NAN
+        totalIssuance
+          ?.times(myPool.balance.total.div(totalIssuance ?? 1))
+          .shiftedBy(-myPool.shareToken.decimals) ?? BN_NAN
 
       const valueDisplay = amount.multipliedBy(spotPrice?.spotPrice ?? 1)
 
@@ -218,10 +118,10 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
         amount,
         valueDisplay,
         value: BN_NAN,
-        id: meta.id,
-        assetId: meta.id,
-        name: meta.name,
-        symbol: meta.symbol,
+        id: myPool.shareToken.id,
+        assetId: myPool.shareToken.id,
+        name: myPool.shareToken.name,
+        symbol: myPool.shareToken.symbol,
         balances,
         isXykPosition: true,
       }
@@ -229,12 +129,12 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
-    assets,
-    myPools,
+    accountShareTokens,
+    native.id,
     poolBalances.data,
     search,
     spotPrices.data,
-    totalIssuances.data,
+    totalIssuances,
   ])
 
   return { data, isLoading }
@@ -245,5 +145,5 @@ export type TXYKPosition = NonNullable<
 >[number]
 
 export const isXYKPosition = (
-  position: HydraPositionsTableData | TXYKPosition,
+  position: TLPData | TXYKPosition,
 ): position is TXYKPosition => (position as TXYKPosition).isXykPosition

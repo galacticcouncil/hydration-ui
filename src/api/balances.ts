@@ -20,19 +20,11 @@ export const getTokenBalance =
     if (id.toString() === NATIVE_ASSET_ID) {
       const res = await api.query.system.account(account)
       const freeBalance = new BigNumber(res.data.free.toHex())
-      const feeFrozenBalance = new BigNumber(
-        //@ts-ignore
-        res.data.feeFrozen?.toHex() ?? res.data.frozen.toHex(),
-      )
-      const miscFrozenBalance = new BigNumber(res.data.miscFrozen?.toHex() ?? 0)
+      const frozenBalance = new BigNumber(res.data.frozen.toHex())
+
       const reservedBalance = new BigNumber(res.data.reserved.toHex())
 
-      const balance = new BigNumber(
-        calculateFreeBalance(
-          freeBalance,
-          BigNumber.max(feeFrozenBalance, miscFrozenBalance),
-        ) ?? NaN,
-      )
+      const balance = freeBalance.minus(frozenBalance)
 
       return {
         accountId: account,
@@ -65,14 +57,14 @@ export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+
+  const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    address != null && id != null
-      ? getTokenBalance(api, address, id)
-      : undefinedNoop,
-    { enabled: address != null && id != null },
+    enabled ? getTokenBalance(api, address, id) : undefinedNoop,
+    { enabled },
   )
 }
 
@@ -81,16 +73,15 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
-      queryFn:
-        address != null ? getTokenBalance(api, address, id) : undefinedNoop,
-      enabled: !!id && !!address,
+      queryFn: address ? getTokenBalance(api, address, id) : undefinedNoop,
+      enabled: !!id && !!address && isLoaded,
     })),
   })
 }
@@ -104,27 +95,6 @@ export function useExistentialDeposit() {
   return useQuery(QUERY_KEYS.existentialDeposit, async () => {
     const existentialDeposit = await getExistentialDeposit(api)
     return existentialDeposit.toBigNumber()
-  })
-}
-
-export const useTokensLocks = (ids: Maybe<u32 | string>[]) => {
-  const { api } = useRpcProvider()
-  const { account } = useAccount()
-
-  const normalizedIds = ids?.reduce<string[]>((memo, item) => {
-    if (item != null) memo.push(item.toString())
-    return memo
-  }, [])
-
-  return useQueries({
-    queries: normalizedIds?.map((id) => ({
-      queryKey: QUERY_KEYS.lock(account?.address, id),
-      queryFn:
-        account?.address != null
-          ? getTokenLock(api, account.address, id)
-          : undefinedNoop,
-      enabled: !!account?.address,
-    })),
   })
 }
 
@@ -143,19 +113,14 @@ export const useTokenLocks = (id: Maybe<u32 | string>) => {
 
 export const getTokenLock =
   (api: ApiPromise, address: AccountId32 | string, id: string) => async () => {
-    if (id === NATIVE_ASSET_ID) {
-      const res = await api.query.balances.locks(address)
-      return res.map((lock) => ({
-        id: id,
-        amount: lock.amount.toBigNumber(),
-        type: lock.id.toHuman(),
-      }))
-    }
+    const res =
+      id === NATIVE_ASSET_ID
+        ? await api.query.balances.locks(address)
+        : await api.query.tokens.locks(address, id)
 
-    const res = await api.query.tokens.locks(address, id)
     return res.map((lock) => ({
       id: id,
       amount: lock.amount.toBigNumber(),
-      type: lock.id.toString(),
+      type: lock.id.toHuman(),
     }))
   }

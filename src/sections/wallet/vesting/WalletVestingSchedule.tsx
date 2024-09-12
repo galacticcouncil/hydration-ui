@@ -19,13 +19,12 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssets } from "providers/assets"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { native } = useAssets()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
@@ -103,7 +102,7 @@ export const WalletVestingSchedule = () => {
           <Text color="brightBlue200" fs={[14, 16]} fw={500}>
             {t("wallet.vesting.claimable_now")}
           </Text>
-          <Heading as="h3" font="FontOver" sx={{ fontSize: [28, 34] }}>
+          <Heading as="h3" font="GeistMono" sx={{ fontSize: [28, 34] }}>
             <Trans
               t={t}
               i18nKey="wallet.vesting.claimable_now_value"

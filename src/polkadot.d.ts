@@ -1,11 +1,15 @@
 import { InjectedWindowProvider } from "@polkadot/extension-inject/types"
-import BN from "bignumber.js"
-
 import { MetaMaskLikeProvider } from "utils/metamask"
 
-declare module "@polkadot/types-codec/abstract" {
-  class AbstractInt {
-    toBigNumber(): BN
+import BigNumber from "bignumber.js"
+
+declare module "@polkadot/types" {
+  interface Int {
+    toBigNumber(): BigNumber
+  }
+
+  interface UInt {
+    toBigNumber(): BigNumber
   }
 }
 
@@ -13,6 +17,10 @@ declare global {
   interface Window {
     ethereum?: MetaMaskLikeProvider
     talismanEth?: MetaMaskLikeProvider
+    SubWallet?: MetaMaskLikeProvider
+    phantom?: {
+      ethereum: MetaMaskLikeProvider
+    }
     injectedWeb3?: Record<string, InjectedWindowProvider>
     walletExtension?: { isNovaWallet?: boolean }
   }

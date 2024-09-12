@@ -1,41 +1,45 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SContainer } from "sections/pools/pool/positions/LiquidityPosition.styled"
 import LiquidityIcon from "assets/icons/WaterRippleIcon.svg?react"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
-import { TAsset, TShareToken } from "api/assetDetails"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
+import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
+import { useRefetchAccountPositions } from "api/deposits"
+import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-
-  const shareTokenMeta = assets.getAsset(pool.id) as TShareToken
+  const queryClient = useQueryClient()
+  const refetchPositions = useRefetchAccountPositions()
+  const [openRemove, setOpenRemove] = useState(false)
 
   const shareTokensBalance = useTokenBalance(pool.id, account?.address)
 
-  const assetsMeta = assets.getAssets(shareTokenMeta.assets)
+  const assetsMeta = pool.meta.assets
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
     [assetMetaA.id, assetMetaB.id],
     pool.poolAddress,
+    true,
   )
   const spotPrices = useDisplayPrices(assetsMeta.map((asset) => asset.id))
 
@@ -77,27 +81,32 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   if (!pool.shareTokenIssuance || pool.shareTokenIssuance.myPoolShare?.isZero())
     return null
 
+  const onSuccess = () => {
+    queryClient.refetchQueries(
+      QUERY_KEYS.tokenBalance(pool.id, account?.address),
+    )
+    refetchPositions()
+  }
+
   return (
-    <div sx={{ flex: "column", gap: 12, p: ["30px 12px", 30], bg: "gray" }}>
-      <Text fs={15} font="FontOver">
-        {t("liquidity.pool.positions.title")}
-      </Text>
-      <div sx={{ flex: "column", gap: 18 }}>
+    <>
+      <SPoolDetailsContainer
+        sx={{ height: ["auto", "auto"] }}
+        css={{ background: "transparent" }}
+      >
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Icon size={15} sx={{ color: "pink600" }} icon={<LiquidityIcon />} />
-          <Text fs={[16, 16]} color="pink600">
+          <Text fs={[16, 16]} color="pink600" font="GeistMonoSemiBold">
             {t("liquidity.xyk.asset.positions.title")}
           </Text>
         </div>
-        <SContainer>
-          <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
-            <div sx={{ flex: "row", justify: "space-between" }}>
+        <SPositionContainer>
+          <div sx={{ flex: "column", gap: 16 }} css={{ flex: 1 }}>
+            <div
+              sx={{ flex: ["column", "row"], gap: 8, justify: "space-between" }}
+            >
               <div sx={{ flex: "row", gap: 7, align: "center" }}>
-                <MultipleIcons
-                  icons={assetsMeta.map((asset: TAsset) => ({
-                    icon: <AssetLogo id={asset.id} />,
-                  }))}
-                />
+                <MultipleAssetLogo iconId={pool.meta.iconId} size={28} />
 
                 <Text fs={[14, 18]} color={["white", "basic100"]}>
                   {t("liquidity.xyk.asset.position.title", {
@@ -107,11 +116,13 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   })}
                 </Text>
               </div>
-
-              <LiquidityPositionRemoveLiquidity
-                pool={pool}
-                onSuccess={() => null}
-              />
+              <div sx={{ flex: "row", gap: 8 }}>
+                <JoinFarmsButton poolId={pool.id} onSuccess={onSuccess} />
+                <LiquidityPositionRemoveLiquidity
+                  pool={pool}
+                  onRemovePosition={() => setOpenRemove(true)}
+                />
+              </div>
             </div>
 
             <Separator color="white" opacity={0.06} />
@@ -137,7 +148,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                   <Text fs={[13, 16]}>
                     {t("value.token", {
                       value: shareTokensBalance.data?.balance,
-                      fixedPointScale: shareTokenMeta.decimals,
+                      fixedPointScale: pool.meta.decimals,
                     })}
                   </Text>
                 </div>
@@ -195,8 +206,16 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
               )}
             </div>
           </div>
-        </SContainer>
-      </div>
-    </div>
+        </SPositionContainer>
+      </SPoolDetailsContainer>
+      {openRemove && (
+        <RemoveLiquidity
+          pool={pool}
+          isOpen
+          onClose={() => setOpenRemove(false)}
+          onSuccess={onSuccess}
+        />
+      )}
+    </>
   )
 }

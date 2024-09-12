@@ -7,13 +7,13 @@ import { useTranslation } from "react-i18next"
 import { useAccountRewards, useClaimsMutation } from "./Rewards.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import Skeleton from "react-loading-skeleton"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useReferrerTierData } from "sections/referrals/ReferralsPage.utils"
+import { useAssets } from "providers/assets"
 
 export const RewardsCard = () => {
-  const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { native } = useAssets()
   const rewards = useAccountRewards(account?.address)
   const { isLevelUp } = useReferrerTierData(account?.address)
 
@@ -42,10 +42,10 @@ export const RewardsCard = () => {
             rewards.isLoading ? (
               <Skeleton height={19} width={60} />
             ) : (
-              <Text font="FontOver" fs={19}>
+              <Text fs={19}>
                 {t("value.tokenWithSymbol", {
                   value: rewards.data?.totalRewards,
-                  symbol: assets.native.symbol,
+                  symbol: native.symbol,
                 })}
               </Text>
             )

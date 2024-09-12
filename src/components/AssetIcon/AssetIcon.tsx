@@ -6,22 +6,15 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-
-const EXTERNAL_ASSETS_WHITELIST = [
-  // PINK
-  { id: "23", origin: 1000 },
-  // STINK
-  { id: "42069", origin: 1000 },
-  // WUD
-  { id: "31337", origin: 1000 },
-]
-
-const chains = Array.from(chainsMap.values())
+import { useExternalAssetsWhiteList } from "api/external"
+import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { ResponsiveValue } from "utils/responsive"
+import { useAssets } from "providers/assets"
+import { Icon } from "components/Icon/Icon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -47,76 +40,74 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
-export function getAssetName(symbol: string | null | undefined) {
-  const _symbol = symbol?.toUpperCase()
+export const MultipleAssetLogo = ({
+  iconId,
+  size = 26,
+}: {
+  iconId: string | string[] | undefined
+  size?: ResponsiveValue<number>
+}) => {
+  const { getAssetWithFallback } = useAssets()
+  if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
+  const allIconIds = Array.isArray(iconId)
+    ? iconId
+        .map((id) => {
+          const { iconId } = getAssetWithFallback(id)
 
-  if (_symbol === "AUSD") return "Acala Dollar"
-  if (_symbol === "BSX") return "Basilisk"
-  if (_symbol === "KAR") return "Karura"
-  if (_symbol === "KSM") return "Kusama"
-  if (_symbol === "PHA") return "Phala"
-  if (_symbol === "TNKR") return "Tinkernet"
-  if (_symbol === "HDX") return "HydraDX"
-  if (_symbol === "LRNA") return "Lerna"
-  if (_symbol === "DAI") return "Dai"
-  if (_symbol === "DOT") return "Polkadot"
-  if (_symbol === "BTC") return "Bitcoin"
-  if (_symbol === "ETH") return "Ethereum"
-  if (_symbol === "USDC") return "USD Coin"
-  if (_symbol === "USDT") return "Tether"
-  if (_symbol === "APE") return "ApeCoin"
-  if (_symbol === "ASTR") return "Astar"
-  if (_symbol === "IBTC") return "interBTC"
-
-  return "N/A"
+          return iconId
+        })
+        .flat()
+    : iconId
+  return typeof allIconIds === "string" ? (
+    <Icon size={size} icon={<AssetLogo id={allIconIds} />} />
+  ) : (
+    <MultipleIcons
+      size={size}
+      icons={allIconIds.map((id) => ({
+        icon: <AssetLogo key={id} id={id} />,
+      }))}
+    />
+  )
 }
 
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
+
+  const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
-    const assetDetails = id ? assets.getAsset(id) : undefined
-
-    const chain = chains.find(
-      (chain) => chain.parachainId === Number(assetDetails?.parachainId),
-    )
-
-    const isWhitelisted = EXTERNAL_ASSETS_WHITELIST.some(
-      (item) =>
-        item.id === assetDetails?.generalIndex &&
-        item.origin === chain?.parachainId,
-    )
-
-    const badgeVariant: "warning" | "danger" | "" = assetDetails?.isExternal
-      ? isWhitelisted
-        ? "warning"
-        : "danger"
-      : ""
+    const assetDetails = id ? getAsset(id) : undefined
+    const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
 
     return {
-      chain: chain?.key,
-      symbol: assetDetails?.symbol,
-      badgeVariant,
+      details: assetDetails,
+      badgeVariant: badge,
     }
-  }, [assets, id])
+  }, [getAsset, getIsWhiteListed, id])
 
-  if (asset.chain || asset.symbol)
+  const { details, badgeVariant } = asset
+
+  if (details)
     return (
       <UigcAssetId
         css={{ "& uigc-logo-chain": { display: "none" } }}
         ref={(el) => {
-          el && asset.chain && el.setAttribute("chain", asset.chain)
+          el &&
+            details.parachainId &&
+            el.setAttribute("chainOrigin", details.parachainId)
           el && el.setAttribute("fit", "")
         }}
-        symbol={asset.symbol}
-        chain={asset?.chain}
+        ecosystem="polkadot"
+        asset={id}
+        chain={HYDRADX_PARACHAIN_ID.toString()}
+        chainOrigin={details.parachainId}
       >
-        {asset.badgeVariant && (
+        {badgeVariant && (
           <UigcAssetBadge
             slot="badge"
-            variant={asset.badgeVariant}
-            text={t(`wallet.addToken.tooltip.${asset.badgeVariant}`)}
+            variant={badgeVariant}
+            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
           />
         )}
       </UigcAssetId>
@@ -131,10 +122,45 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   )
 }
 
-export const ChainLogo = ({ symbol }: { symbol?: string }) => {
+export const ExternalAssetLogo = ({
+  id,
+  parachainId,
+  originHidden,
+  children,
+}: {
+  id: string
+  parachainId: number
+  originHidden?: boolean
+  children?: React.ReactNode
+}) => {
+  return (
+    <UigcAssetId
+      css={{ "& uigc-logo-chain": { display: "none" } }}
+      ref={(el) => {
+        if (el) {
+          el.setAttribute("fit", "")
+          if (parachainId && !originHidden)
+            el.setAttribute("chainOrigin", parachainId.toString())
+          el.shadowRoot
+            ?.querySelector("uigc-logo-asset")
+            ?.setAttribute("style", "width:100%;height:100%;")
+        }
+      }}
+      ecosystem="polkadot"
+      asset={id}
+      chain={parachainId.toString()}
+      chainOrigin={!originHidden ? parachainId.toString() : undefined}
+    >
+      {children}
+    </UigcAssetId>
+  )
+}
+
+export const ChainLogo = ({ id }: { id?: number }) => {
   return (
     <UigcChainLogo
-      chain={symbol}
+      ecosystem={"polkadot"}
+      chain={id?.toString()}
       ref={(el) => el && el.setAttribute("fit", "")}
     >
       <UigcAssetPlaceholder

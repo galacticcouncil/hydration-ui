@@ -28,9 +28,6 @@ export const SInput = styled.input`
   all: unset;
 
   padding: 4px 8px;
-  padding-right: 38px;
-
-  max-width: 124px;
 
   box-sizing: border-box;
 
@@ -42,6 +39,13 @@ export const SInput = styled.input`
 
   border: 1px solid ${theme.colors.darkBlue400};
   border-radius: ${theme.borderRadius.default}px;
+
+  -moz-appearance: textfield;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
   ::placeholder {
     color: rgba(114, 131, 165, 0.6);

@@ -1,41 +1,23 @@
-import { TradeRouter, PoolService } from "@galacticcouncil/sdk"
+import { type TradeRouter, type PoolService } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import {
-  TAsset,
-  TBond,
-  TShareToken,
-  TStableSwap,
-  TToken,
-  fallbackAsset,
-  getAssets,
-} from "api/assetDetails"
-import { useProviderData, useProviderRpcUrlStore } from "api/provider"
+import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
-
-type IContextAssets = Awaited<ReturnType<typeof getAssets>>["assets"] & {
-  all: (TToken | TBond | TStableSwap | TShareToken)[]
-  isStableSwap: (asset: TAsset) => asset is TStableSwap
-  isBond: (asset: TAsset) => asset is TBond
-  isShareToken: (asset: TAsset) => asset is TShareToken
-  getAsset: (id: string) => TAsset
-  getBond: (id: string) => TBond | undefined
-  getAssets: (ids: string[]) => TAsset[]
-  tradeAssets: TAsset[]
-}
+import { useAssetRegistry } from "state/store"
+import { useDisplayAssetStore } from "utils/displayAsset"
+import { useShareTokens } from "api/xyk"
+import { AssetsProvider } from "./assets"
 
 type TProviderContext = {
   api: ApiPromise
-  assets: IContextAssets
   tradeRouter: TradeRouter
   poolService: PoolService
   isLoaded: boolean
-  featureFlags: Awaited<ReturnType<typeof getAssets>>["featureFlags"]
+  featureFlags: TFeatureFlags
 }
 const ProviderContext = createContext<TProviderContext>({
   isLoaded: false,
   api: {} as TProviderContext["api"],
-  assets: {} as TProviderContext["assets"],
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
   poolService: {} as TProviderContext["poolService"],
@@ -44,11 +26,12 @@ const ProviderContext = createContext<TProviderContext>({
 export const useRpcProvider = () => useContext(ProviderContext)
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
-  const preference = useProviderRpcUrlStore()
-
-  const providerData = useProviderData(
-    preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL,
-  )
+  const { assets } = useAssetRegistry.getState()
+  const isAssets = !!assets.length
+  const providerData = useProviderData()
+  const displayAsset = useDisplayAssetStore()
+  useProviderAssets()
+  useShareTokens()
 
   useWindowFocus({
     onFocus: () => {
@@ -61,63 +44,35 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   })
 
   const value = useMemo(() => {
-    if (!!providerData.data && preference._hasHydrated) {
+    if (!!providerData.data && isAssets) {
       const {
-        tokens,
-        bonds,
-        stableswap,
-        shareTokens,
-        rawTradeAssets,
-        external: externalRaw,
-      } = providerData.data.assets
+        isStableCoin,
+        stableCoinId: chainStableCoinId,
+        update,
+      } = displayAsset
 
-      const all = [
-        ...tokens,
-        ...bonds,
-        ...stableswap,
-        ...shareTokens,
-        ...externalRaw,
-      ]
+      let stableCoinId: string | undefined
 
-      const allTokensObject = all.reduce<Record<string, TAsset>>(
-        (acc, asset) => ({ ...acc, [asset.id]: asset }),
-        {},
-      )
-      const isStableSwap = (asset: TAsset): asset is TStableSwap =>
-        asset.isStableSwap
+      // set USDT as a stable token
+      stableCoinId = assets.find((asset) => asset.symbol === "USDT")?.id
 
-      const isBond = (asset: TAsset): asset is TBond => asset.isBond
-
-      const isShareToken = (asset: TAsset): asset is TShareToken =>
-        asset.isShareToken
-
-      const getAsset = (id: string) => allTokensObject[id] ?? fallbackAsset
-
-      const getBond = (id: string) => {
-        const asset = allTokensObject[id] ?? fallbackAsset
-
-        if (isBond(asset)) return asset
+      // set DAI as a stable token if there is no USDT
+      if (!stableCoinId) {
+        stableCoinId = assets.find((asset) => asset.symbol === "DAI")?.id
       }
 
-      const getAssets = (ids: string[]) => ids.map((id) => getAsset(id))
-
-      const tradeAssets = rawTradeAssets.map((tradeAsset) =>
-        getAsset(tradeAsset.id),
-      )
+      if (stableCoinId && isStableCoin && chainStableCoinId !== stableCoinId) {
+        // setting stable coin id from asset registry
+        update({
+          id: stableCoinId,
+          symbol: "$",
+          isRealUSD: false,
+          isStableCoin: true,
+          stableCoinId,
+        })
+      }
 
       return {
-        assets: {
-          ...providerData.data.assets,
-          all,
-          external: externalRaw,
-          isStableSwap,
-          isBond,
-          isShareToken,
-          getAsset,
-          getBond,
-          getAssets,
-          tradeAssets,
-        },
         poolService: providerData.data.poolService,
         api: providerData.data.api,
         tradeRouter: providerData.data.tradeRouter,
@@ -125,19 +80,23 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         isLoaded: true,
       }
     }
+
     return {
       isLoaded: false,
       api: {} as TProviderContext["api"],
-      assets: {} as TProviderContext["assets"],
       tradeRouter: {} as TradeRouter,
-      featureFlags: {} as TProviderContext["featureFlags"],
+      featureFlags: {
+        referrals: true,
+        dispatchPermit: true,
+      } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
-  }, [preference._hasHydrated, providerData.data])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayAsset, isAssets, providerData.data])
 
   return (
     <ProviderContext.Provider value={value}>
-      {children}
+      <AssetsProvider>{children}</AssetsProvider>
     </ProviderContext.Provider>
   )
 }

@@ -6,7 +6,9 @@ export const NewFarmsBannerContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 14px;
+  flex-direction: row;
+
+  gap: 4px;
 
   padding: 6px 0;
 `

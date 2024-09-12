@@ -12,12 +12,12 @@ import { format } from "date-fns"
 import CustomDot from "assets/icons/ChartDot.svg?react"
 import { useTranslation } from "react-i18next"
 import { useMemo, useState } from "react"
-import { CategoricalChartState } from "recharts/types/chart/generateCategoricalChart"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AreaChartSkeleton } from "./AreaChartSkeleton"
 import { StatsData, StatsTimeframe } from "api/stats"
 import { Maybe } from "utils/helpers"
+import { CategoricalChartState } from "recharts/types/chart/types"
 
 const MIN_TO_SHOW_CHART = 5
 
@@ -79,7 +79,7 @@ const Label = ({ value }: { value: number }) => {
         zIndex: 1,
       }}
     >
-      <Text fs={24} font="FontOver">
+      <Text fs={24}>
         <DisplayValue value={value} isUSD />
       </Text>
     </div>

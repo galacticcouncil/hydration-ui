@@ -1,167 +1,310 @@
-import { useParachainAmount } from "api/externalAssetRegistry"
+import {
+  assethub,
+  TRugCheckData,
+  useExternalAssetRegistry,
+  useParachainAmount,
+} from "api/external"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { STokenInfoRow } from "./TokenInfo.styled"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useGetXYKPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_0 } from "utils/constants"
 import { useExternalXYKVolume } from "./TokenInfo.utils"
 import Skeleton from "react-loading-skeleton"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
-
-const MASTER_KEY_WHITELIST = ["23", "31337", "42069"]
+import { TExternal, useAssets } from "providers/assets"
+import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
+import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
+import {
+  useAssetHubAssetAdminRights,
+  useAssetHubRevokeAdminRights,
+} from "api/external/assethub"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Button } from "components/Button/Button"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { useRefetchProviderData } from "api/provider"
 
 export const TokenInfo = ({
-  asset,
-  isChainStored,
+  externalAsset,
+  chainStoredAsset,
+  rugCheckData,
 }: {
-  asset: TExternalAsset
-  isChainStored: boolean
+  externalAsset: TExternalAsset
+  chainStoredAsset?: TExternal
+  rugCheckData?: TRugCheckData
 }) => {
-  const { assets } = useRpcProvider()
+  const { getExternalByExternalId } = useAssets()
+  const { account } = useAccount()
   const { t } = useTranslation()
-  const parachains = useParachainAmount(asset.id)
+  const { setIsWhiteListed } = useUserExternalTokenStore()
+  const refetchProvider = useRefetchProviderData()
+  const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
+  const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
+  const externalAssetRegistry = useExternalAssetRegistry()
+  const refetchAssetHub = externalAssetRegistry[assethub.parachainId].refetch
+
+  const isChainStored = !!chainStoredAsset
+
+  const { data: adminRights } = useAssetHubAssetAdminRights(externalAsset.id)
+
+  const isAdmin =
+    adminRights?.admin && adminRights?.owner && account
+      ? safeConvertAddressSS58(adminRights.owner, 0) ===
+        safeConvertAddressSS58(account.address, 0)
+      : false
+
+  const { mutate: revokeAdminRights, isSuccess: isRevoking } =
+    useAssetHubRevokeAdminRights({
+      onSuccess: () => {
+        if (chainStoredAsset) {
+          setIsWhiteListed(chainStoredAsset.id, true)
+          refetchProvider()
+          refetchAssetHub()
+        }
+      },
+    })
 
   const { isXYKPool, pools } = useMemo(() => {
     if (!isChainStored || !xykPools.data)
       return { isXYKPool: false, pools: undefined }
 
-    const storedAsset = assets.external.find(
-      (external) => external.generalIndex === asset.id,
-    )
+    const chainAsset = getExternalByExternalId(externalAsset.id)
 
-    if (storedAsset) {
+    if (chainAsset) {
       const filteredXykPools = xykPools.data.filter((shareToken) =>
-        shareToken.assets.includes(storedAsset.id),
+        shareToken.assets.includes(chainAsset.id),
       )
 
       return {
+        chainAsset,
         isXYKPool: filteredXykPools.length,
         pools: filteredXykPools.map((pool) => pool.poolAddress),
       }
     }
 
     return { isXYKPool: false, pools: undefined }
-  }, [asset.id, assets.external, isChainStored, xykPools])
+  }, [externalAsset.id, getExternalByExternalId, isChainStored, xykPools.data])
+
+  const warningFlags = Object.fromEntries(
+    rugCheckData?.warnings.map(({ type, diff }) => {
+      const [from, to] = diff
+      return [type, { from, to }]
+    }) ?? [],
+  )
+
+  const externalMeta = !isChainStored
+    ? externalAssetRegistry[externalAsset.origin].data?.get(externalAsset.id)
+    : null
+
+  const isWhiteListed =
+    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   return (
     <div sx={{ flex: "column" }}>
-      <Text fs={12} color="brightBlue300" sx={{ mb: 4 }}>
+      <Text fs={12} color="brightBlue300" sx={{ mb: 10 }}>
         {t("wallet.addToken.form.info.title")}
       </Text>
 
-      <STokenInfoRow>
-        <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <InfoTooltip
-            text={t("wallet.addToken.form.info.registered.tooltip", {
-              value: isChainStored ? "is" : "is not",
+      {totalSupplyExternal && (
+        <TokenInfoRow
+          label={t("wallet.addToken.form.supply")}
+          severity="high"
+          value={
+            <Text
+              fs={12}
+              fw={500}
+              font="GeistMedium"
+              color={warningFlags.supply ? "alarmRed400" : undefined}
+            >
+              {t("value", {
+                value: totalSupplyExternal,
+                fixedPointScale: externalAsset.decimals,
+                decimalPlaces: 0,
+              })}
+            </Text>
+          }
+          warning={
+            warningFlags.supply
+              ? t("wallet.addToken.rugCheck.supply", {
+                  name: rugCheckData?.externalToken.name,
+                })
+              : ""
+          }
+        />
+      )}
+
+      {totalSupplyInternal && (
+        <>
+          <Separator opacity={0.3} color="darkBlue400" />
+          <TokenInfoRow
+            label={t("wallet.addToken.form.hydrationSupply")}
+            value={t("value", {
+              value: totalSupplyInternal,
+              fixedPointScale: externalAsset.decimals,
+              decimalPlaces: 0,
             })}
-          >
-            <SInfoIcon />
-          </InfoTooltip>
-          <Text fs={12} color="basic400">
-            {t("wallet.addToken.form.info.registered")}
-          </Text>
-        </div>
-
-        {isChainStored ? (
-          <Text fs={12} color="green600">
-            {t("yes")}
-          </Text>
-        ) : (
-          <Text fs={12} color="red500">
-            {t("no")}
-          </Text>
-        )}
-      </STokenInfoRow>
+          />
+        </>
+      )}
+      {warningFlags.name && (
+        <>
+          <Separator opacity={0.3} color="darkBlue400" />
+          <TokenInfoRow
+            label={t("wallet.addToken.form.name")}
+            value={
+              <TokenInfoValueDiff
+                before={warningFlags.name.from}
+                after={warningFlags.name.to}
+              />
+            }
+            warning={
+              warningFlags.name ? t("wallet.addToken.rugCheck.name") : ""
+            }
+          />
+        </>
+      )}
       <Separator opacity={0.3} color="darkBlue400" />
-
-      <STokenInfoRow>
-        <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <InfoTooltip
-            text={t("wallet.addToken.form.info.masterAccount.tooltip")}
-          >
-            <SInfoIcon />
-          </InfoTooltip>
-          <Text fs={12} color="basic400">
-            {t("wallet.addToken.form.info.masterAccount")}
-          </Text>
-        </div>
-
-        <div sx={{ flex: "row", gap: 8, align: "center" }}>
-          {MASTER_KEY_WHITELIST.some((id) => id === asset.id) ? (
+      <TokenInfoRow
+        label={t("wallet.addToken.form.symbol")}
+        value={
+          warningFlags.symbol ? (
+            <TokenInfoValueDiff
+              before={warningFlags.symbol.from}
+              after={warningFlags.symbol.to}
+            />
+          ) : (
+            externalAsset.symbol
+          )
+        }
+        warning={
+          warningFlags.symbol ? t("wallet.addToken.rugCheck.symbol") : ""
+        }
+      />
+      <Separator opacity={0.3} color="darkBlue400" />
+      <TokenInfoRow
+        label={t("wallet.addToken.form.decimals")}
+        value={
+          warningFlags.decimals ? (
+            <TokenInfoValueDiff
+              before={warningFlags.decimals.from}
+              after={warningFlags.decimals.to}
+            />
+          ) : (
+            externalAsset.decimals.toString()
+          )
+        }
+        warning={
+          warningFlags.decimals ? t("wallet.addToken.rugCheck.decimals") : ""
+        }
+      />
+      <Separator opacity={0.3} color="darkBlue400" />
+      <TokenInfoRow
+        label={t("wallet.addToken.form.assetId")}
+        value={externalAsset.id}
+      />
+      <Separator opacity={0.3} color="darkBlue400" />
+      <TokenInfoRow
+        label={t("wallet.addToken.form.info.registered")}
+        value={
+          isChainStored ? (
             <Text fs={12} color="green600">
-              {t("no")}
+              {t("yes")}
             </Text>
           ) : (
-            <>
-              {" "}
-              <Text fs={12} color="red500">
-                {t("yes")}
-              </Text>
-              <Icon size={14} sx={{ color: "red500" }} icon={<WarningIcon />} />
-            </>
-          )}
-        </div>
-      </STokenInfoRow>
+            <Text fs={12} color="red500">
+              {t("no")}
+            </Text>
+          )
+        }
+      />
       <Separator opacity={0.3} color="darkBlue400" />
-
-      <STokenInfoRow>
-        <div sx={{ flex: "row", gap: 4, align: "center" }}>
-          <InfoTooltip
-            text={t("wallet.addToken.form.info.availability.tooltip", {
-              count: BN(parachains.amount).plus(1).toNumber(),
-            })}
-          >
-            <SInfoIcon />
-          </InfoTooltip>
-          <Text fs={12} color="basic400">
-            {t("wallet.addToken.form.info.availability")}
-          </Text>
-        </div>
-
-        <Text fs={12}>{BN(parachains.amount).plus(1).toString()}</Text>
-      </STokenInfoRow>
-
+      {externalAsset.origin === assethub.parachainId && (
+        <TokenInfoRow
+          tooltip={t("wallet.addToken.form.info.masterAccount.tooltip")}
+          label={t("wallet.addToken.form.info.masterAccount")}
+          value={
+            <div sx={{ flex: "row", gap: 4, align: "center" }}>
+              {isWhiteListed ? (
+                <Text fs={12} color="green600">
+                  {t("yes")}
+                </Text>
+              ) : (
+                <>
+                  <Text fs={12} lh={14} color="red500">
+                    {t("no")}
+                  </Text>
+                  <Icon
+                    size={14}
+                    sx={{ color: "red500" }}
+                    icon={<WarningIcon />}
+                  />
+                  {isAdmin && (
+                    <Button
+                      type="button"
+                      variant="warning"
+                      size="micro"
+                      disabled={isRevoking}
+                      sx={{
+                        ml: 6,
+                        mt: -2,
+                        py: 0,
+                        px: 4,
+                        fontSize: 9,
+                      }}
+                      onClick={() => revokeAdminRights(externalAsset.id)}
+                    >
+                      {t("memepad.summary.adminRights.burn")}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          }
+        />
+      )}
+      <Separator opacity={0.3} color="darkBlue400" />
+      <TokenInfoRow
+        label={t("wallet.addToken.form.info.availability")}
+        value={BN(parachains.amount).plus(1).toString()}
+      />
       {isChainStored && (
         <>
           <Separator opacity={0.3} color="darkBlue400" />
-          <STokenInfoRow>
-            <Text fs={12} color="basic400">
-              {t("wallet.addToken.form.info.isolatedPool")}
-            </Text>
-
-            {isXYKPool ? (
-              <Text fs={12} color="green600">
-                {t("yes")}
-              </Text>
-            ) : (
-              <Text fs={12} color="red500">
-                {t("no")}
-              </Text>
-            )}
-          </STokenInfoRow>
+          <TokenInfoRow
+            label={t("wallet.addToken.form.info.isolatedPool")}
+            value={
+              isXYKPool ? (
+                <Text fs={12} color="green600">
+                  {t("yes")}
+                </Text>
+              ) : (
+                <Text fs={12} color="red500">
+                  {t("no")}
+                </Text>
+              )
+            }
+          />
+          <Separator opacity={0.3} color="darkBlue400" />
           {pools?.length ? (
             <>
-              <Separator opacity={0.3} color="darkBlue400" />
-              <STokenInfoRow>
-                <Text fs={12} color="basic400">
-                  {t("wallet.addToken.form.info.volume")}
-                </Text>
-
-                <XYKVolume pools={pools} />
-              </STokenInfoRow>
+              <TokenInfoRow
+                label={t("wallet.addToken.form.info.volume")}
+                value={<XYKVolume pools={pools} />}
+              />
             </>
-          ) : null}
+          ) : (
+            <TokenInfoRow
+              label={t("wallet.addToken.form.info.volume")}
+              value={"-"}
+            />
+          )}
         </>
       )}
     </div>
@@ -179,8 +322,10 @@ const XYKVolume = ({ pools }: { pools: string[] }) => {
     <Text fs={12}>
       {volumes.isLoading ? (
         <Skeleton width={40} height={10} />
+      ) : total?.isNaN() || !total ? (
+        "N/A"
       ) : (
-        <DisplayValue value={total?.div(2)} />
+        <DisplayValue value={total.div(2)} />
       )}
     </Text>
   )

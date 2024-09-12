@@ -11,12 +11,13 @@ export function useTimestamp(
   enabled = true,
 ) {
   const { api } = useRpcProvider()
+  const queryEnabled = !!blockNumber && enabled
+
   return useQuery(
     QUERY_KEYS.timestamp(blockNumber),
-    () =>
-      blockNumber !== null ? getTimestamp(api, blockNumber) : undefinedNoop(),
+    () => (queryEnabled ? getTimestamp(api, blockNumber) : undefinedNoop()),
     {
-      enabled: !!blockNumber && enabled,
+      enabled: queryEnabled,
     },
   )
 }
@@ -25,7 +26,7 @@ export async function getTimestamp(
   api: ApiPromise,
   blockNumber?: u32 | BigNumber,
 ) {
-  if (blockNumber != null) {
+  if (blockNumber) {
     const blockHash = await api.rpc.chain.getBlockHash(blockNumber.toString())
     const apiAt = await api.at(blockHash)
     const now = await apiAt.query.timestamp.now()

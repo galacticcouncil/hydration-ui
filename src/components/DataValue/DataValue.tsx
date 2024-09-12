@@ -47,7 +47,7 @@ const VALUE_SIZES: Record<DataValueSize, TextProps> = {
 
 export type DataValueProps = {
   label: ReactNode
-  children: ReactNode
+  children?: ReactNode
   className?: string
   tooltip?: ReactNode
   size?: DataValueSize
@@ -62,7 +62,7 @@ export const DataValue: React.FC<DataValueProps> = ({
   className,
   tooltip,
   size = "medium",
-  font = "FontOver",
+  font = "GeistMono",
   labelColor = "white",
   isLoading = false,
 }) => {

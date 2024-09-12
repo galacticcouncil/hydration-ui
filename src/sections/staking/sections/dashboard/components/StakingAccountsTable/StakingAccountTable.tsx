@@ -54,7 +54,7 @@ export const StakingAccountTable = () => {
               fs={[18, 19]}
               lh={[20, 24]}
               color="white"
-              font="FontOver"
+              font="GeistMono"
               css={{ alignSelf: "self-end" }}
             >
               {t("staking.dashboard.table.title")}

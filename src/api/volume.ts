@@ -6,17 +6,23 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useIndexerUrl, useProviderRpcUrlStore } from "./provider"
+import { PROVIDERS, useActiveProvider, useIndexerUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 
 export type TradeType = {
-  name: "Omnipool.SellExecuted" | "Omnipool.BuyExecuted" | "OTC.Placed"
+  name:
+    | "Omnipool.SellExecuted"
+    | "Omnipool.BuyExecuted"
+    | "XYK.SellExecuted"
+    | "XYK.BuyExecuted"
+    | "Router.Executed"
   id: string
   args: {
     who: string
     assetIn: number
     assetOut: number
+    amount?: string
     amountIn: string
     amountOut: string
   }
@@ -27,6 +33,41 @@ export type TradeType = {
     hash: string
   }
 }
+
+export type StableswapType = {
+  name: "Stableswap.LiquidityAdded"
+  id: string
+  args: {
+    who: string
+    poolId: number
+    assets: { amount: string; assetId: number }[]
+    amounts: { amount: string; assetId: number }[]
+  }
+  block: {
+    timestamp: string
+  }
+  extrinsic: {
+    hash: string
+  }
+}
+
+export const isStableswapEvent = (
+  event: TradeType | StableswapType,
+): event is StableswapType =>
+  ["Stableswap.LiquidityAdded", "Stableswap.LiquidityRemoved"].includes(
+    event.name,
+  )
+
+export const isTradeEvent = (
+  event: TradeType | StableswapType,
+): event is TradeType =>
+  [
+    "Omnipool.SellExecuted",
+    "Omnipool.BuyExecuted",
+    "XYK.SellExecuted",
+    "XYK.BuyExecuted",
+    "Router.Executed",
+  ].includes(event.name)
 
 export const getTradeVolume =
   (indexerUrl: string, assetId: string) => async () => {
@@ -148,26 +189,51 @@ export const getAllTrades =
     // describe the event arguments at all
     return {
       ...(await request<{
-        events: Array<TradeType>
+        events: Array<TradeType | StableswapType>
       }>(
         indexerUrl,
         gql`
           query TradeVolume($assetId: Int, $after: DateTime!) {
             events(
               where: {
-                name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
-                args_jsonContains: { assetIn: $assetId }
-                phase_eq: "ApplyExtrinsic"
-                block: { timestamp_gte: $after }
-                OR: {
-                  name_in: ["Omnipool.SellExecuted", "Omnipool.BuyExecuted"]
-                  args_jsonContains: { assetOut: $assetId }
-                  phase_eq: "ApplyExtrinsic"
-                  block: { timestamp_gte: $after }
-                }
+                OR: [
+                  {
+                    name_in: [
+                      "Omnipool.SellExecuted"
+                      "Omnipool.BuyExecuted"
+                      "XYK.SellExecuted"
+                      "XYK.BuyExecuted"
+                      "Router.Executed"
+                    ]
+                    args_jsonContains: { assetIn: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
+                  {
+                    name_in: [
+                      "Omnipool.SellExecuted"
+                      "Omnipool.BuyExecuted"
+                      "XYK.SellExecuted"
+                      "XYK.BuyExecuted"
+                      "Router.Executed"
+                    ]
+                    args_jsonContains: { assetOut: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
+                  {
+                    name_in: [
+                      "Stableswap.LiquidityAdded"
+                      "Stableswap.LiquidityRemoved"
+                    ]
+                    args_jsonContains: { poolId: $assetId }
+                    phase_eq: "ApplyExtrinsic"
+                    block: { timestamp_gte: $after }
+                  }
+                ]
               }
-              orderBy: [block_height_DESC]
-              limit: 10
+              orderBy: [block_height_DESC, pos_ASC]
+              limit: 100
             ) {
               id
               name
@@ -190,10 +256,11 @@ export function useTradeVolumes(
   assetIds: Maybe<u32 | string>[],
   noRefresh?: boolean,
 ) {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
   const selectedProvider = PROVIDERS.find(
-    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+    (provider) =>
+      activeProvider &&
+      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
   )
 
   const indexerUrl =
@@ -230,10 +297,11 @@ export function useXYKTradeVolumes(assetIds: Maybe<u32 | string>[]) {
 }
 
 export function useAllTrades(assetId?: number) {
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const activeProvider = useActiveProvider()
   const selectedProvider = PROVIDERS.find(
-    (provider) => new URL(provider.url).hostname === new URL(rpcUrl).hostname,
+    (provider) =>
+      activeProvider &&
+      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
   )
 
   const indexerUrl =

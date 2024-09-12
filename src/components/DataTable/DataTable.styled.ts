@@ -100,7 +100,7 @@ export const TableContainer = styled.div<Pick<TableProps, "background">>`
   overflow-x: auto;
   position: relative;
 
-  margin: 0 -15px;
+  margin: 0 -12px;
 
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
@@ -132,7 +132,7 @@ export const TableTitleContainer = styled.div<{
 `
 
 export const TableTitle = styled.div`
-  font-family: "FontOver";
+  font-family: "GeistMono";
   font-size: 14px;
 
   color: ${theme.colors.white};
@@ -149,7 +149,7 @@ export const TableAddons = styled.div<{
 
   ${({ spacing = "medium" }) => TITLE_SPACING[spacing]}
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     padding-top: 0;
   }
 `
@@ -159,7 +159,7 @@ export const Table = styled.table<TableProps>`
   border-spacing: 0;
   border-collapse: collapse;
 
-  &:not(:first-child) {
+  &:not(:first-of-type) {
     border-top: 1px solid rgba(${theme.rgbColors.white}, 0.06);
   }
 
@@ -187,7 +187,7 @@ export const TableRow = styled.tr`
 export const TableHead = styled.th<{ canSort?: boolean }>`
   font-size: 11px !important;
   line-height: 14px;
-  font-family: "ChakraPetchSemiBold";
+  font-family: "GeistSemiBold";
 
   text-transform: uppercase;
   text-align: start;

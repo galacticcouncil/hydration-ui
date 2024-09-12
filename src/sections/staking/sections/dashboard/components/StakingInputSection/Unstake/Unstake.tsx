@@ -14,6 +14,8 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { usePositionVotesIds, useProcessedVotesIds } from "api/staking"
+import { useAssets } from "providers/assets"
 
 export const Unstake = ({
   loading,
@@ -25,10 +27,9 @@ export const Unstake = ({
   staked: BigNumber
 }) => {
   const { t } = useTranslation()
-
+  const { native } = useAssets()
   const queryClient = useQueryClient()
-
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
 
   const { account } = useAccount()
@@ -38,7 +39,12 @@ export const Unstake = ({
     },
   })
 
+  const processedVotes = useProcessedVotesIds()
+  const positionVotes = usePositionVotesIds()
+
   const onSubmit = async () => {
+    if (!positionId) return null
+
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
@@ -56,9 +62,19 @@ export const Unstake = ({
       return memo
     }, {} as ToastMessage)
 
+    const pendingVoteIds = await positionVotes.mutateAsync(positionId)
+    const processedVoteIds = await processedVotes.mutateAsync()
+
+    const voteIds = [...pendingVoteIds, ...processedVoteIds]
+
     const transaction = await createTransaction(
       {
-        tx: api.tx.staking.unstake(positionId!),
+        tx: voteIds.length
+          ? api.tx.utility.batchAll([
+              ...voteIds.map((id) => api.tx.democracy.removeVote(id)),
+              api.tx.staking.unstake(positionId),
+            ])
+          : api.tx.staking.unstake(positionId),
       },
       { toast },
     )
@@ -66,7 +82,7 @@ export const Unstake = ({
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
     await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(assets.native.id, account?.address),
+      QUERY_KEYS.tokenBalance(native.id, account?.address),
     )
 
     if (!transaction.isError) {
@@ -79,7 +95,7 @@ export const Unstake = ({
       <GradientText
         gradient="pinkLightBlue"
         fs={19}
-        sx={{ width: "fit-content" }}
+        sx={{ width: "fit-content", py: 16 }}
       >
         {t("staking.dashboard.form.unstake.title")}
       </GradientText>
@@ -124,7 +140,7 @@ export const Unstake = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                assetId={assets.native.id}
+                assetId={native.id}
                 error={error?.message}
               />
             )

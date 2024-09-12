@@ -1,32 +1,34 @@
-import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { useMemo } from "react"
+import { useExternalAssetRegistry } from "api/external"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Search } from "components/Search/Search"
 import { Text } from "components/Typography/Text/Text"
+import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { SAssetsModalHeader } from "sections/assets/AssetsModal.styled"
 import {
-  SELECTABLE_PARACHAINS_IDS,
   TExternalAsset,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
+import { useSettingsStore } from "state/store"
 import { theme } from "theme"
-
-const DEFAULT_PARACHAIN_ID = SELECTABLE_PARACHAINS_IDS[0]
+import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useAssets } from "providers/assets"
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
   onCustomAssetClick?: () => void
   search: string
   setSearch: (search: string) => void
+  parachainId: number
+  setParachainId: (id: number) => void
 }
 
 export const AddTokenListModal: React.FC<Props> = ({
@@ -34,37 +36,68 @@ export const AddTokenListModal: React.FC<Props> = ({
   onCustomAssetClick,
   search,
   setSearch,
+  parachainId,
+  setParachainId,
 }) => {
   const { t } = useTranslation()
-  const { assets, isLoaded } = useRpcProvider()
-  const [parachainId, setParachainId] = useState(DEFAULT_PARACHAIN_ID)
+  const { isLoaded } = useRpcProvider()
+  const { tokens, external, externalInvalid } = useAssets()
+  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const { data, isLoading } = useExternalAssetRegistry()
+  const assetRegistry = useExternalAssetRegistry()
   const { isAdded } = useUserExternalTokenStore()
 
-  const externalAssets = data?.[parachainId] ?? []
-  const internalAssets =
-    assets?.tokens?.filter(
-      (asset) => asset.parachainId === parachainId.toString(),
-    ) ?? []
+  const selectedParachain = assetRegistry?.[parachainId]
+
+  const externalAssets = selectedParachain.data
+    ? Array.from(selectedParachain.data.values())
+    : []
+
+  const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
+    const internalAssets =
+      tokens.filter((asset) => asset.parachainId === parachainId.toString()) ??
+      []
+
+    const internalAssetsMap = new Map(
+      internalAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    const registeredAssets =
+      [...external, ...externalInvalid].filter(
+        (asset) => asset.parachainId === parachainId.toString(),
+      ) ?? []
+
+    const registeredAssetsMap = new Map(
+      registeredAssets.map((asset) => [asset.externalId, asset]),
+    )
+
+    return {
+      registeredAssetsMap,
+      internalAssetsMap,
+    }
+  }, [external, externalInvalid, parachainId, tokens])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
     if (isDOT) return false
 
-    const isChainStored = internalAssets.some(
-      (internalAsset) => internalAsset.generalIndex === asset.id,
-    )
+    const isChainStored = !!internalAssetsMap.get(asset.id)
     if (isChainStored) return false
+
+    const isRegistered = !!registeredAssetsMap.get(asset.id)
+    if (degenMode && isRegistered) {
+      return false
+    }
 
     const isUserStored = isAdded(asset.id)
     if (isUserStored) return false
 
     const isSearched = search.length
       ? asset.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
-        asset.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+        asset.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+        asset.id.toString().includes(search)
       : true
 
     return isSearched
@@ -96,24 +129,35 @@ export const AddTokenListModal: React.FC<Props> = ({
               width: "100%",
             }}
             content={
-              isLoading || !isLoaded ? (
+              selectedParachain.isLoading || !isLoaded ? (
                 <AddTokenListSkeleton />
               ) : (
                 <>
                   {filteredExternalAssets.map((asset) => (
                     <AssetRow
                       key={asset.id}
-                      onClick={() =>
+                      onClick={() => {
                         onAssetSelect?.({ ...asset, origin: parachainId })
-                      }
+                      }}
                     >
-                      <Text
-                        fs={14}
-                        sx={{ flex: "row", align: "center", gap: 10 }}
-                      >
-                        <Icon icon={<AssetLogo />} size={24} />
-                        {asset.name}
-                      </Text>
+                      <Icon
+                        icon={
+                          <ExternalAssetLogo
+                            id={asset.id}
+                            parachainId={asset.origin}
+                            originHidden
+                          />
+                        }
+                        size={24}
+                      />
+                      <div sx={{ minWidth: 0 }}>
+                        <Text fs={14} font="GeistSemiBold">
+                          {asset.symbol}
+                        </Text>
+                        <Text fs={12} color="basic500">
+                          {asset.name}
+                        </Text>
+                      </div>
                     </AssetRow>
                   ))}
                 </>

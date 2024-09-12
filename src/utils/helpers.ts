@@ -9,7 +9,9 @@ import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
+import { AnyChain, AnyEvmChain, AnyParachain } from "@galacticcouncil/xcm-core"
+import { TAsset } from "providers/assets"
 
 export const noop = () => {}
 export const undefinedNoop = () => undefined
@@ -23,9 +25,8 @@ export const safelyParse = <T>(input: string): T | undefined => {
 }
 
 export type Maybe<T> = T | null | undefined
-export type FormValues<T> = T extends UseFormReturn<infer Values>
-  ? Values
-  : never
+export type FormValues<T> =
+  T extends UseFormReturn<infer Values> ? Values : never
 
 export function isRecord<Key extends string, Value>(
   x: unknown,
@@ -320,4 +321,110 @@ export function abbreviateNumber(price: BN): string {
   }
 
   return formattedPrice
+}
+
+export const isAnyParachain = (chain: AnyChain): chain is AnyParachain =>
+  (chain as AnyParachain).parachainId !== undefined
+
+export const isAnyEvmChain = (chain: AnyChain): chain is AnyEvmChain =>
+  !!(chain as AnyEvmChain).client
+
+export const isJson = (item: string) => {
+  let value = typeof item !== "string" ? JSON.stringify(item) : item
+  try {
+    value = JSON.parse(value)
+  } catch (e) {
+    return false
+  }
+
+  return typeof value === "object" && value !== null
+}
+
+export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
+  assets: Array<T>,
+  balanceKey: Extract<KeyOfType<T, BigNumber>, string>,
+  firstAssetId?: string,
+) => {
+  const tickerOrder = [
+    "HDX",
+    "DOT",
+    "USDC",
+    "USDT",
+    "IBTC",
+    "VDOT",
+    "WETH",
+    "WBTC",
+  ]
+  const getTickerIndex = (ticker: string) => {
+    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    return index === -1 ? Infinity : index
+  }
+
+  return [...assets].sort((a, b) => {
+    if (firstAssetId) {
+      if (a.meta.id === firstAssetId) return -1
+      if (b.meta.id === firstAssetId) return 1
+    }
+    const balanceA = a[balanceKey] as BN
+    const balanceB = b[balanceKey] as BN
+
+    if (balanceA.isNaN() || balanceB.isNaN()) {
+      if (balanceA.isNaN() && !balanceB.isNaN()) return 1
+      if (!balanceA.isNaN() && balanceB.isNaN()) return -1
+
+      if (a.meta.symbol && b.meta.symbol)
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+    }
+
+    if (balanceB.isZero() && balanceA.isZero()) {
+      const tickerIndexA = getTickerIndex(a.meta.symbol)
+      const tickerIndexB = getTickerIndex(b.meta.symbol)
+
+      if (a.meta.isExternal && !b.meta.isExternal) return 1
+      if (!a.meta.isExternal && b.meta.isExternal) return -1
+
+      if (
+        tickerIndexA === tickerIndexB ||
+        (a.meta.isExternal && b.meta.isExternal)
+      ) {
+        return a.meta.symbol.localeCompare(b.meta.symbol)
+      } else {
+        return tickerIndexA - tickerIndexB
+      }
+    }
+
+    return b[balanceKey].minus(a[balanceKey]).toNumber()
+  })
+}
+
+const deepEqual = (obj1: any, obj2: any): boolean => {
+  if (obj1 === obj2) return true
+  if (obj1 == null || obj2 == null) return false
+  if (typeof obj1 !== "object" || typeof obj2 !== "object") {
+    return false
+  }
+
+  let keys1 = Object.keys(obj1)
+  let keys2 = Object.keys(obj2)
+  if (keys1.length !== keys2.length) {
+    return false
+  }
+
+  for (let key of keys1) {
+    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false
+  }
+
+  return true
+}
+
+export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
+  if (arr1.length !== arr2.length) return false
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (!deepEqual(arr1[i], arr2[i])) {
+      return false
+    }
+  }
+
+  return true
 }

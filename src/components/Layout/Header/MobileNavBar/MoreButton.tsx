@@ -1,6 +1,6 @@
 import MoreTabIcon from "assets/icons/MoreTabIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { ReactNode, useState } from "react"
+import React, { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { HeaderSettingsMobile } from "components/Layout/Header/settings/mobile/HeaderSettingsMobile"
 import { STabButton } from "./MobileNavBar.styled"
@@ -9,8 +9,7 @@ import { SQuestionmark } from "components/Layout/Header/Header.styled"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
-
-const settingsEanbled = import.meta.env.VITE_FF_SETTINGS_ENABLED === "true"
+import { DOC_LINK } from "utils/constants"
 
 type MoreButtonProps = { tabs: ReactNode }
 
@@ -33,17 +32,14 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
               width: "calc(100% - 20px)",
             }}
           >
-            {settingsEanbled && (
-              <>
-                <HeaderSettingsMobile />
-                <Separator
-                  orientation="vertical"
-                  css={{ background: "rgba(158, 167, 186, 0.06)" }}
-                />
-              </>
-            )}
+            <HeaderSettingsMobile />
+            <Separator
+              orientation="vertical"
+              css={{ background: "rgba(158, 167, 186, 0.06)" }}
+            />
+
             <a
-              href="https://docs.hydradx.io/"
+              href={DOC_LINK}
               target="blank"
               rel="noreferrer"
               sx={{ flex: "row", align: "center", gap: 10, py: 10 }}
@@ -65,7 +61,9 @@ export const MoreButton = ({ tabs }: MoreButtonProps) => {
               </Text>
             </a>
           </div>
-          {tabs}
+          {React.Children.map(tabs, (child) => (
+            <div onClick={() => setOpenModal(false)}>{child}</div>
+          ))}
         </div>
       </TabMenuModal>
     </>

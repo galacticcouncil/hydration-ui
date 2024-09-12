@@ -17,7 +17,7 @@ export const DeleteModal = ({ onBack, onConfirm }: DeleteModalProps) => {
     <SModalOverlay>
       <SModalContainer>
         <Icon size={22} sx={{ color: "white" }} icon={<IconRemove />} />
-        <Text fs={24} font="FontOver" tTransform="uppercase">
+        <Text fs={24} font="GeistMono" tTransform="uppercase">
           {t("rpc.change.modal.removeRpc.title")}
         </Text>
         <Text color="basic400" sx={{ width: 280 }} tAlign="center">

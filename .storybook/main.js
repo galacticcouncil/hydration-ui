@@ -27,10 +27,10 @@ module.exports = {
       tsconfigPaths(),
       ...(config.plugins.filter(({ name }) => name !== 'transform-index-html'))
     ]
-
     return config
   },
-  docs: {
-    autodocs: true
+  docs: {},
+  typescript: {
+    reactDocgen: "react-docgen-typescript"
   }
 };

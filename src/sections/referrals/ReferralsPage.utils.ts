@@ -2,10 +2,9 @@ import { useReferrerInfo } from "api/referrals"
 import BN from "bignumber.js"
 import { useAccountRewards } from "./components/RewardsCard/Rewards.utils"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
-import { LINKS } from "utils/navigation"
+import { useAssets } from "providers/assets"
 
-export const REFERRAL_PROD_HOST = "hydradx.io"
+export const REFERRAL_PROD_HOST = "hydration.net"
 export const REFERRAL_PARAM_NAME = "referral"
 export const REFERRAL_CODE_MAX_LENGTH = 7
 export const REFERRAL_CODE_REGEX = /^[a-zA-Z0-9]+$/
@@ -22,9 +21,7 @@ export const referralRewards: Record<
 }
 
 export const useReferrerTierData = (referrerAddress?: string) => {
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const referrerInfo = useReferrerInfo(referrerAddress)
   const accountRewards = useAccountRewards(referrerAddress)
 
@@ -55,12 +52,4 @@ export const useReferrerTierData = (referrerAddress?: string) => {
   const isLevelUp = tierProgress?.gte(100) && referrerInfo.data?.tier !== 4
 
   return { referrerInfo, currentTierData, tierProgress, isLevelUp }
-}
-
-export function getShareUrl(code: string, origin?: string) {
-  if (origin && import.meta.env.VITE_ENV !== "production") {
-    return new URL(`${origin}${LINKS.swap}?${REFERRAL_PARAM_NAME}=${code}`)
-  }
-
-  return new URL(`https://${REFERRAL_PROD_HOST}/${code}`)
 }

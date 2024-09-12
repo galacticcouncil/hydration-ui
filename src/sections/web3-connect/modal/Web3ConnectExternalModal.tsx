@@ -126,9 +126,6 @@ export const Web3ConnectExternalModal = ({
       autoComplete="off"
       sx={{ flex: "column", minHeight: "100%" }}
     >
-      <Text color="basic400">
-        {t("walletConnect.externalWallet.modal.desc")}
-      </Text>
       <Controller
         name="address"
         control={form.control}
@@ -165,20 +162,18 @@ export const Web3ConnectExternalModal = ({
           )
 
           return (
-            <div sx={{ mt: 35 }}>
-              <WalletTransferAccountInput
-                label={t("walletConnect.externalWallet.modal.input.label")}
-                name={name}
-                value={value}
-                onChange={onChange}
-                placeholder={t(
-                  "walletConnect.externalWallet.modal.input.placeholder",
-                )}
-                rightIcon={rightIcon}
-                error={error?.message}
-                openAddressBook={onOpenAddressBook}
-              />
-            </div>
+            <WalletTransferAccountInput
+              label={t("walletConnect.externalWallet.modal.input.label")}
+              name={name}
+              value={value}
+              onChange={onChange}
+              placeholder={t(
+                "walletConnect.externalWallet.modal.input.placeholder",
+              )}
+              rightIcon={rightIcon}
+              error={error?.message}
+              openAddressBook={onOpenAddressBook}
+            />
           )
         }}
       />
@@ -189,7 +184,7 @@ export const Web3ConnectExternalModal = ({
           error ? (
             <>
               <Spacer size={15} />
-              <Text color="red400" font="ChakraPetchBold" fs={12}>
+              <Text color="red400" font="GeistMedium" fs={12}>
                 {t("walletConnect.accountSelect.proxyAccount.error")}
               </Text>
               <Spacer size={6} />

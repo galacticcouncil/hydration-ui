@@ -1,10 +1,21 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import ActiveReferendumIcon from "assets/icons/ActiveReferendumIcon.svg?react"
+import PendingBridgeIcon from "assets/icons/ClockIcon.svg?react"
 import { css } from "@emotion/react"
 
 export const SActiveReferendumIcon = styled(ActiveReferendumIcon)`
   color: ${theme.colors.warningYellow400};
+  border-radius: 50%;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+`
+
+export const SPendingBridgeIcon = styled(PendingBridgeIcon)`
+  color: ${theme.colors.green500};
   border-radius: 50%;
   position: absolute;
   right: 6px;

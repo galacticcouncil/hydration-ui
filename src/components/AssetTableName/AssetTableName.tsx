@@ -1,31 +1,26 @@
 import { useTranslation } from "react-i18next"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { useRpcProvider } from "providers/rpcProvider"
-import { Icon } from "components/Icon/Icon"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
+import { useAssets } from "providers/assets"
 
 export const AssetTableName = ({
   large,
-  symbol,
-  name,
   isPaymentFee,
   id,
 }: {
-  symbol: string
-  name: string
   large?: boolean
   isPaymentFee?: boolean
   id: string
 }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const asset = assets.getAsset(id)
+  const { getAsset } = useAssets()
 
-  const iconIds =
-    assets.isStableSwap(asset) || assets.isShareToken(asset)
-      ? asset.assets
-      : asset.id
+  const asset = getAsset(id)
+  const getExternalMeta = useExternalTokenMeta()
+  const meta = asset?.isExternal ? getExternalMeta(id) : asset
+
+  if (!asset || !meta) return null
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -36,44 +31,24 @@ export const AssetTableName = ({
           e.stopPropagation()
         }}
       >
-        {typeof iconIds === "string" ? (
-          <Icon
-            size={[large ? 28 : 26, 26]}
-            icon={<AssetLogo id={iconIds} />}
-          />
-        ) : (
-          <MultipleIcons
-            icons={iconIds.map((asset) => {
-              const meta = assets.getAsset(asset)
-              const isBond = assets.isBond(meta)
-              return {
-                icon: (
-                  <Icon
-                    size={[large ? 28 : 26, 26]}
-                    icon={<AssetLogo id={isBond ? meta.assetId : asset} />}
-                  />
-                ),
-              }
-            })}
-          />
-        )}
+        <MultipleAssetLogo size={[large ? 28 : 26, 26]} iconId={meta.iconId} />
 
-        <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
+        <div sx={{ flex: "column", width: "100%", gap: [0, 2] }}>
           <Text
             fs={large ? 18 : 14}
             lh={large ? 16 : 14}
-            font="ChakraPetchSemiBold"
+            font="GeistMedium"
             color="white"
           >
-            {symbol}
+            {meta.symbol}
           </Text>
           <Text
-            fs={large ? 14 : 13}
-            lh={large ? 17 : 13}
+            fs={large ? 14 : 12}
+            lh={large ? 17 : 12}
             sx={{ display: !large ? ["none", "block"] : undefined }}
             color="whiteish500"
           >
-            {name}
+            {asset.name}
           </Text>
         </div>
       </div>
@@ -82,9 +57,8 @@ export const AssetTableName = ({
           fs={10}
           sx={{
             mt: 4,
-            ml: large ? 30 : [32, 36],
+            ml: large ? 30 : [32, 34],
           }}
-          font="ChakraPetchSemiBold"
           color="brightBlue300"
           tTransform="uppercase"
         >

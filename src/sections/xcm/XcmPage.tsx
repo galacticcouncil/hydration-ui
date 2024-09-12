@@ -1,4 +1,3 @@
-import { Page } from "components/Layout/Page/Page"
 import { SContainer } from "./XcmPage.styled"
 
 import type { TxInfo } from "@galacticcouncil/apps"
@@ -10,21 +9,17 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
-import {
-  useWeb3ConnectStore,
-  WalletMode,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   DEFAULT_DEST_CHAIN,
   getDefaultSrcChain,
+  getDesiredWalletMode,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
   getXCall,
 } from "sections/xcm/XcmPage.utils"
-import { PageSwitch } from "sections/xcm/components/PageSwitch"
 import { genesisHashToChain } from "utils/helpers"
 
 type WalletChangeDetail = {
@@ -68,8 +63,8 @@ export function XcmPage() {
   const search = XcmAppSearch.safeParse(rawSearch)
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+
+  const rpcUrlList = useActiveRpcUrlList()
 
   const ref = React.useRef<Apps.XcmApp>(null)
 
@@ -103,17 +98,10 @@ export function XcmPage() {
   const handleWalletChange = (e: CustomEvent<WalletChangeDetail>) => {
     const { srcChain } = e.detail
 
-    const chain = chainsMap.get(srcChain)
-    const isEvm = chain?.isEvmParachain()
-    const isHydra = chain?.key === "hydradx"
-
-    const walletMode = isHydra
-      ? WalletMode.Default
-      : isEvm
-      ? WalletMode.EVM
-      : WalletMode.Substrate
+    const walletMode = getDesiredWalletMode(srcChain)
 
     setIncomingSrcChain(srcChain)
+
     toggleWeb3Modal(walletMode, {
       chain: srcChain,
     })
@@ -128,29 +116,35 @@ export function XcmPage() {
       : DEFAULT_DEST_CHAIN
 
   const assetDefault =
-    search.success && search.data.asset ? search.data.asset : undefined
+    search.success && search.data.asset
+      ? search.data.asset
+      : srcChain === "ethereum"
+        ? "eth"
+        : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
+  const blacklist =
+    import.meta.env.VITE_ENV === "production"
+      ? "acala-evm,darwinia"
+      : "darwinia"
+
   return (
-    <Page>
-      <PageSwitch />
-      <SContainer>
-        <XcmApp
-          ref={ref}
-          srcChain={srcChainDefault}
-          destChain={destChainDefault}
-          asset={assetDefault}
-          accountName={account?.name}
-          accountProvider={account?.provider}
-          accountAddress={account?.address}
-          apiAddress={rpcUrl}
-          stableCoinAssetId={stableCoinAssetId}
-          onXcmNew={handleSubmit}
-          onWalletChange={handleWalletChange}
-          ss58Prefix={ss58Prefix}
-          blacklist="pendulum"
-        />
-      </SContainer>
-    </Page>
+    <SContainer>
+      <XcmApp
+        ref={ref}
+        srcChain={srcChainDefault}
+        destChain={destChainDefault}
+        asset={assetDefault}
+        accountName={account?.name}
+        accountProvider={account?.provider}
+        accountAddress={account?.address}
+        apiAddress={rpcUrlList.join()}
+        stableCoinAssetId={stableCoinAssetId}
+        onXcmNew={handleSubmit}
+        onWalletChange={handleWalletChange}
+        ss58Prefix={ss58Prefix}
+        blacklist={blacklist}
+      />
+    </SContainer>
   )
 }

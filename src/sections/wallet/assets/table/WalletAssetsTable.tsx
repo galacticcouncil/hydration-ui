@@ -11,10 +11,13 @@ import {
   TableTitle,
 } from "components/Table/Table.styled"
 import { Text } from "components/Typography/Text/Text"
-import { Fragment, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { WalletAssetsTableDetails } from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
+import {
+  ExternalAssetRow,
+  WalletAssetsTableDetails,
+} from "sections/wallet/assets/table/details/WalletAssetsTableDetails"
 import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
 import { useAssetsTable } from "sections/wallet/assets/table/WalletAssetsTable.utils"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
@@ -28,26 +31,40 @@ import { AssetsTableData } from "./data/WalletAssetsTableData.utils"
 import { EmptyState } from "components/Table/EmptyState"
 import EmptyStateIcon from "assets/icons/NoActivities.svg?react"
 import { LINKS } from "utils/navigation"
+import { TablePagination } from "components/Table/TablePagination"
+import { useSettingsStore } from "state/store"
 
 type Props = {
   data: AssetsTableData[]
   showAll: boolean
   setShowAll: (value: boolean) => void
+  search: string
 }
 
 const addTokenEnabled = import.meta.env.VITE_FF_ADD_TOKEN === "true"
 
-export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
+export const WalletAssetsTable = ({
+  data,
+  setShowAll,
+  showAll,
+  search,
+}: Props) => {
   const { t } = useTranslation()
   const [row, setRow] = useState<AssetsTableData | undefined>(undefined)
   const [addToken, setAddToken] = useState(false)
   const [transferAsset, setTransferAsset] = useState<string | null>(null)
+  const { degenMode } = useSettingsStore()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const table = useAssetsTable(data, {
     onTransfer: setTransferAsset,
   })
+
+  useEffect(() => {
+    table.setPageIndex(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, degenMode])
 
   const button = (
     <Button
@@ -70,7 +87,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           <Text
             fs={[16, 20]}
             lh={[20, 26]}
-            css={{ fontFamily: "FontOver" }}
+            font="GeistMono"
             fw={500}
             color="white"
           >
@@ -82,7 +99,10 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             {addTokenEnabled && isDesktop && button}
             <Switch
               value={showAll}
-              onCheckedChange={(value) => setShowAll(value)}
+              onCheckedChange={(value) => {
+                table.setPageIndex(0)
+                setShowAll(value)
+              }}
               size="small"
               name="showAll"
               label={t("wallet.assets.table.toggle")}
@@ -92,7 +112,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
         <Table css={{ tableLayout: "fixed" }}>
           <TableHeaderContent>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} header>
                 {hg.headers.map((header) => (
                   <TableSortHeader
                     key={header.id}
@@ -117,35 +137,68 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
           </TableHeaderContent>
           <TableBodyContent>
             {table.options.data.length ? (
-              table.getRowModel().rows.map((row, i) => (
-                <Fragment key={row.original.id}>
-                  <TableRow
-                    onClick={() => {
-                      isDesktop && row.toggleSelected()
-                      !isDesktop && setRow(row.original)
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableData key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableData>
-                    ))}
-                  </TableRow>
-                  {row.getIsSelected() && (
-                    <TableRow>
-                      <TableData
-                        colSpan={table.getAllColumns().length}
-                        isExpanded
-                      >
-                        <WalletAssetsTableDetails {...row.original} />
-                      </TableData>
+              table.getRowModel().rows.map((row, i) => {
+                if (row.original.isExternalInvalid)
+                  return (
+                    <TableRow
+                      key={row.original.id}
+                      onClick={() => {
+                        !isDesktop && setRow(row.original)
+                      }}
+                    >
+                      <ExternalAssetRow type="unknown" row={row.original} />
                     </TableRow>
-                  )}
-                </Fragment>
-              ))
+                  )
+
+                const rugCheckData = row.original.rugCheckData
+
+                if (rugCheckData?.warnings.length) {
+                  return (
+                    <TableRow
+                      key={row.original.id}
+                      onClick={() => {
+                        !isDesktop && setRow(row.original)
+                      }}
+                    >
+                      <ExternalAssetRow type="changed" row={row.original} />
+                    </TableRow>
+                  )
+                }
+
+                return (
+                  <Fragment key={row.original.id}>
+                    <TableRow
+                      onClick={() => {
+                        isDesktop && row.toggleSelected()
+                        !isDesktop && setRow(row.original)
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableData
+                          key={cell.id}
+                          isExpanded={row.getIsSelected()}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableData>
+                      ))}
+                    </TableRow>
+                    {row.getIsSelected() && (
+                      <TableRow header>
+                        <TableData
+                          colSpan={table.getAllColumns().length}
+                          isExpanded
+                          sub
+                        >
+                          <WalletAssetsTableDetails {...row.original} />
+                        </TableData>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                )
+              })
             ) : (
               <EmptyState
                 desc={
@@ -170,6 +223,7 @@ export const WalletAssetsTable = ({ data, setShowAll, showAll }: Props) => {
             )}
           </TableBodyContent>
         </Table>
+        <TablePagination table={table} />
 
         {transferAsset && (
           <WalletTransferModal

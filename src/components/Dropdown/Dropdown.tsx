@@ -1,6 +1,6 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
 
-import { ReactNode } from "react"
+import React, { ReactNode } from "react"
 import { STrigger, SContent, SItem } from "./Dropdown.styled"
 
 export type TDropdownItem = {
@@ -11,30 +11,42 @@ export type TDropdownItem = {
   disabled?: boolean
 }
 
-export function Dropdown(props: {
+export type DropdownProps = {
   items: Array<TDropdownItem>
   children: ReactNode
   onSelect: (key: TDropdownItem) => void
   asChild?: boolean
+  align?: "start" | "center" | "end"
   header?: ReactNode
   footer?: ReactNode
-}) {
-  const Trigger = props.asChild ? DropdownMenu.Trigger : STrigger
+}
+
+export const Dropdown: React.FC<DropdownProps> = ({
+  items,
+  children,
+  onSelect,
+  asChild,
+  align,
+  header,
+  footer,
+}) => {
   return (
     <DropdownMenu.Root>
-      <Trigger asChild={props.asChild} disabled={!props.items.length}>
-        {props.children}
-      </Trigger>
+      {asChild ? (
+        <DropdownMenu.Trigger asChild>{children}</DropdownMenu.Trigger>
+      ) : (
+        <STrigger disabled={!items.length}>{children}</STrigger>
+      )}
       <DropdownMenu.Portal>
-        <SContent sideOffset={8}>
-          {props.header}
-          {props.items.map((i) => (
-            <SItem key={i.key} onClick={() => props.onSelect(i)}>
+        <SContent sideOffset={8} align={align}>
+          {header}
+          {items.map((i) => (
+            <SItem key={i.key} onClick={() => onSelect(i)}>
               {i.icon}
               {i.label}
             </SItem>
           ))}
-          {props.footer}
+          {footer}
         </SContent>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

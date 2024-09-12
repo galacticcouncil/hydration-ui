@@ -1,5 +1,5 @@
 import { useProviderRpcUrlStore } from "api/provider"
-import { SCircle, SCircleThumb, SItem } from "./ProviderItem.styled"
+import { SCircle, SCircleThumb, SItem, SStatus } from "./ProviderItem.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -12,6 +12,7 @@ import { useEffect, useState } from "react"
 import { u32, u64 } from "@polkadot/types"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { Spinner } from "components/Spinner/Spinner"
 
 type ProviderItemProps = {
   name: string
@@ -63,6 +64,7 @@ export const ProviderItem = ({
       ) : (
         <ProviderSelectItemExternal url={url} css={{ gridArea: "status" }} />
       )}
+
       <div
         css={{ gridArea: "url" }}
         sx={{
@@ -74,19 +76,17 @@ export const ProviderItem = ({
         }}
       >
         <Text
-          font="ChakraPetch"
           fs={14}
           fw={500}
           tAlign="right"
           color={isActive ? "pink600" : "basic600"}
           css={{ transition: `all ${theme.transitions.default}` }}
         >
-          {new URL(url).hostname}
+          {new URL(url).host}
         </Text>
 
-        <SCircle>{isActive && <SCircleThumb />}</SCircle>
         {custom && (
-          <div sx={{ flex: "row", align: "center", gap: 12, ml: 8 }}>
+          <div sx={{ flex: "row", align: "center", gap: 12 }}>
             <InfoTooltip text="Remove" type="black">
               <Icon
                 icon={<IconRemove />}
@@ -112,6 +112,7 @@ export const ProviderItem = ({
             </InfoTooltip>
           </div>
         )}
+        <SCircle>{isActive && <SCircleThumb />}</SCircle>
       </div>
     </SItem>
   )
@@ -121,18 +122,21 @@ const ProviderSelectItemLive = ({ className }: { className?: string }) => {
   const number = useBestNumber()
 
   return (
-    <>
+    <SStatus>
       {number.data?.parachainBlockNumber != null ? (
         <ProviderStatus
           timestamp={number.data.timestamp}
           parachainBlockNumber={number.data?.parachainBlockNumber}
+          ping={number.data.ping}
           className={className}
           side="left"
         />
       ) : (
-        <span className={className} />
+        <span className={className}>
+          <Spinner size={16} />
+        </span>
       )}
-    </>
+    </SStatus>
   )
 }
 
@@ -143,8 +147,10 @@ const ProviderSelectItemExternal = ({
   url: string
   className?: string
 }) => {
+  const [disconnected, setDisconnected] = useState(false)
   const [bestNumberState, setBestNumberState] = useState<
-    { parachainBlockNumber: u32; timestamp: u64 } | undefined
+    | { parachainBlockNumber: u32; timestamp: u64; ping: number | undefined }
+    | undefined
   >(undefined)
 
   useEffect(() => {
@@ -155,6 +161,11 @@ const ProviderSelectItemExternal = ({
 
     provider.on("error", () => {
       cancelInactive = () => provider.disconnect()
+    })
+
+    provider.on("disconnected", () => {
+      provider.disconnect()
+      setDisconnected(true)
     })
 
     provider.on("connected", load)
@@ -168,13 +179,21 @@ const ProviderSelectItemExternal = ({
           api.query.timestamp.now(),
         ])
 
-        setBestNumberState({
+        const now = Date.now()
+        const tsNum = timestamp.toNumber()
+        const ping = now > tsNum ? now - tsNum : undefined
+
+        setBestNumberState((prev) => ({
           parachainBlockNumber: parachain,
           timestamp: timestamp,
-        })
+          ping: ping ?? prev?.ping,
+        }))
       }
 
-      api.on("connected", onNewBlock)
+      api.on("connected", () => {
+        onNewBlock()
+        setDisconnected(false)
+      })
       api.rpc.chain.subscribeNewHeads(onNewBlock).then(
         (newCancel) =>
           (cancel = () => {
@@ -190,18 +209,32 @@ const ProviderSelectItemExternal = ({
     }
   }, [url])
 
+  if (disconnected) {
+    return (
+      <SStatus>
+        <span
+          sx={{ width: 7, height: 7, display: "block" }}
+          css={{ background: "#FF4B4B" }}
+        />
+      </SStatus>
+    )
+  }
+
   return (
-    <>
+    <SStatus>
       {bestNumberState != null ? (
         <ProviderStatus
           timestamp={bestNumberState.timestamp}
           parachainBlockNumber={bestNumberState.parachainBlockNumber}
           className={className}
           side="left"
+          ping={bestNumberState.ping}
         />
       ) : (
-        <span className={className} />
+        <span className={className}>
+          <Spinner size={16} />
+        </span>
       )}
-    </>
+    </SStatus>
   )
 }

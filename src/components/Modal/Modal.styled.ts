@@ -54,11 +54,11 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
 `
 
 export const SContainer = styled(Content)`
-  --modal-header-padding-y: 10px;
+  --modal-header-padding-y: 12px;
   --modal-header-padding-x: 12px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
-    var(--modal-header-btn-size) + var(--modal-header-padding-y) * 2
+    var(--modal-header-btn-size) + var(--modal-header-padding-y) * 1.5
   );
 
   --modal-content-padding: 12px;
@@ -69,7 +69,7 @@ export const SContainer = styled(Content)`
   z-index: ${theme.zIndices.modal};
 
   @media ${theme.viewport.gte.sm} {
-    --modal-header-padding-y: 20px;
+    --modal-header-padding-y: 24px;
     --modal-header-padding-x: 24px;
     --modal-content-padding: 24px;
   }
@@ -102,7 +102,6 @@ export const SModalSection = styled.div`
   height: 100%;
   padding-bottom: env(safe-area-inset-bottom);
   background: ${theme.colors.darkBlue700};
-  box-shadow: ${theme.shadows.modal};
 
   @media ${theme.viewport.gte.sm} {
     height: auto;
@@ -124,6 +123,7 @@ export const SBottomContent = styled.div`
 export const SContent = styled.div<{
   isDrawer?: boolean
   hasTopContent?: boolean
+  maxWidth?: number
 }>`
   position: fixed;
   overflow: auto;
@@ -140,14 +140,14 @@ export const SContent = styled.div<{
           max-height: 90%;
         `
       : hasTopContent
-      ? css`
-          height: calc(100vh - var(--modal-top-content-height));
-          height: calc(100dvh - var(--modal-top-content-height));
-        `
-      : css`
-          height: 100vh;
-          height: 100dvh;
-        `}
+        ? css`
+            height: calc(100vh - var(--modal-top-content-height));
+            height: calc(100dvh - var(--modal-top-content-height));
+          `
+        : css`
+            height: 100vh;
+            height: 100dvh;
+          `}
 
   animation: 150ms cubic-bezier(0.16, 1, 0.3, 1)
     ${({ isDrawer }) => (isDrawer ? drawerKeyFrames : mobFadeInKeyframes)};

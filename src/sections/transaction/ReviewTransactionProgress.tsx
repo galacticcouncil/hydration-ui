@@ -7,6 +7,7 @@ import {
   SProgressBarValue,
 } from "./ReviewTransactionProgress.styled"
 import { useState } from "react"
+import { LazyMotion, domAnimation } from "framer-motion"
 
 export const ReviewTransactionProgress = (props: {
   duration: number
@@ -25,29 +26,31 @@ export const ReviewTransactionProgress = (props: {
   }
 
   return (
-    <SProgressContainer>
-      <Text fs={12} fw={400} color="white" tAlign="center">
-        <Trans
-          i18nKey="liquidity.reviewTransaction.modal.success.timer"
-          t={t}
-          tOptions={{ value }}
+    <LazyMotion features={domAnimation}>
+      <SProgressContainer>
+        <Text fs={12} fw={400} color="white" tAlign="center">
+          <Trans
+            i18nKey="liquidity.reviewTransaction.modal.success.timer"
+            t={t}
+            tOptions={{ value }}
+          >
+            <SProgressTime />
+          </Trans>
+        </Text>
+        <SProgressBar
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: props.duration }}
+          onUpdate={(latest) => {
+            if (typeof latest.width === "string") {
+              updateSeconds(latest.width)
+            }
+          }}
+          onAnimationComplete={props.onComplete}
         >
-          <SProgressTime />
-        </Trans>
-      </Text>
-      <SProgressBar
-        initial={{ width: "0%" }}
-        animate={{ width: "100%" }}
-        transition={{ duration: props.duration }}
-        onUpdate={(latest) => {
-          if (typeof latest.width === "string") {
-            updateSeconds(latest.width)
-          }
-        }}
-        onAnimationComplete={props.onComplete}
-      >
-        <SProgressBarValue />
-      </SProgressBar>
-    </SProgressContainer>
+          <SProgressBarValue />
+        </SProgressBar>
+      </SProgressContainer>
+    </LazyMotion>
   )
 }

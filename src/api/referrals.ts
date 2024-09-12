@@ -6,6 +6,7 @@ import { u32 } from "@polkadot/types"
 import { undefinedNoop } from "utils/helpers"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
+import { useAssets } from "providers/assets"
 
 export const useReferralCodes = (accountAddress?: string | "all") => {
   const { api } = useRpcProvider()
@@ -56,12 +57,12 @@ export const useReferralCodeLength = () => {
 }
 
 export const useUserReferrer = (accountAddress?: string) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.userReferrer(accountAddress),
     !!accountAddress ? getUserReferrer(api, accountAddress) : undefinedNoop,
     {
-      enabled: !!accountAddress,
+      enabled: !!accountAddress && isLoaded,
     },
   )
 }
@@ -69,7 +70,6 @@ export const useUserReferrer = (accountAddress?: string) => {
 const getUserReferrer =
   (api: ApiPromise, accountAddress: string) => async () => {
     const rawData = await api.query.referrals.linkedAccounts(accountAddress)
-    //@ts-ignore
     const data = rawData.unwrapOr(null)
 
     return (data?.toString() as string) || null
@@ -97,8 +97,7 @@ const getReferrerInfo =
       }
     }
 
-    //@ts-ignore
-    const [tier, paidRewards] = rawData.unwrapOr(null) ?? []
+    const [tier, paidRewards] = rawData.unwrap()
 
     return {
       tier: Number(tier.type.slice(-1)),
@@ -187,7 +186,8 @@ const getReferees = (api: ApiPromise) => async () => {
 }
 
 export const useRegistrationLinkFee = (disabled?: boolean) => {
-  const { api, assets } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   return useQuery(
     QUERY_KEYS.referralLinkFee,
@@ -195,14 +195,13 @@ export const useRegistrationLinkFee = (disabled?: boolean) => {
       ? async () => {
           const rawData = await api.consts.referrals.registrationFee
 
-          //@ts-ignore
           const [id, amount] = rawData ?? []
 
           const feeAssetId = id?.toString()
-          const feeAmount = amount?.toBigNumber() as BN
+          const feeAmount = amount?.toBigNumber()
+          const meta = getAsset(feeAssetId)
 
-          if (feeAssetId && feeAmount) {
-            const meta = assets.getAsset(feeAssetId)
+          if (feeAssetId && feeAmount && meta) {
             const amount = feeAmount.shiftedBy(-meta.decimals)
 
             return {
@@ -214,6 +213,6 @@ export const useRegistrationLinkFee = (disabled?: boolean) => {
           }
         }
       : undefinedNoop,
-    { enabled: !disabled },
+    { enabled: !disabled && isLoaded },
   )
 }

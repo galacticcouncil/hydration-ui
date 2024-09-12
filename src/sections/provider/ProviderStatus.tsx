@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
-import { motion, useAnimationControls } from "framer-motion"
+import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function useElapsedTimeStatus(time: Maybe<u64>) {
@@ -88,40 +88,50 @@ function ProviderStatusSuccess() {
   )
 }
 
-export function ProviderStatus(props: {
+type ProviderStatusProps = {
   timestamp: Maybe<u64>
   parachainBlockNumber: Maybe<u32>
+  ping?: number
   className?: string
   side?: "left" | "top" | "bottom" | "right"
-}) {
+  showPing?: boolean
+}
+
+export const ProviderStatus: React.FC<ProviderStatusProps> = ({
+  timestamp,
+  parachainBlockNumber,
+  ping,
+  className,
+  side,
+}) => {
   const { t } = useTranslation()
 
-  const status = useElapsedTimeStatus(props.timestamp)
+  const status = useElapsedTimeStatus(timestamp)
 
   const color =
     status === "online"
       ? "#00FFA0"
       : status === "offline"
-      ? "#FF4B4B"
-      : status === "slow"
-      ? "#F5A855"
-      : undefined
+        ? "#FF4B4B"
+        : status === "slow"
+          ? "#F5A855"
+          : undefined
 
   const statusText = status != null ? t(`rpc.status.${status}`) : ""
 
   return (
-    <InfoTooltip text={statusText} type="default" side={props.side}>
+    <InfoTooltip text={statusText} type="default" side={side}>
       <Text
         fs={9}
         lh={9}
         sx={{ flex: "row", gap: 4, align: "center" }}
         css={{ letterSpacing: "1px", color }}
-        className={props.className}
+        className={className}
       >
-        <span>{t("value", { value: props.parachainBlockNumber })}</span>
+        <span>{t("value", { value: parachainBlockNumber })}</span>
 
         {status === "online" && (
-          <ProviderStatusSuccess key={props.timestamp?.toNumber() ?? 0} />
+          <ProviderStatusSuccess key={timestamp?.toNumber() ?? 0} />
         )}
 
         {status === "offline" && (
@@ -146,6 +156,21 @@ export function ProviderStatus(props: {
           </svg>
         )}
       </Text>
+      {ping && (
+        <Text
+          fs={8}
+          lh={14}
+          color={
+            ping < 1000
+              ? "green400"
+              : ping < 5000
+                ? "warningOrange200"
+                : "red300"
+          }
+        >
+          {t("value", { value: ping })} ms
+        </Text>
+      )}
     </InfoTooltip>
   )
 }

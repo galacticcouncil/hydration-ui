@@ -1,69 +1,108 @@
+import { Root, Trigger } from "@radix-ui/react-tooltip"
 import { Link, Search, useSearch } from "@tanstack/react-location"
-import { SItem, SList } from "components/Layout/Header/menu/HeaderMenu.styled"
-import { useTranslation } from "react-i18next"
+import {
+  SItem,
+  SList,
+  SNoFunBadge,
+} from "components/Layout/Header/menu/HeaderMenu.styled"
+import { Trans, useTranslation } from "react-i18next"
 import { LINKS, MENU_ITEMS, resetSearchParams } from "utils/navigation"
-import { HeaderSubMenu } from "./HeaderSubMenu"
-import { forwardRef } from "react"
+import { HeaderSubMenu, HeaderSubMenuContents } from "./HeaderSubMenu"
+import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountOmnipoolPositions } from "sections/pools/PoolsPage.utils"
-import { useTokensBalances } from "api/balances"
+import IconChevron from "assets/icons/ChevronDown.svg?react"
+import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
+import { useAccountPositions } from "api/deposits"
+import { useAcountAssets } from "api/assetDetails"
 
-export const HeaderMenu = forwardRef<HTMLElement>((_, ref) => {
+export const HeaderMenu = () => {
   const { t } = useTranslation()
   const search = useSearch()
-
-  const { featureFlags, isLoaded } = useRpcProvider()
-
-  const filteredItems = MENU_ITEMS.filter(
-    (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
-  )
+  const { isLoaded } = useRpcProvider()
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const { items, hiddenItems, moreButtonKey, observe } =
+    useVisibleHeaderMenuItems()
 
   return (
-    <SList ref={ref}>
-      {filteredItems.map((item, i) => {
-        if (!item.enabled) {
-          return null
-        }
+    <Root delayDuration={0} open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
+      <div sx={{ flex: "row" }}>
+        <SList ref={observe}>
+          {items.map((item, i) => {
+            if (item.subItems?.length) {
+              return <HeaderSubMenu key={i} item={item} />
+            }
 
-        if (item.asyncEnabled && !featureFlags[item.key]) {
-          return null
-        }
+            if (item.external) {
+              return (
+                <a href={item.href} key={i} data-intersect={item.key}>
+                  <SItem>{t(`header.${item.key}`)}</SItem>
+                </a>
+              )
+            }
 
-        if (item.subItems?.length) {
-          return <HeaderSubMenu key={i} item={item} />
-        }
+            const isLiquidityLink =
+              LINKS.allPools === item.href || LINKS.myLiquidity === item.href
 
-        if (item.external) {
-          return (
-            <a href={item.href} key={i} data-intersect={item.key}>
-              <SItem>{t(`header.${item.key}`)}</SItem>
-            </a>
-          )
-        }
+            if (isLoaded && isLiquidityLink) {
+              return <LiquidityMenuItem key={i} item={item} search={search} />
+            }
 
-        if (
-          (LINKS.allPools === item.href || LINKS.myLiquidity === item.href) &&
-          isLoaded
-        )
-          return <LiquidityMenuItem item={item} search={search} key={i} />
-
-        return (
-          <Link
-            to={item.href}
-            search={resetSearchParams(search)}
-            key={i}
-            data-intersect={item.key}
-          >
-            {({ isActive }) => (
-              <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>
-            )}
-          </Link>
-        )
-      })}
-    </SList>
+            return (
+              <MenuItem
+                key={i}
+                item={item}
+                search={search}
+                moreButton={
+                  moreButtonKey === item.key ? (
+                    <Trigger
+                      asChild
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setMoreMenuOpen((prev) => !prev)
+                      }}
+                      onPointerDown={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                    >
+                      <SItem>
+                        {t("header.more")} <IconChevron />
+                      </SItem>
+                    </Trigger>
+                  ) : undefined
+                }
+              />
+            )
+          })}
+        </SList>
+      </div>
+      {hiddenItems.length > 0 && (
+        <HeaderSubMenuContents
+          onItemClick={() => setMoreMenuOpen(false)}
+          items={hiddenItems.map((item) => ({
+            ...item,
+            title:
+              item.href === LINKS.memepad ? (
+                <>
+                  {t(`header.${item.key}`)}
+                  <SNoFunBadge sx={{ left: -20, top: -14 }}>
+                    <Trans t={t} i18nKey="memepad.badge.nofun">
+                      <span />
+                      <span />
+                    </Trans>
+                  </SNoFunBadge>
+                </>
+              ) : (
+                t(`header.${item.key}`)
+              ),
+          }))}
+        />
+      )}
+    </Root>
   )
-})
+}
 
 const LiquidityMenuItem = ({
   item,
@@ -74,32 +113,89 @@ const LiquidityMenuItem = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
-  const accountPositions = useAccountOmnipoolPositions()
+  const accountPositions = useAccountPositions()
 
-  const shareTokensId = assets.shareTokens.map((shareToken) => shareToken.id)
-  const stableswapsId = assets.stableswap.map((shareToken) => shareToken.id)
+  const balances = useAcountAssets(account?.address)
 
-  const userPositions = useTokensBalances(
-    [...shareTokensId, ...stableswapsId],
-    account?.address,
-  )
+  const isPoolBalances = balances.some((balance) => {
+    if (balance.balance.freeBalance.gt(0)) {
+      return balance.asset.isStableSwap || balance.asset.isShareToken
+    }
+    return false
+  })
 
-  const isOmnipoolPositions =
+  const isPositions =
     accountPositions.data?.miningNfts.length ||
     accountPositions.data?.omnipoolNfts.length ||
-    userPositions.some((userPosition) => userPosition.data?.freeBalance.gt(0))
+    isPoolBalances
 
   return (
     <Link
-      to={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      to={isPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
-      key={isOmnipoolPositions ? LINKS.myLiquidity : item.href}
+      key={isPositions ? LINKS.myLiquidity : item.href}
       data-intersect={item.key}
     >
       {({ isActive }) => (
         <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>
       )}
+    </Link>
+  )
+}
+
+const MenuItem = ({
+  item,
+  search,
+  moreButton,
+}: {
+  item: (typeof MENU_ITEMS)[number]
+  search: Partial<Search<unknown>>
+  moreButton?: React.ReactNode
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <Link
+      to={item.href}
+      onClick={(e) => {
+        if (moreButton) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
+      }}
+      search={resetSearchParams(search)}
+      data-intersect={item.key}
+    >
+      {({ isActive }) => {
+        return (
+          <span sx={{ flex: "row" }} css={{ position: "relative" }}>
+            <SItem
+              isActive={isActive}
+              css={{
+                opacity: moreButton ? 0 : 1,
+              }}
+            >
+              {t(`header.${item.key}`)}
+              {LINKS.memepad === item.href && (
+                <SNoFunBadge
+                  css={{ position: "absolute" }}
+                  sx={{ top: 0, right: 0 }}
+                >
+                  <Trans t={t} i18nKey="memepad.badge.nofun">
+                    <span />
+                    <span />
+                  </Trans>
+                </SNoFunBadge>
+              )}
+            </SItem>
+            {!!moreButton && (
+              <span sx={{ flex: "row" }} css={{ position: "absolute" }}>
+                {moreButton}
+              </span>
+            )}
+          </span>
+        )
+      }}
     </Link>
   )
 }

@@ -11,7 +11,7 @@ export const SPage = styled.div`
   display: flex;
   flex-direction: column;
 
-  height: 100vh;
+  min-height: 100vh;
 
   background: ${theme.colors.bg};
 
@@ -20,9 +20,13 @@ export const SPage = styled.div`
 
     overflow-y: auto;
   }
+
+  @media ${theme.viewport.gte.md} {
+    height: 100vh;
+  }
 `
 
-export const SGradientBg = styled.div`
+export const SGradientBg = styled.div<{ flipped?: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -31,6 +35,17 @@ export const SGradientBg = styled.div`
 
   height: 474px;
   background: ${theme.gradients.background};
+
+  ${({ flipped }) =>
+    flipped &&
+    `
+      position: fixed;
+      rotate: 180deg;
+      height: 237px;
+      top: auto;
+      bottom: 0;
+      opacity: 0.4;
+  `}
 `
 
 export const SPageContent = styled.main`
@@ -39,8 +54,6 @@ export const SPageContent = styled.main`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-
-  padding-bottom: var(--mobile-nav-height);
 
   ::-webkit-scrollbar {
     width: 0px;
@@ -52,7 +65,6 @@ export const SPageContent = styled.main`
 
   @media ${theme.viewport.gte.sm} {
     padding: 0 20px;
-    padding-bottom: var(--mobile-nav-height);
 
     display: block;
 
@@ -111,8 +123,8 @@ export const SSubHeader = styled.div`
 
     background: rgba(9, 9, 9, 0.09);
 
-    border-bottom: solid 1px rgba(114, 131, 165, 0.6);
-    border-top: 1px solid rgba(114, 131, 165, 0.6);
+    border-bottom: 0.5px solid rgba(249, 225, 225, 0.25);
+    border-top: 0.5px solid rgba(249, 225, 225, 0.25);
   }
 
   @media (${theme.viewport.gte.sm}) {

@@ -3,7 +3,7 @@ import { useLbpPool } from "api/bonds"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { useBestNumber } from "api/chain"
-import { TBond } from "api/assetDetails"
+import { TBond } from "providers/assets"
 import { PastBondList } from "./PastBondList"
 
 type Props = {
@@ -62,12 +62,7 @@ export const BondList = ({ isLoading, bonds }: Props) => {
     <div sx={{ flex: "column", gap: 30 }}>
       {active.length ? (
         <div sx={{ flex: "column", gap: 12 }}>
-          <Text
-            color="brightBlue300"
-            tTransform="uppercase"
-            fs={15}
-            font="FontOver"
-          >
+          <Text color="brightBlue300" fs={15} font="GeistMono">
             {t("bonds.section.activeBonds")}
           </Text>
           {active.map((bond) => (
@@ -78,12 +73,7 @@ export const BondList = ({ isLoading, bonds }: Props) => {
 
       {upcoming.length ? (
         <div sx={{ flex: "column", gap: 12 }}>
-          <Text
-            color="brightBlue300"
-            tTransform="uppercase"
-            fs={15}
-            font="FontOver"
-          >
+          <Text color="brightBlue300" fs={15} font="GeistMono">
             {t("bonds.section.upcomingBonds")}
           </Text>
           {upcoming.map((bond) => (

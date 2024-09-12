@@ -21,7 +21,7 @@ export const AddressBookItemRemove = ({ id, onDone }: Props) => {
     <SContainer>
       <IconRemove width={24} height={24} />
       <Spacer size={12} />
-      <Text font="FontOver" fs={24} lh={32}>
+      <Text font="GeistMono" fs={24} lh={32}>
         {t("addressbook.remove.title")}
       </Text>
       <Spacer size={4} />

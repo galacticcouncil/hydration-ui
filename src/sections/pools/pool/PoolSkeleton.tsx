@@ -7,6 +7,7 @@ import Skeleton from "react-loading-skeleton"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import {
+  SPoolDetailsContainer,
   SValue,
   SValuesContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
@@ -17,11 +18,13 @@ export const PoolSkeleton = () => {
 
   return (
     <SPoolContainer>
-      <div sx={{ flex: "column", gap: 20, p: ["30px 12px", 30] }}>
+      <SPoolDetailsContainer>
         <GradientText
           gradient="pinkLightBlue"
+          font="GeistMonoSemiBold"
           fs={19}
           sx={{ width: "fit-content" }}
+          tTransform="uppercase"
         >
           {t("liquidity.pool.details.title")}
         </GradientText>
@@ -66,14 +69,18 @@ export const PoolSkeleton = () => {
         />
         <SValuesContainer>
           <SValue sx={{ align: "start" }}>
-            <Text color="basic400">{t("tvl")}</Text>
+            <Text color="basic400" fs={[12, 13]}>
+              {t("tvl")}
+            </Text>
             <Skeleton height={16} width={50} />
           </SValue>
 
           <Separator orientation="vertical" color="white" opacity={0.06} />
 
           <SValue>
-            <Text color="basic400">{t("liquidity.table.header.volume")}</Text>
+            <Text color="basic400" fs={[12, 13]}>
+              {t("liquidity.table.header.volume")}
+            </Text>
             <Skeleton height={16} width={50} />
           </SValue>
 
@@ -85,18 +92,22 @@ export const PoolSkeleton = () => {
           />
 
           <SValue sx={{ align: "start" }}>
-            <Text color="basic400">{t("price")}</Text>
+            <Text color="basic400" fs={[12, 13]}>
+              {t("price")}
+            </Text>
             <Skeleton height={16} width={50} />
           </SValue>
 
           <Separator orientation="vertical" color="white" opacity={0.06} />
 
           <SValue>
-            <Text color="basic400">{t("liquidity.pool.details.fee")}</Text>
+            <Text color="basic400" fs={[12, 13]}>
+              {t("liquidity.pool.details.fee")}
+            </Text>
             <Skeleton height={16} width={50} />
           </SValue>
         </SValuesContainer>
-      </div>
+      </SPoolDetailsContainer>
     </SPoolContainer>
   )
 }

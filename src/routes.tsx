@@ -1,27 +1,135 @@
-import { WalletPage } from "./sections/wallet/WalletPage"
 import { Navigate, Route } from "@tanstack/react-location"
-import { XcmPage } from "sections/xcm/XcmPage"
-import { PoolsPage } from "sections/pools/PoolsPage"
-import { StatsPage } from "sections/stats/StatsPage"
-import { StakingPage } from "./sections/staking/StakingPage"
-import { TradePage } from "sections/trade/TradePage"
-import { SwapPage } from "sections/trade/sections/swap/SwapPage"
-import { OtcPageWrapper } from "sections/trade/sections/otc/OtcPageWrappet"
-import { DcaPage } from "sections/trade/sections/dca/DcaPage"
-import { BondsPageWrapper } from "sections/trade/sections/bonds/BondsPageWrapper"
-import { BondDetailsPage } from "sections/trade/sections/bonds/details/BondDetailsPage"
-import { AllPools } from "sections/pools/sections/AllPools"
-import { MyLiquidity } from "sections/pools/sections/MyLiquidity"
-import { OmnipoolAndStablepool } from "sections/pools/sections/OmnipoolAndStablepool"
-import { IsolatedPools } from "sections/pools/sections/IsolatedPools"
-import { ReferralsWrapper } from "sections/referrals/ReferralsPage"
-import { StatsPOL } from "sections/stats/sections/POL/StatsPOL"
-import { StatsOverview } from "sections/stats/sections/overview/StatsOverview"
-import { StatsOmnipoolAsset } from "sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset"
-import { BridgePage } from "sections/xcm/BridgePage"
-import { YieldDcaPage } from "sections/trade/sections/yieldDca/YieldDcaPage"
+import { HeaderValuesSkeleton } from "components/Skeleton/HeaderValuesSkeleton"
+import { InputSkeleton } from "components/Skeleton/InputSkeleton"
+import { TableSkeleton } from "components/Skeleton/TableSkeleton"
+
+import { Suspense, lazy } from "react"
+import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
+import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
+import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
+import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
+import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkeleton"
+import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
+import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
+import { LINKS } from "utils/navigation"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
+
+const SwapPage = lazy(async () => ({
+  default: (await import("sections/trade/sections/swap/SwapPage")).SwapPage,
+}))
+
+const DcaPage = lazy(async () => ({
+  default: (await import("sections/trade/sections/dca/DcaPage")).DcaPage,
+}))
+
+const OtcPageWrapper = lazy(async () => ({
+  default: (await import("sections/trade/sections/otc/OtcPageWrappet"))
+    .OtcPageWrapper,
+}))
+
+const YieldDcaPage = lazy(async () => ({
+  default: (await import("sections/trade/sections/yieldDca/YieldDcaPage"))
+    .YieldDcaPage,
+}))
+
+const BondsPageWrapper = lazy(async () => ({
+  default: (await import("sections/trade/sections/bonds/BondsPageWrapper"))
+    .BondsPageWrapper,
+}))
+
+const BondDetailsPage = lazy(async () => ({
+  default: (
+    await import("sections/trade/sections/bonds/details/BondDetailsPage")
+  ).BondDetailsPage,
+}))
+
+const WalletTransactions = lazy(async () => ({
+  default: (await import("sections/wallet/transactions/WalletTransactions"))
+    .WalletTransactions,
+}))
+
+const WalletAssets = lazy(async () => ({
+  default: (await import("sections/wallet/assets/WalletAssets")).WalletAssets,
+}))
+
+const WalletVesting = lazy(async () => ({
+  default: (await import("sections/wallet/vesting/WalletVesting"))
+    .WalletVesting,
+}))
+
+const AllPools = lazy(async () => ({
+  default: (await import("sections/pools/sections/AllPools")).AllPools,
+}))
+
+const MyLiquidity = lazy(async () => ({
+  default: (await import("sections/pools/sections/MyLiquidity")).MyLiquidity,
+}))
+
+const OmnipoolAndStablepool = lazy(async () => ({
+  default: (await import("sections/pools/sections/OmnipoolAndStablepool"))
+    .OmnipoolAndStablepool,
+}))
+
+const IsolatedPools = lazy(async () => ({
+  default: (await import("sections/pools/sections/IsolatedPools"))
+    .IsolatedPools,
+}))
+
+const XcmPage = lazy(async () => ({
+  default: (await import("sections/xcm/XcmPage")).XcmPage,
+}))
+
+const StatsOverview = lazy(async () => ({
+  default: (await import("sections/stats/sections/overview/StatsOverview"))
+    .StatsOverview,
+}))
+
+const StatsPOL = lazy(async () => ({
+  default: (await import("sections/stats/sections/POL/StatsPOL")).StatsPOL,
+}))
+
+const StatsOmnipoolAsset = lazy(async () => ({
+  default: (
+    await import("sections/stats/sections/omnipoolAsset/StatsOmnipoolAsset")
+  ).StatsOmnipoolAsset,
+}))
+
+const StakingPage = lazy(async () => ({
+  default: (await import("sections/staking/StakingPage")).StakingPage,
+}))
+
+const ReferralsWrapper = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsPage")).ReferralsWrapper,
+}))
+
+const SubmitTransaction = lazy(async () => ({
+  default: (await import("sections/submit-transaction/SubmitTransaction"))
+    .SubmitTransaction,
+}))
+
+const MemepadPage = lazy(async () => ({
+  default: (await import("sections/memepad/MemepadPage")).MemepadPage,
+}))
+
+const LendingPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingPage")).LendingPage,
+}))
+
+const LendingDashboardPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingDashboardPage"))
+    .LendingDashboardPage,
+}))
+
+const LendingMarketsPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingMarketsPage"))
+    .LendingMarketsPage,
+}))
+
+const LendingReserveOverviewPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingReserveOverviewPage"))
+    .LendingReserveOverviewPage,
+}))
 
 export const routes: Route[] = [
   {
@@ -30,7 +138,6 @@ export const routes: Route[] = [
   },
   {
     path: "trade",
-    element: <TradePage />,
     children: [
       {
         path: "/",
@@ -38,27 +145,58 @@ export const routes: Route[] = [
       },
       {
         path: "swap",
-        element: <SwapPage />,
+        element: (
+          <Suspense fallback={<SwapPageSkeleton />}>
+            <SwapPage />
+          </Suspense>
+        ),
       },
       {
         path: "otc",
-        element: <OtcPageWrapper />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <OtcPageWrapper />
+          </Suspense>
+        ),
       },
       {
         path: "yield-dca",
-        element: <YieldDcaPage />,
+        element: (
+          <Suspense fallback={<SwapPageSkeleton />}>
+            <YieldDcaPage />
+          </Suspense>
+        ),
       },
       {
         path: "dca",
-        element: <DcaPage />,
+        element: (
+          <Suspense fallback={<SwapPageSkeleton />}>
+            <DcaPage />
+          </Suspense>
+        ),
       },
       {
         path: "bond",
-        element: <BondDetailsPage />,
+        element: (
+          <Suspense fallback={<SwapPageSkeleton />}>
+            <BondDetailsPage />
+          </Suspense>
+        ),
       },
       {
         path: "bonds",
-        element: <BondsPageWrapper />,
+        element: (
+          <Suspense fallback={<BondsPageSkeleton />}>
+            <BondsPageWrapper />
+          </Suspense>
+        ),
       },
     ],
   },
@@ -71,17 +209,55 @@ export const routes: Route[] = [
       },
       {
         path: "assets",
-        element: <WalletPage />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton size="large" sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <WalletAssets />
+          </Suspense>
+        ),
       },
       {
         path: "vesting",
-        element: <WalletPage />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton
+                  count={1}
+                  size="extra-large"
+                  sx={{ mb: [20, 40] }}
+                />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <WalletVesting />
+          </Suspense>
+        ),
       },
       ...(isDevelopment
         ? [
             {
               path: "transactions",
-              element: <WalletPage />,
+              element: (
+                <Suspense
+                  fallback={
+                    <>
+                      <InputSkeleton sx={{ mb: 20 }} />
+                      <TableSkeleton />
+                    </>
+                  }
+                >
+                  <WalletTransactions />
+                </Suspense>
+              ),
             },
           ]
         : []),
@@ -89,7 +265,6 @@ export const routes: Route[] = [
   },
   {
     path: "liquidity",
-    element: <PoolsPage />,
     children: [
       {
         path: "/",
@@ -97,33 +272,82 @@ export const routes: Route[] = [
       },
       {
         path: "my-liquidity",
-        element: <MyLiquidity />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <MyLiquidity />
+          </Suspense>
+        ),
       },
       {
         path: "all-pools",
-        element: <AllPools />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <AllPools />
+          </Suspense>
+        ),
       },
       {
         path: "omnipool-stablepools",
-        element: <OmnipoolAndStablepool />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <OmnipoolAndStablepool />
+          </Suspense>
+        ),
       },
       {
         path: "isolated",
-        element: <IsolatedPools />,
+        element: (
+          <Suspense
+            fallback={
+              <>
+                <HeaderValuesSkeleton sx={{ mb: [20, 40] }} />
+                <InputSkeleton sx={{ mb: 20 }} />
+                <TableSkeleton />
+              </>
+            }
+          >
+            <IsolatedPools />
+          </Suspense>
+        ),
       },
     ],
   },
   {
     path: "cross-chain",
-    element: <XcmPage />,
-  },
-  {
-    path: "bridge",
-    element: <BridgePage />,
+    element: (
+      <Suspense
+        fallback={<SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto" }} />}
+      >
+        <XcmPage />
+      </Suspense>
+    ),
   },
   {
     path: "stats",
-    element: <StatsPage />,
     children: [
       {
         path: "/",
@@ -131,59 +355,93 @@ export const routes: Route[] = [
       },
       {
         path: "overview",
-        element: <StatsOverview />,
+        element: (
+          <Suspense fallback={<StatsPageSkeleton />}>
+            <StatsOverview />
+          </Suspense>
+        ),
       },
       {
         path: "treasury",
-        element: <StatsPOL />,
+        element: (
+          <Suspense fallback={<StatsPageSkeleton />}>
+            <StatsPOL />
+          </Suspense>
+        ),
       },
       {
         path: "asset",
-        element: <StatsOmnipoolAsset />,
+        element: (
+          <Suspense fallback={<StatsAssetPageSkeleton />}>
+            <StatsOmnipoolAsset />
+          </Suspense>
+        ),
       },
-
-      // TODO: Not ready. Requested in #861n9ffe4
-      // {
-      //   path: "LRNA",
-      //   element: <StatsPage />,
-      // },
     ],
   },
   {
     path: "staking",
-    element: <StakingPage />,
+    element: (
+      <Suspense fallback={<SwapPageSkeleton />}>
+        <StakingPage />
+      </Suspense>
+    ),
   },
   {
     path: "referrals",
-    element: <ReferralsWrapper />,
+    element: (
+      <Suspense fallback={<ReferralsSkeleton />}>
+        <ReferralsWrapper />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.submitTransaction,
+    element: (
+      <Suspense fallback={null}>
+        <SubmitTransaction />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.memepad,
+    element: (
+      <Suspense fallback={<MemepadPageSkeleton />}>
+        <MemepadPage />
+      </Suspense>
+    ),
   },
   {
     path: "lending",
-    element: () =>
-      import("./sections/lending/LendingPage").then((mod) => (
-        <mod.LendingPage />
-      )),
+    element: (
+      <Suspense fallback={null}>
+        <LendingPage />
+      </Suspense>
+    ),
     children: [
       {
         path: "/",
-        element: () =>
-          import("./sections/lending/LendingDashboardPage").then((mod) => (
-            <mod.LendingDashboardPage />
-          )),
+        element: (
+          <Suspense fallback={null}>
+            <LendingDashboardPage />
+          </Suspense>
+        ),
       },
       {
         path: "markets",
-        element: () =>
-          import("./sections/lending/LendingMarketsPage").then((mod) => (
-            <mod.LendingMarketsPage />
-          )),
+        element: (
+          <Suspense fallback={null}>
+            <LendingMarketsPage />
+          </Suspense>
+        ),
       },
       {
         path: "reserve-overview",
-        element: () =>
-          import("./sections/lending/LendingReserveOverviewPage").then(
-            (mod) => <mod.LendingReserveOverviewPage />,
-          ),
+        element: (
+          <Suspense fallback={null}>
+            <LendingReserveOverviewPage />
+          </Suspense>
+        ),
       },
     ],
   },

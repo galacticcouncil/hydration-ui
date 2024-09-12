@@ -11,14 +11,16 @@ export const useSpotPrice = (
   assetA: Maybe<u32 | string>,
   assetB: Maybe<u32 | string>,
 ) => {
-  const { tradeRouter } = useRpcProvider()
+  const { tradeRouter, isLoaded } = useRpcProvider()
   const tokenIn = assetA?.toString() ?? ""
   const tokenOut = assetB?.toString() ?? ""
+
+  const routerInitialized = Object.keys(tradeRouter).length > 0
 
   return useQuery(
     QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
     getSpotPrice(tradeRouter, tokenIn, tokenOut),
-    { enabled: !!tokenIn && !!tokenOut },
+    { enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded },
   )
 }
 
@@ -27,7 +29,7 @@ export const useSpotPrices = (
   assetOut: Maybe<u32 | string>,
   noRefresh?: boolean,
 ) => {
-  const { tradeRouter } = useRpcProvider()
+  const { tradeRouter, isLoaded } = useRpcProvider()
 
   const assets = new Set(
     assetsIn.filter((a): a is u32 | string => !!a).map((a) => a.toString()),
@@ -35,13 +37,15 @@ export const useSpotPrices = (
 
   const tokenOut = assetOut?.toString() ?? ""
 
+  const routerInitialized = Object.keys(tradeRouter).length > 0
+
   return useQueries({
     queries: Array.from(assets).map((tokenIn) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.spotPrice(tokenIn, tokenOut)
         : QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
       queryFn: getSpotPrice(tradeRouter, tokenIn, tokenOut),
-      enabled: !!tokenIn && !!tokenOut,
+      enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded,
     })),
   })
 }

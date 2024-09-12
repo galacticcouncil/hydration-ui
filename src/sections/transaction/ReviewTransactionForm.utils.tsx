@@ -4,14 +4,22 @@ import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import { useNextNonce, usePaymentInfo } from "api/transaction"
+import {
+  useNextEvmPermitNonce,
+  useNextNonce,
+  usePaymentInfo,
+} from "api/transaction"
 import BigNumber from "bignumber.js"
 import { Trans, useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-import { NATIVE_EVM_ASSET_DECIMALS, isEvmAccount } from "utils/evm"
+import {
+  NATIVE_EVM_ASSET_DECIMALS,
+  NATIVE_EVM_ASSET_ID,
+  isEvmAccount,
+} from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
@@ -19,6 +27,7 @@ import { useReferralCodesStore } from "sections/referrals/store/useReferralCodes
 import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useMemo } from "react"
+import { useAssets } from "providers/assets"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -33,16 +42,18 @@ export const useTransactionValues = ({
   }
   tx: SubmittableExtrinsic<"promise">
 }) => {
-  const { assets, api, featureFlags } = useRpcProvider()
+  const { api, featureFlags } = useRpcProvider()
+  const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
 
   const { fee, currencyId: feePaymentId, feeExtra } = overrides ?? {}
 
   const isEvm = isEvmAccount(account?.address)
+  const shouldFetchEvmFee = isEvm && feePaymentId === NATIVE_EVM_ASSET_ID
   const evmPaymentFee = useEvmPaymentFee(
     tx.method.toHex(),
-    isEvm ? account?.address : "",
+    shouldFetchEvmFee ? account?.address : "",
   )
 
   /* REFERRALS */
@@ -87,26 +98,28 @@ export const useTransactionValues = ({
   const accountFeePaymentId = feePaymentId ?? feePaymentAssetId
 
   const feePaymentMeta = accountFeePaymentId
-    ? assets.getAsset(accountFeePaymentId)
+    ? getAsset(accountFeePaymentId)
     : undefined
 
-  const spotPrice = useSpotPrice(assets.native.id, accountFeePaymentId)
+  const spotPrice = useSpotPrice(native.id, accountFeePaymentId)
   const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
+
+  const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+  const { permitNonce, pendingPermit } = useNextEvmPermitNonce()
 
   const nonce = useNextNonce(account?.address)
 
   const era = useEra(
     boundedTx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
-    boundedTx.era.isMortalEra,
   )
 
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
-        -assets.native.decimals,
+        -native.decimals,
       )
     : null
 
@@ -138,6 +151,9 @@ export const useTransactionValues = ({
         storedReferralCode,
         tx: boundedTx,
         isNewReferralLink,
+        shouldUsePermit,
+        permitNonce,
+        pendingPermit,
       },
     }
 
@@ -150,7 +166,7 @@ export const useTransactionValues = ({
     )
     displayFeeExtra = feeExtra
       ? feeExtra
-          .shiftedBy(-assets.native.decimals)
+          .shiftedBy(-native.decimals)
           .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       : undefined
   } else {
@@ -169,7 +185,7 @@ export const useTransactionValues = ({
       )
       displayFeeExtra = feeExtra
         ? BN_1.div(transactionPaymentValue).multipliedBy(
-            feeExtra.shiftedBy(-assets.native.decimals),
+            feeExtra.shiftedBy(-native.decimals),
           )
         : undefined
     }
@@ -215,6 +231,9 @@ export const useTransactionValues = ({
       storedReferralCode,
       tx: boundedTx,
       isNewReferralLink,
+      shouldUsePermit,
+      permitNonce,
+      pendingPermit,
     },
   }
 }
@@ -284,6 +303,18 @@ export const useEditFeePaymentAsset = (
   }
 }
 
+export const createPolkadotJSTxUrl = (
+  rpcUrl: string,
+  tx: SubmittableExtrinsic<"promise">,
+) => {
+  let url = ""
+  try {
+    url = `https://polkadot.js.org/apps/?rpc=${rpcUrl}#/extrinsics/decode/${tx.method.toHex()}`
+  } catch (e) {}
+
+  return url
+}
+
 export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   const provider = useProviderRpcUrlStore()
 
@@ -292,8 +323,6 @@ export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   )
 
   return useMemo(() => {
-    return tx
-      ? `https://polkadot.js.org/apps/?rpc=${rpcUrl}#/extrinsics/decode/${tx.method.toHex()}`
-      : ""
+    return createPolkadotJSTxUrl(rpcUrl, tx)
   }, [rpcUrl, tx])
 }

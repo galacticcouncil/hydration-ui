@@ -16,7 +16,6 @@ export const SInput = styled.input`
   all: unset;
   color: ${theme.colors.white} !important;
 
-  font-family: "ChakraPetch", sans-serif;
   font-weight: 700;
   font-size: 16px;
   line-height: 14px;

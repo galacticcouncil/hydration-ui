@@ -6,7 +6,7 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
-import { useProviderRpcUrlStore } from "api/provider"
+import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
@@ -24,7 +24,6 @@ export const DcaApp = createComponent({
   },
 })
 
-const indexerUrl = import.meta.env.VITE_INDEXER_URL
 const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
 const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
@@ -40,8 +39,8 @@ export function DcaPage() {
   } = useAccountCurrency(isLoaded ? account?.address : "")
   const { stableCoinId } = useDisplayAssetStore()
 
-  const preference = useProviderRpcUrlStore()
-  const rpcUrl = preference.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
+  const rpcUrlList = useActiveRpcUrlList()
+  const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     const { transaction, notification } = e.detail
@@ -91,14 +90,14 @@ export function DcaPage() {
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={rpcUrl}
+        apiAddress={rpcUrlList.join()}
         assetIn={!isLoading ? assetInDefault : ""}
         assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        indexerUrl={indexerUrl}
+        indexerUrl={activeProvider?.indexerUrl}
         grafanaUrl={grafanaUrl}
         grafanaDsn={grafanaDsn}
         onDcaSchedule={(e) => handleSubmit(e)}

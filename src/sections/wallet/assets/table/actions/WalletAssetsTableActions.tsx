@@ -4,7 +4,9 @@ import MoreIcon from "assets/icons/MoreDotsIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import MetamaskLogo from "assets/icons/MetaMask.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
+import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import DollarIcon from "assets/icons/DollarIcon.svg?react"
+import InfoIcon from "assets/icons/InfoIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown, TDropdownItem } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
@@ -20,11 +22,10 @@ import { LINKS } from "utils/navigation"
 import { useNavigate } from "@tanstack/react-location"
 import { AssetsTableData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useRefetchProviderData } from "api/provider"
-import { useToast } from "state/toasts"
-import { useExternalAssetRegistry } from "api/externalAssetRegistry"
-import { useMemo } from "react"
+import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
+import { useState } from "react"
+import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
+import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 
 type Props = {
   toggleExpanded: () => void
@@ -37,6 +38,8 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
+  const { featureFlags } = useRpcProvider()
+  const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -45,13 +48,14 @@ export const WalletAssetsTableActions = (props: Props) => {
   const {
     id,
     symbol,
-    decimals,
+    meta,
     couldBeSetAsPaymentFee,
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const enablePaymentFee =
-    couldBeSetAsPaymentFee && !isEvmAccount(account?.address)
+  const rugCheckData = props.asset.rugCheckData
+  const hasRugCheckData = !!rugCheckData
+  const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
   const couldWatchMetaMaskAsset =
     isMetaMask(window?.ethereum) &&
@@ -106,7 +110,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       onSelect: inTradeRouter
         ? () =>
             navigate({
-              to: "/trade/swap",
+              to: LINKS.swap,
               search: canBuy ? { assetOut: id } : { assetIn: id },
             })
         : undefined,
@@ -128,8 +132,12 @@ export const WalletAssetsTableActions = (props: Props) => {
     },
   ]
 
+  const allowSetAsPaymentFee = isEvmAccount(account?.address)
+    ? featureFlags.dispatchPermit && couldBeSetAsPaymentFee
+    : couldBeSetAsPaymentFee
+
   const actionItems = [
-    enablePaymentFee
+    allowSetAsPaymentFee
       ? {
           key: "setAsFeePayment",
           icon: <DollarIcon />,
@@ -145,8 +153,16 @@ export const WalletAssetsTableActions = (props: Props) => {
           onSelect: () =>
             watchAsset(window?.ethereum, id, {
               symbol: symbol,
-              decimals: decimals,
+              decimals: meta.decimals,
             }),
+        }
+      : null,
+    hasRugCheckData
+      ? {
+          key: "checkData",
+          icon: <InfoIcon width={18} height={18} />,
+          label: t("wallet.assets.table.actions.checkExternal"),
+          onSelect: () => setAssetCheckModalOpen(true),
         }
       : null,
   ].filter(isNotNil)
@@ -159,10 +175,12 @@ export const WalletAssetsTableActions = (props: Props) => {
         justify: "end",
       }}
     >
-      {props.asset.isExternal && !props.asset.name ? (
-        <AddTokenAction id={props.asset.id} />
-      ) : (
-        <>
+      <>
+        {hasRugCheckWarnings ? (
+          <UpdateTokenDataAction id={props.asset.id} />
+        ) : props.asset.isExternalInvalid ? (
+          <AddTokenAction id={props.asset.id} />
+        ) : (
           <div
             sx={{
               flex: "row",
@@ -186,23 +204,24 @@ export const WalletAssetsTableActions = (props: Props) => {
               </TableAction>
             ))}
           </div>
-          <Dropdown
-            items={
-              account?.isExternalWalletConnected
-                ? []
-                : [
-                    ...buttons.filter((button) =>
-                      hiddenElementsKeys.includes(button.key),
-                    ),
-                    ...actionItems,
-                  ]
-            }
-            onSelect={(item) => item.onSelect?.()}
-          >
-            <MoreIcon />
-          </Dropdown>
-        </>
-      )}
+        )}
+
+        <Dropdown
+          items={
+            account?.isExternalWalletConnected
+              ? []
+              : [
+                  ...buttons.filter((button) =>
+                    hiddenElementsKeys.includes(button.key),
+                  ),
+                  ...actionItems,
+                ]
+          }
+          onSelect={(item) => item.onSelect?.()}
+        >
+          <MoreIcon />
+        </Dropdown>
+      </>
 
       <ButtonTransparent
         onClick={props.toggleExpanded}
@@ -214,11 +233,20 @@ export const WalletAssetsTableActions = (props: Props) => {
       >
         <ChevronDownIcon />
       </ButtonTransparent>
+      {assetCheckModalOpen && (
+        <ExternalAssetUpdateModal
+          open={assetCheckModalOpen}
+          assetId={id}
+          onClose={() => {
+            setAssetCheckModalOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-export const AddTokenAction = ({
+export const UpdateTokenDataAction = ({
   id,
   className,
 }: {
@@ -227,54 +255,73 @@ export const AddTokenAction = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
-  const { addToken } = useUserExternalTokenStore()
-  const { data } = useExternalAssetRegistry()
+  const [modalOpen, setModalOpen] = useState(false)
+  return (
+    <>
+      <TableAction
+        variant="warning"
+        icon={<WarningIcon />}
+        onClick={() => {
+          setModalOpen(true)
+        }}
+        disabled={account?.isExternalWalletConnected}
+        className={className}
+      >
+        {t("wallet.assets.table.actions.update")}
+      </TableAction>
+      {modalOpen && (
+        <ExternalAssetUpdateModal
+          open={modalOpen}
+          assetId={id}
+          onClose={() => {
+            setModalOpen(false)
+          }}
+        />
+      )}
+    </>
+  )
+}
 
-  const refetchProvider = useRefetchProviderData()
-  const { add } = useToast()
+export const AddTokenAction = ({
+  id,
+  className,
+  onClick,
+  onClose,
+}: {
+  id: string
+  className?: string
+  onClick?: () => void
+  onClose?: () => void
+}) => {
+  const { t } = useTranslation()
+  const { account } = useAccount()
+  const [addTokenModalOpen, setAddTokenModalOpen] = useState(false)
+  const getExternalMeta = useExternalTokenMeta()
 
-  const externalAsset = useMemo(() => {
-    const meta = assets.getAsset(id)
-
-    for (const parachain in data) {
-      const externalAsset = data[Number(parachain)].find(
-        (externalAsset) => externalAsset.id === meta.generalIndex,
-      )
-
-      if (externalAsset) return externalAsset
-    }
-  }, [assets, data, id])
-
-  const onClick = externalAsset
-    ? () => {
-        addToken(externalAsset)
-        refetchProvider()
-        add("success", {
-          title: (
-            <Trans
-              t={t}
-              i18nKey="wallet.addToken.toast.add.onSuccess"
-              tOptions={{
-                name: externalAsset.name,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        })
-      }
-    : undefined
+  const assetMeta = getExternalMeta(id)
 
   return (
-    <TableAction
-      icon={<PlusIcon />}
-      onClick={onClick}
-      disabled={account?.isExternalWalletConnected || !externalAsset}
-      className={className}
-    >
-      {t("wallet.assets.table.addToken")}
-    </TableAction>
+    <>
+      <TableAction
+        icon={<PlusIcon />}
+        onClick={() => {
+          setAddTokenModalOpen(true)
+          onClick?.()
+        }}
+        disabled={account?.isExternalWalletConnected || !assetMeta}
+        className={className}
+      >
+        {t("wallet.assets.table.actions.add")}
+      </TableAction>
+      {assetMeta && addTokenModalOpen && (
+        <ExternalAssetImportModal
+          assetIds={[assetMeta.id]}
+          onClose={() => {
+            setAddTokenModalOpen(false)
+            onClose?.()
+          }}
+        />
+      )}
+    </>
   )
 }

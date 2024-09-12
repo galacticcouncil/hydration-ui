@@ -8,9 +8,13 @@ import { useTransactionValues } from "./ReviewTransactionForm.utils"
 import BN from "bignumber.js"
 import { ReviewReferralCodeWrapper } from "sections/referrals/components/ReviewReferralCode/ReviewReferralCodeWrapper"
 import { useRegistrationLinkFee } from "api/referrals"
-import { useRpcProvider } from "providers/rpcProvider"
 import { ReviewTransactionAuthorTip } from "sections/transaction/ReviewTransactionAuthorTip"
+import { ReviewTransactionNonce } from "sections/transaction/ReviewTransactionNonce"
 import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { Transaction } from "state/store"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssets } from "providers/assets"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -19,16 +23,17 @@ type ReviewTransactionSummaryProps = {
   xcallMeta?: Record<string, string>
   openEditFeePaymentAssetModal: () => void
   onTipChange?: (amount: BN) => void
+  onNonceChange?: (nonce: string) => void
   referralCode?: string
 }
 
 export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
-  tx,
   transactionValues,
   xcallMeta,
   editFeePaymentAssetEnabled,
   openEditFeePaymentAssetModal,
   onTipChange,
+  onNonceChange,
   referralCode,
 }) => {
   const { t } = useTranslation()
@@ -41,7 +46,13 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
     isNewReferralLink,
     displayEvmFeePaymentValue,
     displayFeeExtra,
+    permitNonce,
+    shouldUsePermit,
   } = transactionValues.data || {}
+
+  const nonceValue = shouldUsePermit
+    ? permitNonce?.toString()
+    : nonce?.toString()
 
   return (
     <div>
@@ -98,7 +109,7 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                       onClick={openEditFeePaymentAssetModal}
                       css={{ cursor: "pointer" }}
                     >
-                      <Text lh={14} color="brightBlue300">
+                      <Text fs={14} color="brightBlue300">
                         {t("liquidity.reviewTransaction.modal.edit")}
                       </Text>
                     </div>
@@ -115,15 +126,39 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
         rows={[
           {
             label: t("liquidity.reviewTransaction.modal.detail.lifetime"),
-            content: tx.era.isMortalEra
-              ? t("transaction.mortal.expire", {
-                  date: era?.deathDate,
-                })
-              : t("transaction.immortal.expire"),
+            content: (
+              <Text fs={14} sx={{ flex: "row", gap: 4, align: "center" }}>
+                {era?.isLoading ? (
+                  <Skeleton width={100} height={14} />
+                ) : era?.deathDate ? (
+                  <>
+                    {t("transaction.mortal.expire", {
+                      date: era.deathDate,
+                    })}
+                    <InfoTooltip
+                      text={t(
+                        "liquidity.reviewTransaction.modal.detail.lifetime.tooltip",
+                      )}
+                    >
+                      <SInfoIcon />
+                    </InfoTooltip>
+                  </>
+                ) : (
+                  t("transaction.immortal.expire")
+                )}
+              </Text>
+            ),
           },
           {
             label: t("liquidity.reviewTransaction.modal.detail.nonce"),
-            content: nonce?.toString(),
+            content: !!onNonceChange ? (
+              <ReviewTransactionNonce
+                onChange={onNonceChange}
+                nonce={nonceValue}
+              />
+            ) : (
+              nonceValue
+            ),
           },
           ...(!!onTipChange
             ? [
@@ -149,13 +184,26 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
 }
 
 export const ReviewTransactionXCallSummary: FC<
-  Pick<ReviewTransactionSummaryProps, "xcallMeta">
-> = ({ xcallMeta }) => {
+  Pick<Transaction, "xcallMeta" | "xcall">
+> = ({ xcallMeta, xcall }) => {
   const { t } = useTranslation()
+
   if (!xcallMeta) return null
+
   return (
     <Summary
       rows={[
+        ...(xcall?.value
+          ? [
+              {
+                label: t("liquidity.reviewTransaction.modal.detail.amount"),
+                content: t("value.tokenWithSymbol", {
+                  value: new BN(xcall.value.toString()).shiftedBy(-18),
+                  symbol: xcallMeta?.srcChainFeeSymbol,
+                }),
+              },
+            ]
+          : []),
         {
           label: t("liquidity.reviewTransaction.modal.detail.srcChainFee"),
           content:
@@ -167,17 +215,6 @@ export const ReviewTransactionXCallSummary: FC<
                 })
               : "-",
         },
-        {
-          label: t("liquidity.reviewTransaction.modal.detail.dstChainFee"),
-          content:
-            parseFloat(xcallMeta?.dstChainFee) > 0
-              ? t("liquidity.add.modal.row.transactionCostValue", {
-                  type: "token",
-                  amount: new BN(xcallMeta.dstChainFee),
-                  symbol: xcallMeta?.dstChainFeeSymbol,
-                })
-              : "-",
-        },
       ]}
     />
   )
@@ -185,7 +222,7 @@ export const ReviewTransactionXCallSummary: FC<
 
 const ReferralsLinkFee = () => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
   const registrationFee = useRegistrationLinkFee()
 
   return !registrationFee.isLoading ? (
@@ -194,7 +231,7 @@ const ReferralsLinkFee = () => {
         {t("value.tokenWithSymbol", {
           value: registrationFee.data?.amount,
           symbol: registrationFee.data
-            ? assets.getAsset(registrationFee.data.id).symbol
+            ? getAsset(registrationFee.data.id)?.symbol
             : "",
         })}
       </Text>

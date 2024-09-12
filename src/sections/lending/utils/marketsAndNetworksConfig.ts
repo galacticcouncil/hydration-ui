@@ -143,6 +143,8 @@ export const availableMarkets = Object.keys(marketsData).filter((key) =>
   ),
 ) as CustomMarket[]
 
+console.log({ availableMarkets })
+
 const linkBuilder =
   ({
     baseUrl,
@@ -206,8 +208,8 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
     if (!chainProviders.length) {
       throw new Error(`${chainId} has no jsonRPCUrl configured`)
     }
+    providers[chainId] = new StaticJsonRpcProvider(chainProviders[0], chainId)
     if (chainProviders.length === 1) {
-      providers[chainId] = new StaticJsonRpcProvider(chainProviders[0], chainId)
     } else {
       providers[chainId] = new RotationProvider(chainProviders, chainId)
     }

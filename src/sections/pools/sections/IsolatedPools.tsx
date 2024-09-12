@@ -70,16 +70,23 @@ const IsolatedPoolsData = () => {
   const totalLocked = useMemo(() => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
-        return acc.plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        return acc.plus(
+          !xykPool.tvlDisplay.isNaN() && !xykPool.isInvalid
+            ? xykPool.tvlDisplay
+            : BN_0,
+        )
       }, BN_0)
     }
     return BN_0
   }, [xykPools.data])
 
-  const filteredPools =
-    (search && xykPools.data
-      ? arraySearch(xykPools.data, search, ["symbol", "name"])
-      : xykPools.data) ?? []
+  const filteredPools = useMemo(
+    () =>
+      (search && xykPools.data
+        ? arraySearch(xykPools.data, search, ["symbol", "name"])
+        : xykPools.data) ?? [],
+    [search, xykPools.data],
+  )
 
   if (id != null) {
     const pool = xykPools.data?.find((pool) => pool.id === id.toString())
@@ -116,7 +123,15 @@ const IsolatedPoolsData = () => {
       />
       <SearchFilter />
       <Spacer size={24} />
-      <div sx={{ flex: "row", mb: 14 }}>
+      <div
+        sx={{
+          flex: "row",
+          mb: 14,
+          gap: 4,
+          align: "baseline",
+          flexWrap: "wrap",
+        }}
+      >
         <CreateXYKPoolModalButton
           sx={{ ml: "auto", width: ["100%", "auto"] }}
           disabled={xykPools.isInitialLoading}
@@ -125,7 +140,7 @@ const IsolatedPoolsData = () => {
       {xykPools.isInitialLoading ? (
         <PoolsTableSkeleton isXyk />
       ) : filteredPools.length ? (
-        <PoolsTable data={filteredPools} isXyk />
+        <PoolsTable data={filteredPools} isXyk paginated />
       ) : (
         <EmptySearchState />
       )}

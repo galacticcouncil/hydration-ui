@@ -6,13 +6,13 @@ import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ToastMessage, useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
-import { usePaymentInfo } from "./transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAcountAssets } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { useAcountAssets } from "./assetDetails"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -30,12 +30,11 @@ export const getAcceptedCurrency = (api: ApiPromise) => async () => {
 }
 
 export const useAcceptedCurrencies = (ids: string[]) => {
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+  const { native } = useAssets()
 
   return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
+    enabled: isLoaded && ids.length > 0,
     select: (assets) => {
       return ids.map((id) => {
         const response = assets.find((asset) => asset.id === id)
@@ -43,8 +42,8 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         return response
           ? response
           : id === native.id
-          ? { id, accepted: true, data: undefined }
-          : { id, accepted: false, data: undefined }
+            ? { id, accepted: true, data: undefined }
+            : { id, accepted: false, data: undefined }
       })
     },
   })
@@ -52,15 +51,17 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 
 export const useSetAsFeePayment = () => {
   const { api } = useRpcProvider()
+  const { native } = useAssets()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
-  const { data: paymentInfoData } = usePaymentInfo(
-    api.tx.balances.transfer("", "0"),
-  )
 
   return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!(tokenId && paymentInfoData)) return
+    if (!tokenId) return
+
+    const paymentInfoData = await api.tx.currencies
+      .transfer("", native.id, "0")
+      .paymentInfo(account?.address ?? "")
 
     const transaction = await createTransaction(
       {
@@ -103,15 +104,16 @@ export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
 }
 
 export const useAccountFeePaymentAssets = () => {
-  const { assets } = useRpcProvider()
+  const { featureFlags } = useRpcProvider()
   const { account } = useAccount()
+  const { getAsset } = useAssets()
   const accountAssets = useAcountAssets(account?.address)
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
   const allowedFeePaymentAssetsIds = useMemo(() => {
-    if (isEvmAccount(account?.address)) {
-      const evmNativeAssetId = assets.getAsset(NATIVE_EVM_ASSET_ID).id
+    if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
+      const evmNativeAssetId = getAsset(NATIVE_EVM_ASSET_ID)?.id
       return uniqBy(
         identity,
         [evmNativeAssetId, feePaymentAssetId].filter(isNotNil),
@@ -120,7 +122,13 @@ export const useAccountFeePaymentAssets = () => {
 
     const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
-  }, [assets, account?.address, accountAssets, feePaymentAssetId])
+  }, [
+    account?.address,
+    featureFlags.dispatchPermit,
+    accountAssets,
+    feePaymentAssetId,
+    getAsset,
+  ])
 
   const acceptedFeePaymentAssets = useAcceptedCurrencies(
     allowedFeePaymentAssetsIds,

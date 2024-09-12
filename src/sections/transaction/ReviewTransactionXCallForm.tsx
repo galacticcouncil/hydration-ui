@@ -1,4 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
+import { XItemCursor } from "@galacticcouncil/apps"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -12,7 +13,7 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { MetaMaskSigner } from "sections/web3-connect/wallets/MetaMask/MetaMaskSigner"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { Transaction } from "state/store"
 import { theme } from "theme"
 
@@ -26,7 +27,6 @@ type Props = TxProps & {
 }
 
 export const ReviewTransactionXCallForm: FC<Props> = ({
-  title,
   xcall,
   xcallMeta,
   onEvmSigned,
@@ -45,19 +45,26 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
       if (!wallet.signer) throw new Error("Missing signer")
       if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
 
-      if (wallet?.signer instanceof MetaMaskSigner) {
+      if (wallet?.signer instanceof EthereumSigner) {
         const { srcChain } = xcallMeta
 
-        const evmTx = await wallet.signer.sendTransaction(
-          {
-            from: account.address,
-            to: xcall.to,
-            data: xcall.data,
-          },
-          {
-            chain: srcChain,
-          },
-        )
+        const evmTx = await wallet.signer.sendTransaction({
+          chain: srcChain,
+          from: account.address,
+          to: xcall.to,
+          data: xcall.data,
+          value: xcall.value,
+        })
+
+        const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
+        if (isApproveTx) {
+          XItemCursor.reset({
+            data: evmTx.data as `0x${string}`,
+            hash: evmTx.hash as `0x${string}`,
+            nonce: evmTx.nonce,
+            to: evmTx.to as `0x${string}`,
+          })
+        }
 
         onEvmSigned({ evmTx })
       }
@@ -68,11 +75,6 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
 
   return (
     <>
-      {title && (
-        <Text color="basic400" fw={400} sx={{ mb: 16 }}>
-          {title}
-        </Text>
-      )}
       <ModalScrollableContent
         sx={{
           mx: "calc(-1 * var(--modal-content-padding))",
@@ -81,12 +83,19 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
-          <ReviewTransactionData address={account?.address} xcall={xcall} />
+          <ReviewTransactionData
+            address={account?.address}
+            xcallEvm={xcall}
+            xcallMeta={xcallMeta}
+          />
         }
         footer={
           <>
             <div sx={{ mt: 15 }}>
-              <ReviewTransactionXCallSummary xcallMeta={xcallMeta} />
+              <ReviewTransactionXCallSummary
+                xcallMeta={xcallMeta}
+                xcall={xcall}
+              />
             </div>
             <div
               sx={{
