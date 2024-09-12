@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
 
 export const TableContainer = styled.div`
@@ -204,5 +205,46 @@ export const TableData = styled.td<{
     &:last-of-type {
       padding-right: 10px;
     }
+  }
+`
+
+export const TableFooter = styled.div`
+  padding: 12px 0;
+
+  display: flex;
+  aligh-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  border-top: 1px solid rgba(32, 33, 53, 1);
+`
+
+export const ButtonPagination = styled(ButtonTransparent)<{ active?: boolean }>`
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  minwidth: 22px;
+  height: 22px;
+
+  border-radius: ${theme.borderRadius.default}px;
+  background: ${({ active }) =>
+    active
+      ? `rgba(${theme.rgbColors.alpha0}, 0.15)`
+      : `rgba(${theme.rgbColors.alpha0}, 0.06)`};
+  color: ${theme.colors.white};
+
+  font-size: 13px;
+
+  &:hover {
+    background: rgba(${theme.rgbColors.alpha0}, 0.1);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    box-shadow: unset;
+    transform: none;
+
+    color: ${theme.colors.basic800};
+    background: transparent;
   }
 `

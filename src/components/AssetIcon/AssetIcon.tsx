@@ -8,10 +8,13 @@ import {
 } from "@galacticcouncil/ui"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { useExternalAssetsWhiteList } from "api/external"
 import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { ResponsiveValue } from "utils/responsive"
+import { useAssets } from "providers/assets"
+import { Icon } from "components/Icon/Icon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -37,21 +40,51 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
+export const MultipleAssetLogo = ({
+  iconId,
+  size = 26,
+}: {
+  iconId: string | string[] | undefined
+  size?: ResponsiveValue<number>
+}) => {
+  const { getAssetWithFallback } = useAssets()
+  if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
+  const allIconIds = Array.isArray(iconId)
+    ? iconId
+        .map((id) => {
+          const { iconId } = getAssetWithFallback(id)
+
+          return iconId
+        })
+        .flat()
+    : iconId
+  return typeof allIconIds === "string" ? (
+    <Icon size={size} icon={<AssetLogo id={allIconIds} />} />
+  ) : (
+    <MultipleIcons
+      size={size}
+      icons={allIconIds.map((id) => ({
+        icon: <AssetLogo key={id} id={id} />,
+      }))}
+    />
+  )
+}
+
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
-    const assetDetails = id ? assets.getAsset(id) : undefined
+    const assetDetails = id ? getAsset(id) : undefined
     const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
 
     return {
       details: assetDetails,
       badgeVariant: badge,
     }
-  }, [assets, getIsWhiteListed, id])
+  }, [getAsset, getIsWhiteListed, id])
 
   const { details, badgeVariant } = asset
 

@@ -1,6 +1,5 @@
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
@@ -9,6 +8,7 @@ import { BN_1 } from "utils/constants"
 import { CreateXYKPoolFormData } from "./CreateXYKPoolForm.utils"
 import BigNumber from "bignumber.js"
 import { useState } from "react"
+import { useAssets } from "providers/assets"
 
 type CreateXYKPoolFormProps = {
   form: UseFormReturn<CreateXYKPoolFormData>
@@ -27,7 +27,7 @@ export const CreateXYKPoolForm = ({
 }: CreateXYKPoolFormProps) => {
   const { t } = useTranslation()
 
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
   const assetAId = form.watch("assetAId")
   const assetBId = form.watch("assetBId")
@@ -35,8 +35,8 @@ export const CreateXYKPoolForm = ({
   const assetAValue = BigNumber(form.watch("assetAAmount"))
   const assetBValue = BigNumber(form.watch("assetBAmount"))
 
-  const assetAMeta = assets.getAsset(assetAId)
-  const assetBMeta = assets.getAsset(assetBId)
+  const assetAMeta = getAssetWithFallback(assetAId)
+  const assetBMeta = getAssetWithFallback(assetBId)
 
   const [rateReversed, setRateReversed] = useState(false)
 

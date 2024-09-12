@@ -16,6 +16,7 @@ import { omit } from "utils/rx"
 import { getInputData, TExternalAssetWithLocation } from "utils/externalAssets"
 import { useShallow } from "hooks/useShallow"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { TExternal, useAssets } from "providers/assets"
 
 const pink = {
   decimals: 10,
@@ -382,13 +383,13 @@ export const useUserExternalTokenStore = create<Store>()(
 )
 
 export const useExternalTokenMeta = () => {
-  const { assets } = useRpcProvider()
+  const { getExternalByExternalId, getAsset } = useAssets()
 
   const externalRegistry = useExternalAssetRegistry()
 
   const getExtrernalToken = useCallback(
     (id: string) => {
-      const meta = id ? assets.getAsset(id) : undefined
+      const meta = id ? (getAsset(id) as TExternal) : undefined
 
       if (meta?.isExternal && meta.externalId) {
         for (const parachain in externalRegistry) {
@@ -396,9 +397,7 @@ export const useExternalTokenMeta = () => {
             meta.externalId,
           )
           if (externalAsset) {
-            const meta = assets.external.find(
-              (asset) => asset.externalId === externalAsset.id,
-            )
+            const meta = getExternalByExternalId(externalAsset.id)
 
             if (meta) {
               const externalMeta = omit(["id"], externalAsset)
@@ -407,7 +406,7 @@ export const useExternalTokenMeta = () => {
                 ...meta,
                 ...externalMeta,
                 externalId: externalAsset.id,
-              }
+              } as TExternal
             }
 
             return undefined
@@ -415,7 +414,7 @@ export const useExternalTokenMeta = () => {
         }
       }
     },
-    [assets, externalRegistry],
+    [externalRegistry, getAsset, getExternalByExternalId],
   )
 
   return getExtrernalToken
@@ -453,13 +452,14 @@ export const useRegisteredExternalTokens = () => {
   const { getDataEnv } = useProviderRpcUrlStore()
   const tokens = useUserExternalTokenStore(useShallow((s) => s.tokens))
   const dataEnv = getDataEnv()
-  const { isLoaded, assets } = useRpcProvider()
+  const { external } = useAssets()
+  const { isLoaded } = useRpcProvider()
 
   const externalAssets = useExternalAssetRegistry(degenMode)
 
   return useMemo(() => {
     if (degenMode && isLoaded) {
-      const data = assets.external.reduce((acc, asset) => {
+      const data = external.reduce((acc, asset) => {
         const externalAsset = externalAssets[
           Number(asset.parachainId)
         ]?.data?.get(asset.externalId ?? "")
@@ -477,7 +477,7 @@ export const useRegisteredExternalTokens = () => {
     } else {
       return tokens[dataEnv]
     }
-  }, [assets.external, dataEnv, isLoaded, degenMode, externalAssets, tokens])
+  }, [external, dataEnv, isLoaded, degenMode, externalAssets, tokens])
 }
 
 export const getInternalIdFromResult = (res: ISubmittableResult) => {

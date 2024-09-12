@@ -20,6 +20,7 @@ import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/Ad
 import { useSettingsStore } from "state/store"
 import { theme } from "theme"
 import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useAssets } from "providers/assets"
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -39,7 +40,8 @@ export const AddTokenListModal: React.FC<Props> = ({
   setParachainId,
 }) => {
   const { t } = useTranslation()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { tokens, external, externalInvalid } = useAssets()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -55,16 +57,15 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
     const internalAssets =
-      assets?.tokens?.filter(
-        (asset) => asset.parachainId === parachainId.toString(),
-      ) ?? []
+      tokens.filter((asset) => asset.parachainId === parachainId.toString()) ??
+      []
 
     const internalAssetsMap = new Map(
       internalAssets.map((asset) => [asset.externalId, asset]),
     )
 
     const registeredAssets =
-      assets?.external?.filter(
+      [...external, ...externalInvalid].filter(
         (asset) => asset.parachainId === parachainId.toString(),
       ) ?? []
 
@@ -76,7 +77,7 @@ export const AddTokenListModal: React.FC<Props> = ({
       registeredAssetsMap,
       internalAssetsMap,
     }
-  }, [assets, parachainId])
+  }, [external, externalInvalid, parachainId, tokens])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"

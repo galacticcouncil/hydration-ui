@@ -3,12 +3,12 @@ import { useXYKPoolTradeVolumes } from "sections/pools/pool/details/PoolDetails.
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { usePools } from "sections/pools/PoolsPage.utils"
-import { useRpcProvider } from "providers/rpcProvider"
+import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { MetadataStore } from "@galacticcouncil/ui"
 
 export const AllPoolsVolumeTotal = () => {
-  const { assets } = useRpcProvider()
+  const { getAssets } = useAssets()
   const xykPools = useGetXYKPools()
 
   const whitelist = useMemo(
@@ -19,12 +19,13 @@ export const AllPoolsVolumeTotal = () => {
   const poolsAddress =
     xykPools.data
       ?.filter((pool) => {
-        const assetsMeta = assets.getAssets(pool.assets)
+        const assetsMeta = getAssets(pool.assets)
 
         return (
-          assetsMeta.every((asset) => asset.symbol) &&
+          assetsMeta.every((asset) => asset?.symbol) &&
           assetsMeta.some(
-            (asset) => asset.isSufficient || whitelist.includes(asset.id),
+            (asset) =>
+              asset?.isSufficient || whitelist.includes(asset?.id ?? ""),
           )
         )
       })
@@ -64,7 +65,7 @@ export const AllPoolsVolumeTotal = () => {
 }
 
 export const XYKVolumeTotal = () => {
-  const { assets } = useRpcProvider()
+  const { getAssets } = useAssets()
   const pools = useGetXYKPools()
 
   const whitelist = useMemo(
@@ -74,12 +75,13 @@ export const XYKVolumeTotal = () => {
   const poolsAddress =
     pools.data
       ?.filter((pool) => {
-        const assetsMeta = assets.getAssets(pool.assets)
+        const assetsMeta = getAssets(pool.assets)
 
         return (
-          assetsMeta.every((asset) => asset.symbol) &&
+          assetsMeta.every((asset) => asset?.symbol) &&
           assetsMeta.some(
-            (asset) => asset.isSufficient || whitelist.includes(asset.id),
+            (asset) =>
+              asset?.isSufficient || whitelist.includes(asset?.id ?? ""),
           )
         )
       })

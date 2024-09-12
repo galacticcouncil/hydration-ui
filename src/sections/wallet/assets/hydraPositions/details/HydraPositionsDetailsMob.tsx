@@ -5,12 +5,12 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { useRpcProvider } from "providers/rpcProvider"
 import {
   TXYKPosition,
   isXYKPosition,
 } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { TLPData } from "utils/omnipool"
+import { useAssets } from "providers/assets"
 import { Button } from "components/Button/Button"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
@@ -29,9 +29,9 @@ export const HydraPositionsDetailsMob = ({
   const { t } = useTranslation()
   const { account } = useAccount()
 
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
-  const meta = row?.assetId ? assets.getAsset(row.assetId) : undefined
+  const meta = row?.assetId ? getAsset(row.assetId) : undefined
 
   if (!row) return null
 

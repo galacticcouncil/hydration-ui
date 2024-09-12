@@ -4,7 +4,6 @@ import { useAcountAssets } from "api/assetDetails"
 import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { useShallow } from "hooks/useShallow"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,6 +16,8 @@ import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
 import { createToastMessages } from "state/toasts"
 import { ApiPromise } from "@polkadot/api"
+import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type XYKAsset = {
   id: string
@@ -70,42 +71,41 @@ export const filterIdsByExclusivity = (
 
 export const useAllowedXYKPoolAssets = () => {
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
+  const { all, isExternal } = useAssets()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
-
   const { isAdded } = useUserExternalTokenStore()
 
   const accountAssets = useAcountAssets(account?.address)
 
   return useMemo(() => {
-    const tradableAssetIds = assets.tradeAssets.map((asset) => asset.id)
     const accountAssetIds = accountAssets
       .filter(({ balance }) => balance.freeBalance.gt(0))
       .map(({ asset }) => asset.id)
 
-    return assets.all.filter((asset) => {
-      const isTradable = tradableAssetIds.includes(asset.id)
+    return [...all.values()].filter((asset) => {
+      const isTradable = asset.isTradable
       const hasBalance = accountAssetIds.includes(asset.id)
       const isNotTradableWithBalance = !isTradable && hasBalance
 
       const shouldBeVisible = isTradable || isNotTradableWithBalance
 
-      if (asset.isExternal) {
+      if (isExternal(asset)) {
         return shouldBeVisible && (degenMode || isAdded(asset.externalId))
       }
 
       return shouldBeVisible
     })
-  }, [degenMode, accountAssets, assets.all, assets.tradeAssets, isAdded])
+  }, [accountAssets, all, degenMode, isAdded, isExternal])
 }
 
 export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
-  const { isLoaded, assets } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
   const { account } = useAccount()
 
-  const assetAMeta = isLoaded ? assets.getAsset(assetA ?? "") : null
-  const assetBMeta = isLoaded ? assets.getAsset(assetB ?? "") : null
+  const assetAMeta = isLoaded ? getAssetWithFallback(assetA ?? "") : null
+  const assetBMeta = isLoaded ? getAssetWithFallback(assetB ?? "") : null
 
   const { data: balanceA } = useTokenBalance(assetA, account?.address)
   const { data: balanceB } = useTokenBalance(assetB, account?.address)
@@ -154,13 +154,18 @@ export const useCreateXYKPool = ({
   steps?: Transaction["steps"]
 } = {}) => {
   const { t } = useTranslation()
-  const { api, assets, isLoaded } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const { api, isLoaded } = useRpcProvider()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
   return useMutation(async (values: CreateXYKPoolFormData) => {
-    const assetAMeta = isLoaded ? assets.getAsset(values.assetAId ?? "") : null
-    const assetBMeta = isLoaded ? assets.getAsset(values.assetBId ?? "") : null
+    const assetAMeta = isLoaded
+      ? getAssetWithFallback(values.assetAId ?? "")
+      : null
+    const assetBMeta = isLoaded
+      ? getAssetWithFallback(values.assetBId ?? "")
+      : null
     if (!assetAMeta || !assetBMeta) throw new Error("Assets not found")
 
     const data = {

@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useUserDeposits } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -15,24 +15,23 @@ import { isAfter } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
-import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
+import { useAllFarmDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { theme } from "theme"
 import { getFloatingPointAmount } from "utils/balance"
 import { getEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { useRpcProvider } from "providers/rpcProvider"
 import { arraySearch, isNotNil } from "utils/helpers"
 import { WalletAssetsHydraPositionsDetails } from "sections/wallet/assets/hydraPositions/details/WalletAssetsHydraPositionsDetails"
 import { ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
-import { useXYKDepositValues } from "sections/pools/PoolsPage.utils"
 import { TLPData } from "utils/omnipool"
 import { TableAction } from "components/Table/Table"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssets } from "providers/assets"
 
 export const useFarmingPositionsTable = (
   data: FarmingTablePosition[],
@@ -182,19 +181,18 @@ export const useFarmingPositionsData = ({
 }: {
   search?: string
 } = {}) => {
-  const { assets } = useRpcProvider()
-  const { omnipoolDeposits, xykDeposits } = useUserDeposits()
-  const xykDepositValues = useXYKDepositValues(xykDeposits)
-  const accountDepositsShare = useAllOmnipoolDeposits()
+  const { getShareTokenByAddress, getAsset } = useAssets()
+  const { omnipoolDeposits = [], xykDeposits = [] } =
+    useAccountPositions().data ?? {}
+  const { omnipool, xyk } = useAllFarmDeposits()
 
   const bestNumber = useBestNumber()
 
-  const queries = [accountDepositsShare, bestNumber]
+  const queries = [bestNumber]
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!omnipoolDeposits || !accountDepositsShare.data || !bestNumber.data)
-      return []
+    if (!omnipoolDeposits || !bestNumber.data) return []
 
     const rows = [...omnipoolDeposits, ...xykDeposits]
       .map((deposit) => {
@@ -202,9 +200,7 @@ export const useFarmingPositionsData = ({
         const isXyk = deposit.isXyk
         const poolId = deposit.data.ammPoolId.toString()
 
-        const meta = isXyk
-          ? assets.getShareTokenByAddress(poolId)
-          : assets.getAsset(poolId)
+        const meta = isXyk ? getShareTokenByAddress(poolId) : getAsset(poolId)
 
         if (!meta) return undefined
 
@@ -228,7 +224,7 @@ export const useFarmingPositionsData = ({
 
         let position: XYKPosition | TLPData
         if (isXyk) {
-          const values = xykDepositValues.data.find(
+          const values = xyk[meta.id]?.find(
             (value) => value.depositId === deposit.id,
           )
 
@@ -256,7 +252,7 @@ export const useFarmingPositionsData = ({
             return undefined
           }
         } else {
-          const omnipoolDeposit = accountDepositsShare.data[poolId]?.find(
+          const omnipoolDeposit = omnipool[poolId]?.find(
             (d) => d.depositId?.toString() === deposit.id,
           )
 
@@ -285,12 +281,13 @@ export const useFarmingPositionsData = ({
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [
     omnipoolDeposits,
-    accountDepositsShare.data,
     bestNumber.data,
     xykDeposits,
     search,
-    assets,
-    xykDepositValues,
+    getShareTokenByAddress,
+    getAsset,
+    xyk,
+    omnipool,
   ])
 
   return { data, isLoading }

@@ -3,6 +3,7 @@ import {
   VisibilityState,
   createColumnHelper,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
@@ -13,9 +14,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { useRpcProvider } from "providers/rpcProvider"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
@@ -32,6 +31,11 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
+import { useAssets } from "providers/assets"
+import {
+  defaultPaginationState,
+  useTablePagination,
+} from "components/Table/TablePagination"
 
 const NonClickableContainer = ({
   children,
@@ -56,35 +60,13 @@ const NonClickableContainer = ({
   )
 }
 
-const AssetTableName = ({ id }: { id: string }) => {
-  const { assets } = useRpcProvider()
-  const asset = assets.getAsset(id)
-
-  const farms = useFarms([id])
-  const iconIds = asset.iconId
+const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
+  const asset = pool.meta
+  const farms = useFarms([asset.id])
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
-      {typeof iconIds === "string" ? (
-        <Icon
-          size={26}
-          icon={<AssetLogo id={iconIds} />}
-          css={{ flex: "1 0 auto" }}
-        />
-      ) : (
-        <MultipleIcons
-          size={26}
-          icons={iconIds.map((asset) => {
-            const meta = assets.getAsset(asset)
-            const isBond = assets.isBond(meta)
-            const id = isBond ? meta.assetId : asset
-            return {
-              icon: <AssetLogo key={id} id={id} />,
-            }
-          })}
-        />
-      )}
-
+      <MultipleAssetLogo size={26} iconId={asset.iconId} />
       <div sx={{ flex: "column", width: "100%", gap: [0, 4] }}>
         <div sx={{ flex: "row", gap: 4, width: "fit-content" }}>
           <Text
@@ -97,7 +79,7 @@ const AssetTableName = ({ id }: { id: string }) => {
           >
             {asset.symbol}
           </Text>
-          {asset.isStableSwap && (
+          {asset?.isStableSwap && (
             <div css={{ position: "relative" }}>
               <LazyMotion features={domAnimation}>
                 <SStablepoolBadge
@@ -120,8 +102,12 @@ const AssetTableName = ({ id }: { id: string }) => {
           )}
         </div>
 
-        {asset.isStableSwap && (
-          <Text fs={11} color="white" css={{ opacity: 0.61 }}>
+        {asset?.isStableSwap && (
+          <Text
+            fs={11}
+            color="white"
+            css={{ opacity: 0.61, whiteSpace: "nowrap" }}
+          >
             {asset.name}
           </Text>
         )}
@@ -140,12 +126,11 @@ const AddLiqduidityButton = ({
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
 
   const isXykPool = isXYKPoolType(pool)
 
-  const assetMeta = assets.getAsset(pool.id)
-  const isStablePool = assets.isStableSwap(assetMeta)
+  const assetMeta = pool.meta
+  const isStablePool = assetMeta.isStableSwap
 
   const userStablePoolBalance = useTokenBalance(
     isStablePool ? pool.id : undefined,
@@ -258,9 +243,7 @@ const APY = ({
   isLoading: boolean
 }) => {
   const { t } = useTranslation()
-  const {
-    assets: { native },
-  } = useRpcProvider()
+  const { native } = useAssets()
   const farms = useFarms([assetId])
 
   if (isLoading || farms.isLoading) return <CellSkeleton />
@@ -281,11 +264,13 @@ export const usePoolTable = (
   data: TPool[] | TXYKPool[],
   isXyk: boolean,
   onRowSelect: (id: string) => void,
+  paginated?: boolean,
 ) => {
   const { t } = useTranslation()
 
   const { accessor, display } = createColumnHelper<TPool | TXYKPool>()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useTablePagination()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -305,7 +290,7 @@ export const usePoolTable = (
         id: "name",
         header: t("liquidity.table.header.poolAsset"),
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-        cell: ({ row }) => <AssetTableName id={row.original.id} />,
+        cell: ({ row }) => <AssetTableName pool={row.original} />,
       }),
       accessor("tvlDisplay", {
         id: "tvlDisplay",
@@ -449,9 +434,20 @@ export const usePoolTable = (
   return useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility },
-    onSortingChange: setSorting,
+    state: { sorting, columnVisibility, pagination },
+    onSortingChange: (data) => {
+      setSorting(data)
+      paginated && setPagination(defaultPaginationState)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+
+    ...(paginated
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          onPaginationChange: setPagination,
+          autoResetPageIndex: false,
+        }
+      : {}),
   })
 }
