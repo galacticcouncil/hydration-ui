@@ -58,19 +58,22 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
           ? !MOBILE_ONLY_PROVIDERS.includes(provider.type)
           : !DESKTOP_ONLY_PROVIDERS.includes(provider.type)
 
-        const isEvmProvider = EVM_PROVIDERS.includes(provider.type)
-        const isSubstrateProvider = SUBSTRATE_PROVIDERS.includes(provider.type)
-        const isSubstrateH160Provider = SUBSTRATE_H160_PROVIDERS.includes(
+        const isAlternativeProvider = ALTERNATIVE_PROVIDERS.includes(
           provider.type,
         )
-        const isAlternativeProvider = ALTERNATIVE_PROVIDERS.includes(
+        const isEvmProvider =
+          EVM_PROVIDERS.includes(provider.type) || isAlternativeProvider
+
+        const isSubstrateProvider =
+          SUBSTRATE_PROVIDERS.includes(provider.type) || isAlternativeProvider
+
+        const isSubstrateH160Provider = SUBSTRATE_H160_PROVIDERS.includes(
           provider.type,
         )
 
         const byMode =
           isDefaultMode ||
           isSubstrateEvmMode ||
-          isAlternativeProvider ||
           (isEvmMode && isEvmProvider) ||
           (isSubstrateMode && isSubstrateProvider) ||
           (isSubstrateH160Mode && isSubstrateH160Provider)
@@ -122,43 +125,36 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
 
   const providers = useConnectedProviders()
 
-  const isFilterable =
-    mode === WalletMode.Default || mode === WalletMode.SubstrateEVM
+  const isDefaultMode = mode === WalletMode.Default
 
-  const [selectedMode, setSelectedMode] = useState<WalletMode>(
-    WalletMode.Default,
-  )
+  const [modeFilter, setModeFilter] = useState<WalletMode>(mode)
 
   const { installedProviders, otherProviders } = useWalletProviders(
-    selectedMode,
+    isDefaultMode ? modeFilter : mode,
     meta?.chain,
   )
 
+  const installedExtensions = installedProviders.filter(({ type }) => {
+    return !ALTERNATIVE_PROVIDERS.includes(type)
+  })
+
   const enableAll = useCallback(() => {
-    installedProviders
-      .filter(({ type }) => {
-        return !ALTERNATIVE_PROVIDERS.includes(type)
-      })
-      .forEach(({ type, wallet }) => {
-        wallet.enable(POLKADOT_APP_NAME)
-        setStatus(type, WalletProviderStatus.Connected)
-      })
-  }, [installedProviders, setStatus])
+    installedExtensions.forEach(({ type, wallet }) => {
+      wallet.enable(POLKADOT_APP_NAME)
+      setStatus(type, WalletProviderStatus.Connected)
+    })
+  }, [installedExtensions, setStatus])
 
-  const installedCountWithoutWC = installedProviders.filter(
-    ({ type }) => type !== WalletProviderType.WalletConnect,
-  ).length
-
-  const [expanded, setExpanded] = useState(installedCountWithoutWC === 0)
+  const [expanded, setExpanded] = useState(installedExtensions.length === 0)
 
   return (
     <>
-      {isFilterable && (
+      {isDefaultMode && (
         <>
           <div sx={{ flex: "row", align: "center", gap: 10, flexWrap: "wrap" }}>
             <Web3ConnectModeFilter
-              active={selectedMode}
-              onSetActive={(mode) => setSelectedMode(mode)}
+              active={modeFilter}
+              onSetActive={(mode) => setModeFilter(mode)}
             />
           </div>
           <Separator
@@ -190,32 +186,34 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
           {installedProviders.map((provider) => (
             <Web3ConnectProviderButton
               key={provider.type}
-              mode={selectedMode}
+              mode={modeFilter}
               {...provider}
             />
           ))}
-          <SProviderButton
-            onClick={enableAll}
-            css={{ gridColumn: "1 / -1" }}
-            sx={{
-              flex: "row",
-              justify: "space-between",
-              px: [12, 16],
-              py: [8, 10],
-            }}
-          >
-            <Text fs={[12, 13]}>
-              {t("walletConnect.provider.section.installed.all")}
-            </Text>
-            <Text
-              fs={[12, 13]}
-              color="brightBlue300"
-              sx={{ flex: "row", align: "center" }}
+          {installedExtensions.length > 0 && (
+            <SProviderButton
+              onClick={enableAll}
+              css={{ gridColumn: "1 / -1" }}
+              sx={{
+                flex: "row",
+                justify: "space-between",
+                px: [12, 16],
+                py: [8, 10],
+              }}
             >
-              {t("walletConnect.provider.connectAll")}{" "}
-              <ChevronRight width={20} height={20} sx={{ mr: -4 }} />
-            </Text>
-          </SProviderButton>
+              <Text fs={[12, 13]}>
+                {t("walletConnect.provider.section.installed.all")}
+              </Text>
+              <Text
+                fs={[12, 13]}
+                color="brightBlue300"
+                sx={{ flex: "row", align: "center" }}
+              >
+                {t("walletConnect.provider.connectAll")}{" "}
+                <ChevronRight width={20} height={20} sx={{ mr: -4 }} />
+              </Text>
+            </SProviderButton>
+          )}
         </SProviderContainer>
       ) : (
         <Text fs={12} color="basic400" sx={{ mt: 8 }}>
