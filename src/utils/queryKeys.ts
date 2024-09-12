@@ -1,4 +1,3 @@
-import { AnyNumber } from "@polkadot/types-codec/types"
 import type { u32 } from "@polkadot/types"
 import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
@@ -11,6 +10,8 @@ import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
+  assets: (rpc: string) => ["assets", rpc],
+  bondsAssets: ["bondsAssets"],
   providerAccounts: (provider: string | undefined) => [
     "web3Accounts",
     provider,
@@ -20,11 +21,6 @@ export const QUERY_KEYS = {
   assetsTable: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "assetsTable",
-    id?.toString(),
-  ],
-  omniPositionId: (id: u128 | string) => [
-    QUERY_KEY_PREFIX,
-    "omniPositionId",
     id?.toString(),
   ],
   miningPosition: (id: string) => ["miningPosition", id],
@@ -38,7 +34,7 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountNFTPositions: (id: string | undefined) => ["accountNFTPositions", id],
+  accountPositions: (id: string | undefined) => ["accountPositions", id],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
@@ -104,11 +100,7 @@ export const QUERY_KEYS = {
     "totalLiquidity",
     id?.toString(),
   ],
-  totalIssuance: (lpToken: Maybe<u32 | string | AnyNumber>) => [
-    QUERY_KEY_PREFIX,
-    "totalIssuance",
-    lpToken?.toString(),
-  ],
+  totalIssuances: ["totalIssuances"],
   totalLiquidities: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "totalLiquidities",
@@ -162,16 +154,6 @@ export const QUERY_KEYS = {
     "evmPermitNonce",
     account,
   ],
-  bestBuy: (params: Record<string, any>) => [
-    QUERY_KEY_PREFIX,
-    "bestBuy",
-    params,
-  ],
-  bestSell: (params: Record<string, any>) => [
-    QUERY_KEY_PREFIX,
-    "bestSell",
-    params,
-  ],
   mathLoyaltyRates: (
     plannedYieldingPeriods: u32,
     initialRewardPercentage: Maybe<u128>,
@@ -220,38 +202,6 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  uniques: (address?: string | AccountId32, collectionId?: string | u128) => [
-    "uniques",
-    address?.toString(),
-    collectionId?.toString(),
-  ],
-  uniquesLive: (
-    address?: string | AccountId32,
-    collectionId?: string | u128,
-  ) => [
-    QUERY_KEY_PREFIX,
-    "uniques",
-    address?.toString(),
-    collectionId?.toString(),
-  ],
-  uniquesAssets: (collectionId?: string | u128) => [
-    "uniquesAssets",
-    collectionId?.toString(),
-  ],
-  uniquesAssetsLive: (collectionId?: string | u128) => [
-    QUERY_KEY_PREFIX,
-    "uniquesAssets",
-    collectionId?.toString(),
-  ],
-  uniquesAsset: (collectionId: string | u128) => [
-    "uniquesAsset",
-    collectionId.toString(),
-  ],
-  uniquesAssetLive: (collectionId: string | u128) => [
-    QUERY_KEY_PREFIX,
-    "uniquesAsset",
-    collectionId.toString(),
-  ],
   omnipoolAssets: ["omnipoolAssets"],
   omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
   hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
@@ -263,24 +213,7 @@ export const QUERY_KEYS = {
     id?.toString(),
   ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
-  omnipoolPositionsMulti: (itemIds: Array<string | undefined>) => [
-    "omnipoolPositionsMulti",
-    itemIds,
-  ],
-  omnipoolPositionsMultiLive: (itemIds: Array<string | undefined>) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolPositionsMulti",
-    itemIds,
-  ],
-  omnipoolPosition: (id: string | undefined) => [
-    "omnipoolPosition",
-    id?.toString(),
-  ],
-  omnipoolPositionLive: (id: string | undefined) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolPosition",
-    id?.toString(),
-  ],
+  allOmnipoolPositions: ["allOmnipoolPositions"],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
   otcOrdersTable: [QUERY_KEY_PREFIX, "otcOrdersTable"],
   otcOrdersState: (orderId: Maybe<string | u32>) => [
@@ -294,11 +227,9 @@ export const QUERY_KEYS = {
   metadataVersion: ["metadataVersion"],
   acceptedCurrencies: ["acceptedCurrencies"],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "accountCurrency",
     address,
   ],
-  apiIds: ["apiIds"],
   externalWalletKey: (walletAddress: string) => [
     "externalWallet",
     walletAddress,
@@ -310,7 +241,6 @@ export const QUERY_KEYS = {
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
   referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
-    QUERY_KEY_PREFIX,
     "referendums",
     accountAddress,
     type,
@@ -363,10 +293,9 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  xykPools: ["xylPools"], //TODO: refresh each block??
+  xykPools: ["xykPools"], //TODO: refresh each block??
   xykConsts: ["xykConsts"],
-  shareTokens: ["shareTokens"],
-  shareTokensByIds: (ids: string[]) => ["shareTokensByIds", ids],
+  shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
     QUERY_KEY_PREFIX,
     "totalXYKLiquidity",

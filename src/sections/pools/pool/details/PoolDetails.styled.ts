@@ -52,4 +52,8 @@ export const SXYKRateContainer = styled.div`
   background: rgba(${theme.rgbColors.white}, 0.03);
 
   border-radius: 4px;
+
+  @media (${theme.viewport.gte.sm}) {
+    width: max-content;
+  }
 `

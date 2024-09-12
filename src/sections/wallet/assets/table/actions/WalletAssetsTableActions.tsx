@@ -25,7 +25,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImportModal"
 import { useState } from "react"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
-import { useExternalTokensRugCheck } from "api/external"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 
 type Props = {
@@ -40,7 +39,6 @@ export const WalletAssetsTableActions = (props: Props) => {
   const setFeeAsPayment = useSetAsFeePayment()
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
-  const rugCheck = useExternalTokensRugCheck()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
   const navigate = useNavigate()
@@ -55,7 +53,7 @@ export const WalletAssetsTableActions = (props: Props) => {
     tradability: { inTradeRouter, canBuy },
   } = props.asset
 
-  const rugCheckData = rugCheck.tokensMap.get(id)
+  const rugCheckData = props.asset.rugCheckData
   const hasRugCheckData = !!rugCheckData
   const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 

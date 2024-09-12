@@ -28,6 +28,7 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { BaseSyntheticEvent } from "react"
+import { useAssets } from "providers/assets"
 
 type Props = {
   assetId: string
@@ -51,10 +52,8 @@ export const AddLiquidityForm = ({
   setIsJoinFarms,
 }: Props) => {
   const { t } = useTranslation()
-  const {
-    api,
-    assets: { native },
-  } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { native } = useAssets()
   const { createTransaction } = useStore()
 
   const zodSchema = useAddToOmnipoolZod(assetId, farms)

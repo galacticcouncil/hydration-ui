@@ -4,7 +4,6 @@ import { SJoinFarmContainer } from "./JoinFarmsModal.styled"
 import { useTranslation } from "react-i18next"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useZodSchema } from "./JoinFarmsModal.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 import { FormValues } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import { Spacer } from "components/Spacer/Spacer"
@@ -14,29 +13,28 @@ import { Button } from "components/Button/Button"
 import { Farm } from "api/farms"
 import { TLPData } from "utils/omnipool"
 import { TJoinFarmsInput } from "utils/farms/deposit"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { scale } from "utils/balance"
+import { TDeposit } from "api/deposits"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type FormProps = {
-  poolId: string
   position?: TLPData
   farms: Farm[]
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
   onSubmit: (input: TJoinFarmsInput) => void
 }
 
 export const JoinFarmsForm = ({
-  poolId,
   position,
   farms,
   depositNft,
   onSubmit,
 }: FormProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { pool } = usePoolData()
 
-  const meta = assets.getAsset(poolId)
-  const isXYK = assets.isShareToken(meta)
+  const meta = pool.meta
+  const isXYK = meta.isShareToken
   const shouldValidate =
     !!position?.amount || (meta.isShareToken && !depositNft)
 
@@ -117,7 +115,7 @@ export const JoinFarmsForm = ({
                   name={name}
                   value={value}
                   onChange={onChange}
-                  asset={poolId}
+                  asset={pool.id}
                   error={error?.message}
                 />
               )}

@@ -1,15 +1,25 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useDisplayAssetStore } from "utils/displayAsset"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { getAssets } from "./assetDetails"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick } from "utils/rx"
+import { omit, pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
+import {
+  AssetClient,
+  PoolService,
+  PoolType,
+  TradeRouter,
+} from "@galacticcouncil/sdk"
+import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
+import { useAssetRegistry, useSettingsStore } from "state/store"
+import { undefinedNoop } from "utils/helpers"
+import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
+import { pendulum } from "./external/pendulum"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -19,6 +29,11 @@ export type ProviderProps = {
   squidUrl: string
   env: string | string[]
   dataEnv: TEnv
+}
+
+export type TFeatureFlags = {
+  referrals: boolean
+  dispatchPermit: boolean
 }
 
 export const PROVIDERS: ProviderProps[] = [
@@ -71,14 +86,6 @@ export const PROVIDERS: ProviderProps[] = [
     env: ["rococo", "development"],
     dataEnv: "testnet",
   },
-  /*{
-    name: "Testnet",
-    url: "wss://mining-rpc.hydradx.io",
-    indexerUrl: "https://mining-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
-    env: "development",
-  },*/
 ]
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
@@ -142,10 +149,65 @@ export const useActiveRpcUrlList = () => {
   return autoMode ? PROVIDER_URLS : [rpcUrl]
 }
 
+export const useProviderAssets = () => {
+  const { data: provider } = useProviderData()
+  const rpcUrlList = useActiveRpcUrlList()
+
+  return useQuery(
+    QUERY_KEYS.assets(rpcUrlList.join()),
+    provider
+      ? async () => {
+          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+          const degenMode = useSettingsStore.getState().degenMode
+          const { tokens: externalTokens } = degenMode
+            ? ExternalAssetCursor.deref().state
+            : useUserExternalTokenStore.getState()
+
+          const assetClient = new AssetClient(provider.api)
+
+          return await Promise.all([
+            provider.tradeRouter.getAllAssets(),
+            assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
+          ])
+        }
+      : undefinedNoop,
+    {
+      enabled: !!provider,
+      cacheTime: 1000 * 60 * 60 * 24,
+      staleTime: 1000 * 60 * 60 * 1,
+      onSuccess: (data) => {
+        const [tradeAssets, sdkAssets] = data ?? []
+        if (sdkAssets?.length && tradeAssets?.length) {
+          const { sync } = useAssetRegistry.getState()
+
+          sync(
+            sdkAssets.map((asset) => {
+              const isTradable = tradeAssets.some(
+                (tradeAsset) => tradeAsset.id === asset.id,
+              )
+              return {
+                ...omit(["externalId"], asset),
+                symbol: asset.symbol ?? "",
+                decimals: asset.decimals ?? 0,
+                name: asset.name ?? "",
+                externalId:
+                  asset.origin === pendulum.parachainId &&
+                  typeof asset.externalId === "object"
+                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
+                    : asset.externalId?.toString(),
+                isTradable,
+              }
+            }),
+          )
+        }
+      },
+    },
+  )
+}
+
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
   const { setRpcUrl } = useProviderRpcUrlStore()
-  const displayAsset = useDisplayAssetStore()
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
@@ -153,6 +215,12 @@ export const useProviderData = () => {
       const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(rpcUrlList, maxRetries)
+
+      const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+      const degenMode = useSettingsStore.getState().degenMode
+      const { tokens: externalTokens } = degenMode
+        ? ExternalAssetCursor.deref().state
+        : useUserExternalTokenStore.getState()
 
       api.registry.register({
         XykLMDeposit: {
@@ -167,45 +235,34 @@ export const useProviderData = () => {
         },
       })
 
-      const {
-        isStableCoin,
-        stableCoinId: chainStableCoinId,
-        update,
-      } = displayAsset
+      const poolService = new PoolService(api)
+      const traderRoutes = [
+        PoolType.Omni,
+        PoolType.Stable,
+        PoolType.XYK,
+        PoolType.LBP,
+      ]
 
-      const assets = await getAssets(api)
+      const tradeRouter = new TradeRouter(poolService, {
+        includeOnly: traderRoutes,
+      })
 
-      let stableCoinId: string | undefined
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
-      // set USDT as a stable token
-      stableCoinId = assets.assets.rawTradeAssets.find(
-        (asset) => asset.symbol === "USDT",
-      )?.id
-
-      // set DAI as a stable token if there is no USDT
-      if (!stableCoinId) {
-        stableCoinId = assets.assets.rawTradeAssets.find(
-          (asset) => asset.symbol === "DAI",
-        )?.id
-      }
-
-      if (stableCoinId && isStableCoin && chainStableCoinId !== stableCoinId) {
-        // setting stable coin id from asset registry
-        update({
-          id: stableCoinId,
-          symbol: "$",
-          isRealUSD: false,
-          isStableCoin: true,
-          stableCoinId,
-        })
-      }
+      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
+        api.query.referrals,
+        api.tx.multiTransactionPayment.dispatchPermit,
+        tradeRouter.getPools(),
+      ])
 
       return {
         api,
-        assets: assets.assets,
-        tradeRouter: assets.tradeRouter,
-        featureFlags: assets.featureFlags,
-        poolService: assets.poolService,
+        tradeRouter,
+        poolService,
+        featureFlags: {
+          referrals: !!isReferralsEnabled,
+          dispatchPermit: !!isDispatchPermitEnabled,
+        } as TFeatureFlags,
       }
     },
     {
@@ -227,6 +284,7 @@ export const useRefetchProviderData = () => {
 
   return () => {
     queryClient.invalidateQueries(QUERY_KEYS.provider(rpcList.join()))
+    queryClient.invalidateQueries(QUERY_KEYS.assets(rpcList.join()))
   }
 }
 

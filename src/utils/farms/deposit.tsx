@@ -9,11 +9,11 @@ import { isEvmAccount } from "utils/evm"
 import { ApiPromise } from "@polkadot/api"
 import { t } from "i18next"
 import BN from "bignumber.js"
-import { TShareToken } from "api/assetDetails"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { scaleHuman } from "utils/balance"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { TShareToken, useAssets } from "providers/assets"
+import { useRefetchAccountPositions } from "api/deposits"
 
 type XYKInput = { shares: string; depositId?: string }
 type OmnipoolInput = { positionId: string; value: string; depositId?: string }
@@ -97,15 +97,16 @@ type TArgs = {
 }
 
 export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const isEvm = isEvmAccount(account?.address)
-  const refetch = useRefetchAccountNFTPositions()
+  const refetch = useRefetchAccountPositions()
+  const { getAsset } = useAssets()
 
   const { createTransaction } = useStore()
 
-  const meta = assets.getAsset(poolId)
+  const meta = getAsset(poolId)
 
   const getDepositId = async (nftId: string) => {
     const positions = await api.query.uniques.account.entries(
@@ -121,6 +122,7 @@ export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
 
   return async (data: TJoinFarmsInput) => {
     if (!farms.length) throw new Error("There are no farms to join")
+    if (!meta) throw new Error("Missing asset meta")
 
     const isXyk = isXYKData(data)
     const [firstFarm, ...restFarms] = farms
@@ -140,8 +142,8 @@ export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
         const { assets } = meta as TShareToken
         txs = farms.map((farm) =>
           xykRedepositTx(api, farm, depositId, {
-            assetIn: assets[0],
-            assetOut: assets[1],
+            assetIn: assets[0].id,
+            assetOut: assets[1].id,
           }),
         )
       } else {
@@ -177,15 +179,15 @@ export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
         const { assets } = meta as TShareToken
 
         tx = xykDepositTx(api, firstFarm, data.shares, {
-          assetIn: assets[0],
-          assetOut: assets[1],
+          assetIn: assets[0].id,
+          assetOut: assets[1].id,
         })
       } else {
         tx = depositTx(api, firstFarm, data.positionId)
       }
-      const rewardCurrencySymbol = assets.getAsset(
+      const rewardCurrencySymbol = getAsset(
         firstFarm.globalFarm.rewardCurrency.toString(),
-      ).symbol
+      )?.symbol
 
       await createTransaction(
         {

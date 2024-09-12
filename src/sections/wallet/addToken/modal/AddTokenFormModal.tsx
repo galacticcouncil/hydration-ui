@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { omit } from "utils/rx"
+import { useAssets } from "providers/assets"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
 import {
@@ -41,20 +41,18 @@ enum TokenState {
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const { degenMode } = useSettingsStore()
-
-  const externalAssetRegistry = useExternalAssetRegistry()
+  const { externalInvalid, external } = useAssets()
   const { getTokenByInternalId } = useUserExternalTokenStore()
+  const { degenMode } = useSettingsStore()
+  const externalAssetRegistry = useExternalAssetRegistry()
 
-  const chainStored = assets.external.find(
+  const chainStored = [...external, ...externalInvalid].find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
   )
 
   const userStored = getTokenByInternalId(chainStored?.id ?? "")
-
   const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
   const rugCheck = useExternalTokensRugCheck(rugCheckIds)
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")

@@ -8,17 +8,18 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
-import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 import { Farm } from "api/farms"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import { isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export enum Page {
   ADD_LIQUIDITY,
@@ -27,18 +28,18 @@ export enum Page {
 }
 
 type Props = {
-  pool: TPool | TXYKPool
   isOpen: boolean
   onClose: () => void
   farms: Farm[]
 }
 
-export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
-  const { api, assets } = useRpcProvider()
+export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
+  const { api } = useRpcProvider()
+  const { pool } = usePoolData()
   const { t } = useTranslation()
   const { account } = useAccount()
   const { page, direction, back, paginateTo } = useModalPagination()
-  const refetch = useRefetchAccountNFTPositions()
+  const refetch = useRefetchAccountPositions()
   const isEvm = isEvmAccount(account?.address)
 
   const [assetId, setAssetId] = useState<string>(pool.id)
@@ -118,10 +119,10 @@ export const AddLiquidity = ({ pool, isOpen, onClose, farms }: Props) => {
           account?.address ?? "",
           pool.id,
         )
-        const meta = assets.getAsset(pool.id)
+
         const free = balance.free.toBigNumber()
-        const diff = scaleHuman(free, meta.decimals)
-          .minus(scaleHuman(calculatedShares, meta.decimals))
+        const diff = scaleHuman(free, pool.meta.decimals)
+          .minus(scaleHuman(calculatedShares, pool.meta.decimals))
           .abs()
 
         // go with the whole balance
