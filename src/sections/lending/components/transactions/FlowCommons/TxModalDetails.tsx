@@ -51,7 +51,7 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
 }) => {
   return (
     <div sx={{ pt: 30 }}>
-      <Text font="FontOver" color="pink500" fs={15} sx={{ mb: 16 }}>
+      <Text font="Geist" color="pink500" fs={15} sx={{ mb: 16 }}>
         <span>Transaction overview</span>
       </Text>
       <div

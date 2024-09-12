@@ -35,7 +35,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 
   return (
     <>
-      <Text fs={15} font="FontOver" sx={{ mb: 30 }}>
+      <Text fs={15} font="Geist" sx={{ mb: 30 }}>
         Reserve status and configuration
       </Text>
 
