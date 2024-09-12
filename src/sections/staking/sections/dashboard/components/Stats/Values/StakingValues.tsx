@@ -1,6 +1,5 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import AvailableBalance from "assets/icons/HydraLogo.svg?react"
 import StakedBalance from "assets/icons/StakedBalanceIcon.svg?react"
 import ProjectedRewardsIcon from "assets/icons/ProjectedRewardsIcon.svg?react"
 import Skeleton from "react-loading-skeleton"
@@ -82,40 +81,6 @@ export const StakingValues = ({
   const { t } = useTranslation()
   const { api } = useRpcProvider()
 
-  const availableBalanceValue = (
-    <StakingValue
-      logo={
-        <Icon
-          size={24}
-          sx={{ color: "brightBlue300" }}
-          icon={<AvailableBalance />}
-        />
-      }
-      title={t("staking.dashboard.stats.available")}
-      value={
-        loading ? (
-          <div sx={{ flex: "column", gap: 2 }}>
-            <Skeleton width={100} height={24} />
-            <Skeleton width={100} height={14} />
-          </div>
-        ) : (
-          <div sx={{ flex: "column", align: ["start", "center"] }}>
-            <Text fs={[19]} lh={[19]} color="white">
-              {t("value.tokenWithSymbol", {
-                value: data?.availableBalance,
-                symbol: "HDX",
-                fixedPointScale: 12,
-              })}
-            </Text>
-            <Text fs={14} color="darkBlue200">
-              <DisplayValue value={data?.availableBalanceDollar} />
-            </Text>
-          </div>
-        )
-      }
-    />
-  )
-
   const projectedRewards = (
     <StakingValue
       logo={
@@ -156,15 +121,12 @@ export const StakingValues = ({
         sx={{ flex: ["column", "row"], justify: "space-between" }}
         css={{ rowGap: 28 }}
       >
-        {availableBalanceValue}
         {projectedRewards}
       </div>
     )
 
   return (
     <SStakingValuesContainer>
-      {availableBalanceValue}
-
       <StakingValue
         logo={
           <Icon
