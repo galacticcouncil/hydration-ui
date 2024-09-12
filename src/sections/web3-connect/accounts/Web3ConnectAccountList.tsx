@@ -95,9 +95,7 @@ export const Web3ConnectAccountList: FC<{
   const [searchVal, setSearchVal] = useState("")
   const [filter, setFilter] = useState("")
 
-  const [selectedMode, setSelectedMode] = useState<WalletMode>(
-    WalletMode.Default,
-  )
+  const [modeFilter, setModeFilter] = useState<WalletMode>(WalletMode.Default)
 
   useDebounce(
     () => {
@@ -120,9 +118,9 @@ export const Web3ConnectAccountList: FC<{
 
     return filtered
       .filter(({ provider }) => {
-        if (selectedMode === WalletMode.Default) return true
+        if (modeFilter === WalletMode.Default) return true
 
-        return selectedMode === WalletMode.EVM
+        return modeFilter === WalletMode.EVM
           ? EVM_PROVIDERS.includes(provider)
           : !EVM_PROVIDERS.includes(provider)
       })
@@ -145,7 +143,7 @@ export const Web3ConnectAccountList: FC<{
         if (!aBalance || !bBalance) return 0
         return bBalance.comparedTo(aBalance)
       })
-  }, [account, accounts, balanceMap, filter, isReady, selectedMode])
+  }, [account, accounts, balanceMap, filter, isReady, modeFilter])
 
   const noResults = accountList.length === 0
 
@@ -160,8 +158,8 @@ export const Web3ConnectAccountList: FC<{
           />
           {mode === WalletMode.Default && (
             <Web3ConnectModeFilter
-              active={selectedMode}
-              onSetActive={(mode) => setSelectedMode(mode)}
+              active={modeFilter}
+              onSetActive={(mode) => setModeFilter(mode)}
             />
           )}
         </div>
@@ -169,7 +167,7 @@ export const Web3ConnectAccountList: FC<{
 
       {noResults && (
         <>
-          {filter || selectedMode !== WalletMode.Default ? (
+          {filter || modeFilter !== WalletMode.Default ? (
             <div
               sx={{
                 color: "basic500",
