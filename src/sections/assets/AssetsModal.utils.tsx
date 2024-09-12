@@ -116,6 +116,7 @@ const getValidTokens = (
       }
 
       if (!allowedAssets) {
+        acc.allowed.push(token)
         return acc
       } else {
         allowedAssets.includes(token.meta.id)
