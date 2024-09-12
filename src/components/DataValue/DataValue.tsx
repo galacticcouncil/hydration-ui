@@ -62,7 +62,7 @@ export const DataValue: React.FC<DataValueProps> = ({
   className,
   tooltip,
   size = "medium",
-  font = "GeistMono",
+  font = "GeistMedium",
   labelColor = "white",
   isLoading = false,
 }) => {
