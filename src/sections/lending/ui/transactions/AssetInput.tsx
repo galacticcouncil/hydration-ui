@@ -165,7 +165,7 @@ export const AssetInput = <T extends Asset = Asset>({
               symbol={asset.iconSymbol || asset.symbol}
               sx={{ mr: 8, width: 28, height: 28 }}
             />
-            <Text font="ChakraPetchSemiBold">{asset.symbol}</Text>
+            <Text font="GeistSemiBold">{asset.symbol}</Text>
           </div>
         ) : (
           <Dropdown
@@ -204,7 +204,7 @@ export const AssetInput = <T extends Asset = Asset>({
                 symbol={asset.iconSymbol || asset.symbol}
                 sx={{ mr: 8, width: 28, height: 28 }}
               />
-              <Text font="ChakraPetchSemiBold">{asset.symbol}</Text>
+              <Text font="GeistSemiBold">{asset.symbol}</Text>
               <ChevronDown sx={{ color: "white" }} />
             </ButtonTransparent>
           </Dropdown>

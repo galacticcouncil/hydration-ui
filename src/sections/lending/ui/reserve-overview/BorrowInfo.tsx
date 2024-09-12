@@ -116,7 +116,7 @@ export const BorrowInfo = ({
                     </div>
                   }
                   labelColor="basic400"
-                  font="ChakraPetchBold"
+                  font="GeistSemiBold"
                 >
                   {t("lending.cap.range", {
                     valueA: reserve.totalDebt,
@@ -124,7 +124,7 @@ export const BorrowInfo = ({
                   })}
                   <Text
                     fs={12}
-                    font="ChakraPetch"
+                    font="Geist"
                     color="basic500"
                     tAlign={["right", "left"]}
                   >
@@ -139,12 +139,12 @@ export const BorrowInfo = ({
               <DataValue
                 label={t("lending.market.table.totalBorrowed")}
                 labelColor="basic400"
-                font="ChakraPetchBold"
+                font="GeistSemiBold"
               >
                 {t("value.compact", { value: Number(reserve.totalDebt) })}
                 <Text
                   fs={12}
-                  font="ChakraPetch"
+                  font="Geist"
                   color="basic500"
                   tAlign={["right", "left"]}
                 >
@@ -159,7 +159,7 @@ export const BorrowInfo = ({
             <DataValue
               label={t("lending.apyVariable")}
               labelColor="basic400"
-              font="ChakraPetchBold"
+              font="GeistSemiBold"
             >
               <PercentageValue
                 value={Number(reserve.variableBorrowAPY) * 100}
@@ -175,12 +175,12 @@ export const BorrowInfo = ({
               <DataValue
                 label={t("lending.borrowCap")}
                 labelColor="basic400"
-                font="ChakraPetchBold"
+                font="GeistSemiBold"
               >
                 {t("value.compact", { value: Number(reserve.borrowCap) })}
                 <Text
                   fs={12}
-                  font="ChakraPetch"
+                  font="Geist"
                   color="basic500"
                   tAlign={["right", "left"]}
                 >
@@ -209,7 +209,7 @@ export const BorrowInfo = ({
               fs={14}
               sx={{ mb: 10 }}
               css={{ textTransform: "uppercase" }}
-              font="ChakraPetchSemiBold"
+              font="GeistSemiBold"
             >
               {t("lending.reserve.collectorInfo")}
             </Text>
@@ -218,7 +218,7 @@ export const BorrowInfo = ({
             <DataValue
               label={t("lending.reserveFactor")}
               labelColor="basic400"
-              font="ChakraPetch"
+              font="Geist"
               size="small"
               tooltip={
                 <Text fs={11}>
@@ -240,7 +240,7 @@ export const BorrowInfo = ({
             <DataValue
               label={t("lending.reserve.collectorContract")}
               labelColor="basic400"
-              font="ChakraPetch"
+              font="Geist"
               size="small"
             >
               <a

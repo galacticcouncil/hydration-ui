@@ -80,7 +80,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
               bottom: "calc(100% + 2px)",
             }}
           >
-            <Text fs={13} font="ChakraPetchSemiBold">
+            <Text fs={13} font="GeistSemiBold">
               {formattedHealthFactor}
             </Text>
           </div>
@@ -103,7 +103,7 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
           },
         }}
       >
-        <Text fs={13} font="ChakraPetchSemiBold" color="red400" tAlign="center">
+        <Text fs={13} font="GeistSemiBold" color="red400" tAlign="center">
           1.00
         </Text>
         <Text fs={13} color="red400" tAlign="center">

@@ -33,7 +33,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ fields }) => {
             fs={14}
             color="basic400"
             css={{ textTransform: "uppercase" }}
-            font="ChakraPetchSemiBold"
+            font="GeistSemiBold"
           >
             {text}
           </Text>

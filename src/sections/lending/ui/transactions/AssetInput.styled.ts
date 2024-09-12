@@ -50,7 +50,7 @@ export const SContainer = styled.label<{
     text-align: right;
 
     font-size: 14px;
-    font-family: "ChakraPetchSemibold";
+    font-family: "GeistSemibold";
 
     :focus,
     :focus-visible,

@@ -236,7 +236,7 @@ const CustomTooltip = ({
         <Text
           fs={14}
           sx={{ flex: "row", justify: "space-between", gap: [20, 60], mb: 4 }}
-          font="ChakraPetchBold"
+          font="GeistSemiBold"
         >
           <span>Utilization Rate</span>
           <span>

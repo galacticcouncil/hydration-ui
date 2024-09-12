@@ -7,8 +7,6 @@ export const SButton = styled.button<ButtonProps>`
   cursor: pointer;
   text-transform: ${({ transform }) => transform ?? "uppercase"};
 
-  font-family: "ChakraPetch";
-
   border: none;
   border-radius: 4px;
 

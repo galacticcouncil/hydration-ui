@@ -23,7 +23,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
       <DataValueList>
         <DataValue
           labelColor="basic400"
-          font="ChakraPetch"
+          font="Geist"
           size="small"
           label="Max LTV"
           tooltip="The Maximum LTV ratio represents the maximum borrowing power of a specific collateral. For example, if a collateral has an LTV of 75%, the user can borrow up to 0.75 worth of ETH in the principal currency for every 1 ETH worth of collateral."
@@ -32,7 +32,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
         </DataValue>
         <DataValue
           labelColor="basic400"
-          font="ChakraPetch"
+          font="Geist"
           size="small"
           label="Liquidation threshold"
           tooltip="This represents the threshold at which a borrow position will be considered undercollateralized and subject to liquidation for each collateral. For example, if a collateral has a liquidation threshold of 80%, it means that the position will be liquidated when the debt value is worth 80% of the collateral value."
@@ -43,7 +43,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
         </DataValue>
         <DataValue
           labelColor="basic400"
-          font="ChakraPetch"
+          font="Geist"
           size="small"
           label="Liquidation penalty"
           tooltip="When a liquidation occurs, liquidators repay up to 50% of the outstanding borrowed amount on behalf of the borrower. In return, they can buy the collateral at a discount and keep the difference (liquidation penalty) as a bonus."

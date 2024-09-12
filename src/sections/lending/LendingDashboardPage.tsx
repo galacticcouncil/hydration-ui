@@ -1,5 +1,5 @@
 import { Button } from "components/Button/Button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { DashboardHeaderValues } from "sections/lending/ui/header/DashboardHeaderValues"
@@ -29,32 +29,28 @@ export const LendingDashboardPage = () => {
   const { account } = useAccount()
   const { account: evmAccount, isBound, isLoading } = useEvmAccount()
 
+  useEffect(() => {
+    console.group("Account")
+    console.table({
+      address: account?.address,
+      name: account?.name,
+      provider: account?.provider,
+      publicKey: account?.address
+        ? u8aToHex(decodeAddress(account?.address))
+        : "",
+    })
+    console.groupEnd()
+
+    console.group("EVM Account")
+    console.table({
+      ...evmAccount,
+      bound: !!evmAccount?.address,
+    })
+    console.groupEnd()
+  }, [account?.address, account?.name, account?.provider, evmAccount])
+
   return (
     <>
-      <p sx={{ color: "white", fontSize: 20 }}>Account</p>
-      {account && (
-        <pre sx={{ color: "white" }}>
-          {JSON.stringify(
-            {
-              address: account?.address,
-              name: account?.name,
-              provider: account?.provider,
-              publicKey: account?.address
-                ? u8aToHex(decodeAddress(account?.address))
-                : "",
-            },
-            null,
-            2,
-          )}
-        </pre>
-      )}
-      <p sx={{ color: "white", fontSize: 20, mt: 30 }}>
-        EVM Account (bound: {String(!!evmAccount?.address)})
-      </p>
-      {evmAccount && (
-        <pre sx={{ color: "white" }}>{JSON.stringify(evmAccount, null, 2)}</pre>
-      )}
-      <div sx={{ mt: 40 }}></div>
       <DashboardHeaderValues sx={{ mb: [10, 40] }} />
       {!isLoading && !isBound && <MoneyMarketBanner sx={{ mb: [20, 30] }} />}
       <HollarBanner sx={{ mb: [20, 30] }} />

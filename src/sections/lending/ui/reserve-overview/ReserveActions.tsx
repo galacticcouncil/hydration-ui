@@ -327,7 +327,7 @@ const SupplyAction = ({
       <DataValue
         label={t("lending.supply.available")}
         labelColor="basic400"
-        font="ChakraPetchSemiBold"
+        font="GeistSemiBold"
         size="small"
         tooltip={t("lending.tooltip.supplyAvailable")}
       >
@@ -364,7 +364,7 @@ const BorrowAction = ({
       <DataValue
         label={t("lending.borrow.available")}
         labelColor="basic400"
-        font="ChakraPetchSemiBold"
+        font="GeistSemiBold"
         size="small"
         tooltip={t("lending.tooltip.borrowAvailable")}
       >
@@ -437,7 +437,7 @@ const WalletBalance = ({ balance, symbol }: WalletBalanceProps) => {
       <div>
         <DataValue
           label="Wallet Balance"
-          font="ChakraPetchSemiBold"
+          font="GeistSemiBold"
           size="small"
           labelColor="basic400"
         >

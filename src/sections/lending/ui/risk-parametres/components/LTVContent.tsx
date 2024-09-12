@@ -89,7 +89,7 @@ export const LTVContent = ({
           >
             <Text
               fs={13}
-              font="ChakraPetchSemiBold"
+              font="GeistSemiBold"
               color="red400"
               tAlign="right"
             >
@@ -156,7 +156,7 @@ export const LTVContent = ({
               bottom: "calc(100% + 2px)",
             }}
           >
-            <Text fs={13} font="ChakraPetchSemiBold">
+            <Text fs={13} font="GeistSemiBold">
               {(Number(loanToValue) * 100).toFixed(2)}%
             </Text>
             <div css={{ display: "inline-flex", alignItems: "center" }}>

@@ -41,7 +41,7 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
       <SInnerContainer>
         <SContent>
           <div sx={{ pr: [120, 0] }}>
-            <Text font="ChakraPetchBold" sx={{ mb: 4 }}>
+            <Text font="GeistSemiBold" sx={{ mb: 4 }}>
               {t("lending.bind.banner.title")}
             </Text>
 

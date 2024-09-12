@@ -49,7 +49,7 @@ export const InfoWrapper = ({
             background: `radial-gradient(147.94% 147.94% at 50.5% -6.6%, ${color} 0%, rgba(255, 85, 89, 0.00) 100%)`,
           }}
         >
-          <Text fs={13} font="ChakraPetchSemiBold">
+          <Text fs={13} font="GeistSemiBold">
             {topValue}
           </Text>
         </div>

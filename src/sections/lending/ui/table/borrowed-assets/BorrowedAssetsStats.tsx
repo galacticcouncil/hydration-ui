@@ -21,7 +21,7 @@ export const BorrowedAssetsStats = () => {
     <div sx={{ flex: "row", gap: [30, 40] }}>
       <DataValue
         size="small"
-        font="ChakraPetch"
+        font="Geist"
         labelColor="basic600"
         label={t("lending.balance")}
         isLoading={loading}
@@ -30,7 +30,7 @@ export const BorrowedAssetsStats = () => {
       </DataValue>
       <DataValue
         size="small"
-        font="ChakraPetch"
+        font="Geist"
         labelColor="basic600"
         label={t("lending.apy")}
         tooltip={t("lending.tooltip.apy")}
@@ -40,7 +40,7 @@ export const BorrowedAssetsStats = () => {
       </DataValue>
       <DataValue
         size="small"
-        font="ChakraPetch"
+        font="Geist"
         labelColor="basic600"
         label={t("lending.borrowPower")}
         tooltip={t("lending.tooltip.borrowPower")}

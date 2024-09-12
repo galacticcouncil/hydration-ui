@@ -28,7 +28,7 @@ export const InterestRateModelInfo: React.FC<InterestRateModelInfoProps> = ({
         <DataValue
           label="Utilization Rate"
           labelColor="basic400"
-          font="ChakraPetchBold"
+          font="GeistSemiBold"
         >
           <PercentageValue value={Number(reserve.borrowUsageRatio) * 100} />
         </DataValue>

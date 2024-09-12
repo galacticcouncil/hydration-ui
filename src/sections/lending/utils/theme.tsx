@@ -7,9 +7,9 @@ import {
 } from "@heroicons/react/outline"
 import { SvgIcon, Theme, ThemeOptions } from "@mui/material"
 
-const FONT = "ChakraPetch"
-const FONT_SEMIBOLD = "ChakraPetchSemiBold"
-const FONT_BOLD = "ChakraPetchBold"
+const FONT = "Geist"
+const FONT_SEMIBOLD = "GeistSemiBold"
+const FONT_BOLD = "GeistSemiBold"
 
 declare module "@mui/material/styles/createPalette" {
   interface PaletteColor extends ColorPartial {}

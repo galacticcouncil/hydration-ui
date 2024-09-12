@@ -43,7 +43,7 @@ export function MobileRow<T>({
             <TokenIcon symbol={iconSymbol} sx={{ fontSize: 28 }} />
           )}
           <div>
-            <Text fs={16} font="ChakraPetchSemiBold">
+            <Text fs={16} font="GeistSemiBold">
               {symbol}
             </Text>
             <Text fs={13} color="paleBlue" sx={{ opacity: 0.6 }}>

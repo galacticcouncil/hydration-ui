@@ -89,7 +89,7 @@ export const SupplyInfo = ({
                   </div>
                 }
                 labelColor="basic400"
-                font="ChakraPetchBold"
+                font="GeistSemiBold"
               >
                 {t("lending.cap.range", {
                   valueA: reserve.totalLiquidity,
@@ -97,7 +97,7 @@ export const SupplyInfo = ({
                 })}
                 <Text
                   fs={12}
-                  font="ChakraPetch"
+                  font="Geist"
                   color="basic500"
                   tAlign={["right", "left"]}
                 >
@@ -111,12 +111,12 @@ export const SupplyInfo = ({
               <DataValue
                 label={t("lending.market.table.totalSupplied")}
                 labelColor="basic400"
-                font="ChakraPetchBold"
+                font="GeistSemiBold"
               >
                 {t("value.compact", { value: Number(reserve.totalLiquidity) })}
                 <Text
                   fs={12}
-                  font="ChakraPetch"
+                  font="Geist"
                   color="basic500"
                   tAlign={["right", "left"]}
                 >
@@ -131,7 +131,7 @@ export const SupplyInfo = ({
             <DataValue
               label={t("lending.apy")}
               labelColor="basic400"
-              font="ChakraPetchBold"
+              font="GeistSemiBold"
             >
               <PercentageValue value={Number(reserve.supplyAPY) * 100} />
               <div sx={{ mt: 2 }}>
@@ -144,14 +144,14 @@ export const SupplyInfo = ({
             {hasUnbacked && (
               <DataValue
                 label={t("lending.supply.unbacked")}
-                font="ChakraPetchBold"
+                font="GeistSemiBold"
                 labelColor="basic400"
               >
                 {t("value.displaySymbol", {
                   value: Number(reserve.unbacked),
                   symbol: reserve.symbol,
                 })}
-                <Text fs={12} font="ChakraPetch" color="basic500">
+                <Text fs={12} font="Geist" color="basic500">
                   <DisplayValue
                     value={Number(reserve.unbackedUSD)}
                     isUSD
@@ -178,12 +178,12 @@ export const SupplyInfo = ({
               fs={14}
               sx={{ mb: 10 }}
               css={{ textTransform: "uppercase" }}
-              font="ChakraPetchSemiBold"
+              font="GeistSemiBold"
             >
               {t("lending.collateralUsage")}
             </Text>
             <Alert variant="warning" sx={{ color: "white" }}>
-              <Text fs={14} font="ChakraPetchSemiBold" sx={{ mb: 4 }}>
+              <Text fs={14} font="GeistSemiBold" sx={{ mb: 4 }}>
                 {t("lending.supply.isolatedCollateral.title")}
               </Text>
               <span>
@@ -203,7 +203,7 @@ export const SupplyInfo = ({
             <Text
               fs={14}
               css={{ textTransform: "uppercase" }}
-              font="ChakraPetchSemiBold"
+              font="GeistSemiBold"
             >
               {t("lending.collateralUsage")}
             </Text>
@@ -222,7 +222,7 @@ export const SupplyInfo = ({
               fs={14}
               sx={{ mb: 10 }}
               css={{ textTransform: "uppercase" }}
-              font="ChakraPetchSemiBold"
+              font="GeistSemiBold"
             >
               {t("lending.collateralUsage")}
             </Text>
@@ -238,7 +238,7 @@ export const SupplyInfo = ({
             <DataValue
               label={t("lending.maxLTV")}
               labelColor="basic400"
-              font="ChakraPetch"
+              font="Geist"
               size="small"
               tooltip={t("lending.tooltip.maxLTV")}
             >
@@ -249,7 +249,7 @@ export const SupplyInfo = ({
             <DataValue
               label={t("lending.risk.liquidationThreshold")}
               labelColor="basic400"
-              font="ChakraPetch"
+              font="Geist"
               size="small"
               tooltip={t("lending.tooltip.liquidationThreshold")}
             >
@@ -262,7 +262,7 @@ export const SupplyInfo = ({
             <DataValue
               label={t("lending.risk.liquidationPenalty")}
               labelColor="basic400"
-              font="ChakraPetch"
+              font="Geist"
               size="small"
               tooltip={t("lending.tooltip.liquidationPenalty")}
             >

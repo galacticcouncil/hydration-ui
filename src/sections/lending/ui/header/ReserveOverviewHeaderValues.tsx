@@ -44,7 +44,7 @@ export const ReserveOverviewHeaderValues: FC<
           />
         </div>
         <div>
-          <Text fs={18} lh={24} font="ChakraPetchBold">
+          <Text fs={18} lh={24} font="GeistSemiBold">
             {poolReserve.symbol}
           </Text>
           <Text fs={14} lh={18}>
