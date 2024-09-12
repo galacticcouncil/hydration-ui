@@ -21,6 +21,7 @@ import {
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
 
 type Props = WalletProvider & {
   children?: (props: {
@@ -40,7 +41,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   const { setStatus, setError, disconnect, getStatus } = useWeb3ConnectStore()
 
-  const { logo, title, installed, installUrl } = wallet
+  const { title, installed, installUrl } = wallet
 
   const { enable } = useEnableWallet(type, {
     onMutate: () => setStatus(type, WalletProviderStatus.Pending),
@@ -59,10 +60,6 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   const isConnected = getStatus(type) === WalletProviderStatus.Connected
 
   const onClick = useCallback(() => {
-    if (type === WalletProviderType.ExternalWallet) {
-      return enable()
-    }
-
     if (isConnected) {
       return disconnect(type)
     }
@@ -79,14 +76,8 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   return (
     <SProviderButton onClick={onClick}>
-      <img
-        loading="lazy"
-        src={logo.src}
-        alt={logo.alt}
-        width={32}
-        height={32}
-      />
-      <Text fs={[12, 14]} sx={{ mt: 8 }} tAlign="center">
+      <Web3ConnectProviderIcon type={type} />
+      <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
         {title}
       </Text>
       <Text

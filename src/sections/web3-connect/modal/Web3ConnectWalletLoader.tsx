@@ -6,11 +6,8 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { FC, useMemo } from "react"
 import { Spinner } from "components/Spinner/Spinner"
-import {
-  SContainer,
-  SContent,
-  SInnerContent,
-} from "./Web3ConnectWalletLoader.styled"
+import { SContainer, SContent } from "./Web3ConnectWalletLoader.styled"
+import { Web3ConnectProviderIcons } from "sections/web3-connect/providers/Web3ConnectProviderIcons"
 
 type Web3ConnectWalletLoaderProps = {
   provider: WalletProviderType | WalletProviderType[]
@@ -21,9 +18,11 @@ const getImgSize = (count: number) => {
     case 1:
       return 48
     case 2:
+      return 40
+    case 3:
       return 30
     default:
-      return 24
+      return 28
   }
 }
 
@@ -34,7 +33,7 @@ export const Web3ConnectWalletLoader: FC<Web3ConnectWalletLoaderProps> = ({
 
   const providers = useMemo(() => {
     if (Array.isArray(provider)) {
-      return provider.slice(0, 4).map(getWalletProviderByType)
+      return provider.map(getWalletProviderByType)
     }
     return [getWalletProviderByType(provider)].filter(({ wallet }) => !!wallet)
   }, [provider])
@@ -42,18 +41,11 @@ export const Web3ConnectWalletLoader: FC<Web3ConnectWalletLoaderProps> = ({
   return (
     <SContainer>
       <SContent>
-        <Spinner size={100} />
-        <SInnerContent>
-          {providers.map(({ wallet, type }) => (
-            <img
-              key={type}
-              src={wallet?.logo.src}
-              alt={wallet?.logo.alt}
-              width={getImgSize(providers.length)}
-              height={getImgSize(providers.length)}
-            />
-          ))}
-        </SInnerContent>
+        <Spinner size={120} />
+        <Web3ConnectProviderIcons
+          size={getImgSize(providers.length)}
+          providers={providers.map(({ type }) => type!)}
+        />
       </SContent>
       <Text
         fs={19}

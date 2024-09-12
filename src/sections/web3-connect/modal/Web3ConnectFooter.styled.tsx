@@ -21,8 +21,6 @@ export const SSwitchButton = styled(Button)`
   align-items: center;
   justify-content: center;
 
-  color: ${theme.colors.brightBlue600};
-
   padding: 8px 12px;
 
   text-transform: none;
@@ -47,17 +45,10 @@ export const SProviderIconContainer = styled.div`
     align-items: center;
     justify-content: center;
 
-    width: 24px;
-    height: 24px;
     margin-left: -6px;
 
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid ${theme.colors.darkBlue401};
-
-    @media ${theme.viewport.gte.sm} {
-      width: 32px;
-      height: 32px;
-    }
   }
 `

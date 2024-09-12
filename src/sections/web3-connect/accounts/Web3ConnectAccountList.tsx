@@ -160,7 +160,6 @@ export const Web3ConnectAccountList: FC<{
           />
           {mode === WalletMode.Default && (
             <Web3ConnectModeFilter
-              includeAll
               active={selectedMode}
               onSetActive={(mode) => setSelectedMode(mode)}
             />

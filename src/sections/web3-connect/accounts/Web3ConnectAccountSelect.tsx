@@ -12,6 +12,8 @@ import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_BILL } from "utils/constants"
 import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAddress } from "utils/evm"
+import { Badge } from "components/Badge/Badge"
 
 type Props = {
   name: string
@@ -37,6 +39,7 @@ export const Web3ConnectAccountSelect = ({
   const [, copy] = useCopyToClipboard()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
+  const isEvm = isEvmAddress(address)
 
   return (
     <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
@@ -62,6 +65,11 @@ export const Web3ConnectAccountSelect = ({
             <Text fs={14} color="white">
               {name}
             </Text>
+            {isEvm && (
+              <Badge size="small" variant="orange" rounded={false}>
+                EVM
+              </Badge>
+            )}
           </div>
           <Text fs={14} color="graySoft">
             {balance?.isFinite() && (

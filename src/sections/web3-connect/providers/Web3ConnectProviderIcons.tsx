@@ -4,18 +4,27 @@ import {
   getWalletProviderByType,
   WalletProviderType,
 } from "sections/web3-connect/Web3Connect.utils"
+import { ResponsiveValue } from "utils/responsive"
 
 export type Web3ConnectProviderIconsProps = {
   providers: WalletProviderType[]
+  size?: ResponsiveValue<number>
 }
 
-const DISPLAY_THRESHOLD = 3
+const DISPLAY_THRESHOLD = 4
 
 export const Web3ConnectProviderIcons: React.FC<
   Web3ConnectProviderIconsProps
-> = ({ providers = [] }) => {
+> = ({ providers = [], size = [24, 28] }) => {
   const connectedProviders = useMemo(() => {
-    return providers.slice(0, DISPLAY_THRESHOLD).map(getWalletProviderByType)
+    const maxVisible =
+      providers.length === DISPLAY_THRESHOLD
+        ? DISPLAY_THRESHOLD
+        : DISPLAY_THRESHOLD - 1
+    return [...providers]
+      .reverse()
+      .slice(0, maxVisible)
+      .map(getWalletProviderByType)
   }, [providers])
 
   const remainingCount = providers.length - connectedProviders.length
@@ -23,8 +32,9 @@ export const Web3ConnectProviderIcons: React.FC<
   return (
     <SProviderIconContainer>
       {connectedProviders.map(({ type, wallet }) => (
-        <div key={type} sx={{ bg: "darkBlue401" }}>
+        <div key={type} sx={{ bg: "darkBlue401", width: size, height: size }}>
           <img
+            loading="lazy"
             src={wallet?.logo.src}
             alt={wallet?.logo.alt}
             width="100%"
@@ -33,7 +43,9 @@ export const Web3ConnectProviderIcons: React.FC<
         </div>
       ))}
       {remainingCount > 0 && (
-        <div sx={{ bg: "basic400" }}>+{remainingCount}</div>
+        <div sx={{ bg: "basic400", width: size, height: size }}>
+          +{remainingCount}
+        </div>
       )}
     </SProviderIconContainer>
   )

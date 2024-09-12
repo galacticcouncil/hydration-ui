@@ -12,7 +12,7 @@ export const Web3ConnectProviderPending: FC<Props> = ({ provider }) => {
       {provider ? (
         <Web3ConnectWalletLoader provider={provider} />
       ) : (
-        <Spinner size={100} />
+        <Spinner size={120} />
       )}
     </div>
   )

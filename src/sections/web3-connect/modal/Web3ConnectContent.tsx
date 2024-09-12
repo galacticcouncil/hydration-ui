@@ -146,7 +146,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
             <Web3ConnectError
               message={error}
               onRetry={() => {
-                disconnect()
+                disconnect(recentProvider || undefined)
                 onRetry?.()
               }}
             />

@@ -194,8 +194,7 @@ export const Web3ConnectExternalForm = ({
           )
         }
       />
-
-      <Spacer size={35} />
+      <Spacer size={20} />
       <div sx={{ mt: "auto", flex: "row", gap: 12 }}>
         {isConnected && (
           <Button

@@ -9,7 +9,7 @@ import { WalletConnect } from "./WalletConnect"
 import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "./SubWalletEvm"
 import { SubWallet } from "./SubWallet"
-import { TrustWallet } from "./TrustWallet"
+// import { TrustWallet } from "./TrustWallet"
 import { BraveWallet } from "./BraveWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import {
@@ -33,7 +33,7 @@ const onMetaMaskLikeAccountChange =
   (accounts) => {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {
-      state.disconnect()
+      state.disconnect(type)
     } else {
       const [{ address, name }] = accounts
       const isEvm = isEvmAddress(address)
@@ -66,11 +66,11 @@ const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
-const trustWallet: Wallet = new TrustWallet({
+/* const trustWallet: Wallet = new TrustWallet({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.TrustWallet,
   ),
-})
+}) */
 
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
@@ -97,7 +97,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
-  trustWallet,
+  //trustWallet,
   novaWallet,
   walletConnect,
   externalWallet,
@@ -131,10 +131,10 @@ function syncSupportedWalletProviders(wallet: Wallet) {
 
 const eip6963ProvidersByRdns = new Map([
   ["io.metamask", { Wallet: MetaMask, type: WalletProviderType.MetaMask }],
-  [
-    "com.trustwallet.app",
-    { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
-  ],
+  // [
+  //   "com.trustwallet.app",
+  //   { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
+  // ],
   [
     "xyz.talisman",
     { Wallet: TalismanEvm, type: WalletProviderType.TalismanEvm },

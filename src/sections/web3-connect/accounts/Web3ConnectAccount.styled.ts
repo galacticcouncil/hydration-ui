@@ -69,7 +69,12 @@ export const SAccountItem = styled.div<{
 `
 
 export const SChangeAccountButton = styled(Button)`
+  border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.12);
+  border-top-color: transparent;
+
   border-radius: ${theme.borderRadius.medium}px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+
+  background: rgba(${theme.rgbColors.primaryA15}, 0.12);
 `

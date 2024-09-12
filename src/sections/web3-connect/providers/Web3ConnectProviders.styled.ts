@@ -10,9 +10,12 @@ export const SProviderContainer = styled.div`
 
   padding-top: 12px;
 
-  @media ${theme.viewport.gte.sm} {
+  @media ${theme.viewport.gte.xs} {
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    grid-template-columns: repeat(4, 1fr);
   }
 `
 
@@ -49,7 +52,7 @@ export const SProviderButton = styled(ButtonTransparent)`
   }
 
   @media ${theme.viewport.gte.sm} {
-    padding: 24px 16px;
+    padding: 20px 12px;
   }
 `
 
@@ -101,8 +104,8 @@ export const SAccountIndicator = styled.div`
   background: rgba(${theme.rgbColors.darkBlue700}, 0.25);
 
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 4px;
+  right: 4px;
 
   padding: 3px 5px;
 

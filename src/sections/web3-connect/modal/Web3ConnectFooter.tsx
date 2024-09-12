@@ -1,4 +1,5 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,7 +12,7 @@ type Props = {
   onLogout: () => void
 }
 
-export const Web3ConnectFooter: FC<Props> = ({ onSwitch }) => {
+export const Web3ConnectFooter: FC<Props> = ({ onSwitch, onLogout }) => {
   const { t } = useTranslation()
 
   const providers = useConnectedProviders()
@@ -28,15 +29,26 @@ export const Web3ConnectFooter: FC<Props> = ({ onSwitch }) => {
           </Text>
         </div>
       )}
-      <SSwitchButton
-        variant="outline"
-        size="micro"
-        onClick={onSwitch}
-        sx={{ ml: "auto" }}
-      >
-        {t("walletConnect.logout")}/{t("walletConnect.addWallet")}
-        <ChevronRight width={18} height={18} />
-      </SSwitchButton>
+      <div sx={{ flex: "row", ml: "auto", gap: 8 }}>
+        <SSwitchButton
+          variant="outline"
+          size="micro"
+          onClick={onLogout}
+          sx={{ color: "basic300" }}
+        >
+          {t("walletConnect.logout")}
+          <LogoutIcon width={18} height={18} sx={{ mr: -8 }} />
+        </SSwitchButton>
+        <SSwitchButton
+          variant="outline"
+          size="micro"
+          onClick={onSwitch}
+          sx={{ color: "brightBlue600" }}
+        >
+          {t("walletConnect.addWallet")}
+          <ChevronRight width={18} height={18} sx={{ mr: -8 }} />
+        </SSwitchButton>
+      </div>
     </SContainer>
   )
 }

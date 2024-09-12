@@ -22,8 +22,7 @@ export const SChip = styled(ButtonTransparent)<ChipProps>`
   border: 1px solid
     ${({ active }) => (active ? "rgba(133, 209, 255, 0.5)" : "transparent")};
 
-  & > img,
-  & > svg {
+  & > * {
     margin-left: -4px;
   }
 

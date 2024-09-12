@@ -48,6 +48,9 @@ import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { Talisman } from "sections/web3-connect/wallets/Talisman"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { EvmChain } from "@galacticcouncil/xcm-core"
+import { MetadataStore } from "@galacticcouncil/ui"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -147,7 +150,11 @@ export const useWalletAccounts = (
         await Promise.all(
           connectedProviders.map(async ({ wallet }) => {
             if (!wallet) return []
-            return await wallet.getAccounts()
+            try {
+              return await wallet.getAccounts()
+            } catch (e) {
+              return []
+            }
           }),
         )
       ).flat()
@@ -164,6 +171,9 @@ export const useWalletAccounts = (
         }
         return data.map(mapWalletAccount)
       },
+      cacheTime: 0,
+      staleTime: 5000,
+      keepPreviousData: true,
       ...options,
     },
   )
@@ -498,4 +508,24 @@ function mapWalletAccount({
     provider: wallet?.extensionName as WalletProviderType,
     isExternalWalletConnected: wallet instanceof ExternalWallet,
   }
+}
+
+export function getWalletModeIcon(mode: WalletMode) {
+  try {
+    if (mode === WalletMode.EVM) {
+      const chain = chainsMap.get("ethereum") as EvmChain
+      const asset = chain.getAsset("weth")!
+      const address = chain.getAssetId(asset)
+      return MetadataStore.getInstance().asset(
+        "ethereum",
+        chain.defEvm.id.toString(),
+        address.toString(),
+      )
+    }
+    if (mode === WalletMode.Substrate) {
+      return MetadataStore.getInstance().asset("polkadot", "0", "0")
+    }
+
+    return ""
+  } catch (e) {}
 }
