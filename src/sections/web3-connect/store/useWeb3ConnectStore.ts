@@ -138,7 +138,10 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
         set((state) => ({
           ...state,
           ...initialState,
-          account: provider === state.account?.provider ? null : state.account,
+          account:
+            !provider || provider === state.account?.provider
+              ? null
+              : state.account,
           providers: provider
             ? state.providers.filter((p) => p.type !== provider)
             : [],
