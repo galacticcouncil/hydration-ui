@@ -34,7 +34,7 @@ import {
   isMetaMaskLike,
   requestNetworkSwitch,
 } from "utils/metamask"
-import { genesisHashToChain } from "utils/helpers"
+import { genesisHashToChain, isNotNil } from "utils/helpers"
 import {
   EIP6963AnnounceProviderEvent,
   WalletAccount,
@@ -111,11 +111,13 @@ export const useConnectedProviders = () => {
 
   return useMemo(() => {
     return providers
-      .map(({ type }) => getWalletProviderByType(type))
-      .filter(
-        (provider): provider is WalletProvider =>
-          !!provider.wallet && !!provider.type,
-      )
+      .map(({ status, type }) => {
+        const provider = getWalletProviderByType(type)
+        return !!provider?.wallet && status === WalletProviderStatus.Connected
+          ? provider
+          : null
+      })
+      .filter(isNotNil)
   }, [providers])
 }
 
