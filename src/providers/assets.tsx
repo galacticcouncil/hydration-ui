@@ -24,6 +24,7 @@ type TAssetsContext = {
   bonds: TBond[]
   external: TExternal[]
   externalInvalid: TExternal[]
+  erc20: TAsset[]
   tradable: TAsset[]
   shareTokens: TShareToken[]
   native: TAsset
@@ -36,6 +37,7 @@ type TAssetsContext = {
   getAssetWithFallback: (id: string) => TAsset
   getExternalByExternalId: (externalId: string) => TExternal | undefined
   getShareTokenByAddress: (poolAddress: string) => TShareToken | undefined
+  getErc20: (id: string) => TAsset | undefined
   isExternal: (asset: TAsset) => asset is TExternal
   isBond: (asset: TAsset) => asset is TBond
   isStableSwap: (asset: TAsset) => boolean
@@ -51,6 +53,7 @@ const getFullAsset = (asset: TAssetStored) => {
   const isBond = asset.type === "Bond"
   const isStableSwap = asset.type === "StableSwap"
   const isExternal = asset.type === "External"
+  const isErc20 = asset.type === "Erc20"
   const isShareToken = false
 
   return {
@@ -61,6 +64,7 @@ const getFullAsset = (asset: TAssetStored) => {
     isBond,
     isStableSwap,
     isExternal,
+    isErc20,
     isShareToken,
   }
 }
@@ -76,6 +80,7 @@ const fallbackAsset: TAsset = {
   isStableSwap: false,
   isExternal: false,
   isShareToken: false,
+  isErc20: false,
   iconId: "",
   isSufficient: false,
   isTradable: false,
@@ -112,6 +117,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     bonds,
     external,
     externalInvalid,
+    erc20,
     tradable,
     native,
     hub,
@@ -125,6 +131,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
       bonds: TBond[]
       external: TExternal[]
       externalInvalid: TExternal[]
+      erc20: TAsset[]
       native: TAsset
       hub: TAsset
     }>(
@@ -178,6 +185,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
           } else if (asset.externalId) {
             acc.externalInvalid.push(asset as TExternal)
           }
+        } else if (asset.isErc20) {
+          acc.erc20.push(asset)
         }
 
         return acc
@@ -190,6 +199,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         bonds: [],
         external: [],
         externalInvalid: [],
+        erc20: [],
         native: {} as TAsset,
         hub: {} as TAsset,
       },
@@ -283,6 +293,11 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     [bonds],
   )
 
+  const getErc20 = useCallback(
+    (id: string) => erc20.find((token) => token.id === id),
+    [erc20],
+  )
+
   return (
     <AssetsContext.Provider
       value={{
@@ -292,6 +307,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         bonds,
         external,
         externalInvalid,
+        erc20,
         tradable,
         shareTokens,
         native,
@@ -304,6 +320,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         getAssetWithFallback,
         getExternalByExternalId,
         getShareTokenByAddress,
+        getErc20,
         isExternal,
         isBond,
         isStableSwap,
