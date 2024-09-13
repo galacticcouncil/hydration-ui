@@ -1,5 +1,4 @@
 import { NATIVE_ASSET_ID } from "utils/api"
-
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
@@ -9,33 +8,35 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { OrmlTokensAccountData } from "@polkadot/types/lookup"
 
 export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
   return free.minus(frozen)
 }
 
-export const getTokenBalance =
-  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
-  async () => {
-    if (id.toString() === NATIVE_ASSET_ID) {
-      const res = await api.query.system.account(account)
-      const freeBalance = new BigNumber(res.data.free.toHex())
-      const frozenBalance = new BigNumber(res.data.frozen.toHex())
+const createTokenBalanceFetcher =
+  (api: ApiPromise) =>
+  async (account: AccountId32 | string, id: string | u32) => {
+    const params = api.createType("(AssetId, AccountId)", [id, account])
+    const result = await api.rpc.state.call(
+      "CurrenciesApi_account",
+      params.toHex(),
+    )
+    return api.createType<OrmlTokensAccountData>(
+      "OrmlTokensAccountData",
+      result,
+    )
+  }
 
-      const reservedBalance = new BigNumber(res.data.reserved.toHex())
+export const getTokenBalance = (
+  api: ApiPromise,
+  account: AccountId32 | string,
+  id: string | u32,
+) => {
+  const fetchTokenBalance = createTokenBalanceFetcher(api)
 
-      const balance = freeBalance.minus(frozenBalance)
-
-      return {
-        accountId: account,
-        assetId: id,
-        balance,
-        total: freeBalance.plus(reservedBalance),
-        freeBalance,
-      }
-    }
-
-    const res = await api.query.tokens.accounts(account, id)
+  return async () => {
+    const res = await fetchTokenBalance(account, id)
 
     const freeBalance = new BigNumber(res.free.toHex())
     const reservedBalance = new BigNumber(res.reserved.toHex())
@@ -52,6 +53,7 @@ export const getTokenBalance =
       freeBalance,
     }
   }
+}
 
 export const useTokenBalance = (
   id: Maybe<string | u32>,

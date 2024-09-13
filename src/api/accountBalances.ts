@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { u32 } from "@polkadot/types"
+import { u32, StorageKey } from "@polkadot/types"
+import { OrmlTokensAccountData } from "@polkadot/types/lookup"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { calculateFreeBalance } from "./balances"
@@ -31,15 +32,31 @@ export const useAccountsBalances = (ids: string[]) => {
   )
 }
 
-export const getAccountBalances =
-  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const [tokens, nativeData] = await Promise.all([
-      api.query.tokens.accounts.entries(accountId),
-      api.query.system.account(accountId),
-    ])
-    const balances = tokens.map(([key, data]) => {
-      const [, id] = key.args
+export const createAccountBalancesFetcher =
+  (api: ApiPromise) => async (accountId: AccountId32 | string) => {
+    const params = api.createType("AccountId", accountId)
+    const result = await api.rpc.state.call(
+      "CurrenciesApi_accounts",
+      params.toHex(),
+    )
+    const balances = api.createType(
+      "Vec<(AssetId, OrmlTokensAccountData)>",
+      result,
+    )
 
+    return balances as unknown as [StorageKey<[u32]>, OrmlTokensAccountData][]
+  }
+
+export const getAccountBalances = (
+  api: ApiPromise,
+  accountId: AccountId32 | string,
+) => {
+  const fetchAccountBalances = createAccountBalancesFetcher(api)
+
+  return async () => {
+    const tokens = await fetchAccountBalances(accountId)
+
+    const balances = tokens.map(([id, data]) => {
       const freeBalance = new BigNumber(data.free.toHex())
       const reservedBalance = new BigNumber(data.reserved.toHex())
       const frozenBalance = new BigNumber(data.frozen.toHex())
@@ -57,24 +74,11 @@ export const getAccountBalances =
       }
     })
 
-    const freeBalance = new BigNumber(nativeData.data.free.toHex())
-
-    const frozenBalance = new BigNumber(nativeData.data.frozen.toHex())
-    const reservedBalance = new BigNumber(nativeData.data.reserved.toHex())
-
-    const balance = freeBalance.minus(frozenBalance)
-
-    const native = {
-      accountId: accountId.toString(),
-      id: NATIVE_ASSET_ID,
-      balance,
-      total: freeBalance.plus(reservedBalance),
-      reservedBalance,
-      freeBalance,
-    }
+    const native = balances.find(({ id }) => id === NATIVE_ASSET_ID)
 
     return { native, balances, accountId }
   }
+}
 
 export const useAccountAssetBalances = (
   pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
