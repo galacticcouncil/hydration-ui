@@ -55,11 +55,16 @@ export const Web3ConnectContent: React.FC<Props> = ({
     getConnectedProviders,
   } = useWeb3ConnectStore()
 
-  const { data: accounts, isLoading } = useWalletAccounts()
+  const {
+    data: accounts,
+    isLoading: isAccountsLoading,
+    isFetching: isAccountsFetching,
+  } = useWalletAccounts()
 
   const providers = getConnectedProviders()
-  const isConnecting =
-    isLoading || providers.some(({ status }) => status === "pending")
+  const isProvidersConnecting = providers.some(
+    ({ status }) => status === "pending",
+  )
 
   const chain = meta?.chain ? chainsMap.get(meta?.chain) : null
 
@@ -125,16 +130,19 @@ export const Web3ConnectContent: React.FC<Props> = ({
           description: t("walletConnect.accountSelect.description"),
           content: (
             <>
-              {isConnecting ? (
+              {isAccountsLoading || isProvidersConnecting ? (
                 <Web3ConnectProviderPending
                   provider={
-                    isLoading
+                    isAccountsLoading
                       ? providers.map(({ type }) => type)
                       : recentProvider
                   }
                 />
               ) : (
-                <Web3ConnectAccountList accounts={accounts} />
+                <Web3ConnectAccountList
+                  isLoading={isAccountsFetching}
+                  accounts={accounts}
+                />
               )}
               <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
             </>

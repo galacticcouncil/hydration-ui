@@ -81,7 +81,8 @@ const AccountComponent: FC<
 
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
-}> = ({ accounts = [] }) => {
+  isLoading?: boolean
+}> = ({ accounts = [], isLoading = false }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
@@ -90,7 +91,8 @@ export const Web3ConnectAccountList: FC<{
 
   const { balanceMap } = useAccountBalanceMap()
 
-  const isReady = accounts.every(({ address }) => balanceMap.has(address))
+  const isReady =
+    !isLoading && accounts.every(({ address }) => balanceMap.has(address))
 
   const [searchVal, setSearchVal] = useState("")
   const [filter, setFilter] = useState("")
