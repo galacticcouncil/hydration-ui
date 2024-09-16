@@ -179,21 +179,21 @@ export const useFileErrorMessage = (
   return useMemo(() => {
     switch (errorCode) {
       case FileError.INVALID_FILE_TYPE:
-        return t("fileUploader.error.type", {
+        return t("error.file.type", {
           types: options.allowedTypes?.join(", ") ?? "",
         })
       case FileError.INVALID_FILE_SIZE:
-        return t("fileUploader.error.size", {
+        return t("error.file.size", {
           maxSize: formatBytes(maxSize),
         })
       case FileError.INVALID_FILE_DIMENSIONS:
         const isExact = minWidth === maxWidth && minHeight === maxHeight
         return isExact
-          ? t("fileUploader.error.dimensions.exact", {
+          ? t("error.file.dimensions.exact", {
               width: minWidth,
               height: maxHeight,
             })
-          : t("fileUploader.error.dimensions.range", {
+          : t("error.file.dimensions.range", {
               minWidth,
               minHeight,
               maxWidth,

@@ -13,17 +13,19 @@ export const SContainer = styled.div<{ error?: boolean }>`
     height: 100%;
     min-height: 80px;
 
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+
     border: 1px dashed
-      ${({ error }) => (error ? theme.colors.red400 : theme.colors.basic600)};
+      ${({ error }) => (error ? theme.colors.red400 : theme.colors.darkBlue400)};
     border-radius: ${theme.borderRadius.default}px;
 
     &:hover {
-      border-color: ${theme.colors.brightBlue300};
+      border-color: rgba(${theme.rgbColors.brightBlue600}, 0.5);
     }
 
     &.drag-over {
-      border-color: ${theme.colors.brightBlue300};
-      background-color: ${theme.colors.darkBlue401};
+      border-color: rgba(${theme.rgbColors.brightBlue600}, 0.75);
+      background-color: rgba(${theme.rgbColors.primaryA15}, 0.12);
     }
   }
 `
@@ -32,6 +34,8 @@ export const SUploadButton = styled.div`
   position: absolute;
   inset: 0;
 
+  padding: 10px;
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,6 +43,12 @@ export const SUploadButton = styled.div`
 
   user-select: none;
   cursor: pointer;
+
+  text-wrap: balance;
+
+  @media ${theme.viewport.gte.sm} {
+    padding: 20px;
+  }
 `
 
 export const SUploadPreview = styled.div`
@@ -47,6 +57,13 @@ export const SUploadPreview = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  & > div {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 `
 
 export const SClearButton = styled.button`

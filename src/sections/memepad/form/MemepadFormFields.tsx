@@ -30,6 +30,7 @@ import Skeleton from "react-loading-skeleton"
 import { SInputBoxContainer } from "components/Input/Input.styled"
 import { FileUploader } from "components/FileUploader"
 import { useAssets } from "providers/assets"
+import { FormFieldGrid } from "sections/memepad/form/MemepadForm.styled"
 
 type MemepadFormFieldsProps = {
   form: UseFormReturn<MemepadFormValues>
@@ -97,48 +98,55 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           type="hidden"
           {...form.register("decimals", { valueAsNumber: true })}
         />
-        <Controller
-          name="file"
-          control={form.control}
-          render={({ field }) => (
-            <FileUploader
-              maxSize={30 * 1024} // 30KB
-              minDimensions="128x128"
-              maxDimensions="128x128"
-              allowedTypes={["png", "jpg", "svg", "webp"]}
-              onChange={(files) => {
-                const file = files?.[0] || null
-                field.onChange(file)
-              }}
+        <FormFieldGrid>
+          <div sx={{ flex: "column", gap: 8 }}>
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState: { error } }) => (
+                <InputBox
+                  label={t("memepad.form.name")}
+                  placeholder={t("memepad.form.name.placeholder")}
+                  withLabel
+                  error={error?.message}
+                  {...field}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field, fieldState: { error } }) => (
-            <InputBox
-              label={t("memepad.form.name")}
-              placeholder={t("memepad.form.name.placeholder")}
-              withLabel
-              error={error?.message}
-              {...field}
+            <Controller
+              name="symbol"
+              control={form.control}
+              render={({ field, fieldState: { error } }) => (
+                <InputBox
+                  label={t("memepad.form.symbol")}
+                  placeholder={t("memepad.form.symbol.placeholder")}
+                  withLabel
+                  error={error?.message}
+                  {...field}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="symbol"
-          control={form.control}
-          render={({ field, fieldState: { error } }) => (
-            <InputBox
-              label={t("memepad.form.symbol")}
-              placeholder={t("memepad.form.symbol.placeholder")}
-              withLabel
-              error={error?.message}
-              {...field}
-            />
-          )}
-        />
+          </div>
+          <Controller
+            name="file"
+            control={form.control}
+            render={({ field }) => (
+              <FileUploader
+                hint={t("memepad.form.file.hint")}
+                maxSize={30 * 1024} // 30KB
+                minDimensions="128x128"
+                maxDimensions="128x128"
+                allowedTypes={["png", "jpg", "svg", "webp"]}
+                forceCircleImg
+                onChange={(files) => {
+                  const file = files?.[0] || null
+                  field.onChange(file)
+                }}
+              />
+            )}
+          />
+        </FormFieldGrid>
+
         <Controller
           name="supply"
           control={form.control}
@@ -153,10 +161,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           )}
         />
 
-        <div
-          sx={{ display: ["flex", "grid"], flexDirection: "column", gap: 8 }}
-          css={{ gridTemplateColumns: "6fr 5fr" }}
-        >
+        <FormFieldGrid>
           <Controller
             name="allocatedSupply"
             control={form.control}
@@ -184,7 +189,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
             xykPoolSupply={BN(xykPoolSupply)}
             allocatedSupply={BN(allocatedSupply)}
           />
-        </div>
+        </FormFieldGrid>
 
         <Controller
           name="xykPoolSupply"

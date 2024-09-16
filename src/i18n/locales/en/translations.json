@@ -89,6 +89,11 @@
   "error.required": "This field is required.",
   "error.maxBalance": "Insufficient balance on your account.",
   "error.whitespace": "Spaces are not allowed.",
+  "error.file.type": "Invalid file type. Allowed types are: {{ types }}",
+  "error.file.size": "File size is too large. Maximum allowed file size is {{ maxSize }}",
+  "error.file.dimensions.range": "The file dimensions must be at least {{ minWidth }}x{{ minHeight }} and at most {{ maxWidth }}x{{ maxHeight }} pixels.",
+  "error.file.dimensions.exact": "The file dimensions must be exactly {{ width }}x{{ height }} pixels.",
+  "fileUploader.label": "Drag & drop or click to upload",
   "modal.closeButton.name": "Close modal button",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
@@ -1030,6 +1035,7 @@
   "memepad.form.xykPoolSupply": "Deposit your {{ symbol }} to pool",
   "memepad.form.dotPrice": "DOT price",
   "memepad.form.initialTokenPrice": "Initial token price",
+  "memepad.form.file.hint": "png, jpg, svg, webp of 128x128px, max 30kB",
   "memepad.form.step1.title": "Create ",
   "memepad.form.step2.title": "Register on Hydration",
   "memepad.form.step3.title": "Transfer Liquidity",
@@ -1092,10 +1098,5 @@
   "memepad.summary.adminRights.burn": "Burn admin rights",
   "memepad.summary.adminRights.burned": "Admin rights revoked",
   "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
-  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
-  "fileUploader.placeholder": "Drag & drop or click to upload file",
-  "fileUploader.error.type": "Invalid file type. Allowed types are: {{ types }}",
-  "fileUploader.error.size": "File size is too large. Maximum allowed file size is {{ maxSize }}",
-  "fileUploader.error.dimensions.range": "The file dimensions must be at least {{ minWidth }}x{{ minHeight }} and at most {{ maxWidth }}x{{ maxHeight }} pixels.",
-  "fileUploader.error.dimensions.exact": "The file dimensions must be exactly {{ width }}x{{ height }} pixels."
+  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked."
 }

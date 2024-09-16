@@ -10,7 +10,6 @@ import React, {
   useMemo,
   useState,
 } from "react"
-import { useTranslation } from "react-i18next"
 import {
   SClearButton,
   SContainer,
@@ -32,12 +31,15 @@ import {
   useFileErrorMessage,
 } from "./FileUploader.utils"
 import { usePrevious } from "react-use"
+import { useTranslation } from "react-i18next"
 
 export type FileUploaderProps = {
-  placeholder?: string
+  label?: string
+  hint?: string
   minDimensions?: string
   maxDimensions?: string
   maxSize?: number
+  forceCircleImg?: boolean
   allowedTypes?: readonly FileType[]
   onChange?: (files: File[]) => void
 }
@@ -51,15 +53,16 @@ const UploadButton = asUploadButton(
 )
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
-  placeholder,
+  label,
+  hint,
   minDimensions = `${DEFAULT_MIN_WIDTH}x${DEFAULT_MIN_HEIGHT}`,
   maxDimensions = `${DEFAULT_MAX_WIDTH}x${DEFAULT_MAX_HEIGHT}`,
   maxSize = DEFAULT_MAX_SIZE,
   allowedTypes = ALL_FILE_TYPES,
   onChange,
+  forceCircleImg = false,
 }) => {
   const { t } = useTranslation()
-
   const { abortBatch, clearPending, ...uploady } = useUploady()
 
   const [batch, setBatch] = useState<Batch | null>(null)
@@ -135,8 +138,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     ? batch.items.map(({ file }) => file).filter(isFile)
     : []
 
-  console.log({ batch })
-
   return (
     <SContainer error={!!error}>
       <UploadDropZone onDragOverClassName="drag-over" fileFilter={fileFilter}>
@@ -144,18 +145,18 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           <>
             {!batch && (
               <>
-                <Text fs={12} lh={16} color="basic400">
-                  {placeholder ?? t("fileUploader.placeholder")}
+                <Text fs={12} lh={16} color="basic400" tAlign="center">
+                  {label ?? t("fileUploader.label")}
                 </Text>
-                {!error && allowedTypes && (
-                  <Text fs={12} lh={16} color="basic400">
-                    ({allowedTypes.join(", ")})
+                {!error && hint && (
+                  <Text fs={12} lh={16} color="basic400" tAlign="center">
+                    ({hint})
                   </Text>
                 )}
               </>
             )}
             {error && (
-              <Text fs={12} lh={16} color="red400">
+              <Text fs={12} lh={16} color="red400" tAlign="center">
                 {error}
               </Text>
             )}
@@ -163,7 +164,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         </UploadButton>
         <SUploadPreview sx={{ color: "white" }}>
           {files.map((file) => (
-            <img alt="" src={URL.createObjectURL(file)} />
+            <div css={forceCircleImg && { borderRadius: 9999 }}>
+              <img alt="" src={URL.createObjectURL(file)} />
+            </div>
           ))}
           {batch && (
             <SClearButton type="button" onClick={() => abortBatch(batch.id)}>
