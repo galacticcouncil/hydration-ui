@@ -1,6 +1,6 @@
-import { SBar, SBarContainer, SContainer } from "./OrderCapacity.styled"
-import { Text } from "components/Typography/Text/Text"
+import { SContainer } from "./OrderCapacity.styled"
 import BigNumber from "bignumber.js"
+import { LinearProgress } from "components/Progress/LinearProgress/LinearProgress"
 
 export const OrderCapacity = (props: {
   total: BigNumber
@@ -19,20 +19,12 @@ export const OrderCapacity = (props: {
 
   return (
     <SContainer modal={modal}>
-      <div sx={{ flex: "row", align: "center" }}>
-        <SBarContainer modal={modal}>
-          <SBar filled={filledPct.toFixed()} />
-        </SBarContainer>
-        <Text
-          fs={modal ? 13 : 12}
-          fw={500}
-          color="brightBlue100"
-          as="span"
-          sx={{ ml: 10 }}
-        >
-          {filledPct.toFixed(0)}%
-        </Text>
-      </div>
+      <LinearProgress
+        color="pink600"
+        colorEnd="brightBlue600"
+        percent={filledPct.toNumber()}
+        size={modal ? "medium" : "small"}
+      >{`${filledPct.toNumber()}%`}</LinearProgress>
     </SContainer>
   )
 }

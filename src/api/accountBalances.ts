@@ -13,13 +13,13 @@ export const useAccountBalances = (
   id: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh
       ? QUERY_KEYS.accountBalances(id)
       : QUERY_KEYS.accountBalancesLive(id),
     !!id ? getAccountBalances(api, id) : undefinedNoop,
-    { enabled: id != null },
+    { enabled: id != null && isLoaded },
   )
 }
 

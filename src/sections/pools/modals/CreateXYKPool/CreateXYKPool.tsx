@@ -11,7 +11,7 @@ import {
   useCreateXYKPoolForm,
 } from "./CreateXYKPoolForm.utils"
 import { UseFormReturn } from "react-hook-form"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 
 type CreateXYKPoolProps = {
   controlledForm?: UseFormReturn<CreateXYKPoolFormData>

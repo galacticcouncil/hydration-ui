@@ -6,16 +6,15 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { AnyParachain } from "@galacticcouncil/xcm-core"
-import { isAnyParachain } from "utils/helpers"
 import { useExternalAssetsWhiteList } from "api/external"
-
-const chains = Array.from(chainsMap.values())
+import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { ResponsiveValue } from "utils/responsive"
+import { useAssets } from "providers/assets"
+import { Icon } from "components/Icon/Icon"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -41,46 +40,74 @@ export const UigcChainLogo = createComponent({
   react: React,
 })
 
+export const MultipleAssetLogo = ({
+  iconId,
+  size = 26,
+}: {
+  iconId: string | string[] | undefined
+  size?: ResponsiveValue<number>
+}) => {
+  const { getAssetWithFallback } = useAssets()
+  if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
+  const allIconIds = Array.isArray(iconId)
+    ? iconId
+        .map((id) => {
+          const { iconId } = getAssetWithFallback(id)
+
+          return iconId
+        })
+        .flat()
+    : iconId
+  return typeof allIconIds === "string" ? (
+    <Icon size={size} icon={<AssetLogo id={allIconIds} />} />
+  ) : (
+    <MultipleIcons
+      size={size}
+      icons={allIconIds.map((id) => ({
+        icon: <AssetLogo key={id} id={id} />,
+      }))}
+    />
+  )
+}
+
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
-    const assetDetails = id ? assets.getAsset(id) : undefined
-
-    const chain = chains.find(
-      (chain) =>
-        isAnyParachain(chain) &&
-        chain.parachainId === Number(assetDetails?.parachainId),
-    ) as AnyParachain
-
+    const assetDetails = id ? getAsset(id) : undefined
     const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
 
     return {
-      chain: chain?.key,
-      symbol: assetDetails?.symbol,
+      details: assetDetails,
       badgeVariant: badge,
     }
-  }, [assets, getIsWhiteListed, id])
+  }, [getAsset, getIsWhiteListed, id])
 
-  if (asset.chain || asset.symbol)
+  const { details, badgeVariant } = asset
+
+  if (details)
     return (
       <UigcAssetId
         css={{ "& uigc-logo-chain": { display: "none" } }}
         ref={(el) => {
-          el && asset.chain && el.setAttribute("chain", asset.chain)
+          el &&
+            details.parachainId &&
+            el.setAttribute("chainOrigin", details.parachainId)
           el && el.setAttribute("fit", "")
         }}
-        symbol={asset.symbol}
-        chain={asset?.chain}
+        ecosystem="polkadot"
+        asset={id}
+        chain={HYDRADX_PARACHAIN_ID.toString()}
+        chainOrigin={details.parachainId}
       >
-        {asset.badgeVariant && (
+        {badgeVariant && (
           <UigcAssetBadge
             slot="badge"
-            variant={asset.badgeVariant}
-            text={t(`wallet.addToken.tooltip.${asset.badgeVariant}`)}
+            variant={badgeVariant}
+            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
           />
         )}
       </UigcAssetId>
@@ -95,10 +122,45 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   )
 }
 
-export const ChainLogo = ({ symbol }: { symbol?: string }) => {
+export const ExternalAssetLogo = ({
+  id,
+  parachainId,
+  originHidden,
+  children,
+}: {
+  id: string
+  parachainId: number
+  originHidden?: boolean
+  children?: React.ReactNode
+}) => {
+  return (
+    <UigcAssetId
+      css={{ "& uigc-logo-chain": { display: "none" } }}
+      ref={(el) => {
+        if (el) {
+          el.setAttribute("fit", "")
+          if (parachainId && !originHidden)
+            el.setAttribute("chainOrigin", parachainId.toString())
+          el.shadowRoot
+            ?.querySelector("uigc-logo-asset")
+            ?.setAttribute("style", "width:100%;height:100%;")
+        }
+      }}
+      ecosystem="polkadot"
+      asset={id}
+      chain={parachainId.toString()}
+      chainOrigin={!originHidden ? parachainId.toString() : undefined}
+    >
+      {children}
+    </UigcAssetId>
+  )
+}
+
+export const ChainLogo = ({ id }: { id?: number }) => {
   return (
     <UigcChainLogo
-      chain={symbol}
+      ecosystem={"polkadot"}
+      chain={id?.toString()}
       ref={(el) => el && el.setAttribute("fit", "")}
     >
       <UigcAssetPlaceholder

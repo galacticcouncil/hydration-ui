@@ -73,9 +73,8 @@ export const StakingGuide = () => {
       >
         <SContainer
           sx={{
-            p: "36px 46px",
+            p: [20, "36px 46px"],
             minWidth: ["100%"],
-            display: ["none", "inherit"],
           }}
         >
           <Text color="brightBlue300" fs={19} font="GeistMono">

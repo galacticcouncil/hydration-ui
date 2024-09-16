@@ -11,12 +11,13 @@ import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
-import { useRpcProvider } from "providers/rpcProvider"
 
 import {
   RemoveLiquidityProps,
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
+import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export const RemoveLiquidityForm = ({
   onClose,
@@ -26,14 +27,15 @@ export const RemoveLiquidityForm = ({
   position,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
-  const { api, assets } = useRpcProvider()
+  const { api } = useRpcProvider()
+  const { hub } = useAssets()
   const isPositionMultiple = Array.isArray(position)
 
   const form = useForm<{ value: number }>({
     defaultValues: { value: isPositionMultiple ? 100 : 25 },
   })
 
-  const lrnaMeta = assets.hub
+  const lrnaMeta = hub
   const value = form.watch("value")
 
   const onSubmit = (value: string) => {

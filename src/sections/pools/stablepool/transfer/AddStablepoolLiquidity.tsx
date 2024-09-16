@@ -4,7 +4,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
@@ -16,7 +16,7 @@ import { useDisplayPrice } from "utils/displayAsset"
 import { useTokenBalance } from "api/balances"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { TAsset } from "api/assetDetails"
+import { TAsset } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -32,6 +32,7 @@ import {
 import { Farm } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
+import { BaseSyntheticEvent } from "react"
 
 type Props = {
   poolId: string
@@ -45,6 +46,7 @@ type Props = {
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
   farms: Farm[]
+  setIsJoinFarms: (value: boolean) => void
 }
 
 const createFormSchema = (balance: BigNumber, decimals: number) =>
@@ -64,6 +66,7 @@ export const AddStablepoolLiquidity = ({
   fee,
   isStablepoolOnly,
   farms,
+  setIsJoinFarms,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -102,6 +105,7 @@ export const AddStablepoolLiquidity = ({
         : stablepoolZod,
     ),
   })
+  const { formState } = form
   const displayPrice = useDisplayPrice(asset.id)
 
   const shares = form.watch("amount")
@@ -165,6 +169,21 @@ export const AddStablepoolLiquidity = ({
     )
   }
 
+  const onInvalidSubmit = (
+    errors: FieldErrors<FormValues<typeof form>>,
+    e?: BaseSyntheticEvent,
+  ) => {
+    const submitAction = (e?.nativeEvent as SubmitEvent)
+      ?.submitter as HTMLButtonElement
+
+    if (
+      submitAction?.name === "addLiquidity" &&
+      (errors.amount as { farm?: { message: string } }).farm
+    ) {
+      onSubmit(form.getValues())
+    }
+  }
+
   const customErrors = form.formState.errors.amount as unknown as
     | {
         cap?: { message: string }
@@ -173,9 +192,13 @@ export const AddStablepoolLiquidity = ({
       }
     | undefined
 
+  const isAddOnlyLiquidityDisabled = !!Object.keys(
+    formState.errors.amount ?? {},
+  ).filter((key) => key !== "farm").length
+
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
@@ -258,7 +281,7 @@ export const AddStablepoolLiquidity = ({
         ) : null}
 
         {customErrors?.farm && (
-          <Alert variant="error" css={{ margin: "20px 0" }}>
+          <Alert variant="warning" css={{ margin: "20px 0" }}>
             {customErrors.farm.message}
           </Alert>
         )}
@@ -273,16 +296,42 @@ export const AddStablepoolLiquidity = ({
           mb: [24, 0],
         }}
       >
-        <Button variant="secondary" type="button" onClick={onCancel}>
-          {t("cancel")}
-        </Button>
-        <Button
-          sx={{ width: "300px" }}
-          variant="primary"
-          disabled={!!Object.keys(form.formState.errors).length}
-        >
-          {t("confirm")}
-        </Button>
+        {farms.length && !isStablepoolOnly ? (
+          <>
+            <Button
+              variant="secondary"
+              name="addLiquidity"
+              onClick={() => setIsJoinFarms(false)}
+              disabled={isAddOnlyLiquidityDisabled || !formState.isDirty}
+            >
+              {t("liquidity.add.modal.onlyAddLiquidity")}
+            </Button>
+            <Button
+              variant="primary"
+              name="joinFarms"
+              onClick={() => setIsJoinFarms(true)}
+              disabled={
+                !!Object.keys(form.formState.errors).length ||
+                !formState.isDirty
+              }
+            >
+              {t("liquidity.add.modal.joinFarms")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="secondary" type="button" onClick={onCancel}>
+              {t("cancel")}
+            </Button>
+            <Button
+              sx={{ width: "300px" }}
+              variant="primary"
+              disabled={!!Object.keys(form.formState.errors).length}
+            >
+              {t("confirm")}
+            </Button>
+          </>
+        )}
       </div>
     </form>
   )

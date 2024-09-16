@@ -2,7 +2,6 @@ import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { SIcon, SRow, SContainer } from "./FarmDetailsCard.styled"
-import { FillBar } from "components/FillBar/FillBar"
 import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
@@ -16,40 +15,46 @@ import { BLOCK_TIME, BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useRpcProvider } from "providers/rpcProvider"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
-import { useDepositShare } from "sections/pools/farms/position/FarmingPosition.utils"
+import {
+  isXYKDeposit,
+  TDepositData,
+} from "sections/pools/farms/position/FarmingPosition.utils"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssets } from "providers/assets"
+import { TDeposit } from "api/deposits"
+import { LinearProgress } from "components/Progress"
+import { theme } from "theme"
 
 type FarmDetailsCardProps = {
-  poolId: string
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
+  depositData?: TDepositData
   farm: Farm
   onSelect?: () => void
   compact?: boolean
 }
 
 export const FarmDetailsCard = ({
-  poolId,
   depositNft,
+  depositData,
   farm,
   onSelect,
   compact,
 }: FarmDetailsCardProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
-  const asset = assets.getAsset(farm.globalFarm.rewardCurrency.toString())
+  const asset = getAssetWithFallback(farm.globalFarm.rewardCurrency.toString())
   const apr = useFarmApr(farm)
+
+  const { relaychainBlockNumber } = useBestNumber().data ?? {}
 
   const isClickable = !!onSelect
 
-  const bestNumber = useBestNumber()
   const secondsDurationToEnd =
-    bestNumber.data != null
+    relaychainBlockNumber != null
       ? apr.data?.estimatedEndBlock
-          .minus(bestNumber.data?.relaychainBlockNumber.toBigNumber())
+          .minus(relaychainBlockNumber.toBigNumber())
           .times(BLOCK_TIME)
           .toNumber()
       : undefined
@@ -123,9 +128,12 @@ export const FarmDetailsCard = ({
           {compact ? (
             <Icon sx={{ color: "darkBlue200" }} icon={<Distribution />} />
           ) : (
-            <FillBar
-              percentage={apr.data.distributedRewards
-                .div(apr.data.maxRewards)
+            <LinearProgress
+              size="small"
+              color="brightBlue500"
+              withoutLabel
+              percent={apr.data.distributedRewards
+                .div(apr.data.potMaxRewards)
                 .times(100)
                 .toNumber()}
             />
@@ -152,9 +160,15 @@ export const FarmDetailsCard = ({
           {compact ? (
             <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
           ) : (
-            <FillBar
-              percentage={fullness.toNumber()}
-              variant={isFull ? "full" : "secondary"}
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={fullness.toNumber()}
+              colorCustom={
+                true
+                  ? theme.gradients.pinkDarkPink
+                  : theme.gradients.lightGreenOrange
+              }
             />
           )}
 
@@ -174,13 +188,13 @@ export const FarmDetailsCard = ({
             )}
           </div>
         </SRow>
-        {depositNft && (
+        {depositData && (
           <>
             <SRow compact={compact}>
               <Text fs={14} lh={18}>
                 {t("farms.details.card.locked.label")}
               </Text>
-              <LockedValue poolId={poolId} depositNft={depositNft} />
+              <LockedValue depositData={depositData} />
             </SRow>
 
             <SRow compact={compact}>
@@ -224,17 +238,8 @@ export const FarmDetailsCard = ({
   )
 }
 
-const LockedValue = ({
-  poolId,
-  depositNft,
-}: {
-  poolId: string
-  depositNft: TMiningNftPosition
-}) => {
+const LockedValue = ({ depositData }: { depositData: TDepositData }) => {
   const { t } = useTranslation()
-  const position = useDepositShare(poolId, depositNft.id.toString())
-
-  if (!position.data) return null
 
   return (
     <GradientText
@@ -245,10 +250,24 @@ const LockedValue = ({
       sx={{ width: "fit-content" }}
       css={{ justifySelf: "end" }}
     >
-      {t("value.tokenWithSymbol", {
-        value: position.data.totalValueShifted,
-        symbol: position.data.meta.symbol,
-      })}
+      {isXYKDeposit(depositData) ? (
+        <>
+          {t("value.tokenWithSymbol", {
+            value: depositData.assetA.amount,
+            symbol: depositData.assetA.symbol,
+          })}{" "}
+          |{" "}
+          {t("value.tokenWithSymbol", {
+            value: depositData.assetB.amount,
+            symbol: depositData.assetB.symbol,
+          })}
+        </>
+      ) : (
+        t("value.tokenWithSymbol", {
+          value: depositData.totalValueShifted,
+          symbol: depositData.meta.symbol,
+        })
+      )}
     </GradientText>
   )
 }

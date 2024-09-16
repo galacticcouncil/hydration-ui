@@ -12,18 +12,17 @@ import { TJoinFarmsInput, useJoinFarms } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { useBestNumber } from "api/chain"
-import { useRpcProvider } from "providers/rpcProvider"
 import { TLPData } from "utils/omnipool"
-import { TMiningNftPosition } from "sections/pools/PoolsPage.utils"
 import { JoinFarmsForm } from "./JoinFarmsForm"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
+import { usePoolData } from "sections/pools/pool/Pool"
+import { TDeposit } from "api/deposits"
 
 type JoinFarmModalProps = {
   onClose: () => void
-  poolId: string
   position?: TLPData
   farms: Farm[]
-  depositNft?: TMiningNftPosition
+  depositNft?: TDeposit
 }
 
 export enum Page {
@@ -34,20 +33,20 @@ export enum Page {
 
 export const JoinFarmModal = ({
   onClose,
-  poolId,
   position,
   farms,
   depositNft,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
+  const {
+    pool: { meta, id: poolId },
+  } = usePoolData()
   const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
   const [currentStep, setCurrentStep] = useState(0)
 
   const bestNumber = useBestNumber()
   const { page, direction, paginateTo } = useModalPagination()
 
-  const meta = assets.getAsset(poolId)
   const isMultipleFarms = farms.length > 1
 
   const joinFarms = useJoinFarms({
@@ -137,7 +136,6 @@ export const JoinFarmModal = ({
                   {farms.map((farm, i) => (
                     <FarmDetailsCard
                       key={i}
-                      poolId={poolId}
                       farm={farm}
                       onSelect={() => {
                         setSelectedFarm(farm)
@@ -147,7 +145,6 @@ export const JoinFarmModal = ({
                   ))}
                 </div>
                 <JoinFarmsForm
-                  poolId={poolId}
                   position={position}
                   farms={farms}
                   depositNft={depositNft}
@@ -160,7 +157,6 @@ export const JoinFarmModal = ({
             title: t("farms.modal.details.title"),
             content: selectedFarm && (
               <FarmDetailsModal
-                poolId={poolId}
                 farm={selectedFarm}
                 currentBlock={currentBlock?.toNumber()}
               />

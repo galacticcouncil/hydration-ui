@@ -11,10 +11,10 @@ import { HeaderSubMenu, HeaderSubMenuContents } from "./HeaderSubMenu"
 import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAccountNFTPositions } from "api/deposits"
-import { useAccountBalances } from "api/accountBalances"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
+import { useAccountPositions } from "api/deposits"
+import { useAcountAssets } from "api/assetDetails"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
@@ -113,15 +113,13 @@ const LiquidityMenuItem = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
-  const accountPositions = useAccountNFTPositions()
+  const accountPositions = useAccountPositions()
 
-  const balances = useAccountBalances(account?.address)
+  const balances = useAcountAssets(account?.address)
 
-  const isPoolBalances = balances.data?.balances.some((balance) => {
-    if (balance.freeBalance.gt(0)) {
-      const meta = assets.getAsset(balance.id)
-      return meta.isStableSwap || meta.isShareToken
+  const isPoolBalances = balances.some((balance) => {
+    if (balance.balance.freeBalance.gt(0)) {
+      return balance.asset.isStableSwap || balance.asset.isShareToken
     }
     return false
   })

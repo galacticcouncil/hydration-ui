@@ -20,6 +20,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { assethub, useAssetHubAssetRegistry } from "./assethub"
 import { pendulum, usePendulumAssetRegistry } from "./pendulum"
 import { usePolkadotRegistry } from "./polkadot"
+import { useAssets } from "providers/assets"
 
 export { assethub, pendulum }
 
@@ -128,48 +129,52 @@ export type TRugCheckData = ReturnType<
 >["tokens"][number]
 
 export const useExternalTokensRugCheck = (ids?: string[]) => {
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { external, externalInvalid, getAssetWithFallback } = useAssets()
   const { getTokenByInternalId, isRiskConsentAdded } =
     useUserExternalTokenStore()
 
   const assetRegistry = useExternalAssetRegistry()
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
+  const { data: issuanceData } = useTotalIssuances()
+
   const { internalIds } = useMemo(() => {
+    const allExternal = [...external, ...externalInvalid]
+
     const externalAssets = isLoaded
       ? ids?.length
-        ? assets.external.filter((a) => ids?.some((id) => a.id === id))
-        : assets.external.filter(({ name, symbol }) => !!name && !!symbol)
+        ? ids.map((id) => allExternal.find((external) => external.id === id))
+        : external
       : []
 
-    const internalIds = externalAssets.map(({ id }) => id)
+    const internalIds = externalAssets.reduce<string[]>((acc, asset) => {
+      if (asset) acc.push(asset.id)
+
+      return acc
+    }, [])
 
     return { externalAssets, internalIds }
-  }, [assets.external, ids, isLoaded])
-
-  const issuanceQueries = useTotalIssuances(internalIds)
+  }, [external, externalInvalid, ids, isLoaded])
 
   const tokens = useMemo(() => {
-    if (issuanceQueries.some(({ data }) => !data)) {
-      return []
-    }
+    if (!issuanceData) return []
 
-    const issuanceData = issuanceQueries.map((q) => q.data)
-
-    return issuanceData
-      .map((issuance) => {
-        if (!issuance?.token) return null
-
-        const internalToken = assets.getAsset(issuance.token.toString())
-        const storedToken = getTokenByInternalId(issuance.token.toString())
+    return internalIds
+      .map((tokenId) => {
+        const internalToken = getAssetWithFallback(tokenId)
+        const storedToken = getTokenByInternalId(tokenId)
         const shouldIgnoreRugCheck = isRiskConsentAdded(internalToken.id)
 
         const externalAssetRegistry = internalToken.parachainId
           ? assetRegistry[+internalToken.parachainId]
           : null
+
         const externalToken = externalAssetRegistry?.data?.get(
           internalToken.externalId ?? "",
         )
+
+        const issuance = issuanceData.get(tokenId)
 
         if (!externalToken) return null
 
@@ -179,7 +184,7 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
             : null
 
         const totalSupplyInternal =
-          !shouldIgnoreRugCheck && issuance?.total ? BN(issuance.total) : null
+          !shouldIgnoreRugCheck && issuance ? BN(issuance) : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -212,11 +217,12 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
       .filter(isNotNil)
   }, [
     assetRegistry,
-    assets,
+    getAssetWithFallback,
     getIsWhiteListed,
     getTokenByInternalId,
+    internalIds,
     isRiskConsentAdded,
-    issuanceQueries,
+    issuanceData,
   ])
 
   const tokensMap = useMemo(() => {
@@ -286,7 +292,8 @@ const createRugWarningList = ({
 export type ExternalAssetBadgeVariant = "warning" | "danger"
 
 export const useExternalAssetsWhiteList = () => {
-  const { assets, isLoaded } = useRpcProvider()
+  const { isExternal, getAsset } = useAssets()
+  const { isLoaded } = useRpcProvider()
   const assetRegistry = useExternalAssetRegistry()
 
   const whitelist = useMemo(
@@ -296,9 +303,9 @@ export const useExternalAssetsWhiteList = () => {
 
   const getIsWhiteListed = useCallback(
     (assetId: string) => {
-      const asset = assetId ? assets.getAsset(assetId) : undefined
+      const asset = assetId ? getAsset(assetId) : undefined
 
-      if (isLoaded && asset && assets.isExternal(asset)) {
+      if (isLoaded && asset && isExternal(asset)) {
         const externalAsset = asset.parachainId
           ? assetRegistry[+asset.parachainId]?.data?.get(asset.externalId ?? "")
           : null
@@ -327,7 +334,7 @@ export const useExternalAssetsWhiteList = () => {
         badge: "" as ExternalAssetBadgeVariant,
       }
     },
-    [assets, isLoaded, assetRegistry, whitelist],
+    [getAsset, isLoaded, isExternal, assetRegistry, whitelist],
   )
 
   return {

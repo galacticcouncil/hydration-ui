@@ -29,6 +29,7 @@ import {
 import Skeleton from "react-loading-skeleton"
 import { SInputBoxContainer } from "components/Input/Input.styled"
 import { FileUploader } from "components/FileUploader"
+import { useAssets } from "providers/assets"
 
 type MemepadFormFieldsProps = {
   form: UseFormReturn<MemepadFormValues>
@@ -36,7 +37,8 @@ type MemepadFormFieldsProps = {
 
 export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
   const { t } = useTranslation()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { getAsset } = useAssets()
 
   const { step } = useMemepadFormContext()
 
@@ -193,7 +195,7 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
                 <AssetSelect
                   id={xykPoolAssetId}
                   title={t("memepad.form.xykPoolSupply", {
-                    symbol: assets.getAsset(xykPoolAssetId)?.symbol,
+                    symbol: getAsset(xykPoolAssetId)?.symbol,
                   })}
                   balance={dotBalance}
                   withoutMaxBtn

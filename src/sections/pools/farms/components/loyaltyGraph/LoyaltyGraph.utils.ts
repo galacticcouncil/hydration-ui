@@ -51,7 +51,7 @@ export const useLoyaltyRates = (
               .multipliedBy(axisScale)
               .toNumber(),
             y: new BN(y.rate).times(apr.div(100)).toNumber(),
-            currentLoyalty: y.currentLoyalty,
+            current: y.current,
           }))
         }
       : undefinedNoop,

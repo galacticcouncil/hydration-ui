@@ -1,6 +1,3 @@
-import * as React from "react"
-import { AssetId } from "@galacticcouncil/ui"
-import { createComponent } from "@lit-labs/react"
 import { useMemo } from "react"
 import { useExternalAssetRegistry } from "api/external"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
@@ -22,12 +19,8 @@ import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
 import { useSettingsStore } from "state/store"
 import { theme } from "theme"
-
-export const UigcAssetId = createComponent({
-  tagName: "uigc-asset-id",
-  elementClass: AssetId,
-  react: React,
-})
+import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useAssets } from "providers/assets"
 
 type Props = {
   onAssetSelect?: (asset: TExternalAsset) => void
@@ -47,7 +40,8 @@ export const AddTokenListModal: React.FC<Props> = ({
   setParachainId,
 }) => {
   const { t } = useTranslation()
-  const { assets, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
+  const { tokens, external, externalInvalid } = useAssets()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -63,16 +57,15 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
     const internalAssets =
-      assets?.tokens?.filter(
-        (asset) => asset.parachainId === parachainId.toString(),
-      ) ?? []
+      tokens.filter((asset) => asset.parachainId === parachainId.toString()) ??
+      []
 
     const internalAssetsMap = new Map(
       internalAssets.map((asset) => [asset.externalId, asset]),
     )
 
     const registeredAssets =
-      assets?.external?.filter(
+      [...external, ...externalInvalid].filter(
         (asset) => asset.parachainId === parachainId.toString(),
       ) ?? []
 
@@ -84,7 +77,7 @@ export const AddTokenListModal: React.FC<Props> = ({
       registeredAssetsMap,
       internalAssetsMap,
     }
-  }, [assets, parachainId])
+  }, [external, externalInvalid, parachainId, tokens])
 
   const filteredExternalAssets = externalAssets.filter((asset) => {
     const isDOT = asset.symbol === "DOT"
@@ -143,18 +136,16 @@ export const AddTokenListModal: React.FC<Props> = ({
                   {filteredExternalAssets.map((asset) => (
                     <AssetRow
                       key={asset.id}
-                      onClick={() =>
+                      onClick={() => {
                         onAssetSelect?.({ ...asset, origin: parachainId })
-                      }
+                      }}
                     >
                       <Icon
                         icon={
-                          <UigcAssetId
-                            symbol={
-                              registeredAssetsMap.get(asset.id)
-                                ? asset.symbol
-                                : ""
-                            }
+                          <ExternalAssetLogo
+                            id={asset.id}
+                            parachainId={asset.origin}
+                            originHidden
                           />
                         }
                         size={24}

@@ -19,10 +19,12 @@ import {
   SWrapperContainer,
 } from "./MyPositions.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
+import { usePoolData } from "sections/pools/pool/Pool"
 
-export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
+export const MyPositions = () => {
   const { account } = useAccount()
   const { t } = useTranslation()
+  const { pool } = usePoolData() as { pool: TPoolFullData }
 
   const stablepoolBalance = useTokenBalance(
     pool.isStablePool ? pool.id : undefined,
@@ -32,8 +34,8 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
   const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
 
   const isPositions =
-    !!pool.miningNftPositions.length ||
-    !!pool.omnipoolNftPositions.length ||
+    !!pool.miningPositions.length ||
+    !!pool.omnipoolPositions.length ||
     stablepoolBalance.data?.freeBalance.gt(0)
 
   return (
@@ -49,17 +51,16 @@ export const MyPositions = ({ pool }: { pool: TPoolFullData }) => {
         </Text>
       )}
 
-      {pool.isStablePool && (
-        <StablepoolPosition pool={pool} amount={stablepoolAmount} />
-      )}
-      <LiquidityPositionWrapper pool={pool} />
-      <FarmingPositionWrapper pool={pool} />
+      {pool.isStablePool && <StablepoolPosition amount={stablepoolAmount} />}
+      <LiquidityPositionWrapper />
+      <FarmingPositionWrapper />
     </>
   )
 }
 
-export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
+export const MyXYKPositions = () => {
   const { t } = useTranslation()
+  const pool = usePoolData().pool as TXYKPoolFullData
 
   if (
     !pool.shareTokenIssuance?.myPoolShare?.gt(0) &&
@@ -79,7 +80,7 @@ export const MyXYKPositions = ({ pool }: { pool: TXYKPoolFullData }) => {
       </Text>
 
       <XYKPosition pool={pool} />
-      <FarmingPositionWrapper pool={pool} />
+      <FarmingPositionWrapper />
     </>
   )
 }

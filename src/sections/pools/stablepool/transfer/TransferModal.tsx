@@ -15,18 +15,19 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import { TStableSwap } from "api/assetDetails"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Farm } from "api/farms"
 import { useJoinFarms } from "utils/farms/deposit"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { useRefetchAccountNFTPositions } from "api/deposits"
+import { useRefetchAccountPositions } from "api/deposits"
 import { ToastMessage, useStore } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { scaleHuman } from "utils/balance"
 import { isEvmAccount } from "utils/evm"
+import { useAssets } from "providers/assets"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export enum Page {
   OPTIONS,
@@ -37,29 +38,34 @@ export enum Page {
 }
 
 type Props = {
-  pool: Omit<
-    TPoolFullData,
-    "volumeDisplay" | "omnipoolNftPositions" | "miningNftPositions"
-  >
   onClose: () => void
   defaultPage: Page
   farms: Farm[]
 }
 
-export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
-  const { assets, api } = useRpcProvider()
+export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
+  const { api } = useRpcProvider()
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const refetch = useRefetchAccountNFTPositions()
+  const { getAssetWithFallback } = useAssets()
+  const { pool } = usePoolData()
+  const refetch = useRefetchAccountPositions()
   const { createTransaction } = useStore()
   const isEvm = isEvmAccount(account?.address)
+  const [isJoinFarms, setIsJoinFarms] = useState(false)
 
-  const { id: poolId, reserves, stablepoolFee: fee, canAddLiquidity } = pool
+  const {
+    id: poolId,
+    reserves,
+    stablepoolFee: fee,
+    canAddLiquidity,
+    meta,
+  } = pool as TPoolFullData
 
-  const meta = assets.getAsset(poolId) as TStableSwap
+  const assets = Object.keys(pool.meta.meta ?? {})
 
   const { t } = useTranslation()
-  const [assetId, setAssetId] = useState<string | undefined>(meta.assets[0])
+  const [assetId, setAssetId] = useState<string | undefined>(assets[0])
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [currentStep, setCurrentStep] = useState(0)
 
@@ -72,7 +78,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
   const isOnlyStablepool = selectedOption === "STABLEPOOL"
   const isAddingToOmnipool = defaultPage === Page.MOVE_TO_OMNIPOOL
   const isVisibleStepper = farms.length || !isAddingToOmnipool
-  const isFarms = farms.length
+  const willJoinFarms = farms.length && isJoinFarms
   const isMultipleFarms = farms.length > 1
 
   const joinFarms = useJoinFarms({
@@ -127,7 +133,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
             label: t("liquidity.stablepool.transfer.move"),
             loadingLabel: t("liquidity.stablepool.transfer.adding"),
           },
-          ...(isFarms ? farmSteps : []),
+          ...(willJoinFarms ? farmSteps : []),
         ]),
   ]
 
@@ -136,7 +142,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
     value: string,
   ) => {
     refetch()
-    if (isFarms) {
+    if (willJoinFarms) {
       let positionId: string | undefined
 
       if (isEvm) {
@@ -164,6 +170,10 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       } else {
         onClose()
       }
+    } else {
+      queryClient.invalidateQueries(
+        QUERY_KEYS.tokenBalance(pool.id, account?.address),
+      )
     }
   }
 
@@ -229,11 +239,11 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
             onAddToOmnipoolSuccess(result, shares)
           },
           onSubmitted: () => {
-            !isFarms && onClose()
+            !willJoinFarms && onClose()
           },
           onError: () => onClose(),
           onClose,
-          disableAutoClose: !!isFarms,
+          disableAutoClose: !!willJoinFarms,
           toast,
         },
       )
@@ -261,7 +271,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
       onClose={onClose}
       disableCloseOutside={true}
       topContent={
-        isVisibleStepper ? (
+        isVisibleStepper && steps.length > 1 ? (
           <Stepper
             sx={{ px: [10] }}
             steps={steps.map((step, idx) => ({
@@ -338,8 +348,9 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                 }}
                 reserves={reserves}
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={assets.getAsset(assetId ?? poolId)}
+                asset={getAssetWithFallback(assetId ?? poolId)}
                 fee={fee ?? BN_0}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ),
           },
@@ -359,6 +370,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
                 farms={farms}
                 onSuccess={onAddToOmnipoolSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
+                setIsJoinFarms={setIsJoinFarms}
               />
             ),
           },
@@ -369,7 +381,7 @@ export const TransferModal = ({ pool, onClose, defaultPage, farms }: Props) => {
               <AssetsModalContent
                 hideInactiveAssets={true}
                 allAssets={true}
-                allowedAssets={meta.assets}
+                allowedAssets={assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

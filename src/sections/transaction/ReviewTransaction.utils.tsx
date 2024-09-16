@@ -10,9 +10,8 @@ import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
-import { TExternal } from "api/assetDetails"
+import { useAssets } from "providers/assets"
 import { useNextEvmPermitNonce } from "api/transaction"
-import { decodeError } from "ethers-decode-error"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useRef, useState } from "react"
@@ -190,8 +189,7 @@ export const useSendEvmTransactionMutation = (
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
-        const { error } = decodeError(err)
-        reject(new Error(error))
+        reject(err?.toString() ?? "Unknown error")
       } finally {
         clearTimeout(timeout)
       }
@@ -501,7 +499,7 @@ const useBoundReferralToast = () => {
 }
 
 const useStoreExternalAssetsOnSign = () => {
-  const { assets } = useRpcProvider()
+  const { getAssetWithFallback, isExternal } = useAssets()
   const { addToken, isAdded } = useUserExternalTokenStore()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
 
@@ -509,12 +507,9 @@ const useStoreExternalAssetsOnSign = () => {
     (assetIds: string[]) => {
       if (!degenMode) return
       assetIds.forEach((id) => {
-        const asset = assets.getAsset(id) as TExternal
-        if (
-          !isAdded(asset.externalId) &&
-          asset.isExternal &&
-          asset.externalId
-        ) {
+        const asset = getAssetWithFallback(id)
+        const isExternal_ = isExternal(asset)
+        if (isExternal_ && !isAdded(asset.externalId) && asset.externalId) {
           addToken({
             id: asset.externalId,
             decimals: asset.decimals,
@@ -527,7 +522,7 @@ const useStoreExternalAssetsOnSign = () => {
         }
       })
     },
-    [addToken, assets, degenMode, isAdded],
+    [addToken, degenMode, getAssetWithFallback, isAdded, isExternal],
   )
 }
 

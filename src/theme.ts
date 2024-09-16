@@ -67,6 +67,7 @@ const colors = {
   green600: "#30FFB1",
   green700: "#00FFA0",
   warningYellow200: "#F4E7B0",
+  warningYellow300: "#F0DA73",
   warningYellow400: "#F7BF06",
   alarmRed400: "#FF6868",
   iconGray: "#BDCCD4",
@@ -111,6 +112,8 @@ const gradients = {
   darkBlueLight: "linear-gradient(90deg, #0A1FA7 0%, #57B3EB 100%)",
   pinkLightBlue: "linear-gradient(90deg, #FC408C 0%, #AAEEFC 100%)",
   pinkLightPink: "linear-gradient(90deg, #FC408C 30%, #EFB0FF 100%)",
+  pinkDarkPink:
+    "linear-gradient(90deg, #532051 0%, #AE2569 55.72%, #F6297C 100%)",
   spinner:
     "conic-gradient(from -60.84deg at 50% 50%, rgba(10, 13, 26, 0) 0deg, rgba(10, 13, 26, 0) 134.49deg, #00C2FF 185.07deg, #004DE2 243.24deg, #FC408C 294.78deg, #FC408C 358.13deg, rgba(10, 13, 26, 0) 360deg)",
   lightGreenOrange:

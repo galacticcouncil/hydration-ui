@@ -3,7 +3,7 @@ import { Parachain } from "@galacticcouncil/xcm-core"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { u32 } from "@polkadot/types"
+import { Option, u32 } from "@polkadot/types"
 import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { useExternalApi } from "api/external"
 import BigNumber from "bignumber.js"
@@ -95,8 +95,10 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
       return {
         id,
         decimals: data.decimals.toNumber(),
-        symbol: data.symbol.toHuman() as string,
         // decode from hex because of non-standard characters
+        symbol: Buffer.from(data.symbol.toHex().slice(2), "hex").toString(
+          "utf8",
+        ),
         name: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
         supply,
         origin: assethub.parachainId,
@@ -244,6 +246,14 @@ export const useGetNextAssetHubId = () => {
   const { data: api } = useExternalApi("assethub")
   const mutation = useMutation(async () => {
     if (!api) throw new Error("Asset Hub is not connected")
+
+    if (typeof api.query.assets.nextAssetId === "function") {
+      const res = await api.query.assets.nextAssetId<Option<u32>>()
+      if (!res.isNone) {
+        return res.unwrap().toNumber()
+      }
+    }
+
     const ids = await getAssetHubAssetsIds(api)
 
     let smallestId = 22_222_000

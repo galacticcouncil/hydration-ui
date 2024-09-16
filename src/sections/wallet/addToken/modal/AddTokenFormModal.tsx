@@ -1,5 +1,3 @@
-import * as React from "react"
-import { AssetId } from "@galacticcouncil/ui"
 import { Button } from "components/Button/Button"
 import { FC, useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -7,24 +5,20 @@ import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { InputBox } from "components/Input/InputBox"
 import { TokenInfo } from "./components/TokenInfo/TokenInfo"
 import { omit } from "utils/rx"
-import { createComponent } from "@lit-labs/react"
+import { useAssets } from "providers/assets"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
-import { useExternalTokensRugCheck } from "api/external"
+import {
+  useExternalAssetRegistry,
+  useExternalTokensRugCheck,
+} from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 import { TExternalAssetWithLocation } from "utils/externalAssets"
 import { useSettingsStore } from "state/store"
-
-export const UigcAssetId = createComponent({
-  tagName: "uigc-asset-id",
-  elementClass: AssetId,
-  react: React,
-})
 
 type Props = {
   asset: TExternalAssetWithLocation
@@ -47,22 +41,28 @@ enum TokenState {
 
 export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { t } = useTranslation()
-  const { assets } = useRpcProvider()
-  const { degenMode } = useSettingsStore()
-
+  const { externalInvalid, external } = useAssets()
   const { getTokenByInternalId } = useUserExternalTokenStore()
+  const { degenMode } = useSettingsStore()
+  const externalAssetRegistry = useExternalAssetRegistry()
 
-  const chainStored = assets.external.find(
+  const chainStored = [...external, ...externalInvalid].find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
       chainAsset.parachainId === asset.origin.toString(),
   )
 
   const userStored = getTokenByInternalId(chainStored?.id ?? "")
-
   const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
   const rugCheck = useExternalTokensRugCheck(rugCheckIds)
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
+
+  const externalMeta = !chainStored
+    ? externalAssetRegistry[asset.origin].data?.get(asset.id)
+    : null
+
+  const isWhiteListed =
+    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -113,8 +113,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     <>
       <TokenInfoHeader
         asset={asset}
-        internalId={chainStored?.id}
-        badge={rugCheckData?.badge}
+        badge={rugCheckData?.badge || (isWhiteListed ? "warning" : "danger")}
         severity={rugCheckData?.severity}
       />
       <Separator sx={{ my: 10 }} color="darkBlue401" />

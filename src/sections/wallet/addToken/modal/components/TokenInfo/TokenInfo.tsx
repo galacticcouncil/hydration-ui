@@ -1,9 +1,13 @@
-import { assethub, TRugCheckData, useParachainAmount } from "api/external"
+import {
+  assethub,
+  TRugCheckData,
+  useExternalAssetRegistry,
+  useParachainAmount,
+} from "api/external"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useGetXYKPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -13,12 +17,11 @@ import Skeleton from "react-loading-skeleton"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
-import { TExternal } from "api/assetDetails"
+import { TExternal, useAssets } from "providers/assets"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
 import {
   useAssetHubAssetAdminRights,
-  useAssetHubAssetRegistry,
   useAssetHubRevokeAdminRights,
 } from "api/external/assethub"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -36,15 +39,16 @@ export const TokenInfo = ({
   chainStoredAsset?: TExternal
   rugCheckData?: TRugCheckData
 }) => {
+  const { getExternalByExternalId } = useAssets()
   const { account } = useAccount()
-  const { assets } = useRpcProvider()
   const { t } = useTranslation()
   const { setIsWhiteListed } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
   const xykPools = useGetXYKPools()
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
-  const { refetch: refetchAssetHub } = useAssetHubAssetRegistry()
+  const externalAssetRegistry = useExternalAssetRegistry()
+  const refetchAssetHub = externalAssetRegistry[assethub.parachainId].refetch
 
   const isChainStored = !!chainStoredAsset
 
@@ -71,9 +75,7 @@ export const TokenInfo = ({
     if (!isChainStored || !xykPools.data)
       return { isXYKPool: false, pools: undefined }
 
-    const chainAsset = assets.external.find(
-      (external) => external.externalId === externalAsset.id,
-    )
+    const chainAsset = getExternalByExternalId(externalAsset.id)
 
     if (chainAsset) {
       const filteredXykPools = xykPools.data.filter((shareToken) =>
@@ -88,7 +90,7 @@ export const TokenInfo = ({
     }
 
     return { isXYKPool: false, pools: undefined }
-  }, [externalAsset.id, assets.external, isChainStored, xykPools])
+  }, [externalAsset.id, getExternalByExternalId, isChainStored, xykPools.data])
 
   const warningFlags = Object.fromEntries(
     rugCheckData?.warnings.map(({ type, diff }) => {
@@ -96,6 +98,13 @@ export const TokenInfo = ({
       return [type, { from, to }]
     }) ?? [],
   )
+
+  const externalMeta = !isChainStored
+    ? externalAssetRegistry[externalAsset.origin].data?.get(externalAsset.id)
+    : null
+
+  const isWhiteListed =
+    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   return (
     <div sx={{ flex: "column" }}>
@@ -222,7 +231,7 @@ export const TokenInfo = ({
           label={t("wallet.addToken.form.info.masterAccount")}
           value={
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              {rugCheckData?.isWhiteListed ? (
+              {isWhiteListed ? (
                 <Text fs={12} color="green600">
                   {t("yes")}
                 </Text>

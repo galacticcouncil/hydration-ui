@@ -5,24 +5,33 @@ import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { useRpcProvider } from "providers/rpcProvider"
 import {
   TXYKPosition,
   isXYKPosition,
 } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { TLPData } from "utils/omnipool"
+import { useAssets } from "providers/assets"
+import { Button } from "components/Button/Button"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 
 type Props = {
   row?: TLPData | TXYKPosition
   onClose: () => void
+  onTransfer: (position: TLPData | TXYKPosition) => void
 }
 
-export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
+export const HydraPositionsDetailsMob = ({
+  row,
+  onClose,
+  onTransfer,
+}: Props) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
 
-  const { assets } = useRpcProvider()
+  const { getAsset } = useAssets()
 
-  const meta = row?.assetId ? assets.getAsset(row.assetId) : undefined
+  const meta = row?.assetId ? getAsset(row.assetId) : undefined
 
   if (!row) return null
 
@@ -154,6 +163,16 @@ export const HydraPositionsDetailsMob = ({ row, onClose }: Props) => {
           <Separator css={{ background: `rgba(158, 167, 186, 0.06)` }} />
 
           {secondRow}
+
+          <Button
+            sx={{ width: "100%", mt: 8 }}
+            size="small"
+            disabled={account?.isExternalWalletConnected}
+            onClick={() => onTransfer(row)}
+          >
+            <TransferIcon />
+            {t("wallet.assets.table.actions.transfer")}
+          </Button>
         </div>
       </div>
     </Modal>
