@@ -8,11 +8,10 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
+import { ReferendumCardProgress } from "./ReferendumCardProgress"
 import { Icon } from "components/Icon/Icon"
 import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
-import { LinearProgress } from "components/Progress"
-import { theme } from "theme"
 
 type Props = {
   id: string
@@ -57,7 +56,6 @@ export const ReferendumCardRococo = ({
     return { ayes, nays, percAyes, percNays }
   }, [referendum])
 
-  const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
   const diff = referendum.asOngoing.end
     .toBigNumber()
     .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
@@ -112,40 +110,10 @@ export const ReferendumCardRococo = ({
 
       <Spacer size={20} />
 
-      <div sx={{ flex: "row", gap: 8 }}>
-        {isNoVotes ? (
-          <LinearProgress
-            size="small"
-            withoutLabel
-            percent={100}
-            colorCustom={`rgba(${theme.rgbColors.darkBlue300}, 0.5)`}
-          />
-        ) : (
-          <>
-            {/*zero value of progress bar should be visible*/}
-            <LinearProgress
-              size="small"
-              withoutLabel
-              percent={votes.percAyes.eq(0) ? 2 : votes.percAyes.toNumber()}
-              colorCustom={`linear-gradient(
-            270deg,
-            ${theme.colors.green600} 50%,
-            transparent 100%
-          )`}
-            />
-            <LinearProgress
-              size="small"
-              withoutLabel
-              percent={votes.percNays.eq(0) ? 2 : votes.percNays.toNumber()}
-              colorCustom={`linear-gradient(
-              90deg,
-              ${theme.colors.pink700} 50%,
-              transparent 100%
-            )`}
-            />
-          </>
-        )}
-      </div>
+      <ReferendumCardProgress
+        percAyes={votes.percAyes}
+        percNays={votes.percNays}
+      />
 
       <Spacer size={4} />
 
