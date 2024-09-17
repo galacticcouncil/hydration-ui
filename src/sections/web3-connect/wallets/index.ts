@@ -25,6 +25,7 @@ export type WalletProvider = {
 
 const wallets = getWallets().filter(
   ({ extensionName }) =>
+    // filter out wallet providers that are not supported by Hydration
     !SUBSTRATE_H160_PROVIDERS.includes(extensionName as WalletProviderType),
 )
 
@@ -106,7 +107,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   type: normalizeProviderType(wallet),
 }))
 
-function normalizeProviderType(wallet: Wallet): WalletProviderType {
+export function normalizeProviderType(wallet: Wallet): WalletProviderType {
   if (wallet instanceof NovaWallet) {
     return WalletProviderType.NovaWallet
   }

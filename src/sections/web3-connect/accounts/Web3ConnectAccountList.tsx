@@ -30,6 +30,7 @@ import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import { create } from "zustand"
+import { isEvmAccount } from "utils/evm"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -95,13 +96,12 @@ export const Web3ConnectAccountList: FC<{
     !isLoading && accounts.every(({ address }) => balanceMap.has(address))
 
   const [searchVal, setSearchVal] = useState("")
-  const [filter, setFilter] = useState("")
-
-  const [modeFilter, setModeFilter] = useState<WalletMode>(WalletMode.Default)
+  const [search, setSearch] = useState("")
+  const [filter, setFilter] = useState<WalletMode>(WalletMode.Default)
 
   useDebounce(
     () => {
-      setFilter(searchVal ?? "")
+      setSearch(searchVal ?? "")
     },
     300,
     [searchVal],
@@ -109,8 +109,8 @@ export const Web3ConnectAccountList: FC<{
 
   const accountList = useMemo(() => {
     if (!isReady) return accounts
-    const filtered = filter
-      ? arraySearch(accounts as Required<Account>[], filter, [
+    const searched = search
+      ? arraySearch(accounts as Required<Account>[], search, [
           "name",
           "address",
           "displayAddress",
@@ -118,34 +118,29 @@ export const Web3ConnectAccountList: FC<{
         ])
       : accounts
 
-    return filtered
-      .filter(({ provider }) => {
-        if (modeFilter === WalletMode.Default) return true
+    let filtered = searched
+    if (filter === WalletMode.EVM) {
+      filtered = searched.filter(({ address }) => isEvmAccount(address))
+    }
 
-        return modeFilter === WalletMode.EVM
-          ? EVM_PROVIDERS.includes(provider)
-          : !EVM_PROVIDERS.includes(provider)
-      })
-      .sort((a, b) => {
-        if (
-          a.address === account?.address &&
-          a.provider === account?.provider
-        ) {
-          return -1
-        }
-        if (
-          b.address === account?.address &&
-          b.provider === account?.provider
-        ) {
-          return 1
-        }
+    if (filter === WalletMode.Substrate) {
+      filtered = searched.filter(({ address }) => !isEvmAccount(address))
+    }
 
-        const aBalance = balanceMap.get(a.address)
-        const bBalance = balanceMap.get(b.address)
-        if (!aBalance || !bBalance) return 0
-        return bBalance.comparedTo(aBalance)
-      })
-  }, [account, accounts, balanceMap, filter, isReady, modeFilter])
+    return filtered.sort((a, b) => {
+      if (a.address === account?.address && a.provider === account?.provider) {
+        return -1
+      }
+      if (b.address === account?.address && b.provider === account?.provider) {
+        return 1
+      }
+
+      const aBalance = balanceMap.get(a.address)
+      const bBalance = balanceMap.get(b.address)
+      if (!aBalance || !bBalance) return 0
+      return bBalance.comparedTo(aBalance)
+    })
+  }, [account, accounts, balanceMap, isReady, filter, search])
 
   const noResults = accountList.length === 0
 
@@ -160,8 +155,8 @@ export const Web3ConnectAccountList: FC<{
           />
           {mode === WalletMode.Default && (
             <Web3ConnectModeFilter
-              active={modeFilter}
-              onSetActive={(mode) => setModeFilter(mode)}
+              active={filter}
+              onSetActive={(mode) => setFilter(mode)}
             />
           )}
         </div>
@@ -169,7 +164,7 @@ export const Web3ConnectAccountList: FC<{
 
       {noResults && (
         <>
-          {filter || modeFilter !== WalletMode.Default ? (
+          {search || filter !== WalletMode.Default ? (
             <div
               sx={{
                 color: "basic500",

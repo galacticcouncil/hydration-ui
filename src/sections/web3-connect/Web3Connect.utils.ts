@@ -25,6 +25,7 @@ import {
 import {
   getSupportedWallets,
   handleAnnounceProvider,
+  normalizeProviderType,
   WalletProvider,
 } from "./wallets"
 import { ExternalWallet } from "./wallets/ExternalWallet"
@@ -507,7 +508,7 @@ function mapWalletAccount({
       : safeConvertAddressSS58(address, chainInfo.prefix) || address,
     genesisHash,
     name: name ?? "",
-    provider: wallet?.extensionName as WalletProviderType,
+    provider: normalizeProviderType(wallet!),
     isExternalWalletConnected: wallet instanceof ExternalWallet,
   }
 }
