@@ -129,7 +129,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
       otherProviders,
       alternativeProviders,
     }
-  }, [isDesktop, mode, chain])
+  }, [mode, isDesktop, chain])
 }
 
 export const Web3ConnectProviders = () => {
