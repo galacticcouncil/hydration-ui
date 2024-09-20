@@ -135,8 +135,12 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
   )
 
   const installedExtensions = installedProviders.filter(({ type }) => {
-    return !ALTERNATIVE_PROVIDERS.includes(type)
+    return (
+      !ALTERNATIVE_PROVIDERS.includes(type) && !type.includes("walletconnect")
+    )
   })
+
+  console.log({ installedExtensions })
 
   const enableAll = useCallback(() => {
     installedExtensions.forEach(({ type, wallet }) => {
