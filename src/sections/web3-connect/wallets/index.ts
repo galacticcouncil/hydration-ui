@@ -90,7 +90,7 @@ const walletConnect: Wallet = new WalletConnect({
   },
 })
 
-const walletConnectEvm: Wallet = new WalletConnectEvm() as Wallet
+const walletConnectEvm: Wallet = new WalletConnectEvm()
 
 const externalWallet: Wallet = new ExternalWallet()
 
