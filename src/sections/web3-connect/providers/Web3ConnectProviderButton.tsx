@@ -39,22 +39,16 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   const { title, installed, installUrl } = wallet
 
-  const isWalletConnectEvm = type === WalletProviderType.WalletConnectEvm
-
-  const { enable } = useEnableWallet(
-    // override WC-EVM with regular WC provider, as WC-EVM provider is only a placeholder in the UI
-    isWalletConnectEvm ? WalletProviderType.WalletConnect : type,
-    {
-      onMutate: () => setStatus(type, WalletProviderStatus.Pending),
-      onSuccess: () => setStatus(type, WalletProviderStatus.Connected),
-      onError: (error) => {
-        setStatus(type, WalletProviderStatus.Error)
-        if (error instanceof Error && error.message) {
-          setError(error.message)
-        }
-      },
+  const { enable } = useEnableWallet(type, {
+    onMutate: () => setStatus(type, WalletProviderStatus.Pending),
+    onSuccess: () => setStatus(type, WalletProviderStatus.Connected),
+    onError: (error) => {
+      setStatus(type, WalletProviderStatus.Error)
+      if (error instanceof Error && error.message) {
+        setError(error.message)
+      }
     },
-  )
+  })
 
   const { data: accounts } = useWalletAccounts(type)
   const accountsCount = accounts?.length || 0

@@ -140,8 +140,6 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
     )
   })
 
-  console.log({ installedExtensions })
-
   const enableAll = useCallback(() => {
     installedExtensions.forEach(({ type, wallet }) => {
       wallet.enable(POLKADOT_APP_NAME)
@@ -195,6 +193,7 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
               onClick={enableAll}
               css={{ gridColumn: "1 / -1" }}
               sx={{
+                display: ["none", "flex"],
                 flex: "row",
                 justify: "space-between",
                 px: [12, 16],

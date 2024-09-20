@@ -458,8 +458,14 @@ export function isEvmProvider(provider?: WalletProviderType | null) {
 }
 
 export function getWalletProviderByType(type?: WalletProviderType | null) {
+  const providerType =
+    type === WalletProviderType.WalletConnectEvm
+      ? WalletProviderType.WalletConnect
+      : type
   return (
-    getSupportedWallets().find((provider) => provider.type === type) ?? {
+    getSupportedWallets().find(
+      (provider) => provider.type === providerType,
+    ) ?? {
       wallet: null,
       type: null,
     }

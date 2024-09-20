@@ -90,21 +90,7 @@ const walletConnect: Wallet = new WalletConnect({
   },
 })
 
-const walletConnectEvm: Wallet = new WalletConnectEvm({
-  onModalClose: (session) => {
-    if (!session) {
-      const state = useWeb3ConnectStore.getState()
-      state.disconnect(WalletProviderType.WalletConnect)
-      if (state.open) {
-        state.toggle()
-      }
-    }
-  },
-  onSesssionDelete: () => {
-    const state = useWeb3ConnectStore.getState()
-    state.disconnect(WalletProviderType.WalletConnect)
-  },
-})
+const walletConnectEvm: Wallet = new WalletConnectEvm() as Wallet
 
 const externalWallet: Wallet = new ExternalWallet()
 
