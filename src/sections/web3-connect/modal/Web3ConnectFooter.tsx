@@ -45,7 +45,7 @@ export const Web3ConnectFooter: FC<Props> = ({ onSwitch, onLogout }) => {
           onClick={onSwitch}
           sx={{ color: "brightBlue600" }}
         >
-          {t("walletConnect.addWallet")}
+          {t("walletConnect.manage")}
           <ChevronRight width={18} height={18} sx={{ mr: -8 }} />
         </SSwitchButton>
       </div>

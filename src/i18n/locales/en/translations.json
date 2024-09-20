@@ -452,7 +452,7 @@
   "walletConnect.pending.title": "Waiting for authorization",
   "walletConnect.pending.description": "Please authorize your wallet extension to connect to Hydration.",
   "walletConnect.logout": "Log out",
-  "walletConnect.addWallet": "Add wallet",
+  "walletConnect.manage": "Manage wallets",
   "walletConnect.switch": "Switch",
   "walletConnect.connectedCount": "{{ count }} connected",
   "walletConnect.externalWallet": "View as Wallet",

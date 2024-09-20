@@ -42,6 +42,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   const isWalletConnectEvm = type === WalletProviderType.WalletConnectEvm
 
   const { enable } = useEnableWallet(
+    // override WC-EVM with regular WC provider, as WC-EVM provider is only a placeholder in the UI
     isWalletConnectEvm ? WalletProviderType.WalletConnect : type,
     {
       onMutate: () => setStatus(type, WalletProviderStatus.Pending),
