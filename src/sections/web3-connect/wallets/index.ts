@@ -17,6 +17,7 @@ import {
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -89,6 +90,22 @@ const walletConnect: Wallet = new WalletConnect({
   },
 })
 
+const walletConnectEvm: Wallet = new WalletConnectEvm({
+  onModalClose: (session) => {
+    if (!session) {
+      const state = useWeb3ConnectStore.getState()
+      state.disconnect(WalletProviderType.WalletConnect)
+      if (state.open) {
+        state.toggle()
+      }
+    }
+  },
+  onSesssionDelete: () => {
+    const state = useWeb3ConnectStore.getState()
+    state.disconnect(WalletProviderType.WalletConnect)
+  },
+})
+
 const externalWallet: Wallet = new ExternalWallet()
 
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
@@ -101,6 +118,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   //trustWallet,
   novaWallet,
   walletConnect,
+  walletConnectEvm,
   externalWallet,
 ].map((wallet) => ({
   wallet,

@@ -2,7 +2,7 @@ import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { FC, PropsWithChildren, useCallback } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
@@ -12,12 +12,10 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   SAccountIndicator,
-  SAltProviderButton,
   SConnectionIndicator,
   SProviderButton,
 } from "./Web3ConnectProviders.styled"
 import {
-  WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -28,13 +26,11 @@ type Props = WalletProvider & {
     onClick: () => void
     isConnected: boolean
   }) => JSX.Element
-  mode?: WalletMode
 }
 
 export const Web3ConnectProviderButton: FC<Props> = ({
   type,
   wallet,
-  mode,
   children,
 }) => {
   const { t } = useTranslation()
@@ -43,16 +39,21 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   const { title, installed, installUrl } = wallet
 
-  const { enable } = useEnableWallet(type, {
-    onMutate: () => setStatus(type, WalletProviderStatus.Pending),
-    onSuccess: () => setStatus(type, WalletProviderStatus.Connected),
-    onError: (error) => {
-      setStatus(type, WalletProviderStatus.Error)
-      if (error instanceof Error && error.message) {
-        setError(error.message)
-      }
+  const isWalletConnectEvm = type === WalletProviderType.WalletConnectEvm
+
+  const { enable } = useEnableWallet(
+    isWalletConnectEvm ? WalletProviderType.WalletConnect : type,
+    {
+      onMutate: () => setStatus(type, WalletProviderStatus.Pending),
+      onSuccess: () => setStatus(type, WalletProviderStatus.Connected),
+      onError: (error) => {
+        setStatus(type, WalletProviderStatus.Error)
+        if (error instanceof Error && error.message) {
+          setError(error.message)
+        }
+      },
     },
-  })
+  )
 
   const { data: accounts } = useWalletAccounts(type)
   const accountsCount = accounts?.length || 0
@@ -64,11 +65,13 @@ export const Web3ConnectProviderButton: FC<Props> = ({
       return disconnect(type)
     }
     if (type === WalletProviderType.WalletConnect) {
-      enable(mode === WalletMode.EVM ? "eip155" : "polkadot")
+      enable("polkadot")
+    } else if (type === WalletProviderType.WalletConnectEvm) {
+      enable("eip155")
     } else {
       installed ? enable() : openInstallUrl(installUrl)
     }
-  }, [disconnect, enable, installUrl, installed, isConnected, mode, type])
+  }, [disconnect, enable, installUrl, installed, isConnected, type])
 
   if (typeof children === "function") {
     return children({ onClick, isConnected })
@@ -107,29 +110,6 @@ export const Web3ConnectProviderButton: FC<Props> = ({
         <SAccountIndicator>+{accountsCount}</SAccountIndicator>
       )}
     </SProviderButton>
-  )
-}
-
-export const Web3ConnectAltProviderButton: FC<
-  PropsWithChildren & WalletProvider
-> = ({ children, ...provider }) => {
-  return (
-    <Web3ConnectProviderButton {...provider} key={provider.type}>
-      {(props) => (
-        <SAltProviderButton {...props}>
-          <img
-            loading="lazy"
-            src={provider.wallet.logo.src}
-            alt={provider.wallet.logo.alt}
-            width={24}
-            height={24}
-            sx={{ mr: 4 }}
-          />
-          {children}
-          <ChevronRight width={18} height={18} />
-        </SAltProviderButton>
-      )}
-    </Web3ConnectProviderButton>
   )
 }
 

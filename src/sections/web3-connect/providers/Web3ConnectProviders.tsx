@@ -184,11 +184,7 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
             </SProviderButton>
           )}
           {installedProviders.map((provider) => (
-            <Web3ConnectProviderButton
-              key={provider.type}
-              mode={modeFilter}
-              {...provider}
-            />
+            <Web3ConnectProviderButton key={provider.type} {...provider} />
           ))}
           {installedExtensions.length > 0 && (
             <SProviderButton
