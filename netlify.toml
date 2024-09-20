@@ -17,7 +17,7 @@
     [[plugins.inputs.audits]]
        path = "liquidity/all-pools"
     [[plugins.inputs.audits]]
-       path = "lwallet/assets"
+       path = "wallet/assets"
 
 
 
