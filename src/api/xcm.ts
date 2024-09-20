@@ -34,7 +34,7 @@ export const createXcmAssetKey = (id: string, symbol: string) => {
 }
 
 export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
-  const assetData = external.buildAssetData(asset, ASSETHUB_XCM_ASSET_SUFFIX)
+  const assetData = external.buildAssetData(asset)
   external.buildAssethubConfig(assetData, xcmConfigService)
 }
 
