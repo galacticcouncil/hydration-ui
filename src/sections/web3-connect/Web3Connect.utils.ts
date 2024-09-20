@@ -458,6 +458,7 @@ export function isEvmProvider(provider?: WalletProviderType | null) {
 }
 
 export function getWalletProviderByType(type?: WalletProviderType | null) {
+  // override WC-EVM with regular WC provider, as WC-EVM provider is only a placeholder in the UI
   const providerType =
     type === WalletProviderType.WalletConnectEvm
       ? WalletProviderType.WalletConnect
