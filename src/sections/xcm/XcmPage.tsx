@@ -125,7 +125,7 @@ export function XcmPage() {
 
   const blacklist =
     import.meta.env.VITE_ENV === "production"
-      ? "acala-evm,darwinia"
+      ? "acala-evm,darwinia,ethereum"
       : "darwinia"
 
   return (
