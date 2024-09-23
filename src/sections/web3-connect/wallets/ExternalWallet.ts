@@ -9,7 +9,7 @@ import {
  * Mock Wallet for "View as Wallet" functionality
  */
 export class ExternalWallet implements Wallet {
-  extensionName = "external"
+  extensionName = WalletProviderType.ExternalWallet
   title = "View as Wallet"
   installUrl = ""
   logo = {

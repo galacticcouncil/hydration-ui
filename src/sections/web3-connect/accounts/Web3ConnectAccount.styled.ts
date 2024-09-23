@@ -1,10 +1,12 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
 export const SAccountItem = styled.div<{
   isActive?: boolean
   isProxy?: boolean
+  withButton?: boolean
 }>`
   --secondary-color: ${({ isActive }) =>
     isActive ? theme.colors.pink600 : theme.colors.brightBlue300};
@@ -24,6 +26,13 @@ export const SAccountItem = styled.div<{
   position: relative;
 
   border: 1px solid transparent;
+
+  ${({ withButton }) =>
+    withButton &&
+    css`
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    `}
 
   ${(p) => {
     if (p.isProxy) {
@@ -57,4 +66,15 @@ export const SAccountItem = styled.div<{
       }
     `
   }}
+`
+
+export const SChangeAccountButton = styled(Button)`
+  border: 1px solid rgba(${theme.rgbColors.brightBlue300}, 0.12);
+  border-top-color: transparent;
+
+  border-radius: ${theme.borderRadius.medium}px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+
+  background: rgba(${theme.rgbColors.primaryA15}, 0.12);
 `

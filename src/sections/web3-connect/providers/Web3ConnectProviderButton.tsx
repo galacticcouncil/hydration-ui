@@ -1,39 +1,43 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { FC, PropsWithChildren } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   WalletProvider,
   WalletProviderType,
   useEnableWallet,
+  useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import {
-  SAltProviderButton,
+  SAccountIndicator,
+  SConnectionIndicator,
   SProviderButton,
 } from "./Web3ConnectProviders.styled"
 import {
-  WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
 
 type Props = WalletProvider & {
-  children?: (props: { onClick: () => void }) => JSX.Element
-  mode?: WalletMode
+  children?: (props: {
+    onClick: () => void
+    isConnected: boolean
+  }) => JSX.Element
 }
 
 export const Web3ConnectProviderButton: FC<Props> = ({
   type,
   wallet,
-  mode,
   children,
 }) => {
   const { t } = useTranslation()
 
-  const { setStatus, setError } = useWeb3ConnectStore()
+  const { setStatus, setError, disconnect, getStatus } = useWeb3ConnectStore()
 
-  const { logo, title, installed, installUrl } = wallet
+  const { title, installed, installUrl } = wallet
 
   const { enable } = useEnableWallet(type, {
     onMutate: () => setStatus(type, WalletProviderStatus.Pending),
@@ -46,36 +50,45 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     },
   })
 
-  function onClick() {
+  const { data: accounts } = useWalletAccounts(type)
+  const accountsCount = accounts?.length || 0
+
+  const isConnected = getStatus(type) === WalletProviderStatus.Connected
+
+  const onClick = useCallback(() => {
+    if (isConnected) {
+      return disconnect(type)
+    }
     if (type === WalletProviderType.WalletConnect) {
-      enable(mode === WalletMode.EVM ? "eip155" : "polkadot")
+      enable("polkadot")
+    } else if (type === WalletProviderType.WalletConnectEvm) {
+      enable("eip155")
     } else {
       installed ? enable() : openInstallUrl(installUrl)
     }
-  }
+  }, [disconnect, enable, installUrl, installed, isConnected, type])
 
   if (typeof children === "function") {
-    return children({ onClick })
+    return children({ onClick, isConnected })
   }
 
   return (
     <SProviderButton onClick={onClick}>
-      <img
-        loading="lazy"
-        src={logo.src}
-        alt={logo.alt}
-        width={32}
-        height={32}
-      />
-      <Text fs={[12, 14]} sx={{ mt: 8 }}>
+      <Web3ConnectProviderIcon type={type} />
+      <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
         {title}
       </Text>
       <Text
-        color="brightBlue300"
+        color={isConnected ? "basic500" : "brightBlue300"}
         fs={[12, 13]}
         sx={{ flex: "row", align: "center" }}
       >
-        {installed ? (
+        {isConnected ? (
+          <>
+            {t("walletConnect.provider.disconnect")}
+            <LogoutIcon width={18} height={18} />
+          </>
+        ) : installed ? (
           <>
             {t("walletConnect.provider.continue")}
             <ChevronRight width={18} height={18} />
@@ -87,30 +100,11 @@ export const Web3ConnectProviderButton: FC<Props> = ({
           </>
         )}
       </Text>
-    </SProviderButton>
-  )
-}
-
-export const Web3ConnectAltProviderButton: FC<
-  PropsWithChildren & WalletProvider
-> = ({ children, ...provider }) => {
-  return (
-    <Web3ConnectProviderButton {...provider} key={provider.type}>
-      {(props) => (
-        <SAltProviderButton {...props}>
-          <img
-            loading="lazy"
-            src={provider.wallet.logo.src}
-            alt={provider.wallet.logo.alt}
-            width={24}
-            height={24}
-            sx={{ mr: 4 }}
-          />
-          {children}
-          <ChevronRight width={18} height={18} />
-        </SAltProviderButton>
+      {isConnected && <SConnectionIndicator />}
+      {isConnected && accountsCount > 0 && (
+        <SAccountIndicator>+{accountsCount}</SAccountIndicator>
       )}
-    </Web3ConnectProviderButton>
+    </SProviderButton>
   )
 }
 

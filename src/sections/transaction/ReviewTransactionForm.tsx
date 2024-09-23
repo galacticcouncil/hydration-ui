@@ -31,7 +31,10 @@ import {
 } from "sections/web3-connect/signer/EthereumSigner"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
-import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import {
+  EVM_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import {
   useWeb3ConnectStore,
   WalletMode,
@@ -107,7 +110,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     !props.xcallMeta &&
     account &&
     isEvmAccount(account.address) &&
-    !EVM_PROVIDERS.includes(account.provider)
+    !EVM_PROVIDERS.includes(account.provider) &&
+    account.provider !== WalletProviderType.WalletConnect
 
   const isLinking = !isLinkedAccount && storedReferralCode
 
