@@ -13,12 +13,16 @@ export const variantStyles = {
     background-color: rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
     border: 1px solid rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   `,
+  orange: css`
+    color: ${theme.colors.warning300};
+    background-color: rgba(${theme.rgbColors.warning300}, 0.35);
+  `,
 }
 
 export const sizeStyles = {
   small: css`
     font-size: 10px;
-    padding: 2px 8px;
+    padding: 2px 4px;
   `,
   medium: css`
     font-size: 11px;
@@ -40,7 +44,8 @@ export const SBadge = styled.span<BadgeProps>`
   align-items: center;
   justify-content: center;
 
-  border-radius: 9999px;
+  border-radius: ${({ rounded }) =>
+    rounded ? 9999 : theme.borderRadius.default}px;
 
   ${({ variant }) => variant && variantStyles[variant]}
   ${({ size }) => size && sizeStyles[size]}

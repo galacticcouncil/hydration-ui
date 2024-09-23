@@ -2,12 +2,12 @@ import { Button } from "components/Button/Button"
 import { Alert } from "components/Alert/Alert"
 import { Text } from "components/Typography/Text/Text"
 
-export type Web3ConnectErrorModalProps = {
+export type Web3ConnectErrorProps = {
   message?: string
   onRetry?: () => void
 }
 
-export const Web3ConnectErrorModal: React.FC<Web3ConnectErrorModalProps> = ({
+export const Web3ConnectError: React.FC<Web3ConnectErrorProps> = ({
   message,
   onRetry,
 }) => {
