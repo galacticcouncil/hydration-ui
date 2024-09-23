@@ -28,13 +28,17 @@ export const Web3ConnectExternalAccount: FC<
   const {
     setAccount,
     toggle,
-    account: selectedAccount,
+    account: currentAccount,
   } = useWeb3ConnectStore(
     useShallow((s) => pick(s, ["setAccount", "toggle", "account"])),
   )
 
   const { address, provider } = account
   const { wallet } = getWalletProviderByType(provider)
+
+  const isActive =
+    currentAccount?.address === account.address &&
+    currentAccount?.provider === account.provider
 
   const externalWallet = wallet instanceof ExternalWallet ? wallet : null
   const externalWalletAddress = externalWallet?.account?.address ?? ""
@@ -61,7 +65,7 @@ export const Web3ConnectExternalAccount: FC<
   }, [externalWallet, isProxy])
 
   const { data: accounts } = useWalletAccounts(
-    externalWallet?.proxyWalletProvider ?? null,
+    externalWallet?.proxyWalletProvider,
     {
       enabled: isProxy,
     },
@@ -95,13 +99,16 @@ export const Web3ConnectExternalAccount: FC<
     }
     return (
       <Web3ConnectAccount
-        isActive
+        isActive={isActive}
         provider={WalletProviderType.ExternalWallet}
         name={externalWallet.accountName}
         address={address}
         displayAddress={hydraAddress}
         balance={balance}
-        onClick={() => toggle()}
+        onClick={() => {
+          setAccount(account)
+          toggle()
+        }}
       />
     )
   }
@@ -111,7 +118,7 @@ export const Web3ConnectExternalAccount: FC<
       <SContainer>
         <SLine />
         <Web3ConnectAccount
-          isActive
+          isActive={isActive}
           provider={WalletProviderType.ExternalWallet}
           name={externalWallet.proxyAccountName}
           address={address}
@@ -120,18 +127,19 @@ export const Web3ConnectExternalAccount: FC<
           isProxy
         />
         <SGroupContainer>
-          {filteredAccounts.map(({ address, name }) => {
+          {filteredAccounts.map(({ address, displayAddress, name }) => {
             return (
               <SContainer key={address}>
                 <SLeaf />
                 <Web3ConnectAccount
-                  isActive={address === selectedAccount?.delegate}
+                  isActive={address === currentAccount?.delegate}
                   provider={externalWallet?.proxyWalletProvider}
                   name={name ?? "N/A"}
                   address={address}
                   onClick={async () => {
                     setAccount({
                       ...account,
+                      displayAddress,
                       name: externalWallet.proxyAccountName,
                       delegate: address,
                     })

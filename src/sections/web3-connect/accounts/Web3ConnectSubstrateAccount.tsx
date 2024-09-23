@@ -8,7 +8,9 @@ export const Web3ConnectSubstrateAccount: React.FC<
 > = ({ balance, ...account }) => {
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
   const navigate = useNavigate()
-  const isActive = currentAccount?.address === account.address
+  const isActive =
+    currentAccount?.address === account.address &&
+    currentAccount?.provider === account.provider
 
   return (
     <Web3ConnectAccount
