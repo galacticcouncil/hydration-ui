@@ -21,14 +21,14 @@ export const SContainer = styled.div<{
 
   border-radius: 4px;
   border: 1px solid rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
-  background-color: rgba(${theme.rgbColors.alpha0}, 0.12);
+  background-color: rgba(${theme.rgbColors.alpha0}, 0.06);
 
   transition: all ${theme.transitions.default};
 
   outline: none;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 12px 30px 12px 20px;
+    padding: 16px 30px 16px 20px;
   }
 
   ${({ isClickable }) =>
@@ -45,7 +45,7 @@ export const SContainer = styled.div<{
 
 export const SRow = styled.div<{ compact?: boolean }>`
   display: grid;
-  grid-template-columns: ${({ compact }) => (compact ? "auto" : "2fr")} 3fr;
+  grid-template-columns: ${({ compact }) => (compact ? "auto" : "auto 2fr")} 3fr;
   grid-column-gap: ${({ compact }) => (compact ? "8px" : "12px")};
   align-items: center;
   justify-content: space-between;

@@ -82,7 +82,9 @@ export const PoolsTable = ({
           <TableBodyContent>
             {table.getRowModel().rows.map((row, i) => (
               <TableRow
-                onClick={() => onRowSelect(row.original.id)}
+                onClick={() => {
+                  onRowSelect(row.original.id)
+                }}
                 key={row.id}
                 css={{ cursor: "pointer" }}
               >

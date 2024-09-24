@@ -44,10 +44,10 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
-  const [isJoinFarms, setIsJoinFarms] = useState(false)
+  const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
   const isXYK = isXYKPoolType(pool)
-  const willJoinFarms = farms.length && isJoinFarms
+  const willJoinFarms = farms.length > 0 && isJoinFarms
 
   const joinFarms = useJoinFarms({
     poolId: pool.id,
@@ -202,6 +202,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
                 farms={farms}
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 onSuccess={onSuccess}
+                isJoinFarms={isJoinFarms}
                 setIsJoinFarms={setIsJoinFarms}
               />
             ),

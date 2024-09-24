@@ -356,6 +356,7 @@ export const AddLiquidityFormXYK = ({
             {customErrors.farm.message}
           </Alert>
         )}
+        <Spacer size={20} />
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>

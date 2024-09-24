@@ -18,17 +18,19 @@ import {
   useAddLiquidity,
   useAddToOmnipoolZod,
 } from "./AddLiquidity.utils"
-import { ToastMessage, useStore } from "state/store"
+import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEstimatedFees } from "api/transaction"
 import { Farm } from "api/farms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert } from "components/Alert/Alert"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
-import { TOAST_MESSAGES } from "state/toasts"
+import { createToastMessages } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { BaseSyntheticEvent } from "react"
+import { useEffect } from "react"
 import { useAssets } from "providers/assets"
+import { Switch } from "components/Switch/Switch"
+import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 
 type Props = {
   assetId: string
@@ -38,6 +40,7 @@ type Props = {
   onSubmitted?: () => void
   onSuccess: (result: ISubmittableResult, value: string) => void
   farms: Farm[]
+  isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
 
@@ -49,6 +52,7 @@ export const AddLiquidityForm = ({
   onSuccess,
   initialAmount,
   farms,
+  isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
   const { t } = useTranslation()
@@ -82,37 +86,10 @@ export const AddLiquidityForm = ({
           .minus(assetMeta.existentialDeposit)
       : balance
 
-  const onSubmit = async (
-    values: FormValues<typeof form>,
-    e?: BaseSyntheticEvent,
-  ) => {
+  const onSubmit = async (values: FormValues<typeof form>) => {
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
-    const submitAction = (e?.nativeEvent as SubmitEvent)
-      ?.submitter as HTMLButtonElement
-
-    const isJoinFarms = submitAction?.name === "joinFarms"
-
     const amount = scale(values.amount, assetMeta.decimals).toString()
-
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`liquidity.add.modal.toast.${msType}`}
-          tOptions={{
-            value: values.amount,
-            symbol: assetMeta?.symbol,
-            where: "Omnipool",
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
 
     return await createTransaction(
       { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
@@ -128,21 +105,23 @@ export const AddLiquidityForm = ({
         onClose,
         disableAutoClose: !!farms.length && isJoinFarms,
         onBack: () => {},
-        toast,
+        toast: createToastMessages("liquidity.add.modal.toast", {
+          t,
+          tOptions: {
+            value: values.amount,
+            symbol: assetMeta?.symbol,
+            where: "Omnipool",
+          },
+          components: ["span", "span.highlight"],
+        }),
         onError: onClose,
       },
     )
   }
 
-  const onInvalidSubmit = (
-    errors: FieldErrors<FormValues<typeof form>>,
-    e?: BaseSyntheticEvent,
-  ) => {
-    const submitAction = (e?.nativeEvent as SubmitEvent)
-      ?.submitter as HTMLButtonElement
-
+  const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
     if (
-      submitAction?.name === "addLiquidity" &&
+      !isJoinFarms &&
       (errors.amount as { farm?: { message: string } }).farm
     ) {
       onSubmit(form.getValues())
@@ -157,9 +136,22 @@ export const AddLiquidityForm = ({
       }
     | undefined
 
-  const isAddOnlyLiquidityDisabled = !!Object.keys(
-    formState.errors.amount ?? {},
-  ).filter((key) => key !== "farm").length
+  const isJoinFarmDisabled = !!customErrors?.farm
+  const isSubmitDisabled =
+    farms.length > 0 && isJoinFarms
+      ? !!Object.keys(formState.errors).length
+      : !!Object.keys(formState.errors.amount ?? {}).filter(
+          (key) => key !== "farm",
+        ).length
+
+  useEffect(() => {
+    if (!farms.length) return
+    if (isJoinFarmDisabled) {
+      setIsJoinFarms(false)
+    } else {
+      setIsJoinFarms(true)
+    }
+  }, [farms.length, isJoinFarmDisabled, setIsJoinFarms])
 
   return (
     <form
@@ -193,8 +185,10 @@ export const AddLiquidityForm = ({
             />
           )}
         />
+        <Spacer size={20} />
         <SummaryRow
           label={t("liquidity.add.modal.lpFee")}
+          description={t("liquidity.add.modal.lpFee.description")}
           content={
             assetId === native.id
               ? "--"
@@ -204,7 +198,52 @@ export const AddLiquidityForm = ({
                 })
           }
         />
-        <Spacer size={24} />
+        <Separator
+          color="darkBlue401"
+          sx={{
+            my: 4,
+            width: "auto",
+          }}
+        />
+        {farms.length > 0 && (
+          <>
+            <SummaryRow
+              label={t("liquidity.add.modal.joinFarms")}
+              description={t("liquidity.add.modal.joinFarms.description")}
+              content={
+                <div sx={{ flex: "row", align: "center", gap: 8 }}>
+                  <Text fs={14} color="darkBlue200">
+                    {isJoinFarms ? t("yes") : t("no")}
+                  </Text>
+                  <Switch
+                    name="join-farms"
+                    value={isJoinFarms}
+                    onCheckedChange={setIsJoinFarms}
+                    disabled={isJoinFarmDisabled}
+                  />
+                </div>
+              }
+            />
+            {isJoinFarms && (
+              <div sx={{ flex: "column", gap: 8 }}>
+                {farms.map((farm) => {
+                  return (
+                    <FarmDetailsRow
+                      key={farm.globalFarm.id.toString()}
+                      farm={farm}
+                    />
+                  )
+                })}
+              </div>
+            )}
+            {customErrors?.farm && (
+              <Alert variant="warning" sx={{ mt: 8 }}>
+                {customErrors.farm.message}
+              </Alert>
+            )}
+          </>
+        )}
+        <Spacer size={20} />
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
@@ -240,7 +279,7 @@ export const AddLiquidityForm = ({
             },
           ]}
         />
-        <Text color="warningOrange200" fs={14} fw={400} sx={{ mt: 17, mb: 24 }}>
+        <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>
           {t("liquidity.add.modal.warning")}
         </Text>
 
@@ -254,12 +293,6 @@ export const AddLiquidityForm = ({
             {customErrors.circuitBreaker.message}
           </Alert>
         ) : null}
-
-        {customErrors?.farm && (
-          <Alert variant="warning" css={{ margin: "20px 0" }}>
-            {customErrors.farm.message}
-          </Alert>
-        )}
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>
@@ -271,39 +304,11 @@ export const AddLiquidityForm = ({
           width: "auto",
         }}
       />
-      {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          <Button
-            variant="secondary"
-            name="addLiquidity"
-            onClick={() => setIsJoinFarms(false)}
-            disabled={
-              isAddOnlyLiquidityDisabled || !zodSchema || !formState.isDirty
-            }
-          >
-            {t("liquidity.add.modal.onlyAddLiquidity")}
-          </Button>
-          <Button
-            variant="primary"
-            name="joinFarms"
-            onClick={() => setIsJoinFarms(true)}
-            disabled={
-              !!Object.keys(formState.errors).length ||
-              !zodSchema ||
-              !formState.isDirty
-            }
-          >
-            {t("liquidity.add.modal.joinFarms")}
-          </Button>
-        </div>
-      ) : (
-        <Button
-          variant="primary"
-          disabled={!!Object.keys(formState.errors).length || !zodSchema}
-        >
-          {t("liquidity.add.modal.confirmButton")}
-        </Button>
-      )}
+      <Button variant="primary" disabled={isSubmitDisabled}>
+        {isJoinFarms
+          ? t("liquidity.add.modal.button.joinFarms")
+          : t("liquidity.add.modal.confirmButton")}
+      </Button>
     </form>
   )
 }

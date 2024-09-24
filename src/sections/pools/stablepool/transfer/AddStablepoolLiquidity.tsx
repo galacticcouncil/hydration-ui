@@ -32,7 +32,10 @@ import {
 import { Farm } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
-import { BaseSyntheticEvent } from "react"
+import { useEffect } from "react"
+import { Switch } from "components/Switch/Switch"
+import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
+import { Separator } from "components/Separator/Separator"
 
 type Props = {
   poolId: string
@@ -46,6 +49,7 @@ type Props = {
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
   farms: Farm[]
+  isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
 
@@ -66,6 +70,7 @@ export const AddStablepoolLiquidity = ({
   fee,
   isStablepoolOnly,
   farms,
+  isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
   const { api } = useRpcProvider()
@@ -169,15 +174,9 @@ export const AddStablepoolLiquidity = ({
     )
   }
 
-  const onInvalidSubmit = (
-    errors: FieldErrors<FormValues<typeof form>>,
-    e?: BaseSyntheticEvent,
-  ) => {
-    const submitAction = (e?.nativeEvent as SubmitEvent)
-      ?.submitter as HTMLButtonElement
-
+  const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
     if (
-      submitAction?.name === "addLiquidity" &&
+      !isJoinFarms &&
       (errors.amount as { farm?: { message: string } }).farm
     ) {
       onSubmit(form.getValues())
@@ -192,9 +191,22 @@ export const AddStablepoolLiquidity = ({
       }
     | undefined
 
-  const isAddOnlyLiquidityDisabled = !!Object.keys(
-    formState.errors.amount ?? {},
-  ).filter((key) => key !== "farm").length
+  const isJoinFarmDisabled = !!customErrors?.farm
+  const isSubmitDisabled =
+    farms.length > 0 && isJoinFarms
+      ? !!Object.keys(formState.errors).length
+      : !!Object.keys(formState.errors.amount ?? {}).filter(
+          (key) => key !== "farm",
+        ).length
+
+  useEffect(() => {
+    if (!farms.length || isStablepoolOnly) return
+    if (isJoinFarmDisabled) {
+      setIsJoinFarms(false)
+    } else {
+      setIsJoinFarms(true)
+    }
+  }, [farms.length, isJoinFarmDisabled, isStablepoolOnly, setIsJoinFarms])
 
   return (
     <form
@@ -230,12 +242,58 @@ export const AddStablepoolLiquidity = ({
             />
           )}
         />
+        <Spacer size={20} />
         <SummaryRow
           label={t("liquidity.add.modal.tradeFee")}
           content={t("value.percentage", { value: fee.multipliedBy(100) })}
           description={t("liquidity.add.modal.tradeFee.description")}
         />
-        <Spacer size={10} />
+        <Separator
+          color="darkBlue401"
+          sx={{
+            my: 4,
+            width: "auto",
+          }}
+        />
+        {farms.length > 0 && !isStablepoolOnly && (
+          <>
+            <SummaryRow
+              label={t("liquidity.add.modal.joinFarms")}
+              description={t("liquidity.add.modal.joinFarms.description")}
+              content={
+                <div sx={{ flex: "row", align: "center", gap: 8 }}>
+                  <Text fs={14} color="darkBlue200">
+                    {isJoinFarms ? t("yes") : t("no")}
+                  </Text>
+                  <Switch
+                    name="join-farms"
+                    value={isJoinFarms}
+                    onCheckedChange={setIsJoinFarms}
+                    disabled={isJoinFarmDisabled}
+                  />
+                </div>
+              }
+            />
+            {isJoinFarms && (
+              <div sx={{ flex: "column", gap: 8 }}>
+                {farms.map((farm) => {
+                  return (
+                    <FarmDetailsRow
+                      key={farm.globalFarm.id.toString()}
+                      farm={farm}
+                    />
+                  )
+                })}
+              </div>
+            )}
+            {customErrors?.farm && (
+              <Alert variant="warning" sx={{ mt: 8 }}>
+                {customErrors.farm.message}
+              </Alert>
+            )}
+          </>
+        )}
+        <Spacer size={20} />
         <CurrencyReserves reserves={reserves} />
         <Spacer size={20} />
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
@@ -280,59 +338,23 @@ export const AddStablepoolLiquidity = ({
           </Alert>
         ) : null}
 
-        {customErrors?.farm && (
-          <Alert variant="warning" css={{ margin: "20px 0" }}>
-            {customErrors.farm.message}
-          </Alert>
-        )}
+        <Spacer size={20} />
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
       </div>
-      <div
+      <Separator
+        color="darkBlue401"
         sx={{
-          flex: "row",
-          justify: "space-between",
-          gap: "100px",
-          mb: [24, 0],
+          mx: "calc(-1 * var(--modal-content-padding))",
+          mb: 20,
+          width: "auto",
         }}
-      >
-        {farms.length && !isStablepoolOnly ? (
-          <>
-            <Button
-              variant="secondary"
-              name="addLiquidity"
-              onClick={() => setIsJoinFarms(false)}
-              disabled={isAddOnlyLiquidityDisabled || !formState.isDirty}
-            >
-              {t("liquidity.add.modal.onlyAddLiquidity")}
-            </Button>
-            <Button
-              variant="primary"
-              name="joinFarms"
-              onClick={() => setIsJoinFarms(true)}
-              disabled={
-                !!Object.keys(form.formState.errors).length ||
-                !formState.isDirty
-              }
-            >
-              {t("liquidity.add.modal.joinFarms")}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button variant="secondary" type="button" onClick={onCancel}>
-              {t("cancel")}
-            </Button>
-            <Button
-              sx={{ width: "300px" }}
-              variant="primary"
-              disabled={!!Object.keys(form.formState.errors).length}
-            >
-              {t("confirm")}
-            </Button>
-          </>
-        )}
-      </div>
+      />
+      <Button variant="primary" disabled={isSubmitDisabled}>
+        {isJoinFarms
+          ? t("liquidity.add.modal.button.joinFarms")
+          : t("liquidity.add.modal.confirmButton")}
+      </Button>
     </form>
   )
 }
