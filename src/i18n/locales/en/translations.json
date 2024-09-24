@@ -669,6 +669,7 @@
   "farms.positions.labels.initialValue": "Initial position value",
   "farms.positions.labels.currentValue": "Current value",
   "farms.positions.redeposit.openFarms": "Open Farms",
+  "farms.details.card.title": "Rewards",
   "farms.details.card.tag.label": "Joined",
   "farms.details.card.distribution": "<0>{{ distributed, compact }}</0> <1>of</1> <0>{{ max, compact }} distributed</0>",
   "farms.details.card.capacity": "{{ capacity, bignumber(type: 'percentage') }}% Hydrated",

@@ -96,9 +96,11 @@ export const FarmDetailsCard = ({
         }}
       >
         <div sx={{ flex: "row", justify: "space-between" }}>
-          <Text color="basic200" fs={15}>
-            Rewards
-          </Text>
+          {!compact && (
+            <Text color="basic200" fs={15}>
+              {t("farms.details.card.title")}
+            </Text>
+          )}
           {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
         </div>
         <div
