@@ -2,7 +2,7 @@ import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
-import { Suspense, lazy, useEffect, useRef } from "react"
+import { Suspense, lazy, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useMedia } from "react-use"
 import {
@@ -72,12 +72,11 @@ const useSubheaderComponent = () => {
 export const Page = ({ className }: Props) => {
   const { pathname } = useLocation()
   const matchRoute = useMatchRoute()
-  const ref = useRef<HTMLDivElement>(null)
 
   const subHeaderComponent = useSubheaderComponent()
 
   useEffect(() => {
-    ref.current?.scrollTo({
+    window.scrollTo({
       top: 0,
       left: 0,
     })
@@ -87,7 +86,7 @@ export const Page = ({ className }: Props) => {
 
   return (
     <>
-      <SPage ref={ref}>
+      <SPage>
         <div
           sx={{ flex: "column", height: "100%" }}
           css={{ position: "relative" }}
