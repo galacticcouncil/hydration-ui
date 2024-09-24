@@ -95,14 +95,16 @@ export const FarmDetailsCard = ({
           gap: 12,
         }}
       >
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          {!compact && (
-            <Text color="basic200" fs={15}>
-              {t("farms.details.card.title")}
-            </Text>
-          )}
-          {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
-        </div>
+        {(!compact || depositNft) && (
+          <div sx={{ flex: "row", justify: "space-between" }}>
+            {!compact && (
+              <Text color="basic200" fs={14}>
+                {t("farms.details.card.title")}
+              </Text>
+            )}
+            {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+          </div>
+        )}
         <div
           sx={{
             flex: "row",
