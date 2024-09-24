@@ -87,11 +87,7 @@ export const FarmDetailsCard = ({
   const isFull = fullness.gte(100)
 
   return (
-    <SContainer
-      isClickable={isClickable}
-      onClick={() => onSelect?.()}
-      isJoined={!!depositNft}
-    >
+    <SContainer isClickable={isClickable} onClick={() => onSelect?.()}>
       <div
         sx={{
           flex: "column",
@@ -99,7 +95,12 @@ export const FarmDetailsCard = ({
           gap: 12,
         }}
       >
-        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+        <div sx={{ flex: "row", justify: "space-between" }}>
+          <Text color="basic200" fs={15}>
+            Rewards
+          </Text>
+          {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+        </div>
         <div
           sx={{
             flex: "row",
@@ -202,7 +203,7 @@ export const FarmDetailsCard = ({
               </Text>
               <GradientText
                 fs={14}
-                font="GeistMedium"
+                font="GeistSemiBold"
                 gradient="pinkLightBlue"
                 tAlign="right"
                 sx={{ width: "fit-content" }}
@@ -245,7 +246,7 @@ const LockedValue = ({ depositData }: { depositData: TDepositData }) => {
     <GradientText
       fs={14}
       tAlign="right"
-      font="GeistMedium"
+      font="GeistSemiBold"
       gradient="pinkLightBlue"
       sx={{ width: "fit-content" }}
       css={{ justifySelf: "end", gridColumn: "span 2 / span 2" }}

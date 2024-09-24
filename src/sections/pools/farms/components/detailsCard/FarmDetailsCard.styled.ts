@@ -5,7 +5,6 @@ import { css } from "@emotion/react"
 
 export const SContainer = styled.div<{
   isClickable: boolean
-  isJoined?: boolean
 }>`
   display: flex;
   justify-content: space-between;
@@ -17,7 +16,7 @@ export const SContainer = styled.div<{
   position: relative;
 
   padding: 12px;
-  padding-right: 22px;
+
 
   border-radius: 4px;
   border: 1px solid rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
@@ -28,13 +27,19 @@ export const SContainer = styled.div<{
   outline: none;
 
   @media ${theme.viewport.gte.sm} {
-    padding: 16px 30px 16px 20px;
+    padding: 16px 20px;
   }
 
   ${({ isClickable }) =>
     isClickable &&
     css`
       cursor: pointer;
+
+      padding-right: 22px;
+
+      @media ${theme.viewport.gte.sm} {
+        padding-right: 30px;
+      }
 
       &:hover {
         border: 1px solid ${theme.colors.brightBlue500};
