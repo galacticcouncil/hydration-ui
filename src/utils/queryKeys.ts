@@ -245,12 +245,14 @@ export const QUERY_KEYS = {
     accountAddress,
     type,
   ],
+  openGovReferendas: ["openGovReferendas"],
+  referendaTracks: ["referendaTracks"],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
     accountAddress,
   ],
-  referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
+  referendumInfo: (id: string) => [id, "referendumInfo"],
   stats: (
     type: ChartType,
     timeframe?: StatsTimeframe,
@@ -263,16 +265,12 @@ export const QUERY_KEYS = {
 
     return key
   },
-  circulatingSupply: ["circulatingSupply"],
+  hdxSupply: ["hdxSupply"],
   stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
-  stakingPositionBalances: (positionId: Maybe<string>) => [
-    "positionBalances",
-    positionId,
-  ],
   stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
   stableswapPool: (id?: string) => [QUERY_KEY_PREFIX, "stableswapPool", id],
   lbpPool: ["lbpPool"],

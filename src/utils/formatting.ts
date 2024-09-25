@@ -394,3 +394,7 @@ export function createSubscanLink(
     return ""
   }
 }
+
+export const humanizeUnderscoredString = (value: string) => {
+  return value.split("_").join(" ").toUpperCase()
+}

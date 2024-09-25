@@ -3,7 +3,7 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Stats } from "./components/Stats/Stats"
-import { Referenda, ReferendaWrapper } from "./components/Referenda/Referenda"
+import { OpenGovReferendas, Referenda } from "./components/Referenda/Referendas"
 import { useStakeData } from "sections/staking/StakingPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMedia } from "react-use"
@@ -51,7 +51,7 @@ export const StakingData = () => {
         {showGuide && <StakingGuide />}
         {account && staking.data?.positionId && <AvailableRewards />}
         <Stats data={staking.data} loading={staking.isLoading} />
-        {!isDesktop && <ReferendaWrapper />}
+        {!isDesktop && <OpenGovReferendas />}
       </div>
 
       <div
@@ -59,7 +59,7 @@ export const StakingData = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />
-        {isDesktop && <ReferendaWrapper />}
+        {isDesktop && <OpenGovReferendas />}
       </div>
     </div>
   )

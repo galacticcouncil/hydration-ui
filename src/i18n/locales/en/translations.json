@@ -16,6 +16,7 @@
   "close": "Close",
   "submit": "Submit",
   "transfer": "Transfer",
+  "threshold": "Threshold",
   "24Volume": "24h volume",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
@@ -1098,5 +1099,13 @@
   "memepad.summary.adminRights.burn": "Burn admin rights",
   "memepad.summary.adminRights.burned": "Admin rights revoked",
   "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
-  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked."
+  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
+  "referenda.ongoing": "Ongoing Referenda",
+  "referenda.empty.title": "No Referenda",
+  "referenda.empty.desc.first": "Nothing here.",
+  "referenda.empty.desc.second": " Currently there are no ongoing referenda to vote in.",
+  "referenda.btn.vote": "Vote",
+  "referenda.state.preparing": "Preparing",
+  "referenda.state.deciding": "Deciding",
+  "referenda.state.confirming": "Confirming"
 }

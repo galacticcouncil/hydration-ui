@@ -7,7 +7,6 @@ import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { undefinedNoop } from "utils/helpers"
 
 interface ISubscanData {
   code: number
@@ -46,20 +45,22 @@ export type TStakingPosition = Awaited<
   ReturnType<ReturnType<typeof getStakingPosition>>
 >
 
-export const useCirculatingSupply = () => {
+export const useHDXSupplyFromSubscan = () => {
   return useQuery(
-    QUERY_KEYS.circulatingSupply,
+    QUERY_KEYS.hdxSupply,
     async () => {
-      const res = await getCirculatingSupply()()
+      const res = await getHDXSupplyFromSubscan()()
 
-      return res.data.detail["HDX"].available_balance
+      const HDXData = res.data.detail["BSX"]
+
+      return HDXData
     },
     { retry: 0 },
   )
 }
 
-const getCirculatingSupply = () => async () => {
-  const res = await fetch("https://hydration.api.subscan.io/api/scan/token")
+const getHDXSupplyFromSubscan = () => async () => {
+  const res = await fetch("https://basilisk.api.subscan.io/api/scan/token")
 
   const data: Promise<ISubscanData> = res.json()
 
@@ -202,29 +203,6 @@ type TStakingInitialized = StakeEventBase & {
   name: "Staking.StakingInitialized"
 }
 
-type TPositionBalance = StakeEventBase &
-  (
-    | {
-        name: "Staking.PositionCreated"
-        args: {
-          positionId: string
-          stake: string
-          who: string
-        }
-      }
-    | {
-        name: "Staking.StakeAdded"
-        args: {
-          lockedRewards: string
-          positionId: string
-          slashedPoints: string
-          stake: string
-          totalStake: string
-          who: string
-        }
-      }
-  )
-
 export type TAccumulatedRpsUpdated = StakeEventBase & {
   name: "Staking.AccumulatedRpsUpdated"
   args: {
@@ -249,18 +227,6 @@ export const useStakingEvents = () => {
         : undefined,
     }
   })
-}
-
-export const useStakingPositionBalances = (positionId?: string) => {
-  const { indexerUrl } = useActiveProvider()
-
-  return useQuery(
-    QUERY_KEYS.stakingPositionBalances(positionId),
-    positionId
-      ? getStakingPositionBalances(indexerUrl, positionId)
-      : undefinedNoop,
-    { enabled: !!positionId },
-  )
 }
 
 const getAccumulatedRpsUpdatedEvents = (indexerUrl: string) => async () => {
@@ -306,35 +272,6 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
     )),
   }
 }
-
-const getStakingPositionBalances =
-  (indexerUrl: string, positionId: string) => async () => {
-    return {
-      ...(await request<{
-        events: Array<TPositionBalance>
-      }>(
-        indexerUrl,
-        gql`
-          query StakingPositionBalances($positionId: String!) {
-            events(
-              where: {
-                name_contains: "Staking"
-                args_jsonContains: { positionId: $positionId }
-              }
-              orderBy: [block_height_ASC]
-            ) {
-              name
-              block {
-                height
-              }
-              args
-            }
-          }
-        `,
-        { positionId },
-      )),
-    }
-  }
 
 export const useProcessedVotesIds = () => {
   const { account } = useAccount()
