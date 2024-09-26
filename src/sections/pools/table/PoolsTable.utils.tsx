@@ -78,7 +78,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const farms = useFarms([pool.id])
   const dynamicFees = useDynamicAssetFees(pool.meta.id)
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -363,15 +363,16 @@ export const usePoolTable = (
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useTablePagination()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isTablet = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
 
   const columnVisibility: VisibilityState = {
     name: true,
     spotPrice: isDesktop,
     volumeDisplay: true,
-    tvlDisplay: isDesktop,
+    tvlDisplay: isTablet,
     apy: isDesktop,
-    actions: isDesktop,
+    actions: isTablet,
   }
 
   const columns = useMemo(
