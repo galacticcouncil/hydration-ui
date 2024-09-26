@@ -5,7 +5,7 @@ import { useAccountAssetBalances } from "api/accountBalances"
 import { useBestNumber } from "api/chain"
 import { TDeposit, useAccountPositions } from "api/deposits"
 import { useFarms, useInactiveFarms, useOraclePrices } from "api/farms"
-import { useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { ToastMessage, useStore } from "state/store"
@@ -48,7 +48,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
     [isXYK, meta, omnipoolDeposits, poolId, xykDeposits],
   )
 
-  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAssets = useOmnipoolDataObserver()
 
   const poolIds = poolId
     ? [poolId]
