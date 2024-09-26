@@ -19,6 +19,9 @@ import { useEffect } from "react"
 import { useSettingsStore } from "state/store"
 
 const styles = css`
+  &:last-of-type {
+    padding-right: 0;
+  }
   @media ${theme.viewport.gte.sm} {
     &:last-of-type {
       padding-right: 30px;

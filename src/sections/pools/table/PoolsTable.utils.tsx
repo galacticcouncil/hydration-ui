@@ -354,10 +354,9 @@ export const usePoolTable = (
   const columnVisibility: VisibilityState = {
     name: true,
     spotPrice: isDesktop,
+    volumeDisplay: true,
     tvlDisplay: isDesktop,
     apy: isDesktop,
-    fee: isDesktop,
-    volumeDisplay: true,
     actions: isDesktop,
   }
 
@@ -403,8 +402,7 @@ export const usePoolTable = (
                 flex: "row",
                 gap: 4,
                 align: "center",
-                justify: ["end", "start"],
-                minWidth: [110, "auto"],
+                ml: ["auto", "unset"],
               }}
             >
               <Text color="white" fs={14}>
