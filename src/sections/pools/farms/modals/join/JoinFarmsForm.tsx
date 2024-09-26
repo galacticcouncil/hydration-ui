@@ -71,7 +71,7 @@ export const JoinFarmsForm = ({
       onSubmit({
         positionId: position.id,
         depositId: depositNft?.id,
-        value: positionValue.toString(),
+        value: scale(positionValue, meta.decimals).toString(),
       })
     }
   }
