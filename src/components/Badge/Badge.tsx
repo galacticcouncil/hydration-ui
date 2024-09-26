@@ -5,15 +5,17 @@ export type BadgeProps = {
   children?: ReactNode
   variant?: keyof typeof variantStyles
   size?: keyof typeof sizeStyles
+  rounded?: boolean
 }
 
 export const Badge: FC<BadgeProps> = ({
   variant = "primary",
   size = "medium",
+  rounded = true,
   children,
 }) => {
   return (
-    <SBadge variant={variant} size={size}>
+    <SBadge variant={variant} size={size} rounded={rounded}>
       {children}
     </SBadge>
   )

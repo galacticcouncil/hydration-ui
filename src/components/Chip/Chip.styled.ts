@@ -16,12 +16,15 @@ export const SChip = styled(ButtonTransparent)<ChipProps>`
   color: ${theme.colors.white};
 
   background: ${({ active }) =>
-    active ? "rgba(133, 209, 255, 0.2)" : "rgba(255, 255, 255, 0.03)"};
+    active ? "rgba(133, 209, 255, 0.2)" : "rgba(255, 255, 255, 0.06)"};
 
   border-radius: 9999px;
   border: 1px solid
-    ${({ active }) =>
-      active ? "rgba(133, 209, 255, 0.5)" : "rgba(255, 255, 255, 0.03)"};
+    ${({ active }) => (active ? "rgba(133, 209, 255, 0.5)" : "transparent")};
+
+  & > * {
+    margin-left: -4px;
+  }
 
   ${({ onClick }) =>
     onClick

@@ -2,9 +2,12 @@ import { FC, Fragment, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useAccount,
-  useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  Account,
+  useWeb3ConnectStore,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   SAccountsContainer,
   SAccountsScrollableContainer,
@@ -24,6 +27,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
+import { useShallow } from "hooks/useShallow"
+import { create } from "zustand"
+import { isEvmAccount } from "utils/evm"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -36,14 +43,25 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
   return Web3ConnectSubstrateAccount
 }
 
+const useAccountBalanceMap = create<{
+  balanceMap: Map<string, BN>
+  setBalanceMap: (address: string, balance: BN) => void
+}>((set) => ({
+  balanceMap: new Map(),
+  setBalanceMap: (address, balance) => {
+    set(({ balanceMap }) => ({
+      balanceMap: new Map(balanceMap).set(address, balance),
+    }))
+  },
+}))
+
 const AccountComponent: FC<
   Account & {
     isReady: boolean
-    setBalanceMap: React.Dispatch<React.SetStateAction<Record<string, BN>>>
   }
-> = ({ setBalanceMap, isReady, ...account }) => {
-  const { type } = useWallet()
-  const Component = getAccountComponentByType(type)
+> = ({ isReady, ...account }) => {
+  const Component = getAccountComponentByType(account.provider)
+  const { setBalanceMap } = useAccountBalanceMap()
 
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
     address: account.address,
@@ -51,10 +69,7 @@ const AccountComponent: FC<
 
   useShallowCompareEffect(() => {
     if (!isLoading) {
-      setBalanceMap((prev) => ({
-        ...prev,
-        [account.address]: balanceTotal,
-      }))
+      setBalanceMap(account.address, balanceTotal)
     }
   }, [{ isLoading }])
 
@@ -67,20 +82,26 @@ const AccountComponent: FC<
 
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
-}> = ({ accounts = [] }) => {
+  isLoading?: boolean
+}> = ({ accounts = [], isLoading = false }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
 
-  const [balanceMap, setBalanceMap] = useState<Record<string, BN>>({})
+  const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
 
-  const isReady = accounts.every(({ address }) => address in balanceMap)
+  const { balanceMap } = useAccountBalanceMap()
+
+  const isReady =
+    !isLoading && accounts.every(({ address }) => balanceMap.has(address))
 
   const [searchVal, setSearchVal] = useState("")
-  const [filter, setFilter] = useState("")
+  const [search, setSearch] = useState("")
+  const [filter, setFilter] = useState<WalletMode>(WalletMode.Default)
+
   useDebounce(
     () => {
-      setFilter(searchVal ?? "")
+      setSearch(searchVal ?? "")
     },
     300,
     [searchVal],
@@ -88,40 +109,62 @@ export const Web3ConnectAccountList: FC<{
 
   const accountList = useMemo(() => {
     if (!isReady) return accounts
-    const filtered = filter
-      ? arraySearch(accounts as Required<Account>[], filter, [
+    const searched = search
+      ? arraySearch(accounts as Required<Account>[], search, [
           "name",
           "address",
           "displayAddress",
+          "provider",
         ])
       : accounts
 
-    return filtered.sort((a, b) => {
-      if (a.address === account?.address) return -1
-      if (b.address === account?.address) return 1
+    let filtered = searched
+    if (filter === WalletMode.EVM) {
+      filtered = searched.filter(({ address }) => isEvmAccount(address))
+    }
 
-      const aBalance = balanceMap[a.address]
-      const bBalance = balanceMap[b.address]
+    if (filter === WalletMode.Substrate) {
+      filtered = searched.filter(({ address }) => !isEvmAccount(address))
+    }
+
+    return filtered.sort((a, b) => {
+      if (a.address === account?.address && a.provider === account?.provider) {
+        return -1
+      }
+      if (b.address === account?.address && b.provider === account?.provider) {
+        return 1
+      }
+
+      const aBalance = balanceMap.get(a.address)
+      const bBalance = balanceMap.get(b.address)
       if (!aBalance || !bBalance) return 0
       return bBalance.comparedTo(aBalance)
     })
-  }, [isReady, accounts, filter, account?.address, balanceMap])
+  }, [account, accounts, balanceMap, isReady, filter, search])
 
   const noResults = accountList.length === 0
 
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
-        <Search
-          value={searchVal}
-          setValue={setSearchVal}
-          placeholder={t("walletconnect.accountSelect.search.placeholder")}
-          sx={{ mb: [4, 8] }}
-        />
+        <div sx={{ flex: "column", mb: [4, 8], gap: [12, 16] }}>
+          <Search
+            value={searchVal}
+            setValue={setSearchVal}
+            placeholder={t("walletconnect.accountSelect.search.placeholder")}
+          />
+          {mode === WalletMode.Default && (
+            <Web3ConnectModeFilter
+              active={filter}
+              onSetActive={(mode) => setFilter(mode)}
+            />
+          )}
+        </div>
       )}
+
       {noResults && (
         <>
-          {filter ? (
+          {search || filter !== WalletMode.Default ? (
             <div
               sx={{
                 color: "basic500",
@@ -147,13 +190,9 @@ export const Web3ConnectAccountList: FC<{
 
       <SAccountsScrollableContainer>
         {accountList?.map((account) => (
-          <Fragment key={account.address}>
+          <Fragment key={`${account.provider}-${account.address}`}>
             {isLoaded ? (
-              <AccountComponent
-                {...account}
-                isReady={isReady}
-                setBalanceMap={setBalanceMap}
-              />
+              <AccountComponent {...account} isReady={isReady} />
             ) : (
               <Web3ConnectAccountPlaceholder />
             )}

@@ -4,10 +4,7 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { useEffect } from "react"
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectContent } from "sections/web3-connect/modal/Web3ConnectContent"
-import {
-  WalletMode,
-  useWeb3ConnectStore,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 enum ModalPage {
   ProviderSelect,
@@ -18,49 +15,46 @@ enum ModalPage {
 }
 
 export const Web3ConnectModal = () => {
-  const {
-    provider: activeProvider,
-    account,
-    disconnect,
-    open,
-    toggle,
-    mode,
-  } = useWeb3ConnectStore()
+  const { account, disconnect, open, toggle, getConnectedProviders } =
+    useWeb3ConnectStore()
 
-  const shouldShowProviderSelect =
-    mode !== WalletMode.Default || !activeProvider || !account
-
-  const initialPage = shouldShowProviderSelect
-    ? ModalPage.ProviderSelect
-    : ModalPage.AccountSelect
+  const initialPage =
+    getConnectedProviders().length > 0
+      ? ModalPage.AccountSelect
+      : ModalPage.ProviderSelect
 
   const { page, direction, paginateTo } = useModalPagination(initialPage)
 
   useEffect(() => {
-    return useWeb3ConnectStore.subscribe(({ status, provider, error }) => {
-      const ixExternalProvider = provider === WalletProviderType.ExternalWallet
+    return useWeb3ConnectStore.subscribe(
+      ({ recentProvider, error, getStatus }) => {
+        const ixExternalProvider =
+          recentProvider === WalletProviderType.ExternalWallet
 
-      const isConnected = status === "connected"
-      const isDisconnected = status === "disconnected"
-      const isPending = status === "pending"
-      const isError = status === "error"
+        const status = getStatus(recentProvider)
 
-      if (isError && error) {
-        return paginateTo(ModalPage.Error)
-      }
+        const isConnected = status === "connected"
+        const isDisconnected = status === "disconnected"
+        const isPending = status === "pending"
+        const isError = status === "error"
 
-      if (ixExternalProvider) {
-        return paginateTo(ModalPage.External)
-      }
+        if (isError && error) {
+          return paginateTo(ModalPage.Error)
+        }
 
-      if (isConnected || isPending) {
-        return paginateTo(ModalPage.AccountSelect)
-      }
+        if (ixExternalProvider) {
+          return paginateTo(ModalPage.External)
+        }
 
-      if (isDisconnected) {
-        return paginateTo(ModalPage.ProviderSelect)
-      }
-    })
+        if (isConnected || isPending) {
+          return paginateTo(ModalPage.AccountSelect)
+        }
+
+        if (isDisconnected) {
+          return paginateTo(ModalPage.ProviderSelect)
+        }
+      },
+    )
   }, [paginateTo])
 
   const logout = () => {
@@ -80,9 +74,15 @@ export const Web3ConnectModal = () => {
       <Web3ConnectContent
         page={page}
         direction={direction}
-        onBack={() =>
+        onBack={() => {
           paginateTo(page === ModalPage.AddressBook ? ModalPage.External : 0)
-        }
+          if (
+            page === ModalPage.External &&
+            account?.provider !== WalletProviderType.ExternalWallet
+          ) {
+            disconnect(WalletProviderType.ExternalWallet)
+          }
+        }}
         onClose={toggle}
         onSelect={() => paginateTo(ModalPage.AccountSelect)}
         onRetry={() => paginateTo(ModalPage.ProviderSelect)}
