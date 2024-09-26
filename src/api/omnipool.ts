@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
-import { QUERY_KEYS } from "utils/queryKeys"
+import { QUERY_KEYS, WS_QUERY_KEYS } from "utils/queryKeys"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
@@ -28,7 +28,7 @@ export type TOmnipoolAssetsData = Array<{
 
 export const useOmnipoolDataObserver = () => {
   const { data, isLoading } = useQuery<TOmnipoolAssetsData>(
-    ["omnipoolAssets_"],
+    WS_QUERY_KEYS.omnipoolAssets,
     {
       enabled: false,
       staleTime: Infinity,
@@ -103,10 +103,10 @@ export const useOmnipoolAssetsSubsciption = () => {
           })
 
           const prevData: TOmnipoolAssetsData =
-            queryClient.getQueryData(["omnipoolAssets_"]) ?? []
+            queryClient.getQueryData(WS_QUERY_KEYS.omnipoolAssets) ?? []
 
           if (!arraysEqual(prevData, data)) {
-            queryClient.setQueryData(["omnipoolAssets_"], data)
+            queryClient.setQueryData(WS_QUERY_KEYS.omnipoolAssets, data)
           }
         },
       )

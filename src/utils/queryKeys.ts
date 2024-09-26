@@ -49,11 +49,6 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
-  poolAssets: (address: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolAssets",
-    address.toString(),
-  ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   allXYKDeposits: [QUERY_KEY_PREFIX, "allXYKDeposits"],
   omnipoolDeposits: (ids: string[]) => [
@@ -95,17 +90,7 @@ export const QUERY_KEYS = {
   yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
   yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
-  totalLiquidity: (id: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "totalLiquidity",
-    id?.toString(),
-  ],
   totalIssuances: ["totalIssuances"],
-  totalLiquidities: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "totalLiquidities",
-    ...ids,
-  ],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "reserves",
@@ -204,11 +189,6 @@ export const QUERY_KEYS = {
   ],
   hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: ["omnipoolFee"],
-  omnipoolAsset: (id?: u32 | string) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolAsset",
-    id?.toString(),
-  ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
   allOmnipoolPositions: ["allOmnipoolPositions"],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
@@ -370,3 +350,7 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+}
