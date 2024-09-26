@@ -3,14 +3,13 @@ import {
   calculate_shares,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
-import { u32 } from "@polkadot/types"
 import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useMaxAddLiquidityLimit } from "api/consts"
 import {
-  TOmnipoolAsset,
-  useOmnipoolAssets,
   useOmnipoolFee,
   useOmnipoolMinLiquidity,
+  useOmnipoolDataObserver,
+  TOmnipoolAssetsData,
 } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
@@ -63,13 +62,13 @@ export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   return txs
 }
 
-const getSharesToGet = (omnipoolAsset: TOmnipoolAsset, amount: string) => {
+const getSharesToGet = (
+  omnipoolAsset: TOmnipoolAssetsData[number],
+  amount: string,
+) => {
   if (BigNumber(amount).isNaN()) return BN_NAN
 
-  const {
-    data: { hubReserve, shares },
-    balance,
-  } = omnipoolAsset
+  const { hubReserve, shares, balance } = omnipoolAsset
 
   const assetReserve = balance.toString()
 
@@ -87,12 +86,10 @@ const getSharesToGet = (omnipoolAsset: TOmnipoolAsset, amount: string) => {
   return BN_NAN
 }
 
-export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
-  const omnipoolAssets = useOmnipoolAssets()
+export const useAddLiquidity = (assetId: string, assetValue?: string) => {
+  const omnipoolAssets = useOmnipoolDataObserver()
   const { pool } = usePoolData()
-  const ommipoolAsset = omnipoolAssets.data?.find(
-    (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
-  )
+  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
   const { data: spotPrice } = useDisplayPrice(assetId)
 
@@ -108,9 +105,7 @@ export const useAddLiquidity = (assetId: u32 | string, assetValue?: string) => {
         scale(assetValue, pool.meta.decimals).toString(),
       )
 
-      const totalShares = ommipoolAsset.data.shares
-        .toBigNumber()
-        .plus(sharesToGet)
+      const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
       return poolShare
@@ -142,10 +137,8 @@ export const useAddToOmnipoolZod = (
 
   const { data: assetBalance } = useTokenBalance(assetId, account?.address)
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolAsset = omnipoolAssets.data?.find(
-    (omnipoolAsset) => omnipoolAsset.id.toString() === assetId,
-  )
+  const omnipoolAssets = useOmnipoolDataObserver()
+  const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
   const { data: hubBalance } = useTokenBalance(hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
   const { data: poolBalance } = useTokenBalance(
@@ -188,9 +181,9 @@ export const useAddToOmnipoolZod = (
     return undefined
 
   const assetReserve = poolBalance.balance.toString()
-  const assetHubReserve = omnipoolAsset.data.hubReserve.toString()
-  const assetShares = omnipoolAsset.data.shares.toString()
-  const assetCap = omnipoolAsset.data.cap.toString()
+  const assetHubReserve = omnipoolAsset.hubReserve
+  const assetShares = omnipoolAsset.shares
+  const assetCap = omnipoolAsset.cap
   const totalHubReserve = hubBalance.total.toString()
 
   const circuitBreakerLimit = maxAddLiquidityLimit

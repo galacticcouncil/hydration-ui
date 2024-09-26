@@ -63,7 +63,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Dotters",
-    url: "wss://hydradx.paras.dotters.network",
+    url: "wss://hydration.dotters.network",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: "production",

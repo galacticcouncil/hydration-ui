@@ -1,5 +1,5 @@
 import { useTokenBalance, useTokensBalances } from "api/balances"
-import { useHubAssetTradability, useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import { useMemo } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NATIVE_ASSET_ID } from "utils/api"
@@ -25,59 +25,10 @@ import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
-import {
-  is_add_liquidity_allowed,
-  is_buy_allowed,
-  is_remove_liquidity_allowed,
-  is_sell_allowed,
-} from "@galacticcouncil/math-omnipool"
 import { useAccountPositions } from "api/deposits"
 import { TAsset, useAssets } from "providers/assets"
 import { MetadataStore } from "@galacticcouncil/ui"
-
-export const XYK_TVL_VISIBILITY = 5000
-
-export const useAssetsTradability = () => {
-  const { hub } = useAssets()
-  const assets = useOmnipoolAssets()
-  const hubTradability = useHubAssetTradability()
-
-  const queries = [assets, hubTradability]
-  const isLoading = queries.some((q) => q.isLoading)
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
-
-  const data = useMemo(() => {
-    if (!assets.data || !hubTradability.data) return undefined
-
-    const results = assets.data.map((asset) => {
-      const id = asset.id.toString()
-      const bits = asset.data.tradable.bits.toNumber()
-      const canBuy = is_buy_allowed(bits)
-      const canSell = is_sell_allowed(bits)
-      const canAddLiquidity = is_add_liquidity_allowed(bits)
-      const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
-
-      return { id, canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
-    })
-
-    const hubBits = hubTradability.data.bits.toNumber()
-    const canBuyHub = is_buy_allowed(hubBits)
-    const canSellHub = is_sell_allowed(hubBits)
-    const canAddLiquidityHub = is_add_liquidity_allowed(hubBits)
-    const canRemoveLiquidityHub = is_remove_liquidity_allowed(hubBits)
-    const hubResult = {
-      id: hub.id,
-      canBuy: canBuyHub,
-      canSell: canSellHub,
-      canAddLiquidity: canAddLiquidityHub,
-      canRemoveLiquidity: canRemoveLiquidityHub,
-    }
-
-    return [...results, hubResult]
-  }, [assets, hubTradability, hub])
-
-  return { data, isLoading, isInitialLoading }
-}
+import { getTradabilityFromBits } from "api/omnipool"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -110,13 +61,13 @@ const getTradeFee = (fee: string[]) => {
 }
 
 export const usePools = () => {
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const { stableCoinId } = useDisplayAssetStore()
 
-  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAssets = useOmnipoolDataObserver()
+
   const stablepools = useStableswapPools()
 
-  const assetsTradability = useAssetsTradability()
   const accountPositions = useAccountPositions()
 
   const assetsId = useMemo(
@@ -144,27 +95,20 @@ export const usePools = () => {
   const fees = useFee("all")
   const tvls = useTVL("all")
 
-  const queries = [omnipoolAssets, spotPrices, assetsTradability]
+  const queries = [spotPrices]
 
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isInitialLoading =
+    queries.some((q) => q.isInitialLoading) || omnipoolAssets.isLoading
 
   const data = useMemo(() => {
-    if (!omnipoolAssets.data || !spotPrices.data || !assetsTradability.data)
-      return undefined
+    if (!omnipoolAssets.data || !spotPrices.data) return undefined
 
     const rows = omnipoolAssets.data.map((asset) => {
       const spotPrice = spotPrices.data?.find(
         (sp) => sp?.tokenIn === asset.id,
       )?.spotPrice
 
-      const tradabilityData = assetsTradability.data?.find(
-        (t) => t.id === asset.id,
-      )
-
-      const tradability = {
-        canAddLiquidity: !!tradabilityData?.canAddLiquidity,
-        canRemoveLiquidity: !!tradabilityData?.canRemoveLiquidity,
-      }
+      const tradability = getTradabilityFromBits(asset.bits)
 
       const apiSpotPrice = spotPrices.data?.find(
         (sp) => sp?.tokenIn === stableCoinId,
@@ -202,12 +146,14 @@ export const usePools = () => {
       const isPositions =
         !!filteredOmnipoolPositions.length || !!filteredMiningPositions?.length
 
+      const meta = getAssetWithFallback(asset.id)
+
       return {
-        id: asset.meta.id,
-        name: asset.meta.name,
-        symbol: asset.meta.symbol,
-        iconId: asset.meta.iconId,
-        meta: asset.meta,
+        id: asset.id,
+        name: meta.name,
+        symbol: meta.symbol,
+        iconId: meta.iconId,
+        meta,
         tvlDisplay,
         spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
@@ -236,7 +182,6 @@ export const usePools = () => {
   }, [
     omnipoolAssets.data,
     spotPrices.data,
-    assetsTradability.data,
     tvls.data,
     volumes.data,
     volumes?.isLoading,
@@ -245,6 +190,7 @@ export const usePools = () => {
     fees?.isLoading,
     accountPositions.data,
     stableCoinId,
+    getAssetWithFallback,
   ])
 
   return { data, isLoading: isInitialLoading }
