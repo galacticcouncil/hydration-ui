@@ -1,4 +1,4 @@
-import { QueryObserver, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { REFETCH_INTERVAL } from "utils/constants"
@@ -6,7 +6,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { VoidFn } from "@polkadot/api/types"
 import { arraysEqual } from "utils/helpers"
 import {
@@ -15,7 +15,6 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
-import { useEffectOnce } from "react-use"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -27,63 +26,14 @@ export type TOmnipoolAssetsData = Array<{
   balance: string
 }>
 
-const omnipoolDataQuery = {
-  queryKey: ["omnipoolAssets_"],
-  enabled: false,
-  staleTime: Infinity,
-}
-
 export const useOmnipoolDataObserver = () => {
-  const queryClient = useQueryClient()
-  const { native } = useAssets()
-  const [data, setData] = useState<undefined | TOmnipoolAssetsData>(undefined)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const observer = new QueryObserver(queryClient, omnipoolDataQuery)
-
-    const unsubscribe = observer.subscribe((queryResult) => {
-      const isLoading = queryResult.isLoading
-      setIsLoading((prevState) =>
-        prevState === isLoading ? prevState : isLoading,
-      )
-
-      if (!isLoading) {
-        const assets = queryResult.data as TOmnipoolAssetsData
-
-        setData((prevState) => {
-          if (!arraysEqual(prevState ?? [], assets)) {
-            return assets
-          }
-
-          return prevState
-        })
-      }
-    })
-
-    return () => {
-      unsubscribe()
-    }
-  }, [native.id, queryClient])
-
-  useEffectOnce(() => {
-    const observer = new QueryObserver(queryClient, omnipoolDataQuery)
-
-    if (!data) {
-      const queryData = observer.getCurrentResult().data as
-        | TOmnipoolAssetsData
-        | undefined
-
-      if (queryData) {
-        setIsLoading(false)
-        setData(queryData)
-      }
-    }
-
-    return () => {
-      observer.destroy()
-    }
-  })
+  const { data, isLoading } = useQuery<TOmnipoolAssetsData>(
+    ["omnipoolAssets_"],
+    {
+      enabled: false,
+      staleTime: Infinity,
+    },
+  )
 
   return {
     data,
@@ -152,7 +102,12 @@ export const useOmnipoolAssetsSubsciption = () => {
             }
           })
 
-          queryClient.setQueryData(["omnipoolAssets_"], data)
+          const prevData: TOmnipoolAssetsData =
+            queryClient.getQueryData(["omnipoolAssets_"]) ?? []
+
+          if (!arraysEqual(prevData, data)) {
+            queryClient.setQueryData(["omnipoolAssets_"], data)
+          }
         },
       )
     }
