@@ -1,5 +1,5 @@
 import { useOraclePrice } from "api/farms"
-import { useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import { useSpotPrice } from "api/spotPrice"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
@@ -62,10 +62,8 @@ export const useRemoveLiquidity = (
   const oracle = useOraclePrice(assetId, hubMeta.id)
   const minlFeeQuery = useMinWithdrawalFee()
   const { getData } = useLiquidityPositionData([assetId])
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolAsset = omnipoolAssets.data?.find(
-    (omnipoolAsset) => omnipoolAsset.id === assetId,
-  )
+  const omnipoolAssets = useOmnipoolDataObserver()
+  const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
   const { removeShares, totalValue, remainingValue, removeValue } =
     useMemo(() => {
@@ -106,8 +104,8 @@ export const useRemoveLiquidity = (
         const minWithdrawalFee = minlFeeQuery.data
 
         const lrnaSpotPrice = calculate_lrna_spot_price(
-          omnipoolAsset.balance.toString(),
-          omnipoolAsset.data.hubReserve.toString(),
+          omnipoolAsset.balance,
+          omnipoolAsset.hubReserve,
         )
 
         const withdrawalFee = calculate_withdrawal_fee(
