@@ -10,12 +10,11 @@ import { useTranslation } from "react-i18next"
 import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
+import { ReferendumCardProgress } from "./ReferendumCardProgress"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
-import { LinearProgress } from "components/Progress"
-import { theme } from "theme"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -56,7 +55,6 @@ export const ReferendumCard = ({ id, referendum, type, voted }: Props) => {
     return { ayes, nays, percAyes, percNays }
   }, [referendum])
 
-  const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
   const diff = BN(info?.data?.onchainData.meta.end ?? 0)
     .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
     .times(PARACHAIN_BLOCK_TIME)
@@ -111,40 +109,10 @@ export const ReferendumCard = ({ id, referendum, type, voted }: Props) => {
 
       <Spacer size={20} />
 
-      <div sx={{ flex: "row", gap: 8 }}>
-        {isNoVotes ? (
-          <LinearProgress
-            size="small"
-            withoutLabel
-            percent={100}
-            colorCustom={`rgba(${theme.rgbColors.darkBlue300}, 0.5)`}
-          />
-        ) : (
-          <>
-            {/*zero value of progress bar should be visible*/}
-            <LinearProgress
-              size="small"
-              withoutLabel
-              percent={votes.percAyes.eq(0) ? 2 : votes.percAyes.toNumber()}
-              colorCustom={`linear-gradient(
-            270deg,
-            ${theme.colors.green600} 50%,
-            transparent 100%
-          )`}
-            />
-            <LinearProgress
-              size="small"
-              withoutLabel
-              percent={votes.percNays.eq(0) ? 2 : votes.percNays.toNumber()}
-              colorCustom={`linear-gradient(
-              90deg,
-              ${theme.colors.pink700} 50%,
-              transparent 100%
-            )`}
-            />
-          </>
-        )}
-      </div>
+      <ReferendumCardProgress
+        percAyes={votes.percAyes}
+        percNays={votes.percNays}
+      />
 
       <Spacer size={4} />
 

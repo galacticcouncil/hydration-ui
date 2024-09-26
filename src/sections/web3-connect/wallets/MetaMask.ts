@@ -10,6 +10,7 @@ import {
   isMetaMask,
   isMetaMaskLike,
 } from "utils/metamask"
+import { safeConvertAddressH160 } from "utils/evm"
 
 type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
 
@@ -114,14 +115,16 @@ export class MetaMask implements Wallet {
 
     return (accounts || [])
       .filter((address): address is string => !!address)
+      .slice(0, 1)
       .map(this.toWalletAccount)
   }
 
   toWalletAccount = (address: string): WalletAccount => {
+    const formattedAddress = safeConvertAddressH160(address)!
     return {
-      address,
+      address: formattedAddress,
       source: this.extensionName,
-      name: shortenAccountAddress(address),
+      name: shortenAccountAddress(formattedAddress),
       wallet: this,
       signer: this.signer,
     }
@@ -139,10 +142,10 @@ export class MetaMask implements Wallet {
         ? payload.map((item: string) => item)
         : []
 
-      const accounts = addresses.map(this.toWalletAccount)
+      const accounts = addresses.slice(0, 1).map(this.toWalletAccount)
       callback?.(accounts)
 
-      const mainAccount = accounts.slice(0, 1)[0]
+      const mainAccount = accounts[0]
       this._signer?.setAddress(mainAccount?.address)
     })
   }

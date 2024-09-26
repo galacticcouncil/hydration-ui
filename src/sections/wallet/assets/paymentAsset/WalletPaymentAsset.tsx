@@ -61,7 +61,7 @@ export const WalletPaymentAsset = () => {
       </div>
 
       {!isFeePaymentAssetEditable ? (
-        <InfoTooltip text={t("wallet.header.feePaymentAsset.noAssets")}>
+        <InfoTooltip asChild text={t("wallet.header.feePaymentAsset.noAssets")}>
           {button}
         </InfoTooltip>
       ) : (

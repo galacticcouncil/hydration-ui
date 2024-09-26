@@ -45,7 +45,16 @@ const dota = {
   isWhiteListed: false,
 }
 
-const version = 0.4
+const wud = {
+  decimals: 10,
+  id: "31337",
+  name: "Gavun Wud",
+  origin: 1000,
+  symbol: "WUD",
+  isWhiteListed: false,
+}
+
+const version = 0.5
 
 const ahTreasuryAdminKeyIds = ["86"]
 
@@ -78,6 +87,8 @@ const mainnet = [
     internalId: "1000038",
   },
 ]
+
+const ELEVATED_EXTERNAL_TOKENS = [wud]
 
 const internalIds = new Map([
   ["9999", "1000106"],
@@ -357,15 +368,19 @@ export const useUserExternalTokenStore = create<Store>()(
         }
 
         if (state.tokens.mainnet) {
-          const mainnet = state.tokens.mainnet.map((token) => ({
-            ...token,
-            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
-          }))
+          const mainnet = state.tokens.mainnet
+            .map((token) => ({
+              ...token,
+              isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+            }))
+            .filter(isNotElevatedToken)
 
-          const testnet = state.tokens.testnet.map((token) => ({
-            ...token,
-            isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
-          }))
+          const testnet = state.tokens.testnet
+            .map((token) => ({
+              ...token,
+              isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
+            }))
+            .filter(isNotElevatedToken)
 
           return {
             ...state,
@@ -489,4 +504,10 @@ export const getInternalIdFromResult = (res: ISubmittableResult) => {
   }
 
   return data as { assetId?: u32 }
+}
+
+function isNotElevatedToken(token: TRegisteredAsset) {
+  return !ELEVATED_EXTERNAL_TOKENS.find(
+    ({ id, origin }) => token.id === id && token.origin === origin,
+  )
 }

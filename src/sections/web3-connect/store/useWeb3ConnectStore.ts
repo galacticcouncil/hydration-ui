@@ -2,6 +2,11 @@ import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { omit } from "utils/rx"
+import {
+  EVM_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
+  SUBSTRATE_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 
 export enum WalletProviderStatus {
   Connected = "connected",
@@ -30,12 +35,15 @@ export type Account = {
 type WalletProviderMeta = {
   chain: string
 }
+type WalletProviderEntry = {
+  type: WalletProviderType
+  status: WalletProviderStatus
+}
 type WalletProviderState = {
   open: boolean
-  provider: WalletProviderType | null
+  providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
   account: Account | null
-  status: WalletProviderStatus
   mode: WalletMode
   error?: string
   meta?: WalletProviderMeta | null
@@ -44,21 +52,21 @@ type WalletProviderState = {
 type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
   setAccount: (account: Account | null) => void
-  setProvider: (provider: WalletProviderType | null) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
   ) => void
+  getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
+  getConnectedProviders: () => WalletProviderEntry[]
   setError: (error: string) => void
-  disconnect: () => void
+  disconnect: (provider?: WalletProviderType) => void
 }
 
 const initialState: WalletProviderState = {
   open: false,
-  provider: null,
+  providers: [],
   recentProvider: null,
   account: null,
-  status: WalletProviderStatus.Disconnected,
   mode: WalletMode.Default,
   error: "",
   meta: null,
@@ -66,7 +74,7 @@ const initialState: WalletProviderState = {
 
 export const useWeb3ConnectStore = create<WalletProviderStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       toggle: (mode, meta) =>
         set((state) => {
@@ -79,34 +87,74 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => set((state) => ({ ...state, account })),
-      setProvider: (provider) =>
-        set((state) => ({ ...state, provider, recentProvider: provider })),
       setStatus: (provider, status) => {
-        const isConnected = status === WalletProviderStatus.Connected
         const isError = status === WalletProviderStatus.Error
         return set((state) => ({
           ...state,
-          provider,
+          providers: provider
+            ? [
+                ...state.providers.filter((p) => p.type !== provider),
+                { type: provider, status },
+              ]
+            : state.providers,
           recentProvider: provider,
-          status,
-          account: isConnected ? state.account : null,
+          account: isError ? null : state.account,
           error: isError ? state.error : "",
         }))
       },
+      getStatus: (provider) => {
+        const foundProvider = get().providers.find((p) => p.type === provider)
+        return foundProvider?.status ?? WalletProviderStatus.Disconnected
+      },
+      getConnectedProviders: () => {
+        const { mode, providers } = get()
+
+        if (mode === WalletMode.Default) {
+          return providers
+        }
+
+        return providers.filter(({ type }) => {
+          if (mode === WalletMode.EVM) {
+            return EVM_PROVIDERS.includes(type)
+          }
+
+          if (mode === WalletMode.Substrate) {
+            return SUBSTRATE_PROVIDERS.includes(type)
+          }
+
+          if (mode === WalletMode.SubstrateH160) {
+            return SUBSTRATE_H160_PROVIDERS.includes(type)
+          }
+
+          if (mode === WalletMode.SubstrateEVM) {
+            return [...EVM_PROVIDERS, ...SUBSTRATE_PROVIDERS].includes(type)
+          }
+
+          return true
+        })
+      },
       setError: (error) => set((state) => ({ ...state, error })),
-      disconnect: () => {
+      disconnect: (provider) => {
         set((state) => ({
           ...state,
           ...initialState,
+          account:
+            !provider || provider === state.account?.provider
+              ? null
+              : state.account,
+          providers: provider
+            ? state.providers.filter((p) => p.type !== provider)
+            : [],
+          recentProvider: null,
+          mode: state.mode,
           open: state.open,
-          recentProvider: state.provider,
         }))
       },
     }),
     {
       name: "web3-connect",
       partialize: (state) => omit(["open"], state),
-      version: 4,
+      version: 5,
     },
   ),
 )
