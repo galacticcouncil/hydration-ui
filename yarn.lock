@@ -2205,17 +2205,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.2.0.tgz#c9bc191ccd732adcb7f3b50ecbff6d3a9923d391"
   integrity sha512-6NlzDthJOByf+yARUT+l5PnHASXQRGjXRhFaXofGUhP7tqD8t29eEudzKVXJL1iabpn22ebKPscSw2H+lNQiyQ==
 
-<<<<<<< HEAD
-"@galacticcouncil/apps@6.2.0-pr144-f2d8540":
-  version "6.2.0-pr144-f2d8540"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-6.2.0-pr144-f2d8540.tgz#1a1cd9cc8e87c003c44acbdf62256151349f9342"
-  integrity sha512-lyGadIRmmx/EzfxLwO9VEtCnF4e3D9Wmq0mE0R0CD+DlWJTBmE+Neb45XSlohELejaofGsUvk0P0E60M+3xxhQ==
-=======
-"@galacticcouncil/apps@6.4.2":
-  version "6.4.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-6.4.2.tgz#dac62acc973cde7a7020ce14264f117bdb4cd95c"
-  integrity sha512-KvsCRL6nELLQEajBLetQwV5u4VT/fLZErFXH6XQEYRA+vmjziYnLfjWB6MDx/gPhvPn8nntOmN7TlWhyzljapQ==
->>>>>>> origin/master
+"@galacticcouncil/apps@6.5.0-pr144-c73699f":
+  version "6.5.0-pr144-c73699f"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-6.5.0-pr144-c73699f.tgz#54ec524d46e5d109cd8d355f8abff5d38a983e1f"
+  integrity sha512-Stwon+3FksEoxL/aWq2kQuo+zMxDsi5sRmQIwQwJppHVvxeIMBiSJySR7vQ5sIm1UKRfy2z3wMi8FEe+sitorQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2272,17 +2265,10 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-<<<<<<< HEAD
-"@galacticcouncil/ui@5.2.0-pr144-f2d8540":
-  version "5.2.0-pr144-f2d8540"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-5.2.0-pr144-f2d8540.tgz#90e5e9efd20f78a5367da5dfc05f0b4f2f2bbc99"
-  integrity sha512-sUK3U3oLmmO1+eTr8wdS+aSeUrChoJ9s939TbQXjWrULF16D+yEIUUzxsQgTxtvImty1xHuzXLMwKkvie2E9hg==
-=======
-"@galacticcouncil/ui@^5.1.2":
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-5.1.2.tgz#3c38a1204ed8aea816627a1bdd74cd50f1653227"
-  integrity sha512-ExAEn+u6VpiyYdhPOR9yeXp32sO8lkejK6peGx/rIxaCNd1VMVJxlWNEyqs5y8pO2PUdFu1tUAOQz3BQxt0YHg==
->>>>>>> origin/master
+"@galacticcouncil/ui@5.2.0-pr144-c73699f":
+  version "5.2.0-pr144-c73699f"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/ui/-/ui-5.2.0-pr144-c73699f.tgz#5e76a3c5fa0290d877d09212c3bd980b92a880b0"
+  integrity sha512-+B8m2J8dmqOjWFuKVGG65Q1QhG4kkB7AhmAFseiUllapZylPIF2axdguPzbNaKGGGeTCMu1E92ggPf4AKeFa5Q==
   dependencies:
     "@floating-ui/dom" "^1.5.1"
     "@lit-labs/virtualizer" "^2.0.14"
