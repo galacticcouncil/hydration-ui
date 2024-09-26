@@ -75,6 +75,11 @@ const NonClickableContainer = ({
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const asset = pool.meta
 
+  const farms = useFarms([pool.id])
+  const dynamicFees = useDynamicAssetFees(pool.meta.id)
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
       <MultipleAssetLogo size={26} iconId={asset.iconId} />
@@ -120,6 +125,15 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           >
             {asset.name}
           </Text>
+        )}
+        {farms.data?.length > 0 && !isDesktop && (
+          <GlobalFarmRowMulti
+            fontSize={11}
+            iconSize={11}
+            assetFee={dynamicFees.data?.assetFee}
+            farms={farms.data}
+            withAprSuffix
+          />
         )}
       </div>
     </NonClickableContainer>

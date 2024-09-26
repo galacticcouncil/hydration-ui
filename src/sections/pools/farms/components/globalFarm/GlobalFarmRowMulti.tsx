@@ -14,12 +14,14 @@ export const GlobalFarmRowMulti = ({
   assetFee = BN_0,
   fontSize = 14,
   iconSize = 14,
+  withAprSuffix = false,
   className,
 }: {
   farms: Farm[]
   assetFee?: BN
   fontSize?: number
   iconSize?: number
+  withAprSuffix?: boolean
   className?: string
 }) => {
   const { getAssetWithFallback } = useAssets()
@@ -42,6 +44,7 @@ export const GlobalFarmRowMulti = ({
       />
       <Text fs={fontSize} color="brightBlue200">
         {t(`value.percentage`, { value: totalMaxApr })}
+        {withAprSuffix ? ` ${t("apr")}` : ""}
       </Text>
       <InfoTooltip
         text={
