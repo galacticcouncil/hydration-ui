@@ -1,5 +1,5 @@
 import { useAssets } from "providers/assets"
-import { useAllLiquidityPositions, useOmnipoolAssets } from "api/omnipool"
+import { useAllLiquidityPositions, useOmnipoolDataObserver } from "api/omnipool"
 import { useTVL } from "api/stats"
 import BN from "bignumber.js"
 import { useMemo } from "react"
@@ -15,10 +15,8 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
 
   const positions = useAllLiquidityPositions()
 
-  const omnipoolAssets = useOmnipoolAssets()
-  const omnipoolAsset = omnipoolAssets.data?.find(
-    (omnipoolAsset) => omnipoolAsset.id === assetId,
-  )
+  const omnipoolAssets = useOmnipoolDataObserver()
+  const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
   const { getData } = useLiquidityPositionData([assetId])
 
