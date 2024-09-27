@@ -275,7 +275,7 @@ export const AddStablepoolLiquidity = ({
               }
             />
             {isJoinFarms && (
-              <div sx={{ flex: "column", gap: 8 }}>
+              <div sx={{ flex: "column", gap: 8, mt: 8 }}>
                 {farms.map((farm) => {
                   return (
                     <FarmDetailsRow

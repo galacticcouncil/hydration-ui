@@ -187,8 +187,8 @@ export const AddLiquidityForm = ({
         />
         <Spacer size={20} />
         <SummaryRow
-          label={t("liquidity.add.modal.lpFee")}
-          description={t("liquidity.add.modal.lpFee.description")}
+          label={t("liquidity.add.modal.tradeFee")}
+          description={t("liquidity.add.modal.tradeFee.description")}
           content={
             assetId === native.id
               ? "--"
@@ -225,7 +225,7 @@ export const AddLiquidityForm = ({
               }
             />
             {isJoinFarms && (
-              <div sx={{ flex: "column", gap: 8 }}>
+              <div sx={{ flex: "column", gap: 8, mt: 8 }}>
                 {farms.map((farm) => {
                   return (
                     <FarmDetailsRow

@@ -198,7 +198,6 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
               <AddLiquidityForm
                 assetId={assetId}
                 onClose={onClose}
-                onAssetOpen={() => paginateTo(Page.ASSET_SELECTOR)}
                 farms={farms}
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 onSuccess={onSuccess}

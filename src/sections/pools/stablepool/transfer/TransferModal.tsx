@@ -372,6 +372,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
           {
             title: t("selectAsset.title"),
             headerVariant: "GeistMono",
+            noPadding: true,
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
