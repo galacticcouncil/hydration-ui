@@ -7,6 +7,7 @@ import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import Distribution from "assets/icons/Distribution.svg?react"
+import CalendarIcon from "assets/icons/CalendarIcon.svg?react"
 import Hydrated from "assets/icons/Hydrated.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { Farm, useFarmApr } from "api/farms"
@@ -86,11 +87,7 @@ export const FarmDetailsCard = ({
   const isFull = fullness.gte(100)
 
   return (
-    <SContainer
-      isClickable={isClickable}
-      onClick={() => onSelect?.()}
-      isJoined={!!depositNft}
-    >
+    <SContainer isClickable={isClickable} onClick={() => onSelect?.()}>
       <div
         sx={{
           flex: "column",
@@ -98,7 +95,16 @@ export const FarmDetailsCard = ({
           gap: 12,
         }}
       >
-        {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+        {(!compact || depositNft) && (
+          <div sx={{ flex: "row", justify: "space-between" }}>
+            {!compact && (
+              <Text color="basic200" fs={14}>
+                {t("farms.details.card.title")}
+              </Text>
+            )}
+            {depositNft && <Tag>{t("farms.details.card.tag.label")}</Tag>}
+          </div>
+        )}
         <div
           sx={{
             flex: "row",
@@ -109,11 +115,16 @@ export const FarmDetailsCard = ({
         >
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Icon size={24} icon={<AssetLogo id={asset.id} />} />
-            <Text fs={[18, 16]} font="GeistMedium">
+            <Text fs={16} font="GeistMedium">
               {asset.symbol}
             </Text>
           </div>
-          <Text fs={18} lh={18} fw={400} css={{ whiteSpace: "nowrap" }}>
+          <Text
+            fs={16}
+            lh={16}
+            font="GeistMedium"
+            css={{ whiteSpace: "nowrap" }}
+          >
             {apr.data.minApr && apr.data?.apr.gt(0)
               ? t("value.upToAPR", {
                   maxApr: apr.data?.apr,
@@ -125,21 +136,8 @@ export const FarmDetailsCard = ({
 
       <div sx={{ flex: "column", flexGrow: 1, width: "100%" }}>
         <SRow compact={compact}>
-          {compact ? (
-            <Icon sx={{ color: "darkBlue200" }} icon={<Distribution />} />
-          ) : (
-            <LinearProgress
-              size="small"
-              color="brightBlue500"
-              withoutLabel
-              percent={apr.data.distributedRewards
-                .div(apr.data.potMaxRewards)
-                .times(100)
-                .toNumber()}
-            />
-          )}
-
-          <Text tAlign={compact ? "left" : "right"}>
+          <Icon sx={{ color: "darkBlue200" }} icon={<Distribution />} />
+          <Text>
             <Trans
               t={t}
               i18nKey="farms.details.card.distribution"
@@ -155,27 +153,21 @@ export const FarmDetailsCard = ({
               <Text as="span" fs={14} color="basic300" />
             </Trans>
           </Text>
-        </SRow>
-        <SRow compact={compact}>
-          {compact ? (
-            <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
-          ) : (
+          {!compact && (
             <LinearProgress
               size="small"
+              color="brightBlue500"
               withoutLabel
-              percent={fullness.toNumber()}
-              colorCustom={
-                true
-                  ? theme.gradients.pinkDarkPink
-                  : theme.gradients.lightGreenOrange
-              }
+              percent={apr.data.distributedRewards
+                .div(apr.data.potMaxRewards)
+                .times(100)
+                .toNumber()}
             />
           )}
-
-          <div
-            sx={{ flex: "row", gap: 2, align: "center" }}
-            css={{ justifySelf: compact ? "start" : "end" }}
-          >
+        </SRow>
+        <SRow compact={compact}>
+          <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
+          <div sx={{ flex: "row", gap: 2, align: "center" }}>
             <Text fs={14} color="basic100">
               {t("farms.details.card.capacity", {
                 capacity: fullness,
@@ -187,6 +179,18 @@ export const FarmDetailsCard = ({
               </InfoTooltip>
             )}
           </div>
+          {!compact && (
+            <LinearProgress
+              size="small"
+              withoutLabel
+              percent={fullness.toNumber()}
+              colorCustom={
+                true
+                  ? theme.gradients.pinkDarkPink
+                  : theme.gradients.lightGreenOrange
+              }
+            />
+          )}
         </SRow>
         {depositData && (
           <>
@@ -203,20 +207,21 @@ export const FarmDetailsCard = ({
               </Text>
               <GradientText
                 fs={14}
-                font="GeistMedium"
+                font="GeistSemiBold"
                 gradient="pinkLightBlue"
                 tAlign="right"
                 sx={{ width: "fit-content" }}
-                css={{ justifySelf: "end" }}
+                css={{ justifySelf: "end", gridColumn: "span 2 / span 2" }}
               >
                 {t("value.APR", { apr: currentApr })}
               </GradientText>
             </SRow>
           </>
         )}
-        <SRow compact={compact} sx={{ pb: 0, flex: "row" }}>
-          <Text fs={12} lh={16} fw={400} color="basic500">
-            {secondsDurationToEnd != null &&
+        <SRow compact={compact} sx={{ pb: 0 }}>
+          <Icon sx={{ color: "brightBlue300" }} icon={<CalendarIcon />} />
+          <Text fs={14} lh={18}>
+            {secondsDurationToEnd &&
               t("farms.details.card.end.value", {
                 end: addSeconds(new Date(), secondsDurationToEnd),
               })}
@@ -245,10 +250,10 @@ const LockedValue = ({ depositData }: { depositData: TDepositData }) => {
     <GradientText
       fs={14}
       tAlign="right"
-      font="GeistMedium"
+      font="GeistSemiBold"
       gradient="pinkLightBlue"
       sx={{ width: "fit-content" }}
-      css={{ justifySelf: "end" }}
+      css={{ justifySelf: "end", gridColumn: "span 2 / span 2" }}
     >
       {isXYKDeposit(depositData) ? (
         <>
