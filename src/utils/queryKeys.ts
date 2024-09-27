@@ -49,6 +49,10 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
+  dynamicAssetFee: (id: Maybe<u32 | string>) => [
+    "dynamicAssetFee",
+    id?.toString(),
+  ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   allXYKDeposits: [QUERY_KEY_PREFIX, "allXYKDeposits"],
   omnipoolDeposits: (ids: string[]) => [

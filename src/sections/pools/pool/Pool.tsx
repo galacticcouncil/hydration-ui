@@ -16,7 +16,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { SPoolContainer } from "./Pool.styled"
 import { createContext, useContext } from "react"
 
-const PoolContext = createContext<{
+export const PoolContext = createContext<{
   pool: TPoolFullData | TXYKPoolFullData
   isXYK: boolean
 }>({
