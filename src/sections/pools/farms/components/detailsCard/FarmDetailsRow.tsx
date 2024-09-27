@@ -59,11 +59,7 @@ export const FarmDetailsRow = ({ farm }: FarmDetailsRowProps) => {
         />
         <div>
           <Text fs={12} lh={12} color="brightBlue300" font="GeistMedium">
-            {apr.data?.apr?.gt(0) && (
-              <>
-                {t("value.percentage", { value: apr.data.apr })} {t("apr")}
-              </>
-            )}
+            {apr.data?.apr?.gt(0) && t("value.APR", { apr: apr.data.apr })}
           </Text>
         </div>
         <div sx={{ ml: "auto", flex: "row", align: "center" }}>

@@ -49,11 +49,6 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
-  poolAssets: (address: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolAssets",
-    address.toString(),
-  ],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
