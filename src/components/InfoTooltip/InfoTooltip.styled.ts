@@ -14,8 +14,16 @@ export const SContent = styled(Tooltip.Content)<{ type: "default" | "black" }>`
   z-index: 99999;
 
   max-width: calc(100vw - 12px * 2);
+  max-width: 280px;
 
-  padding: 11px 16px;
+  font-size: 12px;
+  line-height: 16px;
+
+  padding: 10px 14px;
+
+  @media ${theme.viewport.gte.sm} {
+    padding: 14px 16px;
+  }
 
   ${({ type }) =>
     type === "default"

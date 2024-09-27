@@ -45,7 +45,7 @@ export const ModalContents = ({
   const [animating, setAnimating] = useState(false)
 
   const canBack =
-    !contents[page].hideBack && !!onBack && (forceBack || page > 0)
+    !contents[page]?.hideBack && !!onBack && (forceBack || page > 0)
 
   const title = contents[page].title
   const description = contents[page].description
