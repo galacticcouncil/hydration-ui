@@ -36,7 +36,7 @@ export const Web3ConnectAccountSelect = ({
   provider,
 }: Props) => {
   const { t } = useTranslation()
-  const [, copy] = useCopyToClipboard()
+  const [{ value }, copy] = useCopyToClipboard()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
@@ -90,8 +90,11 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <InfoTooltip
-            text={t("wallet.header.copyAddress.hover")}
-            textOnClick={t("wallet.header.copyAddress.click")}
+            text={
+              value
+                ? t("wallet.header.copyAddress.click")
+                : t("wallet.header.copyAddress.hover")
+            }
           >
             <CopyIcon
               width={18}
@@ -100,7 +103,10 @@ export const Web3ConnectAccountSelect = ({
               css={{
                 cursor: "pointer",
               }}
-              onClick={() => copy(address.toString())}
+              onClick={(e) => {
+                e.stopPropagation()
+                copy(address.toString())
+              }}
             />
           </InfoTooltip>
         </div>

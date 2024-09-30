@@ -21,6 +21,9 @@ import {
   getXCall,
 } from "sections/xcm/XcmPage.utils"
 import { genesisHashToChain } from "utils/helpers"
+import { Asset } from "@galacticcouncil/sdk"
+import { useRpcProvider } from "providers/rpcProvider"
+import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -34,6 +37,9 @@ export const XcmApp = createComponent({
     onXcmNew: "gc:xcm:new" as EventName<CustomEvent<TxInfo>>,
     onWalletChange: "gc:wallet:change" as EventName<
       CustomEvent<WalletChangeDetail>
+    >,
+    onCheckAssetDataClick: "gc:external:checkData" as EventName<
+      CustomEvent<Asset>
     >,
   },
 })
@@ -51,8 +57,10 @@ type SearchGenerics = MakeGenerics<{
 }>
 
 export function XcmPage() {
+  const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
+  const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
@@ -65,8 +73,6 @@ export function XcmPage() {
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
 
   const rpcUrlList = useActiveRpcUrlList()
-
-  const ref = React.useRef<Apps.XcmApp>(null)
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     await createTransaction(
@@ -131,7 +137,11 @@ export function XcmPage() {
   return (
     <SContainer>
       <XcmApp
-        ref={ref}
+        ref={(r) => {
+          if (r) {
+            r.setAttribute("assetCheckEnabled", "")
+          }
+        }}
         srcChain={srcChainDefault}
         destChain={destChainDefault}
         asset={assetDefault}
@@ -144,7 +154,15 @@ export function XcmPage() {
         onWalletChange={handleWalletChange}
         ss58Prefix={ss58Prefix}
         blacklist={blacklist}
+        onCheckAssetDataClick={(e) => setTokenCheck(e.detail)}
       />
+      {isLoaded && tokenCheck && (
+        <ExternalAssetUpdateModal
+          assetId={tokenCheck.id}
+          open={!!tokenCheck}
+          onClose={() => setTokenCheck(null)}
+        />
+      )}
     </SContainer>
   )
 }
