@@ -79,6 +79,7 @@ const walletConnect: Wallet = new WalletConnect({
     if (!session) {
       const state = useWeb3ConnectStore.getState()
       state.disconnect(WalletProviderType.WalletConnect)
+      state.disconnect(WalletProviderType.WalletConnectEvm)
       if (state.open) {
         state.toggle()
       }
@@ -87,6 +88,7 @@ const walletConnect: Wallet = new WalletConnect({
   onSesssionDelete: () => {
     const state = useWeb3ConnectStore.getState()
     state.disconnect(WalletProviderType.WalletConnect)
+    state.disconnect(WalletProviderType.WalletConnectEvm)
   },
 })
 
