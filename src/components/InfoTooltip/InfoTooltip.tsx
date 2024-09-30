@@ -2,12 +2,11 @@ import * as Tooltip from "@radix-ui/react-tooltip"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode, useState } from "react"
 import { theme } from "theme"
-import { SContent, STrigger } from "./InfoTooltip.styled"
+import { SContent, SInfoIcon, STrigger } from "./InfoTooltip.styled"
 
 type InfoTooltipProps = {
   text: ReactNode | string
-  textOnClick?: ReactNode
-  children: ReactNode
+  children?: ReactNode
   type?: "default" | "black"
   side?: Tooltip.TooltipContentProps["side"]
   asChild?: boolean
@@ -15,37 +14,21 @@ type InfoTooltipProps = {
 
 export function InfoTooltip({
   text,
-  textOnClick,
   children,
   type = "default",
   side = "bottom",
   asChild = false,
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false)
-  const [content, setContent] = useState<ReactNode | null>(
-    textOnClick != null ? text : null,
-  )
 
   const Trigger = asChild ? Tooltip.Trigger : STrigger
 
   return (
-    <Tooltip.Root
-      delayDuration={0}
-      open={open}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen)
-        // reset state of the content
-        textOnClick && !isOpen && setContent(text)
-      }}
-    >
+    <Tooltip.Root delayDuration={0} open={open} onOpenChange={setOpen}>
       <Trigger
         type="button"
         asChild={asChild}
-        onClick={(e) => {
-          textOnClick && e.preventDefault()
-          textOnClick && e.stopPropagation()
-          // change the content on the click if the text is provided
-          textOnClick && setContent(textOnClick)
+        onClick={() => {
           setOpen(true)
         }}
         onPointerDown={(e) => {
@@ -53,7 +36,7 @@ export function InfoTooltip({
           e.stopPropagation()
         }}
       >
-        {children}
+        {children || <SInfoIcon />}
       </Trigger>
       <Tooltip.Portal>
         <SContent
@@ -65,8 +48,8 @@ export function InfoTooltip({
           collisionPadding={12}
         >
           {typeof text === "string" ? (
-            <Text fs={11} fw={500}>
-              {textOnClick != null ? content : text}
+            <Text fs={12} lh={16}>
+              {text}
             </Text>
           ) : (
             text

@@ -5,6 +5,8 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccountBalances } from "./accountBalances"
+import { ApiPromise } from "@polkadot/api"
+import type { u32 } from "@polkadot/types"
 
 export const useShareOfPools = (assets: string[]) => {
   const { account } = useAccount()
@@ -56,5 +58,26 @@ export const useSDKPools = () => {
       return await tradeRouter.getPools()
     },
     enabled: isLoaded,
+  })
+}
+
+const getDynamicAssetFees =
+  (api: ApiPromise, assetId: string | u32) => async () => {
+    const res = await api.query.dynamicFees.assetFee(assetId)
+    const data = res.unwrap()
+
+    return {
+      protocolFee: data.protocolFee.toBigNumber().div(10_000),
+      assetFee: data.assetFee.toBigNumber().div(10_000),
+    }
+  }
+
+export const useDynamicAssetFees = (assetId: string | u32) => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.dynamicAssetFee(assetId),
+    queryFn: getDynamicAssetFees(api, assetId),
+    enabled: isLoaded && !!assetId,
   })
 }
