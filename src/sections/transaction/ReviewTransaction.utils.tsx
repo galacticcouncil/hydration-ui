@@ -527,6 +527,8 @@ const useStoreExternalAssetsOnSign = () => {
 }
 
 export const useSendTx = () => {
+  const { account } = useEvmAccount()
+  const address = account?.address ?? ""
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
@@ -560,10 +562,10 @@ export const useSendTx = () => {
   const sendPermitTx = useSendDispatchPermit({
     onMutate: ({ permit }) => {
       setTxType("permit")
-      incrementPermitNonce()
       setPendingPermit(permit)
+      incrementPermitNonce(address)
     },
-    onError: () => revertPermitNonce(),
+    onError: () => revertPermitNonce(address),
     onSettled: () => setPendingPermit(null),
   })
 
