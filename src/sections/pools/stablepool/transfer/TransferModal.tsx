@@ -293,6 +293,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 <TransferOptions
                   disableOmnipool={!canAddLiquidity}
                   onSelect={setSelectedOption}
+                  farms={farms}
                   selected={selectedOption}
                 />
                 <Button
