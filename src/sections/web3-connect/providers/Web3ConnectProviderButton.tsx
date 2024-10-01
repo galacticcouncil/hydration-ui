@@ -43,7 +43,13 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     onMutate: () => setStatus(type, WalletProviderStatus.Pending),
     onSuccess: () => setStatus(type, WalletProviderStatus.Connected),
     onError: (error) => {
-      setStatus(type, WalletProviderStatus.Error)
+      if (
+        type !== WalletProviderType.WalletConnect &&
+        type !== WalletProviderType.WalletConnectEvm
+      ) {
+        setStatus(type, WalletProviderStatus.Error)
+      }
+
       if (error instanceof Error && error.message) {
         setError(error.message)
       }
