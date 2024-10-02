@@ -2,6 +2,7 @@ import { FC, Fragment, useMemo, useState } from "react"
 import {
   WalletProviderType,
   useAccount,
+  useAccountBalanceMap,
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
@@ -18,7 +19,6 @@ import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
 import { useDebounce, useShallowCompareEffect } from "react-use"
 import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
 import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
-import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { arraySearch } from "utils/helpers"
 import NoActivities from "assets/icons/NoActivities.svg?react"
@@ -29,7 +29,6 @@ import { Alert } from "components/Alert/Alert"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
-import { create } from "zustand"
 import { isEvmAccount } from "utils/evm"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
@@ -42,18 +41,6 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
 
   return Web3ConnectSubstrateAccount
 }
-
-const useAccountBalanceMap = create<{
-  balanceMap: Map<string, BN>
-  setBalanceMap: (address: string, balance: BN) => void
-}>((set) => ({
-  balanceMap: new Map(),
-  setBalanceMap: (address, balance) => {
-    set(({ balanceMap }) => ({
-      balanceMap: new Map(balanceMap).set(address, balance),
-    }))
-  },
-}))
 
 const AccountComponent: FC<
   Account & {
