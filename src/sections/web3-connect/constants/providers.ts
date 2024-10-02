@@ -15,6 +15,7 @@ export enum WalletProviderType {
   Polkagate = "polkagate",
   AlephZero = "aleph-zero",
   WalletConnect = "walletconnect",
+  WalletConnectEvm = "walletconnect-evm",
   ExternalWallet = "external",
 }
 
@@ -33,7 +34,7 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   //WalletProviderType.TrustWallet,
   WalletProviderType.BraveWallet,
   WalletProviderType.Phantom,
-  WalletProviderType.WalletConnect,
+  WalletProviderType.WalletConnectEvm,
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [

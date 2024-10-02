@@ -10,7 +10,7 @@ export const SValueContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: 6px;
-  align-self: center;
+  align-items: center;
   justify-content: space-between;
 
   width: 100%;

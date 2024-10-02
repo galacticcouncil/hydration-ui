@@ -19,6 +19,9 @@ import { useEffect } from "react"
 import { useSettingsStore } from "state/store"
 
 const styles = css`
+  &:last-of-type {
+    padding-right: 0;
+  }
   @media ${theme.viewport.gte.sm} {
     &:last-of-type {
       padding-right: 30px;
@@ -82,7 +85,9 @@ export const PoolsTable = ({
           <TableBodyContent>
             {table.getRowModel().rows.map((row, i) => (
               <TableRow
-                onClick={() => onRowSelect(row.original.id)}
+                onClick={() => {
+                  onRowSelect(row.original.id)
+                }}
                 key={row.id}
                 css={{ cursor: "pointer" }}
               >

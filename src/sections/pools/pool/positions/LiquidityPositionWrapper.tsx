@@ -19,9 +19,14 @@ import BN from "bignumber.js"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TLPData } from "utils/omnipool"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const LiquidityPositionWrapper = () => {
   const { t } = useTranslation()
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState<TLPData | TLPData[] | undefined>(
     undefined,
@@ -50,6 +55,16 @@ export const LiquidityPositionWrapper = () => {
     return { value: BN_0, hub: BN_0, display: BN_0, totalValue: BN_0 }
   }, [positions, positionsNumber])
 
+  const onSuccess = () => {
+    refetchPositions()
+
+    if (pool.isStablePool) {
+      queryClient.invalidateQueries(
+        QUERY_KEYS.tokenBalance(pool.id, account?.address),
+      )
+    }
+  }
+
   const isHubValue = total.hub.gt(0)
 
   const positionsData = positions.reduce<{
@@ -67,7 +82,7 @@ export const LiquidityPositionWrapper = () => {
             key={`${i}-${position.assetId}`}
             position={position}
             index={i + 1}
-            onSuccess={refetchPositions}
+            onSuccess={onSuccess}
             onRemovePosition={() => setOpenRemove(position)}
             pool={pool}
           />
@@ -180,7 +195,7 @@ export const LiquidityPositionWrapper = () => {
           position={openRemove}
           isOpen
           onClose={() => setOpenRemove(undefined)}
-          onSuccess={refetchPositions}
+          onSuccess={onSuccess}
         />
       )}
     </>

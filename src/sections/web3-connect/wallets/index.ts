@@ -9,7 +9,7 @@ import { WalletConnect } from "./WalletConnect"
 import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "./SubWalletEvm"
 import { SubWallet } from "./SubWallet"
-import { TrustWallet } from "./TrustWallet"
+// import { TrustWallet } from "./TrustWallet"
 import { BraveWallet } from "./BraveWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import {
@@ -17,6 +17,7 @@ import {
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -25,6 +26,7 @@ export type WalletProvider = {
 
 const wallets = getWallets().filter(
   ({ extensionName }) =>
+    // filter out wallet providers that are not supported by Hydration
     !SUBSTRATE_H160_PROVIDERS.includes(extensionName as WalletProviderType),
 )
 
@@ -33,7 +35,7 @@ const onMetaMaskLikeAccountChange =
   (accounts) => {
     const state = useWeb3ConnectStore.getState()
     if (!accounts || accounts.length === 0) {
-      state.disconnect()
+      state.disconnect(type)
     } else {
       const [{ address, name }] = accounts
       const isEvm = isEvmAddress(address)
@@ -66,17 +68,18 @@ const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
-const trustWallet: Wallet = new TrustWallet({
+/* const trustWallet: Wallet = new TrustWallet({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.TrustWallet,
   ),
-})
+}) */
 
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
       const state = useWeb3ConnectStore.getState()
-      state.disconnect()
+      state.disconnect(WalletProviderType.WalletConnect)
+      state.disconnect(WalletProviderType.WalletConnectEvm)
       if (state.open) {
         state.toggle()
       }
@@ -84,9 +87,12 @@ const walletConnect: Wallet = new WalletConnect({
   },
   onSesssionDelete: () => {
     const state = useWeb3ConnectStore.getState()
-    state.disconnect()
+    state.disconnect(WalletProviderType.WalletConnect)
+    state.disconnect(WalletProviderType.WalletConnectEvm)
   },
 })
+
+const walletConnectEvm: Wallet = new WalletConnectEvm()
 
 const externalWallet: Wallet = new ExternalWallet()
 
@@ -97,16 +103,17 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
-  trustWallet,
+  //trustWallet,
   novaWallet,
   walletConnect,
+  walletConnectEvm,
   externalWallet,
 ].map((wallet) => ({
   wallet,
   type: normalizeProviderType(wallet),
 }))
 
-function normalizeProviderType(wallet: Wallet): WalletProviderType {
+export function normalizeProviderType(wallet: Wallet): WalletProviderType {
   if (wallet instanceof NovaWallet) {
     return WalletProviderType.NovaWallet
   }
@@ -131,10 +138,10 @@ function syncSupportedWalletProviders(wallet: Wallet) {
 
 const eip6963ProvidersByRdns = new Map([
   ["io.metamask", { Wallet: MetaMask, type: WalletProviderType.MetaMask }],
-  [
-    "com.trustwallet.app",
-    { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
-  ],
+  // [
+  //   "com.trustwallet.app",
+  //   { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
+  // ],
   [
     "xyz.talisman",
     { Wallet: TalismanEvm, type: WalletProviderType.TalismanEvm },

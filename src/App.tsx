@@ -10,6 +10,14 @@ import { AppLoader } from "components/AppLoader/AppLoader"
 
 import "unfonts.css"
 
+/**
+ * Vite Preload Error Handling
+ * @see https://vitejs.dev/guide/build#load-error-handling
+ */
+window.addEventListener("vite:preloadError", (event) => {
+  window.location.reload()
+})
+
 const AppProviders = lazy(async () => ({
   default: (await import("components/AppProviders/AppProviders")).AppProviders,
 }))

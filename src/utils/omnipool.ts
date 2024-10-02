@@ -2,7 +2,7 @@ import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { useOmnipoolAssets } from "api/omnipool"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
 import { useDisplayPrices, useDisplayPrice } from "./displayAsset"
@@ -21,9 +21,9 @@ export type TLPData = NonNullable<
 >
 
 export const useLiquidityPositionData = (assetsId?: string[]) => {
-  const { hub } = useAssets()
+  const { hub, getAssetWithFallback } = useAssets()
 
-  const omnipoolAssets = useOmnipoolAssets()
+  const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAssetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
 
   const hubSp = useDisplayPrice(hub.id)
@@ -31,9 +31,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
 
   const getData = useCallback(
     (position: TOmnipoolPosition, options?: IOptions) => {
-      const omnipoolAsset = omnipoolAssets.data?.find(
-        (omnipoolAsset) => omnipoolAsset.id === position.assetId.toString(),
-      )
+      const omnipoolAsset = omnipoolAssets.dataMap?.get(position.assetId)
 
       if (!omnipoolAsset) return undefined
 
@@ -41,7 +39,9 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
         (sp) => sp?.tokenIn === omnipoolAsset.id,
       )?.spotPrice
 
-      if (!spotPrice || !hubSp.data?.spotPrice) return undefined
+      const meta = getAssetWithFallback(omnipoolAsset.id)
+
+      if (!spotPrice || !hubSp.data?.spotPrice || !meta) return undefined
 
       const [nom, denom] = position.price.map((n) => new BN(n.toString()))
       const price = nom.div(denom)
@@ -55,8 +55,8 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
 
       const params: Parameters<typeof calculate_liquidity_out> = [
         omnipoolAsset.balance.toString(),
-        omnipoolAsset.data.hubReserve.toString(),
-        omnipoolAsset.data.shares.toString(),
+        omnipoolAsset.hubReserve,
+        omnipoolAsset.shares,
         position.amount.toString(),
         position.shares.toString(),
         positionPrice.toFixed(0),
@@ -72,7 +72,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
 
       const value =
         liquidityOutResult !== "-1" ? new BN(liquidityOutResult) : BN_NAN
-      const valueShifted = value.shiftedBy(-omnipoolAsset.meta.decimals)
+      const valueShifted = value.shiftedBy(-meta.decimals)
 
       let valueDisplay = BN_NAN
       let valueDisplayWithoutLrna = BN_NAN
@@ -81,7 +81,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
       let totalValueShifted = valueShifted
 
       const amount = position.amount
-      const amountShifted = amount.shiftedBy(-omnipoolAsset.meta.decimals)
+      const amountShifted = amount.shiftedBy(-meta.decimals)
       const amountDisplay = amountShifted.times(spotPrice)
 
       if (liquidityOutResult !== "-1") {
@@ -94,17 +94,14 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
           valueDisplay = valueDisplay.plus(lrnaDisplay)
 
           totalValueShifted = valueDisplay.div(spotPrice)
-          totalValue = scale(
-            valueDisplay.div(spotPrice),
-            omnipoolAsset.meta.decimals,
-          )
+          totalValue = scale(valueDisplay.div(spotPrice), meta.decimals)
         }
       }
 
       return {
         id: position.id,
-        symbol: omnipoolAsset.meta.symbol,
-        name: omnipoolAsset.meta.name,
+        symbol: meta.symbol,
+        name: meta.name,
         assetId: position.assetId,
         lrna,
         lrnaShifted,
@@ -120,10 +117,16 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
         shares,
         totalValue,
         totalValueShifted,
-        meta: omnipoolAsset.meta,
+        meta,
       }
     },
-    [hub.decimals, hubSp.data?.spotPrice, omnipoolAssets.data, spotPrices.data],
+    [
+      getAssetWithFallback,
+      hub.decimals,
+      hubSp.data?.spotPrice,
+      omnipoolAssets.dataMap,
+      spotPrices.data,
+    ],
   )
 
   return { getData }

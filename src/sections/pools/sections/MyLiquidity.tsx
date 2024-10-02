@@ -21,10 +21,12 @@ import { MyLiquidityTotal } from "sections/pools/header/MyLiquidityTotal"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { LINKS } from "utils/navigation"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const poolsWithMyPositions = true
 
 export const MyLiquidity = () => {
+  const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
   const { t } = useTranslation()
 
@@ -33,6 +35,10 @@ export const MyLiquidity = () => {
       id?: number
     }
   }>()
+
+  if (!account?.address) {
+    return <Navigate to={LINKS.allPools} />
+  }
 
   if (!isLoaded)
     return id != null ? (

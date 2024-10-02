@@ -11,6 +11,9 @@ import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_BILL } from "utils/constants"
+import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAddress } from "utils/evm"
+import { Badge } from "components/Badge/Badge"
 
 type Props = {
   name: string
@@ -33,8 +36,10 @@ export const Web3ConnectAccountSelect = ({
   provider,
 }: Props) => {
   const { t } = useTranslation()
-  const [, copy] = useCopyToClipboard()
+  const [{ value }, copy] = useCopyToClipboard()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
+  const { wallet } = getWalletProviderByType(provider)
+  const isEvm = isEvmAddress(address)
 
   return (
     <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
@@ -47,9 +52,25 @@ export const Web3ConnectAccountSelect = ({
 
       <div sx={{ flex: "column", gap: 6 }} css={{ flex: 1 }}>
         <div sx={{ flex: "row", justify: "space-between" }}>
-          <Text fs={14} color="white">
-            {name}
-          </Text>
+          <div sx={{ flex: "row", align: "center", gap: 4 }}>
+            {wallet && (
+              <img
+                loading="lazy"
+                src={wallet.logo.src}
+                alt={wallet.logo.alt}
+                width={12}
+                height={12}
+              />
+            )}
+            <Text fs={14} color="white">
+              {name}
+            </Text>
+            {isEvm && (
+              <Badge size="small" variant="orange" rounded={false}>
+                EVM
+              </Badge>
+            )}
+          </div>
           <Text fs={14} color="graySoft">
             {balance?.isFinite() && (
               <DisplayValue value={balance} compact={balance.gt(BN_BILL)} />
@@ -69,8 +90,11 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <InfoTooltip
-            text={t("wallet.header.copyAddress.hover")}
-            textOnClick={t("wallet.header.copyAddress.click")}
+            text={
+              value
+                ? t("wallet.header.copyAddress.click")
+                : t("wallet.header.copyAddress.hover")
+            }
           >
             <CopyIcon
               width={18}
@@ -79,7 +103,10 @@ export const Web3ConnectAccountSelect = ({
               css={{
                 cursor: "pointer",
               }}
-              onClick={() => copy(address.toString())}
+              onClick={(e) => {
+                e.stopPropagation()
+                copy(address.toString())
+              }}
             />
           </InfoTooltip>
         </div>

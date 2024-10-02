@@ -6,7 +6,7 @@ import {
 import { TransferOptions, Option } from "./TransferOptions"
 import { useState } from "react"
 import { Button } from "components/Button/Button"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
@@ -22,8 +22,8 @@ import { Farm } from "api/farms"
 import { useJoinFarms } from "utils/farms/deposit"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useRefetchAccountPositions } from "api/deposits"
-import { ToastMessage, useStore } from "state/store"
-import { TOAST_MESSAGES } from "state/toasts"
+import { useStore } from "state/store"
+import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
 import { isEvmAccount } from "utils/evm"
 import { useAssets } from "providers/assets"
@@ -52,7 +52,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   const refetch = useRefetchAccountPositions()
   const { createTransaction } = useStore()
   const isEvm = isEvmAccount(account?.address)
-  const [isJoinFarms, setIsJoinFarms] = useState(false)
+  const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
   const {
     id: poolId,
@@ -75,10 +75,11 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
     canAddLiquidity ? "OMNIPOOL" : "STABLEPOOL",
   )
 
+  const isOptionsPage = defaultPage === Page.OPTIONS
   const isOnlyStablepool = selectedOption === "STABLEPOOL"
   const isAddingToOmnipool = defaultPage === Page.MOVE_TO_OMNIPOOL
-  const isVisibleStepper = farms.length || !isAddingToOmnipool
-  const willJoinFarms = farms.length && isJoinFarms
+  const isVisibleStepper = farms.length > 0 || !isAddingToOmnipool
+  const willJoinFarms = farms.length > 0 && isJoinFarms
   const isMultipleFarms = farms.length > 1
 
   const joinFarms = useJoinFarms({
@@ -114,13 +115,17 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   ]
 
   const steps = [
-    ...(isAddingToOmnipool
-      ? []
-      : [
+    ...(isOptionsPage
+      ? [
           {
             label: t("liquidity.stablepool.transfer.select"),
             loadingLabel: t("liquidity.stablepool.transfer.select"),
           },
+        ]
+      : []),
+    ...(isAddingToOmnipool
+      ? []
+      : [
           {
             label: t("liquidity.stablepool.transfer.provide"),
             loadingLabel: t("liquidity.stablepool.transfer.adding"),
@@ -210,25 +215,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
     }
 
     if (shares) {
-      const toast = TOAST_MESSAGES.reduce((memo, type) => {
-        const msType = type === "onError" ? "onLoading" : type
-        memo[type] = (
-          <Trans
-            t={t}
-            i18nKey={`liquidity.add.modal.toast.${msType}`}
-            tOptions={{
-              value: scaleHuman(shares, meta.decimals),
-              symbol: meta.symbol,
-              where: "Omnipool",
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        )
-        return memo
-      }, {} as ToastMessage)
-
       await createTransaction(
         {
           tx: api.tx.omnipool.addLiquidity(pool.id, shares),
@@ -244,7 +230,14 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
           onError: () => onClose(),
           onClose,
           disableAutoClose: !!willJoinFarms,
-          toast,
+          toast: createToastMessages("liquidity.add.modal.toast", {
+            t,
+            tOptions: {
+              value: scaleHuman(shares, meta.decimals),
+              symbol: meta.symbol,
+              where: "Omnipool",
+            },
+          }),
         },
       )
     } else {
@@ -300,6 +293,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 <TransferOptions
                   disableOmnipool={!canAddLiquidity}
                   onSelect={setSelectedOption}
+                  farms={farms}
                   selected={selectedOption}
                 />
                 <Button
@@ -350,6 +344,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
                 asset={getAssetWithFallback(assetId ?? poolId)}
                 fee={fee ?? BN_0}
+                isJoinFarms={isJoinFarms && !isOnlyStablepool}
                 setIsJoinFarms={setIsJoinFarms}
               />
             ),
@@ -370,6 +365,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 farms={farms}
                 onSuccess={onAddToOmnipoolSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
+                isJoinFarms={isJoinFarms}
                 setIsJoinFarms={setIsJoinFarms}
               />
             ),
@@ -377,6 +373,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
           {
             title: t("selectAsset.title"),
             headerVariant: "GeistMono",
+            noPadding: true,
             content: (
               <AssetsModalContent
                 hideInactiveAssets={true}
