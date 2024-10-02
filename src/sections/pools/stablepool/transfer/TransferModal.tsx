@@ -28,6 +28,7 @@ import { scaleHuman } from "utils/balance"
 import { isEvmAccount } from "utils/evm"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 
 export enum Page {
   OPTIONS,
@@ -35,6 +36,7 @@ export enum Page {
   WAIT,
   MOVE_TO_OMNIPOOL,
   ASSETS,
+  LIMIT_LIQUIDITY,
 }
 
 type Props = {
@@ -282,7 +284,9 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
         onBack={
           !defaultPage && ![Page.OPTIONS, Page.WAIT].includes(page)
             ? goBack
-            : undefined
+            : page === Page.LIMIT_LIQUIDITY
+              ? () => paginateTo(Page.MOVE_TO_OMNIPOOL)
+              : undefined
         }
         contents={[
           {
@@ -367,6 +371,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 isJoinFarms={isJoinFarms}
                 setIsJoinFarms={setIsJoinFarms}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ),
           },
@@ -384,6 +389,14 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                   paginateTo(Page.ADD_LIQUIDITY)
                 }}
               />
+            ),
+          },
+          {
+            title: t("liquidity.add.modal.limit.title"),
+            noPadding: true,
+            headerVariant: "GeistMono",
+            content: (
+              <LimitModal onConfirm={() => paginateTo(Page.MOVE_TO_OMNIPOOL)} />
             ),
           },
         ]}

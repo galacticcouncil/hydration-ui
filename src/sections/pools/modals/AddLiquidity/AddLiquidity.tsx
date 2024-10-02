@@ -20,10 +20,12 @@ import { isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { LimitModal } from "./components/LimitModal/LimitModal"
 
 export enum Page {
   ADD_LIQUIDITY,
   ASSET_SELECTOR,
+  LIMIT_LIQUIDITY,
   WAIT,
 }
 
@@ -182,6 +184,11 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
         page={page}
         direction={direction}
         onClose={onClose}
+        onBack={
+          page === Page.LIMIT_LIQUIDITY
+            ? () => paginateTo(Page.ADD_LIQUIDITY)
+            : undefined
+        }
         contents={[
           {
             title: t("liquidity.add.modal.title"),
@@ -203,6 +210,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
                 onSuccess={onSuccess}
                 isJoinFarms={isJoinFarms}
                 setIsJoinFarms={setIsJoinFarms}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ),
           },
@@ -218,6 +226,14 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
                   back()
                 }}
               />
+            ),
+          },
+          {
+            title: t("liquidity.add.modal.limit.title"),
+            noPadding: true,
+            headerVariant: "GeistMono",
+            content: (
+              <LimitModal onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)} />
             ),
           },
           {

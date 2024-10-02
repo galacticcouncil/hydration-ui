@@ -48,6 +48,7 @@ import {
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { useDynamicAssetFees } from "api/pools"
+import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 
 const NonClickableContainer = ({
   children,
@@ -74,10 +75,6 @@ const NonClickableContainer = ({
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const asset = pool.meta
-
-  const farms = useFarms([pool.id])
-  const dynamicFees = useDynamicAssetFees(pool.meta.id)
-
   const isDesktop = useMedia(theme.viewport.gte.md)
 
   return (
@@ -126,15 +123,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             {asset.name}
           </Text>
         )}
-        {farms.data?.length > 0 && !isDesktop && (
-          <GlobalFarmRowMulti
-            fontSize={11}
-            iconSize={11}
-            assetFee={dynamicFees.data?.assetFee}
-            farms={farms.data}
-            withAprSuffix
-          />
-        )}
+        {!isDesktop && <CompactAPY assetId={asset.id} />}
       </div>
     </NonClickableContainer>
   )
@@ -217,6 +206,7 @@ const LiquidityModalWrapper: React.FC<{
   )
 
   if (!pool) return null
+
   return (
     <PoolContext.Provider
       value={{
@@ -224,13 +214,15 @@ const LiquidityModalWrapper: React.FC<{
         isXYK: isXYKPoolType(pool),
       }}
     >
-      <TransferModal
-        defaultPage={
-          pool?.meta.isStableSwap ? Page.ADD_LIQUIDITY : Page.MOVE_TO_OMNIPOOL
-        }
-        farms={farms.data}
-        onClose={onClose}
-      />
+      {pool.meta.isStableSwap ? (
+        <TransferModal
+          defaultPage={Page.ADD_LIQUIDITY}
+          onClose={onClose}
+          farms={farms.data}
+        />
+      ) : (
+        <AddLiquidity isOpen onClose={onClose} farms={farms.data} />
+      )}
     </PoolContext.Provider>
   )
 }
@@ -312,6 +304,24 @@ const ManageLiquidityButton: React.FC<{
       )}
     </div>
   )
+}
+
+const CompactAPY = ({ assetId }: { assetId: string }) => {
+  const farms = useFarms([assetId])
+  const dynamicFees = useDynamicAssetFees(assetId)
+
+  if (farms.data?.length)
+    return (
+      <GlobalFarmRowMulti
+        fontSize={11}
+        iconSize={11}
+        assetFee={dynamicFees.data?.assetFee}
+        farms={farms.data}
+        withAprSuffix
+      />
+    )
+
+  return null
 }
 
 const APY = ({

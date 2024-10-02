@@ -1,6 +1,6 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BigNumber from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_100 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -10,11 +10,12 @@ import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
-import { Button } from "components/Button/Button"
+import { Button, ButtonTransparent } from "components/Button/Button"
 import { FormValues } from "utils/helpers"
 import { scale } from "utils/balance"
 import {
   getAddToOmnipoolFee,
+  getSharesToGet,
   useAddLiquidity,
   useAddToOmnipoolZod,
 } from "./AddLiquidity.utils"
@@ -31,6 +32,7 @@ import { useEffect } from "react"
 import { useAssets } from "providers/assets"
 import { Switch } from "components/Switch/Switch"
 import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
+import { useLiquidityLimit } from "state/liquidityLimit"
 
 type Props = {
   assetId: string
@@ -42,6 +44,7 @@ type Props = {
   farms: Farm[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
+  setLiquidityLimit: () => void
 }
 
 export const AddLiquidityForm = ({
@@ -54,11 +57,13 @@ export const AddLiquidityForm = ({
   farms,
   isJoinFarms,
   setIsJoinFarms,
+  setLiquidityLimit,
 }: Props) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
   const { native } = useAssets()
   const { createTransaction } = useStore()
+  const { addLiquidityLimit } = useLiquidityLimit()
 
   const zodSchema = useAddToOmnipoolZod(assetId, farms)
   const form = useForm<{
@@ -73,8 +78,14 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, debouncedAmount)
+  const {
+    poolShare,
+    spotPrice,
+    omnipoolFee,
+    assetMeta,
+    assetBalance,
+    ommipoolAsset,
+  } = useAddLiquidity(assetId, debouncedAmount)
 
   const estimatedFees = useEstimatedFees(getAddToOmnipoolFee(api, farms))
 
@@ -91,8 +102,19 @@ export const AddLiquidityForm = ({
 
     const amount = scale(values.amount, assetMeta.decimals).toString()
 
+    const tx =
+      BigNumber(addLiquidityLimit).gt(0) && ommipoolAsset
+        ? api.tx.omnipool.addLiquidityWithLimit(
+            assetId,
+            amount,
+            getSharesToGet(ommipoolAsset, amount)
+              .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+              .toFixed(0),
+          )
+        : api.tx.omnipool.addLiquidity(assetId, amount)
+
     return await createTransaction(
-      { tx: api.tx.omnipool.addLiquidity(assetId, amount) },
+      { tx },
       {
         onSuccess: (result) => {
           onSuccess(result, amount)
@@ -186,6 +208,24 @@ export const AddLiquidityForm = ({
           )}
         />
         <Spacer size={20} />
+        <SummaryRow
+          label="Trade Limit"
+          content={
+            <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+              <Text>{t("value.percentage", { value: addLiquidityLimit })}</Text>
+              <ButtonTransparent onClick={() => setLiquidityLimit()}>
+                <Text color="brightBlue200">{t("edit")}</Text>
+              </ButtonTransparent>
+            </div>
+          }
+        />
+        <Separator
+          color="darkBlue401"
+          sx={{
+            my: 4,
+            width: "auto",
+          }}
+        />
         <SummaryRow
           label={t("liquidity.add.modal.tradeFee")}
           description={t("liquidity.add.modal.tradeFee.description")}

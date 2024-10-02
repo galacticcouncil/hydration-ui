@@ -7,6 +7,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccountBalances } from "./accountBalances"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
+import { BN_NAN } from "utils/constants"
 
 export const useShareOfPools = (assets: string[]) => {
   const { account } = useAccount()
@@ -64,11 +65,12 @@ export const useSDKPools = () => {
 const getDynamicAssetFees =
   (api: ApiPromise, assetId: string | u32) => async () => {
     const res = await api.query.dynamicFees.assetFee(assetId)
-    const data = res.unwrap()
+
+    const data = res.unwrapOr(null)
 
     return {
-      protocolFee: data.protocolFee.toBigNumber().div(10_000),
-      assetFee: data.assetFee.toBigNumber().div(10_000),
+      protocolFee: data?.protocolFee.toBigNumber().div(10_000) ?? BN_NAN,
+      assetFee: data?.assetFee.toBigNumber().div(10_000) ?? BN_NAN,
     }
   }
 
