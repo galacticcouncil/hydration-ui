@@ -141,7 +141,11 @@ export const QUERY_KEYS = {
   ],
   nextEvmPermitNonce: (account: Maybe<AccountId32 | string>) => [
     "evmPermitNonce",
-    account,
+    account?.toString(),
+  ],
+  pendingEvmPermit: (account: Maybe<AccountId32 | string>) => [
+    "pendingEvmPermit",
+    account?.toString(),
   ],
   mathLoyaltyRates: (
     plannedYieldingPeriods: u32,
