@@ -345,6 +345,7 @@ export const QUERY_KEYS = {
   assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
+  progressToast: (hash: string) => ["progressToast", hash],
   xcmTransfer: (
     asset: string,
     srcAddr: string,
