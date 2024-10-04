@@ -112,6 +112,10 @@ export const useTransactionValues = ({
   const nonce = useNextNonce(account?.address)
   const permitNonce = useNextEvmPermitNonce(account?.address)
 
+  const isNonceLoading = shouldUsePermit
+    ? permitNonce.isLoading
+    : nonce.isLoading
+
   const era = useEra(
     boundedTx.era,
     bestNumber.data?.parachainBlockNumber.toString(),
@@ -129,8 +133,7 @@ export const useTransactionValues = ({
     evmPaymentFee.isInitialLoading ||
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
-    nonce.isLoading ||
-    permitNonce.isLoading ||
+    isNonceLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
