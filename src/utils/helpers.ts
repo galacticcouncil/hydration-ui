@@ -428,3 +428,6 @@ export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
 
   return true
 }
+
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))

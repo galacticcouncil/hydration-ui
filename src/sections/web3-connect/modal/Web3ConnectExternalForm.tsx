@@ -213,10 +213,13 @@ export const Web3ConnectExternalForm = ({
           </Button>
         )}
         <Button
-          disabled={!form.formState.isValid}
+          disabled={
+            form.formState.errors.delegates ? false : !form.formState.isValid
+          }
           variant="primary"
           type="submit"
           fullWidth
+          isLoading={form.formState.isSubmitting}
         >
           {form.formState.errors.delegates
             ? t("walletConnect.accountSelect.viewAsWallet")
