@@ -1,13 +1,9 @@
 import { InterestRate } from "@aave/contract-helpers"
-
 import { Box, Button, Typography, useTheme } from "@mui/material"
-import { ReactNode, useState } from "react"
+import { ReactNode } from "react"
 import { WalletIcon } from "sections/lending/components/icons/WalletIcon"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import {
-  Base64Token,
-  TokenIcon,
-} from "sections/lending/components/primitives/TokenIcon"
+import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
 
@@ -37,7 +33,6 @@ export const TxSuccessView = ({
   customText,
 }: SuccessTxViewProps) => {
   const { addERC20Token } = useWeb3Context()
-  const [base64, setBase64] = useState("")
   const theme = useTheme()
 
   return (
@@ -127,20 +122,12 @@ export const TxSuccessView = ({
                   symbol: addToken.aToken
                     ? `a${addToken.symbol}`
                     : addToken.symbol,
-                  image: !/_/.test(addToken.symbol) ? base64 : undefined,
                 })
               }}
               variant={theme.palette.mode === "dark" ? "outlined" : "contained"}
               size="medium"
               sx={{ mt: "8px", mb: "12px" }}
             >
-              {addToken.symbol && !/_/.test(addToken.symbol) && (
-                <Base64Token
-                  symbol={addToken.symbol}
-                  onImageGenerated={setBase64}
-                  aToken={addToken.aToken}
-                />
-              )}
               <WalletIcon sx={{ width: "20px", height: "20px" }} />
               <Typography variant="buttonM" color="white" ml="4px">
                 <span>Add to wallet</span>
