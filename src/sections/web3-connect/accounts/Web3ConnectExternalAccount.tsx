@@ -4,10 +4,14 @@ import { useShallow } from "hooks/useShallow"
 import { ComponentPropsWithoutRef, FC, useEffect } from "react"
 import {
   getWalletProviderByType,
+  useAccountBalanceMap,
   useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  useWeb3ConnectStore,
+  WalletProviderStatus,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
@@ -29,8 +33,18 @@ export const Web3ConnectExternalAccount: FC<
     setAccount,
     toggle,
     account: currentAccount,
+    setStatus,
+    getConnectedProviders,
   } = useWeb3ConnectStore(
-    useShallow((s) => pick(s, ["setAccount", "toggle", "account"])),
+    useShallow((s) =>
+      pick(s, [
+        "setAccount",
+        "toggle",
+        "account",
+        "setStatus",
+        "getConnectedProviders",
+      ]),
+    ),
   )
 
   const { address, provider } = account
@@ -52,17 +66,33 @@ export const Web3ConnectExternalAccount: FC<
   const isProxy = externalWalletData?.isProxy ?? false
   const delegates = externalWalletData?.delegates ?? []
 
+  const { balanceMap } = useAccountBalanceMap()
+
   useEffect(() => {
     if (isProxy && externalWallet) {
       const { wallet: proxyWallet } = getWalletProviderByType(
         externalWallet.proxyWalletProvider,
       )
 
-      if (proxyWallet?.installed && !proxyWallet?.extension) {
+      const { installed, extension } = proxyWallet ?? {}
+      const connected = getConnectedProviders().some(
+        ({ type }) => type === externalWallet.proxyWalletProvider,
+      )
+
+      if (!installed) return
+
+      if (!extension) {
         proxyWallet?.enable(POLKADOT_APP_NAME)
       }
+
+      if (!connected) {
+        setStatus(
+          externalWallet.proxyWalletProvider,
+          WalletProviderStatus.Connected,
+        )
+      }
     }
-  }, [externalWallet, isProxy])
+  }, [externalWallet, getConnectedProviders, isProxy, setStatus])
 
   const { data: accounts } = useWalletAccounts(
     externalWallet?.proxyWalletProvider,
@@ -126,32 +156,33 @@ export const Web3ConnectExternalAccount: FC<
           balance={balance}
           isProxy
         />
-        <SGroupContainer>
-          {filteredAccounts.map(({ address, displayAddress, name }) => {
-            return (
-              <SContainer key={address}>
-                <SLeaf />
-                <Web3ConnectAccount
-                  isActive={address === currentAccount?.delegate}
-                  provider={externalWallet?.proxyWalletProvider}
-                  name={name ?? "N/A"}
-                  address={address}
-                  onClick={async () => {
-                    setAccount({
-                      ...account,
-                      displayAddress,
-                      name: externalWallet.proxyAccountName,
-                      delegate: address,
-                    })
-                    await externalWallet?.enableProxy(POLKADOT_APP_NAME)
-                    toggle()
-                  }}
-                />
-              </SContainer>
-            )
-          })}
-        </SGroupContainer>
       </SContainer>
+      <SGroupContainer>
+        {filteredAccounts.map(({ address, displayAddress, name }) => {
+          return (
+            <SContainer key={address}>
+              <SLeaf />
+              <Web3ConnectAccount
+                isActive={address === currentAccount?.delegate}
+                provider={externalWallet?.proxyWalletProvider}
+                name={name ?? "N/A"}
+                address={address}
+                balance={balanceMap.get(address)}
+                onClick={async () => {
+                  setAccount({
+                    ...account,
+                    displayAddress,
+                    name: externalWallet.proxyAccountName,
+                    delegate: address,
+                  })
+                  await externalWallet?.enableProxy(POLKADOT_APP_NAME)
+                  toggle()
+                }}
+              />
+            </SContainer>
+          )
+        })}
+      </SGroupContainer>
     </div>
   )
 }

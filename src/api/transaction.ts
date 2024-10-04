@@ -1,9 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import {
-  useAccount,
-  useEvmAccount,
-  useWallet,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -11,11 +7,6 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import { BN_0, BN_1 } from "utils/constants"
-import {
-  EthereumSigner,
-  PermitResult,
-} from "sections/web3-connect/signer/EthereumSigner"
-import { create } from "zustand"
 import BigNumber from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { useAccountCurrency } from "api/payments"
@@ -55,51 +46,6 @@ export function useMultiplePaymentInfo(
   }))
 
   return useQueries({ queries })
-}
-
-export function useNextEvmPermitNonce() {
-  const { account } = useEvmAccount()
-  const address = account?.address ?? ""
-  const { wallet } = useWallet()
-  const {
-    permitNonce,
-    pendingPermit,
-    setPermitNonce,
-    incrementPermitNonce,
-    revertPermitNonce,
-    setPendingPermit,
-  } = useEvmPermitStore()
-
-  const isEvmSigner = wallet?.signer instanceof EthereumSigner
-  const currentPermitNonce = permitNonce[address]
-
-  useQuery(
-    QUERY_KEYS.nextEvmPermitNonce(address),
-    async () => {
-      if (!address) throw new Error("Missing address")
-      if (!wallet?.signer) throw new Error("Missing wallet signer")
-      if (!isEvmSigner) throw new Error("Invalid signer")
-      return await wallet.signer.getPermitNonce()
-    },
-    {
-      enabled: !!address && isEvmSigner && !currentPermitNonce,
-      cacheTime: 1000 * 60 * 60 * 24,
-      keepPreviousData: true,
-      onSuccess: (nonce) => {
-        if (address && nonce) {
-          setPermitNonce(address, nonce)
-        }
-      },
-    },
-  )
-
-  return {
-    permitNonce: currentPermitNonce ?? BN_0,
-    pendingPermit,
-    incrementPermitNonce,
-    revertPermitNonce,
-    setPendingPermit,
-  }
 }
 
 export function useNextNonce(account: Maybe<AccountId32 | string>) {
@@ -153,37 +99,6 @@ export async function getTransactionLinkFromHash(
     return undefined
   }
 }
-
-export const useEvmPermitStore = create<{
-  pendingPermit: PermitResult | null
-  permitNonce: { [address: string]: BigNumber }
-  setPermitNonce: (address: string, nonce: BigNumber) => void
-  setPendingPermit: (permit: PermitResult | null) => void
-  revertPermitNonce: (address: string) => void
-  incrementPermitNonce: (address: string) => void
-}>((set) => ({
-  pendingPermit: null,
-  permitNonce: {},
-  setPermitNonce: (address, nonce) =>
-    set(({ permitNonce }) => ({
-      permitNonce: { ...permitNonce, [address]: nonce },
-    })),
-  setPendingPermit: (permit) => set({ pendingPermit: permit }),
-  revertPermitNonce: (address) =>
-    set(({ permitNonce }) => ({
-      permitNonce: {
-        ...permitNonce,
-        [address]: (permitNonce[address] ?? BN_0).minus(1),
-      },
-    })),
-  incrementPermitNonce: (address) =>
-    set(({ permitNonce }) => ({
-      permitNonce: {
-        ...permitNonce,
-        [address]: (permitNonce[address] ?? BN_0).plus(1),
-      },
-    })),
-}))
 
 export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
   const { getAsset, native } = useAssets()
