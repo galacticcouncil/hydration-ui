@@ -50,6 +50,11 @@ export const useSupplyAssetsTableColumns = () => {
       }),
       accessor("walletBalanceUSD", {
         header: t("lending.walletBalance"),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         sortingFn: (a, b) =>
           Number(a.original.walletBalanceUSD) -
           Number(b.original.walletBalanceUSD),
@@ -223,8 +228,8 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
           ? reserve.reserveLiquidationThreshold !== "0" &&
             (!isIsolated || (isIsolated && !hasDifferentCollateral))
           : !isIsolated
-          ? false
-          : !hasDifferentCollateral
+            ? false
+            : !hasDifferentCollateral
 
         if (reserve.isWrappedBaseAsset) {
           let baseAvailableToDeposit = valueToBigNumber(
@@ -313,8 +318,8 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     const supplyReserves: unknown = showAll
       ? sortedSupplyReserves
       : filteredSupplyReserves.length >= 1
-      ? filteredSupplyReserves
-      : sortedSupplyReserves
+        ? filteredSupplyReserves
+        : sortedSupplyReserves
 
     return supplyReserves as DashboardReserve[]
   }, [

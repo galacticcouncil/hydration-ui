@@ -29,6 +29,7 @@ export const CollateralColumn = ({
         display: "row",
         align: "center",
         justify: "center",
+        gap: 4,
       }}
     >
       {!isIsolated ? (
@@ -36,7 +37,6 @@ export const CollateralColumn = ({
       ) : (
         <>
           <CollateralStates />
-          <br />
           <IsolatedEnabledBadge />
         </>
       )}

@@ -49,6 +49,11 @@ export const useBorrowAssetsTableColumns = () => {
       }),
       accessor("availableBorrowsInUSD", {
         header: t("lending.available"),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         sortingFn: (a, b) =>
           Number(a.original.availableBorrowsInUSD) -
           Number(b.original.availableBorrowsInUSD),
