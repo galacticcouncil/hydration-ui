@@ -1,12 +1,15 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useEvmAccount,
+  useWallet,
+} from "sections/web3-connect/Web3Connect.utils"
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
-import { isEvmAccount } from "utils/evm"
 import { BN_0, BN_1 } from "utils/constants"
 import {
   EthereumSigner,
@@ -55,8 +58,8 @@ export function useMultiplePaymentInfo(
 }
 
 export function useNextEvmPermitNonce() {
-  const { account } = useAccount()
-  const address = account?.address
+  const { account } = useEvmAccount()
+  const address = account?.address ?? ""
   const { wallet } = useWallet()
   const {
     permitNonce,
@@ -68,6 +71,7 @@ export function useNextEvmPermitNonce() {
   } = useEvmPermitStore()
 
   const isEvmSigner = wallet?.signer instanceof EthereumSigner
+  const currentPermitNonce = permitNonce[address]
 
   useQuery(
     QUERY_KEYS.nextEvmPermitNonce(address),
@@ -78,19 +82,19 @@ export function useNextEvmPermitNonce() {
       return await wallet.signer.getPermitNonce()
     },
     {
-      enabled: isEvmAccount(address) && isEvmSigner,
+      enabled: !!address && isEvmSigner && !currentPermitNonce,
       cacheTime: 1000 * 60 * 60 * 24,
-      staleTime: 1000 * 60 * 60 * 24,
+      keepPreviousData: true,
       onSuccess: (nonce) => {
-        if (nonce) {
-          setPermitNonce(nonce)
+        if (address && nonce) {
+          setPermitNonce(address, nonce)
         }
       },
     },
   )
 
   return {
-    permitNonce,
+    permitNonce: currentPermitNonce ?? BN_0,
     pendingPermit,
     incrementPermitNonce,
     revertPermitNonce,
@@ -152,20 +156,33 @@ export async function getTransactionLinkFromHash(
 
 export const useEvmPermitStore = create<{
   pendingPermit: PermitResult | null
-  permitNonce: BigNumber
-  setPermitNonce: (nonce: BigNumber) => void
+  permitNonce: { [address: string]: BigNumber }
+  setPermitNonce: (address: string, nonce: BigNumber) => void
   setPendingPermit: (permit: PermitResult | null) => void
-  revertPermitNonce: () => void
-  incrementPermitNonce: () => void
+  revertPermitNonce: (address: string) => void
+  incrementPermitNonce: (address: string) => void
 }>((set) => ({
   pendingPermit: null,
-  permitNonce: BN_0,
-  setPermitNonce: (nonce: BigNumber) => set({ permitNonce: nonce }),
+  permitNonce: {},
+  setPermitNonce: (address, nonce) =>
+    set(({ permitNonce }) => ({
+      permitNonce: { ...permitNonce, [address]: nonce },
+    })),
   setPendingPermit: (permit) => set({ pendingPermit: permit }),
-  revertPermitNonce: () =>
-    set((state) => ({ permitNonce: state.permitNonce.minus(1) })),
-  incrementPermitNonce: () =>
-    set((state) => ({ permitNonce: state.permitNonce.plus(1) })),
+  revertPermitNonce: (address) =>
+    set(({ permitNonce }) => ({
+      permitNonce: {
+        ...permitNonce,
+        [address]: (permitNonce[address] ?? BN_0).minus(1),
+      },
+    })),
+  incrementPermitNonce: (address) =>
+    set(({ permitNonce }) => ({
+      permitNonce: {
+        ...permitNonce,
+        [address]: (permitNonce[address] ?? BN_0).plus(1),
+      },
+    })),
 }))
 
 export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {

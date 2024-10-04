@@ -38,6 +38,10 @@ const Web3Connect = lazy(async () => ({
   default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
 }))
 
+const QuerySubscriptions = lazy(async () => ({
+  default: (await import("api/subscriptions")).QuerySubscriptions,
+}))
+
 const useSubheaderComponent = () => {
   const { t } = useTranslation()
   const matchRoute = useMatchRoute()
@@ -108,6 +112,7 @@ export const Page = ({ className }: Props) => {
         <Web3Connect />
         <Transactions />
         <ReferralsConnectWrapper />
+        <QuerySubscriptions />
       </Suspense>
     </>
   )

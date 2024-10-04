@@ -10,13 +10,19 @@ import {
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
-import { useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
-import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
-import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
+import {
+  TPool,
+  TXYKPool,
+  isXYKPoolType,
+  usePoolDetails,
+  usePools,
+} from "sections/pools/PoolsPage.utils"
+import { useFarms } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
@@ -36,6 +42,12 @@ import {
   defaultPaginationState,
   useTablePagination,
 } from "components/Table/TablePagination"
+import { PoolContext } from "sections/pools/pool/Pool"
+import {
+  Page,
+  TransferModal,
+} from "sections/pools/stablepool/transfer/TransferModal"
+import { useDynamicAssetFees } from "api/pools"
 
 const NonClickableContainer = ({
   children,
@@ -62,7 +74,11 @@ const NonClickableContainer = ({
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const asset = pool.meta
-  const farms = useFarms([asset.id])
+
+  const farms = useFarms([pool.id])
+  const dynamicFees = useDynamicAssetFees(pool.meta.id)
+
+  const isDesktop = useMedia(theme.viewport.gte.md)
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -72,9 +88,8 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           <Text
             fs={14}
             lh={16}
-            fw={700}
             color="white"
-            font="GeistMedium"
+            font="GeistSemiBold"
             css={{ whiteSpace: "nowrap" }}
           >
             {asset.symbol}
@@ -111,19 +126,119 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             {asset.name}
           </Text>
         )}
-        {farms.data?.length ? <GlobalFarmRowMulti farms={farms.data} /> : null}
+        {farms.data?.length > 0 && !isDesktop && (
+          <GlobalFarmRowMulti
+            fontSize={11}
+            iconSize={11}
+            assetFee={dynamicFees.data?.assetFee}
+            farms={farms.data}
+            withAprSuffix
+          />
+        )}
       </div>
     </NonClickableContainer>
   )
 }
 
-const AddLiqduidityButton = ({
-  pool,
-  onRowSelect,
-}: {
+const AddLiquidityButton: React.FC<{
+  poolId: string
+}> = ({ poolId }) => {
+  const { t } = useTranslation()
+  const { native } = useAssets()
+  const { account } = useAccount()
+  const [open, setOpen] = useState(false)
+  const farms = useFarms([poolId])
+
+  if (native.id === poolId) return null
+
+  const onClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setOpen(true)
+  }
+
+  const styles = {
+    height: 26,
+    padding: "6px 8px",
+    width: 88,
+    "& > span": {
+      fontSize: 12,
+      gap: 4,
+      alignItems: "center",
+    },
+  }
+
+  return (
+    <>
+      {farms.data.length > 0 ? (
+        <Button
+          variant="primary"
+          size="small"
+          css={styles}
+          disabled={account?.isExternalWalletConnected}
+          onClick={onClick}
+        >
+          {t("liquidity.asset.actions.joinFarms")}
+        </Button>
+      ) : (
+        <Button
+          variant="secondary"
+          size="small"
+          css={[
+            styles,
+            {
+              borderColor: `rgba(${theme.rgbColors.brightBlue300}, 0.4)`,
+            },
+          ]}
+          disabled={account?.isExternalWalletConnected}
+          onClick={onClick}
+        >
+          {t("liquidity.asset.actions.joinPool")}
+        </Button>
+      )}
+      {open && (
+        <LiquidityModalWrapper poolId={poolId} onClose={() => setOpen(false)} />
+      )}
+    </>
+  )
+}
+
+const LiquidityModalWrapper: React.FC<{
+  poolId: string
+  onClose: () => void
+}> = ({ poolId, onClose }) => {
+  const farms = useFarms([poolId])
+  const pools = usePools()
+  const poolDetails = usePoolDetails(poolId)
+
+  const pool = useMemo(
+    () => pools.data?.find((pool) => pool.id === poolId),
+    [poolId, pools.data],
+  )
+
+  if (!pool) return null
+  return (
+    <PoolContext.Provider
+      value={{
+        pool: { ...pool, ...poolDetails.data },
+        isXYK: isXYKPoolType(pool),
+      }}
+    >
+      <TransferModal
+        defaultPage={
+          pool?.meta.isStableSwap ? Page.ADD_LIQUIDITY : Page.MOVE_TO_OMNIPOOL
+        }
+        farms={farms.data}
+        onClose={onClose}
+      />
+    </PoolContext.Provider>
+  )
+}
+
+const ManageLiquidityButton: React.FC<{
   pool: TPool | TXYKPool
   onRowSelect: (id: string) => void
-}) => {
+}> = ({ pool, onRowSelect }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
 
@@ -199,40 +314,6 @@ const AddLiqduidityButton = ({
   )
 }
 
-const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
-  const { t } = useTranslation()
-
-  const farmAprs = useFarmAprs(farms)
-
-  const percentage = useMemo(() => {
-    if (farmAprs.data?.length) {
-      return getMinAndMaxAPR(farmAprs)
-    }
-
-    return {
-      minApr: BN_0,
-      maxApr: BN_0,
-    }
-  }, [farmAprs])
-
-  const isLoading = farmAprs.isInitialLoading
-
-  if (isLoading) return <CellSkeleton />
-
-  return (
-    <NonClickableContainer>
-      <Text color="white" fs={14}>
-        {percentage.maxApr.gt(0)
-          ? t("value.percentage.range", {
-              from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
-              to: percentage.maxApr.plus(apy),
-            })
-          : t("value.percentage", { value: BN(apy) })}
-      </Text>
-    </NonClickableContainer>
-  )
-}
-
 const APY = ({
   assetId,
   fee,
@@ -245,11 +326,21 @@ const APY = ({
   const { t } = useTranslation()
   const { native } = useAssets()
   const farms = useFarms([assetId])
+  const dynamicFees = useDynamicAssetFees(assetId)
 
-  if (isLoading || farms.isLoading) return <CellSkeleton />
+  if (isLoading || farms.isLoading || dynamicFees.isLoading) {
+    return <CellSkeleton />
+  }
 
   if (farms.data?.length)
-    return <APYFarming farms={farms.data} apy={fee.toNumber()} />
+    return (
+      <NonClickableContainer>
+        <GlobalFarmRowMulti
+          assetFee={dynamicFees.data?.assetFee}
+          farms={farms.data}
+        />
+      </NonClickableContainer>
+    )
 
   return (
     <NonClickableContainer>
@@ -272,16 +363,16 @@ export const usePoolTable = (
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useTablePagination()
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isTablet = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.md)
 
   const columnVisibility: VisibilityState = {
     name: true,
     spotPrice: isDesktop,
-    tvlDisplay: isDesktop,
-    apy: isDesktop,
-    fee: isDesktop,
     volumeDisplay: true,
-    actions: isDesktop,
+    tvlDisplay: isTablet,
+    apy: isDesktop,
+    actions: isTablet,
   }
 
   const columns = useMemo(
@@ -291,6 +382,63 @@ export const usePoolTable = (
         header: t("liquidity.table.header.poolAsset"),
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
         cell: ({ row }) => <AssetTableName pool={row.original} />,
+      }),
+      ...(!isXyk
+        ? [
+            accessor("spotPrice", {
+              id: "spotPrice",
+              header: t("liquidity.table.header.price"),
+              sortingFn: (a, b) =>
+                (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
+                  ? 1
+                  : -1,
+              cell: ({ row }) => (
+                <NonClickableContainer>
+                  <Text color="white" fs={14}>
+                    <DisplayValue value={row.original.spotPrice} type="token" />
+                  </Text>
+                </NonClickableContainer>
+              ),
+            }),
+          ]
+        : []),
+      accessor("id", {
+        id: "volumeDisplay",
+        header: t("liquidity.table.header.volume"),
+        sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
+        cell: ({ row }) => {
+          const pool = row.original
+          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
+
+          if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
+          return (
+            <NonClickableContainer
+              sx={{
+                flex: "row",
+                gap: 4,
+                align: "center",
+                ml: ["auto", "unset"],
+              }}
+            >
+              <Text color="white" fs={14}>
+                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
+              </Text>
+
+              {isInvalid && (
+                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                  <SInfoIcon />
+                </InfoTooltip>
+              )}
+
+              <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
+                <Icon
+                  sx={{ color: "darkBlue300" }}
+                  icon={<ChevronRightIcon />}
+                />
+              </ButtonTransparent>
+            </NonClickableContainer>
+          )
+        },
       }),
       accessor("tvlDisplay", {
         id: "tvlDisplay",
@@ -352,74 +500,21 @@ export const usePoolTable = (
                   />
                 ) : null,
             }),
-            accessor("spotPrice", {
-              id: "spotPrice",
-              header: t("liquidity.table.header.price"),
-              sortingFn: (a, b) =>
-                (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
-                  ? 1
-                  : -1,
-              cell: ({ row }) => (
-                <NonClickableContainer>
-                  <Text color="white" fs={14}>
-                    <DisplayValue value={row.original.spotPrice} type="token" />
-                  </Text>
-                </NonClickableContainer>
-              ),
-            }),
           ]
         : []),
-      accessor("id", {
-        id: "volumeDisplay",
-        header: t("liquidity.table.header.volume"),
-        sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
-        cell: ({ row }) => {
-          const pool = row.original
-          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
-
-          if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
-          return (
-            <NonClickableContainer
-              sx={{
-                flex: "row",
-                gap: 4,
-                align: "center",
-                justify: ["end", "start"],
-                minWidth: [110, "auto"],
-              }}
-            >
-              <Text color="white" fs={14}>
-                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
-              </Text>
-
-              {isInvalid && (
-                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
-                  <SInfoIcon />
-                </InfoTooltip>
-              )}
-
-              <ButtonTransparent sx={{ display: ["inherit", "none"] }}>
-                <Icon
-                  sx={{ color: "darkBlue300" }}
-                  icon={<ChevronRightIcon />}
-                />
-              </ButtonTransparent>
-            </NonClickableContainer>
-          )
-        },
-      }),
       display({
         id: "actions",
         cell: ({ row }) => (
           <div
             sx={{
               flex: "row",
-              gap: 4,
+              gap: 8,
               align: "center",
-              justify: ["end", "start"],
+              justify: "end",
             }}
           >
-            <AddLiqduidityButton
+            {!isXyk && <AddLiquidityButton poolId={row.original.id} />}
+            <ManageLiquidityButton
               pool={row.original}
               onRowSelect={onRowSelect}
             />
