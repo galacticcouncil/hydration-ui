@@ -53,6 +53,8 @@ import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmChain } from "@galacticcouncil/xcm-core"
 import { MetadataStore } from "@galacticcouncil/ui"
+import { create } from "zustand"
+import BN from "bignumber.js"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -565,3 +567,15 @@ export function getWalletModeIcon(mode: WalletMode) {
     return ""
   } catch (e) {}
 }
+
+export const useAccountBalanceMap = create<{
+  balanceMap: Map<string, BN>
+  setBalanceMap: (address: string, balance: BN) => void
+}>((set) => ({
+  balanceMap: new Map(),
+  setBalanceMap: (address, balance) => {
+    set(({ balanceMap }) => ({
+      balanceMap: new Map(balanceMap).set(address, balance),
+    }))
+  },
+}))
