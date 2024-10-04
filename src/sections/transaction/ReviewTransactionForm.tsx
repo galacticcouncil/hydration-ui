@@ -101,6 +101,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     tx,
     era,
     shouldUsePermit,
+    nonce,
     permitNonce,
     pendingPermit,
   } = transactionValues.data
@@ -164,8 +165,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
-          // defer to polkadot/api to handle nonce w/ regard to mempool
-          nonce: customNonce ? parseInt(customNonce) : -1,
+          nonce: customNonce ? parseInt(customNonce) : nonce,
           withSignedTransaction: true,
         })
 
