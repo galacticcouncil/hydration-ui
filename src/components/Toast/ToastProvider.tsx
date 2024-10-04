@@ -6,7 +6,7 @@ import { Toast } from "components/Toast/Toast"
 import { AnimatePresence, domAnimation, LazyMotion } from "framer-motion"
 
 import { ToastSidebar } from "./sidebar/ToastSidebar"
-import { useBridgeToast } from "./Toast.utils"
+import { useBridgeToast, useProcessToasts } from "./Toast.utils"
 
 export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const { toasts, toastsTemp, hide, sidebar, setSidebar } = useToast()
@@ -15,7 +15,12 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
     (toast) => toast.bridge && toast.variant === "progress",
   )
 
+  const progressToasts = toasts.filter((toast) => {
+    return !toast.bridge && toast.variant === "progress"
+  })
+
   useBridgeToast(bridgeToasts)
+  useProcessToasts(progressToasts)
 
   const activeToasts = [...toastsTemp, ...toasts.filter((i) => !i.hidden)]
   const toast = activeToasts[0]
