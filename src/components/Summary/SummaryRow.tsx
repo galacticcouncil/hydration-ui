@@ -20,16 +20,25 @@ export const SummaryRow = ({
 }: SummaryRowProps) => {
   return (
     <>
-      <div sx={{ my: 8 }}>
+      <div sx={{ flex: "row", justify: "space-between", my: 8 }}>
         <div
           sx={{
-            flex: "row",
+            flex: "column",
             justify: "space-between",
+            gap: 6,
           }}
         >
           <Text color="basic400" fs={14} tAlign="left">
             {label}
           </Text>
+
+          {description && (
+            <Text color="darkBlue300" fs={12} lh={15}>
+              {description}
+            </Text>
+          )}
+        </div>
+        <div>
           {typeof content === "string" ? (
             <Text fs={14} color="white" tAlign="right">
               {content}
@@ -38,11 +47,6 @@ export const SummaryRow = ({
             content
           )}
         </div>
-        {description && (
-          <Text color="darkBlue300" fs={12} lh={15} sx={{ mt: 6 }}>
-            {description}
-          </Text>
-        )}
       </div>
       {withSeparator && <Separator color="darkBlue401" />}
     </>

@@ -49,10 +49,9 @@ export const QUERY_KEYS = {
     "poolShareToken",
     poolId.toString(),
   ],
-  poolAssets: (address: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolAssets",
-    address.toString(),
+  dynamicAssetFee: (id: Maybe<u32 | string>) => [
+    "dynamicAssetFee",
+    id?.toString(),
   ],
   deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
   allXYKDeposits: [QUERY_KEY_PREFIX, "allXYKDeposits"],
@@ -95,17 +94,7 @@ export const QUERY_KEYS = {
   yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
   yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
   activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
-  totalLiquidity: (id: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "totalLiquidity",
-    id?.toString(),
-  ],
   totalIssuances: ["totalIssuances"],
-  totalLiquidities: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "totalLiquidities",
-    ...ids,
-  ],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "reserves",
@@ -152,7 +141,11 @@ export const QUERY_KEYS = {
   ],
   nextEvmPermitNonce: (account: Maybe<AccountId32 | string>) => [
     "evmPermitNonce",
-    account,
+    account?.toString(),
+  ],
+  pendingEvmPermit: (account: Maybe<AccountId32 | string>) => [
+    "pendingEvmPermit",
+    account?.toString(),
   ],
   mathLoyaltyRates: (
     plannedYieldingPeriods: u32,
@@ -202,16 +195,8 @@ export const QUERY_KEYS = {
     address,
     asset,
   ],
-  omnipoolAssets: ["omnipoolAssets"],
-  omnipoolAssetsLive: [QUERY_KEY_PREFIX, "omnipoolAssets"],
-  hubAssetTradability: [QUERY_KEY_PREFIX, "hubAssetTradability"],
   hubAssetImbalance: () => ["hubAssetImbalance"],
   omnipoolFee: ["omnipoolFee"],
-  omnipoolAsset: (id?: u32 | string) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolAsset",
-    id?.toString(),
-  ],
   omnipoolPositions: [QUERY_KEY_PREFIX, "omnipoolPositions"],
   allOmnipoolPositions: ["allOmnipoolPositions"],
   otcOrders: [QUERY_KEY_PREFIX, "otcOrders"],
@@ -271,8 +256,8 @@ export const QUERY_KEYS = {
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
-  stableswapPools: [QUERY_KEY_PREFIX, "stableswapPools"],
-  stableswapPool: (id?: string) => [QUERY_KEY_PREFIX, "stableswapPool", id],
+  stableswapPools: ["stableswapPools"],
+  stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
     "bondEvents",
@@ -362,6 +347,7 @@ export const QUERY_KEYS = {
   assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
+  progressToast: (hash: string) => ["progressToast", hash],
   xcmTransfer: (
     asset: string,
     srcAddr: string,
@@ -371,3 +357,7 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+}

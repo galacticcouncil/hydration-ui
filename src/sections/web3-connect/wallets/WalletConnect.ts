@@ -247,16 +247,30 @@ export class WalletConnect implements Wallet {
       )
     }
 
-    if (!this.namespace) {
+    if (
+      provider.session?.expiry &&
+      provider.session.expiry < Math.floor(Date.now() / 1000)
+    ) {
+      provider.cleanupPendingPairings()
+      provider.disconnect()
+
+      throw new Error("WalletConnectError: Session is expired")
+    }
+
+    const namespace = this.namespace || provider.namespaces
+
+    if (!namespace) {
       throw new Error(
         "WalletConnectError: Namespace is required to enable WalletConnect.",
       )
     }
 
     try {
-      const session = await provider.connect({
-        optionalNamespaces: this.namespace,
-      })
+      const session =
+        provider.session ??
+        (await provider.connect({
+          optionalNamespaces: namespace,
+        }))
 
       if (!session) {
         throw new Error(
@@ -268,16 +282,16 @@ export class WalletConnect implements Wallet {
 
       const accounts = await this.getAccounts()
 
-      const namespace = Object.keys(this.namespace).pop() as NamespaceType
+      const namespaceKey = Object.keys(namespace).pop() as NamespaceType
 
-      if (namespace === "eip155" && provider instanceof UniversalProvider) {
+      if (namespaceKey === "eip155" && provider instanceof UniversalProvider) {
         const mainAddress = accounts[0]?.address
         this._signer = mainAddress
           ? new EthereumSigner(mainAddress, provider)
           : undefined
       }
 
-      if (namespace === "polkadot" && provider.client) {
+      if (namespaceKey === "polkadot" && provider.client) {
         this._signer = new PolkadotSigner(provider.client, session)
       }
     } finally {

@@ -5,6 +5,8 @@ import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 import { SBlock } from "./PathOption.styled"
 import { CheckBox } from "./CheckBox"
+import { Badge } from "components/Badge/Badge"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   selected: boolean
@@ -14,6 +16,7 @@ type Props = {
   subheading?: string
   icon: ReactNode
   disabled?: boolean
+  isFarms?: boolean
 }
 
 export const PathOption = ({
@@ -24,7 +27,10 @@ export const PathOption = ({
   subheading,
   icon,
   disabled,
+  isFarms,
 }: Props) => {
+  const { t } = useTranslation()
+
   const color = disabled ? "whiteish500" : "white"
 
   return (
@@ -37,6 +43,9 @@ export const PathOption = ({
           <Heading fs={15} lh={20} fw={500} color={color}>
             {heading}
           </Heading>
+          {isFarms && (
+            <Badge>{t("farms.modal.joinedFarms.available.label")}</Badge>
+          )}
         </div>
         <CheckBox disabled={disabled} selected={selected} />
       </div>

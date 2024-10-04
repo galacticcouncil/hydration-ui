@@ -66,6 +66,7 @@ export const Modal = ({
     <Root open={open}>
       <Portal>
         <SOverlay
+          onClick={(e) => e.stopPropagation()}
           variant={backdrop}
           onAnimationEnd={() => setIsAnimating(false)}
           className={className}
@@ -82,6 +83,7 @@ export const Modal = ({
           >
             <STopContent>{topContent}</STopContent>
             <SContent
+              onClick={(e) => e.stopPropagation()}
               isDrawer={isDrawer}
               hasTopContent={hasTopContent}
               className={!hasContentProps ? className : undefined}

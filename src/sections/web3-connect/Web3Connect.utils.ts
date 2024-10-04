@@ -52,6 +52,8 @@ import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmChain } from "@galacticcouncil/xcm-core"
 import { MetadataStore } from "@galacticcouncil/ui"
+import { create } from "zustand"
+import BN from "bignumber.js"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -249,17 +251,22 @@ export const useWeb3ConnectEagerEnable = () => {
         return
       }
 
+      // skip if already enabled
       const isEnabled = !!wallet?.extension
 
-      // skip if already enabled
-      if (isEnabled) return
-
       // disconnect on missing WalletConnect session
-      if (wallet instanceof WalletConnect && !wallet._session) {
-        wallet.disconnect()
-        state.disconnect(WalletProviderType.WalletConnect)
-        return
+      if (wallet instanceof WalletConnect) {
+        try {
+          await wallet?.enable(POLKADOT_APP_NAME)
+        } catch (error) {
+          state.disconnect(WalletProviderType.WalletConnect)
+          state.disconnect(WalletProviderType.WalletConnectEvm)
+        } finally {
+          return
+        }
       }
+
+      if (isEnabled) return
 
       await wallet?.enable(POLKADOT_APP_NAME)
     }
@@ -539,3 +546,15 @@ export function getWalletModeIcon(mode: WalletMode) {
     return ""
   } catch (e) {}
 }
+
+export const useAccountBalanceMap = create<{
+  balanceMap: Map<string, BN>
+  setBalanceMap: (address: string, balance: BN) => void
+}>((set) => ({
+  balanceMap: new Map(),
+  setBalanceMap: (address, balance) => {
+    set(({ balanceMap }) => ({
+      balanceMap: new Map(balanceMap).set(address, balance),
+    }))
+  },
+}))

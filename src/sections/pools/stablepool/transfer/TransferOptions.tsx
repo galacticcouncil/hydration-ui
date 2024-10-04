@@ -4,6 +4,7 @@ import { PathOption } from "sections/pools/stablepool/components/PathOption"
 import { ListItem } from "sections/pools/stablepool/components/ListItem"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
+import { Farm } from "api/farms"
 
 export type Option = "OMNIPOOL" | "STABLEPOOL"
 
@@ -11,12 +12,14 @@ type Props = {
   selected: Option
   onSelect: (selected: Option) => void
   disableOmnipool?: boolean
+  farms: Farm[]
 }
 
 export const TransferOptions = ({
   selected,
   onSelect,
   disableOmnipool,
+  farms,
 }: Props) => {
   const { t } = useTranslation()
   return (
@@ -28,6 +31,7 @@ export const TransferOptions = ({
         subheading={t("liquidity.stablepool.add.benefits")}
         icon={<WaterRippleIcon />}
         disabled={disableOmnipool}
+        isFarms={!!farms.length}
       >
         <ListItem>
           {t("liquidity.stablepool.add.stablepoolAndOmnipool.benefit1")}
