@@ -3,28 +3,42 @@ import {
   TransactionResponse,
 } from "@ethersproject/providers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Hash } from "@open-web3/orml-types/interfaces"
+import { AccountId32, Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import type { AnyJson } from "@polkadot/types-codec/types"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { MutationObserverOptions, useMutation } from "@tanstack/react-query"
+import {
+  MutationObserverOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useAssets } from "providers/assets"
-import { useNextEvmPermitNonce } from "api/transaction"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMountedState } from "react-use"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
-import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
+import {
+  useEvmAccount,
+  useWallet,
+} from "sections/web3-connect/Web3Connect.utils"
+import {
+  EthereumSigner,
+  PermitResult,
+} from "sections/web3-connect/signer/EthereumSigner"
 import { useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
 import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
-import { isAnyParachain } from "utils/helpers"
+import { isAnyParachain, Maybe, sleep } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
+import { QUERY_KEYS } from "utils/queryKeys"
+import BigNumber from "bignumber.js"
+
+const EVM_PERMIT_BLOCKTIME = 20_000
 
 type TxMethod = AnyJson & {
   method: string
@@ -213,6 +227,82 @@ export const useSendEvmTransactionMutation = (
   }
 }
 
+export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
+  const queryClient = useQueryClient()
+  const { wallet } = useWallet()
+
+  return useQuery(
+    QUERY_KEYS.nextEvmPermitNonce(account),
+    async () => {
+      if (!account) throw new Error("Missing address")
+      if (!wallet?.signer) throw new Error("Missing wallet signer")
+      if (!(wallet?.signer instanceof EthereumSigner))
+        throw new Error("Invalid signer")
+
+      const prevNonce = queryClient.getQueryData<BigNumber>(
+        QUERY_KEYS.nextEvmPermitNonce(account),
+      )
+
+      const nonce = await wallet.signer.getPermitNonce()
+
+      if (BigNumber.isBigNumber(prevNonce) && nonce.gt(prevNonce)) {
+        // clear pending permit if nonce has increased
+        queryClient.setQueryData(QUERY_KEYS.pendingEvmPermit(account), null)
+      }
+
+      return nonce
+    },
+    {
+      refetchInterval: EVM_PERMIT_BLOCKTIME,
+      refetchOnWindowFocus: false,
+      cacheTime: 0,
+      staleTime: 0,
+      enabled: isEvmAccount(account?.toString()),
+    },
+  )
+}
+
+export const usePendingDispatchPermit = (
+  address: Maybe<AccountId32 | string>,
+) => {
+  const queryClient = useQueryClient()
+  const { api, isLoaded } = useRpcProvider()
+
+  const isPending = !!queryClient.getQueryData(
+    QUERY_KEYS.pendingEvmPermit(address),
+  )
+
+  return useQuery(
+    QUERY_KEYS.pendingEvmPermit(address),
+    async () => {
+      const raw = await api.rpc.author.pendingExtrinsics()
+      const pendingExtrinsics = raw.toHuman()
+
+      if (!Array.isArray(pendingExtrinsics)) return null
+
+      const pendingPermit = pendingExtrinsics.find((ext: AnyJson) => {
+        if (!isTxExtrinsic(ext)) return false
+
+        const evmAddress = address ? H160.fromAccount(address.toString()) : ""
+        const fromAddress = ext?.method?.args?.from?.toString() ?? ""
+
+        return (
+          ext?.method?.section === "multiTransactionPayment" &&
+          ext?.method?.method === "dispatchPermit" &&
+          fromAddress.toLowerCase() === evmAddress.toLowerCase()
+        )
+      }) as TxExtrinsic
+
+      return pendingPermit ?? null
+    },
+    {
+      refetchInterval: EVM_PERMIT_BLOCKTIME,
+      refetchOnWindowFocus: false,
+      enabled: !isPending && isLoaded && isEvmAccount(address?.toString()),
+    },
+  )
+}
+
 export const useSendDispatchPermit = (
   options: MutationObserverOptions<
     ISubmittableResult,
@@ -224,6 +314,7 @@ export const useSendDispatchPermit = (
   > = {},
 ) => {
   const { api } = useRpcProvider()
+  const queryClient = useQueryClient()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
@@ -234,40 +325,65 @@ export const useSendDispatchPermit = (
   const sendTx = useMutation(async ({ permit, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        const unsubscribe = await api.tx.multiTransactionPayment
-          .dispatchPermit(
-            permit.message.from,
-            permit.message.to,
-            permit.message.value,
-            permit.message.data,
-            permit.message.gaslimit,
-            permit.message.deadline,
-            permit.signature.v,
-            permit.signature.r,
-            permit.signature.s,
+        const extrinsic = api.tx.multiTransactionPayment.dispatchPermit(
+          permit.message.from,
+          permit.message.to,
+          permit.message.value,
+          permit.message.data,
+          permit.message.gaslimit,
+          permit.message.deadline,
+          permit.signature.v,
+          permit.signature.r,
+          permit.signature.s,
+        )
+        const subscription = extrinsic.send(async (result) => {
+          if (!result || !result.status) return
+
+          const unsubscribe = await subscription
+
+          if (isMounted()) {
+            setTxHash(result.txHash.toHex())
+            setTxState(result.status.type)
+            setCallMeta(xcallMeta)
+          }
+
+          const account = new H160(permit.message.from).toAccount()
+          queryClient.setQueryData(
+            QUERY_KEYS.pendingEvmPermit(account),
+            extrinsic.toHuman(),
           )
-          .send(async (result) => {
-            if (!result || !result.status) return
-
-            if (isMounted()) {
-              setTxHash(result.txHash.toHex())
-              setTxState(result.status.type)
-              setCallMeta(xcallMeta)
-            } else {
-            }
-
-            const onComplete = createResultOnCompleteHandler(api, {
-              onError: (error) => {
-                reject(error)
-              },
-              onSuccess: (result) => {
-                resolve(result)
-              },
-              onSettled: unsubscribe,
-            })
-
-            return onComplete(result)
+          // stop checking for pending permits until the transaction is settled
+          queryClient.setQueryDefaults(QUERY_KEYS.pendingEvmPermit(account), {
+            refetchInterval: 0,
           })
+          // give some lee-way for the EVM transaction to be processed
+          await sleep(EVM_PERMIT_BLOCKTIME)
+
+          const onComplete = createResultOnCompleteHandler(api, {
+            onError: async (error) => {
+              reject(error)
+            },
+            onSuccess: async (result) => {
+              resolve(result)
+            },
+            onSettled: async () => {
+              unsubscribe()
+              queryClient.refetchQueries(QUERY_KEYS.nextEvmPermitNonce(account))
+              queryClient.setQueryData(
+                QUERY_KEYS.pendingEvmPermit(account),
+                null,
+              )
+              queryClient.setQueryDefaults(
+                QUERY_KEYS.pendingEvmPermit(account),
+                {
+                  refetchInterval: EVM_PERMIT_BLOCKTIME,
+                },
+              )
+            },
+          })
+
+          return onComplete(result)
+        })
       } catch (err) {
         reject(err?.toString() ?? "Unknown error")
       }
@@ -503,17 +619,12 @@ const useStoreExternalAssetsOnSign = () => {
 }
 
 export const useSendTx = () => {
-  const { account } = useEvmAccount()
-  const address = account?.address ?? ""
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
 
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
-
-  const { incrementPermitNonce, revertPermitNonce, setPendingPermit } =
-    useNextEvmPermitNonce()
 
   const sendTx = useSendTransactionMutation({
     onMutate: ({ tx }) => {
@@ -536,13 +647,9 @@ export const useSendTx = () => {
   })
 
   const sendPermitTx = useSendDispatchPermit({
-    onMutate: ({ permit }) => {
+    onMutate: () => {
       setTxType("permit")
-      setPendingPermit(permit)
-      incrementPermitNonce(address)
     },
-    onError: () => revertPermitNonce(address),
-    onSettled: () => setPendingPermit(null),
   })
 
   const activeMutation =
