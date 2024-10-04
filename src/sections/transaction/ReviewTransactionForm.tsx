@@ -101,7 +101,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     tx,
     era,
     shouldUsePermit,
-    nonce,
     permitNonce,
     pendingPermit,
   } = transactionValues.data
@@ -165,7 +164,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
-          nonce: customNonce ? parseInt(customNonce) : nonce,
+          nonce: customNonce ? parseInt(customNonce) : -1,
           withSignedTransaction: true,
         })
 
