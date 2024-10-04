@@ -32,6 +32,7 @@ export const ReviewTransaction = (props: Transaction) => {
     txState,
     reset,
     txLink,
+    txHash,
     bridge,
   } = useSendTx()
 
@@ -98,6 +99,7 @@ export const ReviewTransaction = (props: Transaction) => {
           isError={isError}
           error={error}
           link={txLink}
+          txHash={txHash}
           onReview={onReview}
           onClose={onMinimizeModal}
           toastMessage={props.toastMessage}

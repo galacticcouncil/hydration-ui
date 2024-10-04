@@ -171,14 +171,6 @@ export const useSendEvmTransactionMutation = (
 
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
-      const timeout = setTimeout(
-        () => {
-          clearTimeout(timeout)
-          reject(new UnknownTransactionState())
-        },
-        5 * 60 * 1000,
-      )
-
       try {
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
@@ -190,8 +182,6 @@ export const useSendEvmTransactionMutation = (
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
         reject(err?.toString() ?? "Unknown error")
-      } finally {
-        clearTimeout(timeout)
       }
     })
   }, options)
@@ -212,6 +202,7 @@ export const useSendEvmTransactionMutation = (
     ...sendTx,
     txState,
     txLink,
+    txHash,
     bridge: isApproveTx ? undefined : bridge,
     reset: () => {
       setTxState(null)
@@ -258,26 +249,18 @@ export const useSendDispatchPermit = (
           .send(async (result) => {
             if (!result || !result.status) return
 
-            const timeout = setTimeout(() => {
-              clearTimeout(timeout)
-              reject(new UnknownTransactionState())
-            }, 60000)
-
             if (isMounted()) {
               setTxHash(result.txHash.toHex())
               setTxState(result.status.type)
               setCallMeta(xcallMeta)
             } else {
-              clearTimeout(timeout)
             }
 
             const onComplete = createResultOnCompleteHandler(api, {
               onError: (error) => {
-                clearTimeout(timeout)
                 reject(error)
               },
               onSuccess: (result) => {
-                clearTimeout(timeout)
                 resolve(result)
               },
               onSettled: unsubscribe,
@@ -308,6 +291,7 @@ export const useSendDispatchPermit = (
     ...sendTx,
     txState,
     txLink,
+    txHash,
     bridge,
     reset: () => {
       setTxState(null)
@@ -341,17 +325,10 @@ export const useSendTransactionMutation = (
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
-          const timeout = setTimeout(() => {
-            clearTimeout(timeout)
-            reject(new UnknownTransactionState())
-          }, 60000)
-
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
             setCallMeta(xcallMeta)
-          } else {
-            clearTimeout(timeout)
           }
 
           const externalChain =
@@ -366,11 +343,9 @@ export const useSendTransactionMutation = (
 
           const onComplete = createResultOnCompleteHandler(apiPromise, {
             onError: (error) => {
-              clearTimeout(timeout)
               reject(error)
             },
             onSuccess: (result) => {
-              clearTimeout(timeout)
               resolve(result)
             },
             onSettled: unsubscribe,
@@ -401,6 +376,7 @@ export const useSendTransactionMutation = (
     ...sendTx,
     txState,
     txLink,
+    txHash,
     bridge,
     reset: () => {
       setTxState(null)

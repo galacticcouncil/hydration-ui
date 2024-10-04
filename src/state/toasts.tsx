@@ -5,7 +5,6 @@ import { renderToString } from "react-dom/server"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { Maybe, safelyParse } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { differenceInSeconds } from "date-fns"
 import { Trans } from "react-i18next"
 import { ToastMessage } from "./store"
 
@@ -26,6 +25,7 @@ type ToastParams = {
   actions?: ReactNode
   persist?: boolean
   bridge?: string
+  txHash?: string
   hideTime?: number
 }
 
@@ -106,38 +106,6 @@ const useToastsStore = create<ToastStore>()(
                 safelyParse<PersistState<ToastData[]>>(storeToasts) ?? {}
 
               const allToasts = { ...toastsState?.toasts }
-
-              const allAccounts = Object.keys(allToasts)
-              if (allAccounts?.length) {
-                for (const account of allAccounts) {
-                  const accountToasts = allToasts[account]
-                  const loadingToastsIds = accountToasts
-                    .filter(
-                      (toast) => toast.variant === "progress" && !toast.bridge,
-                    )
-                    .map((toast) => toast.id)
-
-                  allToasts[account] = accountToasts.map((toast) => {
-                    const secondsDiff = differenceInSeconds(
-                      new Date(),
-                      new Date(toast.dateCreated),
-                    )
-
-                    // Change toasts in loading state to unknown state if they are older than 60 seconds
-                    if (
-                      loadingToastsIds.includes(toast.id) &&
-                      secondsDiff > 60
-                    ) {
-                      return {
-                        ...toast,
-                        hidden: true,
-                        variant: "unknown",
-                      }
-                    }
-                    return toast
-                  })
-                }
-              }
 
               return JSON.stringify({
                 ...toastsState,
