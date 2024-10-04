@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useToast } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { UnknownTransactionState } from "./ReviewTransaction.utils"
 
 export function ReviewTransactionToast(props: {
   id: string
@@ -15,11 +14,12 @@ export function ReviewTransactionToast(props: {
   isLoading: boolean
   error: unknown
   bridge: string | undefined
+  txHash: string
 }) {
   const toast = useToast()
   const { t } = useTranslation()
 
-  const { isError, isSuccess, isLoading, error } = props
+  const { isError, isSuccess, isLoading, error, txHash } = props
   const toastRef = useRef<typeof toast>(toast)
   useEffect(() => void (toastRef.current = toast), [toast])
 
@@ -39,6 +39,7 @@ export function ReviewTransactionToast(props: {
           <p>{t("liquidity.reviewTransaction.toast.success")}</p>
         ),
         link: props.link,
+        txHash,
       })
 
       closeRef.current?.()
@@ -47,23 +48,15 @@ export function ReviewTransactionToast(props: {
     let toRemoveId: string | undefined = undefined
 
     if (isError) {
-      if (error instanceof UnknownTransactionState) {
-        toastRef.current.unknown({
-          link: props.link,
-          title: props.toastMessage?.onError ?? (
-            <p>{t("liquidity.reviewTransaction.toast.unknown")}</p>
-          ),
-        })
-      } else {
-        toastRef.current.error({
-          link: props.link,
-          title: props.toastMessage?.onError ?? (
-            <p>{t("liquidity.reviewTransaction.toast.error")}</p>
-          ),
-        })
+      toastRef.current.error({
+        link: props.link,
+        title: props.toastMessage?.onError ?? (
+          <p>{t("liquidity.reviewTransaction.toast.error")}</p>
+        ),
+        txHash,
+      })
 
-        closeRef.current?.()
-      }
+      closeRef.current?.()
     }
 
     if (isLoading) {
@@ -73,6 +66,7 @@ export function ReviewTransactionToast(props: {
           <p>{t("liquidity.reviewTransaction.toast.pending")}</p>
         ),
         bridge: props.bridge || undefined,
+        txHash,
       })
     }
 
@@ -88,6 +82,7 @@ export function ReviewTransactionToast(props: {
     isLoading,
     props.link,
     props.bridge,
+    txHash,
   ])
 
   return null
