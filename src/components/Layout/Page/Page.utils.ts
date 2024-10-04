@@ -16,7 +16,6 @@ export const useControlScroll = () => {
   const poolId = pathname?.includes("liquidity") ? id : undefined
 
   useEffect(() => {
-    console.log("Scroll")
     ref.current?.scrollTo({
       top: 0,
       left: 0,
