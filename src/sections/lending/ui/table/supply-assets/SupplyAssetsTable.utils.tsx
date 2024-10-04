@@ -152,7 +152,7 @@ export const useSupplyAssetsTableColumns = () => {
             Number(walletBalance ?? 0) <= 0 ||
             isMaxCapReached
           return (
-            <div sx={{ flex: "row", justify: "end" }}>
+            <div sx={{ flex: "row", align: "center", justify: "end" }}>
               <Button
                 disabled={disableSupply}
                 onClick={() => openSupply(underlyingAsset)}
