@@ -7,10 +7,10 @@ import { TxInfo } from "@galacticcouncil/apps"
 import { isAnyParachain } from "utils/helpers"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 
-export const HYDRADX_CHAIN_KEY = "hydradx"
+export const HYDRATION_CHAIN_KEY = "hydration"
 export const DEFAULT_NATIVE_CHAIN = "assethub"
 export const DEFAULT_EVM_CHAIN = "ethereum"
-export const DEFAULT_DEST_CHAIN = HYDRADX_CHAIN_KEY
+export const DEFAULT_DEST_CHAIN = HYDRATION_CHAIN_KEY
 
 export function getDefaultSrcChain(address?: string) {
   return isEvmAccount(address) ? DEFAULT_EVM_CHAIN : DEFAULT_NATIVE_CHAIN
@@ -77,7 +77,7 @@ export function getDesiredWalletMode(chainKey: string) {
 
   if (!chain) return WalletMode.Default
 
-  const isEvmAndSubstrate = chain?.key === "hydradx"
+  const isEvmAndSubstrate = chain?.key === "hydration"
   if (isEvmAndSubstrate) return WalletMode.SubstrateEVM
 
   const isEvm =
@@ -87,7 +87,7 @@ export function getDesiredWalletMode(chainKey: string) {
 
   if (isEvm) return WalletMode.EVM
 
-  if (isAnyParachain(chain) && chain.h160AccOnly)
+  if (isAnyParachain(chain) && chain.usesH160Acc)
     return WalletMode.SubstrateH160
 
   return WalletMode.Substrate
