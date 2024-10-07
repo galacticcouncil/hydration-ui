@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
 import { TReferenda } from "api/democracy"
+import { BN_0 } from "./constants"
 
 export const getCurveData = (
   track: TReferenda,
@@ -73,9 +74,11 @@ export const makeLinearCurve = (
 
 export const getDecidingEndPercentage = (
   decisionPeriod: string,
-  decidingSince: string,
+  decidingSince: string | undefined,
   endHeight: string,
 ) => {
+  if (decidingSince === undefined) return BN_0
+
   const gone = BigNumber(endHeight).minus(decidingSince)
 
   return BigNumber.min(gone.div(decisionPeriod), 1)

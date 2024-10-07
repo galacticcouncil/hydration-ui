@@ -29,12 +29,11 @@ export const useMinApprovalThreshold = (
 
   return useMemo(() => {
     if (track && blockNumber) {
-      const isDecidingSince =
-        referenda.deciding.unwrapOr(null)?.since.toString() ?? "0"
+      const decidingSince = referenda.deciding.unwrapOr(null)?.since.toString()
 
       const percentage = getDecidingEndPercentage(
         track.decisionPeriod.toString(),
-        isDecidingSince.toString(),
+        decidingSince,
         blockNumber,
       )
 
@@ -94,12 +93,11 @@ export const useSupportThreshold = (
 
   const supportThreshold = useMemo(() => {
     if (track && blockNumber) {
-      const isDecidingSince =
-        referenda.deciding.unwrapOr(null)?.since.toString() ?? "0"
+      const decidingSince = referenda.deciding.unwrapOr(null)?.since.toString()
 
       const percentage = getDecidingEndPercentage(
         track.decisionPeriod.toString(),
-        isDecidingSince.toString(),
+        decidingSince,
         blockNumber,
       )
 
