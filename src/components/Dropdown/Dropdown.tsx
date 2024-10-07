@@ -17,6 +17,7 @@ export type DropdownProps = {
   onSelect: (key: TDropdownItem) => void
   asChild?: boolean
   align?: "start" | "center" | "end"
+  disabled?: boolean
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -25,18 +26,25 @@ export const Dropdown: React.FC<DropdownProps> = ({
   onSelect,
   asChild,
   align,
+  disabled,
 }) => {
   return (
     <DropdownMenu.Root>
       {asChild ? (
         <DropdownMenu.Trigger asChild>{children}</DropdownMenu.Trigger>
       ) : (
-        <STrigger disabled={!items.length}>{children}</STrigger>
+        <STrigger disabled={!items.length || !!disabled}>{children}</STrigger>
       )}
       <DropdownMenu.Portal>
         <SContent sideOffset={8} align={align}>
           {items.map((i) => (
-            <SItem key={i.key} onClick={() => onSelect(i)}>
+            <SItem
+              key={i.key}
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelect(i)
+              }}
+            >
               {i.icon}
               {i.label}
             </SItem>
