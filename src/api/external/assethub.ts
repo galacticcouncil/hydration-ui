@@ -27,6 +27,29 @@ import { useSpotPrice } from "api/spotPrice"
 import { useCrossChainWallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
+import { Struct, u128, Bytes, u8, bool } from "@polkadot/types"
+
+interface PalletAssetsAssetMetadata extends Struct {
+  readonly deposit: u128
+  readonly name: Bytes
+  readonly symbol: Bytes
+  readonly decimals: u8
+  readonly isFrozen: bool
+}
+
+interface PalletAssetsAssetDetails extends Struct {
+  readonly owner: AccountId32
+  readonly issuer: AccountId32
+  readonly admin: AccountId32
+  readonly freezer: AccountId32
+  readonly supply: u128
+  readonly deposit: u128
+  readonly minBalance: u128
+  readonly isSufficient: bool
+  readonly accounts: u32
+  readonly sufficients: u32
+  readonly approvals: u32
+}
 
 export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -63,8 +86,8 @@ export const assethubNativeToken = assethub.assetsData.get(
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
     const [dataRaw, assetsRaw] = await Promise.all([
-      api.query.assets.metadata.entries(),
-      api.query.assets.asset.entries(),
+      api.query.assets.metadata.entries<PalletAssetsAssetMetadata>(),
+      api.query.assets.asset.entries<Option<PalletAssetsAssetDetails>>(),
     ])
 
     const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
@@ -460,7 +483,8 @@ export const useAssetHubExistentialDeposit = (id: string) => {
   const { data: api } = useExternalApi("assethub")
   return useQuery(QUERY_KEYS.assetHubExistentialDeposit(id), async () => {
     if (!api) throw new Error("Asset Hub is not connected")
-    const response = await api.query.assets.asset(id)
+    const response =
+      await api.query.assets.asset<Option<PalletAssetsAssetDetails>>(id)
     const details = response.unwrap()
     return BN(details.minBalance.toString())
   })
@@ -518,7 +542,8 @@ export const useAssetHubRevokeAdminRights = ({
 
 const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
   try {
-    const asset = await api.query.assets.asset(id)
+    const asset =
+      await api.query.assets.asset<Option<PalletAssetsAssetDetails>>(id)
 
     const admin = asset.unwrap().admin.toString()
     const owner = asset.unwrap().owner.toString()
