@@ -5,18 +5,16 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
   TStakingPosition,
-  useCirculatingSupply,
+  useHDXSupplyFromSubscan,
   useStake,
   useStakingConsts,
   useStakingEvents,
-  useStakingPositionBalances,
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import {
   BN_0,
-  BN_100,
   BN_BILL,
   BN_QUINTILL,
   PARACHAIN_BLOCK_TIME,
@@ -96,15 +94,11 @@ export const useStakeData = () => {
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
-  const circulatingSupply = useCirculatingSupply()
+  const HDXSupply = useHDXSupplyFromSubscan()
   const balance = useTokenBalance(native.id, account?.address)
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
-  const positionBalances = useStakingPositionBalances(
-    stake.data?.positionId?.toString(),
-  )
-  const referendas = useReferendums("finished")
-
+  const circulatingSupply = HDXSupply.data?.available_balance
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -122,15 +116,7 @@ export const useStakeData = () => {
 
   const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
 
-  const queries = [
-    stake,
-    circulatingSupply,
-    balance,
-    locks,
-    spotPrice,
-    positionBalances,
-    referendas,
-  ]
+  const queries = [stake, HDXSupply, balance, locks, spotPrice]
 
   const isLoading = queries.some((query) => query.isInitialLoading)
 
@@ -144,7 +130,7 @@ export const useStakeData = () => {
     const totalStake = stake.data?.totalStake ?? 0
 
     const supplyStaked = BN(totalStake)
-      .div(Number(circulatingSupply.data ?? 1))
+      .div(Number(circulatingSupply ?? 1))
       .decimalPlaces(4)
       .multipliedBy(100)
 
@@ -152,68 +138,11 @@ export const useStakeData = () => {
       .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       .shiftedBy(-native.decimals)
 
-    const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
+    const circulatingSupplyData = BN(circulatingSupply ?? 0).shiftedBy(
       -native.decimals,
     )
 
     const stakePosition = stake.data?.stakePosition
-    let averagePercentage = BN_0
-    let amountOfReferends = 0
-
-    if (stakePosition) {
-      const initialPositionBalance = BN(
-        positionBalances.data?.events.find(
-          (event) => event.name === "Staking.PositionCreated",
-        )?.args.stake ?? 0,
-      )
-
-      const allReferendaPercentages =
-        referendas.data?.reduce((acc, referenda) => {
-          const endReferendaBlockNumber =
-            referenda.referendum.asFinished.end.toBigNumber()
-
-          if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            amountOfReferends++
-
-            if (referenda.amount && referenda.conviction) {
-              /* staked position value when a referenda is over */
-              let positionBalance = initialPositionBalance
-
-              positionBalances.data?.events.forEach((event) => {
-                if (event.name === "Staking.StakeAdded") {
-                  const eventOccurBlockNumber = BN(event.block.height)
-
-                  if (
-                    endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                    positionBalance.lt(event.args.totalStake)
-                  ) {
-                    positionBalance = BN(event.args.totalStake)
-                  }
-                }
-              })
-
-              const percentageOfVotedReferenda = referenda.amount
-                .div(positionBalance)
-                .multipliedBy(CONVICTIONS[referenda.conviction.toLowerCase()])
-                .div(CONVICTIONS["locked6x"])
-                .multipliedBy(100)
-
-              return acc.plus(percentageOfVotedReferenda)
-            }
-          }
-
-          return acc
-        }, BN_0) ?? BN(0)
-
-      averagePercentage =
-        allReferendaPercentages.isZero() && !amountOfReferends
-          ? BN_100
-          : allReferendaPercentages.div(amountOfReferends)
-    }
-
-    const rewardBoostPersentage = referendas.data?.length
-      ? averagePercentage
-      : BN_100
 
     return {
       supplyStaked,
@@ -226,16 +155,13 @@ export const useStakeData = () => {
       stakePosition: stakePosition
         ? {
             ...stake.data?.stakePosition,
-            rewardBoostPersentage,
           }
         : undefined,
     }
   }, [
     availableBalance,
-    circulatingSupply.data,
+    circulatingSupply,
     isLoading,
-    positionBalances.data?.events,
-    referendas.data,
     spotPrice.data?.spotPrice,
     stake.data?.minStake,
     stake.data?.positionId,
