@@ -52,7 +52,7 @@ export const WalletAssetsTableActionsMob = ({
   const { t } = useTranslation()
   const { native } = useAssets()
   const { account } = useAccount()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const feeAsPayment = useSetAsFeePayment()
   const { featureFlags } = useRpcProvider()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
@@ -228,7 +228,7 @@ export const WalletAssetsTableActionsMob = ({
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    onClick={() => setFeeAsPayment(row.id)}
+                    onClick={() => feeAsPayment.mutate(row.id)}
                     disabled={
                       !row.couldBeSetAsPaymentFee ||
                       account?.isExternalWalletConnected

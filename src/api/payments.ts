@@ -1,10 +1,10 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { ToastMessage, useStore } from "state/store"
+import { useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -13,6 +13,8 @@ import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { useAcountAssets } from "./assetDetails"
+import { createToastMessages } from "state/toasts"
+import { useTranslation } from "react-i18next"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -50,34 +52,52 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 }
 
 export const useSetAsFeePayment = () => {
+  const { t } = useTranslation()
   const { api } = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
-  return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!tokenId) return
+  return useMutation(
+    async (tokenId?: string) => {
+      if (!tokenId) return
 
-    const paymentInfoData = await api.tx.currencies
-      .transfer("", native.id, "0")
-      .paymentInfo(account?.address ?? "")
+      const meta = getAsset(tokenId)
 
-    const transaction = await createTransaction(
-      {
-        tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
-        overrides: {
-          fee: new BigNumber(paymentInfoData.partialFee.toHex()),
-          currencyId: tokenId,
+      const toast = createToastMessages(
+        "wallet.assets.table.actions.payment.toast",
+        {
+          t,
+          tOptions: {
+            asset: meta?.symbol,
+          },
+          components: ["span", "span.highlight"],
         },
-      },
-      { toast },
-    )
-    if (transaction.isError) return
-    await queryClient.refetchQueries({
-      queryKey: QUERY_KEYS.accountCurrency(account?.address),
-    })
-  }
+      )
+
+      const paymentInfoData = await api.tx.currencies
+        .transfer("", native.id, "0")
+        .paymentInfo(account?.address ?? "")
+
+      return await createTransaction(
+        {
+          tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
+          overrides: {
+            fee: new BigNumber(paymentInfoData.partialFee.toHex()),
+            currencyId: tokenId,
+          },
+        },
+        { toast },
+      )
+    },
+    {
+      onSuccess: () =>
+        queryClient.refetchQueries({
+          queryKey: QUERY_KEYS.accountCurrency(account?.address),
+        }),
+    },
+  )
 }
 
 export const getAccountCurrency =
