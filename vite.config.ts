@@ -24,7 +24,7 @@ export const SEO_METADATA = {
     image: "https://hydration.net/twitter-image.png",
   },
   referrals: {
-    image: "https://hydration.net/opengraph-image-ref.png",
+    image: "https://hydration.net/opengraph-image-ref.jpg",
   },
 } satisfies MetadataMap
 
