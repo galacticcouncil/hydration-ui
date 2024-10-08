@@ -992,12 +992,22 @@ export const createPoolSlice: StateCreator<
         ? tx.gasLimit
         : BigNumber.from("0")
       delete tx.gasLimit
-      let estimatedGas = await provider.estimateGas(tx)
+      let estimatedGas = BigNumber.from("0")
+      try {
+        estimatedGas = await provider.estimateGas(tx)
+      } catch (e) {
+        estimatedGas = BigNumber.from("300000")
+      }
+
+      console.log({ estimatedGas: estimatedGas.toString() })
       estimatedGas = estimatedGas.mul(115).div(100) // Add 15% buffer
       // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
       tx.gasLimit = estimatedGas.gt(defaultGasLimit)
         ? estimatedGas
         : defaultGasLimit
+
+      //tx.gasLimit = BigNumber.from("5000000")
+
       return tx
     },
   }

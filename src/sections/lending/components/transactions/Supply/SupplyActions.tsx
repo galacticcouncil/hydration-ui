@@ -118,9 +118,9 @@ export const SupplyActions = React.memo(
       setApprovalTxState({})
     }
 
-    const usePermit =
-      permitAvailable &&
-      walletApprovalMethodPreference === ApprovalMethod.PERMIT
+    const usePermit = false
+    /*     permitAvailable &&
+      walletApprovalMethodPreference === ApprovalMethod.PERMIT */
 
     const { approval } = useApprovalTx({
       usePermit,
@@ -249,7 +249,8 @@ export const SupplyActions = React.memo(
         actionInProgressText={<span>Supplying {symbol}</span>}
         handleApproval={approval}
         handleAction={action}
-        requiresApproval={requiresApproval}
+        //requiresApproval={requiresApproval}
+        requiresApproval={false}
         tryPermit={permitAvailable}
         sx={sx}
         {...props}

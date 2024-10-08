@@ -22,7 +22,7 @@ export function useIsEvmAccountBound(address: string) {
   const { api, isLoaded } = useRpcProvider()
 
   return useQuery({
-    enabled: isLoaded && !!address,
+    enabled: isLoaded && isEvmAddress(address),
     queryKey: QUERY_KEYS.evmBoundAccountId(address),
     queryFn: getIsEvmAccountBound(api, address),
   })

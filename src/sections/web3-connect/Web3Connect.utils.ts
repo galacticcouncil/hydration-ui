@@ -62,7 +62,7 @@ export const useWallet = () => {
   const providerType = useWeb3ConnectStore(
     useShallow((state) => state.account?.provider),
   )
-  return useMemo(() => getWalletProviderByType(providerType), [providerType])
+  return getWalletProviderByType(providerType)
 }
 
 export const useAccount = () => {
@@ -84,7 +84,7 @@ export const useEvmAccount = () => {
     return H160.fromSS58(address)
   }, [isEvm, address])
 
-  const accountBinding = useIsEvmAccountBound(isEvm ? "" : evmAddress)
+  const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data
 
   const evm = useQuery(
@@ -114,7 +114,9 @@ export const useEvmAccount = () => {
 
   return {
     isBound,
-    isLoading: accountBinding.isLoading || evm.isLoading,
+    isLoading: isEvm
+      ? evm.isLoading
+      : accountBinding.isLoading || evm.isLoading,
     account: {
       chainId: evm.data?.chainId ?? null,
       name: account?.name ?? "",

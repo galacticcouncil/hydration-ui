@@ -159,6 +159,7 @@ export const TxActionsWrapper = ({
             approvalParams.handleClick && approvalParams.handleClick()
           }
           size="medium"
+          type="button"
         >
           {approvalParams.loading && (
             <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
@@ -172,6 +173,7 @@ export const TxActionsWrapper = ({
         disabled={disabled || blocked || readOnlyModeAddress !== undefined}
         onClick={handleClick}
         size="medium"
+        type="button"
         sx={approvalParams ? { mt: 8 } : undefined}
       >
         {loading && (

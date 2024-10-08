@@ -100,19 +100,20 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const sendTx = useCallback(
     async (txData: PopulatedTransaction, abi?: string) => {
       if (provider) {
+        /* 
         createTransaction({
           evmTx: {
             data: txData,
             abi,
           },
-        })
+        }) */
 
-        /* const signer = provider.getSigner(from)
+        const signer = provider.getSigner(txData.from)
         const txResponse: TransactionResponse = await signer.sendTransaction({
-          ...data,
-          value: data.value ? BigNumber.from(data.value) : undefined,
+          ...txData,
+          value: txData.value ? BigNumber.from(txData.value) : undefined,
         })
-        return txResponse */
+        return txResponse
       }
     },
     [createTransaction, provider],
