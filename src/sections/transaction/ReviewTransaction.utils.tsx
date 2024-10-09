@@ -231,8 +231,6 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
   const queryClient = useQueryClient()
   const { wallet } = useWallet()
 
-  const isEvmSigner = wallet?.signer instanceof EthereumSigner
-
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
@@ -259,7 +257,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       refetchOnWindowFocus: false,
       cacheTime: 0,
       staleTime: 0,
-      enabled: !!account && isEvmSigner,
+      enabled: isEvmAccount(account?.toString()),
     },
   )
 }

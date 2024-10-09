@@ -191,7 +191,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         )
 
         // move to unknown state
-        if (hoursDiff >= 1) {
+        if (hoursDiff >= 1 || !toastData.txHash?.length) {
           toast.remove(toastData.id)
           toast.add("unknown", toastData)
 

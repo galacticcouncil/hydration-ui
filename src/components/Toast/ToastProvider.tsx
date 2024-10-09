@@ -16,7 +16,7 @@ export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   )
 
   const progressToasts = toasts.filter((toast) => {
-    return !toast.bridge && toast.variant === "progress" && toast.txHash
+    return !toast.bridge && toast.variant === "progress"
   })
 
   useBridgeToast(bridgeToasts)
