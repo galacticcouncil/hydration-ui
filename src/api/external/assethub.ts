@@ -1,5 +1,6 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain } from "@galacticcouncil/xcm-core"
+import { Parachain, ParachainAssetData } from "@galacticcouncil/xcm-core"
+import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
@@ -22,9 +23,8 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
-import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain/Parachain"
 import { useSpotPrice } from "api/spotPrice"
-import { wallet } from "api/xcm"
+import { useCrossChainWallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
 
@@ -58,7 +58,7 @@ export const ASSETHUB_ID_BLACKLIST = [
 export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get(
   "dot",
-) as ParachainAssetsData
+) as ParachainAssetData
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -274,7 +274,7 @@ export type CreateTokenValues = {
 }
 
 type SwapNativeOptions = {
-  asset: ParachainAssetsData
+  asset: ParachainAssetData
   address: string
   nativeAmount: string
   assetAmount: string
@@ -314,7 +314,7 @@ export function assetHubSwapNativeForAssetExactOut(
 }
 
 type XCMOutTransferOptions = {
-  asset: ParachainAssetsData
+  asset: ParachainAssetData
   address: string
   amount: string
   dstChain: string
@@ -322,6 +322,7 @@ type XCMOutTransferOptions = {
 
 export async function getAssetHubXcmOutTransfer(
   api: ApiPromise,
+  wallet: Wallet,
   options: XCMOutTransferOptions,
 ) {
   const xTransfer = await wallet.transfer(
@@ -371,6 +372,7 @@ export const useCreateAssetHubToken = ({
   const { account } = useAccount()
   const { data: api } = useExternalApi("assethub")
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
+  const wallet = useCrossChainWallet()
 
   // DOT to USDT spot price
   const { data: spotPrice } = useSpotPrice("10", "5")
@@ -401,16 +403,16 @@ export const useCreateAssetHubToken = ({
     })
 
     // Transfer half of the USDT to Hydration
-    const usdtTransferCall = await getAssetHubXcmOutTransfer(api, {
+    const usdtTransferCall = await getAssetHubXcmOutTransfer(api, wallet, {
       asset: usdt,
       address: account.address,
       amount: usdtAmount.div(2).toString(),
-      dstChain: "hydradx",
+      dstChain: "hydration",
     })
 
     // Transfer DOT from AH to Polkadot
     const dotTransferCall = values.dotAmount
-      ? await getAssetHubXcmOutTransfer(api, {
+      ? await getAssetHubXcmOutTransfer(api, wallet, {
           asset: assethubNativeToken,
           address: account.address,
           amount: values.dotAmount,
