@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
-import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
+import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
   getVisibleCells,

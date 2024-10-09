@@ -18,11 +18,11 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useRootStore } from "sections/lending/store/root"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
 import {
   assetCanBeBorrowedByUser,
   getMaxAmountAvailableToBorrow,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
+import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>

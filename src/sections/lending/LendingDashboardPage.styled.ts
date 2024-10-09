@@ -5,7 +5,7 @@ export const SContainer = styled.div`
   grid-template-columns: 1fr;
   gap: 20px;
 
-  @media ${theme.viewport.gte.xl} {
+  @media ${theme.viewport.gte.md} {
     grid-template-columns: 1fr 1fr;
   }
 `

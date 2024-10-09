@@ -1,13 +1,13 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { DotsHorizontalIcon } from "@heroicons/react/solid"
-import { Box, SvgIcon, Typography } from "@mui/material"
 import { useState } from "react"
-
-import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { IncentivesTooltipContent } from "./IncentivesTooltipContent"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
+import { Box, SvgIcon } from "@mui/material"
 
 interface IncentivesButtonProps {
   symbol: string
@@ -17,18 +17,16 @@ interface IncentivesButtonProps {
 
 const BlankIncentives = () => {
   return (
-    <Box
+    <div
       sx={{
-        p: { xs: "0 4px", xsm: "3.625px 4px" },
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        px: 4,
+        flex: "row",
+        align: "center",
+        justify: "center",
       }}
     >
-      <Typography variant="main12" color="text.secondary">
-        &nbsp;
-      </Typography>
-    </Box>
+      &nbsp;
+    </div>
   )
 }
 
@@ -60,8 +58,8 @@ export const IncentivesButton = ({
   const incentivesNetAPR = isIncentivesInfinity
     ? "Infinity"
     : incentivesAPRSum !== "Infinity"
-    ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
-    : "Infinity"
+      ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
+      : "Infinity"
 
   if (incentivesNetAPR === 0) {
     if (displayBlank) {
@@ -92,28 +90,21 @@ export const IncentivesButton = ({
         />
       )
     } else if (incentivesNetAPR === "Infinity") {
-      return (
-        <Typography variant="main12" color="text.secondary">
-          ∞
-        </Typography>
-      )
+      return <Text color="basic400">∞</Text>
     }
   }
 
   const iconSize = 12
 
   return (
-    <ContentWithTooltip
-      tooltipContent={
+    <InfoTooltip
+      text={
         <IncentivesTooltipContent
           incentives={incentives}
           incentivesNetAPR={incentivesNetAPR}
           symbol={symbol}
         />
       }
-      withoutHover
-      setOpen={setOpen}
-      open={open}
     >
       <Box
         sx={(theme) => ({
@@ -177,6 +168,6 @@ export const IncentivesButton = ({
           </>
         </Box>
       </Box>
-    </ContentWithTooltip>
+    </InfoTooltip>
   )
 }

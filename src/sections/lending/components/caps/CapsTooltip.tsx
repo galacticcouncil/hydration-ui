@@ -1,8 +1,4 @@
-import { ExclamationIcon } from "@heroicons/react/outline"
-
-import { SvgIcon } from "@mui/material"
-
-import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { CapType } from "./helper"
 
 interface CapsTooltipProps {
@@ -47,11 +43,5 @@ export const CapsTooltip = ({
       )
   }
 
-  return (
-    <ContentWithTooltip tooltipContent={<>{message || ""}</>}>
-      <SvgIcon sx={{ fontSize: "14px", color: "error.main" }}>
-        <ExclamationIcon />
-      </SvgIcon>
-    </ContentWithTooltip>
-  )
+  return <InfoTooltip text={message} />
 }

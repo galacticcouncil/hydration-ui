@@ -1,12 +1,12 @@
-import { Box, Tooltip, Typography, TypographyProps } from "@mui/material"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-
-import { PopperComponent } from "sections/lending/components/ContentWithTooltip"
+import { Box, TypographyProps } from "@mui/material"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
 import GhoBorrowApyRange from "sections/lending/components/GhoBorrowApyRange"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Link } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export interface GhoIncentivesCardProps {
   value: string | number
@@ -45,20 +45,8 @@ export const GhoIncentivesCard = ({
   const showTooltip = userQualifiesForDiscount || forceShowTooltip
   if (showTooltip) {
     toolTipContent = (
-      <Box
-        sx={{
-          py: 4,
-          px: 6,
-          fontSize: "12px",
-          lineHeight: "16px",
-          a: {
-            fontSize: "12px",
-            lineHeight: "16px",
-            fontWeight: 500,
-          },
-        }}
-      >
-        <Typography variant="subheader2">
+      <>
+        <Text fs={16}>
           <span>
             Estimated compounding interest, including discount for Staking{" "}
             {minStkAaveBalanceReached ? (
@@ -80,8 +68,8 @@ export const GhoIncentivesCard = ({
           >
             <span>Learn more</span>
           </Link>
-        </Typography>
-      </Box>
+        </Text>
+      </>
     )
   }
 
@@ -97,20 +85,8 @@ export const GhoIncentivesCard = ({
       }}
     >
       {value.toString() !== "-1" ? (
-        <Tooltip
-          enterTouchDelay={0}
-          leaveTouchDelay={0}
-          placement="top"
-          title={toolTipContent}
-          arrow={showTooltip}
-          PopperComponent={PopperComponent}
-        >
-          <Box
-            sx={() => ({
-              display: "flex",
-              alignItems: "center",
-            })}
-          >
+        <InfoTooltip text={toolTipContent}>
+          <div sx={{ flex: "row", align: "center" }}>
             {withTokenIcon && (
               <TokenIcon
                 symbol="stkAAVE"
@@ -134,10 +110,10 @@ export const GhoIncentivesCard = ({
                 data-cy={"apy"}
               />
             )}
-          </Box>
-        </Tooltip>
+          </div>
+        </InfoTooltip>
       ) : (
-        <NoData variant="secondary14" color="text.secondary" />
+        <NoData />
       )}
     </Box>
   )

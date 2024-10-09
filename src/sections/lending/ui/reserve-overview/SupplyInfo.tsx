@@ -226,7 +226,7 @@ export const SupplyInfo = ({
             >
               {t("lending.collateralUsage")}
             </Text>
-            <Alert size="small" variant="warning">
+            <Alert variant="warning">
               <Text fs={14}>{t("lending.supply.assetCannotBeCollateral")}</Text>
             </Alert>
           </div>

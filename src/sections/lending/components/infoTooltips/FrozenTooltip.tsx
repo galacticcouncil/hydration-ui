@@ -1,10 +1,7 @@
-import { ExclamationIcon } from "@heroicons/react/outline"
-
-import { Box, SvgIcon } from "@mui/material"
-
-import { frozenProposalMap } from "sections/lending/utils/marketsAndNetworksConfig"
-import { ContentWithTooltip } from "sections/lending/components/ContentWithTooltip"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Text } from "components/Typography/Text/Text"
 import { Link } from "sections/lending/components/primitives/Link"
+import { frozenProposalMap } from "sections/lending/utils/marketsAndNetworksConfig"
 
 interface FrozenTooltipProps {
   symbol?: string
@@ -34,24 +31,18 @@ export const FrozenTooltip = ({
   currentMarket,
 }: FrozenTooltipProps) => {
   return (
-    <ContentWithTooltip
-      tooltipContent={
-        <Box>
-          <span>
-            This asset is frozen due to an Aave Protocol Governance decision.{" "}
-            <Link
-              href={getFrozenProposalLink(symbol, currentMarket)}
-              sx={{ textDecoration: "underline" }}
-            >
-              <span>More details</span>
-            </Link>
-          </span>
-        </Box>
+    <InfoTooltip
+      text={
+        <Text>
+          This asset is frozen due to an Aave Protocol Governance decision.{" "}
+          <Link
+            href={getFrozenProposalLink(symbol, currentMarket)}
+            sx={{ textDecoration: "underline" }}
+          >
+            <span>More details</span>
+          </Link>
+        </Text>
       }
-    >
-      <SvgIcon sx={{ fontSize: "20px", color: "error.main", ml: 8 }}>
-        <ExclamationIcon />
-      </SvgIcon>
-    </ContentWithTooltip>
+    ></InfoTooltip>
   )
 }

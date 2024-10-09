@@ -3,7 +3,6 @@ import { Input } from "components/Input/Input"
 import { useState } from "react"
 import { useDebounce } from "react-use"
 import { MarketsHeaderValues } from "sections/lending/ui/header/MarketsHeaderValues"
-import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 import { MarketAssetsTable } from "sections/lending/ui/table/market-assets/MarketAssetsTable"
 import IconSearch from "assets/icons/IconSearch.svg?react"
 
@@ -34,7 +33,7 @@ export const LendingMarketsPage = () => {
   return (
     <>
       <MarketsHeaderValues sx={{ mb: [10, 40] }} />
-      <HollarBanner sx={{ mb: [20, 30] }} />
+      {/* <HollarBanner sx={{ mb: [20, 30] }} /> */}
       <Input
         label="Search"
         name="market-search"

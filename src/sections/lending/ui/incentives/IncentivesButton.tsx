@@ -36,8 +36,8 @@ export const IncentivesButton = ({
   const incentivesNetAPR = isIncentivesInfinity
     ? "Infinity"
     : incentivesAPRSum !== "Infinity"
-    ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
-    : "Infinity"
+      ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
+      : "Infinity"
 
   if (incentivesNetAPR === 0) {
     return null

@@ -1,33 +1,21 @@
-import { ExclamationIcon } from "@heroicons/react/outline"
-
-import { Box } from "@mui/material"
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
-
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Link } from "sections/lending/components/primitives/Link"
-import {
-  TextWithTooltip,
-  TextWithTooltipProps,
-} from "sections/lending/components/TextWithTooltip"
+import { Text } from "components/Typography/Text/Text"
 
-type DebtCeilingMaxedTooltipProps = TextWithTooltipProps & {
+type DebtCeilingMaxedTooltipProps = {
   debtCeiling: AssetCapData
 }
 
 export const DebtCeilingMaxedTooltip = ({
   debtCeiling,
-  ...rest
 }: DebtCeilingMaxedTooltipProps) => {
   if (!debtCeiling || !debtCeiling.isMaxed) return null
 
   return (
-    <Box sx={{ ml: 8 }}>
-      <TextWithTooltip
-        {...rest}
-        icon={<ExclamationIcon />}
-        iconColor="error.main"
-        iconSize={18}
-      >
-        <>
+    <InfoTooltip
+      text={
+        <Text>
           <span>
             Protocol debt ceiling is at 100% for this asset. Futher borrowing
             against this asset is unavailable.
@@ -38,8 +26,8 @@ export const DebtCeilingMaxedTooltip = ({
           >
             <span>Learn more</span>
           </Link>
-        </>
-      </TextWithTooltip>
-    </Box>
+        </Text>
+      }
+    />
   )
 }

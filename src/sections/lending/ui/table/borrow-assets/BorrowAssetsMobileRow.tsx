@@ -2,7 +2,7 @@ import { Row } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
-import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
+import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export const BorrowAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
   getVisibleCells,

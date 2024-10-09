@@ -23,7 +23,7 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import { DashboardReserve } from "sections/lending/utils/dashboardSortUtils"
+import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
