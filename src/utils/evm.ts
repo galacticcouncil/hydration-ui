@@ -11,7 +11,7 @@ import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 
-const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
+const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
 export const NATIVE_EVM_ASSET_DECIMALS = nativeEvmChain.client.chainDecimals
@@ -64,7 +64,7 @@ export class H160 {
 export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
-  chainKey = "hydradx",
+  chainKey = "hydration",
 ) {
   const chain = chainsMap.get(chainKey)
 
