@@ -39,6 +39,7 @@ import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { BN_0 } from "utils/constants"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -136,7 +137,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const txData = tx.method.toHex()
 
           if (shouldUsePermit) {
-            const nonce = customNonce ? BN(customNonce) : permitNonce
+            const nonce = customNonce ? BN(customNonce) : permitNonce ?? BN_0
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,
@@ -163,7 +164,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
-          // defer to polkadot/api to handle nonce w/ regard to mempool
           nonce: customNonce ? parseInt(customNonce) : -1,
           withSignedTransaction: true,
         })

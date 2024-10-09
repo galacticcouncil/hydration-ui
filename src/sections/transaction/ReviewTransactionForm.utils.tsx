@@ -4,13 +4,9 @@ import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import {
-  useNextEvmPermitNonce,
-  useNextNonce,
-  usePaymentInfo,
-} from "api/transaction"
+import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
@@ -28,6 +24,10 @@ import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useMemo } from "react"
 import { useAssets } from "providers/assets"
+import {
+  useNextEvmPermitNonce,
+  usePendingDispatchPermit,
+} from "sections/transaction/ReviewTransaction.utils"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -107,9 +107,14 @@ export const useTransactionValues = ({
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
   const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
-  const { permitNonce, pendingPermit } = useNextEvmPermitNonce()
+  const { data: pendingPermit } = usePendingDispatchPermit(account?.address)
 
   const nonce = useNextNonce(account?.address)
+  const permitNonce = useNextEvmPermitNonce(account?.address)
+
+  const isNonceLoading = shouldUsePermit
+    ? permitNonce.isLoading
+    : nonce.isLoading
 
   const era = useEra(
     boundedTx.era,
@@ -128,7 +133,7 @@ export const useTransactionValues = ({
     evmPaymentFee.isInitialLoading ||
     isPaymentInfoLoading ||
     spotPrice.isInitialLoading ||
-    nonce.isLoading ||
+    isNonceLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
@@ -152,7 +157,7 @@ export const useTransactionValues = ({
         tx: boundedTx,
         isNewReferralLink,
         shouldUsePermit,
-        permitNonce,
+        permitNonce: permitNonce.data,
         pendingPermit,
       },
     }
@@ -232,7 +237,7 @@ export const useTransactionValues = ({
       tx: boundedTx,
       isNewReferralLink,
       shouldUsePermit,
-      permitNonce,
+      permitNonce: permitNonce.data,
       pendingPermit,
     },
   }
@@ -243,7 +248,7 @@ export const useEditFeePaymentAsset = (
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const feeAsPayment = useSetAsFeePayment()
 
   const {
     openModal: openEditFeePaymentAssetModal,
@@ -255,45 +260,7 @@ export const useEditFeePaymentAsset = (
     confirmRequired: true,
     defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets: acceptedFeePaymentAssets,
-    onSelect: (asset) =>
-      setFeeAsPayment(asset.id.toString(), {
-        onLoading: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onSuccess: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onError: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-      }),
+    onSelect: (asset) => feeAsPayment.mutate(asset.id),
   })
 
   return {
