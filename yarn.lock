@@ -2205,10 +2205,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.2.0.tgz#c9bc191ccd732adcb7f3b50ecbff6d3a9923d391"
   integrity sha512-6NlzDthJOByf+yARUT+l5PnHASXQRGjXRhFaXofGUhP7tqD8t29eEudzKVXJL1iabpn22ebKPscSw2H+lNQiyQ==
 
-"@galacticcouncil/apps@7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-7.0.0.tgz#b12af0519ceaecd217b2a2654834a1e60e1310ba"
-  integrity sha512-47M1hpOYBMtS3rKOEGaYHH4d+18/k0D7JYaPcm2csoqinif4YW+DoK7T9hhyXvVplgCjS42ZN7AzoEmqsyj1qw==
+"@galacticcouncil/apps@7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-7.0.1.tgz#e4ca69a629f9327970cdf798518aa2ed83cd9202"
+  integrity sha512-l+3bMgxTCfzoUYqxjACwjns+iM6z32d9b9H8xLkYmhgPF7m3nV8F7KWEwC7AmqwwU7/Jjj1XO2y1vGklSh45EQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2276,10 +2276,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-4.0.1.tgz#4c26ce9fe28dc5f4c0778b5cbcddb03114c63f2a"
-  integrity sha512-Q4mzW/kBO2IMvS7vxgwE2MseCh5FEKFxiHroTQ0zB7ls0nWMa94lXsF2HW9/l7OPvNH6A2jIH/ZFNcohUYu6Uw==
+"@galacticcouncil/xcm-cfg@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-4.1.1.tgz#03cd47b2a33495fc45d0240bc35b0b5264708b60"
+  integrity sha512-bG35Cm9TNHlwt8B79q2W8m8CROc8i+XPzaZ1MQlXt6ux7+Ik2rbnlBa8jQphYWioUFW3GaUqaS2VfQrF+nfRbA==
   dependencies:
     "@galacticcouncil/xcm-core" "^4.0.0"
 
