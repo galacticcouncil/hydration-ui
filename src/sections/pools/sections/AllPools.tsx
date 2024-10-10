@@ -9,7 +9,7 @@ import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
-import { useSearch } from "@tanstack/react-location"
+import { useNavigate, useSearch } from "@tanstack/react-location"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { AllPoolsVolumeTotal } from "sections/pools/header/VolumeTotal"
@@ -76,13 +76,15 @@ export const AllPools = () => {
 
 const AllPoolsData = () => {
   const { t } = useTranslation()
-
+  const navigate = useNavigate()
   const { search } = useSearchFilter()
-  const { id } = useSearch<{
+  const searchQuery = useSearch<{
     Search: {
       id?: number
     }
   }>()
+
+  const { id } = searchQuery
 
   const pools = usePools()
   const xylPools = useXYKPools()
@@ -133,6 +135,12 @@ const AllPoolsData = () => {
     const isLoading = pools.isLoading || xylPools.isInitialLoading
 
     if (!pool && isLoading) return <PoolSkeleton />
+
+    if (!pool?.isPositions) {
+      navigate({
+        search: { ...searchQuery, id: undefined },
+      })
+    }
 
     if (pool) return <PoolWrapper pool={pool} />
   }

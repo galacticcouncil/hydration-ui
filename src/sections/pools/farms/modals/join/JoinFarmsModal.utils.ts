@@ -1,7 +1,5 @@
 import { z } from "zod"
 import { maxBalance, required } from "utils/validators"
-import { useTokenBalance } from "api/balances"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { Farm, useOraclePrice } from "api/farms"
 import { useMemo } from "react"
@@ -10,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import BigNumber from "bignumber.js"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export const useZodSchema = ({
   id,
@@ -24,12 +23,14 @@ export const useZodSchema = ({
 }) => {
   const assetId = enabled ? id : undefined
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const { data: balance } = useTokenBalance(assetId, account?.address)
+  const { data: accountAssets } = useAccountAssets()
   const { getData } = useLiquidityPositionData(assetId ? [assetId] : undefined)
 
   const meta = getAssetWithFallback(id)
+  const balance = assetId
+    ? accountAssets?.accountAssetsMap.get(assetId)?.balance
+    : undefined
 
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(

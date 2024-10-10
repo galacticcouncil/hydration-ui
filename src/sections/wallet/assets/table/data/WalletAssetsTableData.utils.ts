@@ -1,4 +1,3 @@
-import { useAccountBalances } from "api/accountBalances"
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
@@ -16,6 +15,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
+import { useAccountAssets } from "api/deposits"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -40,29 +40,27 @@ export const useAssetsData = ({
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const balances = useAccountBalances(address, true)
+  const balances = useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
-  const nativeTokenWithBalance = balances.data?.native
-  const tokensWithBalance = useMemo(() => {
-    if (nativeTokenWithBalance && balances.data) {
-      const filteredTokens = balances.data.balances.filter((balance) => {
-        if (balance.id === native.id) return false
 
-        const meta = getAsset(balance.id)
+  const tokensWithBalance = useMemo(() => {
+    if (balances.data) {
+      const filteredTokens = balances.data.balances.filter((balance) => {
+        if (balance.assetId === native.id) return false
+
+        const meta = getAsset(balance.assetId)
 
         return meta?.isToken || meta?.isStableSwap || meta?.isExternal
       })
 
-      return nativeTokenWithBalance.total.gt(0)
-        ? [...filteredTokens, nativeTokenWithBalance]
-        : filteredTokens
+      return filteredTokens
     }
 
     return []
-  }, [balances.data, getAsset, nativeTokenWithBalance, native])
+  }, [balances.data, getAsset, native])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
-    (tokenWithBalance) => tokenWithBalance.id,
+    (tokenWithBalance) => tokenWithBalance.assetId,
   )
 
   const currencyId = useAccountCurrency(address).data
@@ -78,7 +76,7 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (balances.isInitialLoading || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const asset = getAssetWithFallback(balance.id)
+      const asset = getAssetWithFallback(balance.assetId)
       const isExternalInvalid = asset.isExternal && !asset.symbol
       const meta = isExternalInvalid
         ? getExternalMeta(asset.id) ?? asset

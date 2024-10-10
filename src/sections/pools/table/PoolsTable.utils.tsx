@@ -34,7 +34,6 @@ import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { useTokenBalance } from "api/balances"
 import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { useAssets } from "providers/assets"
@@ -239,18 +238,11 @@ const ManageLiquidityButton: React.FC<{
   pool: TPool | TXYKPool
   onRowSelect: (id: string) => void
 }> = ({ pool, onRowSelect }) => {
-  const { account } = useAccount()
   const { t } = useTranslation()
 
   const isXykPool = isXYKPoolType(pool)
 
-  const assetMeta = pool.meta
-  const isStablePool = assetMeta.isStableSwap
-
-  const userStablePoolBalance = useTokenBalance(
-    isStablePool ? pool.id : undefined,
-    account?.address,
-  )
+  const userStablePoolBalance = pool.balance
 
   let positionsAmount: BN = BN_0
 
@@ -261,7 +253,7 @@ const ManageLiquidityButton: React.FC<{
   } else {
     positionsAmount = BN(pool.omnipoolPositions.length)
       .plus(pool.miningPositions.length)
-      .plus(userStablePoolBalance.data?.freeBalance.gt(0) ? 1 : 0)
+      .plus(userStablePoolBalance?.freeBalance.gt(0) ? 1 : 0)
   }
 
   const isPositions = positionsAmount.gt(0)
@@ -369,7 +361,7 @@ export const usePoolTable = (
   const columnVisibility: VisibilityState = {
     name: true,
     spotPrice: isDesktop,
-    volumeDisplay: true,
+    volume: true,
     tvlDisplay: isTablet,
     apy: isDesktop,
     actions: isTablet,
@@ -403,7 +395,7 @@ export const usePoolTable = (
           ]
         : []),
       accessor("id", {
-        id: "volumeDisplay",
+        id: "volume",
         header: t("liquidity.table.header.volume"),
         sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
