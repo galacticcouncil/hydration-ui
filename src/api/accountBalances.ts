@@ -26,8 +26,13 @@ export const useAccountBalances = (
 export const useAccountsBalances = (addresses: string[]) => {
   const { api } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.accountsBalances(addresses), () =>
-    Promise.all(addresses.map((address) => getAccountBalances(api, address)())),
+  return useQuery(
+    QUERY_KEYS.accountsBalances(addresses),
+    () =>
+      Promise.all(
+        addresses.map((address) => getAccountBalances(api, address)()),
+      ),
+    { enabled: !!addresses.length },
   )
 }
 
