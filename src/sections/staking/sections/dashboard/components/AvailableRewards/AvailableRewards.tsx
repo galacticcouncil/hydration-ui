@@ -26,6 +26,7 @@ import { XAxis, YAxis } from "recharts"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
+import { useRefetchAccountAssets } from "api/deposits"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()
@@ -34,6 +35,7 @@ export const AvailableRewards = () => {
   const reward = useClaimReward()
   const { native } = useAssets()
   const spotPrice = useDisplayPrice(native.id)
+  const refetch = useRefetchAccountAssets()
 
   const processedVotes = useProcessedVotesIds()
 
@@ -75,9 +77,7 @@ export const AvailableRewards = () => {
     )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(native.id, account?.address),
-    )
+    refetch()
   }
 
   const isGraphSecondaryPoint = reward.data?.chartValues?.some(

@@ -402,7 +402,7 @@ export const useFarmApr = (farm: Farm) => {
         rewardCurrency === native.id
           ? accountBalance.data?.native.freeBalance
           : accountBalance.data?.balances.find(
-              (balance) => balance.id.toString() === rewardCurrency,
+              (balance) => balance.assetId.toString() === rewardCurrency,
             )?.freeBalance
 
       return getFarmApr(
@@ -445,7 +445,7 @@ export const useFarmAprs = (farms: Farm[]) => {
         ? rewardCurrency === native.id
           ? accountBalance.native.freeBalance
           : accountBalance.balances.find(
-              (balance) => balance.id.toString() === rewardCurrency,
+              (balance) => balance.assetId.toString() === rewardCurrency,
             )?.freeBalance
         : undefined
 
@@ -483,23 +483,24 @@ export const useOraclePrice = (
   rewardCurrency: string | undefined,
   incentivizedAsset: string | undefined,
 ) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
     rewardCurrency != null && incentivizedAsset != null
       ? getOraclePrice(api, rewardCurrency, incentivizedAsset)
       : undefinedNoop,
-    { enabled: rewardCurrency != null && incentivizedAsset != null },
+    {
+      enabled: rewardCurrency != null && incentivizedAsset != null && isLoaded,
+    },
   )
 }
 
 const getOraclePrice =
   (api: ApiPromise, rewardCurrency: string, incentivizedAsset: string) =>
   async () => {
-    const orderedAssets = [rewardCurrency, incentivizedAsset].sort() as [
-      string,
-      string,
-    ]
+    const orderedAssets = [rewardCurrency, incentivizedAsset].sort(
+      (a, b) => Number(a) - Number(b),
+    ) as [string, string]
 
     if (rewardCurrency === incentivizedAsset)
       return {

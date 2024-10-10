@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -183,7 +183,7 @@ export const useFarmingPositionsData = ({
 } = {}) => {
   const { getShareTokenByAddress, getAsset } = useAssets()
   const { omnipoolDeposits = [], xykDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
   const { omnipool, xyk } = useAllFarmDeposits()
 
   const bestNumber = useBestNumber()

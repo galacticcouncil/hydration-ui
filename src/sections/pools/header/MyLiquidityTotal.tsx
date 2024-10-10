@@ -14,16 +14,20 @@ export const MyLiquidityTotal = () => {
   const omnipoolPositions = useOmnipoolPositionsData()
   const totalFarms = useFarmDepositsTotal()
   const stablePoolTotal = useMyStablePoolaTotal()
-  const xykPools = useXYKPools(true)
+  const xykPools = useXYKPools()
 
   const xykTotal = useMemo(() => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
-        const myTotalDisplay = xykPool.tvlDisplay
-          ?.div(100)
-          .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
+        if (xykPool.isPositions) {
+          const myTotalDisplay = xykPool.tvlDisplay
+            ?.div(100)
+            .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
 
-        return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
+          return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
+        }
+
+        return acc
       }, BN_0)
     }
     return BN_0

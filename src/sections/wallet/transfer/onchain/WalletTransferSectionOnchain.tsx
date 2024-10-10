@@ -24,7 +24,6 @@ import {
   CloseIcon,
   PasteAddressIcon,
 } from "./WalletTransferSectionOnchain.styled"
-import { useTokenBalance } from "api/balances"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
@@ -32,6 +31,7 @@ import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -53,10 +53,11 @@ export function WalletTransferSectionOnchain({
   const { native, getAssetWithFallback } = useAssets()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const accountAssets = useAccountAssets()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const tokenBalance = useTokenBalance(asset, account?.address)
+  const tokenBalance = accountAssets.data?.accountAssetsMap.get(asset)?.balance
   const assetMeta = getAssetWithFallback(asset.toString())
 
   const accountCurrency = useAccountCurrency(account?.address)
@@ -68,7 +69,7 @@ export function WalletTransferSectionOnchain({
 
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
-  const balance = tokenBalance.data?.balance ?? BN_0
+  const balance = tokenBalance?.balance ?? BN_0
 
   const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 500)
 

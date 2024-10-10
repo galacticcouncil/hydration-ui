@@ -1,5 +1,4 @@
 import { NATIVE_ASSET_ID } from "utils/api"
-
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useQueries, useQuery } from "@tanstack/react-query"
@@ -9,9 +8,31 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import {
+  PalletBalancesAccountData,
+  OrmlTokensAccountData,
+} from "@polkadot/types/lookup"
 
-export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
-  return free.minus(frozen)
+export type TBalance = ReturnType<typeof parceBalanceData>
+
+export const parceBalanceData = (
+  data: PalletBalancesAccountData | OrmlTokensAccountData,
+  id: string,
+  address: string,
+) => {
+  const freeBalance = new BigNumber(data.free.toHex())
+  const frozenBalance = new BigNumber(data.frozen.toHex())
+  const reservedBalance = new BigNumber(data.reserved.toHex())
+  const balance = freeBalance.minus(frozenBalance)
+
+  return {
+    accountId: address,
+    assetId: id,
+    balance,
+    total: freeBalance.plus(reservedBalance),
+    freeBalance,
+    reservedBalance,
+  }
 }
 
 export const getTokenBalance =
@@ -19,38 +40,13 @@ export const getTokenBalance =
   async () => {
     if (id.toString() === NATIVE_ASSET_ID) {
       const res = await api.query.system.account(account)
-      const freeBalance = new BigNumber(res.data.free.toHex())
-      const frozenBalance = new BigNumber(res.data.frozen.toHex())
 
-      const reservedBalance = new BigNumber(res.data.reserved.toHex())
-
-      const balance = freeBalance.minus(frozenBalance)
-
-      return {
-        accountId: account,
-        assetId: id,
-        balance,
-        total: freeBalance.plus(reservedBalance),
-        freeBalance,
-      }
+      return parceBalanceData(res.data, id.toString(), account.toString())
     }
 
     const res = await api.query.tokens.accounts(account, id)
 
-    const freeBalance = new BigNumber(res.free.toHex())
-    const reservedBalance = new BigNumber(res.reserved.toHex())
-    const frozenBalance = new BigNumber(res.frozen.toHex())
-    const balance = new BigNumber(
-      calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
-    )
-
-    return {
-      accountId: account,
-      assetId: id,
-      balance,
-      total: freeBalance.plus(reservedBalance),
-      freeBalance,
-    }
+    return parceBalanceData(res, id.toString(), account.toString())
   }
 
 export const useTokenBalance = (

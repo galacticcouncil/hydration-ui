@@ -33,7 +33,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
     tvlDisplay: isDesktop,
     apy: isDesktop,
     fee: isDesktop,
-    volumeDisplay: true,
+    volume: true,
     actions: isDesktop,
   }
 
@@ -116,7 +116,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
             ),
           }),
       display({
-        id: "volumeDisplay",
+        id: "volume",
         header: t("liquidity.table.header.volume"),
         cell: () => (
           <Skeleton width={100} height={26} enableAnimation={enableAnimation} />
