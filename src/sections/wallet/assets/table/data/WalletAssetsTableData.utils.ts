@@ -33,7 +33,6 @@ export const useAssetsData = ({
     external,
     getAsset,
     tokens,
-    native,
     getAssetWithFallback,
   } = useAssets()
   const address = givenAddress ?? account?.address
@@ -46,8 +45,6 @@ export const useAssetsData = ({
   const tokensWithBalance = useMemo(() => {
     if (balances.data) {
       const filteredTokens = balances.data.balances.filter((balance) => {
-        if (balance.assetId === native.id) return false
-
         const meta = getAsset(balance.assetId)
 
         return meta?.isToken || meta?.isStableSwap || meta?.isExternal
@@ -57,7 +54,7 @@ export const useAssetsData = ({
     }
 
     return []
-  }, [balances.data, getAsset, native])
+  }, [balances.data, getAsset])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
     (tokenWithBalance) => tokenWithBalance.assetId,
