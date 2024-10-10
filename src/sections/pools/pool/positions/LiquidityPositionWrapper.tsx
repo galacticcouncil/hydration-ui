@@ -102,7 +102,7 @@ export const LiquidityPositionWrapper = () => {
 
   return (
     <>
-      {positionsNumber && (
+      {positionsNumber ? (
         <SPoolDetailsContainer
           css={{ background: "transparent" }}
           sx={{ pb: [0, 0] }}
@@ -188,7 +188,7 @@ export const LiquidityPositionWrapper = () => {
 
           <CollapsedPositionsList positions={positionsData.positions} />
         </SPoolDetailsContainer>
-      )}
+      ) : null}
       {openRemove && (
         <RemoveLiquidity
           pool={pool}

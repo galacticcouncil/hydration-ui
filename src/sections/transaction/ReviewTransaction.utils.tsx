@@ -336,10 +336,8 @@ export const useSendDispatchPermit = (
           permit.signature.r,
           permit.signature.s,
         )
-        const subscription = extrinsic.send(async (result) => {
+        const unsubscribe = await extrinsic.send(async (result) => {
           if (!result || !result.status) return
-
-          const unsubscribe = await subscription
 
           if (isMounted()) {
             setTxHash(result.txHash.toHex())

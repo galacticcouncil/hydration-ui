@@ -2,9 +2,9 @@ import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
-import { Suspense, lazy, useEffect, useRef } from "react"
+import { Suspense, lazy } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useMedia } from "react-use"
+import { useMedia } from "react-use"
 import {
   PoolNavigation,
   Navigation as PoolsNavigation,
@@ -20,6 +20,7 @@ import {
   SPageInner,
   SSubHeader,
 } from "./Page.styled"
+import { useControlScroll } from "./Page.utils"
 
 type Props = {
   className?: string
@@ -74,40 +75,24 @@ const useSubheaderComponent = () => {
 }
 
 export const Page = ({ className }: Props) => {
-  const { pathname } = useLocation()
   const matchRoute = useMatchRoute()
-  const ref = useRef<HTMLDivElement>(null)
-
+  const ref = useControlScroll()
   const subHeaderComponent = useSubheaderComponent()
-
-  useEffect(() => {
-    ref.current?.scrollTo({
-      top: 0,
-      left: 0,
-    })
-  }, [pathname])
 
   const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (
     <>
       <SPage ref={ref}>
-        <div
-          sx={{ flex: "column", height: "100%" }}
-          css={{ position: "relative" }}
-        >
-          <SGradientBg flipped={flippedBg} />
-          <Header />
-          <SPageContent>
-            {subHeaderComponent && (
-              <SSubHeader>{subHeaderComponent}</SSubHeader>
-            )}
-            <SPageInner className={className}>
-              <Outlet />
-            </SPageInner>
-          </SPageContent>
-          <MobileNavBar />
-        </div>
+        <SGradientBg flipped={flippedBg} />
+        <Header />
+        <SPageContent>
+          {subHeaderComponent && <SSubHeader>{subHeaderComponent}</SSubHeader>}
+          <SPageInner className={className}>
+            <Outlet />
+          </SPageInner>
+        </SPageContent>
+        <MobileNavBar />
       </SPage>
       <Suspense>
         <Web3Connect />
