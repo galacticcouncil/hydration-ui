@@ -23,7 +23,7 @@ export function useIsEvmAccountBound(address: string) {
 
   return useQuery({
     enabled: isLoaded && isEvmAddress(address),
-    queryKey: QUERY_KEYS.evmBoundAccountId(address),
+    queryKey: QUERY_KEYS.evmAccountBinding(address),
     queryFn: getIsEvmAccountBound(api, address),
   })
 }

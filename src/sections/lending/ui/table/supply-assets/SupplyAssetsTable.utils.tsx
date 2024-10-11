@@ -204,12 +204,14 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
           walletBalances[reserve.underlyingAsset]?.amountUSD
         let availableToDeposit = valueToBigNumber(walletBalance)
         if (reserve.supplyCap !== "0") {
-          availableToDeposit = BigNumber.min(
-            availableToDeposit,
-            new BigNumber(reserve.supplyCap)
-              .minus(reserve.totalLiquidity)
-              .multipliedBy("0.995"),
-          )
+          availableToDeposit = availableToDeposit.isNaN()
+            ? new BigNumber(0)
+            : BigNumber.min(
+                availableToDeposit,
+                new BigNumber(reserve.supplyCap)
+                  .minus(reserve.totalLiquidity)
+                  .multipliedBy("0.995"),
+              )
         }
         const availableToDepositUSD = valueToBigNumber(availableToDeposit)
           .multipliedBy(reserve.priceInMarketReferenceCurrency)
@@ -236,12 +238,14 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
             walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount,
           )
           if (reserve.supplyCap !== "0") {
-            baseAvailableToDeposit = BigNumber.min(
-              baseAvailableToDeposit,
-              new BigNumber(reserve.supplyCap)
-                .minus(reserve.totalLiquidity)
-                .multipliedBy("0.995"),
-            )
+            baseAvailableToDeposit = baseAvailableToDeposit.isNaN()
+              ? new BigNumber(0)
+              : BigNumber.min(
+                  baseAvailableToDeposit,
+                  new BigNumber(reserve.supplyCap)
+                    .minus(reserve.totalLiquidity)
+                    .multipliedBy("0.995"),
+                )
           }
           const baseAvailableToDepositUSD = valueToBigNumber(
             baseAvailableToDeposit,

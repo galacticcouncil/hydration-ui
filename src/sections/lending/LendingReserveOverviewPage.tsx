@@ -1,33 +1,30 @@
-import { useSearch } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
-import { useState } from "react"
+import React, { useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   ComputedReserveData,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
-import { ReserveActions } from "sections/lending/ui/reserve-overview/ReserveActions"
 import { ReserveOverviewHeaderValues } from "sections/lending/ui/header/ReserveOverviewHeaderValues"
+import { ReserveActions } from "sections/lending/ui/reserve-overview/ReserveActions"
 import { ReserveConfiguration } from "sections/lending/ui/reserve-overview/ReserveConfiguration"
-import { withHexPrefix } from "sections/lending/utils/utils"
 import {
   SContainer,
   SContent,
   SFilterContainer,
 } from "./LendingReserveOverviewPage.styled"
-import { useTranslation } from "react-i18next"
 
-export const LendingReserveOverviewPage = () => {
+export type LendingReserveOverviewPageProps = {
+  underlyingAsset: string
+}
+
+export const LendingReserveOverviewPage: React.FC<
+  LendingReserveOverviewPageProps
+> = ({ underlyingAsset }) => {
   const { t } = useTranslation()
-  const search = useSearch<{
-    Search: {
-      underlyingAsset: string
-    }
-  }>()
+
   const { reserves } = useAppDataContext()
-  const underlyingAsset = search.underlyingAsset
-    ? withHexPrefix(search.underlyingAsset)
-    : ""
 
   const reserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,

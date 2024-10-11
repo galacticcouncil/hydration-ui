@@ -44,6 +44,8 @@ export const LINKS = {
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
   lending: "/lending",
+  lendingMarkets: "/lending/markets",
+  lendingReserveOverview: "/lending/reserve-overview",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
 }

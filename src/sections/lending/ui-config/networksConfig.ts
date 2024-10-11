@@ -62,7 +62,7 @@ export const networkConfigs: Record<string, BaseNetworkConfig> = {
     baseAssetDecimals: 18,
     explorerLink: "https://explorer.nice.hydration.cloud",
     isTestnet: true,
-    networkLogoPath: "",
+    networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },
   [ChainId.sepolia]: {
     name: "Ethereum Sepolia",

@@ -1,10 +1,9 @@
 import { useNavigate, useSearch } from "@tanstack/react-location"
-import { Input } from "components/Input/Input"
+import { Search } from "components/Search/Search"
 import { useState } from "react"
 import { useDebounce } from "react-use"
 import { MarketsHeaderValues } from "sections/lending/ui/header/MarketsHeaderValues"
 import { MarketAssetsTable } from "sections/lending/ui/table/market-assets/MarketAssetsTable"
-import IconSearch from "assets/icons/IconSearch.svg?react"
 
 export const LendingMarketsPage = () => {
   const navigate = useNavigate()
@@ -18,7 +17,7 @@ export const LendingMarketsPage = () => {
 
   useDebounce(
     () => {
-      if (search !== query.search) {
+      if (search && search !== query.search) {
         navigate({
           search: {
             search: search,
@@ -34,14 +33,12 @@ export const LendingMarketsPage = () => {
     <>
       <MarketsHeaderValues sx={{ mb: [10, 40] }} />
       {/* <HollarBanner sx={{ mb: [20, 30] }} /> */}
-      <Input
-        label="Search"
+      <Search
         name="market-search"
         placeholder="Search by token name, symbol or address"
         value={search}
-        onChange={setSearch}
+        setValue={setSearch}
         sx={{ mb: [20, 30] }}
-        iconStart={<IconSearch />}
       />
       <MarketAssetsTable search={search} />
     </>

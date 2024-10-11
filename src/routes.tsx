@@ -412,7 +412,7 @@ export const routes: Route[] = [
     ),
   },
   {
-    path: "lending",
+    path: LINKS.lending,
     element: (
       <Suspense fallback={null}>
         <LendingPage />
@@ -428,7 +428,7 @@ export const routes: Route[] = [
         ),
       },
       {
-        path: "markets",
+        path: LINKS.lendingMarkets.split("/").pop(),
         element: (
           <Suspense fallback={null}>
             <LendingMarketsPage />
@@ -436,12 +436,21 @@ export const routes: Route[] = [
         ),
       },
       {
-        path: "reserve-overview",
-        element: (
-          <Suspense fallback={null}>
-            <LendingReserveOverviewPage />
-          </Suspense>
-        ),
+        path: LINKS.lendingReserveOverview.split("/").pop(),
+        children: [
+          {
+            path: "/",
+            element: <Navigate to={LINKS.lending} />,
+          },
+          {
+            path: ":underlyingAsset",
+            element: async ({ params: { underlyingAsset } }) => (
+              <Suspense fallback={null}>
+                <LendingReserveOverviewPage underlyingAsset={underlyingAsset} />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },

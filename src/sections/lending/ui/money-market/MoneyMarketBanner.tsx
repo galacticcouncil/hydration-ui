@@ -9,6 +9,11 @@ import {
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation, Trans } from "react-i18next"
+import { useQueryClient } from "@tanstack/react-query"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { H160 } from "utils/evm"
+import { createToastMessages } from "state/toasts"
 
 type MoneyMarketBannerProps = {
   className?: string
@@ -20,6 +25,8 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
   const { t } = useTranslation()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
 
   const onBind = () => {
     createTransaction(
@@ -27,10 +34,15 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
         tx: api.tx.evmAccounts.bindEvmAddress(),
       },
       {
-        toast: {
-          onLoading: <Trans t={t} i18nKey="lending.bind.toast.onLoading" />,
-          onSuccess: <Trans t={t} i18nKey="lending.bind.toast.onSuccess" />,
-          onError: <Trans t={t} i18nKey="lending.bind.toast.onError" />,
+        toast: createToastMessages("lending.bind.toast", {
+          t,
+        }),
+        onSuccess: () => {
+          if (account) {
+            queryClient.refetchQueries(
+              QUERY_KEYS.evmAccountBinding(H160.fromSS58(account.address)),
+            )
+          }
         },
       },
     )

@@ -9,6 +9,7 @@ import {
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { theme } from "theme"
+import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 
 export type ReserveOverviewHeaderValuesProps = {
   className?: string
@@ -36,13 +37,17 @@ export const ReserveOverviewHeaderValues: FC<
       className={className}
     >
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <div>
+        <TokenIcon
+          symbol={poolReserve.iconSymbol}
+          sx={{ width: 32, height: 32 }}
+        />
+        {/* <div>
           <img
             src={`https://app.aave.com/icons/tokens/${poolReserve.iconSymbol.toLowerCase()}.svg`}
             sx={{ width: 32, height: 32 }}
             alt=""
           />
-        </div>
+        </div> */}
         <div>
           <Text fs={18} lh={24} font="GeistSemiBold">
             {poolReserve.symbol}

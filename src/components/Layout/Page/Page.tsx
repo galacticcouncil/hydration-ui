@@ -11,6 +11,7 @@ import {
 } from "sections/pools/navigation/Navigation"
 import { Navigation as TradeNavigation } from "sections/trade/navigation/Navigation"
 import { Navigation as WalletNavigation } from "sections/wallet/navigation/Navigation"
+import { Navigation as LendingNavigation } from "sections/lending/ui/navigation/Navigation"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import {
@@ -71,6 +72,22 @@ const useSubheaderComponent = () => {
 
   if (matchRoute({ to: LINKS.statsOmnipool })) {
     return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
+  }
+
+  if (
+    matchRoute({ to: LINKS.lending }) ||
+    matchRoute({ to: LINKS.lendingMarkets })
+  ) {
+    return <LendingNavigation />
+  }
+
+  if (matchRoute({ to: LINKS.lendingReserveOverview, fuzzy: true })) {
+    return (
+      <BackSubHeader
+        label={t("lending.navigation.back")}
+        to={LINKS.lendingMarkets}
+      />
+    )
   }
 }
 
