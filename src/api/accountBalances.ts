@@ -7,7 +7,7 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { parceBalanceData } from "./balances"
+import { parseBalanceData } from "./balances"
 
 export const useAccountBalances = (
   address: Maybe<AccountId32 | string>,
@@ -45,10 +45,10 @@ export const getAccountBalances =
     const balances = tokens.map(([key, data]) => {
       const [, id] = key.args
 
-      return parceBalanceData(data, id.toString(), accountId.toString())
+      return parseBalanceData(data, id.toString(), accountId.toString())
     })
 
-    const native = parceBalanceData(
+    const native = parseBalanceData(
       nativeData.data,
       NATIVE_ASSET_ID,
       accountId.toString(),

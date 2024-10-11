@@ -13,9 +13,9 @@ import {
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
 
-export type TBalance = ReturnType<typeof parceBalanceData>
+export type TBalance = ReturnType<typeof parseBalanceData>
 
-export const parceBalanceData = (
+export const parseBalanceData = (
   data: PalletBalancesAccountData | OrmlTokensAccountData,
   id: string,
   address: string,
@@ -41,12 +41,12 @@ export const getTokenBalance =
     if (id.toString() === NATIVE_ASSET_ID) {
       const res = await api.query.system.account(account)
 
-      return parceBalanceData(res.data, id.toString(), account.toString())
+      return parseBalanceData(res.data, id.toString(), account.toString())
     }
 
     const res = await api.query.tokens.accounts(account, id)
 
-    return parceBalanceData(res, id.toString(), account.toString())
+    return parseBalanceData(res, id.toString(), account.toString())
   }
 
 export const useTokenBalance = (

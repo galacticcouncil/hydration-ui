@@ -12,7 +12,7 @@ import { undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { parceBalanceData, TBalance } from "./balances"
+import { parseBalanceData, TBalance } from "./balances"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
 
@@ -246,10 +246,10 @@ export const useAccountAssets = (givenAddress?: string) => {
           const balances = balancesRaw.map(([key, data]) => {
             const [, id] = key.args
 
-            return parceBalanceData(data, id.toString(), address)
+            return parseBalanceData(data, id.toString(), address)
           })
 
-          const native = parceBalanceData(
+          const native = parseBalanceData(
             nativeBalance.data,
             NATIVE_ASSET_ID,
             address,
