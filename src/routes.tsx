@@ -429,18 +429,14 @@ export const routes: Route[] = [
       },
       {
         path: LINKS.lendingMarkets.split("/").pop(),
-        element: (
-          <Suspense fallback={null}>
-            <LendingMarketsPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: LINKS.lendingReserveOverview.split("/").pop(),
         children: [
           {
             path: "/",
-            element: <Navigate to={LINKS.lending} />,
+            element: (
+              <Suspense fallback={null}>
+                <LendingMarketsPage />
+              </Suspense>
+            ),
           },
           {
             path: ":underlyingAsset",

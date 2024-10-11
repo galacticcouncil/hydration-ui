@@ -81,7 +81,7 @@ const useSubheaderComponent = () => {
     return <LendingNavigation />
   }
 
-  if (matchRoute({ to: LINKS.lendingReserveOverview, fuzzy: true })) {
+  if (matchRoute({ to: LINKS.lendingMarkets, fuzzy: true })) {
     return (
       <BackSubHeader
         label={t("lending.navigation.back")}

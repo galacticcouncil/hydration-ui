@@ -68,6 +68,6 @@ export const ROUTES = {
   dynamicRenderedProposal: (proposalId: number) =>
     `/lending/governance/v3/proposal?proposalId=${proposalId}`,
   reserveOverview: (underlyingAsset: string, marketName: CustomMarket) =>
-    `/lending/reserve-overview/${underlyingAsset}?marketName=${marketName}`,
+    `/lending/markets/${underlyingAsset}?marketName=${marketName}`,
   history: "/lending/history",
 }
