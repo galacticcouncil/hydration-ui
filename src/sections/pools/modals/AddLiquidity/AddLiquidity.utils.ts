@@ -62,7 +62,7 @@ export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   return txs
 }
 
-const getSharesToGet = (
+export const getSharesToGet = (
   omnipoolAsset: TOmnipoolAssetsData[number],
   amount: string,
 ) => {
@@ -98,7 +98,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const { account } = useAccount()
   const { data: assetBalance } = useTokenBalance(assetId, account?.address)
 
-  const poolShare = useMemo(() => {
+  const { poolShare, sharesToGet } = useMemo(() => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
@@ -108,16 +108,20 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
-      return poolShare
+      return { poolShare, sharesToGet }
     }
+
+    return { poolShare: undefined, sharesToGet: undefined }
   }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
     poolShare,
+    sharesToGet,
     spotPrice,
     omnipoolFee,
     assetMeta: pool.meta,
     assetBalance,
+    ommipoolAsset,
   }
 }
 
