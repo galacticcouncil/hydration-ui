@@ -7,7 +7,7 @@ import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Controller, UseFormReturn } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -31,7 +31,8 @@ import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
+import { createToastMessages } from "state/toasts"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -54,6 +55,7 @@ export function WalletTransferSectionOnchain({
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const accountAssets = useAccountAssets()
+  const refetchAccountAssets = useRefetchAccountAssets()
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -136,59 +138,19 @@ export function WalletTransferSectionOnchain({
       {
         onClose,
         onBack: () => {},
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="wallet.assets.transfer.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta.symbol,
-                address: shortenAccountAddress(
-                  getChainSpecificAddress(normalizedDest),
-                  12,
-                ),
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="wallet.assets.transfer.toast.onSuccess"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta.symbol,
-                address: shortenAccountAddress(
-                  getChainSpecificAddress(normalizedDest),
-                  12,
-                ),
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onError: (
-            <Trans
-              t={t}
-              i18nKey="wallet.assets.transfer.toast.onLoading"
-              tOptions={{
-                value: values.amount,
-                symbol: assetMeta.symbol,
-                address: shortenAccountAddress(
-                  getChainSpecificAddress(normalizedDest),
-                  12,
-                ),
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        onSuccess: () => refetchAccountAssets(),
+        toast: createToastMessages("wallet.assets.transfer.toast", {
+          t,
+          tOptions: {
+            value: values.amount,
+            symbol: assetMeta.symbol,
+            address: shortenAccountAddress(
+              getChainSpecificAddress(normalizedDest),
+              12,
+            ),
+          },
+          components: ["span", "span.highlight"],
+        }),
       },
     )
   }
