@@ -35,10 +35,16 @@ export const PathOption = ({
 
   return (
     <SBlock selected={selected} {...(!disabled && { onClick: onSelect })}>
-      <div
-        sx={{ flex: "row", align: "center", justify: "space-between", mb: 26 }}
-      >
-        <div sx={{ flex: "row", align: "center", gap: 12, color: "white" }}>
+      <div sx={{ flex: "row", justify: "space-between", gap: 4, mb: 26 }}>
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            flexWrap: "wrap",
+            gap: 12,
+            color: "white",
+          }}
+        >
           <Icon icon={icon} sx={{ color }} />
           <Heading fs={15} lh={20} fw={500} color={color}>
             {heading}

@@ -96,6 +96,9 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
+export const isTestnetRpcUrl = (url: string) =>
+  PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
+
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
@@ -147,6 +150,11 @@ export const useActiveRpcUrlList = () => {
     useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
   )
   return autoMode ? PROVIDER_URLS : [rpcUrl]
+}
+
+export const useIsTestnet = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  return isTestnetRpcUrl(rpcUrlList[0])
 }
 
 export const useProviderAssets = () => {

@@ -8,7 +8,11 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { PROVIDERS, useActiveProvider, useActiveRpcUrlList } from "api/provider"
+import {
+  useActiveProvider,
+  useActiveRpcUrlList,
+  useIsTestnet,
+} from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -67,9 +71,7 @@ export function SwapPage() {
 
   const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
-  const isTestnet =
-    PROVIDERS.find((provider) => provider.url === rpcUrlList[0])?.dataEnv ===
-    "testnet"
+  const isTestnet = useIsTestnet()
 
   const isEvm = isEvmAccount(account?.address)
   const version = useRemount([isEvm])

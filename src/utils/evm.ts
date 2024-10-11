@@ -65,6 +65,7 @@ export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
   chainKey = "hydration",
+  isTestnet = false,
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -79,8 +80,14 @@ export function getEvmTxLink(
   }
 
   if (chain.isEvmParachain()) {
-    const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
-    return blockExplorers ? `${blockExplorers.default.url}/tx/${txHash}` : ""
+    let explorerUrl = ""
+    if (isTestnet && chainKey === "hydration") {
+      explorerUrl = "https://explorer.nice.hydration.cloud"
+    } else {
+      const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
+      explorerUrl = blockExplorers?.default.url ?? ""
+    }
+    return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ""
   } else {
     return createSubscanLink("extrinsic", txHash, chainKey)
   }
