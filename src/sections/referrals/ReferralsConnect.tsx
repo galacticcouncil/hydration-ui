@@ -23,15 +23,22 @@ export const ReferralsConnect = () => {
 
   const referralStore = useReferralToastStore()
   const storedReferralCodes = useReferralCodesStore()
+  const storedReferralCode = account
+    ? storedReferralCodes.referralCodes[account.address]
+    : undefined
+
+  const queryParamReferralCode = search?.referral?.toString()
+
+  const activeReferralCode = storedReferralCode ?? queryParamReferralCode
 
   const referrer = useUserReferrer(account?.address)
   const isNoReferrer = referrer.data === null
 
-  const codes = useReferralCodes(isNoReferrer ? "all" : undefined)
+  const codes = useReferralCodes(
+    isNoReferrer && activeReferralCode ? "all" : undefined,
+  )
 
   const isLoadedCodes = isNoReferrer ? !codes.isInitialLoading : false
-
-  const queryParamReferralCode = search?.referral?.toString()
 
   useEffect(() => {
     // reset displaying referral toasts when switching accounts
@@ -48,19 +55,12 @@ export const ReferralsConnect = () => {
     // I am connected, my code is loaded, all referrals coded are load
     if (account && isLoadedCodes && !account.isExternalWalletConnected) {
       // referral code stored in the local storage
-      const storedReferralCode =
-        storedReferralCodes.referralCodes[account.address]
 
-      if (
-        (storedReferralCode || queryParamReferralCode) &&
-        !referralStore.displayed
-      ) {
+      if (activeReferralCode && !referralStore.displayed) {
         const state = useReferralCodesStore.getState()
 
         const isValidCode = codes.data?.find(
-          (code) =>
-            code?.referralCode ===
-            (storedReferralCode || queryParamReferralCode),
+          (code) => code?.referralCode === activeReferralCode,
         )
         referralStore.display()
 
