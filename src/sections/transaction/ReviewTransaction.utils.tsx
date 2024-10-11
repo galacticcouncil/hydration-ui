@@ -37,6 +37,7 @@ import { isAnyParachain, Maybe, sleep } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BigNumber from "bignumber.js"
+import { useIsTestnet } from "api/provider"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -182,6 +183,7 @@ export const useSendEvmTransactionMutation = (
   )
 
   const { account } = useEvmAccount()
+  const isTestnet = useIsTestnet()
 
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -201,7 +203,8 @@ export const useSendEvmTransactionMutation = (
   }, options)
 
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
-  const txLink = txHash && chain ? getEvmTxLink(txHash, txData, chain.key) : ""
+  const txLink =
+    txHash && chain ? getEvmTxLink(txHash, txData, chain.key, isTestnet) : ""
 
   const isApproveTx = txData?.startsWith("0x095ea7b3")
 
@@ -231,8 +234,6 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
   const queryClient = useQueryClient()
   const { wallet } = useWallet()
 
-  const isEvmSigner = wallet?.signer instanceof EthereumSigner
-
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
@@ -259,7 +260,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       refetchOnWindowFocus: false,
       cacheTime: 0,
       staleTime: 0,
-      enabled: !!account && isEvmSigner,
+      enabled: isEvmAccount(account?.toString()),
     },
   )
 }
@@ -338,10 +339,8 @@ export const useSendDispatchPermit = (
           permit.signature.r,
           permit.signature.s,
         )
-        const subscription = extrinsic.send(async (result) => {
+        const unsubscribe = await extrinsic.send(async (result) => {
           if (!result || !result.status) return
-
-          const unsubscribe = await subscription
 
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
