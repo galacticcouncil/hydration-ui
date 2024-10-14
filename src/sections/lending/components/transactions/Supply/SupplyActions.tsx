@@ -57,7 +57,6 @@ export const SupplyActions = React.memo(
       tryPermit,
       supply,
       supplyWithPermit,
-      walletApprovalMethodPreference,
       estimateGasLimit,
       addTransaction,
       currentMarketData,
@@ -65,7 +64,6 @@ export const SupplyActions = React.memo(
       state.tryPermit,
       state.supply,
       state.supplyWithPermit,
-      state.walletApprovalMethodPreference,
       state.estimateGasLimit,
       state.addTransaction,
       state.currentMarketData,
@@ -198,7 +196,12 @@ export const SupplyActions = React.memo(
             getFunctionDefsFromAbi(IPool__factory.abi, "supply"),
           )
 
-          await response.wait(1)
+          if (response) {
+            await response.wait(1)
+          } else {
+            //@ts-ignore
+            response = {}
+          }
         }
 
         setMainTxState({
@@ -220,6 +223,7 @@ export const SupplyActions = React.memo(
         refetchIncentiveData && refetchIncentiveData()
         refetchGhoData && refetchGhoData()
       } catch (error) {
+        console.log(error)
         const parsedError = getErrorTextFromError(
           error as Error,
           TxAction.GAS_ESTIMATION,

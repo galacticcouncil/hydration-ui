@@ -27,6 +27,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMask } from "utils/metamask"
 import { useStore } from "state/store"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type ERC20TokenType = {
   address: string
@@ -62,6 +63,7 @@ export type Web3Data = {
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const evmAccount = useEvmAccount()
   const { wallet, type } = useWallet()
@@ -100,23 +102,30 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const sendTx = useCallback(
     async (txData: PopulatedTransaction, abi?: string) => {
       if (provider) {
-        /* 
-        createTransaction({
-          evmTx: {
-            data: txData,
-            abi,
-          },
-        }) */
-
         const signer = provider.getSigner(txData.from)
         const txResponse: TransactionResponse = await signer.sendTransaction({
           ...txData,
           value: txData.value ? BigNumber.from(txData.value) : undefined,
         })
         return txResponse
+      } else {
+        const tx = api.tx.evm.call(
+          txData.from ?? "",
+          txData.to ?? "",
+          txData.data ?? "",
+          0,
+          txData.gasLimit?.toString() ?? "0",
+          0,
+          null,
+          null,
+          [],
+        )
+        createTransaction({
+          tx,
+        })
       }
     },
-    [createTransaction, provider],
+    [api, createTransaction, provider],
   )
 
   // TODO: recheck that it works on all wallets

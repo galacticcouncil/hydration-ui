@@ -1,13 +1,13 @@
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useProtocolDataContext } from "./useProtocolDataContext"
 
 export function useIsWrongNetwork(_requiredChainId?: number) {
+  const { account } = useEvmAccount()
+
   const { currentChainId } = useProtocolDataContext()
-  const { chainId: connectedChainId } = useWeb3Context()
 
   const requiredChainId = _requiredChainId ? _requiredChainId : currentChainId
-  const isWrongNetwork = connectedChainId !== requiredChainId
+  const isWrongNetwork = account?.chainId !== requiredChainId
 
   return {
     isWrongNetwork,

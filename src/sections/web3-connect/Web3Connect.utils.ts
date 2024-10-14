@@ -118,7 +118,9 @@ export const useEvmAccount = () => {
       ? evm.isLoading
       : accountBinding.isLoading || evm.isLoading,
     account: {
-      chainId: evm.data?.chainId ?? null,
+      chainId: isEvm
+        ? evm.data?.chainId ?? null
+        : parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
       name: account?.name ?? "",
       address: isBound ? evmAddress : "",
     },
