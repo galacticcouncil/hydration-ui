@@ -19,6 +19,7 @@ interface useAssetsModalProps {
   allAssets?: boolean
   confirmRequired?: boolean
   defaultSelectedAsssetId?: string
+  withExternal?: boolean
 }
 
 export const useAssetsModal = ({
@@ -29,6 +30,7 @@ export const useAssetsModal = ({
   allAssets,
   confirmRequired,
   defaultSelectedAsssetId,
+  withExternal,
 }: useAssetsModalProps) => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -62,6 +64,7 @@ export const useAssetsModal = ({
         allAssets={allAssets}
         confirmRequired={confirmRequired}
         defaultSelectedAsssetId={defaultSelectedAsssetId}
+        withExternal={withExternal}
       />
     </Modal>
   ) : null
