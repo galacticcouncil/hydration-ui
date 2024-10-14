@@ -37,6 +37,7 @@ import { isAnyParachain, Maybe, sleep } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BigNumber from "bignumber.js"
+import { useIsTestnet } from "api/provider"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -182,6 +183,7 @@ export const useSendEvmTransactionMutation = (
   )
 
   const { account } = useEvmAccount()
+  const isTestnet = useIsTestnet()
 
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -201,7 +203,8 @@ export const useSendEvmTransactionMutation = (
   }, options)
 
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
-  const txLink = txHash && chain ? getEvmTxLink(txHash, txData, chain.key) : ""
+  const txLink =
+    txHash && chain ? getEvmTxLink(txHash, txData, chain.key, isTestnet) : ""
 
   const isApproveTx = txData?.startsWith("0x095ea7b3")
 
