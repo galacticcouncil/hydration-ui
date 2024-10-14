@@ -21,6 +21,7 @@ import { hexToAscii } from "sections/lending/utils/utils"
 // import { isLedgerDappBrowserProvider } from 'web3-ledgerhq-frame-connector';
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import {
+  useAccount,
   useEnableWallet,
   useEvmAccount,
   useWallet,
@@ -28,6 +29,7 @@ import {
 import { isMetaMask } from "utils/metamask"
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useNextNonce } from "api/transaction"
 
 export type ERC20TokenType = {
   address: string
@@ -65,9 +67,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 }) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const substrateAccount = useAccount()
   const evmAccount = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
+  const { data: nonce } = useNextNonce(substrateAccount?.account?.address)
   const { error, setError } = useWeb3React<providers.Web3Provider>()
 
   const account = evmAccount?.account?.address || ""
@@ -113,11 +117,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           txData.from ?? "",
           txData.to ?? "",
           txData.data ?? "",
-          0,
+          "0",
           txData.gasLimit?.toString() ?? "0",
-          0,
-          null,
-          null,
+          "0",
+          "0",
+          nonce?.toString() ?? "0",
           [],
         )
         createTransaction({
@@ -125,7 +129,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         })
       }
     },
-    [api, createTransaction, provider],
+    [api, createTransaction, nonce, provider],
   )
 
   // TODO: recheck that it works on all wallets
