@@ -87,6 +87,7 @@ export const useBondsEvents = (
         return { events, bondId }
       },
       enabled: !!bondId,
+      retry: 1,
     })),
   })
 }
