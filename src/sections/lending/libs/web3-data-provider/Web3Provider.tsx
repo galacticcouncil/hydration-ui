@@ -1,4 +1,4 @@
-import { API_ETH_MOCK_ADDRESS, transactionType } from "@aave/contract-helpers"
+import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { SignatureLike } from "@ethersproject/bytes"
 import {
   JsonRpcProvider,
@@ -19,17 +19,17 @@ import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfi
 import { hexToAscii } from "sections/lending/utils/utils"
 
 // import { isLedgerDappBrowserProvider } from 'web3-ledgerhq-frame-connector';
+import { useRpcProvider } from "providers/rpcProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import {
-  useAccount,
   useEnableWallet,
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { isMetaMask } from "utils/metamask"
 import { useStore } from "state/store"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useNextNonce } from "api/transaction"
+import { isMetaMask } from "utils/metamask"
+import { useAccountFeePaymentAssets } from "api/payments"
+import { NATIVE_EVM_ASSET_ID } from "utils/evm"
 
 export type ERC20TokenType = {
   address: string
@@ -65,13 +65,11 @@ export type Web3Data = {
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { createTransaction } = useStore()
-  const substrateAccount = useAccount()
   const evmAccount = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
-  const { data: nonce } = useNextNonce(substrateAccount?.account?.address)
   const { error, setError } = useWeb3React<providers.Web3Provider>()
 
   const account = evmAccount?.account?.address || ""
@@ -96,6 +94,9 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const setAccountLoading = useRootStore((store) => store.setAccountLoading)
   const setWalletType = useRootStore((store) => store.setWalletType)
 
+  const { feePaymentAssetId } = useAccountFeePaymentAssets()
+  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
+
   const disconnectWallet = useCallback(async () => {
     deactivate()
     setWalletType(undefined)
@@ -105,23 +106,16 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
   const sendTx = useCallback(
     async (txData: PopulatedTransaction, abi?: string) => {
-      if (provider) {
-        const signer = provider.getSigner(txData.from)
-        const txResponse: TransactionResponse = await signer.sendTransaction({
-          ...txData,
-          value: txData.value ? BigNumber.from(txData.value) : undefined,
-        })
-        return txResponse
-      } else {
+      if (shouldUsePermit || !provider) {
         const tx = api.tx.evm.call(
           txData.from ?? "",
           txData.to ?? "",
           txData.data ?? "",
           "0",
           txData.gasLimit?.toString() ?? "0",
-          "0",
-          "0",
-          nonce?.toString() ?? "0",
+          txData.maxFeePerGas?.toString() ?? "0",
+          txData.maxPriorityFeePerGas?.toString() ?? "0",
+          null,
           [],
         )
         createTransaction({
@@ -129,8 +123,15 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         })
         return {} as TransactionResponse
       }
+
+      const signer = provider.getSigner(txData.from)
+      const txResponse: TransactionResponse = await signer.sendTransaction({
+        ...txData,
+        value: txData.value ? BigNumber.from(txData.value) : undefined,
+      })
+      return txResponse
     },
-    [api, createTransaction, nonce, provider],
+    [api, shouldUsePermit, createTransaction, provider],
   )
 
   // TODO: recheck that it works on all wallets

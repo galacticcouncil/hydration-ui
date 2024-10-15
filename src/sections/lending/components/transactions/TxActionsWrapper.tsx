@@ -15,6 +15,7 @@ import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { TxAction } from "sections/lending/ui-config/errorMapping"
 
 import { ApprovalTooltip } from "sections/lending/components/infoTooltips/ApprovalTooltip"
+import { useRpcProvider } from "providers/rpcProvider"
 
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode
@@ -60,6 +61,7 @@ export const TxActionsWrapper = ({
   tryPermit,
   ...rest
 }: TxActionsWrapperProps) => {
+  const { isLoaded } = useRpcProvider()
   const { txError } = useModalContext()
   const { readOnlyModeAddress } = useWeb3Context()
   const hasApprovalError =
@@ -70,6 +72,8 @@ export const TxActionsWrapper = ({
     requiresAmount && requiresAmount && Number(amount) === 0
 
   function getMainParams() {
+    if (!isLoaded)
+      return { disabled: true, loading: true, content: <span>Loading...</span> }
     if (blocked) return { disabled: true, content: actionText }
     if (
       (txError?.txAction === TxAction.GAS_ESTIMATION ||

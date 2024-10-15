@@ -9,6 +9,7 @@ import {
   EthereumTransactionTypeExtended,
   FaucetParamsType,
   FaucetService,
+  gasLimitRecommendations,
   IncentivesController,
   IncentivesControllerV2,
   IncentivesControllerV2Interface,
@@ -22,6 +23,7 @@ import {
   PoolBaseCurrencyHumanized,
   PoolBundle,
   PoolBundleInterface,
+  ProtocolAction,
   ReserveDataHumanized,
   ReservesIncentiveDataHumanized,
   UiIncentiveDataProvider,
@@ -996,17 +998,28 @@ export const createPoolSlice: StateCreator<
       try {
         estimatedGas = await provider.estimateGas(tx)
       } catch (e) {
-        estimatedGas = BigNumber.from("300000")
+        const recommendedGasLimit =
+          gasLimitRecommendations[ProtocolAction.supply].recommended
+        console.error(
+          `Error estimating gas, using ${recommendedGasLimit} as fallback`,
+          e,
+        )
+        estimatedGas = BigNumber.from(recommendedGasLimit)
       }
 
+      const feeData = await provider.getFeeData()
+
+      estimatedGas = estimatedGas.mul(120).div(100) // Add 20% buffer
       console.log({ estimatedGas: estimatedGas.toString() })
-      estimatedGas = estimatedGas.mul(115).div(100) // Add 15% buffer
       // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
       tx.gasLimit = estimatedGas.gt(defaultGasLimit)
         ? estimatedGas
         : defaultGasLimit
 
-      //tx.gasLimit = BigNumber.from("5000000")
+      Object.assign(tx, {
+        maxFeePerGas: feeData.maxFeePerGas,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      })
 
       return tx
     },
