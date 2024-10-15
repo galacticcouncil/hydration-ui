@@ -134,6 +134,8 @@ export function WalletTransferSectionOnchain({
       },
       {
         onClose,
+        disableAutoClose: true,
+        onSubmitted: onClose,
         onBack: () => {},
         toast: {
           onLoading: (
