@@ -127,6 +127,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         createTransaction({
           tx,
         })
+        return {} as TransactionResponse
       }
     },
     [api, createTransaction, nonce, provider],
@@ -153,7 +154,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           { chainId: `0x${newChainId.toString(16)}` },
         ])
         setSwitchNetworkError(undefined)
-      } catch (switchError) {
+      } catch (switchError: any) {
         const networkInfo = getNetworkConfig(newChainId)
         if (switchError.code === 4902) {
           try {
@@ -173,13 +174,13 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
                   blockExplorerUrls: [networkInfo.explorerLink],
                 },
               ])
-            } catch (error) {
+            } catch (error: any) {
               if (error.code !== 4001) {
                 throw error
               }
             }
             setSwitchNetworkError(undefined)
-          } catch (addError) {
+          } catch (addError: any) {
             setSwitchNetworkError(addError)
           }
         } else if (switchError.code === 4001) {

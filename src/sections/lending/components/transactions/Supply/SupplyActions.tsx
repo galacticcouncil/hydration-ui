@@ -196,11 +196,8 @@ export const SupplyActions = React.memo(
             getFunctionDefsFromAbi(IPool__factory.abi, "supply"),
           )
 
-          if (response) {
+          if (response.wait) {
             await response.wait(1)
-          } else {
-            //@ts-ignore
-            response = {}
           }
         }
 
