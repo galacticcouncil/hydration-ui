@@ -224,7 +224,7 @@ export class EthereumSigner {
       return await this.signer.sendTransaction({
         maxPriorityFeePerGas: gasPricePlus,
         maxFeePerGas: gasPricePlus,
-        gasLimit: gas.mul(11).div(10), // add 10%
+        gasLimit: gas.mul(12).div(10), // add 20%
         ...tx,
       })
     } else {
