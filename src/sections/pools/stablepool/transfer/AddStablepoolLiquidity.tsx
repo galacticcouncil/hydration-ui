@@ -34,7 +34,7 @@ import { useEffect } from "react"
 import { Switch } from "components/Switch/Switch"
 import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 import { Separator } from "components/Separator/Separator"
-import { usePoolData } from "sections/pools/pool/Pool"
+import { useAccountAssets } from "api/deposits"
 
 type Props = {
   poolId: string
@@ -74,11 +74,13 @@ export const AddStablepoolLiquidity = ({
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const accountBalances = useAccountAssets()
 
   const { t } = useTranslation()
 
-  const { pool } = usePoolData()
-  const walletBalance = pool.balance
+  const walletBalance = accountBalances.data?.accountAssetsMap.get(
+    asset.id,
+  )?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
