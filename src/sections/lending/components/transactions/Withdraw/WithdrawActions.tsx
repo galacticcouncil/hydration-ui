@@ -70,7 +70,8 @@ export const WithdrawActions = ({
       handleApproval={() =>
         approval([{ amount: amountToWithdraw, underlyingAsset: poolAddress }])
       }
-      requiresApproval={requiresApproval}
+      //requiresApproval={requiresApproval}
+      requiresApproval={false}
       sx={sx}
     />
   )

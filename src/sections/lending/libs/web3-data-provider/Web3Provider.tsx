@@ -124,12 +124,20 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         return {} as TransactionResponse
       }
 
+      createTransaction({
+        evmTx: {
+          data: txData,
+          abi,
+        },
+      })
+
       const signer = provider.getSigner(txData.from)
       const txResponse: TransactionResponse = await signer.sendTransaction({
         ...txData,
         value: txData.value ? BigNumber.from(txData.value) : undefined,
       })
       return txResponse
+      //return {} as TransactionResponse
     },
     [api, shouldUsePermit, createTransaction, provider],
   )

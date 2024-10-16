@@ -6,7 +6,7 @@ import {
 import { SignatureLike } from "@ethersproject/bytes"
 import { TransactionResponse } from "@ethersproject/providers"
 import { useQueryClient } from "@tanstack/react-query"
-import { PopulatedTransaction } from "ethers"
+import { BigNumber, PopulatedTransaction } from "ethers"
 import { DependencyList, useEffect, useRef, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -55,11 +55,13 @@ export const useTransactionHandler = ({
   abi,
 }: UseTransactionHandlerProps) => {
   const queryClient = useQueryClient()
+
   const {
     approvalTxState,
     setApprovalTxState,
     mainTxState,
     setMainTxState,
+    gasLimit,
     setGasLimit,
     loadingTxns,
     setLoadingTxns,
@@ -79,6 +81,7 @@ export const useTransactionHandler = ({
     generatePermitPayloadForMigrationSupplyAsset,
     addTransaction,
     currentMarketData,
+    jsonRpcProvider,
   ] = useRootStore((state) => [
     state.signERC20Approval,
     state.walletApprovalMethodPreference,
@@ -86,6 +89,7 @@ export const useTransactionHandler = ({
     state.generatePermitPayloadForMigrationSupplyAsset,
     state.addTransaction,
     state.currentMarketData,
+    state.jsonRpcProvider,
   ])
 
   const [approvalTxes, setApprovalTxes] = useState<
@@ -354,6 +358,13 @@ export const useTransactionHandler = ({
         setMainTxState({ ...mainTxState, loading: true })
         const params = await actionTx.tx()
         delete params.gasPrice
+        delete params.gasLimit
+        params.gasLimit = BigNumber.from(gasLimit).mul(12).div(10)
+        const feeData = await jsonRpcProvider().getFeeData()
+        Object.assign(params, {
+          maxFeePerGas: feeData.maxFeePerGas,
+          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        })
         return processTx({
           tx: () => sendTx(params as PopulatedTransaction, abi),
           successCallback: (txnResponse: TransactionResponse) => {
@@ -450,10 +461,14 @@ export const useTransactionHandler = ({
               let gasLimit = 0
               try {
                 for (const tx of txs) {
-                  const txGas = await tx.gas()
-                  // If permit is available, use regular action for estimation but exclude the approval tx
-                  if (txGas && txGas.gasLimit) {
-                    gasLimit = gasLimit + Number(txGas.gasLimit)
+                  if (protocolAction) {
+                    gasLimit = +gasLimitRecommendations[protocolAction].limit
+                  } else {
+                    const txGas = await tx.gas()
+                    // If permit is available, use regular action for estimation but exclude the approval tx
+                    if (txGas && txGas.gasLimit) {
+                      gasLimit = gasLimit + Number(txGas.gasLimit)
+                    }
                   }
                 }
               } catch (error) {

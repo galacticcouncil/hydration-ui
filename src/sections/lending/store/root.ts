@@ -66,19 +66,19 @@ if (typeof document !== "undefined") {
 
 export const usePoolDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolData()
-}, 60000)
+}, 12000)
 
 export const usePoolDataV3Subscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolV3Data()
-}, 60000)
+}, 12000)
 
 export const useIncentiveDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshIncentiveData()
-}, 60000)
+}, 12000)
 
 export const useGhoDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshGhoData()
-}, 60000)
+}, 12000)
 
 useRootStore.subscribe(
   (state) => state.account,

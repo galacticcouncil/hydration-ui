@@ -998,11 +998,11 @@ export const createPoolSlice: StateCreator<
       try {
         //estimatedGas = await provider.estimateGas(tx)
         estimatedGas = BigNumber.from(
-          gasLimitRecommendations[ProtocolAction.supply].recommended,
+          gasLimitRecommendations[ProtocolAction.supply].limit,
         )
       } catch (e) {
         const recommendedGasLimit =
-          gasLimitRecommendations[ProtocolAction.supply].recommended
+          gasLimitRecommendations[ProtocolAction.supply].limit
         console.error(
           `Error estimating gas, using ${recommendedGasLimit} as fallback`,
           e,

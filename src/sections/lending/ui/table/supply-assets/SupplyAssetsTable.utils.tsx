@@ -114,7 +114,7 @@ export const useSupplyAssetsTableColumns = () => {
           return (
             <>
               {debtCeiling.isMaxed ? (
-                <NoData />
+                <></>
               ) : (
                 <CollateralColumn
                   isIsolated={isIsolated}

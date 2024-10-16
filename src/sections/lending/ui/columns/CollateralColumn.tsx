@@ -26,7 +26,7 @@ export const CollateralColumn = ({
   return (
     <div
       sx={{
-        display: "row",
+        flex: "column",
         align: "center",
         justify: "center",
         gap: 4,
