@@ -31,6 +31,7 @@ export const useAssetsData = ({
     tradable,
     stableswap,
     external,
+    erc20,
     getAsset,
     tokens,
     native,
@@ -50,7 +51,12 @@ export const useAssetsData = ({
 
         const meta = getAsset(balance.id)
 
-        return meta?.isToken || meta?.isStableSwap || meta?.isExternal
+        return (
+          meta?.isToken ||
+          meta?.isStableSwap ||
+          meta?.isExternal ||
+          meta?.isErc20
+        )
       })
 
       return nativeTokenWithBalance.total.gt(0)
@@ -71,8 +77,8 @@ export const useAssetsData = ({
   const spotPrices = useDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
-    () => [...tokens, ...stableswap, ...external],
-    [external, stableswap, tokens],
+    () => [...tokens, ...stableswap, ...external, ...erc20],
+    [external, stableswap, tokens, erc20],
   )
 
   const data = useMemo(() => {

@@ -102,6 +102,7 @@ const StakingPage = lazy(async () => ({
 const ReferralsWrapper = lazy(async () => ({
   default: (await import("sections/referrals/ReferralsPage")).ReferralsWrapper,
 }))
+
 const SubmitTransaction = lazy(async () => ({
   default: (await import("sections/submit-transaction/SubmitTransaction"))
     .SubmitTransaction,
@@ -109,6 +110,25 @@ const SubmitTransaction = lazy(async () => ({
 
 const MemepadPage = lazy(async () => ({
   default: (await import("sections/memepad/MemepadPage")).MemepadPage,
+}))
+
+const LendingPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingPage")).LendingPage,
+}))
+
+const LendingDashboardPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingDashboardPage"))
+    .LendingDashboardPage,
+}))
+
+const LendingMarketsPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingMarketsPage"))
+    .LendingMarketsPage,
+}))
+
+const LendingReserveOverviewPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingReserveOverviewPage"))
+    .LendingReserveOverviewPage,
 }))
 
 export const routes: Route[] = [
@@ -390,6 +410,45 @@ export const routes: Route[] = [
         <MemepadPage />
       </Suspense>
     ),
+  },
+  {
+    path: LINKS.lending,
+    element: (
+      <Suspense fallback={null}>
+        <LendingPage />
+      </Suspense>
+    ),
+    children: [
+      {
+        path: "/",
+        element: (
+          <Suspense fallback={null}>
+            <LendingDashboardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: LINKS.lendingMarkets.split("/").pop(),
+        children: [
+          {
+            path: "/",
+            element: (
+              <Suspense fallback={null}>
+                <LendingMarketsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ":underlyingAsset",
+            element: async ({ params: { underlyingAsset } }) => (
+              <Suspense fallback={null}>
+                <LendingReserveOverviewPage underlyingAsset={underlyingAsset} />
+              </Suspense>
+            ),
+          },
+        ],
+      },
+    ],
   },
   {
     path: "*",
