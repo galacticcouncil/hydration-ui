@@ -107,7 +107,7 @@ export class EthereumSigner {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: 1000000, //gas.mul(12).div(10).toNumber(),
+          gaslimit: 600000, //gas.mul(12).div(10).toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }
