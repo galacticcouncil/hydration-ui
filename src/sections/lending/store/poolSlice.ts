@@ -996,7 +996,10 @@ export const createPoolSlice: StateCreator<
       delete tx.gasLimit
       let estimatedGas = BigNumber.from("0")
       try {
-        estimatedGas = await provider.estimateGas(tx)
+        //estimatedGas = await provider.estimateGas(tx)
+        estimatedGas = BigNumber.from(
+          gasLimitRecommendations[ProtocolAction.supply].recommended,
+        )
       } catch (e) {
         const recommendedGasLimit =
           gasLimitRecommendations[ProtocolAction.supply].recommended
