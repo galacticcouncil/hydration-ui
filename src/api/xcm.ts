@@ -1,10 +1,11 @@
 import {
   assetsMap,
-  chainsConfigMap,
   chainsMap,
+  routesMap,
   validations,
+  HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
-import { ConfigService, SubstrateApis } from "@galacticcouncil/xcm-core"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
@@ -32,20 +33,20 @@ export const createXcmAssetKey = (id: string, symbol: string) => {
 
 export const syncAssethubXcmConfig = (
   asset: TRegisteredAsset,
-  config: ConfigService,
+  config: HydrationConfigService,
 ) => {
   const assetData = external.buildAssetData(asset)
-  external.buildAssethubConfig(assetData, config)
+  config.addExternalHubRoute(assetData)
 }
 
 export const useCrossChainWallet = () => {
   const { poolService } = useRpcProvider()
 
   return useMemo(() => {
-    const configService = new ConfigService({
+    const configService = new HydrationConfigService({
       assets: assetsMap,
       chains: chainsMap,
-      chainsConfig: chainsConfigMap,
+      routes: routesMap,
     })
 
     return new Wallet({
@@ -101,7 +102,8 @@ export const useCrossChainTransaction = ({
         values.dstChain,
       )
 
-      const { balance, srcFee, dstFee, srcFeeBalance } = xTransfer
+      const { source } = xTransfer
+      const { balance, fee, feeBalance, destinationFee } = source
 
       const call = await xTransfer.buildCall(values.amount)
 
@@ -117,12 +119,12 @@ export const useCrossChainTransaction = ({
           tx: api.tx(call.data),
           xcallMeta: {
             srcChain: values.srcChain,
-            srcChainFee: srcFee.toDecimal(dstFee.decimals),
-            srcChainFeeBalance: balance.toDecimal(srcFeeBalance.decimals),
-            srcChainFeeSymbol: srcFee.originSymbol,
+            srcChainFee: fee.toDecimal(fee.decimals),
+            srcChainFeeBalance: feeBalance.toDecimal(feeBalance.decimals),
+            srcChainFeeSymbol: fee.originSymbol,
             dstChain: values.dstChain,
-            dstChainFee: dstFee.toDecimal(dstFee.decimals),
-            dstChainFeeSymbol: dstFee.originSymbol,
+            dstChainFee: destinationFee.toDecimal(destinationFee.decimals),
+            dstChainFeeSymbol: destinationFee.originSymbol,
           },
         },
         {

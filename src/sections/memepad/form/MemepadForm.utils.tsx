@@ -1,3 +1,4 @@
+import { HydrationConfigService } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ApiPromise } from "@polkadot/api"
@@ -315,7 +316,10 @@ export const useMemepad = () => {
           token,
           internalId,
         )
-        syncAssethubXcmConfig(registeredAsset, wallet.config)
+        syncAssethubXcmConfig(
+          registeredAsset,
+          wallet.config as HydrationConfigService,
+        )
 
         form.setValue("internalId", internalId)
         setNextStep()
