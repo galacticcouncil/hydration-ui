@@ -137,6 +137,8 @@ export function WalletTransferSectionOnchain({
       },
       {
         onClose,
+        disableAutoClose: true,
+        onSubmitted: onClose,
         onBack: () => {},
         onSuccess: () => refetchAccountAssets(),
         toast: createToastMessages("wallet.assets.transfer.toast", {

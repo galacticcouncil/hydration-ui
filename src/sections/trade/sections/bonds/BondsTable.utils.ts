@@ -40,10 +40,7 @@ export const useBondsTableData = ({
     true,
   )
 
-  const isLoading =
-    accountAssets.isLoading ||
-    lbpPools.isLoading ||
-    bondEvents.some((event) => event.isLoading)
+  const isLoading = accountAssets.isLoading || lbpPools.isLoading
 
   const isAccount = !!account
 
@@ -63,9 +60,7 @@ export const useBondsTableData = ({
       const id = bondBalance?.assetId.toString() ?? ""
       const bond = bondMap.get(id)
 
-      const isLoaded = bondEvents.every((bondEvent) => bondEvent.data)
-
-      if (!bond || !isLoaded) return undefined
+      if (!bond) return undefined
 
       const eventsQuery = bondEvents.find(
         (bondEvent) => bondEvent.data?.bondId === id,
