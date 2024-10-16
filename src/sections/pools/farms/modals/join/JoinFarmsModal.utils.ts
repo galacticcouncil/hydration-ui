@@ -59,7 +59,7 @@ export const useZodSchema = ({
 
   const oraclePrice = useOraclePrice(minDeposit.assetId, assetId)
 
-  if (!balance || !oraclePrice.data || assetId === undefined) return undefined
+  if (!oraclePrice.data || assetId === undefined) return undefined
 
   const rule = required
     .refine(

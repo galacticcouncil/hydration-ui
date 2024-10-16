@@ -171,7 +171,6 @@ export const useAddToOmnipoolZod = (
   )
 
   if (
-    assetBalance === undefined ||
     minPoolLiquidity === undefined ||
     omnipoolAsset === undefined ||
     hubBalance === undefined ||
@@ -193,7 +192,9 @@ export const useAddToOmnipoolZod = (
   const rules = required
     .pipe(positive)
     .pipe(
-      isStablepool ? z.string() : maxBalance(assetBalance.balance, decimals),
+      isStablepool
+        ? z.string()
+        : maxBalance(assetBalance?.balance ?? BN_0, decimals),
     )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
