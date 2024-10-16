@@ -124,12 +124,12 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         return {} as TransactionResponse
       }
 
-      createTransaction({
+      /* createTransaction({
         evmTx: {
           data: txData,
           abi,
         },
-      })
+      }) */
 
       const signer = provider.getSigner(txData.from)
       const txResponse: TransactionResponse = await signer.sendTransaction({
