@@ -1012,7 +1012,7 @@ export const createPoolSlice: StateCreator<
 
       const feeData = await provider.getFeeData()
 
-      estimatedGas = estimatedGas.mul(120).div(100) // Add 20% buffer
+      estimatedGas = estimatedGas.mul(2)
       console.log({ estimatedGas: estimatedGas.toString() })
       // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
       tx.gasLimit = estimatedGas.gt(defaultGasLimit)
