@@ -101,13 +101,13 @@ export class EthereumSigner {
         data,
       }
 
-      const [gas] = await this.getGasValues(tx)
+      //const [gas] = await this.getGasValues(tx)
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: gas.mul(11).div(10).toNumber(),
+          gaslimit: 360000, //gas.mul(12).div(10).toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }

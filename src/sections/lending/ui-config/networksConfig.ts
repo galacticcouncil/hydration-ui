@@ -54,8 +54,8 @@ export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 export const networkConfigs: Record<string, BaseNetworkConfig> = {
   222222: {
     name: "Hydration",
-    privateJsonRPCUrl: "https://rpc.nice.hydration.cloud",
-    publicJsonRPCUrl: ["https://rpc.nice.hydration.cloud"],
+    privateJsonRPCUrl: "https://ws.nice.hydration.cloud",
+    publicJsonRPCUrl: ["https://ws.nice.hydration.cloud"],
     baseUniswapAdapter: "0x0",
     baseAssetSymbol: "WETH",
     wrappedBaseAssetSymbol: "WETH",

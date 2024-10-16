@@ -28,7 +28,7 @@ export const LendingDashboardPage = () => {
   const { account } = useAccount()
   const { account: evmAccount, isBound, isLoading } = useEvmAccount()
 
-  useEffect(() => {
+  /*   useEffect(() => {
     console.group("Account")
     console.table({
       address: account?.address,
@@ -46,7 +46,7 @@ export const LendingDashboardPage = () => {
       bound: !!evmAccount?.address,
     })
     console.groupEnd()
-  }, [account?.address, account?.name, account?.provider, evmAccount])
+  }, [account?.address, account?.name, account?.provider, evmAccount]) */
 
   return (
     <>
