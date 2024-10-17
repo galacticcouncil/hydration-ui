@@ -162,6 +162,10 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
+            onPermitDispatched={(permit) => {
+              props.onSubmitted?.()
+              sendPermitTx(permit)
+            }}
           />
         ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
           <ReviewTransactionXCallForm

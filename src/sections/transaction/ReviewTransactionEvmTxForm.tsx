@@ -4,23 +4,24 @@ import {
 } from "@ethersproject/providers"
 import { useMutation } from "@tanstack/react-query"
 import { useEvmPaymentFee } from "api/evm"
+import { useAccountFeePaymentAssets } from "api/payments"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
-import { parseUnits } from "ethers/lib/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
-// import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
-import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import {
+  EthereumSigner,
+  PermitResult,
+} from "sections/web3-connect/signer/EthereumSigner"
 import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { NATIVE_EVM_ASSET_ID, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
 type Props = {
   title?: string
@@ -29,6 +30,7 @@ type Props = {
     data: TransactionRequest
     abi?: string
   }
+  onPermitDispatched: ({ permit }: { permit: PermitResult }) => void
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
 }
 
@@ -36,12 +38,15 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
   title,
   tx,
   onEvmSigned,
+  onPermitDispatched,
   onCancel,
 }) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
 
   const { data: fee } = useEvmPaymentFee("0xcb0014000000", account?.address)
+  const { feePaymentAssetId } = useAccountFeePaymentAssets()
+  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
 
   const { wallet } = useWallet()
 
@@ -51,6 +56,11 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
     if (!wallet.signer) throw new Error("Missing signer")
 
     if (wallet?.signer instanceof EthereumSigner) {
+      if (shouldUsePermit) {
+        const nonce = await wallet.signer.getPermitNonce()
+        const permit = await wallet.signer.getPermit(tx.data, nonce)
+        return onPermitDispatched({ permit })
+      }
       const evmTx = await wallet.signer.sendTransaction(tx.data)
       onEvmSigned({ evmTx })
     }

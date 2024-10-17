@@ -5,6 +5,7 @@ import {
 } from "@ethersproject/providers"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
 import { Contract, Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
@@ -18,7 +19,6 @@ import {
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 type PermitMessage = {
   from: string
@@ -92,22 +92,48 @@ export class EthereumSigner {
     return BigNumber(nonce.toString())
   }
 
-  getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
+  getPermit = async (
+    data: string | TransactionRequest,
+    nonce: BigNumber,
+  ): Promise<PermitResult> => {
     if (this.provider && this.address) {
       await this.requestNetworkSwitch("hydradx")
-      const tx = {
-        from: this.address,
-        to: DISPATCH_ADDRESS,
-        data,
-      }
+      const tx =
+        typeof data === "string"
+          ? {
+              from: this.address,
+              to: DISPATCH_ADDRESS,
+              data,
+            }
+          : {
+              from: data?.from ?? "",
+              to: data?.to ?? "",
+              data: data.data?.toString() ?? "",
+              gasLimit: data.gasLimit?.toString() ?? "0",
+            }
 
-      //const [gas] = await this.getGasValues(tx)
+      if (!tx.from)
+        throw new Error("Permit transaction must have a 'from' field")
+      if (!tx.to) throw new Error("Permit transaction must have a 'to' field")
+      if (!tx.data)
+        throw new Error("Permit transaction must have a 'data' field")
+
+      let gasLimit = BigNumber(0)
+      if (tx.gasLimit) {
+        gasLimit = BigNumber(tx.gasLimit.toString())
+          .multipliedBy(12)
+          .dividedBy(10)
+          .decimalPlaces(0)
+      } else {
+        const gas = await this.getGasValues(tx)
+        gasLimit = BigNumber(gas[0].toString())
+      }
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: 600000, //gas.mul(12).div(10).toNumber(),
+          gaslimit: gasLimit.toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }

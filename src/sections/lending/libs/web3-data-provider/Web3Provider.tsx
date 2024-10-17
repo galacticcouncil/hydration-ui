@@ -106,7 +106,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
   const sendTx = useCallback(
     async (txData: PopulatedTransaction, abi?: string) => {
-      if (shouldUsePermit || !provider) {
+      if (!provider) {
         const tx = api.tx.evm.call(
           txData.from ?? "",
           txData.to ?? "",
@@ -131,15 +131,16 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         },
       })
 
+      return {} as TransactionResponse
+
       /* const signer = provider.getSigner(txData.from)
       const txResponse: TransactionResponse = await signer.sendTransaction({
         ...txData,
         value: txData.value ? BigNumber.from(txData.value) : undefined,
       })
       return txResponse */
-      //return {} as TransactionResponse
     },
-    [api, shouldUsePermit, createTransaction, provider],
+    [api, createTransaction, provider],
   )
 
   // TODO: recheck that it works on all wallets
