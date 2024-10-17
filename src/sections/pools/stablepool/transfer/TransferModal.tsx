@@ -15,13 +15,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import { useQueryClient } from "@tanstack/react-query"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { Farm } from "api/farms"
 import { useJoinFarms } from "utils/farms/deposit"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
@@ -46,10 +44,9 @@ type Props = {
 export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   const { api } = useRpcProvider()
   const { account } = useAccount()
-  const queryClient = useQueryClient()
   const { getAssetWithFallback } = useAssets()
   const { pool } = usePoolData()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
   const { createTransaction } = useStore()
   const isEvm = isEvmAccount(account?.address)
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
@@ -175,10 +172,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
       } else {
         onClose()
       }
-    } else {
-      queryClient.invalidateQueries(
-        QUERY_KEYS.tokenBalance(pool.id, account?.address),
-      )
     }
   }
 
@@ -329,9 +322,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 }}
                 onSuccess={(result, shares) => {
                   if (isOnlyStablepool) {
-                    queryClient.invalidateQueries(
-                      QUERY_KEYS.tokenBalance(pool.id, account?.address),
-                    )
                     refetch()
                     return
                   }

@@ -1,5 +1,4 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
@@ -28,6 +27,7 @@ import {
   useNextEvmPermitNonce,
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
+import { useAccountAssets } from "api/deposits"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -102,7 +102,10 @@ export const useTransactionValues = ({
     : undefined
 
   const spotPrice = useSpotPrice(native.id, accountFeePaymentId)
-  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
+  const accountAssets = useAccountAssets()
+  const feeAssetBalance = accountFeePaymentId
+    ? accountAssets.data?.accountAssetsMap.get(accountFeePaymentId)?.balance
+    : undefined
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
@@ -140,7 +143,7 @@ export const useTransactionValues = ({
   if (
     !feePaymentMeta ||
     !paymentFeeHDX ||
-    !feeAssetBalance.data ||
+    !feeAssetBalance ||
     !accountFeePaymentId
   )
     return {
@@ -206,7 +209,7 @@ export const useTransactionValues = ({
       parseFloat(xcallMeta.srcChainFee)
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
-    isEnoughPaymentBalance = feeAssetBalance.data.balance
+    isEnoughPaymentBalance = feeAssetBalance.balance
       .shiftedBy(-feePaymentMeta.decimals)
       .minus(displayFeePaymentValue ?? 0)
       .minus(displayFeeExtra ?? 0)

@@ -1,4 +1,3 @@
-import { useTokenBalance } from "api/balances"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
@@ -9,13 +8,13 @@ import { useStore } from "state/store"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { useAssets } from "providers/assets"
 import { useOTCfee } from "api/consts"
 import { Summary } from "components/Summary/Summary"
 import Skeleton from "react-loading-skeleton"
 import { Spacer } from "components/Spacer/Spacer"
+import { useAccountAssets } from "api/deposits"
 
 type FillOrderProps = {
   orderId: string
@@ -33,12 +32,14 @@ export const FillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
-  const assetInBalance = useTokenBalance(accepting.asset, account?.address)
+  const accountAssets = useAccountAssets()
+  const assetInBalance = accountAssets.data?.accountAssetsMap.get(
+    accepting.asset,
+  )?.balance
   const assetOutMeta = getAssetWithFallback(offering.asset)
   const [error, setError] = useState<string | undefined>(undefined)
 
@@ -50,10 +51,10 @@ export const FillOrder = ({
     e.preventDefault()
     if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
 
-    if (assetInBalance.data?.balance == null)
+    if (assetInBalance?.balance == null)
       throw new Error("Missing assetIn balance")
 
-    const aInBalance = assetInBalance.data?.balance
+    const aInBalance = assetInBalance?.balance
     const aInDecimals = assetInMeta.decimals
 
     if (aInBalance.gte(accepting.amount.multipliedBy(BN_10.pow(aInDecimals)))) {
@@ -105,7 +106,7 @@ export const FillOrder = ({
   }
 
   const isDisabled =
-    assetInBalance.data?.balance?.lt(
+    assetInBalance?.balance?.lt(
       accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
     ) ?? false
 
@@ -131,7 +132,7 @@ export const FillOrder = ({
           title={t("otc.order.fill.payTitle")}
           value={accepting.amount.toFixed()}
           asset={accepting.asset}
-          balance={assetInBalance.data?.balance}
+          balance={assetInBalance?.balance}
           readonly={true}
           error={error}
         />

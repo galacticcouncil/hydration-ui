@@ -34,7 +34,7 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountPositions: (id: string | undefined) => ["accountPositions", id],
+  accountAssets: (address: string | undefined) => ["accountAssets", address],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
@@ -258,7 +258,6 @@ export const QUERY_KEYS = {
     "positionBalances",
     positionId,
   ],
-  stableswapPools: ["stableswapPools"],
   stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
