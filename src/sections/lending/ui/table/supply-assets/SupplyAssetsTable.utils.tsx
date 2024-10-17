@@ -1,4 +1,3 @@
-import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { USD_DECIMALS, valueToBigNumber } from "@aave/math-utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
@@ -9,7 +8,6 @@ import { Link } from "components/Link/Link"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ROUTES } from "sections/lending/components/primitives/Link"
-import { NoData } from "sections/lending/components/primitives/NoData"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -19,7 +17,6 @@ import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
-import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
@@ -178,9 +175,6 @@ export const useSupplyAssetsTableColumns = () => {
 }
 
 export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
-  const currentNetworkConfig = useRootStore(
-    (store) => store.currentNetworkConfig,
-  )
   const currentMarketData = useRootStore((store) => store.currentMarketData)
   const {
     user,
@@ -189,8 +183,6 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     loading: loadingReserves,
   } = useAppDataContext()
   const { walletBalances, loading } = useWalletBalances(currentMarketData)
-
-  const { baseAssetSymbol } = currentNetworkConfig
 
   const data = useMemo(() => {
     const tokensToSupply = reserves
@@ -233,7 +225,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
             ? false
             : !hasDifferentCollateral
 
-        if (reserve.isWrappedBaseAsset) {
+        /* if (reserve.isWrappedBaseAsset) {
           let baseAvailableToDeposit = valueToBigNumber(
             walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount,
           )
@@ -290,7 +282,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
               detailsAddress: reserve.underlyingAsset,
             },
           ]
-        }
+        } */
 
         return {
           ...reserve,
@@ -327,10 +319,9 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
 
     return supplyReserves as DashboardReserve[]
   }, [
-    baseAssetSymbol,
-    showAll,
     marketReferencePriceInUsd,
     reserves,
+    showAll,
     user?.isInIsolationMode,
     user?.userReservesData,
     walletBalances,

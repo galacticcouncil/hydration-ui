@@ -1,4 +1,3 @@
-import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
@@ -9,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMeasure } from "react-use"
 import {
   splitHexByZeroes,
-  decodeXCallEvm,
+  decodeEvmCall,
 } from "sections/transaction/ReviewTransactionData.utils"
 import { isEvmAccount, isEvmAddress } from "utils/evm"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
@@ -28,13 +27,17 @@ import { Dropdown } from "components/Dropdown/Dropdown"
 import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
+import { TransactionRequest } from "@ethersproject/providers"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
   address?: string
   tx?: SubmittableExtrinsic
-  xcallEvm?: XCallEvm
+  evmTx?: {
+    abi?: string
+    data: `0x${string}` | TransactionRequest
+  }
   xcallMeta?: Record<string, string>
 }
 
@@ -137,7 +140,7 @@ const TransactionExpander: FC<{
 
 export const ReviewTransactionData: FC<Props> = ({
   tx,
-  xcallEvm,
+  evmTx,
   xcallMeta,
   address = "",
 }) => {
@@ -147,7 +150,11 @@ export const ReviewTransactionData: FC<Props> = ({
 
   const isEVM = isEvmAccount(address) || isEvmAddress(address)
   const json = tx ? getTransactionJSON(tx) : null
-  const decodedEvmData = isEVM && xcallEvm ? decodeXCallEvm(xcallEvm) : null
+  const decodedEvmData = isEVM && evmTx ? decodeEvmCall(evmTx) : null
+  const evmTxData =
+    typeof evmTx?.data === "string"
+      ? evmTx.data
+      : evmTx?.data?.data?.toString() ?? ""
 
   useEffect(() => {
     if (!copied) return
@@ -168,7 +175,7 @@ export const ReviewTransactionData: FC<Props> = ({
       setCopied(true)
     }
 
-    if (xcallEvm && decodedEvmData) {
+    if (evmTx && decodedEvmData) {
       items.push({
         key: "json-evm",
         label: t("liquidity.reviewTransaction.dropdown.json"),
@@ -180,7 +187,7 @@ export const ReviewTransactionData: FC<Props> = ({
         key: "calldata-evm",
         label: t("liquidity.reviewTransaction.dropdown.calldata"),
         onSelect: () => {
-          copy(xcallEvm.data)
+          copy(evmTxData)
         },
       })
     }
@@ -233,12 +240,20 @@ export const ReviewTransactionData: FC<Props> = ({
     }
 
     return items
-  }, [copyToClipboard, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
+  }, [
+    evmTx,
+    decodedEvmData,
+    tx,
+    copyToClipboard,
+    t,
+    evmTxData,
+    xcallMeta?.srcChain,
+  ])
 
   return (
     <SContainer>
       <SScrollableContent>
-        {isEVM && xcallEvm && decodedEvmData ? (
+        {isEVM && evmTx && decodedEvmData ? (
           <TransactionExpander
             decodedCall={
               <TransactionCode
@@ -246,7 +261,7 @@ export const ReviewTransactionData: FC<Props> = ({
                 src={decodedEvmData.data}
               />
             }
-            encodedCall={<TransactionData data={xcallEvm.data} />}
+            encodedCall={<TransactionData data={evmTxData} />}
           />
         ) : json && tx ? (
           <TransactionExpander

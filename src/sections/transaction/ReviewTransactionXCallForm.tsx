@@ -85,7 +85,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         content={
           <ReviewTransactionData
             address={account?.address}
-            xcallEvm={xcall}
+            evmTx={xcall}
             xcallMeta={xcallMeta}
           />
         }

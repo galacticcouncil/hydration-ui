@@ -3,11 +3,16 @@ import {
   TransactionResponse,
 } from "@ethersproject/providers"
 import { useMutation } from "@tanstack/react-query"
+import { useEvmPaymentFee } from "api/evm"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
+import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
+import { parseUnits } from "ethers/lib/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
+import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 // import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import {
@@ -15,6 +20,7 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
+import { NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
 
 type Props = {
   title?: string
@@ -34,6 +40,8 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
+
+  const { data: fee } = useEvmPaymentFee("0xcb0014000000", account?.address)
 
   const { wallet } = useWallet()
 
@@ -69,6 +77,23 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
         }
         footer={
           <div sx={{ mt: 15 }}>
+            <Summary
+              rows={[
+                {
+                  label: t("liquidity.reviewTransaction.modal.detail.cost"),
+                  content: (
+                    <Text fs={14}>
+                      {t("liquidity.add.modal.row.transactionCostValue", {
+                        amount: fee,
+                        symbol: NATIVE_EVM_ASSET_SYMBOL,
+                        type: "token",
+                        fixedPointScale: 18,
+                      })}
+                    </Text>
+                  ),
+                },
+              ]}
+            />
             <div
               sx={{
                 mt: ["auto", 24],

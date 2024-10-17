@@ -1,6 +1,7 @@
 import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { Result as AbiDecoderResult } from "ethers/lib/utils"
 import { utils } from "ethers"
+import { TransactionRequest } from "@ethersproject/providers"
 
 /**
  * Splits a hex string by consecutive zeroes.
@@ -37,18 +38,24 @@ export function hexDataSlice(data: string, start: number, end?: number) {
 }
 
 /**
- * Decodes the XCallEvm data to JSON format and returns the method name.
+ * Decodes evm transaction data to JSON format and returns the method name.
  */
-export function decodeXCallEvm(xcallEvm: XCallEvm) {
-  if (!xcallEvm?.abi) return
+export function decodeEvmCall(call: {
+  abi?: string
+  data: `0x${string}` | TransactionRequest
+}) {
+  if (!call?.abi) return
   try {
-    const iface = new utils.Interface(xcallEvm.abi)
-    const decodedArgs = iface.decodeFunctionData(
-      xcallEvm.data.slice(0, 10),
-      xcallEvm.data,
-    )
-    const method = iface.getFunction(xcallEvm.data.slice(0, 10)).name
+    const data =
+      typeof call.data === "string"
+        ? call.data
+        : call.data.data?.toString() || ""
+    const iface = new utils.Interface(call.abi)
+    const decodedArgs = iface.decodeFunctionData(data.slice(0, 10), data)
+    const method = iface.getFunction(data.slice(0, 10)).name
 
     return { data: decodedResultToJson(decodedArgs), method }
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error decoding XCallEvm data", error)
+  }
 }

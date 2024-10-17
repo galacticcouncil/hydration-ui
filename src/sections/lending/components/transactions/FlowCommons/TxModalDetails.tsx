@@ -1,7 +1,6 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
 import { Box, SvgIcon, Typography } from "@mui/material"
-import { parseUnits } from "ethers/lib/utils"
 import React, { ReactNode } from "react"
 import Skeleton from "react-loading-skeleton"
 import {
@@ -21,7 +20,6 @@ import {
   FormattedNumberProps,
 } from "sections/lending/components/primitives/FormattedNumber"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
-import { GasStation } from "sections/lending/components/transactions/GasStation/GasStation"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
 import { PercentageValue } from "components/PercentageValue"
@@ -64,20 +62,6 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
         }}
       >
         {children}
-      </div>
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-        }}
-      >
-        <GasStation
-          chainId={chainId}
-          gasLimit={parseUnits(gasLimit || "0", "wei")}
-          skipLoad={skipLoad}
-          disabled={disabled}
-          rightComponent={slippageSelector}
-        />
       </div>
     </div>
   )
