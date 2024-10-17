@@ -125,8 +125,9 @@ export class EthereumSigner {
           .dividedBy(10)
           .decimalPlaces(0)
       } else {
-        const gas = await this.getGasValues(tx)
-        gasLimit = BigNumber(gas[0].toString())
+        /* const gas = await this.getGasValues(tx)
+        gasLimit = BigNumber(gas[0].toString()) */
+        gasLimit = BigNumber(1000000)
       }
 
       const createPermitMessageData = () => {
