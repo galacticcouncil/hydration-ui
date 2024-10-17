@@ -129,10 +129,7 @@ export function XcmPage() {
         : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist =
-    import.meta.env.VITE_ENV === "production"
-      ? "acala-evm,darwinia"
-      : "darwinia"
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
 
   return (
     <SContainer>

@@ -94,7 +94,7 @@ export class EthereumSigner {
 
   getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
     if (this.provider && this.address) {
-      await this.requestNetworkSwitch("hydradx")
+      await this.requestNetworkSwitch("hydration")
       const tx = {
         from: this.address,
         to: DISPATCH_ADDRESS,
@@ -211,11 +211,11 @@ export class EthereumSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && chainsMap.get(chain) ? chain : "hydradx"
+    const from = chain && chainsMap.get(chain) ? chain : "hydration"
 
     await this.requestNetworkSwitch(from)
 
-    if (from === "hydradx") {
+    if (from === "hydration") {
       const [gas, gasPrice] = await this.getGasValues(tx)
 
       const onePrc = gasPrice.div(100)
