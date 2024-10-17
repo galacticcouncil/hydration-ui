@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMeasure } from "react-use"
 import {
   decodeEvmCall,
+  getCallDataHex,
   splitHexByZeroes,
 } from "sections/transaction/ReviewTransactionData.utils"
 import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
@@ -145,15 +146,11 @@ export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
   const txJson = tx ? getTransactionJSON(tx) : null
 
   const evmTxJson = evmTx ? decodeEvmCall(evmTx) : null
-  const evmTxData =
-    typeof evmTx?.data === "string"
-      ? evmTx.data
-      : evmTx?.data?.data?.toString() ?? ""
+  const evmTxData = evmTx ? getCallDataHex(evmTx.data) : ""
 
   const isSubstrateTx = !!tx && !!txJson
   const isEvmTx = !!evmTx && !!evmTxJson
-  const isWrappedEvmTx =
-    isSubstrateTx && isEvmTx && txJson?.method.startsWith("evm.call")
+  const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
 
   const [mode, setMode] = useState<"auto" | "evm" | "substrate">(
     isWrappedEvmTx ? "evm" : "auto",

@@ -1,4 +1,3 @@
-import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { Result as AbiDecoderResult } from "ethers/lib/utils"
 import { utils } from "ethers"
 import { TransactionRequest } from "@ethersproject/providers"
@@ -38,6 +37,13 @@ export function hexDataSlice(data: string, start: number, end?: number) {
 }
 
 /**
+ *  Returns the hex data of a call.
+ */
+export function getCallDataHex(call: `0x${string}` | TransactionRequest) {
+  return typeof call === "string" ? call : call.data?.toString() || ""
+}
+
+/**
  * Decodes evm transaction data to JSON format and returns the method name.
  */
 export function decodeEvmCall(call: {
@@ -46,10 +52,7 @@ export function decodeEvmCall(call: {
 }) {
   if (!call?.abi) return
   try {
-    const data =
-      typeof call.data === "string"
-        ? call.data
-        : call.data.data?.toString() || ""
+    const data = getCallDataHex(call.data)
     const iface = new utils.Interface(call.abi)
     const decodedArgs = iface.decodeFunctionData(data.slice(0, 10), data)
     const method = iface.getFunction(data.slice(0, 10)).name
