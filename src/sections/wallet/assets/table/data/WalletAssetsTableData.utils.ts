@@ -1,7 +1,7 @@
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -258,10 +258,12 @@ export const useUnlockableTokens = () => {
     : lockDemocracy
         .minus(votes.data?.maxLockedValue ?? 0)
         .shiftedBy(-native.decimals)
-  const date = votes.data?.maxLockedBlock.times(BLOCK_TIME)
+  const lockedSeconds = votes.data?.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
   const endDate =
     votes.data && !votes.data.maxLockedBlock.isZero()
-      ? durationInDaysAndHoursFromNow(date?.times(1000).toNumber() ?? 0)
+      ? durationInDaysAndHoursFromNow(
+          lockedSeconds?.times(1000).toNumber() ?? 0,
+        )
       : undefined
 
   return {
