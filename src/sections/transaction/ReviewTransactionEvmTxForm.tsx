@@ -80,11 +80,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={
-          <>
-            {/* <ReviewTransactionData address={account?.address} evmTx={tx} /> */}
-          </>
-        }
+        content={<ReviewTransactionData evmTx={tx} />}
         footer={
           <div sx={{ mt: 15 }}>
             <Summary

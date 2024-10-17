@@ -101,7 +101,6 @@ export const BorrowActions = React.memo(
             approveDelegationTxData,
           )
           const response = await sendTx(approveDelegationTxData)
-          await response.wait(1)
           setApprovalTxState({
             txHash: response.hash,
             loading: false,
@@ -140,7 +139,6 @@ export const BorrowActions = React.memo(
           borrowTxData,
           getFunctionDefsFromAbi(IPool__factory.abi, "borrow"),
         )
-        await response.wait(1)
         setMainTxState({
           txHash: response.hash,
           loading: false,

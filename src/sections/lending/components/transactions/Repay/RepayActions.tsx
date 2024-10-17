@@ -188,7 +188,6 @@ export const RepayActions = ({
           signedRepayWithPermitTxData,
           getFunctionDefsFromAbi(IPool__factory.abi, "repayWithPermit"),
         )
-        await response.wait(1)
       } else {
         const repayParams = {
           amountToRepay:
@@ -215,9 +214,6 @@ export const RepayActions = ({
           repayTxData,
           getFunctionDefsFromAbi(IPool__factory.abi, "repay"),
         )
-
-        console.log({ abi: IPool__factory.abi })
-        await response.wait(1)
       }
       setMainTxState({
         txHash: response.hash,

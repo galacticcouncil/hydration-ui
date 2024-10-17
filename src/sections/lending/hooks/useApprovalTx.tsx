@@ -93,7 +93,6 @@ export const useApprovalTx = ({
           setApprovalTxState({ ...approvalTxState, loading: true })
           approveTxData = await estimateGasLimit(approveTxData)
           const response = await sendTx(approveTxData)
-          await response.wait(1)
           setApprovalTxState({
             txHash: response.hash,
             loading: false,

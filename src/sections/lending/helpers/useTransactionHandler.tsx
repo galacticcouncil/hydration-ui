@@ -131,8 +131,6 @@ export const useTransactionHandler = ({
       if (!txnResult) return
 
       try {
-        await txnResult.wait(1)
-
         mounted.current && successCallback && successCallback(txnResult)
 
         addTransaction(txnResult.hash, {

@@ -137,6 +137,7 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionForm
             tx={props.tx}
             xcallMeta={props.xcallMeta}
+            evmTx={props.evmTx}
             isProxy={props.isProxy}
             overrides={props.overrides}
             onCancel={onClose}

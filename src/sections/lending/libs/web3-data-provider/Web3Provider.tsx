@@ -120,6 +120,10 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
         )
         createTransaction({
           tx,
+          evmTx: {
+            data: txData,
+            abi,
+          },
         })
         return {} as TransactionResponse
       }

@@ -181,8 +181,6 @@ export const SupplyActions = React.memo(
             signedSupplyWithPermitTxData,
             getFunctionDefsFromAbi(IPool__factory.abi, "supplyWithPermit"),
           )
-
-          await response.wait(1)
         } else {
           action = ProtocolAction.supply
           let supplyTxData = supply({
@@ -195,10 +193,6 @@ export const SupplyActions = React.memo(
             supplyTxData,
             getFunctionDefsFromAbi(IPool__factory.abi, "supply"),
           )
-
-          if (response.wait) {
-            await response.wait(1)
-          }
         }
 
         setMainTxState({
