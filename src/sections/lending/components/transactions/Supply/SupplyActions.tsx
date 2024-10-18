@@ -14,7 +14,6 @@ import { usePoolApprovedAmount } from "sections/lending/hooks/useApprovedAmount"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { useRootStore } from "sections/lending/store/root"
-import { ApprovalMethod } from "sections/lending/store/walletSlice"
 import {
   getErrorTextFromError,
   TxAction,

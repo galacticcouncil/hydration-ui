@@ -15,7 +15,7 @@ export const SContainer = styled.div<{ active?: boolean }>`
     padding: 30px;
   }
 
-  @media ${theme.viewport.gte.xl} {
+  @media ${theme.viewport.gte.md} {
     display: block !important;
   }
 `
@@ -29,7 +29,7 @@ export const SFilterContainer = styled.div`
     max-width: 400px;
   }
 
-  @media ${theme.viewport.gte.xl} {
+  @media ${theme.viewport.gte.md} {
     display: none;
   }
 `
@@ -47,7 +47,7 @@ export const SContent = styled.div`
     display: none;
   }
 
-  @media ${theme.viewport.gte.xl} {
+  @media ${theme.viewport.gte.md} {
     flex-direction: row;
 
     > div:nth-of-type(1) {
