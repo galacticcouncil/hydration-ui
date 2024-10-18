@@ -31,6 +31,7 @@ export const useAssetsData = ({
     tradable,
     stableswap,
     external,
+    erc20,
     getAsset,
     tokens,
     getAssetWithFallback,
@@ -47,7 +48,12 @@ export const useAssetsData = ({
       const filteredTokens = balances.data.balances.filter((balance) => {
         const meta = getAsset(balance.assetId)
 
-        return meta?.isToken || meta?.isStableSwap || meta?.isExternal
+        return (
+          meta?.isToken ||
+          meta?.isStableSwap ||
+          meta?.isExternal ||
+          meta?.isErc20
+        )
       })
 
       return filteredTokens
@@ -66,8 +72,8 @@ export const useAssetsData = ({
   const spotPrices = useDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
-    () => [...tokens, ...stableswap, ...external],
-    [external, stableswap, tokens],
+    () => [...tokens, ...stableswap, ...external, ...erc20],
+    [external, stableswap, tokens, erc20],
   )
 
   const data = useMemo(() => {

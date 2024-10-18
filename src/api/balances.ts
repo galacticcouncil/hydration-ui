@@ -35,19 +35,33 @@ export const parseBalanceData = (
   }
 }
 
-export const getTokenBalance =
-  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
-  async () => {
-    if (id.toString() === NATIVE_ASSET_ID) {
-      const res = await api.query.system.account(account)
+const createTokenBalanceFetcher =
+  (api: ApiPromise) =>
+  async (account: AccountId32 | string, id: string | u32) => {
+    const params = api.createType("(AssetId, AccountId)", [id, account])
+    const result = await api.rpc.state.call(
+      "CurrenciesApi_account",
+      params.toHex(),
+    )
+    return api.createType<OrmlTokensAccountData>(
+      "OrmlTokensAccountData",
+      result,
+    )
+  }
 
-      return parseBalanceData(res.data, id.toString(), account.toString())
-    }
+export const getTokenBalance = (
+  api: ApiPromise,
+  account: AccountId32 | string,
+  id: string | u32,
+) => {
+  const fetchTokenBalance = createTokenBalanceFetcher(api)
 
-    const res = await api.query.tokens.accounts(account, id)
+  return async () => {
+    const res = await fetchTokenBalance(account, id)
 
     return parseBalanceData(res, id.toString(), account.toString())
   }
+}
 
 export const useTokenBalance = (
   id: Maybe<string | u32>,
