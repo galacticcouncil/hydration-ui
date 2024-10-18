@@ -426,7 +426,7 @@ export const useTransactionHandler = ({
               // For permit flow, just use recommendation for gas limit as estimation will always fail without signature and tx must be rebuilt with signature anyways
               setUsePermit(true)
               const gas = gasLimitRecommendations[permitAction]
-              setGasLimit(gas.limit || "")
+              setGasLimit(gas?.limit || "")
               setMainTxState({
                 txHash: undefined,
               })
@@ -460,7 +460,8 @@ export const useTransactionHandler = ({
               try {
                 for (const tx of txs) {
                   if (protocolAction) {
-                    gasLimit = +gasLimitRecommendations[protocolAction].limit
+                    gasLimit =
+                      +gasLimitRecommendations[protocolAction]?.limit || 1000000
                   } else {
                     const txGas = await tx.gas()
                     // If permit is available, use regular action for estimation but exclude the approval tx

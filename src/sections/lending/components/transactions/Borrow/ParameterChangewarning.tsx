@@ -10,9 +10,7 @@ export const ParameterChangewarning = ({
     <Alert variant="info" sx={{ my: 24 }}>
       <Text fs={13}>
         Attention: Parameter changes via governance can alter your account
-        health factor and risk of liquidation. Follow the{" "}
-        <a href="https://governance.aave.com/">Aave governance forum</a> for
-        updates.
+        health factor and risk of liquidation.
       </Text>
     </Alert>
   )

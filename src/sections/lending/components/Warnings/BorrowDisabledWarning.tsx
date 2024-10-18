@@ -11,7 +11,7 @@ export const BorrowDisabledWarning = ({
 }: BorrowDisabledWarningProps) => {
   return (
     <span>
-      Borrowing is disabled due to an Aave community decision.{" "}
+      Borrowing is disabled due to an Hydration community decision.{" "}
       <Link
         href={getFrozenProposalLink(symbol, currentMarket)}
         sx={{ textDecoration: "underline" }}

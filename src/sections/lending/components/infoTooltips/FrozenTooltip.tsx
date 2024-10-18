@@ -34,7 +34,7 @@ export const FrozenTooltip = ({
     <InfoTooltip
       text={
         <Text>
-          This asset is frozen due to an Aave Protocol Governance decision.{" "}
+          This asset is frozen due to a protocol governance decision.{" "}
           <Link
             href={getFrozenProposalLink(symbol, currentMarket)}
             sx={{ textDecoration: "underline" }}

@@ -298,9 +298,9 @@ export const GhoBorrowModalContent = ({
               <InfoTooltip
                 text={
                   <Text fs={12}>
-                    Interest rate that is determined by Aave Governance. This
-                    rate may be changed over time depending on the need for the
-                    GHO supply to contract/expand.{" "}
+                    Interest rate that is determined by Hydration Governance.
+                    This rate may be changed over time depending on the need for
+                    the GHO supply to contract/expand.{" "}
                     <a
                       href="https://docs.gho.xyz/concepts/how-gho-works/interest-rate-discount-model#interest-rate-model"
                       target="_blank"
