@@ -13,7 +13,12 @@ import {
   WalletConnect,
 } from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
-import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
+import {
+  H160,
+  getEvmAddress,
+  isEvmAddress,
+  isEvmWalletExtension,
+} from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
@@ -78,10 +83,9 @@ export const useEvmAccount = () => {
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
-      const chainId =
-        isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
-          ? await wallet?.extension?.request({ method: "eth_chainId" })
-          : null
+      const chainId = isEvmWalletExtension(wallet?.extension)
+        ? await wallet?.extension?.request({ method: "eth_chainId" })
+        : null
 
       return {
         chainId: Number(chainId),
