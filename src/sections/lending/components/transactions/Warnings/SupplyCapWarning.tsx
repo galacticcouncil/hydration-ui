@@ -1,10 +1,8 @@
-import { AlertProps } from "@mui/material"
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
-
 import { Link } from "sections/lending/components/primitives/Link"
-import { Warning } from "sections/lending/components/primitives/Warning"
+import { Alert } from "components/Alert"
 
-type SupplyCapWarningProps = AlertProps & {
+type SupplyCapWarningProps = {
   supplyCap: AssetCapData
   icon?: boolean
 }
@@ -34,7 +32,7 @@ export const SupplyCapWarning = ({
   }
 
   return (
-    <Warning variant={severity} icon={icon} {...rest}>
+    <Alert variant={severity} {...rest}>
       {renderText()}{" "}
       <Link
         href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
@@ -42,6 +40,6 @@ export const SupplyCapWarning = ({
       >
         <span>Learn more</span>
       </Link>
-    </Warning>
+    </Alert>
   )
 }

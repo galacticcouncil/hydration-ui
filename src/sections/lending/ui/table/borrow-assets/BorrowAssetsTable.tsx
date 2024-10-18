@@ -11,6 +11,7 @@ import { BorrowAssetsMobileRow } from "sections/lending/ui/table/borrow-assets/B
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
 
 export const BorrowAssetsTable = () => {
   const { t } = useTranslation()
@@ -39,7 +40,9 @@ export const BorrowAssetsTable = () => {
       addons={
         account &&
         user?.totalCollateralMarketReferenceCurrency === "0" && (
-          <Alert variant="info">{t("lending.borrow.table.alert")}</Alert>
+          <Alert variant="info">
+            <Text fs={13}>{t("lending.borrow.table.alert")}</Text>
+          </Alert>
         )
       }
     />

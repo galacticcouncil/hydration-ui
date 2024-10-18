@@ -1,7 +1,6 @@
 import { ChainId } from "@aave/contract-helpers"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-
-import { Warning } from "sections/lending/components/primitives/Warning"
+import { Alert } from "components/Alert"
 import { Button } from "components/Button/Button"
 
 export type ChangeNetworkWarningProps = {
@@ -21,7 +20,7 @@ export const ChangeNetworkWarning = ({
     switchNetwork(chainId)
   }
   return (
-    <Warning variant="error" className={className}>
+    <Alert variant="error" className={className}>
       {switchNetworkError ? (
         <span>
           Seems like we can&apos;t switch the network automatically. Please
@@ -42,6 +41,6 @@ export const ChangeNetworkWarning = ({
           </Button>
         </span>
       )}
-    </Warning>
+    </Alert>
   )
 }

@@ -1,6 +1,8 @@
 import { ChainId } from "@aave/contract-helpers"
+import { Alert } from "components/Alert"
+import { Text } from "components/Typography/Text/Text"
+import { useTranslation } from "react-i18next"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
 import {
   ComputedReserveData,
@@ -23,6 +25,7 @@ export const useReserveActionState = ({
   maxAmountToBorrow,
   reserve,
 }: ReserveActionStateProps) => {
+  const { t } = useTranslation()
   const { user, eModes } = useAppDataContext()
   const { supplyCap, borrowCap, debtCeiling } = useAssetCaps()
   const [currentMarket, currentNetworkConfig, currentChainId, displayGho] =
@@ -54,11 +57,11 @@ export const useReserveActionState = ({
       eModeBorrowDisabled ||
       maxAmountToBorrow === "0",
     alerts: (
-      <div sx={{ flex: "column", gap: 12 }}>
+      <>
         {balance === "0" && !isGho && (
-          <Warning sx={{ mt: 12 }} variant="info">
+          <Alert sx={{ mt: 12 }} variant="info">
             {bridge ? (
-              <span>
+              <Text fs={14}>
                 Your {networkName} wallet is empty. Purchase or transfer assets
                 or use {<Link href={bridge.url}>{bridge.name}</Link>} to
                 transfer your{" "}
@@ -66,60 +69,60 @@ export const useReserveActionState = ({
                   ? "Ethereum & Bitcoin"
                   : "Ethereum"}{" "}
                 assets.
-              </span>
+              </Text>
             ) : (
-              <span>
+              <Text fs={14}>
                 Your {networkName} wallet is empty. Purchase or transfer assets.
-              </span>
+              </Text>
             )}
-          </Warning>
+          </Alert>
         )}
 
         {(balance !== "0" || isGho) &&
           user?.totalCollateralMarketReferenceCurrency === "0" && (
-            <Warning sx={{ mt: 12 }} variant="info">
-              <span>
-                To borrow you need to supply any asset to be used as collateral.
-              </span>
-            </Warning>
+            <Alert sx={{ mt: 12 }} variant="info">
+              <Text fs={14}>{t("lending.borrow.table.alert")}</Text>
+            </Alert>
           )}
 
         {isolationModeBorrowDisabled && (
-          <Warning sx={{ mt: 12 }} variant="warning">
-            <span>Collateral usage is limited because of Isolation mode.</span>
-          </Warning>
+          <Alert sx={{ mt: 12 }} variant="warning">
+            <Text fs={14}>
+              Collateral usage is limited because of Isolation mode.
+            </Text>
+          </Alert>
         )}
 
         {eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mt: 12 }} variant="info">
-            <span>
+          <Alert sx={{ mt: 12 }} variant="info">
+            <Text fs={14}>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) and Isolation mode. To manage E-Mode and Isolation mode
               visit your <Link href={ROUTES.dashboard}>Dashboard</Link>.
-            </span>
-          </Warning>
+            </Text>
+          </Alert>
         )}
 
         {eModeBorrowDisabled && !isolationModeBorrowDisabled && (
-          <Warning sx={{ mt: 12 }} variant="info">
-            <span>
+          <Alert sx={{ mt: 12 }} variant="info">
+            <Text fs={14}>
               Borrowing is unavailable because you’ve enabled Efficiency Mode
               (E-Mode) for{" "}
               {getEmodeMessage(eModes[user.userEmodeCategoryId].label)}{" "}
               category. To manage E-Mode categories visit your{" "}
               <Link href={ROUTES.dashboard}>Dashboard</Link>.
-            </span>
-          </Warning>
+            </Text>
+          </Alert>
         )}
 
         {!eModeBorrowDisabled && isolationModeBorrowDisabled && (
-          <Warning sx={{ mt: 12 }} variant="info">
-            <span>
+          <Alert sx={{ mt: 12 }} variant="info">
+            <Text fs={14}>
               Borrowing is unavailable because you’re using Isolation mode. To
               manage Isolation mode visit your{" "}
               <Link href={ROUTES.dashboard}>Dashboard</Link>.
-            </span>
-          </Warning>
+            </Text>
+          </Alert>
         )}
 
         {maxAmountToSupply === "0" &&
@@ -142,7 +145,7 @@ export const useReserveActionState = ({
             icon: false,
             sx: { mt: 12 },
           })}
-      </div>
+      </>
     ),
   }
 }

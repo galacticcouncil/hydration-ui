@@ -1,9 +1,9 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
 
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { useModalContext } from "sections/lending/hooks/useModal"
 
+import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -96,9 +96,7 @@ export const RateSwitchModalContent = ({
   return (
     <>
       {blockingError !== undefined && (
-        <Warning variant="error" sx={{ mb: 0 }}>
-          {handleBlocked()}
-        </Warning>
+        <Alert variant="error">{handleBlocked()}</Alert>
       )}
       <TxModalDetails gasLimit={gasLimit}>
         <DetailsNumberLine

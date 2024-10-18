@@ -1,6 +1,7 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { normalize } from "@aave/math-utils"
 import GasPumpIcon from "assets/icons/GasPumpIcon.svg?react"
+import { Alert } from "components/Alert"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
@@ -9,7 +10,6 @@ import { BigNumber } from "ethers/lib/ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import React, { ReactNode } from "react"
 import Skeleton from "react-loading-skeleton"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { useWalletBalances } from "sections/lending/hooks/app-data-provider/useWalletBalances"
 import { usePoolReservesHumanized } from "sections/lending/hooks/pool/usePoolReserves"
 import { useGasStation } from "sections/lending/hooks/useGasStation"
@@ -119,11 +119,11 @@ export const GasStation: React.FC<GasStationProps> = ({
       </div>
       {!disabled && Number(nativeBalanceUSD) < Number(totalGasCostsUsd) && (
         <div sx={{ flex: "row", align: "center" }}>
-          <Warning variant="warning" sx={{ mb: 0, mx: "auto" }}>
+          <Alert variant="warning" sx={{ mb: 0, mx: "auto" }}>
             You do not have enough {baseAssetSymbol} in your account to pay for
             transaction fees on {name} network. Please deposit {baseAssetSymbol}{" "}
             from another account.
-          </Warning>
+          </Alert>
         </div>
       )}
     </div>

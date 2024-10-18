@@ -2,19 +2,18 @@ import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
 import { Checkbox, Typography } from "@mui/material"
 import { useRef, useState } from "react"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 
+import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsHFLine,
   DetailsNumberLine,
-  DetailsUnwrapSwitch,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { zeroLTVBlockingWithdraw } from "sections/lending/components/transactions/utils"
@@ -148,13 +147,13 @@ export const WithdrawModalContent = ({
         </Typography>
       )}
 
-      {poolReserve.isWrappedBaseAsset && (
+      {/* {poolReserve.isWrappedBaseAsset && (
         <DetailsUnwrapSwitch
           unwrapped={withdrawUnWrapped}
           setUnWrapped={setWithdrawUnWrapped}
           label={`Unwrap ${poolReserve.symbol} (to withdraw ${currentNetworkConfig.baseAssetSymbol})`}
         />
-      )}
+      )} */}
 
       <TxModalDetails gasLimit={gasLimit}>
         <DetailsNumberLine
@@ -177,12 +176,10 @@ export const WithdrawModalContent = ({
 
       {displayRiskCheckbox && (
         <>
-          <Warning variant="error" sx={{ my: 24 }}>
-            <span>
-              Withdrawing this amount will reduce your health factor and
-              increase risk of liquidation.
-            </span>
-          </Warning>
+          <Alert variant="error" sx={{ my: 24 }}>
+            Withdrawing this amount will reduce your health factor and increase
+            risk of liquidation.
+          </Alert>
           <div sx={{ flex: "row", align: "center" }}>
             <Checkbox
               checked={riskCheckboxAccepted}

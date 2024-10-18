@@ -1,25 +1,20 @@
-import { API_ETH_MOCK_ADDRESS, InterestRate } from "@aave/contract-helpers"
+import { InterestRate } from "@aave/contract-helpers"
 import {
   BigNumberValue,
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
-import { ReactNode, useState } from "react"
+import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
-
 import WalletIcon from "assets/icons/WalletIcon.svg?react"
-
 import { Button } from "components/Button/Button"
 import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Spacer } from "components/Spacer/Spacer"
-import { ToggleGroup, ToggleGroupItem } from "components/ToggleGroup"
 import { Text } from "components/Typography/Text/Text"
-
-import { Warning } from "sections/lending/components/primitives/Warning"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -46,6 +41,7 @@ import {
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { amountToUsd } from "sections/lending/utils/utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { Alert } from "components/Alert"
 
 export const getMarketInfoById = (marketId: CustomMarket) => {
   const market: MarketDataType = marketsData[marketId as CustomMarket]
@@ -71,15 +67,13 @@ interface ReserveActionsProps {
 }
 
 export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
-  const [selectedAsset, setSelectedAsset] = useState<string>(reserve.symbol)
+  const selectedAsset = reserve.symbol
 
   const { currentAccount } = useWeb3Context()
   const { isPermissionsLoading } = usePermissions()
   const { openBorrow, openSupply } = useModalContext()
   const currentMarket = useRootStore((store) => store.currentMarket)
-  const currentNetworkConfig = useRootStore(
-    (store) => store.currentNetworkConfig,
-  )
+
   const currentMarketData = useRootStore((store) => store.currentMarketData)
   const {
     ghoReserveData,
@@ -94,11 +88,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
     store.poolComputed.minRemainingBaseTokenBalance,
     store.displayGho,
   ])
-  const { baseAssetSymbol } = currentNetworkConfig
   let balance = walletBalances[reserve.underlyingAsset]
-  if (reserve.isWrappedBaseAsset && selectedAsset === baseAssetSymbol) {
-    balance = walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]
-  }
 
   let maxAmountToBorrow = "0"
   let maxAmountToSupply = "0"
@@ -155,27 +145,13 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
   }
 
   const onSupplyClicked = () => {
-    if (reserve.isWrappedBaseAsset && selectedAsset === baseAssetSymbol) {
-      openSupply(API_ETH_MOCK_ADDRESS.toLowerCase())
-    } else {
-      openSupply(reserve.underlyingAsset)
-    }
+    openSupply(reserve.underlyingAsset)
   }
 
   const { market } = getMarketInfoById(currentMarket)
 
   return (
     <PaperWrapper>
-      {reserve.isWrappedBaseAsset && (
-        <div>
-          <WrappedBaseAssetSelector
-            assetSymbol={reserve.symbol}
-            baseAssetSymbol={baseAssetSymbol}
-            selectedAsset={selectedAsset}
-            setSelectedAsset={setSelectedAsset}
-          />
-        </div>
-      )}
       <WalletBalance
         balance={balance.amount}
         symbol={selectedAsset}
@@ -228,18 +204,18 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
 const PauseWarning = () => {
   const { t } = useTranslation()
   return (
-    <Warning sx={{ mb: 0 }} variant="error">
+    <Alert sx={{ mb: 0 }} variant="error">
       {t("lending.reserve.paused")}
-    </Warning>
+    </Alert>
   )
 }
 
 const FrozenWarning = () => {
   const { t } = useTranslation()
   return (
-    <Warning sx={{ mb: 0 }} variant="error">
+    <Alert sx={{ mb: 0 }} variant="error">
       {t("lending.reserve.frozen")}
-    </Warning>
+    </Alert>
   )
 }
 
@@ -385,34 +361,6 @@ const BorrowAction = ({
         </Button>
       </div>
     </div>
-  )
-}
-
-const WrappedBaseAssetSelector = ({
-  assetSymbol,
-  baseAssetSymbol,
-  selectedAsset,
-  setSelectedAsset,
-}: {
-  assetSymbol: string
-  baseAssetSymbol: string
-  selectedAsset: string
-  setSelectedAsset: (value: string) => void
-}) => {
-  return (
-    <ToggleGroup
-      type="single"
-      variant="secondary"
-      size="small"
-      value={selectedAsset}
-      onValueChange={setSelectedAsset}
-      sx={{ mb: 20 }}
-    >
-      <ToggleGroupItem value={assetSymbol}>{assetSymbol}</ToggleGroupItem>
-      <ToggleGroupItem value={baseAssetSymbol}>
-        {baseAssetSymbol}
-      </ToggleGroupItem>
-    </ToggleGroup>
   )
 }
 

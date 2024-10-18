@@ -19,7 +19,7 @@ export const BorrowModal = () => {
   }>
   const { currentMarket } = useProtocolDataContext()
 
-  const [borrowUnWrapped, setBorrowUnWrapped] = useState(true)
+  const [borrowUnWrapped, setBorrowUnWrapped] = useState(false)
   const [displayGho] = useRootStore((store) => [store.displayGho])
 
   const handleBorrowUnwrapped = (borrowUnWrapped: boolean) => {

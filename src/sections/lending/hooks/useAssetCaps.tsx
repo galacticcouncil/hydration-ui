@@ -52,9 +52,7 @@ export const getAssetCapData = (
       // percentUsed: 99.9,
       // isMaxed: true,
       determineWarningDisplay: ({ supplyCap, icon, ...rest }) =>
-        supplyCap ? (
-          <SupplyCapWarning supplyCap={supplyCap} icon={icon} {...rest} />
-        ) : null,
+        supplyCap ? <SupplyCapWarning supplyCap={supplyCap} {...rest} /> : null,
       displayMaxedTooltip: ({ supplyCap }) =>
         supplyCap ? <SupplyCapMaxedTooltip supplyCap={supplyCap} /> : null,
     },
@@ -75,7 +73,7 @@ export const getAssetCapData = (
       // isMaxed: true,
       determineWarningDisplay: ({ debtCeiling, icon, ...rest }) =>
         debtCeiling ? (
-          <DebtCeilingWarning debtCeiling={debtCeiling} icon={icon} {...rest} />
+          <DebtCeilingWarning debtCeiling={debtCeiling} {...rest} />
         ) : null,
       displayMaxedTooltip: ({ debtCeiling }) =>
         debtCeiling ? (

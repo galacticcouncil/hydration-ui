@@ -4,7 +4,6 @@ import { Box, Link, SvgIcon, Typography } from "@mui/material"
 import { useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { EmodeCategory } from "sections/lending/helpers/types"
 import {
   AppDataContextType,
@@ -24,10 +23,11 @@ import {
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
-import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { EmodeActions } from "./EmodeActions"
 import { getEmodeMessage } from "./EmodeNaming"
 import { EmodeSelect } from "./EmodeSelect"
+import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
+import { Alert } from "components/Alert"
 
 export enum ErrorType {
   EMODE_DISABLED_LIQUIDATION,
@@ -118,7 +118,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     switch (blockingError) {
       case ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING:
         return (
-          <Warning variant="info" sx={{ mt: 24, alignItems: "center" }}>
+          <Alert variant="info" sx={{ mt: 24, alignItems: "center" }}>
             <Typography variant="caption">
               <span>
                 To enable E-mode for the{" "}
@@ -127,11 +127,11 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 closed.
               </span>
             </Typography>
-          </Warning>
+          </Alert>
         )
       case ErrorType.EMODE_DISABLED_LIQUIDATION:
         return (
-          <Warning variant="error" sx={{ mt: 24, alignItems: "center" }}>
+          <Alert variant="error" sx={{ mt: 24, alignItems: "center" }}>
             <Typography variant="subheader1" color="#4F1919">
               <span>Cannot disable E-Mode</span>
             </Typography>
@@ -142,7 +142,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 exit E-Mode supply or repay borrowed positions.
               </span>
             </Typography>
-          </Warning>
+          </Alert>
         )
       default:
         return null
@@ -165,7 +165,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
   // Shown only if the user is disabling eMode, is not blocked from disabling, and has a health factor that is decreasing
   // HF will never decrease on enable or switch because all borrow positions must initially be in the eMode category
-  const showLiquidationRiskWarning: boolean =
+  const showLiquidationRiskAlert: boolean =
     !!selectedEmode &&
     selectedEmode.id === 0 &&
     blockingError === undefined &&
@@ -193,7 +193,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       )}
 
       {user.userEmodeCategoryId === 0 && (
-        <Warning variant="warning">
+        <Alert variant="warning">
           <Typography variant="caption">
             <span>
               Enabling E-Mode only allows you to borrow assets belonging to the
@@ -208,7 +208,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
               to learn more about how it works and the applied restrictions.
             </span>
           </Typography>
-        </Warning>
+        </Alert>
       )}
 
       {showModal && (
@@ -221,8 +221,8 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       )}
 
       {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
-      {showLiquidationRiskWarning && (
-        <Warning variant="error" sx={{ mt: 24, alignItems: "center" }}>
+      {showLiquidationRiskAlert && (
+        <Alert variant="error" sx={{ mt: 24, alignItems: "center" }}>
           <Typography variant="subheader1" color="#4F1919">
             <span>Liquidation risk</span>
           </Typography>
@@ -232,7 +232,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
               the increased risk of collateral liquidation.{" "}
             </span>
           </Typography>
-        </Warning>
+        </Alert>
       )}
 
       <TxModalDetails gasLimit={gasLimit}>

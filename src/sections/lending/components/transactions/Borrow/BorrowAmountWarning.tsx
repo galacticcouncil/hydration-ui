@@ -1,5 +1,5 @@
 import { Checkbox, Typography } from "@mui/material"
-import { Warning } from "sections/lending/components/primitives/Warning"
+import { Alert } from "components/Alert"
 
 interface BorrowAmountWarningProps {
   riskCheckboxAccepted: boolean
@@ -12,10 +12,10 @@ export const BorrowAmountWarning = ({
 }: BorrowAmountWarningProps) => {
   return (
     <>
-      <Warning variant="warning" sx={{ my: 20 }}>
+      <Alert variant="warning" sx={{ my: 20 }}>
         Borrowing this amount will reduce your health factor and increase risk
         of liquidation.
-      </Warning>
+      </Alert>
       <div sx={{ flex: "row", align: "center" }}>
         <Checkbox
           checked={riskCheckboxAccepted}

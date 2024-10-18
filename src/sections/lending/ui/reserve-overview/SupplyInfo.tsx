@@ -183,10 +183,10 @@ export const SupplyInfo = ({
               {t("lending.collateralUsage")}
             </Text>
             <Alert variant="warning" sx={{ color: "white" }}>
-              <Text fs={14} font="GeistSemiBold" sx={{ mb: 4 }}>
+              <Text fs={13} font="GeistSemiBold" sx={{ mb: 4 }}>
                 {t("lending.supply.isolatedCollateral.title")}
               </Text>
-              <span>
+              <Text fs={13}>
                 {t("lending.supply.isolatedCollateral.description")}{" "}
                 <a
                   target="_blank"
@@ -195,7 +195,7 @@ export const SupplyInfo = ({
                 >
                   {t("lending.learnMore")}
                 </a>
-              </span>
+              </Text>
             </Alert>
           </div>
         ) : reserve.reserveLiquidationThreshold !== "0" ? (

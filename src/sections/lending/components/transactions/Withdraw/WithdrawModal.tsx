@@ -15,7 +15,7 @@ export const WithdrawModal = () => {
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
-  const [withdrawUnWrapped, setWithdrawUnWrapped] = useState(true)
+  const [withdrawUnWrapped, setWithdrawUnWrapped] = useState(false)
 
   return (
     <BasicModal open={type === ModalType.Withdraw} setOpen={close}>

@@ -1,4 +1,5 @@
-import { Warning } from "sections/lending/components/primitives/Warning"
+import { Alert } from "components/Alert"
+import { Text } from "components/Typography/Text/Text"
 
 export const ParameterChangewarning = ({
   underlyingAsset,
@@ -6,13 +7,13 @@ export const ParameterChangewarning = ({
   underlyingAsset: string
 }) => {
   return (
-    <Warning variant="info" sx={{ my: 24 }}>
-      <span>
+    <Alert variant="info" sx={{ my: 24 }}>
+      <Text fs={13}>
         Attention: Parameter changes via governance can alter your account
         health factor and risk of liquidation. Follow the{" "}
         <a href="https://governance.aave.com/">Aave governance forum</a> for
         updates.
-      </span>
-    </Warning>
+      </Text>
+    </Alert>
   )
 }

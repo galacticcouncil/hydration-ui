@@ -219,9 +219,6 @@ export const SupplyModalContent = React.memo(
 
     return (
       <>
-        {showIsolationWarning && (
-          <IsolationModeWarning asset={poolReserve.symbol} />
-        )}
         {supplyCapUsage.determineWarningDisplay({ supplyCap: supplyCapUsage })}
         {debtCeilingUsage.determineWarningDisplay({
           debtCeiling: debtCeilingUsage,
@@ -276,6 +273,9 @@ export const SupplyModalContent = React.memo(
         </TxModalDetails>
 
         {txError && <GasEstimationError txError={txError} />}
+        {showIsolationWarning && (
+          <IsolationModeWarning asset={poolReserve.symbol} sx={{ mt: 12 }} />
+        )}
 
         <SupplyActions {...supplyActionsProps} />
       </>

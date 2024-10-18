@@ -1,10 +1,10 @@
+import { Alert } from "components/Alert"
 import { ButtonTransparent } from "components/Button/Button"
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
 export const GasEstimationError = ({ txError }: { txError: TxErrorType }) => {
   return (
-    <Warning variant="error" sx={{ mt: 16, mb: 0 }}>
+    <Alert variant="error" sx={{ mt: 16, mb: 0 }}>
       <span>
         {txError.error ? (
           <span>
@@ -38,6 +38,6 @@ export const GasEstimationError = ({ txError }: { txError: TxErrorType }) => {
           </span>
         )}
       </span>
-    </Warning>
+    </Alert>
   )
 }

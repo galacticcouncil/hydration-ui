@@ -3,7 +3,6 @@ import {
   valueToBigNumber,
 } from "@aave/math-utils"
 
-import { Warning } from "sections/lending/components/primitives/Warning"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -19,6 +18,7 @@ import {
 import { zeroLTVBlockingWithdraw } from "sections/lending/components/transactions/utils"
 import { IsolationModeWarning } from "sections/lending/components/transactions/Warnings/IsolationModeWarning"
 import { CollateralChangeActions } from "./CollateralChangeActions"
+import { Alert } from "components/Alert"
 
 export type CollateralChangeModalContentProps = {
   underlyingAsset: string
@@ -136,22 +136,22 @@ export const CollateralChangeModalContent = ({
   return (
     <>
       {showEnableIsolationModeMsg && (
-        <Warning variant="warning" sx={{ mb: 12 }}>
+        <Alert variant="warning" sx={{ mb: 12 }}>
           <span>
             Enabling this asset as collateral increases your borrowing power and
             Health Factor. However, it can get liquidated if your health factor
             drops below 1.
           </span>
-        </Warning>
+        </Alert>
       )}
 
       {showDisableIsolationModeMsg && (
-        <Warning variant="warning" sx={{ mb: 12 }}>
+        <Alert variant="warning" sx={{ mb: 12 }}>
           <span>
             Disabling this asset as collateral affects your borrowing power and
             Health Factor.
           </span>
-        </Warning>
+        </Alert>
       )}
 
       {showEnterIsolationModeMsg && (
@@ -159,12 +159,12 @@ export const CollateralChangeModalContent = ({
       )}
 
       {showExitIsolationModeMsg && (
-        <Warning variant="info" sx={{ mb: 12 }}>
+        <Alert variant="info" sx={{ mb: 12 }}>
           <span>
             You will exit isolation mode and other tokens can now be used as
             collateral
           </span>
-        </Warning>
+        </Alert>
       )}
 
       {poolReserve.isIsolated &&
@@ -185,9 +185,9 @@ export const CollateralChangeModalContent = ({
       </TxModalDetails>
 
       {blockingError !== undefined && (
-        <Warning variant="error" sx={{ mt: 16 }}>
+        <Alert variant="error" sx={{ mt: 16 }}>
           <BlockingError />
-        </Warning>
+        </Alert>
       )}
 
       {txError && <GasEstimationError txError={txError} />}
