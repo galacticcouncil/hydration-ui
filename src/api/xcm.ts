@@ -1,5 +1,11 @@
-import { assetsMap, chainsConfigMap, chainsMap } from "@galacticcouncil/xcm-cfg"
-import { ConfigService, SubstrateApis } from "@galacticcouncil/xcm-core"
+import {
+  assetsMap,
+  chainsMap,
+  routesMap,
+  validations,
+  HydrationConfigService,
+} from "@galacticcouncil/xcm-cfg"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
@@ -8,8 +14,10 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
 import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { createToastMessages } from "state/toasts"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type TransferProps = {
   asset: string
@@ -19,23 +27,34 @@ type TransferProps = {
   dstChain: string
 }
 
-export const xcmConfigService = new ConfigService({
-  assets: assetsMap,
-  chains: chainsMap,
-  chainsConfig: chainsConfigMap,
-})
-
-export const wallet = new Wallet({
-  config: xcmConfigService,
-})
-
 export const createXcmAssetKey = (id: string, symbol: string) => {
   return `${symbol.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
 }
 
-export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
+export const syncAssethubXcmConfig = (
+  asset: TRegisteredAsset,
+  config: HydrationConfigService,
+) => {
   const assetData = external.buildAssetData(asset)
-  external.buildAssethubConfig(assetData, xcmConfigService)
+  config.addExternalHubRoute(assetData)
+}
+
+export const useCrossChainWallet = () => {
+  const { poolService } = useRpcProvider()
+
+  return useMemo(() => {
+    const configService = new HydrationConfigService({
+      assets: assetsMap,
+      chains: chainsMap,
+      routes: routesMap,
+    })
+
+    return new Wallet({
+      configService: configService,
+      poolService: poolService,
+      transferValidations: validations,
+    })
+  }, [poolService])
 }
 
 export const useCrossChainTransfer = ({
@@ -45,6 +64,7 @@ export const useCrossChainTransfer = ({
   dstAddr,
   dstChain,
 }: TransferProps) => {
+  const wallet = useCrossChainWallet()
   return useQuery(
     QUERY_KEYS.xcmTransfer(asset, srcAddr, srcChain, dstAddr, dstChain),
     async () =>
@@ -59,6 +79,7 @@ export const useCrossChainTransaction = ({
 } = {}) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
+  const wallet = useCrossChainWallet()
 
   return useMutation(
     async (values: TransferProps & { amount: number | string }) => {
@@ -81,7 +102,8 @@ export const useCrossChainTransaction = ({
         values.dstChain,
       )
 
-      const { balance, srcFee, dstFee, srcFeeBalance } = xTransfer
+      const { source } = xTransfer
+      const { balance, fee, feeBalance, destinationFee } = source
 
       const call = await xTransfer.buildCall(values.amount)
 
@@ -97,12 +119,12 @@ export const useCrossChainTransaction = ({
           tx: api.tx(call.data),
           xcallMeta: {
             srcChain: values.srcChain,
-            srcChainFee: srcFee.toDecimal(dstFee.decimals),
-            srcChainFeeBalance: balance.toDecimal(srcFeeBalance.decimals),
-            srcChainFeeSymbol: srcFee.originSymbol,
+            srcChainFee: fee.toDecimal(fee.decimals),
+            srcChainFeeBalance: feeBalance.toDecimal(feeBalance.decimals),
+            srcChainFeeSymbol: fee.originSymbol,
             dstChain: values.dstChain,
-            dstChainFee: dstFee.toDecimal(dstFee.decimals),
-            dstChainFeeSymbol: dstFee.originSymbol,
+            dstChainFee: destinationFee.toDecimal(destinationFee.decimals),
+            dstChainFeeSymbol: destinationFee.originSymbol,
           },
         },
         {

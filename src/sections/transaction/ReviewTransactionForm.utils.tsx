@@ -17,7 +17,7 @@ import {
 } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
@@ -203,7 +203,7 @@ export const useTransactionValues = ({
   if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
     // @TODO remove when fixed in xcm app
     isEnoughPaymentBalance = true
-  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY) {
     const feeBalanceDiff =
       parseFloat(xcallMeta.srcChainFeeBalance) -
       parseFloat(xcallMeta.srcChainFee)
