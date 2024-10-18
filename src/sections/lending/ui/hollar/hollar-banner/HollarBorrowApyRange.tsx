@@ -1,6 +1,6 @@
-import { Skeleton } from "@mui/material"
 import React from "react"
 import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 type HollarBorrowApyRangeProps = {

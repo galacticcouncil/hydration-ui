@@ -40,6 +40,7 @@ export const NumberFormatCustom = React.forwardRef<
             },
           })
       }}
+      autoComplete="off"
       thousandSeparator
       isNumericString
       allowNegative={false}

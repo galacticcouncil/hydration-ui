@@ -49,8 +49,9 @@ export const SContainer = styled.label<{
 
     text-align: right;
 
-    font-size: 14px;
+    font-size: 18px;
     font-family: "GeistSemibold";
+    line-height: 28px;
 
     :focus,
     :focus-visible,

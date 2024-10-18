@@ -244,8 +244,7 @@ export const SupplyActions = React.memo(
         actionInProgressText={<span>Supplying {symbol}</span>}
         handleApproval={approval}
         handleAction={action}
-        //requiresApproval={requiresApproval}
-        requiresApproval={false}
+        requiresApproval={requiresApproval}
         tryPermit={permitAvailable}
         sx={sx}
         {...props}
