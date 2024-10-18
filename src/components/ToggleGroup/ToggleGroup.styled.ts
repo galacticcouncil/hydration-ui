@@ -45,19 +45,19 @@ const getSizeStyles = (size: ItemSize) => {
       `
     case "small":
       return css`
-        border-radius: 9999px;
+        border-radius: ${theme.borderRadius.medium}px;
         font-size: 13px;
         padding: 8px 20px;
       `
     case "medium":
       return css`
-        border-radius: 9999px;
+        border-radius: ${theme.borderRadius.medium}px;
         font-size: 14px;
         padding: 10px 32px;
       `
     case "large":
       return css`
-        border-radius: 9999px;
+        border-radius: ${theme.borderRadius.medium}px;
         font-size: 14px;
         padding: 14px 38px;
       `

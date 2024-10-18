@@ -19,6 +19,7 @@ import { zeroLTVBlockingWithdraw } from "sections/lending/components/transaction
 import { IsolationModeWarning } from "sections/lending/components/transactions/Warnings/IsolationModeWarning"
 import { CollateralChangeActions } from "./CollateralChangeActions"
 import { Alert } from "components/Alert"
+import { Text } from "components/Typography/Text/Text"
 
 export type CollateralChangeModalContentProps = {
   underlyingAsset: string
@@ -103,22 +104,22 @@ export const CollateralChangeModalContent = ({
   const BlockingError: React.FC = () => {
     switch (blockingError) {
       case ErrorType.DO_NOT_HAVE_SUPPLIES_IN_THIS_CURRENCY:
-        return <span>You do not have supplies in this currency</span>
+        return <Text fs={13}>You do not have supplies in this currency</Text>
       case ErrorType.CAN_NOT_USE_THIS_CURRENCY_AS_COLLATERAL:
-        return <span>You can not use this currency as collateral</span>
+        return <Text fs={13}>You can not use this currency as collateral</Text>
       case ErrorType.CAN_NOT_SWITCH_USAGE_AS_COLLATERAL_MODE:
         return (
-          <span>
+          <Text fs={13}>
             You can not switch usage as collateral mode for this currency,
             because it will cause collateral call
-          </span>
+          </Text>
         )
       case ErrorType.ZERO_LTV_WITHDRAW_BLOCKED:
         return (
-          <span>
+          <Text fs={13}>
             Assets with zero LTV ({assetsBlockingWithdraw}) must be withdrawn or
             disabled as collateral to perform this action
-          </span>
+          </Text>
         )
       default:
         return null
@@ -137,20 +138,20 @@ export const CollateralChangeModalContent = ({
     <>
       {showEnableIsolationModeMsg && (
         <Alert variant="warning" sx={{ mb: 12 }}>
-          <span>
+          <Text fs={13}>
             Enabling this asset as collateral increases your borrowing power and
             Health Factor. However, it can get liquidated if your health factor
             drops below 1.
-          </span>
+          </Text>
         </Alert>
       )}
 
       {showDisableIsolationModeMsg && (
         <Alert variant="warning" sx={{ mb: 12 }}>
-          <span>
+          <Text fs={13}>
             Disabling this asset as collateral affects your borrowing power and
             Health Factor.
-          </span>
+          </Text>
         </Alert>
       )}
 
@@ -160,10 +161,10 @@ export const CollateralChangeModalContent = ({
 
       {showExitIsolationModeMsg && (
         <Alert variant="info" sx={{ mb: 12 }}>
-          <span>
+          <Text fs={13}>
             You will exit isolation mode and other tokens can now be used as
             collateral
-          </span>
+          </Text>
         </Alert>
       )}
 
@@ -174,7 +175,7 @@ export const CollateralChangeModalContent = ({
         <DetailsNumberLine
           symbol={poolReserve.symbol}
           iconSymbol={poolReserve.iconSymbol}
-          description={<span>Supply balance</span>}
+          description="Supply balance"
           value={userReserve.underlyingBalance}
         />
         <DetailsHFLine

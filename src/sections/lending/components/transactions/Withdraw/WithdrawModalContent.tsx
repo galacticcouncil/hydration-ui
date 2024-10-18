@@ -1,6 +1,5 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
-import { Checkbox, Typography } from "@mui/material"
 import { useRef, useState } from "react"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -21,6 +20,8 @@ import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { WithdrawActions } from "./WithdrawActions"
 import { useWithdrawError } from "./WithdrawError"
 import { calculateMaxWithdrawAmount } from "./utils"
+import { Text } from "components/Typography/Text/Text"
+import { CheckBox } from "components/CheckBox/CheckBox"
 
 export enum ErrorType {
   CAN_NOT_WITHDRAW_THIS_AMOUNT,
@@ -142,9 +143,9 @@ export const WithdrawModalContent = ({
       />
 
       {blockingError !== undefined && (
-        <Typography variant="helperText" color="error.main">
+        <Text fs={13} color="red400" sx={{ mt: 4 }}>
           {errorComponent}
-        </Typography>
+        </Text>
       )}
 
       {/* {poolReserve.isWrappedBaseAsset && (
@@ -176,20 +177,24 @@ export const WithdrawModalContent = ({
 
       {displayRiskCheckbox && (
         <>
-          <Alert variant="error" sx={{ my: 24 }}>
-            Withdrawing this amount will reduce your health factor and increase
-            risk of liquidation.
+          <Alert variant="error" sx={{ my: 12 }}>
+            <Text fs={13}>
+              Withdrawing this amount will reduce your health factor and
+              increase risk of liquidation.
+            </Text>
           </Alert>
           <div sx={{ flex: "row", align: "center" }}>
-            <Checkbox
+            <CheckBox
+              label={
+                <Text fs={14} lh={28}>
+                  I acknowledge the risks involved.
+                </Text>
+              }
               checked={riskCheckboxAccepted}
               onChange={() => {
                 setRiskCheckboxAccepted(!riskCheckboxAccepted)
               }}
             />
-            <Typography variant="description">
-              <span>I acknowledge the risks involved.</span>
-            </Typography>
           </div>
         </>
       )}
