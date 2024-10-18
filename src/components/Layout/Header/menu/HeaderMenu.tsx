@@ -10,11 +10,9 @@ import { LINKS, MENU_ITEMS, resetSearchParams } from "utils/navigation"
 import { HeaderSubMenu, HeaderSubMenuContents } from "./HeaderSubMenu"
 import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
-import { useAccountPositions } from "api/deposits"
-import { useAcountAssets } from "api/assetDetails"
+import { useAccountAssets } from "api/deposits"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
@@ -112,28 +110,13 @@ const LiquidityMenuItem = ({
   search: Partial<Search<unknown>>
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
-  const accountPositions = useAccountPositions()
-
-  const balances = useAcountAssets(account?.address)
-
-  const isPoolBalances = balances.some((balance) => {
-    if (balance.balance.freeBalance.gt(0)) {
-      return balance.asset.isStableSwap || balance.asset.isShareToken
-    }
-    return false
-  })
-
-  const isPositions =
-    accountPositions.data?.miningNfts.length ||
-    accountPositions.data?.omnipoolNfts.length ||
-    isPoolBalances
+  const { data } = useAccountAssets()
 
   return (
     <Link
-      to={isPositions ? LINKS.myLiquidity : item.href}
+      to={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
-      key={isPositions ? LINKS.myLiquidity : item.href}
+      key={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
       data-intersect={item.key}
     >
       {({ isActive }) => (

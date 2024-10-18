@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { TDeposit, useAccountPositions } from "api/deposits"
+import { TDeposit, useAccountAssets } from "api/deposits"
 import { useMemo } from "react"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { BN_0 } from "utils/constants"
@@ -34,7 +34,7 @@ export const isXYKDeposit = (
 
 export const useAllOmnipoolDeposits = (address?: string) => {
   const { depositLiquidityPositions = [] } =
-    useAccountPositions(address).data ?? {}
+    useAccountAssets(address).data ?? {}
   const { getData } = useLiquidityPositionData()
 
   const data = useMemo(
@@ -67,7 +67,7 @@ export const useAllOmnipoolDeposits = (address?: string) => {
 }
 
 export const useAllXYKDeposits = (address?: string) => {
-  const { xykDeposits = [] } = useAccountPositions(address).data ?? {}
+  const { xykDeposits = [] } = useAccountAssets(address).data ?? {}
   const { getShareTokenByAddress } = useAssets()
 
   const depositNftsData = xykDeposits.reduce<
@@ -86,6 +86,7 @@ export const useAllXYKDeposits = (address?: string) => {
   const uniqAssetIds = [
     ...new Set(depositNftsData.map((deposit) => deposit.asset.id)),
   ]
+
   const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
   const pools = useSDKPools()

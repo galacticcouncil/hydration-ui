@@ -8,10 +8,31 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
-import { OrmlTokensAccountData } from "@polkadot/types/lookup"
+import {
+  PalletBalancesAccountData,
+  OrmlTokensAccountData,
+} from "@polkadot/types/lookup"
 
-export function calculateFreeBalance(free: BigNumber, frozen: BigNumber) {
-  return free.minus(frozen)
+export type TBalance = ReturnType<typeof parseBalanceData>
+
+export const parseBalanceData = (
+  data: PalletBalancesAccountData | OrmlTokensAccountData,
+  id: string,
+  address: string,
+) => {
+  const freeBalance = new BigNumber(data.free.toHex())
+  const frozenBalance = new BigNumber(data.frozen.toHex())
+  const reservedBalance = new BigNumber(data.reserved.toHex())
+  const balance = freeBalance.minus(frozenBalance)
+
+  return {
+    accountId: address,
+    assetId: id,
+    balance,
+    total: freeBalance.plus(reservedBalance),
+    freeBalance,
+    reservedBalance,
+  }
 }
 
 const createTokenBalanceFetcher =
@@ -38,20 +59,7 @@ export const getTokenBalance = (
   return async () => {
     const res = await fetchTokenBalance(account, id)
 
-    const freeBalance = new BigNumber(res.free.toHex())
-    const reservedBalance = new BigNumber(res.reserved.toHex())
-    const frozenBalance = new BigNumber(res.frozen.toHex())
-    const balance = new BigNumber(
-      calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
-    )
-
-    return {
-      accountId: account,
-      assetId: id,
-      balance,
-      total: freeBalance.plus(reservedBalance),
-      freeBalance,
-    }
+    return parseBalanceData(res, id.toString(), account.toString())
   }
 }
 

@@ -8,27 +8,32 @@ import { u32, StorageKey } from "@polkadot/types"
 import { OrmlTokensAccountData } from "@polkadot/types/lookup"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { calculateFreeBalance } from "./balances"
+import { parseBalanceData } from "./balances"
 
 export const useAccountBalances = (
-  id: Maybe<AccountId32 | string>,
+  address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) => {
   const { api, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh
-      ? QUERY_KEYS.accountBalances(id)
-      : QUERY_KEYS.accountBalancesLive(id),
-    !!id ? getAccountBalances(api, id) : undefinedNoop,
-    { enabled: id != null && isLoaded },
+      ? QUERY_KEYS.accountBalances(address)
+      : QUERY_KEYS.accountBalancesLive(address),
+    !!address ? getAccountBalances(api, address) : undefinedNoop,
+    { enabled: address != null && isLoaded },
   )
 }
 
-export const useAccountsBalances = (ids: string[]) => {
+export const useAccountsBalances = (addresses: string[]) => {
   const { api } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.accountsBalances(ids), () =>
-    Promise.all(ids.map((id) => getAccountBalances(api, id)())),
+  return useQuery(
+    QUERY_KEYS.accountsBalances(addresses),
+    () =>
+      Promise.all(
+        addresses.map((address) => getAccountBalances(api, address)()),
+      ),
+    { enabled: !!addresses.length },
   )
 }
 
@@ -57,24 +62,10 @@ export const getAccountBalances = (
     const tokens = await fetchAccountBalances(accountId)
 
     const balances = tokens.map(([id, data]) => {
-      const freeBalance = new BigNumber(data.free.toHex())
-      const reservedBalance = new BigNumber(data.reserved.toHex())
-      const frozenBalance = new BigNumber(data.frozen.toHex())
-      const balance = new BigNumber(
-        calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
-      )
-
-      return {
-        accountId: accountId.toString(),
-        id: id.toString(),
-        balance,
-        total: freeBalance.plus(reservedBalance),
-        reservedBalance,
-        freeBalance,
-      }
+      return parseBalanceData(data, id.toString(), accountId.toString())
     })
 
-    const native = balances.find(({ id }) => id === NATIVE_ASSET_ID)
+    const native = balances.find(({ assetId }) => assetId === NATIVE_ASSET_ID)
 
     return { native, balances, accountId }
   }

@@ -104,7 +104,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("wallet.assets.table.header.total")}
                 </Text>
                 <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.total })}
+                  {t("value.token", { value: row.total })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
                   <DisplayValue value={row.totalDisplay} />
@@ -116,7 +116,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("wallet.assets.table.header.transferable")}
                 </Text>
                 <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.transferable })}
+                  {t("value.token", { value: row.transferable })}
                 </Text>
                 <Text fs={12} lh={12} color="whiteish500">
                   <DisplayValue value={row.transferableDisplay} />
@@ -414,7 +414,7 @@ const NativeLocks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value", { value: reserved })}
+          {t("value.token", { value: reserved })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
           <DisplayValue value={reservedDisplay} />
@@ -470,7 +470,7 @@ const Locks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value", { value: reserved })}
+          {t("value.token", { value: reserved })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
           <DisplayValue value={reservedDisplay} />

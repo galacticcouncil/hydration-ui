@@ -18,6 +18,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
+import { useRefetchAccountAssets } from "api/deposits"
 
 export const Stake = ({
   loading,
@@ -36,6 +37,8 @@ export const Stake = ({
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
+  const refetchAccountAssets = useRefetchAccountAssets()
+
   const form = useForm<{ amount: string }>()
 
   const processedVotes = useProcessedVotesIds()
@@ -96,9 +99,7 @@ export const Stake = ({
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
-    await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(native.id, account?.address),
-    )
+    refetchAccountAssets()
   }
 
   return (

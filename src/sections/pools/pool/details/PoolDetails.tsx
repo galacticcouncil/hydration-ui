@@ -2,10 +2,7 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
-import {
-  TXYKPoolFullData,
-  useXYKSpotPrice,
-} from "sections/pools/PoolsPage.utils"
+import { TXYKPool, useXYKSpotPrice } from "sections/pools/PoolsPage.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -318,7 +315,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
   )
 }
 
-export const XYKRateWrapper = ({ pool }: { pool: TXYKPoolFullData }) => {
+export const XYKRateWrapper = ({ pool }: { pool: TXYKPool }) => {
   const prices = useXYKSpotPrice(pool.id)
 
   if (!prices) return null

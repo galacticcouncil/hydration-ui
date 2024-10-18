@@ -1,8 +1,7 @@
-import { useAccountBalances } from "api/accountBalances"
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -16,6 +15,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
+import { useAccountAssets } from "api/deposits"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -34,22 +34,19 @@ export const useAssetsData = ({
     erc20,
     getAsset,
     tokens,
-    native,
     getAssetWithFallback,
   } = useAssets()
   const address = givenAddress ?? account?.address
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const balances = useAccountBalances(address, true)
+  const balances = useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
-  const nativeTokenWithBalance = balances.data?.native
-  const tokensWithBalance = useMemo(() => {
-    if (nativeTokenWithBalance && balances.data) {
-      const filteredTokens = balances.data.balances.filter((balance) => {
-        if (balance.id === native.id) return false
 
-        const meta = getAsset(balance.id)
+  const tokensWithBalance = useMemo(() => {
+    if (balances.data) {
+      const filteredTokens = balances.data.balances.filter((balance) => {
+        const meta = getAsset(balance.assetId)
 
         return (
           meta?.isToken ||
@@ -59,16 +56,14 @@ export const useAssetsData = ({
         )
       })
 
-      return nativeTokenWithBalance.total.gt(0)
-        ? [...filteredTokens, nativeTokenWithBalance]
-        : filteredTokens
+      return filteredTokens
     }
 
     return []
-  }, [balances.data, getAsset, nativeTokenWithBalance, native])
+  }, [balances.data, getAsset])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
-    (tokenWithBalance) => tokenWithBalance.id,
+    (tokenWithBalance) => tokenWithBalance.assetId,
   )
 
   const currencyId = useAccountCurrency(address).data
@@ -84,7 +79,7 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (balances.isInitialLoading || !spotPrices.data) return []
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const asset = getAssetWithFallback(balance.id)
+      const asset = getAssetWithFallback(balance.assetId)
       const isExternalInvalid = asset.isExternal && !asset.symbol
       const meta = isExternalInvalid
         ? getExternalMeta(asset.id) ?? asset
@@ -269,10 +264,12 @@ export const useUnlockableTokens = () => {
     : lockDemocracy
         .minus(votes.data?.maxLockedValue ?? 0)
         .shiftedBy(-native.decimals)
-  const date = votes.data?.maxLockedBlock.times(BLOCK_TIME)
+  const lockedSeconds = votes.data?.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
   const endDate =
     votes.data && !votes.data.maxLockedBlock.isZero()
-      ? durationInDaysAndHoursFromNow(date?.times(1000).toNumber() ?? 0)
+      ? durationInDaysAndHoursFromNow(
+          lockedSeconds?.times(1000).toNumber() ?? 0,
+        )
       : undefined
 
   return {

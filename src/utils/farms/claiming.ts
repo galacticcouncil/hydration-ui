@@ -3,7 +3,7 @@ import { AccountId32 } from "@polkadot/types/interfaces"
 import { useMutation } from "@tanstack/react-query"
 import { useAccountAssetBalances } from "api/accountBalances"
 import { useBestNumber } from "api/chain"
-import { TDeposit, useAccountPositions } from "api/deposits"
+import { TDeposit, useAccountAssets } from "api/deposits"
 import { useFarms, useInactiveFarms, useOraclePrices } from "api/farms"
 import { useOmnipoolDataObserver } from "api/omnipool"
 import BigNumber from "bignumber.js"
@@ -23,7 +23,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   const bestNumberQuery = useBestNumber()
   const { api } = useRpcProvider()
   const { omnipoolDeposits = [], xykDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
   const {
     getShareTokenByAddress,
     shareTokens,
@@ -95,6 +95,7 @@ export const useClaimableAmount = (poolId?: string, depositNft?: TDeposit) => {
   }))
 
   const oraclePrices = useOraclePrices(oracleAssetIds ?? [])
+
   const accountBalances = useAccountAssetBalances(accountAddresses)
 
   const queries = [
@@ -243,7 +244,7 @@ export const useClaimFarmMutation = (
   const isXYK = isShareToken(meta)
 
   const { omnipoolDeposits = [], xykDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
 
   let omnipoolDeposits_: TDeposit[] = []
   let xykDeposits_: TDeposit[] = []

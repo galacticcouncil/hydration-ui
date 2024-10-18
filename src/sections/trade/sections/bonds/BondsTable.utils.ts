@@ -1,4 +1,3 @@
-import { useTokensBalances } from "api/balances"
 import { useBondsEvents, useLbpPool } from "api/bonds"
 import { useBestNumber } from "api/chain"
 import { useState } from "react"
@@ -11,6 +10,7 @@ import { format } from "date-fns"
 import BN from "bignumber.js"
 import { Transaction } from "./table/transactions/Transactions.utils"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export const useBondsTableData = ({
   id,
@@ -28,24 +28,19 @@ export const useBondsTableData = ({
   const lbpPools = useLbpPool()
   const bondsData = (id ? bonds.filter((bond) => bond.id === id) : bonds) ?? []
 
-  const balances = useTokensBalances(
-    pluck("id", bondsData),
-    account?.address,
-    true,
+  const accountAssets = useAccountAssets()
+  const balances = pluck("id", bonds).map(
+    (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )
 
-  const bondsBalances = balances.filter((balance) => balance.data?.total.gt(0))
+  const bondsBalances = balances.filter((balance) => balance?.total.gt(0))
 
   const bondEvents = useBondsEvents(
-    bondsBalances.map((bondBalance) => bondBalance.data?.assetId.toString()) ??
-      [],
+    bondsBalances.map((bondBalance) => bondBalance?.assetId.toString()) ?? [],
     true,
   )
 
-  const isLoading =
-    pluck("isLoading", balances).some(Boolean) ||
-    lbpPools.isLoading ||
-    bondEvents.some((event) => event.isLoading)
+  const isLoading = accountAssets.isLoading || lbpPools.isLoading
 
   const isAccount = !!account
 
@@ -62,12 +57,10 @@ export const useBondsTableData = ({
 
   const bondsWithBalance = bondsBalances
     .map((bondBalance) => {
-      const id = bondBalance.data?.assetId.toString() ?? ""
+      const id = bondBalance?.assetId.toString() ?? ""
       const bond = bondMap.get(id)
 
-      const isLoaded = bondEvents.every((bondEvent) => bondEvent.data)
-
-      if (!bond || !isLoaded) return undefined
+      if (!bond) return undefined
 
       const eventsQuery = bondEvents.find(
         (bondEvent) => bondEvent.data?.bondId === id,
@@ -145,10 +138,8 @@ export const useBondsTableData = ({
         assetId: bondAssetId,
         assetIn: accumulatedAssetId,
         maturity: bondMap.get(id)?.maturity,
-        balance: bondBalance.data?.total,
-        balanceHuman: bondBalance.data?.total
-          ?.shiftedBy(-bond.decimals)
-          .toString(),
+        balance: bondBalance?.total,
+        balanceHuman: bondBalance?.total?.shiftedBy(-bond.decimals).toString(),
         price: "",
         bondId: bond.id,
         isSale,

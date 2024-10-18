@@ -1,36 +1,29 @@
 import { useMemo } from "react"
 import { useTotalIssuances } from "./totalIssuance"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccountBalances } from "./accountBalances"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
+import { useAccountAssets } from "./deposits"
 
 export const useShareOfPools = (assets: string[]) => {
-  const { account } = useAccount()
-
   const totalIssuances = useTotalIssuances()
-  const accountBalances = useAccountBalances(account?.address, true)
-  const balances = accountBalances.data?.balances.filter((balance) =>
-    assets.includes(balance.id),
-  )
+  const accountAssets = useAccountAssets()
 
-  const queries = [totalIssuances, accountBalances]
+  const queries = [totalIssuances, accountAssets]
   const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!!totalIssuances.data) {
+    if (!!totalIssuances.data && accountAssets.data) {
       return assets.map((asset) => {
-        const totalBalance = (balances ?? []).find(
-          (balance) => balance.id === asset,
-        )
+        const balance =
+          accountAssets.data?.accountShareTokensMap.get(asset)?.balance
         const totalIssuance = totalIssuances.data.get(asset)
 
         const calculateTotalShare = () => {
-          if (totalBalance && totalIssuance) {
-            return totalBalance.total.div(totalIssuance).multipliedBy(100)
+          if (balance && totalIssuance) {
+            return balance.total.div(totalIssuance).multipliedBy(100)
           }
           return null
         }
@@ -44,7 +37,7 @@ export const useShareOfPools = (assets: string[]) => {
     }
 
     return null
-  }, [assets, balances, totalIssuances.data])
+  }, [accountAssets.data, assets, totalIssuances.data])
 
   return { isLoading, isInitialLoading: isLoading, data }
 }
