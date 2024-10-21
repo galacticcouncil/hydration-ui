@@ -1,3 +1,4 @@
+import { HydrationConfigService } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ApiPromise } from "@polkadot/api"
@@ -17,6 +18,7 @@ import { useSpotPrice } from "api/spotPrice"
 import {
   createXcmAssetKey,
   syncAssethubXcmConfig,
+  useCrossChainWallet,
   useCrossChainTransaction,
 } from "api/xcm"
 import BN from "bignumber.js"
@@ -41,7 +43,7 @@ import { useAssets } from "providers/assets"
 
 export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
-export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
+export const MEMEPAD_XCM_DST_CHAIN = "hydration"
 
 export const HYDRA_DOT_ASSET_ID = "5"
 export const HYDRA_USDT_ASSET_ID = "10"
@@ -222,6 +224,7 @@ const useMemepadSteps = (step: MemepadStep) => {
 
 export const useMemepad = () => {
   const { api } = useRpcProvider()
+  const wallet = useCrossChainWallet()
   const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
   const [supplyPerc, setSupplyPerc] = useState(50)
   const dotTransferredRef = useRef(false)
@@ -313,7 +316,10 @@ export const useMemepad = () => {
           token,
           internalId,
         )
-        syncAssethubXcmConfig(registeredAsset)
+        syncAssethubXcmConfig(
+          registeredAsset,
+          wallet.config as HydrationConfigService,
+        )
 
         form.setValue("internalId", internalId)
         setNextStep()
