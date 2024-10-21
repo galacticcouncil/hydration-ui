@@ -10,6 +10,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
+import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
@@ -32,6 +33,10 @@ export function isEvmAccount(address?: string) {
   } catch {
     return false
   }
+}
+
+export function isEvmWalletExtension(provider: any) {
+  return isMetaMask(provider) || isMetaMaskLike(provider)
 }
 
 export class H160 {
