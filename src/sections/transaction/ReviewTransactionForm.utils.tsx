@@ -109,7 +109,12 @@ export const useTransactionValues = ({
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
-  const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+  const srcChain = xcallMeta?.srcChain || HYDRATION_CHAIN_KEY
+
+  const shouldUsePermit =
+    isEvm &&
+    srcChain === HYDRATION_CHAIN_KEY &&
+    feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
   const { data: pendingPermit } = usePendingDispatchPermit(account?.address)
 
   const nonce = useNextNonce(account?.address)
@@ -200,10 +205,10 @@ export const useTransactionValues = ({
   }
 
   let isEnoughPaymentBalance
-  if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
+  if (srcChain === "bifrost") {
     // @TODO remove when fixed in xcm app
     isEnoughPaymentBalance = true
-  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY) {
+  } else if (xcallMeta && srcChain !== HYDRATION_CHAIN_KEY) {
     const feeBalanceDiff =
       parseFloat(xcallMeta.srcChainFeeBalance) -
       parseFloat(xcallMeta.srcChainFee)
