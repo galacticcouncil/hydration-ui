@@ -352,10 +352,6 @@
   "liquidity.reviewTransaction.modal.error.copy": "Copy error message",
   "liquidity.reviewTransaction.modal.error.copied": "Message copied!",
   "liquidity.reviewTransaction.modal.error.tip": "Not enough HDX for TIP",
-  "liquidity.reviewTransaction.toast.pending": "Submitting transaction...",
-  "liquidity.reviewTransaction.toast.success": "Transaction successful.",
-  "liquidity.reviewTransaction.toast.error": "Transaction failed.",
-  "liquidity.reviewTransaction.toast.unknown": "Transaction status unknown.",
   "liquidity.reviewTransaction.calldata.encoded": "Encoded call data",
   "liquidity.reviewTransaction.calldata.encodedHash": "Encoded call hash",
   "liquidity.reviewTransaction.calldata.decoded": "Decoded",
@@ -1105,5 +1101,9 @@
   "memepad.summary.adminRights.burn": "Burn admin rights",
   "memepad.summary.adminRights.burned": "Admin rights revoked",
   "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
-  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked."
+  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
+  "toast.pending": "Submitting transaction...",
+  "toast.success": "Transaction successful.",
+  "toast.error": "Transaction failed.",
+  "toast.unknown": "Transaction status unknown."
 }

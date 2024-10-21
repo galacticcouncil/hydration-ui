@@ -42,7 +42,7 @@ export interface Transaction extends TransactionInput {
   onSuccess?: (result: ISubmittableResult) => void
   onSubmitted?: () => void
   onError?: () => void
-  toastMessage?: ToastMessage
+  toast?: ToastMessage
   isProxy: boolean
   steps?: Array<StepProps>
   onBack?: () => void
@@ -69,6 +69,7 @@ interface Store {
     options?: TransactionOptions,
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
+  clearTransactions: () => void
 }
 
 type RpcStore = {
@@ -90,11 +91,7 @@ export const useStore = create<Store>((set) => ({
             {
               ...transaction,
               id: uuid(),
-              toastMessage: {
-                onLoading: options?.toast?.onLoading,
-                onSuccess: options?.toast?.onSuccess,
-                onError: options?.toast?.onError,
-              },
+              toast: options?.toast,
               onSubmitted: () => {
                 options?.onSubmitted?.()
               },
@@ -125,6 +122,10 @@ export const useStore = create<Store>((set) => ({
       ),
     }))
   },
+  clearTransactions: () =>
+    set(() => ({
+      transactions: [],
+    })),
 }))
 
 export const useRpcStore = create<RpcStore>()(
