@@ -221,7 +221,7 @@ export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
         },
       })
 
-      const chain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+      const chain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
       const url =
         chain && isAnyParachain(chain) && chain?.ws
           ? createPolkadotJSTxUrl(
