@@ -63,11 +63,12 @@ export const OmnipoolAndStablepool = () => {
 const OmnipoolAndStablepoolData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
-  const { id } = useSearch<{
+  const searchQuery = useSearch<{
     Search: {
       id?: number
     }
   }>()
+  const { id } = searchQuery
 
   const pools = usePools()
 

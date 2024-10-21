@@ -8,7 +8,7 @@ import { Button } from "components/Button/Button"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 import { ReactElement, useMemo, useState } from "react"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { BN_0 } from "utils/constants"
 import { Separator } from "components/Separator/Separator"
@@ -19,20 +19,15 @@ import BN from "bignumber.js"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TLPData } from "utils/omnipool"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useQueryClient } from "@tanstack/react-query"
 
 export const LiquidityPositionWrapper = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
-  const queryClient = useQueryClient()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [openRemove, setOpenRemove] = useState<TLPData | TLPData[] | undefined>(
     undefined,
   )
   const pool = usePoolData().pool as TPoolFullData
-  const refetchPositions = useRefetchAccountPositions()
+  const refetchAccountAssets = useRefetchAccountAssets()
 
   const positions = pool.omnipoolNftPositions
   const positionsNumber = positions.length
@@ -56,13 +51,7 @@ export const LiquidityPositionWrapper = () => {
   }, [positions, positionsNumber])
 
   const onSuccess = () => {
-    refetchPositions()
-
-    if (pool.isStablePool) {
-      queryClient.invalidateQueries(
-        QUERY_KEYS.tokenBalance(pool.id, account?.address),
-      )
-    }
+    refetchAccountAssets()
   }
 
   const isHubValue = total.hub.gt(0)

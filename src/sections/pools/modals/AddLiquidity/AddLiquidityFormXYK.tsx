@@ -13,21 +13,18 @@ import { scale, scaleHuman } from "utils/balance"
 import { ToastMessage, useStore } from "state/store"
 import { BaseSyntheticEvent, useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Farm } from "api/farms"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 
 type Props = {
   onClose: () => void
@@ -57,10 +54,8 @@ export const AddLiquidityFormXYK = ({
   farms,
   setIsJoinFarms,
 }: Props) => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
   const { t } = useTranslation()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
 
   const { assets, decimals } = pool.meta
   const [assetA, assetB] = assets
@@ -166,9 +161,6 @@ export const AddLiquidityFormXYK = ({
       {
         onSuccess: (result) => {
           refetch()
-          queryClient.refetchQueries(
-            QUERY_KEYS.tokenBalance(pool.id, account?.address),
-          )
           onSuccess(result, scale(shares, decimals).toString())
         },
         onSubmitted: () => {

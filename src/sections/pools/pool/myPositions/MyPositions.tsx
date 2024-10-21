@@ -1,12 +1,10 @@
-import { useTokenBalance } from "api/balances"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { TPoolFullData, TXYKPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0 } from "utils/constants"
 import { ReactElement, useState } from "react"
 import { ButtonTransparent } from "components/Button/Button"
@@ -22,21 +20,11 @@ import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const MyPositions = () => {
-  const { account } = useAccount()
   const { t } = useTranslation()
   const { pool } = usePoolData() as { pool: TPoolFullData }
 
-  const stablepoolBalance = useTokenBalance(
-    pool.isStablePool ? pool.id : undefined,
-    account?.address,
-  )
-
-  const stablepoolAmount = stablepoolBalance.data?.freeBalance ?? BN_0
-
-  const isPositions =
-    !!pool.miningPositions.length ||
-    !!pool.omnipoolPositions.length ||
-    stablepoolBalance.data?.freeBalance.gt(0)
+  const stablepoolAmount = pool.balance?.freeBalance ?? BN_0
+  const isPositions = pool.isPositions
 
   return (
     <>
@@ -60,7 +48,7 @@ export const MyPositions = () => {
 
 export const MyXYKPositions = () => {
   const { t } = useTranslation()
-  const pool = usePoolData().pool as TXYKPoolFullData
+  const pool = usePoolData().pool as TXYKPool
 
   if (
     !pool.shareTokenIssuance?.myPoolShare?.gt(0) &&
