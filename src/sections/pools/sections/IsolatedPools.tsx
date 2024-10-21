@@ -59,11 +59,12 @@ export const IsolatedPools = () => {
 const IsolatedPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
-  const { id } = useSearch<{
+  const searchQuery = useSearch<{
     Search: {
       id?: number
     }
   }>()
+  const { id } = searchQuery
 
   const xykPools = useXYKPools()
 

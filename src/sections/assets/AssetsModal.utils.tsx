@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAssets } from "providers/assets"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayPrices } from "utils/displayAsset"
 import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
-import { useAcountAssets } from "api/assetDetails"
+import { useAccountAssets } from "api/deposits"
+import { TBalance } from "api/balances"
 
 interface useAssetsModalProps {
   onSelect?: (asset: NonNullable<TAsset>) => void
@@ -72,8 +72,6 @@ export const useAssetsModal = ({
     isOpen,
   }
 }
-
-type TBalance = ReturnType<typeof useAcountAssets>[number]["balance"]
 
 type TAssetSelector = {
   meta: TAsset
@@ -151,8 +149,7 @@ export const useAssetsData = ({
     isBond,
     tokens: tokenAssets,
   } = useAssets()
-  const { account } = useAccount()
-  const accountAssets = useAcountAssets(account?.address)
+  const { data } = useAccountAssets()
 
   const {
     tokensWithBalance,
@@ -160,38 +157,48 @@ export const useAssetsData = ({
     tokensWithBalanceId,
     bondsWithBalanceId,
   } = useMemo(() => {
-    return accountAssets.reduce<{
-      tokensWithBalance: { balance: TBalance; asset: TAsset }[]
-      tokensWithBalanceId: string[]
-      bondsWithBalance: { balance: TBalance; asset: TAsset }[]
-      bondsWithBalanceId: string[]
-    }>(
-      (acc, item) => {
-        if (
-          item.asset.isToken ||
-          item.asset.isStableSwap ||
-          (withExternal ? item.asset.isExternal && !!item.asset.name : false)
-        ) {
-          acc.tokensWithBalance.push(item)
-          acc.tokensWithBalanceId.push(item.asset.id)
-        } else if (isBond(item.asset)) {
-          const meta = item.asset
-          acc.bondsWithBalance.push(item)
-          acc.bondsWithBalanceId.push(
-            !meta.isTradable ? meta.underlyingAssetId : meta.id,
-          )
-        }
+    const tokensWithBalance: { asset: TAsset; balance: TBalance }[] = []
+    const bondsWithBalance: { asset: TAsset; balance: TBalance }[] = []
+    const tokensWithBalanceId = []
+    const bondsWithBalanceId = []
 
-        return acc
-      },
-      {
-        tokensWithBalance: [],
-        tokensWithBalanceId: [],
-        bondsWithBalance: [],
-        bondsWithBalanceId: [],
-      },
-    )
-  }, [accountAssets, isBond, withExternal])
+    if (data?.accountAssetsMap) {
+      for (const [, accountAsset] of data.accountAssetsMap) {
+        if (accountAsset.balance) {
+          if (
+            accountAsset.asset.isToken ||
+            accountAsset.asset.isStableSwap ||
+            (withExternal
+              ? accountAsset.asset.isExternal && !!accountAsset.asset.name
+              : false)
+          ) {
+            tokensWithBalance.push({
+              asset: accountAsset.asset,
+              balance: accountAsset.balance,
+            })
+            tokensWithBalanceId.push(accountAsset.asset.id)
+          } else if (isBond(accountAsset.asset)) {
+            const meta = accountAsset.asset
+
+            bondsWithBalance.push({
+              asset: accountAsset.asset,
+              balance: accountAsset.balance,
+            })
+            bondsWithBalanceId.push(
+              !meta.isTradable ? meta.underlyingAssetId : meta.id,
+            )
+          }
+        }
+      }
+    }
+
+    return {
+      tokensWithBalance,
+      bondsWithBalance,
+      tokensWithBalanceId,
+      bondsWithBalanceId,
+    }
+  }, [data?.accountAssetsMap, isBond, withExternal])
 
   const spotPrices = useDisplayPrices([
     ...tokensWithBalanceId,

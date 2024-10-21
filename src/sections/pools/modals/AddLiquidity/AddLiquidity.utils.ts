@@ -3,7 +3,7 @@ import {
   calculate_shares,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
-import { useTokenBalance, useTokensBalances } from "api/balances"
+import { useTokenBalance } from "api/balances"
 import { useMaxAddLiquidityLimit } from "api/consts"
 import {
   useOmnipoolFee,
@@ -13,7 +13,6 @@ import {
 } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -29,6 +28,7 @@ import { useXYKConsts } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset, useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
@@ -95,8 +95,8 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
 
   const { data: omnipoolFee } = useOmnipoolFee()
 
-  const { account } = useAccount()
-  const { data: assetBalance } = useTokenBalance(assetId, account?.address)
+  const { data: accountAssets } = useAccountAssets()
+  const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   const poolShare = useMemo(() => {
     if (ommipoolAsset && assetValue) {
@@ -127,7 +127,6 @@ export const useAddToOmnipoolZod = (
   isStablepool?: boolean,
 ) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { pool } = usePoolData()
   const { hub } = useAssets()
 
@@ -135,7 +134,8 @@ export const useAddToOmnipoolZod = (
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
-  const { data: assetBalance } = useTokenBalance(assetId, account?.address)
+  const { data: accountAssets } = useAccountAssets()
+  const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
@@ -171,7 +171,6 @@ export const useAddToOmnipoolZod = (
   )
 
   if (
-    assetBalance === undefined ||
     minPoolLiquidity === undefined ||
     omnipoolAsset === undefined ||
     hubBalance === undefined ||
@@ -193,7 +192,9 @@ export const useAddToOmnipoolZod = (
   const rules = required
     .pipe(positive)
     .pipe(
-      isStablepool ? z.string() : maxBalance(assetBalance.balance, decimals),
+      isStablepool
+        ? z.string()
+        : maxBalance(assetBalance?.balance ?? BN_0, decimals),
     )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
@@ -308,10 +309,10 @@ export const useXYKZodSchema = (
   meta: TAsset,
   farms: Farm[],
 ) => {
-  const { account } = useAccount()
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { data: xykConsts } = useXYKConsts()
+  const accountAssets = useAccountAssets()
 
   const assetAId = assetAMeta.id
   const assetBId = assetBMeta.id
@@ -324,8 +325,10 @@ export const useXYKZodSchema = (
     .times(1.03) // 3%
     .decimalPlaces(0)
 
-  const [{ data: assetABalances }, { data: assetBBalances }] =
-    useTokensBalances([assetAId, assetBId], account?.address, true)
+  const assetABalances =
+    accountAssets.data?.accountAssetsMap.get(assetAId)?.balance
+  const assetBBalances =
+    accountAssets.data?.accountAssetsMap.get(assetBId)?.balance
 
   const balanceA = assetABalances?.balance ?? BN_0
   const balanceB = assetBBalances?.balance ?? BN_0

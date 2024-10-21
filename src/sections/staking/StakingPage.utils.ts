@@ -25,6 +25,7 @@ import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -97,7 +98,8 @@ export const useStakeData = () => {
   const { account } = useAccount()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
-  const balance = useTokenBalance(native.id, account?.address)
+  const accountAssets = useAccountAssets()
+
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
   const positionBalances = useStakingPositionBalances(
@@ -105,6 +107,7 @@ export const useStakeData = () => {
   )
   const referendas = useReferendums("finished")
 
+  const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -115,7 +118,7 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = balance.data?.freeBalance
+  const rawAvailableBalance = balance?.freeBalance
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
@@ -125,11 +128,11 @@ export const useStakeData = () => {
   const queries = [
     stake,
     circulatingSupply,
-    balance,
     locks,
     spotPrice,
     positionBalances,
     referendas,
+    accountAssets,
   ]
 
   const isLoading = queries.some((query) => query.isInitialLoading)

@@ -117,7 +117,7 @@ export async function requestNetworkSwitch(
 ) {
   if (!isEthereumProvider(provider)) return
 
-  const params = getAddEvmChainParams(options.chain ?? "hydradx")
+  const params = getAddEvmChainParams(options.chain ?? "hydration")
 
   try {
     await provider

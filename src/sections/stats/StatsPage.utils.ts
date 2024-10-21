@@ -11,13 +11,13 @@ import { useFee, useTVL } from "api/stats"
 import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
 
 const withoutRefresh = true
 
 export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   const { native, getAssetWithFallback } = useAssets()
-  const accountPositions = useAccountPositions(HYDRA_TREASURE_ACCOUNT)
+  const accountAssets = useAccountAssets(HYDRA_TREASURE_ACCOUNT)
   const omnipoolAssets = useOmnipoolDataObserver()
   const { getData } = useLiquidityPositionData()
   const displayAsset = useDisplayAssetStore()
@@ -35,10 +35,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     withoutRefresh,
   )
 
-  const queries = [omnipoolAssets, accountPositions, tvls, ...spotPrices]
+  const queries = [omnipoolAssets, accountAssets, tvls, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
-  const positions = accountPositions.data?.liquidityPositions
+  const positions = accountAssets.data?.liquidityPositions
 
   const data = useMemo(() => {
     if (

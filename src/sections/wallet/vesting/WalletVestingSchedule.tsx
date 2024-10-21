@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import { useExistentialDeposit, useTokenBalance } from "api/balances"
+import { useExistentialDeposit } from "api/balances"
 import { usePaymentInfo } from "api/transaction"
 import {
   useNextClaimableDate,
@@ -20,6 +20,7 @@ import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -28,13 +29,14 @@ export const WalletVestingSchedule = () => {
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
+  const accountAssets = useAccountAssets()
 
   const { data: nextClaimableDate } = useNextClaimableDate()
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
 
   const spotPrice = useDisplayPrice(native.id)
-  const balance = useTokenBalance(native.id, account?.address)
+  const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
 
   const claimableDisplay = useMemo(() => {
     if (claimableBalance && spotPrice.data) {
@@ -137,7 +139,7 @@ export const WalletVestingSchedule = () => {
             width: ["100%", "auto"],
           }}
         >
-          {balance.data && claimableBalance && (
+          {balance && claimableBalance && (
             <SClaimButton
               variant="gradient"
               transform="uppercase"

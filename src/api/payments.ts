@@ -12,7 +12,7 @@ import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAcountAssets } from "./assetDetails"
+import { useAccountAssets } from "./deposits"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 
@@ -127,7 +127,7 @@ export const useAccountFeePaymentAssets = () => {
   const { featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const accountAssets = useAcountAssets(account?.address)
+  const accountAssets = useAccountAssets()
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
@@ -140,7 +140,8 @@ export const useAccountFeePaymentAssets = () => {
       )
     }
 
-    const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
+    const assetIds =
+      accountAssets.data?.balances.map((balance) => balance.assetId) ?? []
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
   }, [
     account?.address,
@@ -161,12 +162,17 @@ export const useAccountFeePaymentAssets = () => {
     .map((acceptedFeeAsset) => acceptedFeeAsset?.id)
 
   const isLoading =
-    accountFeePaymentAsset.isLoading || acceptedFeePaymentAssets.isLoading
+    accountFeePaymentAsset.isLoading ||
+    acceptedFeePaymentAssets.isLoading ||
+    accountAssets.isLoading
   const isInitialLoading =
     accountFeePaymentAsset.isInitialLoading ||
-    acceptedFeePaymentAssets.isInitialLoading
+    acceptedFeePaymentAssets.isInitialLoading ||
+    accountAssets.isInitialLoading
   const isSuccess =
-    accountFeePaymentAsset.isSuccess && acceptedFeePaymentAssets.isSuccess
+    accountFeePaymentAsset.isSuccess &&
+    acceptedFeePaymentAssets.isSuccess &&
+    accountAssets.isSuccess
 
   return {
     acceptedFeePaymentAssetsIds,

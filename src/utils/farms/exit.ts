@@ -1,10 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { useAssets } from "providers/assets"
-import { TDeposit } from "api/deposits"
+import { TDeposit, useRefetchAccountAssets } from "api/deposits"
 
 export const useFarmExitAllMutation = (
   depositNfts: TDeposit[],
@@ -14,9 +12,8 @@ export const useFarmExitAllMutation = (
 ) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const { account } = useAccount()
   const { getAssetWithFallback, isShareToken } = useAssets()
-  const queryClient = useQueryClient()
+  const refetch = useRefetchAccountAssets()
 
   const meta = getAssetWithFallback(poolId)
   const isXYK = isShareToken(meta)
@@ -55,12 +52,7 @@ export const useFarmExitAllMutation = (
     },
     {
       onSuccess: () => {
-        queryClient.refetchQueries(
-          QUERY_KEYS.tokenBalance(meta.id, account?.address),
-        )
-        queryClient.refetchQueries(
-          QUERY_KEYS.accountPositions(account?.address),
-        )
+        refetch()
       },
     },
   )

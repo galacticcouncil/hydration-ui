@@ -16,32 +16,24 @@ import {
   domAnimation,
   m as motion,
 } from "framer-motion"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useTokensBalances } from "api/balances"
 import { pluck } from "utils/rx"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DOC_LINK } from "utils/constants"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
-  const { isLoaded } = useRpcProvider()
+
   const { bonds } = useAssets()
 
   const [expanded, setExpanded] = useState<boolean | undefined>(undefined)
 
-  const { account } = useAccount()
-
-  const balances = useTokensBalances(
-    isLoaded ? pluck("id", bonds) : [],
-    account?.address,
-    true,
+  const accountAssets = useAccountAssets()
+  const balances = pluck("id", bonds).map(
+    (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )
 
-  const hasBonds =
-    balances.length && balances.every((balance) => !balance.isInitialLoading)
-      ? balances.some((balance) => balance.data?.total.gt(0))
-      : undefined
+  const hasBonds = balances.some((balance) => balance?.total.gt(0))
 
   useEffect(() => {
     if (hasBonds !== undefined && expanded === undefined) {
@@ -51,7 +43,7 @@ export const WhyBonds = () => {
         setExpanded(false)
       }
     }
-  }, [hasBonds, account?.address, expanded])
+  }, [hasBonds, expanded])
 
   return (
     <SWhyBonds
