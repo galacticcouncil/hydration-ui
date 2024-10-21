@@ -70,7 +70,10 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
       ? []
       : pools
           .map((shareToken) => {
-            const { poolAddress } = shareToken
+            const { poolAddress } = shareToken ?? {}
+
+            if (!poolAddress) return undefined
+
             const poolBalance = poolBalances.data?.find(
               (poolBalance) => poolBalance.accountId === poolAddress,
             )
