@@ -9,7 +9,7 @@ import { Spinner } from "components/Spinner/Spinner"
 
 type Props = {
   onClose: () => void
-  txState: ExtrinsicStatus["type"] | null
+  txState?: ExtrinsicStatus["type"] | null
 }
 
 export const ReviewTransactionPending = ({ onClose, txState }: Props) => {

@@ -8,7 +8,6 @@ import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
 import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
-import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
@@ -28,13 +27,13 @@ export const ReviewTransaction = (props: Transaction) => {
     isSuccess,
     isError: isSendError,
     error: sendError,
-    data,
     txState,
     reset,
-    txLink,
-    txHash,
-    bridge,
-  } = useSendTx()
+  } = useSendTx({
+    toast: props.toast,
+    onSuccess: (data) => props.onSuccess?.(data),
+    onError: props.onError,
+  })
 
   if (!isLoaded) return null
 
@@ -54,32 +53,19 @@ export const ReviewTransaction = (props: Transaction) => {
             props.description ?? t("liquidity.reviewTransaction.modal.desc"),
         }
 
-  const handleTxOnClose = () => {
-    if (isLoading) {
-      setMinimizeModal(true)
-      return
-    }
-
-    if (isSuccess) {
-      props.onSuccess?.(data)
-    } else {
-      props.onError?.()
-    }
-  }
-
   const onClose = () => {
-    handleTxOnClose()
+    setMinimizeModal(true)
     props.onClose?.()
   }
 
   const onMinimizeModal = () => {
-    handleTxOnClose()
+    setMinimizeModal(true)
     if (!props.disableAutoClose) props.onClose?.()
   }
 
   const onBack = props.onBack
     ? () => {
-        handleTxOnClose()
+        setMinimizeModal(true)
         props.onBack?.()
       }
     : undefined
@@ -91,22 +77,6 @@ export const ReviewTransaction = (props: Transaction) => {
 
   return (
     <>
-      {minimizeModal && (
-        <ReviewTransactionToast
-          id={props.id}
-          isLoading={isLoading}
-          isSuccess={isSuccess}
-          isError={isError}
-          error={error}
-          link={txLink}
-          txHash={txHash}
-          onReview={onReview}
-          onClose={onMinimizeModal}
-          toastMessage={props.toastMessage}
-          bridge={bridge}
-        />
-      )}
-
       <Modal
         open={!minimizeModal}
         onBack={onBack}

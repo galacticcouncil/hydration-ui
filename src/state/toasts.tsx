@@ -27,6 +27,7 @@ type ToastParams = {
   bridge?: string
   txHash?: string
   hideTime?: number
+  hidden?: boolean
 }
 
 export type ToastData = ToastParams & {
@@ -183,7 +184,7 @@ export const useToast = () => {
             title,
             dateCreated,
             id,
-            hidden: store.sidebar,
+            hidden: toast.hidden ?? store.sidebar,
           } as ToastData,
           ...prevToasts,
         ]
@@ -198,7 +199,7 @@ export const useToast = () => {
             title,
             dateCreated,
             id,
-            hidden: store.sidebar,
+            hidden: toast.hidden ?? store.sidebar,
           } as ToastData,
         ]
       })
