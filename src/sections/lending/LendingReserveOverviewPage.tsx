@@ -14,6 +14,8 @@ import {
   SContent,
   SFilterContainer,
 } from "./LendingReserveOverviewPage.styled"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
 
 export type LendingReserveOverviewPageProps = {
   underlyingAsset: string
@@ -23,6 +25,10 @@ export const LendingReserveOverviewPage: React.FC<
   LendingReserveOverviewPageProps
 > = ({ underlyingAsset }) => {
   const { t } = useTranslation()
+
+  const { isBound, isLoading, account: evmAccount } = useEvmAccount()
+
+  const shouldRenderReserveActions = !evmAccount || (!!evmAccount && isBound)
 
   const { reserves } = useAppDataContext()
 
@@ -62,9 +68,13 @@ export const LendingReserveOverviewPage: React.FC<
         <SContainer active={mode === "overview"}>
           <ReserveConfiguration reserve={reserve} />
         </SContainer>
-        <SContainer active={mode === "actions"}>
-          <ReserveActions reserve={reserve} />
-        </SContainer>
+        {shouldRenderReserveActions ? (
+          <SContainer active={mode === "actions"}>
+            <ReserveActions reserve={reserve} />
+          </SContainer>
+        ) : !isLoading ? (
+          <MoneyMarketBanner />
+        ) : null}
       </SContent>
     </AssetCapsProvider>
   )

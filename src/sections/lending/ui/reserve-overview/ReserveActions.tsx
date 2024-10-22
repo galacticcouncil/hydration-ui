@@ -4,17 +4,17 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import BigNumber from "bignumber.js"
-import { ReactNode } from "react"
-import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
-import { theme } from "theme"
 import WalletIcon from "assets/icons/WalletIcon.svg?react"
+import BigNumber from "bignumber.js"
+import { Alert } from "components/Alert"
 import { Button } from "components/Button/Button"
 import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
+import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -41,7 +41,7 @@ import {
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { amountToUsd } from "sections/lending/utils/utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { Alert } from "components/Alert"
+import { theme } from "theme"
 
 export const getMarketInfoById = (marketId: CustomMarket) => {
   const market: MarketDataType = marketsData[marketId as CustomMarket]

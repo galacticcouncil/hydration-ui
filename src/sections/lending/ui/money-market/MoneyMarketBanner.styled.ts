@@ -4,6 +4,7 @@ import { theme } from "theme"
 import LinesSvg from "sections/lending/ui/hollar/hollar-banner/assets/lines.svg"
 
 export const SContainer = styled.div`
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -31,7 +32,7 @@ export const SInnerContainer = styled.div`
     rgba(110, 42, 255, 0) 100%
   );
 
-  @media ${theme.viewport.gte.sm} {
+  @container ${theme.viewport.gte.sm} {
     height: 89px;
   }
 
@@ -54,7 +55,7 @@ export const SInnerContainer = styled.div`
     transform: rotate(-15deg) scale(1.5) translateX(-20%);
     opacity: 0.5;
 
-    @media ${theme.viewport.gte.sm} {
+    @container ${theme.viewport.gte.sm} {
       background-size: auto;
       transform: none;
       opacity: 1;
@@ -71,11 +72,21 @@ export const SContent = styled.div`
   display: flex;
   flex-direction: column;
 
-  @media ${theme.viewport.gte.sm} {
+  button {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  @container ${theme.viewport.gte.sm} {
     padding-right: 34px;
 
     flex-direction: row;
     align-items: center;
+
+    button {
+      width: auto;
+      margin-top: 0;
+    }
   }
 `
 
@@ -87,7 +98,7 @@ export const SValuesContainer = styled.div`
 
   margin-top: 20px;
 
-  @media ${theme.viewport.gte.sm} {
+  @container ${theme.viewport.gte.sm} {
     gap: 60px;
 
     margin-left: auto;

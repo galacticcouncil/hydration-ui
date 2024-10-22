@@ -52,16 +52,12 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
     <SContainer className={className}>
       <SInnerContainer>
         <SContent>
-          <div sx={{ pr: [120, 0] }}>
+          <div>
             <Text font="GeistSemiBold" sx={{ mb: 4 }}>
               {t("lending.bind.banner.title")}
             </Text>
 
-            <Text
-              fs={12}
-              lh={16}
-              sx={{ maxWidth: ["100%", 600], opacity: 0.7 }}
-            >
+            <Text fs={12} lh={16} sx={{ opacity: 0.7 }}>
               <Trans t={t} i18nKey="lending.bind.banner.description" />
             </Text>
           </div>

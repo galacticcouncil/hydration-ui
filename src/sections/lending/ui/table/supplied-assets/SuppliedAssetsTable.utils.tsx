@@ -14,7 +14,7 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
@@ -172,10 +172,10 @@ export const useSuppliedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
 
-  const { account } = useAccount()
+  const { isBound } = useEvmAccount()
 
   const data = useMemo(() => {
-    if (!account) return []
+    if (!isBound) return []
     return (
       user?.userReservesData
         .filter((userReserve) => userReserve.underlyingBalance !== "0")
@@ -193,7 +193,7 @@ export const useSuppliedAssetsTableData = () => {
           },
         })) || []
     )
-  }, [account, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+  }, [isBound, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
 
   return {
     data,
