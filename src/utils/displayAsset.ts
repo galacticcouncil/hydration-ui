@@ -70,25 +70,28 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
       ? []
       : pools
           .map((shareToken) => {
-            const { poolAddress } = shareToken
+            const { poolAddress } = shareToken ?? {}
+
+            if (!poolAddress) return undefined
+
             const poolBalance = poolBalances.data?.find(
               (poolBalance) => poolBalance.accountId === poolAddress,
             )
 
             const assetA = poolBalance?.balances.find((balance) =>
-              shareToken.assets.some((asset) => asset.id === balance.id),
+              shareToken.assets.some((asset) => asset.id === balance.assetId),
             )
 
             if (!assetA) return undefined
 
             const assetABalance = assetA.freeBalance.shiftedBy(
-              -getAssetWithFallback(assetA.id.toString()).decimals,
+              -getAssetWithFallback(assetA.assetId).decimals,
             )
 
             const tvl = assetABalance.multipliedBy(2)
 
             return {
-              spotPriceId: assetA.id.toString(),
+              spotPriceId: assetA.assetId,
               tvl,
               shareTokenId: shareToken.id,
             }

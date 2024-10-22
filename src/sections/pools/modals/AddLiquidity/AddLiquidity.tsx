@@ -15,7 +15,7 @@ import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 import { isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
@@ -39,7 +39,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { page, direction, back, paginateTo } = useModalPagination()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
   const isEvm = isEvmAccount(account?.address)
 
   const [assetId, setAssetId] = useState<string>(pool.id)

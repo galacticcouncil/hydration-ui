@@ -55,7 +55,7 @@ export class PolkadotSigner implements Signer {
   // It might be used outside of the object context to sign messages.
   // ref: https://polkadot.js.org/docs/extension/cookbook#sign-a-message
   signRaw = async (raw: SignerPayloadRaw): Promise<SignerResult> => {
-    const chainId = POLKADOT_CAIP_ID_MAP["hydradx"]
+    const chainId = POLKADOT_CAIP_ID_MAP["hydration"]
     let request = {
       topic: this.session.topic,
       chainId,

@@ -1,5 +1,4 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
@@ -18,7 +17,7 @@ import {
 } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
@@ -28,6 +27,7 @@ import {
   useNextEvmPermitNonce,
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
+import { useAccountAssets } from "api/deposits"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -102,11 +102,19 @@ export const useTransactionValues = ({
     : undefined
 
   const spotPrice = useSpotPrice(native.id, accountFeePaymentId)
-  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
+  const accountAssets = useAccountAssets()
+  const feeAssetBalance = accountFeePaymentId
+    ? accountAssets.data?.accountAssetsMap.get(accountFeePaymentId)?.balance
+    : undefined
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
-  const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+  const srcChain = xcallMeta?.srcChain || HYDRATION_CHAIN_KEY
+
+  const shouldUsePermit =
+    isEvm &&
+    srcChain === HYDRATION_CHAIN_KEY &&
+    feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
   const { data: pendingPermit } = usePendingDispatchPermit(account?.address)
 
   const nonce = useNextNonce(account?.address)
@@ -140,7 +148,7 @@ export const useTransactionValues = ({
   if (
     !feePaymentMeta ||
     !paymentFeeHDX ||
-    !feeAssetBalance.data ||
+    !feeAssetBalance ||
     !accountFeePaymentId
   )
     return {
@@ -197,16 +205,16 @@ export const useTransactionValues = ({
   }
 
   let isEnoughPaymentBalance
-  if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
+  if (srcChain === "bifrost") {
     // @TODO remove when fixed in xcm app
     isEnoughPaymentBalance = true
-  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+  } else if (xcallMeta && srcChain !== HYDRATION_CHAIN_KEY) {
     const feeBalanceDiff =
       parseFloat(xcallMeta.srcChainFeeBalance) -
       parseFloat(xcallMeta.srcChainFee)
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
-    isEnoughPaymentBalance = feeAssetBalance.data.balance
+    isEnoughPaymentBalance = feeAssetBalance.balance
       .shiftedBy(-feePaymentMeta.decimals)
       .minus(displayFeePaymentValue ?? 0)
       .minus(displayFeeExtra ?? 0)

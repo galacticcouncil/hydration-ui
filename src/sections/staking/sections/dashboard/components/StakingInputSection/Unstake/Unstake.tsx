@@ -16,6 +16,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { usePositionVotesIds, useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
+import { useRefetchAccountAssets } from "api/deposits"
 
 export const Unstake = ({
   loading,
@@ -31,6 +32,7 @@ export const Unstake = ({
   const queryClient = useQueryClient()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const refetchAccountAssets = useRefetchAccountAssets()
 
   const { account } = useAccount()
   const form = useForm<{ amount: string }>({
@@ -81,9 +83,7 @@ export const Unstake = ({
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
-    await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(native.id, account?.address),
-    )
+    refetchAccountAssets()
 
     if (!transaction.isError) {
       form.reset({ amount: "0" })

@@ -1,9 +1,8 @@
 import { u32 } from "@polkadot/types"
-import { useTokenBalance } from "api/balances"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
+import { useAccountAssets } from "api/deposits"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -26,8 +25,10 @@ export const WalletTransferAssetSelect = (props: {
   error?: string
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
-  const balance = useTokenBalance(props.asset, account?.address)
+  const accountAssets = useAccountAssets()
+  const balance = accountAssets.data?.accountAssetsMap.get(
+    props.asset.toString(),
+  )?.balance
 
   return (
     <AssetSelect
@@ -38,7 +39,7 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       id={props.asset.toString()}
-      balance={props.balance ?? balance.data?.balance}
+      balance={props.balance ?? balance?.balance}
       balanceMax={props.balanceMax}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
