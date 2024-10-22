@@ -15,7 +15,11 @@ export const CollateralChangeModal = () => {
   }>
   return (
     <BasicModal open={type === ModalType.CollateralChange} setOpen={close}>
-      <ModalWrapper title="Review tx" underlyingAsset={args.underlyingAsset}>
+      <ModalWrapper
+        title="Update collateral"
+        hideTitleSymbol
+        underlyingAsset={args.underlyingAsset}
+      >
         {(params) => <CollateralChangeModalContent {...params} />}
       </ModalWrapper>
     </BasicModal>

@@ -6,7 +6,7 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { useWeb3React } from "@web3-react/core"
-import { BigNumber, PopulatedTransaction, providers } from "ethers"
+import { PopulatedTransaction, providers } from "ethers"
 import React, {
   ReactElement,
   useCallback,
@@ -19,20 +19,18 @@ import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfi
 import { hexToAscii } from "sections/lending/utils/utils"
 
 // import { isLedgerDappBrowserProvider } from 'web3-ledgerhq-frame-connector';
+import { useQueryClient } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
+import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import {
   useEnableWallet,
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
-import { isMetaMask } from "utils/metamask"
-import { useAccountFeePaymentAssets } from "api/payments"
-import { NATIVE_EVM_ASSET_ID } from "utils/evm"
-import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
+import { isEvmWalletExtension } from "utils/evm"
 
 export type ERC20TokenType = {
   address: string
@@ -68,12 +66,12 @@ export type Web3Data = {
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const evmAccount = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
-  const { error, setError } = useWeb3React<providers.Web3Provider>()
+  const { error } = useWeb3React<providers.Web3Provider>()
   const queryClient = useQueryClient()
 
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
@@ -86,15 +84,15 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const extension = wallet?.extension
 
   const provider = useMemo(() => {
-    if (isMetaMask(extension)) {
+    if (isEvmWalletExtension(extension)) {
       return new Web3Provider(extension)
     }
   }, [extension])
 
   const [loading, setLoading] = useState(false)
-  const [readOnlyMode, setReadOnlyMode] = useState(false)
+  const [readOnlyMode] = useState(false)
   const [switchNetworkError, setSwitchNetworkError] = useState<Error>()
-  const [setAccount, currentChainId] = useRootStore((store) => [
+  const [setAccount] = useRootStore((store) => [
     store.setAccount,
     store.currentChainId,
   ])
