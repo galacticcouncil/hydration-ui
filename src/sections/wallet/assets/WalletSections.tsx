@@ -86,6 +86,7 @@ export const AllAssets = () => {
           data={bonds}
           allAssets={isAllAssets}
           setAllAssets={setAllAssets}
+          showTransfer
         />
       ) : null}
       {positionsTable.isInitialLoading || xykPositions.isLoading ? (

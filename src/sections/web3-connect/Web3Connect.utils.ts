@@ -531,7 +531,7 @@ export function getWalletModeIcon(mode: WalletMode) {
   try {
     if (mode === WalletMode.EVM) {
       const chain = chainsMap.get("ethereum") as EvmChain
-      const asset = chain.getAsset("weth")!
+      const asset = chain.getAsset("eth")!
       const address = chain.getAssetId(asset)
       return MetadataStore.getInstance().asset(
         "ethereum",
