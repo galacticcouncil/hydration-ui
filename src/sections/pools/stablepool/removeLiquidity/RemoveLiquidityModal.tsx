@@ -13,10 +13,9 @@ import { Button } from "components/Button/Button"
 import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
-import { useTokenBalance } from "api/balances"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
+import { useRefetchAccountAssets } from "api/deposits"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -41,15 +40,14 @@ export const RemoveLiquidityModal = ({
   pool,
   position,
 }: RemoveStableSwapAssetProps) => {
-  const id = pool.id
   const stableSwapMeta = pool.meta
   const assets = Object.keys(stableSwapMeta.meta ?? {})
+  const refetch = useRefetchAccountAssets()
 
   const isRemovingOmnipoolPosition = !!position
 
-  const { account } = useAccount()
-  const stablepoolPosition = useTokenBalance(id, account?.address)
-  const stablepoolPositionAmount = stablepoolPosition?.data?.freeBalance ?? BN_0
+  const stablepoolPosition = pool.balance
+  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? BN_0
 
   const { t } = useTranslation()
   const { page, direction, paginateTo } = useModalPagination(
@@ -172,7 +170,7 @@ export const RemoveLiquidityModal = ({
                 }}
                 onSuccess={() => {
                   if (selectedOption === "STABLE") {
-                    stablepoolPosition.refetch()
+                    refetch()
                     paginateTo(
                       RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
                     )
@@ -222,7 +220,7 @@ export const RemoveLiquidityModal = ({
                 }}
                 onSuccess={() => {
                   onSuccess()
-                  stablepoolPosition.refetch()
+                  refetch()
                 }}
                 onAssetOpen={() =>
                   paginateTo(RemoveStablepoolLiquidityPage.ASSETS)

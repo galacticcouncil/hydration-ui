@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { Farm } from "api/farms"
 import { Trans } from "react-i18next"
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
@@ -11,9 +10,8 @@ import { t } from "i18next"
 import BN from "bignumber.js"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { scaleHuman } from "utils/balance"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { TShareToken, useAssets } from "providers/assets"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 
 type XYKInput = { shares: string; depositId?: string }
 type OmnipoolInput = { positionId: string; value: string; depositId?: string }
@@ -99,9 +97,8 @@ type TArgs = {
 export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
   const { api } = useRpcProvider()
   const { account } = useAccount()
-  const queryClient = useQueryClient()
   const isEvm = isEvmAccount(account?.address)
-  const refetch = useRefetchAccountPositions()
+  const refetchAccountAssets = useRefetchAccountAssets()
   const { getAsset } = useAssets()
 
   const { createTransaction } = useStore()
@@ -159,12 +156,7 @@ export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
           toast,
           ...redeposit,
           onSuccess: (result) => {
-            if (isXyk)
-              queryClient.refetchQueries(
-                QUERY_KEYS.tokenBalance(poolId, account?.address),
-              )
-
-            refetch()
+            refetchAccountAssets()
 
             redeposit?.onSuccess?.(result)
           },
@@ -200,12 +192,7 @@ export const useJoinFarms = ({ farms, deposit, redeposit, poolId }: TArgs) => {
           toast,
           ...deposit,
           onSuccess: async (result) => {
-            if (isXyk)
-              queryClient.refetchQueries(
-                QUERY_KEYS.tokenBalance(poolId, account?.address),
-              )
-
-            refetch()
+            refetchAccountAssets()
             deposit?.onSuccess?.(result)
 
             if (isRestFarms) {

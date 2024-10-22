@@ -9,14 +9,14 @@ import { HeaderSeparator } from "sections/pools/header/PoolsHeader"
 import { theme } from "theme"
 import { STriggerButton } from "./ClaimAllDrowpdown.styled"
 import { ClaimAllContent } from "./ClaimAllContent"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { xykDeposits = [], omnipoolDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
 
   if (!xykDeposits.length && !omnipoolDeposits.length) {
     return null
