@@ -145,7 +145,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             })
           }
 
-          const evmTx = await wallet.signer.sendDispatch(txData)
+          const evmTx = await wallet.signer.sendDispatch(
+            txData,
+            props.xcallMeta?.srcChain,
+          )
           return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
         }
 

@@ -72,11 +72,12 @@ export class EthereumSigner {
     }
   }
 
-  sendDispatch = async (data: string) => {
+  sendDispatch = async (data: string, chain?: string) => {
     return this.sendTransaction({
       to: DISPATCH_ADDRESS,
       data,
       from: this.address,
+      chain,
     })
   }
 
