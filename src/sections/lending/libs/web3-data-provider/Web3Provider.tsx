@@ -30,6 +30,9 @@ import { useStore } from "state/store"
 import { isMetaMask } from "utils/metamask"
 import { useAccountFeePaymentAssets } from "api/payments"
 import { NATIVE_EVM_ASSET_ID } from "utils/evm"
+import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
+import { useQueryClient } from "@tanstack/react-query"
+import { queryKeysFactory } from "sections/lending/ui-config/queries"
 
 export type ERC20TokenType = {
   address: string
@@ -71,6 +74,10 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
   const { error, setError } = useWeb3React<providers.Web3Provider>()
+  const queryClient = useQueryClient()
+
+  const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
+    useBackgroundDataProvider()
 
   const account = evmAccount?.account?.address || ""
   const chainId = evmAccount?.account?.chainId || null
@@ -94,9 +101,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const setAccountLoading = useRootStore((store) => store.setAccountLoading)
   const setWalletType = useRootStore((store) => store.setWalletType)
 
-  const { feePaymentAssetId } = useAccountFeePaymentAssets()
-  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
-
   const disconnectWallet = useCallback(async () => {
     deactivate()
     setWalletType(undefined)
@@ -118,22 +122,42 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           null,
           [],
         )
-        createTransaction({
-          tx,
+        createTransaction(
+          {
+            tx,
+            evmTx: {
+              data: txData,
+              abi,
+            },
+          },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+              refetchPoolData && refetchPoolData()
+              refetchIncentiveData && refetchIncentiveData()
+              refetchGhoData && refetchGhoData()
+            },
+          },
+        )
+        return {} as TransactionResponse
+      }
+
+      createTransaction(
+        {
           evmTx: {
             data: txData,
             abi,
           },
-        })
-        return {} as TransactionResponse
-      }
-
-      createTransaction({
-        evmTx: {
-          data: txData,
-          abi,
         },
-      })
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+            refetchPoolData && refetchPoolData()
+            refetchIncentiveData && refetchIncentiveData()
+            refetchGhoData && refetchGhoData()
+          },
+        },
+      )
 
       return {} as TransactionResponse
 
@@ -144,7 +168,15 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
       })
       return txResponse */
     },
-    [api, createTransaction, provider],
+    [
+      api,
+      createTransaction,
+      provider,
+      queryClient,
+      refetchGhoData,
+      refetchIncentiveData,
+      refetchPoolData,
+    ],
   )
 
   // TODO: recheck that it works on all wallets

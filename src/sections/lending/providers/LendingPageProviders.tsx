@@ -73,11 +73,11 @@ export const LendingPageProviders = ({
 }) => {
   return (
     <Web3ReactProvider getLibrary={getWeb3Library}>
-      <Web3ContextProvider>
-        <AppGlobalStyles>
-          <PermissionProvider>
-            <ModalContextProvider>
-              <BackgroundDataProvider>
+      <BackgroundDataProvider>
+        <Web3ContextProvider>
+          <AppGlobalStyles>
+            <PermissionProvider>
+              <ModalContextProvider>
                 <AppDataProvider>
                   <GasStationProvider>
                     <SharedDependenciesProvider>
@@ -96,11 +96,11 @@ export const LendingPageProviders = ({
                     </SharedDependenciesProvider>
                   </GasStationProvider>
                 </AppDataProvider>
-              </BackgroundDataProvider>
-            </ModalContextProvider>
-          </PermissionProvider>
-        </AppGlobalStyles>
-      </Web3ContextProvider>
+              </ModalContextProvider>
+            </PermissionProvider>
+          </AppGlobalStyles>
+        </Web3ContextProvider>
+      </BackgroundDataProvider>
     </Web3ReactProvider>
   )
 }

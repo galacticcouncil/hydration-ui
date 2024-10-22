@@ -7,18 +7,11 @@ import {
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useWalletBalances } from "sections/lending/hooks/app-data-provider/useWalletBalances"
 import { AssetCapsProvider } from "sections/lending/hooks/useAssetCaps"
-import { useIsWrongNetwork } from "sections/lending/hooks/useIsWrongNetwork"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { usePermissions } from "sections/lending/hooks/usePermissions"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { useRootStore } from "sections/lending/store/root"
-import {
-  getNetworkConfig,
-  isFeatureEnabled,
-} from "sections/lending/utils/marketsAndNetworksConfig"
-
+import { isFeatureEnabled } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { TxErrorView } from "./Error"
 
 export interface ModalWrapperProps {
@@ -51,7 +44,6 @@ export const ModalWrapper: React.FC<{
   requiredPermission,
   keepWrappedSymbol,
 }) => {
-  const { readOnlyModeAddress } = useWeb3Context()
   const currentMarketData = useRootStore((store) => store.currentMarketData)
   const currentNetworkConfig = useRootStore(
     (store) => store.currentNetworkConfig,
@@ -61,8 +53,8 @@ export const ModalWrapper: React.FC<{
   const { txError, mainTxState, close } = useModalContext()
   const { permissions } = usePermissions()
 
-  const { isWrongNetwork, requiredChainId } =
-    useIsWrongNetwork(_requiredChainId)
+  /* const { isWrongNetwork, requiredChainId } =
+    useIsWrongNetwork(_requiredChainId) */
 
   if (txError && txError.blocking) {
     return <TxErrorView txError={txError} />
@@ -107,15 +99,8 @@ export const ModalWrapper: React.FC<{
             title: fullModalTitle,
             content: (
               <>
-                {isWrongNetwork && !readOnlyModeAddress && (
-                  <ChangeNetworkWarning
-                    networkName={getNetworkConfig(requiredChainId).name}
-                    chainId={requiredChainId}
-                    sx={{ mb: 20 }}
-                  />
-                )}
                 {children({
-                  isWrongNetwork,
+                  isWrongNetwork: false,
                   nativeBalance:
                     walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]
                       ?.amount || "0",
