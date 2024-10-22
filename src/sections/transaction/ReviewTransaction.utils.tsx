@@ -396,7 +396,7 @@ export const useSendDispatchPermit = (
     ? chainsMap.get(xcallMeta.dstChain)
     : undefined
 
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
 
   const txLink =
     txHash && srcChain
@@ -450,7 +450,7 @@ export const useSendTransactionMutation = (
           }
 
           const externalChain =
-            xcallMeta?.srcChain && xcallMeta.srcChain !== "hydradx"
+            xcallMeta?.srcChain && xcallMeta.srcChain !== "hydration"
               ? chainsMap.get(xcallMeta?.srcChain)
               : null
 
@@ -481,7 +481,7 @@ export const useSendTransactionMutation = (
     ? chainsMap.get(xcallMeta.dstChain)
     : undefined
 
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
 
   const txLink =
     txHash && srcChain

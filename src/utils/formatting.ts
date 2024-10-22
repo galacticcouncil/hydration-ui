@@ -384,7 +384,7 @@ const SUBSCAN_PATHS = {
 export function createSubscanLink(
   path: keyof typeof SUBSCAN_PATHS,
   data: BigNumber | number | string,
-  chainKey: string = "hydradx",
+  chainKey: string = "hydration",
 ) {
   const chain = chainsMap.get(chainKey)
 

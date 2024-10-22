@@ -20,7 +20,7 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
 import { H160, isEvmAccount } from "utils/evm"
@@ -145,7 +145,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             })
           }
 
-          const evmTx = await wallet.signer.sendDispatch(txData)
+          const evmTx = await wallet.signer.sendDispatch(
+            txData,
+            props.xcallMeta?.srcChain,
+          )
           return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
         }
 
@@ -154,7 +157,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           : null
 
         const isH160SrcChain =
-          !!srcChain && isAnyParachain(srcChain) && srcChain.h160AccOnly
+          !!srcChain && isAnyParachain(srcChain) && srcChain.usesH160Acc
 
         const formattedAddress = isH160SrcChain
           ? H160.fromAccount(address)
@@ -186,7 +189,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isLoading =
     transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
   const hasMultipleFeeAssets =
-    props.xcallMeta && props.xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY
+    props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
@@ -219,7 +222,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isEvm = isEvmAccount(account?.address)
 
   const isTippingEnabled = props.xcallMeta
-    ? props.xcallMeta?.srcChain === "hydradx" && !isEvm
+    ? props.xcallMeta?.srcChain === "hydration" && !isEvm
     : !isEvm
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true

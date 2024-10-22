@@ -12,7 +12,7 @@ import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 
-const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
+const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
 export const NATIVE_EVM_ASSET_DECIMALS = nativeEvmChain.client.chainDecimals
@@ -69,7 +69,7 @@ export class H160 {
 export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
-  chainKey = "hydradx",
+  chainKey = "hydration",
   isTestnet = false,
 ) {
   const chain = chainsMap.get(chainKey)
@@ -86,7 +86,7 @@ export function getEvmTxLink(
 
   if (chain.isEvmParachain()) {
     let explorerUrl = ""
-    if (isTestnet && chainKey === "hydradx") {
+    if (isTestnet && chainKey === "hydration") {
       explorerUrl = "https://explorer.nice.hydration.cloud"
     } else {
       const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
