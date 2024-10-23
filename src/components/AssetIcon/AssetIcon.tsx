@@ -6,7 +6,7 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { assetPlaceholderCss } from "./AssetIcon.styled"
+import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useExternalAssetsWhiteList } from "api/external"
@@ -70,6 +70,19 @@ export const MultipleAssetLogo = ({
   )
 }
 
+const A_TOKENS_MAP: { [key: string]: string } = {
+  // aDOT
+  "1000037": "5",
+  // aUSDT
+  "1000039": "10",
+  // aUSDC
+  "1000038": "21",
+  // aWETH
+  "1000041": "20",
+  // aWBTC
+  "1000040": "3",
+}
+
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
@@ -77,41 +90,52 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
-    const assetDetails = id ? getAsset(id) : undefined
+    const aTokenId = id ? A_TOKENS_MAP[id] : undefined
+    const assetId = aTokenId ?? id
+    const assetDetails = assetId ? getAsset(assetId) : undefined
     const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
+
+    if (aTokenId) {
+      delete assetDetails?.parachainId
+    }
 
     return {
       details: assetDetails,
       badgeVariant: badge,
+      aTokenId: id ? A_TOKENS_MAP[id] : undefined,
     }
   }, [getAsset, getIsWhiteListed, id])
 
-  const { details, badgeVariant } = asset
+  const { details, badgeVariant, aTokenId } = asset
 
-  if (details)
+  if (details) {
+    const Wrapper = aTokenId ? SATokenWrapper : React.Fragment
     return (
-      <UigcAssetId
-        css={{ "& uigc-logo-chain": { display: "none" } }}
-        ref={(el) => {
-          el &&
-            details.parachainId &&
-            el.setAttribute("chainOrigin", details.parachainId)
-          el && el.setAttribute("fit", "")
-        }}
-        ecosystem="polkadot"
-        asset={id}
-        chain={HYDRADX_PARACHAIN_ID.toString()}
-        chainOrigin={details.parachainId}
-      >
-        {badgeVariant && (
-          <UigcAssetBadge
-            slot="badge"
-            variant={badgeVariant}
-            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
-          />
-        )}
-      </UigcAssetId>
+      <Wrapper>
+        <UigcAssetId
+          css={{ "& uigc-logo-chain": { display: "none" } }}
+          ref={(el) => {
+            el &&
+              details.parachainId &&
+              el.setAttribute("chainOrigin", details.parachainId)
+            el && el.setAttribute("fit", "")
+          }}
+          ecosystem="polkadot"
+          asset={details.id}
+          chain={HYDRADX_PARACHAIN_ID.toString()}
+          chainOrigin={details.parachainId}
+        >
+          {badgeVariant && (
+            <UigcAssetBadge
+              slot="badge"
+              variant={badgeVariant}
+              text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+            />
+          )}
+        </UigcAssetId>
+      </Wrapper>
     )
+  }
 
   return (
     <UigcAssetPlaceholder
