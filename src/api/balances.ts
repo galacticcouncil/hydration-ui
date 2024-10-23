@@ -35,7 +35,7 @@ export const parseBalanceData = (
   }
 }
 
-const createTokenBalanceFetcher =
+export const createTokenBalanceFetcher =
   (api: ApiPromise) =>
   async (account: AccountId32 | string, id: string | u32) => {
     const params = api.createType("(AssetId, AccountId)", [id, account])
