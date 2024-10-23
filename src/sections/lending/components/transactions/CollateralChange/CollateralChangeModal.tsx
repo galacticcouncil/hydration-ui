@@ -16,7 +16,7 @@ export const CollateralChangeModal = () => {
   return (
     <BasicModal open={type === ModalType.CollateralChange} setOpen={close}>
       <ModalWrapper
-        title="Update collateral"
+        title="Change collateral"
         hideTitleSymbol
         underlyingAsset={args.underlyingAsset}
       >

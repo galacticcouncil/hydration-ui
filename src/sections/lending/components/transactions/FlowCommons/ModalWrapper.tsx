@@ -87,7 +87,8 @@ export const ModalWrapper: React.FC<{
       : poolReserve?.symbol
 
   const modalTitle = !mainTxState.success ? title : ""
-  const fullModalTitle = `${modalTitle}${hideTitleSymbol ? "" : ` ${symbol}`}`
+  const fullModalTitle =
+    `${modalTitle}${hideTitleSymbol ? "" : ` ${symbol}`}`.toUpperCase()
 
   return (
     <AssetCapsProvider asset={poolReserve}>

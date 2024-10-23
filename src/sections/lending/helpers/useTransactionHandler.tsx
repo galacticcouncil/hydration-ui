@@ -460,8 +460,13 @@ export const useTransactionHandler = ({
               try {
                 for (const tx of txs) {
                   if (protocolAction) {
-                    gasLimit =
-                      +gasLimitRecommendations[protocolAction]?.limit || 1000000
+                    if (protocolAction === "setUsageAsCollateral") {
+                      gasLimit = 500000
+                    } else {
+                      gasLimit =
+                        +gasLimitRecommendations[protocolAction]?.limit ||
+                        1000000
+                    }
                   } else {
                     const txGas = await tx.gas()
                     // If permit is available, use regular action for estimation but exclude the approval tx
