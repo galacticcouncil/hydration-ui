@@ -139,16 +139,8 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          py: [0, 10],
-        }}
-      >
-        <JoinedFarms depositNft={depositNft} />
-      </div>
+      <JoinedFarms depositNft={depositNft} />
+
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
       <div

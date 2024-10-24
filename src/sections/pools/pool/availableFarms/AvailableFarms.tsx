@@ -59,7 +59,7 @@ export const AvailableFarms = () => {
       </div>
       {selectedFarm && (
         <Modal
-          open={true}
+          open
           onClose={() => setSelectedFarm(null)}
           title={t("farms.modal.details.title")}
         >

@@ -140,7 +140,7 @@ export const usePools = () => {
         canRemoveLiquidity: tradability.canRemoveLiquidity,
         volume,
         isVolumeLoading: volumes?.isLoading,
-        farms,
+        farms: !totalApr || totalApr === "0" ? [] : farms,
         fee,
         totalFee,
         isFeeLoading,
@@ -338,7 +338,7 @@ export const useXYKPools = () => {
           balance,
           isPositions,
           totalFee,
-          farms,
+          farms: !totalApr || totalApr === "0" ? [] : farms,
           isFeeLoading,
         }
       })
