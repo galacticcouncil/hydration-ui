@@ -1,57 +1,47 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { useFarmAprs, useFarms } from "api/farms"
+import { useFarmCurrentPeriod } from "api/farms"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { isNotNil } from "utils/helpers"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
+import BN from "bignumber.js"
 
 type JoinedFarmsProps = { depositNft: TDeposit }
 
 export const JoinedFarms = ({ depositNft }: JoinedFarmsProps) => {
   const { t } = useTranslation()
   const {
-    pool: { id: poolId },
+    pool: { farms },
   } = usePoolData()
-  const farms = useFarms([poolId])
 
-  const joinedFarms =
-    farms.data?.filter((farm) => {
-      return depositNft.data.yieldFarmEntries.some(
-        (entry) =>
-          entry.globalFarmId.eq(farm.globalFarm.id) &&
-          entry.yieldFarmId.eq(farm.yieldFarm.id) &&
-          entry.yieldFarmId.toString() === farm.yieldFarm.id.toString(),
-      )
-    }) ?? []
-
-  const farmAprs = useFarmAprs(joinedFarms)
+  const { getCurrentPeriod } = useFarmCurrentPeriod()
 
   const joinedFarmsAprs =
-    farmAprs.data
-      ?.map((farmApr) => {
+    farms
+      ?.map((farm) => {
         const joinedYieldFarm = depositNft.data.yieldFarmEntries.find(
-          (nft) => nft.yieldFarmId.toString() === farmApr.yieldFarmId,
+          (nft) => nft.yieldFarmId.toString() === farm.yieldFarmId,
         )
 
         if (!joinedYieldFarm) return null
 
-        const currentPeriodInFarm = farmApr.currentPeriod.minus(
-          joinedYieldFarm.enteredAt.toBigNumber(),
-        )
+        const currentPeriod = getCurrentPeriod(farm.blocksPerPeriod)
 
-        const currentApr = farmApr.loyaltyCurve
-          ? farmApr.apr.times(
-              getCurrentLoyaltyFactor(
-                farmApr.loyaltyCurve,
-                currentPeriodInFarm,
-              ),
-            )
-          : farmApr.apr
+        const currentPeriodInFarm = currentPeriod
+          ? BN(currentPeriod).minus(joinedYieldFarm.enteredAt.toBigNumber())
+          : undefined
 
-        return { currentApr, assetId: farmApr.assetId.toString() }
+        const currentApr =
+          farm.loyaltyCurve && currentPeriodInFarm
+            ? BN(farm.apr).times(
+                getCurrentLoyaltyFactor(farm.loyaltyCurve, currentPeriodInFarm),
+              )
+            : BN(farm.apr)
+
+        return { currentApr, assetId: farm.rewardCurrency }
       })
       .filter(isNotNil) ?? []
 

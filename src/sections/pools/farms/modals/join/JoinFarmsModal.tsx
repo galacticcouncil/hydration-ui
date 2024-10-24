@@ -1,4 +1,4 @@
-import { Farm } from "api/farms"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import {
@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next"
 import { TJoinFarmsInput, useJoinFarms } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
-import { useBestNumber } from "api/chain"
 import { TLPData } from "utils/omnipool"
 import { JoinFarmsForm } from "./JoinFarmsForm"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
@@ -21,7 +20,6 @@ import { TDeposit } from "api/deposits"
 type JoinFarmModalProps = {
   onClose: () => void
   position?: TLPData
-  farms: Farm[]
   depositNft?: TDeposit
 }
 
@@ -34,17 +32,16 @@ export enum Page {
 export const JoinFarmModal = ({
   onClose,
   position,
-  farms,
   depositNft,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const {
-    pool: { meta, id: poolId },
+    pool: { meta, id: poolId, farms },
   } = usePoolData()
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
+  const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
   const [currentStep, setCurrentStep] = useState(0)
 
-  const bestNumber = useBestNumber()
+  const { getCurrentPeriod } = useFarmCurrentPeriod()
   const { page, direction, paginateTo } = useModalPagination()
 
   const isMultipleFarms = farms.length > 1
@@ -73,12 +70,6 @@ export const JoinFarmModal = ({
     paginateTo(Page.JOIN_FARM)
     setSelectedFarm(null)
   }
-
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
-    .toBigNumber()
-    .dividedToIntegerBy(
-      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
-    )
 
   const steps = [
     {
@@ -158,7 +149,9 @@ export const JoinFarmModal = ({
             content: selectedFarm && (
               <FarmDetailsModal
                 farm={selectedFarm}
-                currentBlock={currentBlock?.toNumber()}
+                currentBlock={getCurrentPeriod(
+                  selectedFarm?.blocksPerPeriod.toString(),
+                )?.toNumber()}
               />
             ),
           },

@@ -5,17 +5,18 @@ import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import {
   isXYKDeposit,
   TDepositData,
 } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
 import { TDeposit } from "api/deposits"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 type RedepositFarmsProps = {
   depositNft: TDeposit
-  availableYieldFarms: Farm[]
+  availableYieldFarms: TFarmAprData[]
   depositData: TDepositData
 }
 
@@ -27,6 +28,9 @@ export const RedepositFarms = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
+  const {
+    pool: { totalFee },
+  } = usePoolData()
 
   if (!availableYieldFarms.length) return null
 
@@ -41,6 +45,7 @@ export const RedepositFarms = ({
           farms={availableYieldFarms}
           fontSize={16}
           iconSize={24}
+          totalFee={totalFee}
           css={{ flexDirection: "row-reverse" }}
         />
       </div>

@@ -387,6 +387,7 @@ export const useAccountAssets = (givenAddress?: string) => {
             accountStableswapMap,
             isAnyPoolPositions,
             balances: allBalances,
+            accountAddress: address,
           }
         }
       : undefinedNoop,

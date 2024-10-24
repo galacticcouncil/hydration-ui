@@ -21,7 +21,7 @@ import {
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEstimatedFees } from "api/transaction"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert } from "components/Alert/Alert"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
@@ -39,7 +39,7 @@ type Props = {
   onAssetOpen?: () => void
   onSubmitted?: () => void
   onSuccess: (result: ISubmittableResult, value: string) => void
-  farms: Farm[]
+  farms: TFarmAprData[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
@@ -227,12 +227,7 @@ export const AddLiquidityForm = ({
             {isJoinFarms && (
               <div sx={{ flex: "column", gap: 8, mt: 8 }}>
                 {farms.map((farm) => {
-                  return (
-                    <FarmDetailsRow
-                      key={farm.globalFarm.id.toString()}
-                      farm={farm}
-                    />
-                  )
+                  return <FarmDetailsRow key={farm.globalFarmId} farm={farm} />
                 })}
               </div>
             )}

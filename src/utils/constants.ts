@@ -51,3 +51,5 @@ export const DOC_LINK = "https://docs.hydration.net"
 export const HYDRATION_PARACHAIN_ID = 2034
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
+
+export const HOUR_STALE_TIME = 1000 * 60 * 60 * 1
