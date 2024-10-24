@@ -60,7 +60,6 @@ export const RedepositFarms = ({
       </SJoinButton>
       {joinFarm && (
         <JoinFarmModal
-          farms={availableYieldFarms}
           position={
             !isXYKDeposit(depositData)
               ? omit(["depositId"], depositData)
