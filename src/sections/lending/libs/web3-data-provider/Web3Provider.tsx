@@ -1,7 +1,8 @@
-import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
+import { API_ETH_MOCK_ADDRESS, ProtocolAction } from "@aave/contract-helpers"
 import { SignatureLike } from "@ethersproject/bytes"
 import {
   JsonRpcProvider,
+  TransactionRequest,
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
@@ -16,7 +17,10 @@ import React, {
 } from "react"
 import { useRootStore } from "sections/lending/store/root"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
-import { hexToAscii } from "sections/lending/utils/utils"
+import {
+  getFunctionDefsFromAbi,
+  hexToAscii,
+} from "sections/lending/utils/utils"
 
 // import { isLedgerDappBrowserProvider } from 'web3-ledgerhq-frame-connector';
 import { useQueryClient } from "@tanstack/react-query"
@@ -29,8 +33,13 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { useStore } from "state/store"
+import { TransactionOptions, useStore } from "state/store"
 import { isEvmWalletExtension } from "utils/evm"
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+import { createToastMessages } from "state/toasts"
+import { useTranslation } from "react-i18next"
+import { decodeEvmCall } from "sections/transaction/ReviewTransactionData.utils"
+import { PoolReserve } from "sections/lending/store/poolSlice"
 
 export type ERC20TokenType = {
   address: string
@@ -51,7 +60,7 @@ export type Web3Data = {
   getTxError: (txHash: string) => Promise<string>
   sendTx: (
     txData: PopulatedTransaction,
-    abi?: string,
+    action?: ProtocolAction,
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -63,9 +72,97 @@ export type Web3Data = {
   readOnlyMode: boolean
 }
 
+const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
+  switch (action) {
+    case ProtocolAction.switchBorrowRateMode:
+      return "swapBorrowRateMode"
+    case ProtocolAction.setUsageAsCollateral:
+      return "setUserUseReserveAsCollateral"
+    default:
+      return action
+  }
+}
+
+const getToastPropsByProtocolAction = (
+  action: ProtocolAction,
+  poolData: PoolReserve,
+  tx: { data: `0x${string}` | TransactionRequest; abi: string },
+) => {
+  try {
+    const call = decodeEvmCall(tx)!
+    const asset = poolData?.reserves?.find(({ underlyingAsset }) => {
+      return underlyingAsset.toLowerCase() === call.data.asset.toLowerCase()
+    })
+
+    if (!asset) return
+
+    if (
+      [
+        ProtocolAction.supply,
+        ProtocolAction.withdraw,
+        ProtocolAction.repay,
+        ProtocolAction.borrow,
+      ].includes(action)
+    ) {
+      return {
+        key: `lending.${action}.toast`,
+        tOptions: {
+          value: call.data.amount,
+          symbol: asset.symbol,
+          fixedPointScale: asset.decimals,
+        },
+        components: ["span.highlight"],
+      }
+    }
+
+    if (action === ProtocolAction.setUsageAsCollateral) {
+      return {
+        key: `lending.collateral.${call?.data?.useAsCollateral ? "enable" : "disable"}.toast`,
+        tOptions: {
+          symbol: asset.symbol,
+        },
+        components: ["span.highlight"],
+      }
+    }
+  } catch {}
+}
+
+const getTransactionMeta = (
+  action?: ProtocolAction,
+  tx?: PopulatedTransaction,
+  poolData?: PoolReserve,
+) => {
+  if (!action) {
+    return {
+      abi: "",
+      toasProps: undefined,
+    }
+  }
+  const abi = action
+    ? getFunctionDefsFromAbi(
+        IPool__factory.abi,
+        getAbiMethodByProtocolAction(action),
+      )
+    : undefined
+
+  const toastProps =
+    action && poolData && tx && abi
+      ? getToastPropsByProtocolAction(action, poolData, {
+          data: tx,
+          abi,
+        })
+      : undefined
+
+  return {
+    abi,
+    toastProps,
+  }
+}
+
 export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
+  const { t } = useTranslation()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const evmAccount = useEvmAccount()
@@ -74,7 +171,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const { error } = useWeb3React<providers.Web3Provider>()
   const queryClient = useQueryClient()
 
-  const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
+  const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
     useBackgroundDataProvider()
 
   const account = evmAccount?.account?.address || ""
@@ -107,7 +204,24 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   }, [deactivate, setWalletType])
 
   const sendTx = useCallback(
-    async (txData: PopulatedTransaction, abi?: string) => {
+    async (txData: PopulatedTransaction, action?: ProtocolAction) => {
+      const { abi, toastProps } = getTransactionMeta(action, txData, poolData)
+
+      const txOptions: TransactionOptions = {
+        toast: toastProps
+          ? createToastMessages(toastProps.key, {
+              t,
+              ...toastProps,
+            })
+          : undefined,
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+          refetchPoolData && refetchPoolData()
+          refetchIncentiveData && refetchIncentiveData()
+          refetchGhoData && refetchGhoData()
+        },
+      }
+
       if (!provider) {
         const tx = api.tx.evm.call(
           txData.from ?? "",
@@ -128,14 +242,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
               abi,
             },
           },
-          {
-            onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-              refetchPoolData && refetchPoolData()
-              refetchIncentiveData && refetchIncentiveData()
-              refetchGhoData && refetchGhoData()
-            },
-          },
+          txOptions,
         )
         return {} as TransactionResponse
       }
@@ -147,14 +254,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
             abi,
           },
         },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-            refetchPoolData && refetchPoolData()
-            refetchIncentiveData && refetchIncentiveData()
-            refetchGhoData && refetchGhoData()
-          },
-        },
+        txOptions,
       )
 
       return {} as TransactionResponse
@@ -169,11 +269,13 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
     [
       api,
       createTransaction,
+      poolData,
       provider,
       queryClient,
       refetchGhoData,
       refetchIncentiveData,
       refetchPoolData,
+      t,
     ],
   )
 

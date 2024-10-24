@@ -34,7 +34,6 @@ interface UseTransactionHandlerProps {
   protocolAction?: ProtocolAction
   deps?: DependencyList
   eventTxInfo?: TransactionDetails
-  abi?: string
 }
 
 export type Approval = {
@@ -52,7 +51,6 @@ export const useTransactionHandler = ({
   protocolAction,
   deps = [],
   eventTxInfo,
-  abi,
 }: UseTransactionHandlerProps) => {
   const queryClient = useQueryClient()
 
@@ -364,7 +362,7 @@ export const useTransactionHandler = ({
           maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         })
         return processTx({
-          tx: () => sendTx(params as PopulatedTransaction, abi),
+          tx: () => sendTx(params as PopulatedTransaction, protocolAction),
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,

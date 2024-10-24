@@ -1,5 +1,7 @@
 import React, { useContext } from "react"
+import { PoolReserve } from "sections/lending/store/poolSlice"
 import {
+  useCurrentMarketData,
   useGhoDataSubscription,
   useIncentiveDataSubscription,
   usePoolDataSubscription,
@@ -9,6 +11,7 @@ interface BackgroundDataProviderContextType {
   refetchGhoData: () => Promise<void>
   refetchIncentiveData?: () => Promise<void>
   refetchPoolData?: () => Promise<void> | Promise<void[]>
+  poolData?: PoolReserve
 }
 
 const BackgroundDataProviderContext =
@@ -27,9 +30,16 @@ export const BackgroundDataProvider: React.FC<{
   const refetchPoolData = usePoolDataSubscription()
   const refetchIncentiveData = useIncentiveDataSubscription()
   const refetchGhoData = useGhoDataSubscription()
+  const poolData = useCurrentMarketData()
+
   return (
     <BackgroundDataProviderContext.Provider
-      value={{ refetchIncentiveData, refetchPoolData, refetchGhoData }}
+      value={{
+        refetchIncentiveData,
+        refetchPoolData,
+        refetchGhoData,
+        poolData,
+      }}
     >
       {children}
     </BackgroundDataProviderContext.Provider>

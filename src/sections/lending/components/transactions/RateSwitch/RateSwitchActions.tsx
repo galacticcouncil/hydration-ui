@@ -1,10 +1,8 @@
 import { InterestRate, ProtocolAction } from "@aave/contract-helpers"
+import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import { useTransactionHandler } from "sections/lending/helpers/useTransactionHandler"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRootStore } from "sections/lending/store/root"
-import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
-import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
-import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 
 export type RateSwitchActionsProps = {
   poolReserve: ComputedReserveData
@@ -41,7 +39,6 @@ export const RateSwitchActions = ({
             : InterestRate.Variable,
       },
       skip: blocked,
-      abi: getFunctionDefsFromAbi(IPool__factory.abi, "swapBorrowRateMode"),
     })
 
   return (

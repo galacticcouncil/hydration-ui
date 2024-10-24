@@ -19,14 +19,12 @@ import {
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 
+import { useQueryClient } from "@tanstack/react-query"
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import {
   APPROVE_DELEGATION_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
-import { useQueryClient } from "@tanstack/react-query"
-import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
-import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 export interface BorrowActionsProps extends BoxProps {
@@ -135,10 +133,7 @@ export const BorrowActions = React.memo(
               : poolReserve.stableDebtTokenAddress,
         })
         borrowTxData = await estimateGasLimit(borrowTxData)
-        const response = await sendTx(
-          borrowTxData,
-          getFunctionDefsFromAbi(IPool__factory.abi, "borrow"),
-        )
+        const response = await sendTx(borrowTxData, ProtocolAction.borrow)
         setMainTxState({
           txHash: response.hash,
           loading: false,

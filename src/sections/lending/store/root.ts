@@ -80,6 +80,13 @@ export const useGhoDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshGhoData()
 }, 60_000)
 
+export const useCurrentMarketData = () => {
+  const { currentMarketData, data } = useRootStore.getState()
+  return data
+    .get(currentMarketData.chainId)
+    ?.get(currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER)
+}
+
 useRootStore.subscribe(
   (state) => state.account,
   (account) => {

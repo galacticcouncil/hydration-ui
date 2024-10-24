@@ -1,5 +1,4 @@
 import { gasLimitRecommendations, ProtocolAction } from "@aave/contract-helpers"
-import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { TransactionResponse } from "@ethersproject/providers"
 
 import { BoxProps } from "@mui/material"
@@ -26,7 +25,6 @@ import {
   APPROVAL_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
-import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string
@@ -176,10 +174,7 @@ export const SupplyActions = React.memo(
           signedSupplyWithPermitTxData = await estimateGasLimit(
             signedSupplyWithPermitTxData,
           )
-          response = await sendTx(
-            signedSupplyWithPermitTxData,
-            getFunctionDefsFromAbi(IPool__factory.abi, "supplyWithPermit"),
-          )
+          response = await sendTx(signedSupplyWithPermitTxData, action)
         } else {
           action = ProtocolAction.supply
           let supplyTxData = supply({
@@ -188,10 +183,7 @@ export const SupplyActions = React.memo(
           })
           supplyTxData = await estimateGasLimit(supplyTxData)
 
-          response = await sendTx(
-            supplyTxData,
-            getFunctionDefsFromAbi(IPool__factory.abi, "supply"),
-          )
+          response = await sendTx(supplyTxData, action)
         }
 
         setMainTxState({

@@ -2,10 +2,7 @@ import { ProtocolAction } from "@aave/contract-helpers"
 import { useTransactionHandler } from "sections/lending/helpers/useTransactionHandler"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRootStore } from "sections/lending/store/root"
-
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
-import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
-import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 
 export type CollateralChangeActionsProps = {
   poolReserve: ComputedReserveData
@@ -44,10 +41,6 @@ export const CollateralChangeActions = ({
         })
       },
       skip: blocked,
-      abi: getFunctionDefsFromAbi(
-        IPool__factory.abi,
-        "setUserUseReserveAsCollateral",
-      ),
     })
 
   return (
