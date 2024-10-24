@@ -248,6 +248,7 @@ export const SupplyModalContent = React.memo(
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
           maxValue={maxAmountToSupply}
+          sx={{ mb: 20 }}
         />
 
         <TxModalDetails

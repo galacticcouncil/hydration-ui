@@ -261,6 +261,7 @@ export const BorrowModalContent = ({
         isMaxSelected={isMaxSelected}
         maxValue={maxAmountToBorrow}
         balanceText={<span>Available</span>}
+        sx={{ mb: 20 }}
       />
 
       {blockingError !== undefined && (
@@ -293,6 +294,7 @@ export const BorrowModalContent = ({
 
       {displayRiskCheckbox && (
         <BorrowAmountWarning
+          sx={{ mb: 20 }}
           riskCheckboxAccepted={riskCheckboxAccepted}
           onRiskCheckboxChange={() => {
             setRiskCheckboxAccepted(!riskCheckboxAccepted)

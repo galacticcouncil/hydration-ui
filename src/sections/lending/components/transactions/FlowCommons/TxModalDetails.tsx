@@ -48,7 +48,7 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
   chainId,
 }) => {
   return (
-    <div sx={{ pt: 30 }}>
+    <div>
       <Text font="Geist" color="pink500" fs={15} sx={{ mb: 16 }}>
         <span>Transaction overview</span>
       </Text>

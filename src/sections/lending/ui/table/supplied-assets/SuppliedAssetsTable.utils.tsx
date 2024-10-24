@@ -195,6 +195,8 @@ export const useSuppliedAssetsTableData = () => {
     )
   }, [isBound, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
 
+  console.log(data)
+
   return {
     data,
     isLoading: loading,

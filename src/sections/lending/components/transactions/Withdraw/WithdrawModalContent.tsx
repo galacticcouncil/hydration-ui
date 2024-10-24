@@ -140,6 +140,7 @@ export const WithdrawModalContent = ({
             <span>Supply balance</span>
           )
         }
+        sx={{ mb: 20 }}
       />
 
       {blockingError !== undefined && (
@@ -147,14 +148,6 @@ export const WithdrawModalContent = ({
           {errorComponent}
         </Text>
       )}
-
-      {/* {poolReserve.isWrappedBaseAsset && (
-        <DetailsUnwrapSwitch
-          unwrapped={withdrawUnWrapped}
-          setUnWrapped={setWithdrawUnWrapped}
-          label={`Unwrap ${poolReserve.symbol} (to withdraw ${currentNetworkConfig.baseAssetSymbol})`}
-        />
-      )} */}
 
       <TxModalDetails gasLimit={gasLimit}>
         <DetailsNumberLine

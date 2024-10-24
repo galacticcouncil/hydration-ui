@@ -136,41 +136,6 @@ export const CollateralChangeModalContent = ({
 
   return (
     <>
-      {showEnableIsolationModeMsg && (
-        <Alert variant="warning" sx={{ mb: 12 }}>
-          <Text fs={13}>
-            Enabling this asset as collateral increases your borrowing power and
-            Health Factor. However, it can get liquidated if your health factor
-            drops below 1.
-          </Text>
-        </Alert>
-      )}
-
-      {showDisableIsolationModeMsg && (
-        <Alert variant="warning" sx={{ mb: 12 }}>
-          <Text fs={13}>
-            Disabling this asset as collateral affects your borrowing power and
-            Health Factor.
-          </Text>
-        </Alert>
-      )}
-
-      {showEnterIsolationModeMsg && (
-        <IsolationModeWarning asset={poolReserve.symbol} />
-      )}
-
-      {showExitIsolationModeMsg && (
-        <Alert variant="info" sx={{ mb: 12 }}>
-          <Text fs={13}>
-            You will exit isolation mode and other tokens can now be used as
-            collateral
-          </Text>
-        </Alert>
-      )}
-
-      {poolReserve.isIsolated &&
-        debtCeiling.determineWarningDisplay({ debtCeiling })}
-
       <TxModalDetails gasLimit={gasLimit}>
         <DetailsNumberLine
           symbol={poolReserve.symbol}
@@ -190,6 +155,41 @@ export const CollateralChangeModalContent = ({
           <BlockingError />
         </Alert>
       )}
+
+      {showEnableIsolationModeMsg && (
+        <Alert variant="warning" sx={{ mt: 12 }}>
+          <Text fs={13}>
+            Enabling this asset as collateral increases your borrowing power and
+            Health Factor. However, it can get liquidated if your health factor
+            drops below 1.
+          </Text>
+        </Alert>
+      )}
+
+      {showDisableIsolationModeMsg && (
+        <Alert variant="warning" sx={{ mt: 12 }}>
+          <Text fs={13}>
+            Disabling this asset as collateral affects your borrowing power and
+            Health Factor.
+          </Text>
+        </Alert>
+      )}
+
+      {showEnterIsolationModeMsg && (
+        <IsolationModeWarning asset={poolReserve.symbol} />
+      )}
+
+      {showExitIsolationModeMsg && (
+        <Alert variant="info" sx={{ mt: 12 }}>
+          <Text fs={13}>
+            You will exit isolation mode and other tokens can now be used as
+            collateral
+          </Text>
+        </Alert>
+      )}
+
+      {poolReserve.isIsolated &&
+        debtCeiling.determineWarningDisplay({ debtCeiling })}
 
       {txError && <GasEstimationError txError={txError} />}
 
