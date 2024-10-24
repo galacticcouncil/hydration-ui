@@ -32,23 +32,46 @@ export const getAcceptedCurrency = (api: ApiPromise) => async () => {
 }
 
 export const useAcceptedCurrencies = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api, isLoaded, tradeRouter } = useRpcProvider()
   const { native } = useAssets()
 
-  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
-    enabled: isLoaded && ids.length > 0,
-    select: (assets) => {
-      return ids.map((id) => {
-        const response = assets.find((asset) => asset.id === id)
+  return useQuery(
+    QUERY_KEYS.acceptedCurrencies(ids),
+    async () => {
+      const [pools, acceptedCurrency] = await Promise.all([
+        tradeRouter.getPools(),
+        getAcceptedCurrency(api)(),
+      ])
 
-        return response
-          ? response
-          : id === native.id
-            ? { id, accepted: true, data: undefined }
-            : { id, accepted: false, data: undefined }
+      return ids.map((id) => {
+        const currency = acceptedCurrency.find((currency) => currency.id === id)
+
+        if (currency) {
+          return currency
+        }
+
+        if (id === native.id) {
+          return { id, accepted: true, data: undefined }
+        }
+
+        const hasPoolWithDOT = !!pools.find((pool) => {
+          return (
+            pool.tokens.find((token) => token.id === id) &&
+            pool.tokens.find((token) => token.id === "5")
+          )
+        })
+
+        if (hasPoolWithDOT) {
+          return { id, accepted: true, data: undefined }
+        }
+
+        return { id, accepted: false, data: undefined }
       })
     },
-  })
+    {
+      enabled: isLoaded && ids.length > 0,
+    },
+  )
 }
 
 export const useSetAsFeePayment = () => {
