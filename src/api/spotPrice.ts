@@ -6,6 +6,7 @@ import { BN_1, BN_10, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { Maybe } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { A_TOKENS_MAP } from "sections/lending/ui-config/aTokens"
 
 export const useSpotPrice = (
   assetA: Maybe<u32 | string>,
@@ -52,13 +53,19 @@ export const useSpotPrices = (
 
 export const getSpotPrice =
   (tradeRouter: TradeRouter, tokenIn: string, tokenOut: string) => async () => {
+    const tokenInParam = A_TOKENS_MAP[tokenIn] ?? tokenIn
+    const tokenOutParam = A_TOKENS_MAP[tokenOut] ?? tokenOut
     // X -> X would return undefined, no need for spot price in such case
-    if (tokenIn === tokenOut) return { tokenIn, tokenOut, spotPrice: BN_1 }
+    if (tokenIn === tokenOut || tokenInParam === tokenOutParam)
+      return { tokenIn, tokenOut, spotPrice: BN_1 }
 
     // error replies are valid in case token has no spot price
     let spotPrice = BN_NAN
     try {
-      const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
+      const res = await tradeRouter.getBestSpotPrice(
+        tokenInParam,
+        tokenOutParam,
+      )
       if (res) {
         spotPrice = res.amount.div(BN_10.pow(res.decimals))
       }

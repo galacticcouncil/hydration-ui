@@ -13,8 +13,8 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
-import { NATIVE_ASSET_ID } from "utils/api"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
+import { createAccountBalancesFetcher } from "api/accountBalances"
 
 export type TDeposit = {
   id: string
@@ -158,23 +158,19 @@ export const useAccountAssets = (givenAddress?: string) => {
 
   const address = givenAddress ?? account?.address
 
+  const fetchAccountBalances = createAccountBalancesFetcher(api)
+
   return useQuery(
     QUERY_KEYS.accountAssets(address),
     address != null
       ? async () => {
-          const [
-            omnipoolNftId,
-            miningNftId,
-            xykMiningNftId,
-            balancesRaw,
-            nativeBalance,
-          ] = await Promise.all([
-            api.consts.omnipool.nftCollectionId,
-            api.consts.omnipoolLiquidityMining.nftCollectionId,
-            api.consts.xykLiquidityMining.nftCollectionId,
-            api.query.tokens.accounts.entries(address),
-            api.query.system.account(address),
-          ])
+          const [omnipoolNftId, miningNftId, xykMiningNftId, accountBalances] =
+            await Promise.all([
+              api.consts.omnipool.nftCollectionId,
+              api.consts.omnipoolLiquidityMining.nftCollectionId,
+              api.consts.xykLiquidityMining.nftCollectionId,
+              fetchAccountBalances(address),
+            ])
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([
               api.query.uniques.account.entries(address, omnipoolNftId),
@@ -243,19 +239,9 @@ export const useAccountAssets = (givenAddress?: string) => {
             true,
           )
 
-          const balances = balancesRaw.map(([key, data]) => {
-            const [, id] = key.args
-
+          const allBalances = accountBalances.map(([id, data]) => {
             return parseBalanceData(data, id.toString(), address)
           })
-
-          const native = parseBalanceData(
-            nativeBalance.data,
-            NATIVE_ASSET_ID,
-            address,
-          )
-
-          const allBalances = [...balances, native]
 
           let isAnyPoolPositions = false
           const accountShareTokensMap: Map<
