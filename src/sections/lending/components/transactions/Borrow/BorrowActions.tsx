@@ -1,7 +1,6 @@
 import {
   API_ETH_MOCK_ADDRESS,
   ApproveDelegationType,
-  gasLimitRecommendations,
   InterestRate,
   MAX_UINT_AMOUNT,
   ProtocolAction,
@@ -28,6 +27,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
+import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 export interface BorrowActionsProps extends BoxProps {
   poolReserve: ComputedReserveData

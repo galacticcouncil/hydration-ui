@@ -1,6 +1,5 @@
 import {
   EthereumTransactionTypeExtended,
-  gasLimitRecommendations,
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { SignatureLike } from "@ethersproject/bytes"
@@ -19,6 +18,7 @@ import {
   TxAction,
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
+import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 export const MOCK_SIGNED_HASH = "Signed correctly"
 
@@ -460,13 +460,8 @@ export const useTransactionHandler = ({
               try {
                 for (const tx of txs) {
                   if (protocolAction) {
-                    if (protocolAction === "setUsageAsCollateral") {
-                      gasLimit = 500000
-                    } else {
-                      gasLimit =
-                        +gasLimitRecommendations[protocolAction]?.limit ||
-                        1000000
-                    }
+                    gasLimit =
+                      +gasLimitRecommendations[protocolAction]?.limit || 1000000
                   } else {
                     const txGas = await tx.gas()
                     // If permit is available, use regular action for estimation but exclude the approval tx
