@@ -6,24 +6,15 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 
-export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
-  getVisibleCells,
-  original,
+const RowFooter: React.FC<DashboardReserve> = ({
+  isActive,
+  isPaused,
+  isFreezed,
+  walletBalance,
+  reserve,
+  underlyingAsset,
 }) => {
   const { t } = useTranslation()
-  const {
-    name,
-    symbol,
-    iconSymbol,
-    detailsAddress,
-    isActive,
-    isPaused,
-    isFreezed,
-    walletBalance,
-    reserve,
-    underlyingAsset,
-  } = original
-  const cells = getVisibleCells()
 
   const { openSupply } = useModalContext()
 
@@ -38,6 +29,25 @@ export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
     isMaxCapReached
 
   return (
+    <Button
+      disabled={disableSupply}
+      onClick={() => openSupply(underlyingAsset)}
+      fullWidth
+      size="small"
+    >
+      {t("lending.supply")}
+    </Button>
+  )
+}
+
+export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
+  getVisibleCells,
+  original,
+}) => {
+  const { name, symbol, iconSymbol, detailsAddress } = original
+  const cells = getVisibleCells()
+
+  return (
     <MobileRow
       name={name}
       symbol={symbol}
@@ -49,16 +59,7 @@ export const SupplyAssetsMobileRow: React.FC<Row<DashboardReserve>> = ({
         "walletBalanceUSD",
         "usageAsCollateralEnabledOnUser",
       ]}
-      footer={
-        <Button
-          disabled={disableSupply}
-          onClick={() => openSupply(underlyingAsset)}
-          fullWidth
-          size="small"
-        >
-          {t("lending.supply")}
-        </Button>
-      }
+      footer={<RowFooter {...original} />}
     />
   )
 }

@@ -5,19 +5,47 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { TSuppliedAssetsRow } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsTable.utils"
 
+const RowFooter: React.FC<TSuppliedAssetsRow> = ({
+  reserve,
+  underlyingAsset,
+}) => {
+  const { t } = useTranslation()
+  const { isActive, isPaused, isFrozen } = reserve
+
+  const disableWithdraw = !isActive || isPaused
+  const disableSupply = !isActive || isFrozen || isPaused
+
+  const { openSupply, openWithdraw } = useModalContext()
+
+  return (
+    <div sx={{ flex: "row", gap: 16 }}>
+      <Button
+        disabled={disableSupply}
+        onClick={() => openSupply(underlyingAsset)}
+        fullWidth
+        size="small"
+      >
+        {t("lending.supply")}
+      </Button>
+      <Button
+        disabled={disableWithdraw}
+        onClick={() => openWithdraw(underlyingAsset)}
+        fullWidth
+        size="small"
+      >
+        {t("lending.withdraw")}
+      </Button>
+    </div>
+  )
+}
+
 export const SuppliedAssetsMobileRow: React.FC<Row<TSuppliedAssetsRow>> = ({
   getVisibleCells,
   original,
 }) => {
-  const { t } = useTranslation()
   const { reserve, underlyingAsset } = original
-  const { name, symbol, iconSymbol, isActive, isPaused, isFrozen } = reserve
+  const { name, symbol, iconSymbol } = reserve
   const cells = getVisibleCells()
-
-  const { openSupply, openWithdraw } = useModalContext()
-
-  const disableWithdraw = !isActive || isPaused
-  const disableSupply = !isActive || isFrozen || isPaused
 
   return (
     <MobileRow
@@ -31,26 +59,7 @@ export const SuppliedAssetsMobileRow: React.FC<Row<TSuppliedAssetsRow>> = ({
         "supplyAPY",
         "usageAsCollateralEnabledOnUser",
       ]}
-      footer={
-        <div sx={{ flex: "row", gap: 16 }}>
-          <Button
-            disabled={disableSupply}
-            onClick={() => openSupply(underlyingAsset)}
-            fullWidth
-            size="small"
-          >
-            {t("lending.supply")}
-          </Button>
-          <Button
-            disabled={disableWithdraw}
-            onClick={() => openWithdraw(underlyingAsset)}
-            fullWidth
-            size="small"
-          >
-            {t("lending.withdraw")}
-          </Button>
-        </div>
-      }
+      footer={<RowFooter {...original} />}
     />
   )
 }

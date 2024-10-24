@@ -17,10 +17,10 @@ export const LendingDashboardPage = () => {
   const [mode, setMode] = useState<"supply" | "borrow">("supply")
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const { account: evmAccount, isBound, isLoading } = useEvmAccount()
+
   const shouldRenderSupply = mode === "supply" || isDesktop
   const shouldRenderBorrow = mode === "borrow" || isDesktop
-
-  const { account: evmAccount, isBound, isLoading } = useEvmAccount()
 
   return (
     <>
