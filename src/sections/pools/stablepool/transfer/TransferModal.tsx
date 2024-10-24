@@ -16,7 +16,7 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { useJoinFarms } from "utils/farms/deposit"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useRefetchAccountAssets } from "api/deposits"
@@ -38,7 +38,7 @@ export enum Page {
 type Props = {
   onClose: () => void
   defaultPage: Page
-  farms: Farm[]
+  farms: TFarmAprData[]
 }
 
 export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {

@@ -10,69 +10,30 @@ import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
 import { OmnipoolAssetsTableColumn } from "sections/stats/components/OmnipoolAssetsTable/OmnipoolAssetsTable.utils"
 import { useMedia } from "react-use"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
-import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
-import { useMemo } from "react"
-import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 
-const APYFarming = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
+const APY = ({
+  assetId,
+  isLoading,
+  totalFee,
+}: {
+  assetId: string
+  isLoading: boolean
+  totalFee: BigNumber
+}) => {
   const { t } = useTranslation()
-
-  const farmAprs = useFarmAprs(farms)
-
-  const percentage = useMemo(() => {
-    if (farmAprs.data?.length) {
-      return getMinAndMaxAPR(farmAprs)
-    }
-
-    return {
-      minApr: BN_0,
-      maxApr: BN_0,
-    }
-  }, [farmAprs])
-
-  const isLoading = farmAprs.isInitialLoading
+  const { native } = useAssets()
 
   if (isLoading) return <CellSkeleton />
 
   return (
     <Text color="white" fs={14}>
-      {percentage.maxApr.gt(0)
-        ? t("value.percentage.range", {
-            from: percentage.minApr.lt(apy)
-              ? percentage.minApr
-              : BigNumber(apy),
-            to: percentage.maxApr.plus(apy),
-          })
-        : t("value.percentage", { value: BigNumber(apy) })}
-    </Text>
-  )
-}
-
-const APY = ({
-  assetId,
-  fee,
-  isLoading,
-}: {
-  assetId: string
-  fee: BigNumber
-  isLoading: boolean
-}) => {
-  const { t } = useTranslation()
-  const { native } = useAssets()
-  const farms = useFarms([assetId])
-
-  if (isLoading || farms.isLoading) return <CellSkeleton />
-
-  if (farms.data?.length)
-    return <APYFarming farms={farms.data} apy={fee.toNumber()} />
-
-  return (
-    <Text color="white" fs={14}>
-      {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
+      {assetId === native.id
+        ? "--"
+        : t("value.percentage", { value: totalFee })}
     </Text>
   )
 }
@@ -155,8 +116,8 @@ export const useOmnipoolAssetsColumns = (): OmnipoolAssetsTableColumn[] => {
       cell: ({ row }) => (
         <APY
           assetId={row.original.id}
-          fee={row.original.fee}
           isLoading={row.original.isLoadingFee}
+          totalFee={row.original.totalFee}
         />
       ),
     }),

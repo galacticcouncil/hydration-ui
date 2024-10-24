@@ -9,31 +9,49 @@ import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
-import { useClaimFarmMutation, useClaimableAmount } from "utils/farms/claiming"
+import { useClaimFarmMutation } from "utils/farms/claiming"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
 import { TDeposit } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import {
+  useAccountClaimableFarmValues,
+  useSummarizeClaimableValues,
+} from "api/farms"
+import BN from "bignumber.js"
 
 export const ClaimRewardsCard = (props: {
   depositNft?: TDeposit
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
-  const { getAssetWithFallback } = useAssets()
+  const {
+    pool: { id, meta },
+  } = usePoolData()
+  const { getAssetWithFallback, isShareToken } = useAssets()
   const { account } = useAccount()
 
-  const claimable = useClaimableAmount(pool.id, props.depositNft)
+  const { data: claimableValues } = useAccountClaimableFarmValues()
+  const poolClaimableValues = claimableValues?.get(
+    isShareToken(meta) ? meta.poolAddress : id,
+  )
+  const claimableDepositValues = props.depositNft
+    ? poolClaimableValues?.filter(
+        (farm) => farm.depositId === props.depositNft?.id,
+      )
+    : poolClaimableValues
+
+  const { total, claimableAssetValues } = useSummarizeClaimableValues(
+    claimableDepositValues ?? [],
+  )
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
 
-    for (let key in claimable.data?.assets) {
+    for (let key in claimableAssetValues) {
       const asset = getAssetWithFallback(key)
-      const balance = separateBalance(claimable.data?.assets[key], {
-        fixedPointScale: asset.decimals,
+      const balance = separateBalance(BN(claimableAssetValues[key]), {
         type: "token",
       })
 
@@ -53,7 +71,7 @@ export const ClaimRewardsCard = (props: {
     })
 
     return { claimableAssets, toastValue }
-  }, [getAssetWithFallback, claimable.data?.assets, t])
+  }, [getAssetWithFallback, claimableAssetValues, t])
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -69,14 +87,14 @@ export const ClaimRewardsCard = (props: {
   }, {} as ToastMessage)
 
   const claimAll = useClaimFarmMutation(
-    pool.id,
+    id,
     props.depositNft,
     toast,
     props.onTxClose,
     () => {},
   )
 
-  if (!claimable.data?.displayValue) return null
+  if (!claimableAssets.length) return null
 
   return (
     <Card variant="primary">
@@ -123,7 +141,7 @@ export const ClaimRewardsCard = (props: {
             css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-              <DisplayValue value={claimable.data?.displayValue} />
+              <DisplayValue value={total} />
             </Trans>
           </Text>
         </div>
@@ -132,8 +150,7 @@ export const ClaimRewardsCard = (props: {
           size="small"
           sx={{ height: "fit-content", width: ["100%", 275] }}
           disabled={
-            account?.isExternalWalletConnected ||
-            (claimable.data && claimable.data.displayValue.isZero())
+            account?.isExternalWalletConnected || (total && total.isZero())
           }
           onClick={() => claimAll.mutate()}
           isLoading={claimAll.isLoading}

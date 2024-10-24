@@ -1,40 +1,29 @@
 import { useTranslation } from "react-i18next"
-import { useFarms } from "api/farms"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { useState } from "react"
-import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
-import { useBestNumber } from "api/chain"
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
 import { usePoolData } from "sections/pools/pool/Pool"
 
 export const AvailableFarms = () => {
   const { t } = useTranslation()
-  const [selectedFarmId, setSelectedFarmId] = useState<{
-    yieldFarmId: u32
-    globalFarmId: u32
-  } | null>(null)
-  const { pool } = usePoolData()
-  const farms = useFarms([pool.id])
-  const bestNumber = useBestNumber()
+  const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
+  const {
+    pool: { farms },
+  } = usePoolData()
 
-  if (!farms.data?.length) return null
+  const { getCurrentPeriod } = useFarmCurrentPeriod()
 
-  const selectedFarm = farms.data.find(
-    (farm) =>
-      farm.globalFarm.id.eq(selectedFarmId?.globalFarmId) &&
-      farm.yieldFarm.id.eq(selectedFarmId?.yieldFarmId),
-  )
+  if (!farms.length) return null
 
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
-    .toBigNumber()
-    .dividedToIntegerBy(
-      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
-    )
+  const currentBlock = selectedFarm
+    ? getCurrentPeriod(selectedFarm.blocksPerPeriod)
+    : undefined
 
-  const isMultipleFarms = farms.data.length > 1
+  const isMultipleFarms = farms.length > 1
 
   return (
     <>
@@ -58,27 +47,20 @@ export const AvailableFarms = () => {
             gap: 20,
           }}
         >
-          {farms.data.map((farm, i) => {
-            return (
-              <FarmDetailsCard
-                compact
-                key={i}
-                farm={farm}
-                onSelect={() => {
-                  setSelectedFarmId({
-                    globalFarmId: farm.globalFarm.id,
-                    yieldFarmId: farm.yieldFarm.id,
-                  })
-                }}
-              />
-            )
-          })}
+          {farms.map((farm, i) => (
+            <FarmDetailsCard
+              compact
+              key={i}
+              farm={farm}
+              onSelect={() => setSelectedFarm(farm)}
+            />
+          ))}
         </div>
       </div>
       {selectedFarm && (
         <Modal
-          open={true}
-          onClose={() => setSelectedFarmId(null)}
+          open
+          onClose={() => setSelectedFarm(null)}
           title={t("farms.modal.details.title")}
         >
           <FarmDetailsModal

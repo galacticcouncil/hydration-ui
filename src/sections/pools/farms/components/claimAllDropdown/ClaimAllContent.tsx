@@ -1,7 +1,7 @@
 import { forwardRef } from "react"
 import { ToastMessage } from "state/store"
 import { Trans, useTranslation } from "react-i18next"
-import { useClaimableAmount, useClaimFarmMutation } from "utils/farms/claiming"
+import { useClaimFarmMutation } from "utils/farms/claiming"
 import { TOAST_MESSAGES } from "state/toasts"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { SClaimButton, SContent } from "./ClaimAllDrowpdown.styled"
@@ -13,6 +13,11 @@ import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { useAssets } from "providers/assets"
+import {
+  useAccountClaimableFarmValues,
+  useSummarizeClaimableValues,
+} from "api/farms"
+import { BN_0 } from "utils/constants"
 
 type Props = { onClose: () => void }
 
@@ -21,15 +26,21 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
     const { account } = useAccount()
     const { t } = useTranslation()
     const { getAssetWithFallback } = useAssets()
-    const claimable = useClaimableAmount()
 
-    const claimableAssets = Object.keys(claimable.data?.assets ?? {}).map(
+    const { data: claimableValues, isLoading } = useAccountClaimableFarmValues()
+
+    const { total = BN_0, claimableAssetValues } = useSummarizeClaimableValues(
+      claimableValues
+        ? Array.from(claimableValues.entries()).flatMap(([key, value]) => value)
+        : [],
+    )
+
+    const claimableAssets = Object.keys(claimableAssetValues ?? {}).map(
       (key) => {
         const asset = getAssetWithFallback(key)
         return {
-          value: claimable.data?.assets[key],
+          value: claimableAssetValues[key],
           symbol: asset.symbol,
-          decimals: asset.decimals,
         }
       },
     )
@@ -41,7 +52,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
           <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
             <span />
           </Trans>
-          <DisplayValue value={claimable.data?.displayValue} type="token" />
+          <DisplayValue value={total} type="token" />
         </>
       )
       return memo
@@ -67,13 +78,12 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
           <div sx={{ p: 40, flex: "column" }}>
             <Text>{t("farms.claimCard.title")}</Text>
             <Spacer size={16} />
-            {claimable.isLoading && <Skeleton height={25} width={150} />}
+            {isLoading && <Skeleton height={25} width={150} />}
             {claimableAssets.map((claimableAsset, index) => (
               <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
                 <Text fs={19} lh={19} sx={{ mb: 8 }}>
                   {t("value.tokenWithSymbol", {
                     value: claimableAsset.value,
-                    fixedPointScale: claimableAsset.decimals.toString(),
                     symbol: claimableAsset.symbol,
                   })}
                 </Text>
@@ -88,14 +98,14 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
             ))}
             <Text fs={14} sx={{ mt: 6 }}>
               <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-                <DisplayValue value={claimable.data?.displayValue} />
+                <DisplayValue value={total} />
               </Trans>
             </Text>
             <Spacer size={18} />
             <SClaimButton
               disabled={
-                !claimable.data ||
-                claimable.data.displayValue.isZero() ||
+                !claimableValues ||
+                total.isZero() ||
                 account?.isExternalWalletConnected
               }
               onClick={() => {

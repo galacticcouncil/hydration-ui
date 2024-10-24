@@ -22,7 +22,6 @@ import BN from "bignumber.js"
 import { useRefetchAccountAssets } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { useFarms } from "api/farms"
 
 export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const { t } = useTranslation()
@@ -30,7 +29,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const pool = usePoolData().pool as TPoolFullData
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const farms = useFarms([pool.id])
+  const { farms } = pool
 
   const [transferOpen, setTransferOpen] = useState<number | undefined>(
     undefined,
@@ -182,7 +181,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
         <TransferModal
           defaultPage={transferOpen}
           onClose={() => setTransferOpen(undefined)}
-          farms={farms.data}
+          farms={farms}
         />
       )}
     </>

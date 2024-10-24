@@ -10,7 +10,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { Alert } from "components/Alert/Alert"
 import { Button } from "components/Button/Button"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { TLPData } from "utils/omnipool"
 import { TJoinFarmsInput } from "utils/farms/deposit"
 import { scale } from "utils/balance"
@@ -19,7 +19,7 @@ import { usePoolData } from "sections/pools/pool/Pool"
 
 type FormProps = {
   position?: TLPData
-  farms: Farm[]
+  farms: TFarmAprData[]
   depositNft?: TDeposit
   onSubmit: (input: TJoinFarmsInput) => void
 }

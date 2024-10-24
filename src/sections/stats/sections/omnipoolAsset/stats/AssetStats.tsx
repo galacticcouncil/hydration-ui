@@ -1,66 +1,36 @@
 import { useTranslation } from "react-i18next"
 import { AssetStatsCard } from "./AssetStatsCard"
 import BN from "bignumber.js"
-import { Farm, getMinAndMaxAPR, useFarmAprs, useFarms } from "api/farms"
-import { useMemo } from "react"
-import { BN_0 } from "utils/constants"
+import { TFarmAprData } from "api/farms"
 import { useAssets } from "providers/assets"
-
-const APYFarmStatsCard = ({ farms, apy }: { farms: Farm[]; apy: number }) => {
-  const { t } = useTranslation()
-  const farmAprs = useFarmAprs(farms)
-
-  const percentage = useMemo(() => {
-    if (farmAprs.data?.length) {
-      return getMinAndMaxAPR(farmAprs)
-    }
-
-    return {
-      minApr: BN_0,
-      maxApr: BN_0,
-    }
-  }, [farmAprs])
-
-  return (
-    <AssetStatsCard
-      title={t("stats.omnipool.stats.card.apyWithFarm")}
-      value={
-        percentage.maxApr.gt(0)
-          ? t("value.percentage.range", {
-              from: percentage.minApr.lt(apy) ? percentage.minApr : BN(apy),
-              to: percentage.maxApr.plus(apy),
-            })
-          : t("value.percentage", { value: BN(apy) })
-      }
-      loading={farmAprs.isInitialLoading}
-      tooltip={t("stats.overview.table.assets.header.apy.desc")}
-    />
-  )
-}
 
 const APYStatsCard = ({
   loading,
   assetId,
-  fee,
+  totalFee,
+  isFarms,
 }: {
   loading?: boolean
   assetId: string
-  fee: BN
+  totalFee: BN
+  isFarms: boolean
 }) => {
   const { t } = useTranslation()
   const { native } = useAssets()
-  const farms = useFarms([assetId])
-
-  if (farms.data?.length)
-    return <APYFarmStatsCard farms={farms.data} apy={fee.toNumber()} />
 
   return (
     <AssetStatsCard
-      title={t("stats.omnipool.stats.card.apy")}
+      title={t(
+        isFarms
+          ? "stats.omnipool.stats.card.apyWithFarm"
+          : "stats.omnipool.stats.card.apy",
+      )}
       value={
-        assetId === native.id ? "--" : t("value.percentage", { value: fee })
+        assetId === native.id
+          ? "--"
+          : t("value.percentage", { value: totalFee })
       }
-      loading={loading || farms.isLoading}
+      loading={loading}
       tooltip={t("stats.overview.table.assets.header.apy.desc")}
     />
   )
@@ -73,7 +43,16 @@ export const AssetStats = ({
 }: {
   loading?: boolean
   isLoadingFee?: boolean
-  data?: { pol: BN; vlm: BN; cap: BN; share: BN; assetId: string; fee: BN }
+  data?: {
+    pol: BN
+    vlm: BN
+    cap: BN
+    share: BN
+    assetId: string
+    fee: BN
+    totalFee: BN
+    farms: TFarmAprData[]
+  }
 }) => {
   const { t } = useTranslation()
 
@@ -94,7 +73,8 @@ export const AssetStats = ({
           <APYStatsCard
             loading={loading || isLoadingFee}
             assetId={data.assetId}
-            fee={data.fee}
+            totalFee={data.totalFee}
+            isFarms={!!data.farms.length}
           />
         ) : (
           <AssetStatsCard title={t("stats.omnipool.stats.card.apy")} loading />

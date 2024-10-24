@@ -1,4 +1,4 @@
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { Text } from "components/Typography/Text/Text"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -10,7 +10,7 @@ import { TDeposit } from "api/deposits"
 import { TDepositData } from "sections/pools/farms/position/FarmingPosition.utils"
 
 type FarmDetailsModalProps = {
-  farm: Farm
+  farm: TFarmAprData
   depositNft?: TDeposit
   depositData?: TDepositData
   currentBlock?: number
@@ -24,13 +24,11 @@ export const FarmDetailsModal = ({
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
-  const loyaltyCurve = farm.yieldFarm.loyaltyCurve.unwrapOr(null)
-
   const enteredBlock = depositNft?.data.yieldFarmEntries
     .find(
       (entry) =>
-        entry.yieldFarmId.eq(farm.yieldFarm.id) &&
-        entry.globalFarmId.eq(farm.globalFarm.id),
+        entry.yieldFarmId.eq(farm.yieldFarmId) &&
+        entry.globalFarmId.eq(farm.globalFarmId),
     )
     ?.enteredAt.toBigNumber()
 
@@ -40,7 +38,7 @@ export const FarmDetailsModal = ({
     <>
       <FarmDetailsCard depositNft={depositNft} farm={farm} />
 
-      {loyaltyCurve && currentBlockRef.current && (
+      {farm.loyaltyCurve && currentBlockRef.current && (
         <SLoyaltyRewardsContainer>
           <Text
             fs={19}
@@ -54,18 +52,17 @@ export const FarmDetailsModal = ({
 
           <LoyaltyGraph
             farm={farm}
-            loyaltyCurve={loyaltyCurve}
+            loyaltyCurve={farm.loyaltyCurve}
             enteredAt={enteredBlock}
             currentBlock={currentBlockRef.current}
           />
         </SLoyaltyRewardsContainer>
       )}
 
-      {depositNft && depositData && enteredBlock ? (
+      {depositData && enteredBlock ? (
         <FarmDetailsModalValues
           depositData={depositData}
-          yieldFarmId={farm.yieldFarm.id.toString()}
-          depositNft={depositNft}
+          yieldFarmId={farm.yieldFarmId}
           enteredBlock={enteredBlock}
         />
       ) : (

@@ -12,6 +12,7 @@ import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { useOmnipoolFarms } from "api/farms"
 
 const withoutRefresh = true
 
@@ -24,6 +25,8 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
 
   const omnipoolAssetsIds =
     omnipoolAssets.data?.map((a) => a.id.toString()) ?? []
+  const { data: allFarms, isLoading: isAllFarmsLoading } =
+    useOmnipoolFarms(omnipoolAssetsIds)
 
   const volumes = useVolume("all")
   const tvls = useTVL("all")
@@ -101,6 +104,9 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
           (volume) => volume.asset_id === Number(omnipoolAssetId),
         )?.volume_usd ?? BN_NAN,
       )
+      const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
+
+      const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
 
       const fee =
         native.id === omnipoolAssetId
@@ -110,6 +116,8 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
                 (fee) => fee.asset_id === Number(omnipoolAssetId),
               )?.projected_apr_perc ?? BN_NAN,
             )
+
+      const totalFee = !isLoadingFee ? fee.plus(totalApr ?? 0) : BN_NAN
 
       return {
         id: omnipoolAssetId,
@@ -123,7 +131,9 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         volumePol: BN(0),
         price: spotPrice,
         fee,
-        isLoadingFee: fees?.isInitialLoading,
+        totalFee,
+        farms,
+        isLoadingFee,
         isLoadingVolume: volumes.isInitialLoading,
       }
     })
@@ -140,6 +150,8 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     tvls.data,
     volumes?.data,
     volumes.isInitialLoading,
+    allFarms,
+    isAllFarmsLoading,
   ])
     .filter(isNotNil)
     .sort((assetA, assetB) => {
