@@ -30,6 +30,7 @@ export const ReviewTransaction = (props: Transaction) => {
     isBroadcasted,
     reset,
   } = useSendTx({
+    id: props.id,
     toast: props.toast,
     onSuccess: (data) => props.onSuccess?.(data),
     onError: props.onError,

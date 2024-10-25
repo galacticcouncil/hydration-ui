@@ -4,16 +4,13 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { Buffer } from "buffer"
 import { keccak256 } from "ethers/lib/utils"
 import { omit } from "utils/rx"
-import {
-  differenceInHours,
-  differenceInMinutes,
-  differenceInSeconds,
-} from "date-fns"
+import { differenceInHours, differenceInMinutes } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import request, { gql } from "graphql-request"
 import { useIndexerUrl } from "api/provider"
 import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { useStore } from "state/store"
 
 const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
 //const txInfoSubscan = "https://hydration.api.subscan.io/api/scan/extrinsic"
@@ -172,18 +169,18 @@ const getWormholeTx = async (extrinsicIndex: string) => {
 export const useProcessToasts = (toasts: ToastData[]) => {
   const indexerUrl = useIndexerUrl()
   const toast = useToast()
+  const { transactions } = useStore()
 
   useQueries({
     queries: toasts.map((toastData) => ({
       queryKey: QUERY_KEYS.progressToast(toastData.id),
       queryFn: async () => {
-        const secondsDiff = differenceInSeconds(
-          new Date(),
-          new Date(toastData.dateCreated),
-        )
-
-        // skip processing
-        if (secondsDiff < 60) return false
+        // skip processing cause toast is being processed within useMutation
+        if (
+          !!transactions?.find((transaction) => transaction.id === toastData.id)
+        ) {
+          return false
+        }
 
         const hoursDiff = differenceInHours(
           new Date(),

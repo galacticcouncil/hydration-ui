@@ -179,6 +179,7 @@ export const useSendEvmTransactionMutation = (
       xcallMeta?: Record<string, string>
     }
   > = {},
+  id: string,
   toast?: ToastMessage,
 ) => {
   const { t } = useTranslation()
@@ -211,7 +212,8 @@ export const useSendEvmTransactionMutation = (
             ? chain?.key
             : undefined
 
-        const loadingToastId = loading({
+        loading({
+          id,
           title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
           link,
           txHash,
@@ -229,9 +231,7 @@ export const useSendEvmTransactionMutation = (
           hidden: sidebar,
         })
 
-        if (loadingToastId) {
-          remove(loadingToastId)
-        }
+        remove(id)
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
@@ -348,6 +348,7 @@ export const useSendDispatchPermit = (
       xcallMeta?: Record<string, string>
     }
   > = {},
+  id: string,
   toast?: ToastMessage,
 ) => {
   const { api } = useRpcProvider()
@@ -361,7 +362,6 @@ export const useSendDispatchPermit = (
     return await new Promise(async (resolve, reject) => {
       try {
         let isLoadingNotified = false
-        let loadingToastId: string | undefined = undefined
 
         const extrinsic = api.tx.multiTransactionPayment.dispatchPermit(
           permit.message.from,
@@ -385,7 +385,8 @@ export const useSendDispatchPermit = (
           )
 
           if (status.isBroadcast && txHash && !isLoadingNotified) {
-            loadingToastId = loading({
+            loading({
+              id,
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
               link,
               txHash,
@@ -424,9 +425,8 @@ export const useSendDispatchPermit = (
                 txHash,
                 hidden: sidebar,
               })
-              if (loadingToastId) {
-                remove(loadingToastId)
-              }
+
+              remove(id)
 
               reject(e)
             },
@@ -437,9 +437,8 @@ export const useSendDispatchPermit = (
                 txHash,
                 hidden: sidebar,
               })
-              if (loadingToastId) {
-                remove(loadingToastId)
-              }
+
+              remove(id)
 
               resolve(result)
             },
@@ -488,6 +487,7 @@ export const useSendTransactionMutation = (
       xcallMeta?: Record<string, string>
     }
   > = {},
+  id: string,
   toast?: ToastMessage,
 ) => {
   const { api } = useRpcProvider()
@@ -499,7 +499,6 @@ export const useSendTransactionMutation = (
     return await new Promise(async (resolve, reject) => {
       try {
         let isLoadingNotified = false
-        let loadingToastId: string | undefined = undefined
 
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
@@ -510,7 +509,8 @@ export const useSendTransactionMutation = (
           )
 
           if (status.isBroadcast && txHash && !isLoadingNotified) {
-            loadingToastId = loading({
+            loading({
+              id,
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
               link,
               txHash,
@@ -538,9 +538,8 @@ export const useSendTransactionMutation = (
                 txHash,
                 hidden: sidebar,
               })
-              if (loadingToastId) {
-                remove(loadingToastId)
-              }
+
+              remove(id)
 
               reject(e)
             },
@@ -551,9 +550,8 @@ export const useSendTransactionMutation = (
                 txHash,
                 hidden: sidebar,
               })
-              if (loadingToastId) {
-                remove(loadingToastId)
-              }
+
+              remove(id)
 
               resolve(result)
             },
@@ -694,10 +692,12 @@ const useStoreExternalAssetsOnSign = () => {
 }
 
 export const useSendTx = ({
+  id,
   toast,
   onSuccess,
   onError,
 }: {
+  id: string
   toast?: ToastMessage
   onSuccess?: (data: ISubmittableResult) => void
   onError?: () => void
@@ -722,6 +722,7 @@ export const useSendTx = ({
       },
       onError: () => onError?.(),
     },
+    id,
     toast,
   )
 
@@ -740,6 +741,7 @@ export const useSendTx = ({
       },
       onError: () => onError?.(),
     },
+    id,
     toast,
   )
 
@@ -751,6 +753,7 @@ export const useSendTx = ({
       onSuccess: (data) => onSuccess?.(data),
       onError: () => onError?.(),
     },
+    id,
     toast,
   )
 
