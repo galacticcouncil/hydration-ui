@@ -15,7 +15,7 @@ export const useShareOfPools = (assets: string[]) => {
   const isLoading = queries.some((query) => query.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!!totalIssuances.data && accountAssets.data) {
+    if (!!totalIssuances.data) {
       return assets.map((asset) => {
         const balance =
           accountAssets.data?.accountShareTokensMap.get(asset)?.balance
