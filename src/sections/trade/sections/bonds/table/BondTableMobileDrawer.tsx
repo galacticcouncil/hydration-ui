@@ -88,7 +88,13 @@ export const BondTableMobileDrawer = ({
             sx={{ minWidth: 162 }}
             css={{ flex: "1 0 0" }}
             variant="primary"
+            isLoading={claim.isLoading}
             disabled={isClaimDisabled}
+            onClick={() =>
+              bondId &&
+              balance &&
+              claim.mutate({ bondId, amount: balance.toString() })
+            }
           >
             {t("bonds.table.claim")}
           </Button>
