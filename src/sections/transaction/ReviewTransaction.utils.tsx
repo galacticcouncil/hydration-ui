@@ -1,6 +1,7 @@
 import {
   TransactionReceipt,
   TransactionResponse,
+  Web3Provider,
 } from "@ethersproject/providers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AccountId32, Hash } from "@open-web3/orml-types/interfaces"
@@ -32,11 +33,16 @@ import {
 } from "sections/web3-connect/signer/EthereumSigner"
 import { useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
-import { H160, getEvmChainById, getEvmTxLink, isEvmAccount } from "utils/evm"
-import { isAnyParachain, Maybe, sleep } from "utils/helpers"
+import {
+  H160,
+  getEvmChainById,
+  getEvmTxLink,
+  isEvmAccount,
+  isEvmWalletExtension,
+} from "utils/evm"
+import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import BigNumber from "bignumber.js"
 import { useIsTestnet } from "api/provider"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
@@ -231,7 +237,6 @@ export const useSendEvmTransactionMutation = (
 }
 
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
-  const queryClient = useQueryClient()
   const { wallet } = useWallet()
 
   return useQuery(
@@ -242,18 +247,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       if (!(wallet?.signer instanceof EthereumSigner))
         throw new Error("Invalid signer")
 
-      const prevNonce = queryClient.getQueryData<BigNumber>(
-        QUERY_KEYS.nextEvmPermitNonce(account),
-      )
-
-      const nonce = await wallet.signer.getPermitNonce()
-
-      if (BigNumber.isBigNumber(prevNonce) && nonce.gt(prevNonce)) {
-        // clear pending permit if nonce has increased
-        queryClient.setQueryData(QUERY_KEYS.pendingEvmPermit(account), null)
-      }
-
-      return nonce
+      return wallet.signer.getPermitNonce()
     },
     {
       refetchInterval: EVM_PERMIT_BLOCKTIME,
@@ -268,12 +262,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
 export const usePendingDispatchPermit = (
   address: Maybe<AccountId32 | string>,
 ) => {
-  const queryClient = useQueryClient()
   const { api, isLoaded } = useRpcProvider()
-
-  const isPending = !!queryClient.getQueryData(
-    QUERY_KEYS.pendingEvmPermit(address),
-  )
 
   return useQuery(
     QUERY_KEYS.pendingEvmPermit(address),
@@ -301,7 +290,7 @@ export const usePendingDispatchPermit = (
     {
       refetchInterval: EVM_PERMIT_BLOCKTIME,
       refetchOnWindowFocus: false,
-      enabled: !isPending && isLoaded && isEvmAccount(address?.toString()),
+      enabled: isLoaded && isEvmAccount(address?.toString()),
     },
   )
 }
@@ -317,6 +306,7 @@ export const useSendDispatchPermit = (
   > = {},
 ) => {
   const { api } = useRpcProvider()
+  const { wallet } = useWallet()
   const queryClient = useQueryClient()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
@@ -342,6 +332,8 @@ export const useSendDispatchPermit = (
         const unsubscribe = await extrinsic.send(async (result) => {
           if (!result || !result.status) return
 
+          const isInBlock = result.status.type === "InBlock"
+
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
@@ -353,12 +345,19 @@ export const useSendDispatchPermit = (
             QUERY_KEYS.pendingEvmPermit(account),
             extrinsic.toHuman(),
           )
+
+          if (
+            isInBlock &&
+            wallet?.extension &&
+            isEvmWalletExtension(wallet.extension)
+          ) {
+            await waitForEvmBlock(new Web3Provider(wallet.extension))
+          }
+
           // stop checking for pending permits until the transaction is settled
           queryClient.setQueryDefaults(QUERY_KEYS.pendingEvmPermit(account), {
             refetchInterval: 0,
           })
-          // give some lee-way for the EVM transaction to be processed
-          await sleep(EVM_PERMIT_BLOCKTIME)
 
           const onComplete = createResultOnCompleteHandler(api, {
             onError: async (error) => {
@@ -369,10 +368,12 @@ export const useSendDispatchPermit = (
             },
             onSettled: async () => {
               unsubscribe()
-              queryClient.refetchQueries(QUERY_KEYS.nextEvmPermitNonce(account))
-              queryClient.setQueryData(
+
+              queryClient.invalidateQueries(
+                QUERY_KEYS.nextEvmPermitNonce(account),
+              )
+              queryClient.invalidateQueries(
                 QUERY_KEYS.pendingEvmPermit(account),
-                null,
               )
               queryClient.setQueryDefaults(
                 QUERY_KEYS.pendingEvmPermit(account),
@@ -662,4 +663,27 @@ export const useSendTx = () => {
     sendPermitTx: sendPermitTx.mutateAsync,
     ...activeMutation,
   }
+}
+
+async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
+  const currentBlock = await provider.getBlockNumber()
+  return new Promise((resolve, reject) => {
+    const checkBlock = async () => {
+      let timeout
+      try {
+        const newBlock = await provider.getBlockNumber()
+        if (newBlock > currentBlock) {
+          clearTimeout(timeout)
+          resolve()
+        } else {
+          timeout = setTimeout(checkBlock, 5000)
+        }
+      } catch (error) {
+        clearTimeout(timeout)
+        reject(error)
+      }
+    }
+
+    checkBlock()
+  })
 }

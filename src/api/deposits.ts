@@ -255,7 +255,11 @@ export const useAccountAssets = (givenAddress?: string) => {
             address,
           )
 
-          const allBalances = [...balances, native]
+          const allBalances = balances
+
+          if (native.total.gt(0)) {
+            allBalances.push(native)
+          }
 
           let isAnyPoolPositions = false
           const accountShareTokensMap: Map<

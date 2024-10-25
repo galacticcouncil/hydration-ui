@@ -78,6 +78,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const dynamicFees = useDynamicAssetFees(pool.meta.id)
 
   const isDesktop = useMedia(theme.viewport.gte.md)
+  const isFarmsVisible = !isDesktop || asset.isShareToken
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -125,7 +126,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             {asset.name}
           </Text>
         )}
-        {farms.data?.length > 0 && !isDesktop && (
+        {farms.data?.length > 0 && isFarmsVisible && (
           <GlobalFarmRowMulti
             fontSize={11}
             iconSize={11}
