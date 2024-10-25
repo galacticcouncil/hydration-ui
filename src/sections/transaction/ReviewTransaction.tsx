@@ -27,7 +27,7 @@ export const ReviewTransaction = (props: Transaction) => {
     isSuccess,
     isError: isSendError,
     error: sendError,
-    txState,
+    isBroadcasted,
     reset,
   } = useSendTx({
     toast: props.toast,
@@ -41,7 +41,7 @@ export const ReviewTransaction = (props: Transaction) => {
   const error = sendError || signError
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
-    isLoading || isSuccess || isError
+    (isLoading && isBroadcasted) || isSuccess || isError
       ? {
           title: undefined,
           backdrop: isError ? "error" : "default",
@@ -89,11 +89,8 @@ export const ReviewTransaction = (props: Transaction) => {
         }
         {...modalProps}
       >
-        {isLoading ? (
-          <ReviewTransactionPending
-            txState={txState}
-            onClose={onMinimizeModal}
-          />
+        {isLoading && isBroadcasted ? (
+          <ReviewTransactionPending onClose={onMinimizeModal} />
         ) : isSuccess ? (
           <ReviewTransactionSuccess onClose={onMinimizeModal} />
         ) : isError ? (
@@ -122,6 +119,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
             onSignError={setSignError}
+            isLoading={isLoading}
           />
         ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
           <ReviewTransactionXCallForm
@@ -133,6 +131,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendEvmTx(data)
             }}
             onSignError={setSignError}
+            isLoading={isLoading}
           />
         ) : null}
       </Modal>

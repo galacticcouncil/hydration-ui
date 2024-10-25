@@ -64,6 +64,7 @@ type Props = TxProps & {
     xcallMeta?: Record<string, string>,
   ) => void
   onSignError?: (error: unknown) => void
+  isLoading: boolean
 }
 
 export const ReviewTransactionForm: FC<Props> = (props) => {
@@ -187,7 +188,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     wallet?.signer instanceof EthereumSigner ? evmWalletReady : true
 
   const isLoading =
-    transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
+    transactionValues.isLoading ||
+    signTx.isLoading ||
+    isChangingFeePaymentAsset ||
+    props.isLoading
   const hasMultipleFeeAssets =
     props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false

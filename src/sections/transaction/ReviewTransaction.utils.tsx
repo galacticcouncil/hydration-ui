@@ -183,7 +183,7 @@ export const useSendEvmTransactionMutation = (
 ) => {
   const { t } = useTranslation()
   const { loading, success, error, remove, sidebar } = useToast()
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
@@ -219,9 +219,8 @@ export const useSendEvmTransactionMutation = (
           hidden: true,
         })
 
-        setTxState("Broadcast")
+        setIsBroadcasted(true)
         const receipt = await evmTx.wait()
-        setTxState("InBlock")
 
         success({
           title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
@@ -247,7 +246,7 @@ export const useSendEvmTransactionMutation = (
 
   return {
     ...sendTx,
-    txState,
+    isBroadcasted,
   }
 }
 
@@ -356,7 +355,7 @@ export const useSendDispatchPermit = (
   const { t } = useTranslation()
   const { loading, success, error, remove, sidebar } = useToast()
   const queryClient = useQueryClient()
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const sendTx = useMutation(async ({ permit, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -385,9 +384,7 @@ export const useSendDispatchPermit = (
             xcallMeta,
           )
 
-          setTxState(status.type)
-
-          if (status.isReady && !isLoadingNotified) {
+          if (status.isBroadcast && txHash && !isLoadingNotified) {
             loadingToastId = loading({
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
               link,
@@ -397,6 +394,7 @@ export const useSendDispatchPermit = (
             })
 
             isLoadingNotified = true
+            setIsBroadcasted(true)
           }
 
           const account = new H160(permit.message.from).toAccount()
@@ -477,7 +475,7 @@ export const useSendDispatchPermit = (
 
   return {
     ...sendTx,
-    txState,
+    isBroadcasted,
   }
 }
 
@@ -495,7 +493,7 @@ export const useSendTransactionMutation = (
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { loading, success, error, remove, sidebar } = useToast()
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>()
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const sendTx = useMutation(async ({ tx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -511,9 +509,7 @@ export const useSendTransactionMutation = (
             xcallMeta,
           )
 
-          setTxState(status.type)
-
-          if (status.isReady && !isLoadingNotified) {
+          if (status.isBroadcast && txHash && !isLoadingNotified) {
             loadingToastId = loading({
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
               link,
@@ -523,6 +519,7 @@ export const useSendTransactionMutation = (
             })
 
             isLoadingNotified = true
+            setIsBroadcasted(true)
           }
 
           const apiPromise =
@@ -577,7 +574,7 @@ export const useSendTransactionMutation = (
 
   return {
     ...sendTx,
-    txState,
+    isBroadcasted,
   }
 }
 
