@@ -123,9 +123,9 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
 
         if (!totalIssuance || !spotPrice?.tokenOut) return undefined
 
-        const shareTokenDisplay = tvlDisplay.div(
-          totalIssuance.shiftedBy(-shareTokenMeta.decimals),
-        )
+        const shareTokenDisplay = tvlDisplay
+          .div(totalIssuance.shiftedBy(-shareTokenMeta.decimals))
+          .toFixed(6)
 
         return {
           tokenIn: shareTokenTvl.shareTokenId,

@@ -13,7 +13,6 @@ import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { Navigate, useNavigate, useSearch } from "@tanstack/react-location"
 import { MyOmnipoolTotal } from "sections/pools/header/MyOmnipoolTotal"
-import { MyStablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
@@ -116,6 +115,22 @@ const MyLiquidityData = () => {
     return BN_0
   }, [xykPools.data])
 
+  const stablePoolTotal = useMemo(() => {
+    if (pools.data) {
+      return pools.data.reduce((acc, pool) => {
+        if (pool.meta.isStableSwap && pool.balance && pool.spotPrice) {
+          acc = acc.plus(
+            pool.balance.freeBalance
+              .shiftedBy(-pool.meta.decimals)
+              .times(pool.spotPrice),
+          )
+        }
+        return acc
+      }, BN_0)
+    }
+    return BN_0
+  }, [pools.data])
+
   const filteredPools = useMemo(() => {
     const myPools = (pools.data ?? []).filter((pool) => pool.isPositions)
 
@@ -157,7 +172,13 @@ const MyLiquidityData = () => {
         values={[
           {
             label: t("liquidity.header.myTotal"),
-            content: <MyLiquidityTotal />,
+            content: (
+              <MyLiquidityTotal
+                xykTotal={xykTotal}
+                stablePoolTotal={stablePoolTotal}
+                isLoading={pools.isLoading || xykPools.isInitialLoading}
+              />
+            ),
           },
           {
             label: t("liquidity.header.omnipool"),
@@ -165,7 +186,13 @@ const MyLiquidityData = () => {
           },
           {
             label: t("liquidity.header.stablepool"),
-            content: <MyStablePoolsTotal />,
+            content: (
+              <HeaderTotalData
+                isLoading={pools.isLoading}
+                value={stablePoolTotal}
+                fontSize={19}
+              />
+            ),
           },
           {
             label: t("liquidity.header.isolated"),

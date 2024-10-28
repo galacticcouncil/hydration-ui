@@ -8,7 +8,9 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { PROVIDERS, useActiveProvider, useIndexerUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
-import { decodeAddress } from "@polkadot/util-crypto"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useBestNumber } from "./chain"
 
 export type TradeType = {
   name:
@@ -280,17 +282,17 @@ export function useTradeVolumes(
   })
 }
 
-export function useXYKTradeVolumes(assetIds: Maybe<u32 | string>[]) {
+export function useXYKTradeVolumes(addresses: Maybe<u32 | string>[]) {
   const indexerUrl = useIndexerUrl()
 
   return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.xykTradeVolume(assetId),
+    queries: addresses.map((address) => ({
+      queryKey: QUERY_KEYS.xykTradeVolume(address),
       queryFn:
-        assetId != null
-          ? getXYKTradeVolume(indexerUrl, assetId.toString())
+        address != null
+          ? getXYKTradeVolume(indexerUrl, address.toString())
           : undefinedNoop,
-      enabled: !!assetId,
+      enabled: !!address,
       refetchInterval: 30000,
     })),
   })
@@ -402,4 +404,70 @@ const getVolumeDaily = async (assetId?: string) => {
   const data: Promise<{ volume_usd: number; asset_id: number }[]> = res.json()
 
   return data
+}
+
+const squidUrl =
+  "https://galacticcouncil.squids.live/hydration-xyk-pools-indexer/v/v402/graphql"
+const VOLUME_BLOCK_COUNT = 7200 //24 hours
+
+export const useXYKSquidVolumes = (addresses: string[]) => {
+  const { data: bestNumber } = useBestNumber()
+
+  return useQuery(
+    QUERY_KEYS.xykSquidVolumes(addresses.length),
+    bestNumber
+      ? async () => {
+          const hexAddresses = addresses.map((address) =>
+            u8aToHex(decodeAddress(address)),
+          )
+          const startBlockNumber =
+            bestNumber.parachainBlockNumber.toNumber() - VOLUME_BLOCK_COUNT
+
+          const { xykPoolHistoricalVolumesByPeriod } = await request<{
+            xykPoolHistoricalVolumesByPeriod: {
+              nodes: {
+                poolId: string
+                assetAId: number
+                assetAVolume: string
+                assetBId: number
+                assetBVolume: string
+              }[]
+            }
+          }>(
+            squidUrl,
+            gql`
+              query MyQuery($poolIds: [String!]!, $startBlockNumber: Int!) {
+                xykPoolHistoricalVolumesByPeriod(
+                  filter: {
+                    poolIds: $poolIds
+                    startBlockNumber: $startBlockNumber
+                  }
+                ) {
+                  nodes {
+                    poolId
+                    assetAId
+                    assetAVolume
+                    assetBId
+                    assetBVolume
+                  }
+                }
+              }
+            `,
+            { poolIds: hexAddresses, startBlockNumber },
+          )
+
+          const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+
+          return nodes.map((node) => ({
+            poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
+            assetId: node.assetAId.toString(),
+            volume: node.assetAVolume,
+          }))
+        }
+      : undefinedNoop,
+    {
+      enabled: !!bestNumber && !!addresses.length,
+      staleTime: 100000, // replace by STALE_HOUR_TIME
+    },
+  )
 }
