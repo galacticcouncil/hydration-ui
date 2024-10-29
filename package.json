@@ -9,7 +9,6 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "preview": "turbo preview",
-    "storybook": "turbo storybook",
     "lint": "turbo lint"
   },
   "devDependencies": {
