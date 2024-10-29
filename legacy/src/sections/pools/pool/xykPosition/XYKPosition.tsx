@@ -76,7 +76,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     spotPrices.data,
   ])
 
-  if (!pool.shareTokenIssuance || pool.shareTokenIssuance.myPoolShare?.isZero())
+  if (!pool.shareTokenIssuance || !pool.shareTokenIssuance.myPoolShare)
     return null
 
   const onSuccess = () => {
