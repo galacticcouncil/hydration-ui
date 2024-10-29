@@ -7,7 +7,7 @@ import {
   Web3Provider,
 } from "@ethersproject/providers"
 import { useWeb3React } from "@web3-react/core"
-import { PopulatedTransaction, providers } from "ethers"
+import { constants, PopulatedTransaction, providers } from "ethers"
 import React, {
   ReactElement,
   useCallback,
@@ -63,7 +63,6 @@ export type Web3Data = {
     action?: ProtocolAction,
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signTxData: (unsignedData: string) => Promise<SignatureLike>
   error: Error | undefined
   switchNetworkError: Error | undefined
@@ -107,7 +106,10 @@ const getToastPropsByProtocolAction = (
       return {
         key: `lending.${action}.toast`,
         tOptions: {
-          value: call.data.amount,
+          value:
+            call.data.amount === constants.MaxUint256.toString()
+              ? undefined
+              : call.data.amount,
           symbol: asset.symbol,
           fixedPointScale: asset.decimals,
         },
