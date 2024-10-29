@@ -145,12 +145,7 @@ export const useTransactionValues = ({
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
-  if (
-    !feePaymentMeta ||
-    !paymentFeeHDX ||
-    !feeAssetBalance ||
-    !accountFeePaymentId
-  )
+  if (!feePaymentMeta || !paymentFeeHDX || !accountFeePaymentId)
     return {
       isLoading,
       data: {
@@ -204,7 +199,7 @@ export const useTransactionValues = ({
     }
   }
 
-  let isEnoughPaymentBalance
+  let isEnoughPaymentBalance: boolean
   if (srcChain === "bifrost") {
     // @TODO remove when fixed in xcm app
     isEnoughPaymentBalance = true
@@ -214,11 +209,13 @@ export const useTransactionValues = ({
       parseFloat(xcallMeta.srcChainFee)
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
-    isEnoughPaymentBalance = feeAssetBalance.balance
-      .shiftedBy(-feePaymentMeta.decimals)
-      .minus(displayFeePaymentValue ?? 0)
-      .minus(displayFeeExtra ?? 0)
-      .gt(0)
+    isEnoughPaymentBalance = feeAssetBalance?.balance
+      ? feeAssetBalance.balance
+          .shiftedBy(-feePaymentMeta.decimals)
+          .minus(displayFeePaymentValue ?? 0)
+          .minus(displayFeeExtra ?? 0)
+          .gt(0)
+      : false
   }
 
   let displayEvmFeePaymentValue
