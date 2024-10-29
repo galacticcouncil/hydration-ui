@@ -1,4 +1,4 @@
-import { TFarmAprData } from "api/farms"
+import { getTotalAPR, TFarmAprData } from "api/farms"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -19,7 +19,7 @@ export const GlobalFarmRowMulti = ({
   className,
 }: {
   farms: TFarmAprData[]
-  totalFee: BN
+  totalFee?: BN
   assetFee?: BN
   fontSize?: number
   iconSize?: number
@@ -28,6 +28,8 @@ export const GlobalFarmRowMulti = ({
 }) => {
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
+
+  const apr = totalFee ?? getTotalAPR(farms).plus(assetFee ?? 0)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
@@ -38,7 +40,7 @@ export const GlobalFarmRowMulti = ({
         }))}
       />
       <Text fs={fontSize} color="brightBlue200">
-        {t(`value.percentage`, { value: totalFee })}
+        {t(`value.percentage`, { value: apr })}
         {withAprSuffix ? ` ${t("apr")}` : ""}
       </Text>
       <InfoTooltip

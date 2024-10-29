@@ -21,6 +21,7 @@ type JoinFarmModalProps = {
   onClose: () => void
   position?: TLPData
   depositNft?: TDeposit
+  initialFarms?: TFarmAprData[]
 }
 
 export enum Page {
@@ -33,10 +34,11 @@ export const JoinFarmModal = ({
   onClose,
   position,
   depositNft,
+  initialFarms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const {
-    pool: { meta, id: poolId, farms },
+    pool: { meta, id: poolId, farms: allFarms },
   } = usePoolData()
   const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
   const [currentStep, setCurrentStep] = useState(0)
@@ -44,6 +46,7 @@ export const JoinFarmModal = ({
   const { getCurrentPeriod } = useFarmCurrentPeriod()
   const { page, direction, paginateTo } = useModalPagination()
 
+  const farms = initialFarms ?? allFarms
   const isMultipleFarms = farms.length > 1
 
   const joinFarms = useJoinFarms({

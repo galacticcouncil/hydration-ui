@@ -631,7 +631,7 @@ export const useAccountClaimableFarmValues = () => {
             return {
               poolId,
               rewardCurrency: reward.assetId,
-              value: scaleHuman(reward.value, meta.decimals).toFixed(4),
+              value: scaleHuman(reward.value, meta.decimals).toFixed(6),
               yieldFarmId,
               depositId: deposit.id,
               isXyk,
@@ -707,4 +707,10 @@ export const useSummarizeClaimableValues = (
   }, [claimableAssetValues, spotPrices])
 
   return { total, claimableAssetValues }
+}
+
+export const getTotalAPR = (farms: TFarmAprData[]) => {
+  const aprs = farms.map(({ apr }) => apr)
+
+  return aprs.reduce((acc, apr) => acc.plus(apr), BN_0)
 }

@@ -125,8 +125,8 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           <GlobalFarmRowMulti
             fontSize={11}
             iconSize={11}
-            assetFee={fee}
-            totalFee={totalFee}
+            assetFee={asset.isShareToken ? undefined : fee}
+            totalFee={asset.isShareToken ? undefined : totalFee}
             farms={farms}
             withAprSuffix
           />

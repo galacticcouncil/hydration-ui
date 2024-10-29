@@ -12,7 +12,6 @@ import {
 } from "sections/pools/farms/position/FarmingPosition.utils"
 import { omit } from "utils/rx"
 import { TDeposit } from "api/deposits"
-import { usePoolData } from "sections/pools/pool/Pool"
 
 type RedepositFarmsProps = {
   depositNft: TDeposit
@@ -28,9 +27,6 @@ export const RedepositFarms = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
-  const {
-    pool: { totalFee },
-  } = usePoolData()
 
   if (!availableYieldFarms.length) return null
 
@@ -45,7 +41,6 @@ export const RedepositFarms = ({
           farms={availableYieldFarms}
           fontSize={16}
           iconSize={24}
-          totalFee={totalFee}
           css={{ flexDirection: "row-reverse" }}
         />
       </div>
@@ -60,6 +55,7 @@ export const RedepositFarms = ({
       </SJoinButton>
       {joinFarm && (
         <JoinFarmModal
+          initialFarms={availableYieldFarms}
           position={
             !isXYKDeposit(depositData)
               ? omit(["depositId"], depositData)
