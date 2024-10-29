@@ -1,0 +1,19 @@
+{
+  "name": "hydration-ui",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "preview": "turbo preview",
+    "storybook": "turbo storybook",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.3"
+  },
+  "packageManager": "yarn@1.22.22"
+}

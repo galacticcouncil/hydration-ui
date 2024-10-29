@@ -1,0 +1,10 @@
+{
+  "root": true,
+  "extends": [
+    "@galacticcouncil/eslint-config/index.js",
+    "plugin:storybook/recommended"
+  ],
+  "rules": {
+    "no-restricted-imports": "off"
+  }
+}

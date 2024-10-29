@@ -1,0 +1,47 @@
+{
+  "name": "@galacticcouncil/ui",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --build && storybook dev --no-open -p 6006",
+    "build": "tsc --build && storybook build",
+    "preview": "http-server ./storybook-static -p 6007 -s",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src"
+  },
+  "dependencies": {
+    "@emotion/babel-plugin": "^11.12.0",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^1.9.0",
+    "@galacticcouncil/eslint-config": "*",
+    "@galacticcouncil/typescript-config": "*",
+    "@storybook/addon-essentials": "^8.3.6",
+    "@storybook/addon-interactions": "^8.3.6",
+    "@storybook/addon-links": "^8.3.6",
+    "@storybook/addon-themes": "^8.3.6",
+    "@storybook/blocks": "^8.3.6",
+    "@storybook/react": "^8.3.6",
+    "@storybook/react-vite": "^8.3.6",
+    "@storybook/test": "^8.3.6",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "8.57.0",
+    "eslint-plugin-storybook": "^0.10.1",
+    "http-server": "^14.1.1",
+    "prettier": "^3.3.3",
+    "storybook": "^8.3.6",
+    "tsup": "^8.3.5",
+    "typescript": "5.5.4",
+    "vite-tsconfig-paths": "^5.0.1"
+  }
+}

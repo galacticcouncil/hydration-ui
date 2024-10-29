@@ -1,0 +1,16 @@
+{
+  "extends": "@galacticcouncil/typescript-config/base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./build",
+    "jsxImportSource": "@emotion/react",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": ["src"],
+}

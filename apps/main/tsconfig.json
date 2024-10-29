@@ -1,0 +1,15 @@
+{
+  "extends": "@galacticcouncil/typescript-config/vite.json",
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/ui" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}
