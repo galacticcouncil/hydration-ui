@@ -36,6 +36,8 @@ export type TFeatureFlags = {
   dispatchPermit: boolean
 }
 
+export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
@@ -78,11 +80,10 @@ export const PROVIDERS: ProviderProps[] = [
     dataEnv: "testnet",
   },
   {
-    name: "Rococo via GC",
-    url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+    name: "Paseo",
+    url: `wss://${PASEO_WS_URL}`,
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
     env: ["rococo", "development"],
     dataEnv: "testnet",
   },
