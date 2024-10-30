@@ -18,6 +18,7 @@ import {
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
+import { CoinbaseWallet } from "sections/web3-connect/wallets/CoinbaseWallet"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -74,6 +75,12 @@ const metaMask: Wallet = new MetaMask({
   ),
 }) */
 
+const coinbaseWallet: Wallet = new CoinbaseWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.CoinbaseWallet,
+  ),
+})
+
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
@@ -103,6 +110,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
+  coinbaseWallet,
   //trustWallet,
   novaWallet,
   walletConnect,
@@ -150,6 +158,10 @@ const eip6963ProvidersByRdns = new Map([
     "com.brave.wallet",
     { Wallet: BraveWallet, type: WalletProviderType.BraveWallet },
   ],
+  [
+    "com.coinbase.wallet",
+    { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
+  ],
 ])
 
 /**
@@ -157,6 +169,7 @@ const eip6963ProvidersByRdns = new Map([
  * For more information, refer to https://eips.ethereum.org/EIPS/eip-6963
  */
 export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
+  console.log(event.detail)
   const provider = eip6963ProvidersByRdns.get(event.detail.info.rdns)
 
   if (provider) {
