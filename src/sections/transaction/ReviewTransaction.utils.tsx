@@ -19,7 +19,7 @@ import {
 import { useAssets } from "providers/assets"
 import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import {
@@ -358,6 +358,8 @@ export const useSendDispatchPermit = (
   const queryClient = useQueryClient()
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
+  const unsubscribeRef = useRef<null | (() => void)>(null)
+
   const sendTx = useMutation(async ({ permit, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
@@ -460,6 +462,8 @@ export const useSendDispatchPermit = (
             },
           })
 
+          unsubscribeRef.current = unsubscribe
+
           return onComplete(result)
         })
       } catch (err) {
@@ -471,6 +475,12 @@ export const useSendDispatchPermit = (
       }
     })
   }, options)
+
+  useEffect(() => {
+    return () => {
+      unsubscribeRef.current?.()
+    }
+  }, [])
 
   return {
     ...sendTx,
@@ -494,6 +504,8 @@ export const useSendTransactionMutation = (
   const { t } = useTranslation()
   const { loading, success, error, remove, sidebar } = useToast()
   const [isBroadcasted, setIsBroadcasted] = useState(false)
+
+  const unsubscribeRef = useRef<null | (() => void)>(null)
 
   const sendTx = useMutation(async ({ tx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -558,6 +570,8 @@ export const useSendTransactionMutation = (
             onSettled: unsubscribe,
           })
 
+          unsubscribeRef.current = unsubscribe
+
           return onComplete(result)
         })
       } catch (err) {
@@ -569,6 +583,12 @@ export const useSendTransactionMutation = (
       }
     })
   }, options)
+
+  useEffect(() => {
+    return () => {
+      unsubscribeRef.current?.()
+    }
+  }, [])
 
   return {
     ...sendTx,
