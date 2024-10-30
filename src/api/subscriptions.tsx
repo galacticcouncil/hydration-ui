@@ -1,4 +1,4 @@
-import { useOmnipoolAssetsSubsciption, useSquidSubscription } from "./omnipool"
+import { useOmnipoolAssetsSubsciption } from "./omnipool"
 
 export const QuerySubscriptions = () => {
   return <OmnipoolAssetsSubscription />
@@ -6,7 +6,6 @@ export const QuerySubscriptions = () => {
 
 const OmnipoolAssetsSubscription = () => {
   useOmnipoolAssetsSubsciption()
-  // useSquidSubscription()
 
   return null
 }

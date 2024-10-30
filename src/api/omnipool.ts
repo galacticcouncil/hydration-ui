@@ -15,10 +15,6 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
-import { createClient } from "graphql-ws"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { u8aToHex } from "@polkadot/util"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -44,66 +40,6 @@ export const useOmnipoolDataObserver = () => {
     dataMap: data ? new Map(data.map((asset) => [asset.id, asset])) : undefined,
     isLoading,
   }
-}
-
-const squidWSClient = createClient({
-  webSocketImpl: WebSocket,
-  url: "wss://galacticcouncil.squids.live/hydration-xyk-pools-indexer/graphql",
-})
-
-export const useSquidSubscription = () => {
-  const { shareTokens } = useAssets()
-
-  const hexAddresses = shareTokens.map((shareToken) =>
-    u8aToHex(decodeAddress(shareToken.poolAddress)),
-  )
-
-  useEffect(() => {
-    const unsubscribe = squidWSClient.subscribe(
-      {
-        query: `
-      subscription ($poolIds: [String!]!){
-        xykPoolHistoricalVolume(filter: {poolIds: $poolIds}) {
-          event
-          node {
-            assetAId
-            assetATotalVolumeIn
-            assetATotalVolumeOut
-            assetAVolumeIn
-            assetAVolumeOut
-            assetBId
-            assetBTotalVolumeIn
-            assetBTotalVolumeOut
-            assetBVolumeIn
-            assetBVolumeOut
-            paraChainBlockHeight
-            poolId
-          }
-        }
-      }
-      `,
-        variables: { poolIds: hexAddresses },
-      },
-      {
-        next: (data) => {
-          console.log(
-            `New transfers: ${JSON.parse(JSON.stringify(data))}`,
-            data,
-          )
-        },
-        error: (error) => {
-          console.error("error", error)
-        },
-        complete: () => {
-          console.log("done!")
-        },
-      },
-    )
-
-    return () => unsubscribe()
-  }, [])
-
-  return null
 }
 
 export const useOmnipoolAssetsSubsciption = () => {
