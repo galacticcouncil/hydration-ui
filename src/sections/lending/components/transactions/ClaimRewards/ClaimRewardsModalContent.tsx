@@ -47,6 +47,13 @@ export const ClaimRewardsModalContent = () => {
 
   const networkConfig = getNetworkConfig(currentChainId)
 
+  // is Network mismatched
+  const isWrongNetwork = currentChainId !== connectedChainId
+  const selectedReward =
+    selectedRewardSymbol === "all"
+      ? allReward
+      : rewards.find((r) => r.symbol === selectedRewardSymbol)
+
   // get all rewards
   useEffect(() => {
     const userIncentives: Reward[] = []
@@ -117,7 +124,14 @@ export const ClaimRewardsModalContent = () => {
 
     setRewards(userIncentives)
     setClaimableUsd(totalClaimableUsd.toString())
-  }, [])
+  }, [
+    claimableUsd,
+    currentMarketData.chainId,
+    currentMarketData.v3,
+    reserves,
+    selectedReward,
+    user.calculatedUserIncentives,
+  ])
 
   // error handling
   let blockingError: ErrorType | undefined = undefined
@@ -134,13 +148,6 @@ export const ClaimRewardsModalContent = () => {
         return null
     }
   }
-
-  // is Network mismatched
-  const isWrongNetwork = currentChainId !== connectedChainId
-  const selectedReward =
-    selectedRewardSymbol === "all"
-      ? allReward
-      : rewards.find((r) => r.symbol === selectedRewardSymbol)
 
   if (txError && txError.blocking) {
     return <TxErrorView txError={txError} />
@@ -183,9 +190,7 @@ export const ClaimRewardsModalContent = () => {
             <>
               <Row
                 caption={<span>Balance</span>}
-                captionVariant="description"
-                align="flex-start"
-                mb={selectedReward.symbol !== "all" ? 0 : 4}
+                sx={{ mb: selectedReward.symbol !== "all" ? 0 : 4 }}
               >
                 <Box
                   sx={{

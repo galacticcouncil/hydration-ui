@@ -86,8 +86,11 @@ export class WalletConnectConnector extends AbstractConnector {
       const accounts = await this.walletConnectProvider.enable()
       const defaultAccount = accounts[0]
       return { provider: this.walletConnectProvider, account: defaultAccount }
-    } catch (error) {
-      if (error.message === "Connection request reset. Please try again.") {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message === "Connection request reset. Please try again."
+      ) {
         throw new UserRejectedRequestError()
       }
       throw error

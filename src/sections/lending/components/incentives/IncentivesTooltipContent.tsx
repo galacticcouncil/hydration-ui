@@ -67,7 +67,6 @@ export const IncentivesTooltipContent = ({
       <Box sx={{ width: "100%" }}>
         {incentives.map((incentive) => (
           <Row
-            height={32}
             caption={
               <Box
                 sx={{
@@ -86,7 +85,6 @@ export const IncentivesTooltipContent = ({
               </Box>
             }
             key={incentive.rewardTokenAddress}
-            width="100%"
           >
             <Number incentiveAPR={incentive.incentiveAPR} />
           </Row>
@@ -100,7 +98,7 @@ export const IncentivesTooltipContent = ({
               border: `1px solid ${theme.palette.divider}`,
             })}
           >
-            <Row caption={<span>Net APR</span>} height={32}>
+            <Row caption={<span>Net APR</span>}>
               <Number incentiveAPR={incentivesNetAPR} />
             </Row>
           </Box>

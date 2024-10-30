@@ -55,6 +55,7 @@ const useGetEns = (address: string): EnsResponse => {
     if (ensName) {
       getAvatar(ensName)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ensName])
 
   return { name: ensName, avatar: ensAvatar }

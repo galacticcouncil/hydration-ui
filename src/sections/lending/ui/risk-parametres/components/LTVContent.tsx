@@ -87,12 +87,7 @@ export const LTVContent = ({
               textAlign: liquidationThresholdPercent > 75 ? "right" : "center",
             }}
           >
-            <Text
-              fs={13}
-              font="GeistSemiBold"
-              color="red400"
-              tAlign="right"
-            >
+            <Text fs={13} font="GeistSemiBold" color="red400" tAlign="right">
               {(Number(currentLiquidationThreshold) * 100).toFixed(2)}%
             </Text>
             <Text fs={13} color="red400" tAlign="right">
@@ -145,14 +140,14 @@ export const LTVContent = ({
                 LTVLineWidth > 75
                   ? "flex-end"
                   : LTVLineWidth < 15
-                  ? "flex-start"
-                  : "center",
+                    ? "flex-start"
+                    : "center",
               textAlign:
                 LTVLineWidth > 75
                   ? "right"
                   : LTVLineWidth < 15
-                  ? "left"
-                  : "center",
+                    ? "left"
+                    : "center",
               bottom: "calc(100% + 2px)",
             }}
           >

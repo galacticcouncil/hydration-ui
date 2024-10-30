@@ -143,8 +143,6 @@ export const availableMarkets = Object.keys(marketsData).filter((key) =>
   ),
 ) as CustomMarket[]
 
-console.log({ availableMarkets })
-
 const linkBuilder =
   ({
     baseUrl,
@@ -233,8 +231,6 @@ const v2MainnetDisableProposal =
   "https://governance-v2.aave.com/governance/proposal/111"
 const v2MainnetDisableProposal2 =
   "https://governance-v2.aave.com/governance/proposal/125"
-const v2PolygonDisableProposal =
-  "https://governance-v2.aave.com/governance/proposal/124"
 
 export const frozenProposalMap: Record<string, string> = {
   ["UST" + CustomMarket.proto_mainnet]: ustDisableProposal,
@@ -279,12 +275,6 @@ export const frozenProposalMap: Record<string, string> = {
   ["LINK" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
   ["UNI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
   ["SNX" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["BAL" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
-  ["CRV" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
-  ["DPI" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
-  ["GHST" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
-  ["LINK" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
-  ["XSUSHI" + CustomMarket.proto_polygon]: v2PolygonDisableProposal,
 }
 
 // reexport so we can forbit config import

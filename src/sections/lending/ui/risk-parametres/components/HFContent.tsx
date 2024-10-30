@@ -69,14 +69,14 @@ export const HFContent = ({ healthFactor }: HFContentProps) => {
                 dotPosition > 75
                   ? "flex-end"
                   : dotPosition < 15
-                  ? "flex-start"
-                  : "center",
+                    ? "flex-start"
+                    : "center",
               textAlign:
                 dotPosition > 75
                   ? "right"
                   : dotPosition < 15
-                  ? "left"
-                  : "center",
+                    ? "left"
+                    : "center",
               bottom: "calc(100% + 2px)",
             }}
           >

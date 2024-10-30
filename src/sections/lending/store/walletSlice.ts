@@ -1,4 +1,4 @@
-import { WalletType } from "sections/lendinglibs/web3-data-provider/WalletOptions"
+import { WalletType } from "sections/lending/libs/web3-data-provider/WalletOptions"
 import { StateCreator } from "zustand"
 
 import { RootStore } from "./root"

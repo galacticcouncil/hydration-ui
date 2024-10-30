@@ -9,7 +9,6 @@ import {
   EthereumTransactionTypeExtended,
   FaucetParamsType,
   FaucetService,
-  gasLimitRecommendations,
   IncentivesController,
   IncentivesControllerV2,
   IncentivesControllerV2Interface,
@@ -23,7 +22,6 @@ import {
   PoolBaseCurrencyHumanized,
   PoolBundle,
   PoolBundleInterface,
-  ProtocolAction,
   ReserveDataHumanized,
   ReservesIncentiveDataHumanized,
   UiIncentiveDataProvider,
@@ -50,10 +48,12 @@ import { BigNumber, PopulatedTransaction, Signature, utils } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
 import { produce } from "immer"
 import { ClaimRewardsActionsProps } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions"
-import { DebtSwitchActionProps } from "sections/lending/components/transactions/DebtSwitch/DebtSwitchActions"
-import { CollateralRepayActionProps } from "sections/lending/components/transactions/Repay/CollateralRepayActions"
-import { SwapActionProps } from "sections/lending/components/transactions/Swap/SwapActions"
-import { WithdrawAndSwitchActionProps } from "sections/lending/components/transactions/Withdraw/WithdrawAndSwitchActions"
+import {
+  DebtSwitchActionProps,
+  CollateralRepayActionProps,
+  SwapActionProps,
+  WithdrawAndSwitchActionProps,
+} from "sections/lending/helpers/types"
 import { Approval } from "sections/lending/helpers/useTransactionHandler"
 import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
 import {

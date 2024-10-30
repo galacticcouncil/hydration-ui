@@ -1,5 +1,3 @@
-
-
 export const StETHCollateralWarning = () => {
   return (
     <span>

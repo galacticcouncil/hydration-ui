@@ -54,7 +54,7 @@ export const BorrowAssetsTable = () => {
       addons={
         account &&
         user?.totalCollateralMarketReferenceCurrency === "0" && (
-          <Alert variant="info">
+          <Alert variant="info" size="small">
             <Text fs={13}>{t("lending.borrow.table.alert")}</Text>
           </Alert>
         )

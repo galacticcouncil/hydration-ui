@@ -1,26 +1,20 @@
 import { PERMISSION } from "@aave/contract-helpers"
-import React, { useState } from "react"
+import { useState } from "react"
+import { BasicModal } from "sections/lending/components/primitives/BasicModal"
+import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import {
   ModalContextType,
   ModalType,
   useModalContext,
 } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { useRootStore } from "sections/lending/store/root"
-
-import { BasicModal } from "sections/lending/components/primitives/BasicModal"
-import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { BorrowModalContent } from "./BorrowModalContent"
-import { GhoBorrowModalContent } from "./GhoBorrowModalContent"
 
 export const BorrowModal = () => {
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
-  const { currentMarket } = useProtocolDataContext()
 
   const [borrowUnWrapped, setBorrowUnWrapped] = useState(false)
-  const [displayGho] = useRootStore((store) => [store.displayGho])
 
   const handleBorrowUnwrapped = (borrowUnWrapped: boolean) => {
     setBorrowUnWrapped(borrowUnWrapped)
@@ -35,17 +29,13 @@ export const BorrowModal = () => {
         keepWrappedSymbol={!borrowUnWrapped}
         requiredPermission={PERMISSION.BORROWER}
       >
-        {(params) =>
-          displayGho({ symbol: params.symbol, currentMarket }) ? (
-            <GhoBorrowModalContent {...params} />
-          ) : (
-            <BorrowModalContent
-              {...params}
-              unwrap={borrowUnWrapped}
-              setUnwrap={handleBorrowUnwrapped}
-            />
-          )
-        }
+        {(params) => (
+          <BorrowModalContent
+            {...params}
+            unwrap={borrowUnWrapped}
+            setUnwrap={handleBorrowUnwrapped}
+          />
+        )}
       </ModalWrapper>
     </BasicModal>
   )
