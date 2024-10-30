@@ -11,10 +11,11 @@ import {
 import { undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
-import { BN_0, HOUR_STALE_TIME } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
+import { millisecondsInHour } from "date-fns/constants"
 
 export type TDeposit = {
   id: string
@@ -395,6 +396,6 @@ export const useAccountAssets = (givenAddress?: string) => {
           }
         }
       : undefinedNoop,
-    { enabled: !!address && isLoaded, staleTime: HOUR_STALE_TIME },
+    { enabled: !!address && isLoaded, staleTime: millisecondsInHour },
   )
 }

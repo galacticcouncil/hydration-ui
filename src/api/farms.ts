@@ -7,13 +7,7 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import {
-  BLOCK_TIME,
-  BN_0,
-  BN_1,
-  HOUR_STALE_TIME,
-  PARACHAIN_BLOCK_TIME,
-} from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_1, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
@@ -36,6 +30,7 @@ import { OmnipoolLiquidityMiningClaimSim } from "utils/farms/claiming/claimSimul
 import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
+import { millisecondsInHour } from "date-fns/constants"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -232,7 +227,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data: activeFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
     getActiveFarms(api, ids),
-    { enabled: !!ids.length && isLoaded, staleTime: HOUR_STALE_TIME },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
   return useQuery(
@@ -243,7 +238,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
     {
       enabled: !!activeFarms?.length && isLoaded,
       select,
-      staleTime: HOUR_STALE_TIME,
+      staleTime: millisecondsInHour,
     },
   )
 }
@@ -255,7 +250,7 @@ export const useXYKFarms = (ids: string[]) => {
   const { data: activeFarms } = useQuery(
     QUERY_KEYS.xykActiveFarms,
     getActiveFarms(api, ids, true),
-    { enabled: !!ids.length && isLoaded, staleTime: HOUR_STALE_TIME },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
   return useQuery(
@@ -266,7 +261,7 @@ export const useXYKFarms = (ids: string[]) => {
     {
       enabled: !!activeFarms?.length && isLoaded,
       select,
-      staleTime: HOUR_STALE_TIME,
+      staleTime: millisecondsInHour,
     },
   )
 }
@@ -660,7 +655,7 @@ export const useAccountClaimableFarmValues = () => {
           return map
         }, new Map()),
       enabled: isLoaded && !!allDeposits.length && !!accountAddress,
-      staleTime: HOUR_STALE_TIME,
+      staleTime: millisecondsInHour,
       refetchInterval: 60000,
     },
   )
