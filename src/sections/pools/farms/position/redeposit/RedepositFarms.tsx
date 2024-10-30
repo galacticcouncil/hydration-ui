@@ -5,7 +5,7 @@ import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import {
   isXYKDeposit,
   TDepositData,
@@ -15,7 +15,7 @@ import { TDeposit } from "api/deposits"
 
 type RedepositFarmsProps = {
   depositNft: TDeposit
-  availableYieldFarms: Farm[]
+  availableYieldFarms: TFarmAprData[]
   depositData: TDepositData
 }
 
@@ -55,7 +55,7 @@ export const RedepositFarms = ({
       </SJoinButton>
       {joinFarm && (
         <JoinFarmModal
-          farms={availableYieldFarms}
+          initialFarms={availableYieldFarms}
           position={
             !isXYKDeposit(depositData)
               ? omit(["depositId"], depositData)

@@ -15,6 +15,7 @@ import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
+import { millisecondsInHour } from "date-fns/constants"
 
 export type TDeposit = {
   id: string
@@ -391,9 +392,10 @@ export const useAccountAssets = (givenAddress?: string) => {
             accountStableswapMap,
             isAnyPoolPositions,
             balances: allBalances,
+            accountAddress: address,
           }
         }
       : undefinedNoop,
-    { enabled: !!address && isLoaded },
+    { enabled: !!address && isLoaded, staleTime: millisecondsInHour },
   )
 }
