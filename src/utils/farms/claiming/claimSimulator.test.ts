@@ -128,7 +128,7 @@ test("create mock type registry", () => {
     [
       {
         id: "0",
-        existentialDeposit: new BigNumber("1000000000000"),
+        existentialDeposit: "1000000000000",
       },
     ],
   )

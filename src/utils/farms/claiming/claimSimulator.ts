@@ -24,7 +24,7 @@ export class OmnipoolLiquidityMiningClaimSim {
     multiCurrency: MultiCurrencyContainer,
     protected assetRegistry: Array<{
       id: string
-      existentialDeposit: BN
+      existentialDeposit: string
     }>,
   ) {
     this.get_account = addressResolver
