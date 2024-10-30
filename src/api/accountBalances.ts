@@ -4,68 +4,64 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { u32, StorageKey } from "@polkadot/types"
-import { OrmlTokensAccountData } from "@polkadot/types/lookup"
+import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { parseBalanceData } from "./balances"
+import { BalanceClient } from "@galacticcouncil/sdk"
 
 export const useAccountBalances = (
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh
       ? QUERY_KEYS.accountBalances(address)
       : QUERY_KEYS.accountBalancesLive(address),
-    !!address ? getAccountBalances(api, address) : undefinedNoop,
+    !!address ? getAccountBalances(balanceClient, address) : undefinedNoop,
     { enabled: address != null && isLoaded },
   )
 }
 
 export const useAccountsBalances = (addresses: string[]) => {
-  const { api } = useRpcProvider()
+  const { balanceClient } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.accountsBalances(addresses),
     () =>
       Promise.all(
-        addresses.map((address) => getAccountBalances(api, address)()),
+        addresses.map((address) =>
+          getAccountBalances(balanceClient, address)(),
+        ),
       ),
     { enabled: !!addresses.length },
   )
 }
 
-export const createAccountBalancesFetcher =
-  (api: ApiPromise) => async (accountId: AccountId32 | string) => {
-    const params = api.createType("AccountId", accountId)
-    const result = await api.rpc.state.call(
-      "CurrenciesApi_accounts",
-      params.toHex(),
-    )
-    const balances = api.createType(
-      "Vec<(AssetId, OrmlTokensAccountData)>",
-      result,
-    )
-
-    return balances as unknown as [StorageKey<[u32]>, OrmlTokensAccountData][]
-  }
-
 export const getAccountBalances = (
-  api: ApiPromise,
+  balanceClient: BalanceClient,
   accountId: AccountId32 | string,
 ) => {
-  const fetchAccountBalances = createAccountBalancesFetcher(api)
-
   return async () => {
-    const tokens = await fetchAccountBalances(accountId)
+    const tokens = await balanceClient.getAccountBalanceData(
+      accountId.toString(),
+    )
 
     const balances = tokens.map(([id, data]) => {
       return parseBalanceData(data, id.toString(), accountId.toString())
     })
 
-    const native = balances.find(({ assetId }) => assetId === NATIVE_ASSET_ID)
+    const native = balances.find(
+      ({ assetId }) => assetId === NATIVE_ASSET_ID,
+    ) ?? {
+      accountId: accountId.toString(),
+      assetId: NATIVE_ASSET_ID,
+      balance: new BigNumber(0),
+      total: new BigNumber(0),
+      freeBalance: new BigNumber(0),
+      reservedBalance: new BigNumber(0),
+    }
 
     return { native, balances, accountId }
   }

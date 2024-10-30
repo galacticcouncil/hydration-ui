@@ -14,7 +14,6 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
-import { createAccountBalancesFetcher } from "api/accountBalances"
 
 export type TDeposit = {
   id: string
@@ -152,13 +151,11 @@ const parseDepositData = (
 
 export const useAccountAssets = (givenAddress?: string) => {
   const { account } = useAccount()
-  const { api, isLoaded } = useRpcProvider()
+  const { api, balanceClient, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, getShareTokenByAddress, isShareToken } =
     useAssets()
 
   const address = givenAddress ?? account?.address
-
-  const fetchAccountBalances = createAccountBalancesFetcher(api)
 
   return useQuery(
     QUERY_KEYS.accountAssets(address),
@@ -169,7 +166,7 @@ export const useAccountAssets = (givenAddress?: string) => {
               api.consts.omnipool.nftCollectionId,
               api.consts.omnipoolLiquidityMining.nftCollectionId,
               api.consts.xykLiquidityMining.nftCollectionId,
-              fetchAccountBalances(address),
+              balanceClient.getAccountBalanceData(address),
             ])
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([

@@ -12,6 +12,7 @@ import {
   PalletBalancesAccountData,
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
+import { BalanceClient } from "@galacticcouncil/sdk"
 
 export type TBalance = ReturnType<typeof parseBalanceData>
 
@@ -35,29 +36,16 @@ export const parseBalanceData = (
   }
 }
 
-export const createTokenBalanceFetcher =
-  (api: ApiPromise) =>
-  async (account: AccountId32 | string, id: string | u32) => {
-    const params = api.createType("(AssetId, AccountId)", [id, account])
-    const result = await api.rpc.state.call(
-      "CurrenciesApi_account",
-      params.toHex(),
-    )
-    return api.createType<OrmlTokensAccountData>(
-      "OrmlTokensAccountData",
-      result,
-    )
-  }
-
 export const getTokenBalance = (
-  api: ApiPromise,
+  balanceClient: BalanceClient,
   account: AccountId32 | string,
   id: string | u32,
 ) => {
-  const fetchTokenBalance = createTokenBalanceFetcher(api)
-
   return async () => {
-    const res = await fetchTokenBalance(account, id)
+    const res = await balanceClient.getTokenBalanceData(
+      account.toString(),
+      id.toString(),
+    )
 
     return parseBalanceData(res, id.toString(), account.toString())
   }
@@ -67,13 +55,13 @@ export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    enabled ? getTokenBalance(api, address, id) : undefinedNoop,
+    enabled ? getTokenBalance(balanceClient, address, id) : undefinedNoop,
     { enabled },
   )
 }
@@ -83,14 +71,16 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
-      queryFn: address ? getTokenBalance(api, address, id) : undefinedNoop,
+      queryFn: address
+        ? getTokenBalance(balanceClient, address, id)
+        : undefinedNoop,
       enabled: !!id && !!address && isLoaded,
     })),
   })

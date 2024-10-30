@@ -10,6 +10,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
+  BalanceClient,
   PoolService,
   PoolType,
   TradeRouter,
@@ -263,10 +264,13 @@ export const useProviderData = () => {
         tradeRouter.getPools(),
       ])
 
+      const balanceClient = new BalanceClient(api)
+
       return {
         api,
         tradeRouter,
         poolService,
+        balanceClient,
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
