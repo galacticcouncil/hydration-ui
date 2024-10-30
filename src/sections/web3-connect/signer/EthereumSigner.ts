@@ -82,6 +82,7 @@ export class EthereumSigner {
   }
 
   getPermitNonce = async (): Promise<BigNumber> => {
+    await this.requestNetworkSwitch("hydration")
     const callPermit = new Contract(
       CALL_PERMIT_ADDRESS,
       CALL_PERMIT_ABI,
