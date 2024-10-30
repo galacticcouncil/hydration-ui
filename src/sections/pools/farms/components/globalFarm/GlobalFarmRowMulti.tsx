@@ -44,6 +44,7 @@ export const GlobalFarmRowMulti = ({
         {withAprSuffix ? ` ${t("apr")}` : ""}
       </Text>
       <InfoTooltip
+        preventDefault
         text={
           <>
             <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
