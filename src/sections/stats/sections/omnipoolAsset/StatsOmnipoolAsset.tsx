@@ -145,6 +145,8 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
             assetId,
             fee: omnipoolAsset.fee,
+            totalFee: omnipoolAsset.totalFee,
+            farms: omnipoolAsset.farms,
           }}
           isLoadingFee={omnipoolAsset.isLoadingFee}
         />

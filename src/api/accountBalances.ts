@@ -57,18 +57,7 @@ export const getAccountBalances =
     return { native, balances, accountId }
   }
 
-export const useAccountAssetBalances = (
-  pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
-) => {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.accountAssetBalances(pairs),
-    pairs != null ? getAccountAssetBalances(api, pairs) : undefinedNoop,
-    { enabled: pairs.length > 0 },
-  )
-}
-
-const getAccountAssetBalances =
+export const getAccountAssetBalances =
   (
     api: ApiPromise,
     pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,

@@ -1,4 +1,4 @@
-import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms"
+import { getTotalAPR, TFarmAprData } from "api/farms"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -12,12 +12,14 @@ import { BN_0 } from "utils/constants"
 export const GlobalFarmRowMulti = ({
   farms,
   assetFee = BN_0,
+  totalFee,
   fontSize = 14,
   iconSize = 14,
   withAprSuffix = false,
   className,
 }: {
-  farms: Farm[]
+  farms: TFarmAprData[]
+  totalFee?: BN
   assetFee?: BN
   fontSize?: number
   iconSize?: number
@@ -26,24 +28,19 @@ export const GlobalFarmRowMulti = ({
 }) => {
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
-  const farmAprs = useFarmAprs(farms)
 
-  if (!farmAprs.data) return null
-
-  const { maxApr } = getMinAndMaxAPR(farmAprs)
-
-  const totalMaxApr = maxApr.plus(assetFee ?? 0)
+  const apr = totalFee ?? getTotalAPR(farms).plus(assetFee ?? 0)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
       <MultipleIcons
         size={iconSize}
-        icons={farmAprs.data.map((farm) => ({
-          icon: <AssetLogo id={farm.assetId.toString()} />,
+        icons={farms.map((farm) => ({
+          icon: <AssetLogo id={farm.rewardCurrency} />,
         }))}
       />
       <Text fs={fontSize} color="brightBlue200">
-        {t(`value.percentage`, { value: totalMaxApr })}
+        {t(`value.percentage`, { value: apr })}
         {withAprSuffix ? ` ${t("apr")}` : ""}
       </Text>
       <InfoTooltip
@@ -63,7 +60,7 @@ export const GlobalFarmRowMulti = ({
                 </Text>
               </div>
             )}
-            {farmAprs.data.length > 0 && (
+            {farms.length > 0 && (
               <div
                 sx={{
                   flex: "row",
@@ -81,19 +78,16 @@ export const GlobalFarmRowMulti = ({
                 </Text>
               </div>
             )}
-            {farmAprs.data.map(({ assetId, apr }) => {
+            {farms.map(({ rewardCurrency, apr }) => {
               return (
                 <div
-                  key={assetId.toString()}
+                  key={rewardCurrency}
                   sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
                 >
                   <div sx={{ flex: "row", gap: 4, align: "center" }}>
-                    <Icon
-                      size={14}
-                      icon={<AssetLogo id={assetId.toString()} />}
-                    />
+                    <Icon size={14} icon={<AssetLogo id={rewardCurrency} />} />
                     <Text fs={12}>
-                      {getAssetWithFallback(assetId.toString()).symbol}
+                      {getAssetWithFallback(rewardCurrency).symbol}
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
