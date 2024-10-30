@@ -631,7 +631,7 @@ export const useAccountClaimableFarmValues = () => {
             return {
               poolId,
               rewardCurrency: reward.assetId,
-              value: scaleHuman(reward.value, meta.decimals).toFixed(6),
+              value: scaleHuman(reward.value, meta.decimals).toFixed(8),
               yieldFarmId,
               depositId: deposit.id,
               isXyk,
