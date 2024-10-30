@@ -190,7 +190,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         // move to unknown state
         if (hoursDiff >= 1 || !toastData.txHash?.length) {
           toast.remove(toastData.id)
-          toast.add("unknown", toastData)
+          toast.add("unknown", { ...toastData, hidden: true })
 
           return false
         }
@@ -201,20 +201,12 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         if (isExtrinsic) {
           const isSuccess = res.extrinsics[0].success
 
-          // use subscan to get extrinsic info
-          // const txInfoRes = await fetch(txInfoSubscan, {
-          //   method: "POST",
-          //   body: JSON.stringify({ hash: toastData.txHash }),
-          // })
-
-          // const data: { data: { success: boolean } } = await txInfoRes.json()
-
           toast.remove(toastData.id)
 
           if (isSuccess) {
-            toast.add("success", toastData)
+            toast.add("success", { ...toastData, hidden: true })
           } else {
-            toast.add("error", toastData)
+            toast.add("error", { ...toastData, hidden: true })
           }
 
           return true
