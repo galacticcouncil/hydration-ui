@@ -2322,10 +2322,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@5.0.0-pr76-67d3d8f":
-  version "5.0.0-pr76-67d3d8f"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.0.0-pr76-67d3d8f.tgz#f82ca8a4426f04fd13354d0879967dd9b3b3febb"
-  integrity sha512-LqIT/0MELgsd2EgPtMNPdrdOmEb2h4SlWTQadg5OStFQXkJvhvQY3qWU7NA8KDLEHgCknO49yCa3oxSoJMTI9A==
+"@galacticcouncil/sdk@4.3.0-pr76-ee87b95":
+  version "4.3.0-pr76-ee87b95"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.3.0-pr76-ee87b95.tgz#b40b70e875fd785b31102aa6c51912fc34a12d65"
+  integrity sha512-L7cB2LY48QTVZD8YgKpaW6CAA31GeeGiTkE9Ugs5PVZXONJOR5cQYAkf/2i3/vA3x9GrAw0J2OI8wZSXjelK6Q==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2366,10 +2366,10 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@7.0.0-pr76-67d3d8f":
-  version "7.0.0-pr76-67d3d8f"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-7.0.0-pr76-67d3d8f.tgz#293cd52b9904f4060de50d01f151674b9d1a2e72"
-  integrity sha512-hKnrWJjDvBf7haLpGsAmYif1NP9sIhllAKPDJf5jVp/OIJ1onH43OlVme+Bn8twi7kAGnuFKQ5tF7dROUeJbNQ==
+"@galacticcouncil/xcm-sdk@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.0.0.tgz#a034885a226344c8277cc04bb5f9e236346eb816"
+  integrity sha512-mDS8b4DPnJe2dvDyDCs/wEg2cE4itOShUFY0rayw1R26CB5NozOkzn0vynOa7IrdrxnDAtLYZcr5N439ltQiZg==
   dependencies:
     "@galacticcouncil/xcm-core" "^5.0.0"
 
