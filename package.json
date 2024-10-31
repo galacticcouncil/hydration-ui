@@ -50,7 +50,6 @@
     "@galacticcouncil/xcm-cfg": "^5.1.0",
     "@galacticcouncil/xcm-core": "^5.0.0",
     "@galacticcouncil/xcm-sdk": "^6.0.0",
-    "@gnosis.pm/safe-apps-web3-react": "1.2.0",
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
     "@polkadot/api": "12.1.1",
