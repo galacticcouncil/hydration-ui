@@ -38,11 +38,7 @@ export const CollateralChangeModalContent = ({
   isWrongNetwork,
   symbol,
 }: ModalWrapperProps) => {
-  const {
-    gasLimit,
-    mainTxState: collateralChangeTxState,
-    txError,
-  } = useModalContext()
+  const { mainTxState: collateralChangeTxState, txError } = useModalContext()
   const { user } = useAppDataContext()
   const { debtCeiling } = useAssetCaps()
 
@@ -136,7 +132,7 @@ export const CollateralChangeModalContent = ({
 
   return (
     <>
-      <TxModalDetails gasLimit={gasLimit}>
+      <TxModalDetails>
         <DetailsNumberLine
           symbol={poolReserve.symbol}
           iconSymbol={poolReserve.iconSymbol}

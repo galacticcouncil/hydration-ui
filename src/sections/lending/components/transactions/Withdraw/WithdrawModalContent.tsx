@@ -40,7 +40,7 @@ export const WithdrawModalContent = ({
   unwrap: boolean
   setUnwrap: (unwrap: boolean) => void
 }) => {
-  const { gasLimit, mainTxState: withdrawTxState, txError } = useModalContext()
+  const { mainTxState: withdrawTxState, txError } = useModalContext()
   const { user } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
 
@@ -149,7 +149,7 @@ export const WithdrawModalContent = ({
         </Text>
       )}
 
-      <TxModalDetails gasLimit={gasLimit}>
+      <TxModalDetails>
         <DetailsNumberLine
           description={<span>Remaining supply</span>}
           value={underlyingBalance.minus(withdrawAmount || "0").toString(10)}

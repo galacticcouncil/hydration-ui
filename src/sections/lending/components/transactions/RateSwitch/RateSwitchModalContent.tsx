@@ -31,11 +31,7 @@ export const RateSwitchModalContent = ({
   poolReserve,
   userReserve,
 }: ModalWrapperProps & { currentRateMode: InterestRate }) => {
-  const {
-    mainTxState: rateSwitchTxState,
-    gasLimit,
-    txError,
-  } = useModalContext()
+  const { mainTxState: rateSwitchTxState, txError } = useModalContext()
 
   const rateModeAfterSwitch =
     InterestRate.Variable === currentRateMode
@@ -98,7 +94,7 @@ export const RateSwitchModalContent = ({
       {blockingError !== undefined && (
         <Alert variant="error">{handleBlocked()}</Alert>
       )}
-      <TxModalDetails gasLimit={gasLimit}>
+      <TxModalDetails>
         <DetailsNumberLine
           description={<span>New APY</span>}
           value={apyAfterSwitch}

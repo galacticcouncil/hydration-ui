@@ -94,7 +94,7 @@ export const BorrowModalContent = ({
   unwrap: boolean
   setUnwrap: (unwrap: boolean) => void
 }) => {
-  const { mainTxState: borrowTxState, gasLimit, txError } = useModalContext()
+  const { mainTxState: borrowTxState, txError } = useModalContext()
   const { user, marketReferencePriceInUsd } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
   const { borrowCap } = useAssetCaps()
@@ -278,7 +278,7 @@ export const BorrowModalContent = ({
         />
       )}
 
-      <TxModalDetails gasLimit={gasLimit}>
+      <TxModalDetails>
         <DetailsIncentivesLine
           incentives={incentive}
           symbol={poolReserve.symbol}

@@ -28,11 +28,7 @@ export enum ErrorType {
 }
 
 export const ClaimRewardsModalContent = () => {
-  const {
-    gasLimit,
-    mainTxState: claimRewardsTxState,
-    txError,
-  } = useModalContext()
+  const { mainTxState: claimRewardsTxState, txError } = useModalContext()
   const { user, reserves } = useAppDataContext()
   const { currentChainId, currentMarketData } = useProtocolDataContext()
   const { chainId: connectedChainId, readOnlyModeAddress } = useWeb3Context()
@@ -179,7 +175,7 @@ export const ClaimRewardsModalContent = () => {
       )}
 
       {selectedReward && (
-        <TxModalDetails gasLimit={gasLimit}>
+        <TxModalDetails>
           {selectedRewardSymbol === "all" && (
             <>
               <Row

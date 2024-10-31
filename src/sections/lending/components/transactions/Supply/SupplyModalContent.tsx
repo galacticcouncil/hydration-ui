@@ -45,7 +45,7 @@ export const SupplyModalContent = React.memo(
   }: ModalWrapperProps) => {
     const { marketReferencePriceInUsd, user } = useAppDataContext()
     const { currentNetworkConfig } = useProtocolDataContext()
-    const { mainTxState: supplyTxState, gasLimit, txError } = useModalContext()
+    const { mainTxState: supplyTxState, txError } = useModalContext()
     const { supplyCap: supplyCapUsage, debtCeiling: debtCeilingUsage } =
       useAssetCaps()
     const minRemainingBaseTokenBalance = useRootStore(
@@ -251,11 +251,7 @@ export const SupplyModalContent = React.memo(
           sx={{ mb: 20 }}
         />
 
-        <TxModalDetails
-          gasLimit={gasLimit}
-          skipLoad={true}
-          disabled={Number(amount) === 0}
-        >
+        <TxModalDetails>
           <DetailsNumberLine
             description={<span>Supply APY</span>}
             value={supplyApy}

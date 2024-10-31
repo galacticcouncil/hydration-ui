@@ -74,7 +74,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   const { currentChainId } = useProtocolDataContext()
   const { chainId: connectedChainId, readOnlyModeAddress } = useWeb3Context()
   const currentTimestamp = useCurrentTimestamp(1)
-  const { gasLimit, mainTxState: emodeTxState, txError } = useModalContext()
+  const { mainTxState: emodeTxState, txError } = useModalContext()
 
   const [selectedEmode, setSelectedEmode] = useState<EmodeCategory | undefined>(
     getInitialEmode(mode, eModes, user.userEmodeCategoryId),
@@ -178,7 +178,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   if (emodeTxState.success) return <TxSuccessView action={<span>Emode</span>} />
   return (
     <>
-      <TxModalDetails gasLimit={gasLimit}>
+      <TxModalDetails>
         {!showModal && (
           <Row captionColor="basic400" caption={<span>E-Mode category</span>}>
             <div sx={{ flex: "row", justify: "right", align: "center" }}>
