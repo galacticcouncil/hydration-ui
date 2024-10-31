@@ -16,6 +16,7 @@ import {
 } from "./LendingReserveOverviewPage.styled"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
+import { ReserveActionsSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
 
 export type LendingReserveOverviewPageProps = {
   underlyingAsset: string
@@ -70,7 +71,11 @@ export const LendingReserveOverviewPage: React.FC<
         </SContainer>
         {shouldRenderReserveActions ? (
           <SContainer active={mode === "actions"}>
-            <ReserveActions reserve={reserve} />
+            {isLoading ? (
+              <ReserveActionsSkeleton />
+            ) : (
+              <ReserveActions reserve={reserve} />
+            )}
           </SContainer>
         ) : !isLoading ? (
           <MoneyMarketBanner />

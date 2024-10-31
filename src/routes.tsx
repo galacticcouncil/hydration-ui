@@ -4,6 +4,9 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
+import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
+import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
@@ -111,7 +114,6 @@ const SubmitTransaction = lazy(async () => ({
 const MemepadPage = lazy(async () => ({
   default: (await import("sections/memepad/MemepadPage")).MemepadPage,
 }))
-
 const LendingPage = lazy(async () => ({
   default: (await import("sections/lending/LendingPage")).LendingPage,
 }))
@@ -414,7 +416,7 @@ export const routes: Route[] = [
   {
     path: LINKS.lending,
     element: (
-      <Suspense fallback={null}>
+      <Suspense fallback={<LendingDashboardSkeleton />}>
         <LendingPage />
       </Suspense>
     ),
@@ -422,7 +424,7 @@ export const routes: Route[] = [
       {
         path: "/",
         element: (
-          <Suspense fallback={null}>
+          <Suspense fallback={<LendingDashboardSkeleton />}>
             <LendingDashboardPage />
           </Suspense>
         ),
@@ -433,7 +435,7 @@ export const routes: Route[] = [
           {
             path: "/",
             element: (
-              <Suspense fallback={null}>
+              <Suspense fallback={<LendingMarketsSkeleton />}>
                 <LendingMarketsPage />
               </Suspense>
             ),
@@ -441,7 +443,7 @@ export const routes: Route[] = [
           {
             path: ":underlyingAsset",
             element: async ({ params: { underlyingAsset } }) => (
-              <Suspense fallback={null}>
+              <Suspense fallback={<LendingReserveOverviewSkeleton />}>
                 <LendingReserveOverviewPage underlyingAsset={underlyingAsset} />
               </Suspense>
             ),

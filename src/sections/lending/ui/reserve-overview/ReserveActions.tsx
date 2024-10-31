@@ -14,7 +14,6 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
 import {
   ComputedReserveData,
   useAppDataContext,
@@ -24,6 +23,7 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { usePermissions } from "sections/lending/hooks/usePermissions"
 import { useReserveActionState } from "sections/lending/hooks/useReserveActionState"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
+import { ReserveActionsSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
 import { useRootStore } from "sections/lending/store/root"
 import {
   CustomMarket,
@@ -141,7 +141,7 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
   }
 
   if (loadingReserves || loadingWalletBalance) {
-    return <ActionsSkeleton />
+    return <ReserveActionsSkeleton />
   }
 
   const onSupplyClicked = () => {
@@ -216,44 +216,6 @@ const FrozenWarning = () => {
     <Alert sx={{ mb: 0 }} variant="error">
       {t("lending.reserve.frozen")}
     </Alert>
-  )
-}
-
-const ActionsSkeleton = () => {
-  const RowSkeleton = (
-    <div>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-        <div>
-          <Skeleton width={100} height={14} sx={{ mt: 4, mb: 8 }} />
-          <Skeleton width={75} height={12} />
-        </div>
-        <Skeleton height={36} width={96} />
-      </div>
-    </div>
-  )
-
-  return (
-    <PaperWrapper>
-      <div sx={{ flex: "row", gap: 12, mb: 30 }}>
-        <Skeleton width={42} height={42} />
-        <div>
-          <Skeleton width={100} height={12} sx={{ mt: 4, mb: 8 }} />
-          <Skeleton width={100} height={14} />
-        </div>
-      </div>
-
-      <div>
-        <div sx={{ flex: "column", gap: 12 }}>
-          {RowSkeleton}
-          <Spacer
-            size={1}
-            sx={{ bg: "darkBlue401", width: "100%", my: 12 }}
-            axis="horizontal"
-          />
-          {RowSkeleton}
-        </div>
-      </div>
-    </PaperWrapper>
   )
 }
 

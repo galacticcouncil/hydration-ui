@@ -23,22 +23,10 @@ import { theme } from "theme"
 import ArrowRightIcon from "assets/icons/ArrowRightIcon.svg?react"
 
 export interface TxModalDetailsProps {
-  gasLimit?: string
-  slippageSelector?: ReactNode
-  skipLoad?: boolean
-  disabled?: boolean
-  chainId?: number
   children?: ReactNode
 }
 
-export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
-  gasLimit,
-  slippageSelector,
-  skipLoad,
-  disabled,
-  children,
-  chainId,
-}) => {
+export const TxModalDetails: React.FC<TxModalDetailsProps> = ({ children }) => {
   return (
     <div>
       <Text font="Geist" color="pink500" fs={15} sx={{ mb: 16 }}>
