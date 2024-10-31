@@ -2276,10 +2276,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.1.0.tgz#c51d3d73168595151da68f887c1ee07a43749577"
-  integrity sha512-xqYV/RSS1nTL1lfposppz7xXMeb0Au1CKbPMdMT1jH2r4k9sUiguLAe6fhwdNEDfQIV3H3+Y+sogWukTMnoHtA==
+"@galacticcouncil/xcm-cfg@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.1.1.tgz#688d1775e1f2de5f1e22b98abfe170fe648e5ee0"
+  integrity sha512-gaQZjYKY4hrlXEBLMfAkeJ7ybAc9/OHGsFPNCG6j2HUVlO6fgFuiGL+3smy7hpbW5psmyty5GiMsjAqLAtFIdA==
   dependencies:
     "@galacticcouncil/xcm-core" "^5.0.0"
 

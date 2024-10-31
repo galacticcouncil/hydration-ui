@@ -10,6 +10,7 @@ type InfoTooltipProps = {
   type?: "default" | "black"
   side?: Tooltip.TooltipContentProps["side"]
   asChild?: boolean
+  preventDefault?: boolean
 }
 
 export function InfoTooltip({
@@ -18,6 +19,7 @@ export function InfoTooltip({
   type = "default",
   side = "bottom",
   asChild = false,
+  preventDefault,
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false)
 
@@ -28,7 +30,12 @@ export function InfoTooltip({
       <Trigger
         type="button"
         asChild={asChild}
-        onClick={() => {
+        onClick={(e) => {
+          if (!!preventDefault) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+
           setOpen(true)
         }}
         onPointerDown={(e) => {
