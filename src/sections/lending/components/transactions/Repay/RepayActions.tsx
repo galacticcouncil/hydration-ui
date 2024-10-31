@@ -5,7 +5,6 @@ import {
 } from "@aave/contract-helpers"
 import { TransactionResponse } from "@ethersproject/providers"
 
-import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import { useEffect, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
@@ -32,7 +31,7 @@ import {
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
 
-export interface RepayActionProps extends BoxProps {
+export interface RepayActionProps {
   amountToRepay: string
   poolReserve: ComputedReserveData
   isWrongNetwork: boolean
@@ -43,6 +42,7 @@ export interface RepayActionProps extends BoxProps {
   repayWithATokens: boolean
   blocked?: boolean
   maxApproveNeeded: string
+  className?: string
 }
 
 export const RepayActions = ({
@@ -50,13 +50,12 @@ export const RepayActions = ({
   poolReserve,
   poolAddress,
   isWrongNetwork,
-  sx,
   symbol,
   debtType,
   repayWithATokens,
   blocked,
   maxApproveNeeded,
-  ...props
+  className,
 }: RepayActionProps) => {
   const queryClient = useQueryClient()
   const [
@@ -268,8 +267,7 @@ export const RepayActions = ({
       amount={amountToRepay}
       requiresApproval={requiresApproval}
       isWrongNetwork={isWrongNetwork}
-      sx={sx}
-      {...props}
+      className={className}
       handleAction={action}
       handleApproval={approval}
       actionText={<span>Repay {symbol}</span>}

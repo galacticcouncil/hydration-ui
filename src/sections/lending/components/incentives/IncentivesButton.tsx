@@ -1,13 +1,12 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-import { DotsHorizontalIcon } from "@heroicons/react/solid"
 import { useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { IncentivesTooltipContent } from "./IncentivesTooltipContent"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
-import { Box, SvgIcon } from "@mui/material"
+import { Button } from "components/Button/Button"
 
 interface IncentivesButtonProps {
   symbol: string
@@ -71,24 +70,9 @@ export const IncentivesButton = ({
 
   const incentivesButtonValue = () => {
     if (incentivesNetAPR !== "Infinity" && incentivesNetAPR < 10000) {
-      return (
-        <FormattedNumber
-          value={incentivesNetAPR}
-          percent
-          variant="secondary12"
-          color="text.secondary"
-        />
-      )
+      return <FormattedNumber value={incentivesNetAPR} percent />
     } else if (incentivesNetAPR !== "Infinity" && incentivesNetAPR > 9999) {
-      return (
-        <FormattedNumber
-          value={incentivesNetAPR}
-          percent
-          compact
-          variant="secondary12"
-          color="text.secondary"
-        />
-      )
+      return <FormattedNumber value={incentivesNetAPR} percent compact />
     } else if (incentivesNetAPR === "Infinity") {
       return <Text color="basic400">∞</Text>
     }
@@ -106,38 +90,24 @@ export const IncentivesButton = ({
         />
       }
     >
-      <Box
-        sx={(theme) => ({
-          p: { xs: "0 4px", xsm: "2px 4px" },
-          border: `1px solid ${
-            open ? theme.palette.action.disabled : theme.palette.divider
-          }`,
-          borderRadius: "4px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "opacity 0.2s ease",
-          bgcolor: open ? "action.hover" : "transparent",
-          "&:hover": {
-            bgcolor: "action.hover",
-            borderColor: "action.disabled",
-          },
-        })}
+      <Button
+        variant="outline"
+        size="micro"
         onClick={() => {
           setOpen(!open)
         }}
       >
-        <Box sx={{ mr: 8 }}>{incentivesButtonValue()}</Box>
+        <div sx={{ mr: 8 }}>{incentivesButtonValue()}</div>
 
-        <Box sx={{ display: "inline-flex" }}>
+        <div css={{ display: "inline-flex" }}>
           <>
             {incentives.length < 5 ? (
               <>
                 {incentives.map((incentive) => (
                   <TokenIcon
                     symbol={incentive.rewardTokenSymbol}
-                    sx={{ fontSize: `${iconSize}px`, ml: -1 }}
+                    size={iconSize}
+                    sx={{ ml: -1 }}
                     key={incentive.rewardTokenSymbol}
                   />
                 ))}
@@ -147,27 +117,17 @@ export const IncentivesButton = ({
                 {incentives.slice(0, 3).map((incentive) => (
                   <TokenIcon
                     symbol={incentive.rewardTokenSymbol}
-                    sx={{ fontSize: `${iconSize}px`, ml: -1 }}
+                    size={iconSize}
+                    sx={{ ml: -1 }}
                     key={incentive.rewardTokenSymbol}
                   />
                 ))}
-                <SvgIcon
-                  sx={{
-                    fontSize: `${iconSize}px`,
-                    borderRadius: "50%",
-                    bgcolor: "common.white",
-                    color: "common.black",
-                    ml: -1,
-                    zIndex: 5,
-                  }}
-                >
-                  <DotsHorizontalIcon />
-                </SvgIcon>
+                ...
               </>
             )}
           </>
-        </Box>
-      </Box>
+        </div>
+      </Button>
     </InfoTooltip>
   )
 }

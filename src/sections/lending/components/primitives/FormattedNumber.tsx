@@ -1,12 +1,4 @@
 import { normalizeBN, valueToBigNumber } from "@aave/math-utils"
-import { Typography } from "@mui/material"
-import { Variant } from "@mui/material/styles/createTypography"
-import type {
-  TypographyProps,
-  TypographyPropsVariantOverrides,
-} from "@mui/material/Typography/Typography"
-import type { OverridableStringUnion } from "@mui/types"
-import type { ElementType } from "react"
 
 interface CompactNumberProps {
   value: string | number
@@ -71,22 +63,15 @@ function CompactNumber({
   )
 }
 
-export type FormattedNumberProps = TypographyProps<
-  ElementType,
-  { component?: ElementType }
-> & {
+export type FormattedNumberProps = {
   value: string | number
   symbol?: string
   visibleDecimals?: number
   compact?: boolean
   percent?: boolean
-  symbolsColor?: string
-  symbolsVariant?: OverridableStringUnion<
-    Variant | "inherit",
-    TypographyPropsVariantOverrides
-  >
   roundDown?: boolean
   compactThreshold?: number
+  className?: string
 }
 
 export function FormattedNumber({
@@ -95,11 +80,9 @@ export function FormattedNumber({
   visibleDecimals,
   compact,
   percent,
-  symbolsVariant,
-  symbolsColor,
   roundDown,
   compactThreshold,
-  ...rest
+  className,
 }: FormattedNumberProps) {
   const number = percent ? Number(value) * 100 : Number(value)
 
@@ -126,34 +109,16 @@ export function FormattedNumber({
   }
 
   return (
-    <Typography
-      {...rest}
+    <span
+      className={className}
+      css={{ display: "inline-flex", position: "relative" }}
       sx={{
-        display: "inline-flex",
-        flexDirection: "row",
-        alignItems: "center",
-        position: "relative",
-        ...rest.sx,
+        align: "center",
       }}
-      noWrap
     >
-      {isSmallerThanMin && (
-        <Typography
-          component="span"
-          sx={{ mr: 2, color: symbolsColor || "basic300" }}
-          variant={symbolsVariant || rest.variant}
-        >
-          {"<"}
-        </Typography>
-      )}
+      {isSmallerThanMin && <span sx={{ mr: 2, color: "basic300" }}>{"<"}</span>}
       {symbol?.toLowerCase() === "usd" && !percent && (
-        <Typography
-          component="span"
-          sx={{ mr: 2, color: symbolsColor || "basic300" }}
-          variant={symbolsVariant || rest.variant}
-        >
-          $
-        </Typography>
+        <span sx={{ mr: 2, color: "basic300" }}>$</span>
       )}
 
       {!forceCompact ? (
@@ -170,24 +135,10 @@ export function FormattedNumber({
         />
       )}
 
-      {percent && (
-        <Typography
-          component="span"
-          sx={{ ml: 2, color: symbolsColor || "basic300" }}
-          variant={symbolsVariant || rest.variant}
-        >
-          %
-        </Typography>
-      )}
+      {percent && <span sx={{ ml: 2, color: "basic300" }}>%</span>}
       {symbol?.toLowerCase() !== "usd" && typeof symbol !== "undefined" && (
-        <Typography
-          component="span"
-          sx={{ ml: 2, color: symbolsColor || "basic300" }}
-          variant={symbolsVariant || rest.variant}
-        >
-          {symbol}
-        </Typography>
+        <span sx={{ ml: 2, color: "basic300" }}>{symbol}</span>
       )}
-    </Typography>
+    </span>
   )
 }

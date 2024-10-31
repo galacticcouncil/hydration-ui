@@ -36,18 +36,8 @@ export const ReserveOverviewHeaderValues: FC<
       }}
       className={className}
     >
-      <div sx={{ flex: "row", gap: 8, align: "center" }}>
-        <TokenIcon
-          symbol={poolReserve.iconSymbol}
-          sx={{ width: 32, height: 32 }}
-        />
-        {/* <div>
-          <img
-            src={`https://app.aave.com/icons/tokens/${poolReserve.iconSymbol.toLowerCase()}.svg`}
-            sx={{ width: 32, height: 32 }}
-            alt=""
-          />
-        </div> */}
+      <div sx={{ flex: "row", gap: 12, align: "center" }}>
+        <TokenIcon symbol={poolReserve.iconSymbol} size={38} />
         <div>
           <Text fs={18} lh={24} font="GeistSemiBold">
             {poolReserve.symbol}

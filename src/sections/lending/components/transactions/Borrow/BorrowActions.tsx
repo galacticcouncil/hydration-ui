@@ -5,7 +5,6 @@ import {
   MAX_UINT_AMOUNT,
   ProtocolAction,
 } from "@aave/contract-helpers"
-import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import React, { useCallback, useEffect, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
@@ -27,7 +26,7 @@ import {
 } from "sections/lending/components/transactions/utils"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
-export interface BorrowActionsProps extends BoxProps {
+export interface BorrowActionsProps {
   poolReserve: ComputedReserveData
   amountToBorrow: string
   poolAddress: string
@@ -35,6 +34,7 @@ export interface BorrowActionsProps extends BoxProps {
   isWrongNetwork: boolean
   symbol: string
   blocked: boolean
+  className?: string
 }
 
 export const BorrowActions = React.memo(
@@ -46,7 +46,7 @@ export const BorrowActions = React.memo(
     interestRateMode,
     isWrongNetwork,
     blocked,
-    sx,
+    className,
   }: BorrowActionsProps) => {
     const queryClient = useQueryClient()
     const [
@@ -247,7 +247,7 @@ export const BorrowActions = React.memo(
         handleApproval={() => approval()}
         requiresApproval={requiresApproval}
         preparingTransactions={loadingTxns}
-        sx={sx}
+        className={className}
       />
     )
   },

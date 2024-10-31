@@ -72,6 +72,7 @@ export const DataValue: React.FC<DataValueProps> = ({
         <SText
           as="div"
           color={labelColor}
+          font="GeistMono"
           {...LABEL_SIZES[size]}
           sx={{ flex: "row", gap: 4, align: "center" }}
         >

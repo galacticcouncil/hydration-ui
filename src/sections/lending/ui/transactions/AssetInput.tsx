@@ -164,7 +164,8 @@ export const AssetInput = <T extends Asset = Asset>({
             <TokenIcon
               aToken={asset.aToken}
               symbol={asset.iconSymbol || asset.symbol}
-              sx={{ mr: 8, width: 28, height: 28 }}
+              size={28}
+              sx={{ mr: 8 }}
             />
             <Text font="GeistSemiBold">{asset.symbol}</Text>
           </div>
@@ -191,7 +192,8 @@ export const AssetInput = <T extends Asset = Asset>({
                 <TokenIcon
                   aToken={asset.aToken}
                   symbol={asset.iconSymbol || asset.symbol}
-                  sx={{ mr: 8, width: 28, height: 28 }}
+                  size={28}
+                  sx={{ mr: 8 }}
                 />
               ),
             }))}
@@ -203,7 +205,8 @@ export const AssetInput = <T extends Asset = Asset>({
               <TokenIcon
                 aToken={asset.aToken}
                 symbol={asset.iconSymbol || asset.symbol}
-                sx={{ mr: 8, width: 28, height: 28 }}
+                size={28}
+                sx={{ mr: 8 }}
               />
               <Text font="GeistSemiBold">{asset.symbol}</Text>
               <ChevronDown sx={{ color: "white" }} />

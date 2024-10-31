@@ -22,7 +22,7 @@ export const DebtCeilingMaxedTooltip = ({
           </span>{" "}
           <Link
             href="https://docs.aave.com/faq/aave-v3-features#how-does-isolation-mode-affect-my-borrowing-power"
-            underline="always"
+            css={{ textDecoration: "underline" }}
           >
             <span>Learn more</span>
           </Link>

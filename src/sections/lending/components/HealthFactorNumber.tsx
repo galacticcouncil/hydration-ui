@@ -1,8 +1,7 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
-import { theme } from "theme"
-
 import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
 import { getHealthFactorColor } from "sections/lending/utils/utils"
 
 type HealthFactorNumberProps = {
@@ -27,9 +26,18 @@ export const HealthFactorNumber = ({
       }}
     >
       {value === "-1" ? (
-        <span sx={{ color: theme.colors.green400 }}>∞</span>
+        <Text fs={20} lh={20} color="green400">
+          ∞
+        </Text>
       ) : (
-        <span css={{ color: healthFactorColor }}>{formattedHealthFactor}</span>
+        <Text
+          fs={14}
+          lh={20}
+          font="GeistSemiBold"
+          css={{ color: healthFactorColor }}
+        >
+          {formattedHealthFactor}
+        </Text>
       )}
 
       {onInfoClick && (

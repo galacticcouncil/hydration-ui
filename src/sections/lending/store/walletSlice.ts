@@ -1,7 +1,16 @@
-import { WalletType } from "sections/lending/libs/web3-data-provider/WalletOptions"
 import { StateCreator } from "zustand"
-
 import { RootStore } from "./root"
+
+export enum WalletType {
+  INJECTED = "injected",
+  WALLET_CONNECT = "wallet_connect",
+  WALLET_LINK = "wallet_link",
+  TORUS = "torus",
+  FRAME = "frame",
+  GNOSIS = "gnosis",
+  LEDGER = "ledger",
+  READ_ONLY_MODE = "read_only_mode",
+}
 
 export enum ApprovalMethod {
   APPROVE = "Transaction",

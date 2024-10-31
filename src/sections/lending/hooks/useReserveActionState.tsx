@@ -125,26 +125,32 @@ export const useReserveActionState = ({
           </Alert>
         )}
 
-        {maxAmountToSupply === "0" &&
-          supplyCap?.determineWarningDisplay({
-            supplyCap,
-            icon: false,
-            sx: { mt: 12 },
-          })}
-        {maxAmountToBorrow === "0" &&
-          borrowCap?.determineWarningDisplay({
-            borrowCap,
-            icon: false,
-            sx: { mt: 12 },
-          })}
+        {maxAmountToSupply === "0" && (
+          <div sx={{ mt: 12 }}>
+            {supplyCap?.determineWarningDisplay({
+              supplyCap,
+              icon: false,
+            })}
+          </div>
+        )}
+        {maxAmountToBorrow === "0" && (
+          <div sx={{ mt: 12 }}>
+            {borrowCap?.determineWarningDisplay({
+              borrowCap,
+              icon: false,
+            })}
+          </div>
+        )}
         {reserve.isIsolated &&
           balance !== "0" &&
-          user?.totalCollateralUSD !== "0" &&
-          debtCeiling?.determineWarningDisplay({
-            debtCeiling,
-            icon: false,
-            sx: { mt: 12 },
-          })}
+          user?.totalCollateralUSD !== "0" && (
+            <div sx={{ mt: 12 }}>
+              {debtCeiling?.determineWarningDisplay({
+                debtCeiling,
+                icon: false,
+              })}
+            </div>
+          )}
       </>
     ),
   }

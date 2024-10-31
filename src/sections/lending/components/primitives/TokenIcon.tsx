@@ -1,11 +1,13 @@
-import { Badge, Box, Icon, IconProps } from "@mui/material"
+import { Icon } from "components/Icon/Icon"
 
 const CDN_BASE_URL =
   "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest"
 
-interface TokenIconProps extends IconProps {
+interface TokenIconProps {
   symbol: string
   aToken?: boolean
+  size?: number
+  className?: string
 }
 
 /**
@@ -14,28 +16,29 @@ interface TokenIconProps extends IconProps {
  * @param param0
  * @returns
  */
-function SingleTokenIcon({ symbol, aToken, ...rest }: TokenIconProps) {
+function SingleTokenIcon({
+  symbol,
+  aToken,
+  size = 24,
+  ...rest
+}: TokenIconProps) {
   return (
     <Icon
+      size={size}
+      icon={
+        <img
+          src={`${CDN_BASE_URL}/v1/assets/${symbol.toLowerCase()}.svg`}
+          width="100%"
+          height="100%"
+          alt={`${symbol} icon`}
+        />
+      }
       {...rest}
-      sx={{
-        display: "flex",
-        position: "relative",
-        borderRadius: "50%",
-        ...rest.sx,
-      }}
-    >
-      <img
-        src={`${CDN_BASE_URL}/v1/assets/${symbol.toLowerCase()}.svg`}
-        width="100%"
-        height="100%"
-        alt={`${symbol} icon`}
-      />
-    </Icon>
+    />
   )
 }
 
-interface MultiTokenIconProps extends IconProps {
+interface MultiTokenIconProps {
   symbols: string[]
   badgeSymbol?: string
   aToken?: boolean
@@ -48,37 +51,31 @@ export function MultiTokenIcon({
 }: MultiTokenIconProps) {
   if (!badgeSymbol)
     return (
-      <Box sx={{ display: "inline-flex", position: "relative" }}>
+      <div css={{ display: "inline-flex", position: "relative" }}>
         {symbols.map((symbol, ix) => (
           <SingleTokenIcon
             {...rest}
             key={symbol}
             symbol={symbol}
-            sx={{ ml: ix === 0 ? 0 : `calc(-1 * 0.5em)`, ...rest.sx }}
+            sx={{ ml: ix === 0 ? 0 : `calc(-1 * 0.5em)` }}
           />
         ))}
-      </Box>
+      </div>
     )
   return (
-    <Badge
-      badgeContent={
-        <SingleTokenIcon
-          symbol={badgeSymbol}
-          sx={{ border: "1px solid #fff" }}
-          fontSize="small"
-        />
-      }
-      sx={{ ".MuiBadge-anchorOriginTopRight": { top: 9 } }}
-    >
+    <div css={{ display: "inline-flex", position: "relative" }}>
       {symbols.map((symbol, ix) => (
         <SingleTokenIcon
           {...rest}
           key={symbol}
           symbol={symbol}
-          sx={{ ml: ix === 0 ? 0 : "calc(-1 * 0.5em)", ...rest.sx }}
+          sx={{ ml: ix === 0 ? 0 : "calc(-1 * 0.5em)" }}
         />
       ))}
-    </Badge>
+      <div css={{ position: "absolute", right: -4, top: -4 }}>
+        <SingleTokenIcon symbol={badgeSymbol} size={16} />
+      </div>
+    </div>
   )
 }
 
@@ -86,13 +83,7 @@ export function TokenIcon({ symbol, ...rest }: TokenIconProps) {
   const symbolChunks = symbol.split("_")
   if (symbolChunks.length > 1) {
     const [badge, ...symbols] = symbolChunks
-    return (
-      <MultiTokenIcon
-        {...rest}
-        symbols={symbols}
-        badgeSymbol={"/pools/" + badge}
-      />
-    )
+    return <MultiTokenIcon {...rest} symbols={symbols} badgeSymbol={badge} />
   }
   return <SingleTokenIcon symbol={symbol} {...rest} />
 }

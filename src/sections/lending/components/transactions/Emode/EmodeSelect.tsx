@@ -1,10 +1,9 @@
-import { FormLabel, Typography } from "@mui/material"
-import FormControl from "@mui/material/FormControl"
-import MenuItem from "@mui/material/MenuItem"
-import Select from "@mui/material/Select"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import { ButtonTransparent } from "components/Button/Button"
+import { Dropdown } from "components/Dropdown/Dropdown"
+import { Text } from "components/Typography/Text/Text"
 import * as React from "react"
 import { EmodeCategory } from "sections/lending/helpers/types"
-
 import { getEmodeMessage } from "./EmodeNaming"
 
 export type EmodeSelectProps = {
@@ -23,79 +22,38 @@ export const EmodeSelect = ({
   userEmode,
 }: EmodeSelectProps) => {
   return (
-    <FormControl sx={{ mb: 4, width: "100%" }}>
-      <FormLabel sx={{ mb: 4, color: "text.secondary" }}>
-        <span>Asset category</span>
-      </FormLabel>
-
-      <Select
-        defaultValue={0}
-        value={selectedEmode}
-        onChange={(e) => {
-          setSelectedEmode(emodeCategories[Number(e.target.value)])
+    <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+      <Text fs={14} color="basic400">
+        Asset category
+      </Text>
+      <Dropdown
+        asChild
+        onSelect={({ key }) => {
+          setSelectedEmode(emodeCategories[Number(key)])
         }}
-        className="EmodeSelect"
-        data-cy="EmodeSelect"
-        sx={{
-          width: "100%",
-          height: "44px",
-          borderRadius: "6px",
-          borderColor: "divider",
-          outline: "none !important",
-          color: "text.primary",
-          ".MuiOutlinedInput-input": {
-            backgroundColor: "transparent",
-          },
-          ".MuiOutlinedInput-notchedOutline, .MuiOutlinedInput-notchedOutline":
-            {
-              borderColor: "divider",
-              outline: "none !important",
-              borderWidth: "1px",
-            },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "divider",
-            borderWidth: "1px",
-          },
-          "&.EmodeSelect .MuiSelect-icon": { color: "text.primary" },
-        }}
-        native={false}
-        renderValue={(emode) => {
-          if (emode !== 0) {
-            return (
-              <Typography color="text.primary">
-                {getEmodeMessage(emodeCategories[emode].label)}
-              </Typography>
-            )
-          } else {
-            return (
-              <Typography color="text.muted">
-                <span>Select</span>
-              </Typography>
-            )
-          }
-        }}
+        items={Object.keys(emodeCategories)
+          .filter(
+            (categoryKey) =>
+              userEmode !== Number(categoryKey) && Number(categoryKey) !== 0,
+          )
+          .map((categoryKey) => ({
+            key: categoryKey,
+            label: getEmodeMessage(emodeCategories[Number(categoryKey)].label),
+          }))}
       >
-        {Object.keys(emodeCategories).map((categoryKey) => {
-          if (userEmode !== Number(categoryKey) && Number(categoryKey) !== 0) {
-            return (
-              <MenuItem
-                key={`emode-${emodeCategories[Number(categoryKey)].id}`}
-                value={emodeCategories[Number(categoryKey)].id}
-              >
-                {
-                  <Typography color="text.primary">
-                    {getEmodeMessage(
-                      emodeCategories[Number(categoryKey)].label,
-                    )}
-                  </Typography>
-                }
-              </MenuItem>
-            )
-          }
-
-          return null
-        })}
-      </Select>
-    </FormControl>
+        <ButtonTransparent>
+          <Text sx={{ flex: "row", align: "center", color: "brightBlue300" }}>
+            {selectedEmode !== 0 ? (
+              <span>
+                {getEmodeMessage(emodeCategories[Number(selectedEmode)].label)}
+              </span>
+            ) : (
+              <span>Select</span>
+            )}
+            <ChevronDown width={24} height={24} />
+          </Text>
+        </ButtonTransparent>
+      </Dropdown>
+    </div>
   )
 }

@@ -1,21 +1,14 @@
-import { ExternalLinkIcon } from "@heroicons/react/outline"
-import { CheckIcon } from "@heroicons/react/solid"
-
-import { Box, Button, Link, SvgIcon, Typography } from "@mui/material"
 import { ReactNode } from "react"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
+import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
 
 export type BaseSuccessTxViewProps = {
   txHash?: string
   children: ReactNode
 }
-
-const ExtLinkIcon = () => (
-  <SvgIcon sx={{ ml: "2px", fontSize: "11px" }}>
-    <ExternalLinkIcon />
-  </SvgIcon>
-)
 
 export const BaseSuccessView = ({
   txHash,
@@ -26,69 +19,36 @@ export const BaseSuccessView = ({
 
   return (
     <>
-      <Box
+      <div
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+          flex: "column",
+          justify: "center",
+          align: "center",
         }}
       >
-        <Box
-          sx={{
-            width: "48px",
-            height: "48px",
-            bgcolor: "success.200",
-            borderRadius: "50%",
-            mt: 14,
-            mx: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <SvgIcon sx={{ color: "success.main", fontSize: "32px" }}>
-            <CheckIcon />
-          </SvgIcon>
-        </Box>
-
-        <Typography sx={{ mt: 4 }} variant="h2">
+        <Text fs={20} sx={{ mt: 12 }}>
           <span>All done!</span>
-        </Typography>
+        </Text>
 
         {children}
-      </Box>
+      </div>
 
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
-        <Link
-          variant="helperText"
+      <div sx={{ flex: "column" }}>
+        <a
           href={currentNetworkConfig.explorerLinkBuilder({
             tx: txHash ? txHash : mainTxState.txHash,
           })}
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "right",
-            mt: 24,
-            mb: 3,
-          }}
-          underline="hover"
+          sx={{ flex: "row" }}
           target="_blank"
           rel="noreferrer noopener"
         >
           <span>Review tx details</span>
-          <ExtLinkIcon />
-        </Link>
-        <Button
-          onClick={close}
-          variant="contained"
-          size="large"
-          sx={{ minHeight: "44px" }}
-          data-cy="closeButton"
-        >
+          <LinkIcon width={20} height={20} />
+        </a>
+        <Button onClick={close}>
           <span>Ok, Close</span>
         </Button>
-      </Box>
+      </div>
     </>
   )
 }

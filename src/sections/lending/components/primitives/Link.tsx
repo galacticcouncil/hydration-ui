@@ -1,27 +1,12 @@
-import { Link as MuiLink, LinkProps as MuiLinkProps } from "@mui/material"
-import { SxProps as MuiSxProps } from "@mui/system"
 import { Link as RouterLink } from "@tanstack/react-location"
-import { forwardRef } from "react"
+import React, { forwardRef } from "react"
 import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 
-const RouterLinkComposed = forwardRef<HTMLAnchorElement, MuiLinkProps>(
-  (props, ref) => (
-    <RouterLink
-      _ref={ref}
-      to={props.href}
-      title={props.title}
-      className={props.className}
-    >
-      {props.children}
-    </RouterLink>
-  ),
-)
+export type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement>
 
-export type LinkProps = MuiLinkProps
-
-export const Link = forwardRef<HTMLAnchorElement, MuiLinkProps>(
+export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   function Link(props, ref) {
-    const { className, children, href, sx, ...other } = props
+    const { className, children, href } = props
 
     const isExternal =
       typeof href === "string" &&
@@ -29,33 +14,22 @@ export const Link = forwardRef<HTMLAnchorElement, MuiLinkProps>(
 
     if (isExternal) {
       return (
-        <MuiLink
+        <a
           ref={ref}
           href={href}
           className={className}
           target="_blank"
-          rel="noopener"
-          sx={sx as MuiSxProps}
-          underline="none"
-          {...other}
+          rel="noopener noreferrer"
         >
           {children}
-        </MuiLink>
+        </a>
       )
     }
 
     return (
-      <MuiLink
-        ref={ref}
-        href={href}
-        className={className}
-        component={RouterLinkComposed}
-        sx={sx as MuiSxProps}
-        underline="none"
-        {...other}
-      >
+      <RouterLink to={href} className={className}>
         {children}
-      </MuiLink>
+      </RouterLink>
     )
   },
 )

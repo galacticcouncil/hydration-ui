@@ -2,9 +2,15 @@ import { Alert } from "components/Alert"
 import { ButtonTransparent } from "components/Button/Button"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
-export const GasEstimationError = ({ txError }: { txError: TxErrorType }) => {
+export const GasEstimationError = ({
+  txError,
+  className,
+}: {
+  txError: TxErrorType
+  className?: string
+}) => {
   return (
-    <Alert variant="error" sx={{ mt: 16, mb: 0 }}>
+    <Alert variant="error" sx={{ mt: 16, mb: 0 }} className={className}>
       <span>
         {txError.error ? (
           <span>

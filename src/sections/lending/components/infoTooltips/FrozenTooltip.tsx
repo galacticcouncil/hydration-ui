@@ -37,7 +37,7 @@ export const FrozenTooltip = ({
           This asset is frozen due to a protocol governance decision.{" "}
           <Link
             href={getFrozenProposalLink(symbol, currentMarket)}
-            sx={{ textDecoration: "underline" }}
+            css={{ textDecoration: "underline" }}
           >
             <span>More details</span>
           </Link>

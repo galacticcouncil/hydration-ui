@@ -14,7 +14,7 @@ export const BorrowDisabledWarning = ({
       Borrowing is disabled due to an Hydration community decision.{" "}
       <Link
         href={getFrozenProposalLink(symbol, currentMarket)}
-        sx={{ textDecoration: "underline" }}
+        css={{ textDecoration: "underline" }}
       >
         <span>More details</span>
       </Link>

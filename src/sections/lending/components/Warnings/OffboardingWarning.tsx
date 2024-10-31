@@ -20,7 +20,7 @@ export const OffboardingWarning = ({
     <span>
       This asset is planned to be offboarded due to an Hydration governance
       decision.{" "}
-      <Link href={discussionLink} sx={{ textDecoration: "underline" }}>
+      <Link href={discussionLink} css={{ textDecoration: "underline" }}>
         <span>More details</span>
       </Link>
     </span>

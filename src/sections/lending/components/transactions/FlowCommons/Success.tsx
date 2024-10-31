@@ -1,13 +1,11 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { Box, Button, Typography, useTheme } from "@mui/material"
 import { ReactNode } from "react"
-import { WalletIcon } from "sections/lending/components/icons/WalletIcon"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
 
 import { BaseSuccessView } from "./BaseSuccess"
+import { Text } from "components/Typography/Text/Text"
 
 export type SuccessTxViewProps = {
   txHash?: string
@@ -32,110 +30,64 @@ export const TxSuccessView = ({
   customAction,
   customText,
 }: SuccessTxViewProps) => {
-  const { addERC20Token } = useWeb3Context()
-  const theme = useTheme()
-
   return (
     <BaseSuccessView txHash={txHash}>
-      <Box
+      <div
         sx={{
           mt: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
+          flex: "column",
+          align: "center",
+          justify: "center",
           textAlign: "center",
         }}
       >
         {action && amount && symbol && (
-          <Typography>
-            <span>
-              You {action}{" "}
-              <FormattedNumber
-                value={Number(amount)}
-                compact
-                variant="secondary14"
-              />{" "}
-              {symbol}
-            </span>
-          </Typography>
+          <Text>
+            You {action} <FormattedNumber value={Number(amount)} compact />{" "}
+            {symbol}
+          </Text>
         )}
 
         {customAction && (
-          <Typography>
+          <Text>
             {customText}
             {customAction}
-          </Typography>
+          </Text>
         )}
 
         {!action && !amount && symbol && (
-          <Typography>
+          <Text>
             Your {symbol} {collateral ? "now" : "is not"} used as collateral
-          </Typography>
+          </Text>
         )}
 
         {rate && (
-          <Typography>
-            <span>
-              You switched to{" "}
-              {rate === InterestRate.Variable ? "variable" : "stable"} rate
-            </span>
-          </Typography>
+          <Text>
+            You switched to{" "}
+            {rate === InterestRate.Variable ? "variable" : "stable"} rate
+          </Text>
         )}
 
         {addToken && symbol && (
-          <Box
-            sx={(theme) => ({
-              border:
-                theme.palette.mode === "dark"
-                  ? `1px solid ${theme.palette.divider}`
-                  : "none",
-              background: theme.palette.mode === "dark" ? "none" : "#F7F7F9",
-              borderRadius: "12px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              mt: "24px",
-            })}
+          <div
+            sx={{
+              flex: "column",
+              gap: 8,
+              mt: 24,
+              align: "center",
+              justify: "center",
+              textAlign: "center",
+            }}
           >
             <TokenIcon
               symbol={addToken.symbol}
               aToken={addToken && addToken.aToken ? true : false}
-              sx={{ fontSize: "32px", mt: "12px", mb: "8px" }}
+              size={32}
+              sx={{ mt: 12, mb: 8 }}
             />
-            <Typography
-              variant="description"
-              color="text.primary"
-              sx={{ mx: "24px" }}
-            >
-              <span>
-                Add {addToken && addToken.aToken ? "aToken " : "token "} to
-                wallet to track your balance.
-              </span>
-            </Typography>
-            <Button
-              onClick={() => {
-                addERC20Token({
-                  address: addToken.address,
-                  decimals: addToken.decimals,
-                  symbol: addToken.aToken
-                    ? `a${addToken.symbol}`
-                    : addToken.symbol,
-                })
-              }}
-              variant={theme.palette.mode === "dark" ? "outlined" : "contained"}
-              size="medium"
-              sx={{ mt: "8px", mb: "12px" }}
-            >
-              <WalletIcon sx={{ width: "20px", height: "20px" }} />
-              <Typography variant="buttonM" color="white" ml="4px">
-                <span>Add to wallet</span>
-              </Typography>
-            </Button>
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
     </BaseSuccessView>
   )
 }

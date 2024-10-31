@@ -13,7 +13,7 @@ export const ApprovalTooltip = () => {
           by submitting an approval transaction (requires gas).{" "}
           <Link
             href="https://eips.ethereum.org/EIPS/eip-2612"
-            underline="always"
+            css={{ textDecoration: "underline" }}
           >
             Learn more
           </Link>

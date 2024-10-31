@@ -21,9 +21,7 @@ export const IncentivesTooltipContent = ({
     incentiveAPR: "Infinity" | number | string
   }) => {
     return (
-      <div
-        sx={{ display: "inline-flex", alignItems: "center", color: "white" }}
-      >
+      <div sx={{ display: "inline-flex", align: "center", color: "white" }}>
         {incentiveAPR !== "Infinity" ? (
           <>
             <span>
@@ -68,7 +66,8 @@ export const IncentivesTooltipContent = ({
               >
                 <TokenIcon
                   symbol={incentive.rewardTokenSymbol}
-                  sx={{ fontSize: "20px", mr: 4 }}
+                  sx={{ mr: 4 }}
+                  size={20}
                 />
                 <span>{incentive.rewardTokenSymbol}</span>
               </div>

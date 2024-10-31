@@ -1,12 +1,10 @@
-import { Box, Divider, FormLabel, Typography } from "@mui/material"
-import FormControl from "@mui/material/FormControl"
-import MenuItem from "@mui/material/MenuItem"
-import Select from "@mui/material/Select"
-import * as React from "react"
-import { Reward } from "sections/lending/helpers/types"
-
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import ChevronDown from "assets/icons/ChevronDown.svg?react"
+import { ButtonTransparent } from "components/Button/Button"
+import { Dropdown } from "components/Dropdown/Dropdown"
+import { Text } from "components/Typography/Text/Text"
+import { useMemo } from "react"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { Reward } from "sections/lending/helpers/types"
 
 export type RewardsSelectProps = {
   rewards: Reward[]
@@ -15,98 +13,58 @@ export type RewardsSelectProps = {
 }
 
 export const RewardsSelect = ({
-  rewards,
+  rewards = [],
   selectedReward,
   setSelectedReward,
 }: RewardsSelectProps) => {
-  return (
-    <FormControl sx={{ mb: 4, width: "100%" }}>
-      <FormLabel sx={{ mb: 4, color: "text.secondary" }}>
-        <span>Reward(s) to claim</span>
-      </FormLabel>
+  const selected = rewards.find((r) => r.symbol === selectedReward) as Reward
 
-      <Select
-        value={selectedReward}
-        onChange={(e) => setSelectedReward(e.target.value)}
-        sx={{
-          width: "100%",
-          height: "44px",
-          borderRadius: "6px",
-          borderColor: "divider",
-          outline: "none !important",
-          color: "text.primary",
-          ".MuiOutlinedInput-input": {
-            backgroundColor: "transparent",
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline, .MuiOutlinedInput-notchedOutline":
-            {
-              borderColor: "divider",
-              outline: "none !important",
-              borderWidth: "1px",
-            },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "divider",
-            borderWidth: "1px",
-          },
-          ".MuiSelect-icon": { color: "text.primary" },
-        }}
-        native={false}
-        renderValue={(reward) => {
-          if (reward === "all") {
-            return (
-              <Typography color="text.primary">
+  const items = useMemo(() => {
+    return [
+      {
+        key: "all",
+        label: "Claim all rewards",
+      },
+    ].concat(
+      rewards.map((reward) => ({
+        key: reward.symbol,
+        label: reward.symbol,
+      })),
+    )
+  }, [rewards])
+
+  return (
+    <>
+      <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+        <Text fs={14} color="basic400">
+          Rewards(s) to claim
+        </Text>
+        <Dropdown
+          asChild
+          onSelect={({ key }) => {
+            setSelectedReward(key)
+          }}
+          items={items}
+        >
+          <ButtonTransparent>
+            <Text sx={{ flex: "row", align: "center", color: "brightBlue300" }}>
+              {selectedReward === "all" ? (
                 <span>Claim all rewards</span>
-              </Typography>
-            )
-          }
-          const selected = rewards.find((r) => r.symbol === reward) as Reward
-          return (
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <TokenIcon
-                symbol={selected.symbol}
-                sx={{ mr: 8, fontSize: "16px" }}
-              />
-              <Typography color="text.primary">{selected.symbol}</Typography>
-            </Box>
-          )
-        }}
-      >
-        <MenuItem value={"all"}>
-          <Typography variant="subheader1">
-            <span>Claim all rewards</span>
-          </Typography>
-        </MenuItem>
-        <Divider />
-        {rewards.map((reward) => (
-          <MenuItem value={reward.symbol} key={`reward-token-${reward.symbol}`}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <TokenIcon
-                symbol={reward.symbol}
-                sx={{ fontSize: "24px", mr: 12 }}
-              />
-              <Typography variant="subheader1" sx={{ mr: 1 }}>
-                {reward.symbol}
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ display: "inline-flex", alignItems: "center" }}
-                variant="caption"
-                color="text.muted"
-              >
-                ~
-              </Typography>
-              <FormattedNumber
-                value={Number(reward.balanceUsd)}
-                variant="caption"
-                compact
-                symbol="USD"
-                symbolsColor="text.muted"
-                color="text.muted"
-              />
-            </Box>
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+              ) : (
+                <div sx={{ flex: "row", align: "center" }}>
+                  <TokenIcon
+                    symbol={selected.symbol}
+                    size={16}
+                    sx={{ mr: 8 }}
+                  />
+                  <span>{selected.symbol}</span>
+                </div>
+              )}
+              <ChevronDown width={24} height={24} />
+            </Text>
+          </ButtonTransparent>
+        </Dropdown>
+      </div>
+    </>
   )
 }

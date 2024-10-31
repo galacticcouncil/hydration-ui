@@ -1,19 +1,17 @@
 import { ProtocolAction } from "@aave/contract-helpers"
-
-import { BoxProps } from "@mui/material"
 import { useTransactionHandler } from "sections/lending/helpers/useTransactionHandler"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRootStore } from "sections/lending/store/root"
-
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 
-export interface WithdrawActionsProps extends BoxProps {
+export interface WithdrawActionsProps {
   poolReserve: ComputedReserveData
   amountToWithdraw: string
   poolAddress: string
   isWrongNetwork: boolean
   symbol: string
   blocked: boolean
+  className?: string
 }
 
 export const WithdrawActions = ({
@@ -23,7 +21,7 @@ export const WithdrawActions = ({
   isWrongNetwork,
   symbol,
   blocked,
-  sx,
+  className,
 }: WithdrawActionsProps) => {
   const withdraw = useRootStore((state) => state.withdraw)
 
@@ -68,7 +66,7 @@ export const WithdrawActions = ({
         approval([{ amount: amountToWithdraw, underlyingAsset: poolAddress }])
       }
       requiresApproval={requiresApproval}
-      sx={sx}
+      className={className}
     />
   )
 }

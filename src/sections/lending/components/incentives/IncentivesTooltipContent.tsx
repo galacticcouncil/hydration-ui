@@ -1,10 +1,10 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-
-import { Box, Typography } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { theme } from "theme"
 
 interface IncentivesTooltipContentProps {
   incentives: ReserveIncentiveResponse[]
@@ -17,72 +17,58 @@ export const IncentivesTooltipContent = ({
   incentivesNetAPR,
   symbol,
 }: IncentivesTooltipContentProps) => {
-  const typographyVariant = "secondary12"
-
   const Number = ({
     incentiveAPR,
   }: {
     incentiveAPR: "Infinity" | number | string
   }) => {
     return (
-      <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+      <div css={{ display: "inline-flex", alignItems: "center" }}>
         {incentiveAPR !== "Infinity" ? (
           <>
-            <FormattedNumber
-              value={+incentiveAPR}
-              percent
-              variant={typographyVariant}
-            />
-            <Typography variant={typographyVariant} sx={{ ml: 4 }}>
+            <FormattedNumber value={+incentiveAPR} percent />
+            <Text sx={{ ml: 4 }}>
               <span>APR</span>
-            </Typography>
+            </Text>
           </>
         ) : (
           <>
-            <Typography variant={typographyVariant}>∞ %</Typography>
-            <Typography variant={typographyVariant} sx={{ ml: 4 }}>
+            <Text>∞ %</Text>
+            <Text sx={{ ml: 4 }}>
               <span>APR</span>
-            </Typography>
+            </Text>
           </>
         )}
-      </Box>
+      </div>
     )
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
-      }}
-    >
-      <Typography variant="caption" color="text.secondary" mb={3}>
+    <div sx={{ flex: "column", justify: "center", align: "center" }}>
+      <Text color="basic400" sx={{ mb: 4 }}>
         <span>
           Participating in this {symbol} reserve gives annualized rewards.
         </span>
-      </Typography>
+      </Text>
 
-      <Box sx={{ width: "100%" }}>
+      <div sx={{ width: "100%" }}>
         {incentives.map((incentive) => (
           <Row
             caption={
-              <Box
+              <div
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
+                  flex: "row",
+                  align: "center",
                   mb: incentives.length > 1 ? 2 : 0,
                 }}
               >
                 <TokenIcon
                   symbol={incentive.rewardTokenSymbol}
-                  sx={{ fontSize: "20px", mr: 16 }}
+                  size={20}
+                  sx={{ mr: 16 }}
                 />
-                <Typography variant={typographyVariant}>
-                  {incentive.rewardTokenSymbol}
-                </Typography>
-              </Box>
+                <Text>{incentive.rewardTokenSymbol}</Text>
+              </div>
             }
             key={incentive.rewardTokenAddress}
           >
@@ -91,19 +77,19 @@ export const IncentivesTooltipContent = ({
         ))}
 
         {incentives.length > 1 && (
-          <Box
-            sx={(theme) => ({
-              pt: 1,
-              mt: 1,
-              border: `1px solid ${theme.palette.divider}`,
-            })}
+          <div
+            css={{ border: `1px solid ${theme.colors.basic400}` }}
+            sx={{
+              pt: 4,
+              mt: 4,
+            }}
           >
             <Row caption={<span>Net APR</span>}>
               <Number incentiveAPR={incentivesNetAPR} />
             </Row>
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

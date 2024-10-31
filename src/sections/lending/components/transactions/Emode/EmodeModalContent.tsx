@@ -1,6 +1,4 @@
 import { formatUserSummary } from "@aave/math-utils"
-import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Box, Link, SvgIcon, Typography } from "@mui/material"
 import { useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
@@ -15,6 +13,10 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
+import ArrowRightIcon from "assets/icons/ArrowRightIcon.svg?react"
+import { Alert } from "components/Alert"
+import { Separator } from "components/Separator/Separator"
+import { Text } from "components/Typography/Text/Text"
 import { TxErrorView } from "sections/lending/components/transactions/FlowCommons/Error"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -22,12 +24,10 @@ import {
   DetailsHFLine,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
-import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
+import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { EmodeActions } from "./EmodeActions"
 import { getEmodeMessage } from "./EmodeNaming"
 import { EmodeSelect } from "./EmodeSelect"
-import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
-import { Alert } from "components/Alert"
 
 export enum ErrorType {
   EMODE_DISABLED_LIQUIDATION,
@@ -118,30 +118,30 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     switch (blockingError) {
       case ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING:
         return (
-          <Alert variant="info" sx={{ mt: 24, alignItems: "center" }}>
-            <Typography variant="caption">
+          <Alert variant="info" sx={{ mt: 12, align: "center" }}>
+            <Text>
               <span>
                 To enable E-mode for the{" "}
                 {selectedEmode && getEmodeMessage(selectedEmode.label)}{" "}
                 category, all borrow positions outside of this category must be
                 closed.
               </span>
-            </Typography>
+            </Text>
           </Alert>
         )
       case ErrorType.EMODE_DISABLED_LIQUIDATION:
         return (
-          <Alert variant="error" sx={{ mt: 24, alignItems: "center" }}>
-            <Typography variant="subheader1" color="#4F1919">
+          <Alert variant="error" sx={{ mt: 12, align: "center" }}>
+            <Text>
               <span>Cannot disable E-Mode</span>
-            </Typography>
-            <Typography variant="caption">
+            </Text>
+            <Text>
               <span>
                 You can not disable E-Mode as your current collateralization
                 level is above 80%, disabling E-Mode can cause liquidation. To
                 exit E-Mode supply or repay borrowed positions.
               </span>
-            </Typography>
+            </Text>
           </Alert>
         )
       default:
@@ -156,12 +156,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
   // is Network mismatched
   const isWrongNetwork: boolean = currentChainId !== connectedChainId
-
-  const ArrowRight: React.FC = () => (
-    <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
-      <ArrowNarrowRightIcon />
-    </SvgIcon>
-  )
 
   // Shown only if the user is disabling eMode, is not blocked from disabling, and has a health factor that is decreasing
   // HF will never decrease on enable or switch because all borrow positions must initially be in the eMode category
@@ -184,155 +178,74 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   if (emodeTxState.success) return <TxSuccessView action={<span>Emode</span>} />
   return (
     <>
-      <TxModalTitle title={`${mode} E-Mode`} />
-      {isWrongNetwork && !readOnlyModeAddress && (
-        <ChangeNetworkWarning
-          networkName={networkConfig.name}
-          chainId={currentChainId}
-        />
-      )}
-
-      {user.userEmodeCategoryId === 0 && (
-        <Alert variant="warning">
-          <Typography variant="caption">
-            <span>
-              Enabling E-Mode only allows you to borrow assets belonging to the
-              selected category. Please visit our{" "}
-              <Link
-                href="https://docs.aave.com/faq/aave-v3-features#high-efficiency-mode-e-mode"
-                target="_blank"
-                rel="noopener"
-              >
-                FAQ guide
-              </Link>{" "}
-              to learn more about how it works and the applied restrictions.
-            </span>
-          </Typography>
-        </Alert>
-      )}
-
-      {showModal && (
-        <EmodeSelect
-          emodeCategories={eModes}
-          selectedEmode={selectedEmode?.id}
-          setSelectedEmode={setSelectedEmode}
-          userEmode={user.userEmodeCategoryId}
-        />
-      )}
-
-      {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
-      {showLiquidationRiskAlert && (
-        <Alert variant="error" sx={{ mt: 24, alignItems: "center" }}>
-          <Typography variant="subheader1" color="#4F1919">
-            <span>Liquidation risk</span>
-          </Typography>
-          <Typography variant="caption">
-            <span>
-              This action will reduce your health factor. Please be mindful of
-              the increased risk of collateral liquidation.{" "}
-            </span>
-          </Typography>
-        </Alert>
-      )}
-
       <TxModalDetails gasLimit={gasLimit}>
         {!showModal && (
-          <Row caption={<span>E-Mode category</span>} sx={{ mb: 12 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "right",
-                alignItems: "center",
-              }}
-            >
-              <Box sx={{ display: "inline-flex", alignItems: "center", mx: 4 }}>
+          <Row captionColor="basic400" caption={<span>E-Mode category</span>}>
+            <div sx={{ flex: "row", justify: "right", align: "center" }}>
+              <div sx={{ align: "center" }} css={{ display: "inline-flex" }}>
                 {user.userEmodeCategoryId !== 0 ? (
                   <>
-                    <Typography variant="subheader1">
+                    <span>
                       {getEmodeMessage(eModes[user.userEmodeCategoryId].label)}
-                    </Typography>
+                    </span>
                   </>
                 ) : (
-                  <Typography variant="subheader1">
-                    <span>None</span>
-                  </Typography>
+                  <span>None</span>
                 )}
-              </Box>
+              </div>
               {selectedEmode && (
                 <>
-                  <ArrowRight />
-                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                  <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
+                  <div
+                    css={{ display: "inline-flex" }}
+                    sx={{ align: "center" }}
+                  >
                     {selectedEmode.id !== 0 ? (
                       <>
-                        <Typography variant="subheader1">
+                        <span>
                           {getEmodeMessage(eModes[selectedEmode.id].label)}
-                        </Typography>
+                        </span>
                       </>
                     ) : (
-                      <Typography variant="subheader1">
-                        <span>None</span>
-                      </Typography>
+                      <span>None</span>
                     )}
-                  </Box>
+                  </div>
                 </>
               )}
-            </Box>
+            </div>
           </Row>
         )}
 
-        <Row
-          caption={<span>Available assets</span>}
-          sx={{ alignContent: "flex-end", mb: 12 }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "right",
-              alignItems: "center",
-            }}
-          >
+        <Row captionColor="basic400" caption={<span>Available assets</span>}>
+          <div sx={{ flex: "row", justify: "right", align: "center" }}>
             {eModes[user.userEmodeCategoryId] && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  textAlign: "end",
-                }}
-              >
+              <div sx={{ flex: "row", align: "center", textAlign: "end" }}>
                 {user.userEmodeCategoryId !== 0 ? (
-                  <Typography sx={{ textAlign: "end" }}>
+                  <span>
                     {eModes[user.userEmodeCategoryId].assets.join(", ")}
-                  </Typography>
+                  </span>
                 ) : (
-                  <Typography>
-                    <span>All Assets</span>
-                  </Typography>
+                  <span>All Assets</span>
                 )}
-              </Box>
+              </div>
             )}
             {selectedEmode && (
               <>
-                <ArrowRight />
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    textAlign: "end",
-                  }}
-                >
+                <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
+                <div sx={{ flex: "row", align: "center", justify: "flex-end" }}>
                   {selectedEmode?.id !== 0 ? (
-                    <Typography sx={{ textAlign: "end" }}>
+                    <Text sx={{ textAlign: "end" }}>
                       {selectedEmode.assets.join(", ")}
-                    </Typography>
+                    </Text>
                   ) : (
-                    <Typography>
+                    <Text>
                       <span>All Assets</span>
-                    </Typography>
+                    </Text>
                   )}
-                </Box>
+                </div>
               </>
             )}
-          </Box>
+          </div>
         </Row>
         <DetailsHFLine
           visibleHfChange={!!selectedEmode}
@@ -341,48 +254,96 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         />
 
         {showMaxLTVRow && (
-          <Row caption={<span>Maximum loan to value</span>} sx={{ mb: 12 }}>
-            <Box sx={{ textAlign: "right" }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                }}
-              >
+          <Row
+            caption={<span>Maximum loan to value</span>}
+            captionColor="basic400"
+            sx={{ mb: 12 }}
+          >
+            <div sx={{ textAlign: "right" }}>
+              <div sx={{ flex: "row", align: "center", justify: "flex-end" }}>
                 <FormattedNumber
                   value={user.currentLoanToValue}
-                  sx={{ color: "text.primary" }}
                   visibleDecimals={2}
                   compact
                   percent
-                  variant="secondary14"
                 />
 
                 {selectedEmode !== undefined && (
                   <>
-                    <ArrowRight />
+                    <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                     <FormattedNumber
                       value={newSummary.currentLoanToValue}
-                      sx={{ color: "text.primary" }}
                       visibleDecimals={2}
                       compact
                       percent
-                      variant="secondary14"
                     />
                   </>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           </Row>
         )}
       </TxModalDetails>
+
+      {showModal && (
+        <>
+          <Separator color="darkBlue401" sx={{ my: 6 }} />
+          <EmodeSelect
+            emodeCategories={eModes}
+            selectedEmode={selectedEmode?.id}
+            setSelectedEmode={setSelectedEmode}
+            userEmode={user.userEmodeCategoryId}
+          />
+        </>
+      )}
 
       {blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING && (
         <Blocked />
       )}
 
-      {txError && <GasEstimationError txError={txError} />}
+      {txError && <GasEstimationError txError={txError} sx={{ mt: 12 }} />}
+
+      {isWrongNetwork && !readOnlyModeAddress && (
+        <ChangeNetworkWarning
+          sx={{ mt: 12 }}
+          networkName={networkConfig.name}
+          chainId={currentChainId}
+        />
+      )}
+
+      {user.userEmodeCategoryId === 0 && (
+        <Alert variant="warning" sx={{ mt: 12 }}>
+          <Text>
+            <span>
+              Enabling E-Mode only allows you to borrow assets belonging to the
+              selected category. Please visit our{" "}
+              <a
+                href="https://docs.aave.com/faq/aave-v3-features#high-efficiency-mode-e-mode"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                FAQ guide
+              </a>{" "}
+              to learn more about how it works and the applied restrictions.
+            </span>
+          </Text>
+        </Alert>
+      )}
+
+      {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
+      {showLiquidationRiskAlert && (
+        <Alert variant="error" sx={{ mt: 24, align: "center" }}>
+          <Text>
+            <span>Liquidation risk</span>
+          </Text>
+          <Text>
+            <span>
+              This action will reduce your health factor. Please be mindful of
+              the increased risk of collateral liquidation.{" "}
+            </span>
+          </Text>
+        </Alert>
+      )}
 
       <EmodeActions
         isWrongNetwork={isWrongNetwork}

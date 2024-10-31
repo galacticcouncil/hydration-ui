@@ -169,72 +169,10 @@ export interface SxProps
     FontProps,
     DisplayProps {}
 
-type PropName = keyof SxProps
-
-const sxPropNames = [
-  "m",
-  "mt",
-  "mb",
-  "ml",
-  "mr",
-  "mx",
-  "my",
-  "p",
-  "pt",
-  "pb",
-  "pl",
-  "pr",
-  "px",
-  "py",
-  "width",
-  "height",
-  "minWidth",
-  "minHeight",
-  "maxWidth",
-  "maxHeight",
-  "flexBasis",
-  "aspectRatio",
-  "gap",
-  "top",
-  "bottom",
-  "left",
-  "right",
-  "color",
-  "bg",
-  "fontSize",
-  "fontWeight",
-  "lineHeight",
-  "opacity",
-  "textAlign",
-  "display",
-  "flexDirection",
-  "flexGrow",
-  "flexShrink",
-  "flexWrap",
-  "align",
-  "flex",
-  "justify",
-] satisfies PropName[]
-
 export const sx = [margins, paddings, size, colors, fonts, display]
 
-const isSxProp = (prop: string): prop is PropName =>
-  sxPropNames.includes(prop as PropName)
-
-const isMuiSxPropValue = (value: any) =>
-  typeof value === "function" ||
-  (typeof value === "object" && !Array.isArray(value))
-
-const isSxPropsValid = (sx: SxProps) =>
-  typeof sx === "object" &&
-  Object.entries(sx).every(([prop, value]) => {
-    return isSxProp(prop) && !isMuiSxPropValue(value)
-  })
-
 export function parseSxProps(props: any) {
-  if (!isSxPropsValid(props.sx)) {
-    return props
-  }
+  if (props?.sx == null) return props
 
   const newCss = sx.map((i) => i(props.sx))
   const hasCss = !!newCss.flat(1).filter((x) => x != null).length
@@ -246,7 +184,7 @@ export function parseSxProps(props: any) {
   } else {
     props.css = [newCss, props.css]
   }
-  delete props.sx
 
+  delete props.sx
   return props
 }

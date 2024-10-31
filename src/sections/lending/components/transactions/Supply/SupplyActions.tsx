@@ -1,7 +1,5 @@
 import { gasLimitRecommendations, ProtocolAction } from "@aave/contract-helpers"
 import { TransactionResponse } from "@ethersproject/providers"
-
-import { BoxProps } from "@mui/material"
 import { parseUnits } from "ethers/lib/utils"
 import React, { useEffect, useState } from "react"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
@@ -18,7 +16,6 @@ import {
   TxAction,
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
-
 import { useQueryClient } from "@tanstack/react-query"
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import {
@@ -26,7 +23,7 @@ import {
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
 
-export interface SupplyActionProps extends BoxProps {
+export interface SupplyActionProps {
   amountToSupply: string
   isWrongNetwork: boolean
   customGasPrice?: string
@@ -35,6 +32,7 @@ export interface SupplyActionProps extends BoxProps {
   blocked: boolean
   decimals: number
   isWrappedBaseAsset: boolean
+  className?: string
 }
 
 export const SupplyActions = React.memo(
@@ -42,12 +40,11 @@ export const SupplyActions = React.memo(
     amountToSupply,
     poolAddress,
     isWrongNetwork,
-    sx,
     symbol,
     blocked,
     decimals,
     isWrappedBaseAsset,
-    ...props
+    className,
   }: SupplyActionProps) => {
     const queryClient = useQueryClient()
     const [
@@ -237,8 +234,7 @@ export const SupplyActions = React.memo(
         handleAction={action}
         requiresApproval={requiresApproval}
         tryPermit={permitAvailable}
-        sx={sx}
-        {...props}
+        className={className}
       />
     )
   },

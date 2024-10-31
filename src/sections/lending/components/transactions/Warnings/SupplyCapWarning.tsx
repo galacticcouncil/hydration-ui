@@ -36,7 +36,7 @@ export const SupplyCapWarning = ({
       {renderText()}{" "}
       <Link
         href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-        underline="always"
+        css={{ textDecoration: "underline" }}
       >
         <span>Learn more</span>
       </Link>

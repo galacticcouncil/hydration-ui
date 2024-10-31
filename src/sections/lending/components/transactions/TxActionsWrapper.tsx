@@ -1,23 +1,14 @@
-import { CheckIcon } from "@heroicons/react/solid"
-
+import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import { Button } from "components/Button/Button"
-
-import {
-  Box,
-  BoxProps,
-  CircularProgress,
-  SvgIcon,
-  Typography,
-} from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
+import { useRpcProvider } from "providers/rpcProvider"
 import { ReactNode } from "react"
+import { ApprovalTooltip } from "sections/lending/components/infoTooltips/ApprovalTooltip"
 import { TxStateType, useModalContext } from "sections/lending/hooks/useModal"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { TxAction } from "sections/lending/ui-config/errorMapping"
 
-import { ApprovalTooltip } from "sections/lending/components/infoTooltips/ApprovalTooltip"
-import { useRpcProvider } from "providers/rpcProvider"
-
-interface TxActionsWrapperProps extends BoxProps {
+interface TxActionsWrapperProps {
   actionInProgressText: ReactNode
   actionText: ReactNode
   amount?: string
@@ -39,6 +30,7 @@ interface TxActionsWrapperProps extends BoxProps {
     handleClick: () => Promise<void>
   }
   tryPermit?: boolean
+  className?: string
 }
 
 export const TxActionsWrapper = ({
@@ -53,13 +45,12 @@ export const TxActionsWrapper = ({
   preparingTransactions,
   requiresAmount,
   requiresApproval,
-  sx,
   symbol,
   blocked,
   fetchingData = false,
   errorParams,
   tryPermit,
-  ...rest
+  className,
 }: TxActionsWrapperProps) => {
   const { isLoaded } = useRpcProvider()
   const { txError } = useModalContext()
@@ -120,9 +111,7 @@ export const TxActionsWrapper = ({
         content: (
           <>
             <span>Approve Confirmed</span>
-            <SvgIcon sx={{ fontSize: 20, ml: 8 }}>
-              <CheckIcon />
-            </SvgIcon>
+            <CheckIcon />
           </>
         ),
       }
@@ -142,21 +131,11 @@ export const TxActionsWrapper = ({
   const { content, disabled, loading, handleClick } = getMainParams()
   const approvalParams = getApprovalParams()
   return (
-    <Box sx={{ flex: "column", mt: ["auto", 16] }} {...rest}>
-      {/* {approvalParams && !readOnlyModeAddress && (
-        <Box
-          sx={{ display: "flex", justifyContent: "end", alignItems: "center" }}
-        >
-          <RightHelperText
-            approvalHash={approvalTxState?.txHash}
-            tryPermit={tryPermit}
-          />
-        </Box>
-      )} */}
-
+    <div sx={{ flex: "column", mt: ["auto", 16] }} className={className}>
       {approvalParams && !readOnlyModeAddress && (
         <Button
           variant="primary"
+          isLoading={approvalParams.loading}
           disabled={approvalParams.disabled || blocked}
           onClick={() =>
             approvalParams.handleClick && approvalParams.handleClick()
@@ -164,37 +143,27 @@ export const TxActionsWrapper = ({
           size="medium"
           type="button"
         >
-          {approvalParams.loading && (
-            <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
-          )}
           {approvalParams.content}
         </Button>
       )}
-
       <Button
         variant="primary"
         disabled={disabled || blocked || readOnlyModeAddress !== undefined}
         onClick={handleClick}
         size="medium"
         type="button"
+        isLoading={loading}
         sx={approvalParams ? { mt: 8 } : undefined}
       >
-        {loading && (
-          <CircularProgress color="inherit" size="16px" sx={{ mr: 8 }} />
-        )}
         {content}
       </Button>
       {readOnlyModeAddress && (
-        <Typography
-          variant="helperText"
-          color="warning.main"
-          sx={{ textAlign: "center", mt: 8 }}
-        >
+        <Text fs={12} tAlign="center" color="basic400" sx={{ mt: 8 }}>
           <span>
             Read-only mode. Connect to a wallet to perform transactions.
           </span>
-        </Typography>
+        </Text>
       )}
-    </Box>
+    </div>
   )
 }

@@ -1,18 +1,10 @@
 import { ChainId } from "@aave/contract-helpers"
 import { normalize, UserIncentiveData } from "@aave/math-utils"
-
-import { Box, Typography } from "@mui/material"
+import { Text } from "components/Typography/Text/Text"
 import { useEffect, useState } from "react"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
-import { Reward } from "sections/lending/helpers/types"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
-
 import { TxErrorView } from "sections/lending/components/transactions/FlowCommons/Error"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
@@ -21,8 +13,13 @@ import {
   DetailsNumberLineWithSub,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
-import { TxModalTitle } from "sections/lending/components/transactions/FlowCommons/TxModalTitle"
 import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
+import { Reward } from "sections/lending/helpers/types"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
+import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ClaimRewardsActions } from "./ClaimRewardsActions"
 import { RewardsSelect } from "./RewardsSelect"
 
@@ -162,7 +159,6 @@ export const ClaimRewardsModalContent = () => {
 
   return (
     <>
-      <TxModalTitle title="Claim rewards" />
       {isWrongNetwork && !readOnlyModeAddress && (
         <ChangeNetworkWarning
           networkName={networkConfig.name}
@@ -171,9 +167,7 @@ export const ClaimRewardsModalContent = () => {
       )}
 
       {blockingError !== undefined && (
-        <Typography variant="helperText" color="error.main">
-          {handleBlocked()}
-        </Typography>
+        <Text color="red400">{handleBlocked()}</Text>
       )}
 
       {rewards.length > 1 && (
@@ -192,46 +186,29 @@ export const ClaimRewardsModalContent = () => {
                 caption={<span>Balance</span>}
                 sx={{ mb: selectedReward.symbol !== "all" ? 0 : 4 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                  }}
-                >
+                <div sx={{ flex: "column", align: "flex-end" }}>
                   {rewards.map((reward) => (
-                    <Box
+                    <div
                       key={`claim-${reward.symbol}`}
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        mb: 4,
-                      }}
+                      sx={{ flex: "column", align: "flex-end", mb: 4 }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <div sx={{ flex: "row", align: "center" }}>
                         <TokenIcon
                           symbol={reward.symbol}
-                          sx={{ mr: 4, fontSize: "16px" }}
+                          size={16}
+                          sx={{ mr: 4 }}
                         />
-                        <FormattedNumber
-                          value={Number(reward.balance)}
-                          variant="secondary14"
-                        />
-                        <Typography ml={1} variant="secondary14">
-                          {reward.symbol}
-                        </Typography>
-                      </Box>
+                        <FormattedNumber value={Number(reward.balance)} />
+                        <Text sx={{ ml: 4 }}>{reward.symbol}</Text>
+                      </div>
                       <FormattedNumber
                         value={Number(reward.balanceUsd)}
-                        variant="helperText"
                         compact
                         symbol="USD"
-                        color="text.secondary"
                       />
-                    </Box>
+                    </div>
                   ))}
-                </Box>
+                </div>
               </Row>
               <DetailsNumberLine
                 description={<span>Total worth</span>}

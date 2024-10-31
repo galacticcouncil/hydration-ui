@@ -1,5 +1,5 @@
-import { Typography } from "@mui/material"
 import { ReactNode } from "react"
+import { Text } from "components/Typography/Text/Text"
 
 export type TxModalTitleProps = {
   title: ReactNode
@@ -8,8 +8,8 @@ export type TxModalTitleProps = {
 
 export const TxModalTitle = ({ title, symbol }: TxModalTitleProps) => {
   return (
-    <Typography variant="h2" sx={{ mb: 24 }}>
+    <Text fs={20} sx={{ mb: 24 }}>
       {title} {symbol ?? ""}
-    </Typography>
+    </Text>
   )
 }

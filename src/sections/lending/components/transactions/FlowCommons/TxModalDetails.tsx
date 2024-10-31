@@ -1,28 +1,26 @@
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-import { ArrowNarrowRightIcon } from "@heroicons/react/solid"
-import { Box, SvgIcon, Typography } from "@mui/material"
-import React, { ReactNode } from "react"
-import Skeleton from "react-loading-skeleton"
-import {
-  IsolatedDisabledBadge,
-  IsolatedEnabledBadge,
-  UnavailableDueToIsolationBadge,
-} from "sections/lending/ui/isolation-mode/IsolationBadge"
-import { Row } from "sections/lending/components/primitives/Row"
-import { CollateralType } from "sections/lending/helpers/types"
-
+import { PercentageValue } from "components/PercentageValue"
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
+import React, { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import {
   FormattedNumber,
   FormattedNumberProps,
 } from "sections/lending/components/primitives/FormattedNumber"
+import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { CollateralType } from "sections/lending/helpers/types"
+import {
+  IsolatedDisabledBadge,
+  IsolatedEnabledBadge,
+  UnavailableDueToIsolationBadge,
+} from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { theme } from "theme"
-import { useTranslation } from "react-i18next"
-import { PercentageValue } from "components/PercentageValue"
+import ArrowRightIcon from "assets/icons/ArrowRightIcon.svg?react"
 
 export interface TxModalDetailsProps {
   gasLimit?: string
@@ -32,12 +30,6 @@ export interface TxModalDetailsProps {
   chainId?: number
   children?: ReactNode
 }
-
-const ArrowRightIcon = (
-  <SvgIcon color="primary" sx={{ fontSize: "14px", mx: 4 }}>
-    <ArrowNarrowRightIcon />
-  </SvgIcon>
-)
 
 export const TxModalDetails: React.FC<TxModalDetailsProps> = ({
   gasLimit,
@@ -94,13 +86,13 @@ export const DetailsNumberLine = ({
   const futureNum = Number(futureValue)
   return (
     <Row captionColor="basic400" caption={description}>
-      <Box sx={{ display: "flex", alignItems: "center" }}>
+      <div sx={{ flex: "row", align: "center" }}>
         {loading ? (
           <Skeleton height={20} width={100} />
         ) : (
           <>
             {iconSymbol && (
-              <TokenIcon symbol={iconSymbol} sx={{ mr: 6, fontSize: 16 }} />
+              <TokenIcon symbol={iconSymbol} sx={{ mr: 6 }} size={16} />
             )}
             {numberPrefix && (
               <Text fs={14} sx={{ mr: 6 }}>
@@ -117,7 +109,7 @@ export const DetailsNumberLine = ({
 
             {futureValue && (
               <>
-                {ArrowRightIcon}
+                <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 {percent ? (
                   <PercentageValue value={futureNum * 100} />
                 ) : symbol ? (
@@ -129,7 +121,7 @@ export const DetailsNumberLine = ({
             )}
           </>
         )}
-      </Box>
+      </div>
     </Row>
   )
 }
@@ -142,7 +134,6 @@ interface DetailsNumberLineWithSubProps {
   futureValue: string
   futureValueUSD: string
   hideSymbolSuffix?: boolean
-  color?: string
   tokenIcon?: string
   loading?: boolean
 }
@@ -155,19 +146,12 @@ export const DetailsNumberLineWithSub = ({
   futureValue,
   futureValueUSD,
   hideSymbolSuffix,
-  color,
   tokenIcon,
   loading = false,
 }: DetailsNumberLineWithSubProps) => {
   return (
     <Row captionColor="basic400" caption={description}>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-        }}
-      >
+      <div sx={{ flex: "column", align: "flex-end" }}>
         {loading ? (
           <>
             <Skeleton height={20} width={100} />
@@ -175,58 +159,32 @@ export const DetailsNumberLineWithSub = ({
           </>
         ) : (
           <>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            <div sx={{ flex: "row", align: "center" }}>
               {value && (
                 <>
-                  <FormattedNumber
-                    value={value}
-                    variant="secondary14"
-                    color={color}
-                  />
-                  {!hideSymbolSuffix && (
-                    <Typography ml={1} variant="secondary14">
-                      {symbol}
-                    </Typography>
-                  )}
-                  {ArrowRightIcon}
+                  <FormattedNumber value={value} />
+                  {!hideSymbolSuffix && <Text sx={{ mt: 4 }}>{symbol}</Text>}
+                  <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 </>
               )}
               {tokenIcon && (
-                <TokenIcon symbol={tokenIcon} sx={{ mr: 4, fontSize: 14 }} />
+                <TokenIcon symbol={tokenIcon} sx={{ mr: 4 }} size={14} />
               )}
-              <FormattedNumber
-                value={futureValue}
-                variant="secondary14"
-                color={color}
-              />
-              {!hideSymbolSuffix && (
-                <Typography ml={1} variant="secondary14">
-                  {symbol}
-                </Typography>
-              )}
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <FormattedNumber value={futureValue} />
+              {!hideSymbolSuffix && <Text sx={{ mt: 4 }}>{symbol}</Text>}
+            </div>
+            <div sx={{ flex: "row", align: "center" }}>
               {valueUSD && (
                 <>
-                  <FormattedNumber
-                    value={valueUSD}
-                    variant="helperText"
-                    compact
-                    symbol="USD"
-                  />
-                  {ArrowRightIcon}
+                  <FormattedNumber value={valueUSD} compact symbol="USD" />
+                  <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 </>
               )}
-              <FormattedNumber
-                value={futureValueUSD}
-                variant="helperText"
-                compact
-                symbol="USD"
-              />
-            </Box>
+              <FormattedNumber value={futureValueUSD} compact symbol="USD" />
+            </div>
           </>
         )}
-      </Box>
+      </div>
     </Row>
   )
 }
@@ -251,7 +209,7 @@ interface CollateralStateProps {
 
 export const CollateralState = ({ collateralType }: CollateralStateProps) => {
   return (
-    <div sx={{ display: "inline-flex", alignItems: "center" }}>
+    <div css={{ display: "inline-flex", alignItems: "center" }}>
       {
         {
           [CollateralType.ENABLED]: (
@@ -303,7 +261,7 @@ export const DetailsIncentivesLine = ({
     return null
   return (
     <Row captionColor="basic400" caption={<span>Rewards APR</span>}>
-      <Box sx={{ display: "flex", alignItems: "center" }}>
+      <div sx={{ flex: "row", align: "center" }}>
         {loading ? (
           <Skeleton height={20} width={100} />
         ) : (
@@ -311,21 +269,21 @@ export const DetailsIncentivesLine = ({
             <IncentivesButton incentives={incentives} symbol={symbol} />
             {futureSymbol && (
               <>
-                {ArrowRightIcon}
+                <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 <IncentivesButton
                   incentives={futureIncentives}
                   symbol={futureSymbol}
                 />
                 {futureIncentives && futureIncentives.length === 0 && (
-                  <Typography variant="secondary14">
+                  <Text>
                     <span>None</span>
-                  </Typography>
+                  </Text>
                 )}
               </>
             )}
           </>
         )}
-      </Box>
+      </div>
     </Row>
   )
 }
@@ -346,14 +304,8 @@ export const DetailsHFLine = ({
   if (healthFactor === "-1" && futureHealthFactor === "-1") return null
   return (
     <Row captionColor="basic400" caption={<span>Health factor</span>}>
-      <Box sx={{ textAlign: "right" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
+      <div css={{ textAlign: "right" }}>
+        <div sx={{ flex: "row", align: "center", justify: "flex-end" }}>
           {loading ? (
             <Skeleton height={20} width={80} />
           ) : (
@@ -362,7 +314,7 @@ export const DetailsHFLine = ({
 
               {visibleHfChange && (
                 <>
-                  {ArrowRightIcon}
+                  <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
 
                   <HealthFactorNumber
                     value={
@@ -375,13 +327,13 @@ export const DetailsHFLine = ({
               )}
             </>
           )}
-        </Box>
+        </div>
 
-        <Typography variant="helperText" color="text.secondary">
+        <Text fs={12} color="basic400">
           <span>Liquidation at</span>
           {" <1.0"}
-        </Typography>
-      </Box>
+        </Text>
+      </div>
     </Row>
   )
 }
