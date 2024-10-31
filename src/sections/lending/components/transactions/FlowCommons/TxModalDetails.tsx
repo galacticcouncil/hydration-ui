@@ -7,10 +7,6 @@ import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
-import {
-  FormattedNumber,
-  FormattedNumberProps,
-} from "sections/lending/components/primitives/FormattedNumber"
 import { Row } from "sections/lending/components/primitives/Row"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { CollateralType } from "sections/lending/helpers/types"
@@ -49,8 +45,8 @@ export const TxModalDetails: React.FC<TxModalDetailsProps> = ({ children }) => {
 
 type DetailsNumberLineProps = {
   description: ReactNode
-  value: FormattedNumberProps["value"]
-  futureValue?: FormattedNumberProps["value"]
+  value: string | number
+  futureValue?: string | number
   numberPrefix?: ReactNode
   symbol?: string
   iconSymbol?: string
@@ -137,6 +133,7 @@ export const DetailsNumberLineWithSub = ({
   tokenIcon,
   loading = false,
 }: DetailsNumberLineWithSubProps) => {
+  const { t } = useTranslation()
   return (
     <Row captionColor="basic400" caption={description}>
       <div sx={{ flex: "column", align: "flex-end" }}>
@@ -150,25 +147,33 @@ export const DetailsNumberLineWithSub = ({
             <div sx={{ flex: "row", align: "center" }}>
               {value && (
                 <>
-                  <FormattedNumber value={value} />
-                  {!hideSymbolSuffix && <Text sx={{ mt: 4 }}>{symbol}</Text>}
+                  <Text fs={14}>
+                    {t("value.token", { value })}
+                    {!hideSymbolSuffix && ` ${symbol}`}
+                  </Text>
                   <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 </>
               )}
               {tokenIcon && (
                 <TokenIcon symbol={tokenIcon} sx={{ mr: 4 }} size={14} />
               )}
-              <FormattedNumber value={futureValue} />
-              {!hideSymbolSuffix && <Text sx={{ mt: 4 }}>{symbol}</Text>}
+              <Text fs={14}>
+                {t("value.token", { value: futureValue })}
+                {!hideSymbolSuffix && ` ${symbol}`}
+              </Text>
             </div>
-            <div sx={{ flex: "row", align: "center" }}>
+            <div sx={{ flex: "row", align: "center", mt: 4 }}>
               {valueUSD && (
                 <>
-                  <FormattedNumber value={valueUSD} compact symbol="USD" />
+                  <Text fs={14} color="basic400">
+                    {t("value.usd", { amount: valueUSD })}
+                  </Text>
                   <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 </>
               )}
-              <FormattedNumber value={futureValueUSD} compact symbol="USD" />
+              <Text fs={14} color="basic400">
+                {t("value.usd", { amount: futureValueUSD })}
+              </Text>
             </div>
           </>
         )}
