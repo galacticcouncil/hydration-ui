@@ -1,7 +1,7 @@
 /**
  * Map of aTokens and their corresponding underlying asset ids
  */
-export const A_TOKENS_MAP: { [key: string]: string } = {
+export const A_TOKEN_UNDERLYING_ID_MAP: { [key: string]: string } = {
   // aDOT
   "1000037": "5",
   // aUSDT

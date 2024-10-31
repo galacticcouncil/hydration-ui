@@ -15,7 +15,6 @@ import { ResponsiveValue } from "utils/responsive"
 import { useAssets } from "providers/assets"
 import { Icon } from "components/Icon/Icon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { A_TOKENS_MAP } from "sections/lending/ui-config/aTokens"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -73,28 +72,24 @@ export const MultipleAssetLogo = ({
 
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
-  const { getAsset } = useAssets()
+  const { getAsset, getErc20, isErc20 } = useAssets()
 
   const { getIsWhiteListed } = useExternalAssetsWhiteList()
 
   const asset = useMemo(() => {
-    const underlyingAssetId = id ? A_TOKENS_MAP[id] : undefined
-    const assetId = underlyingAssetId ?? id
-    const assetDetails = assetId ? getAsset(assetId) : undefined
+    const assetDetails = id ? getErc20(id) || getAsset(id) : undefined
     const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
-
-    if (underlyingAssetId) {
-      delete assetDetails?.parachainId
-    }
 
     return {
       details: assetDetails,
       badgeVariant: badge,
-      underlyingAssetId,
     }
-  }, [getAsset, getIsWhiteListed, id])
+  }, [getAsset, getErc20, getIsWhiteListed, id])
 
-  const { details, badgeVariant, underlyingAssetId } = asset
+  const { details, badgeVariant } = asset
+
+  const underlyingAssetId =
+    details && isErc20(details) ? details.underlyingAssetId : undefined
 
   if (details) {
     const Wrapper = underlyingAssetId ? SATokenWrapper : React.Fragment
@@ -109,7 +104,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
             el && el.setAttribute("fit", "")
           }}
           ecosystem="polkadot"
-          asset={details.id}
+          asset={underlyingAssetId ?? details.id}
           chain={HYDRADX_PARACHAIN_ID.toString()}
           chainOrigin={details.parachainId}
         >
