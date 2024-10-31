@@ -1,6 +1,4 @@
-import { u32 } from "@polkadot/types"
-import { useBestNumber } from "api/chain"
-import { Farm, useFarms } from "api/farms"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -23,30 +21,29 @@ import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import { useJoinFarms } from "utils/farms/deposit"
 
-function isFarmJoined(depositNft: TDeposit, farm: Farm) {
+function isFarmJoined(depositNft: TDeposit, farm: TFarmAprData) {
   return depositNft.data.yieldFarmEntries.find(
     (entry) =>
-      entry.globalFarmId.eq(farm.globalFarm.id) &&
-      entry.yieldFarmId.eq(farm.yieldFarm.id),
+      entry.globalFarmId.eq(farm.globalFarmId) &&
+      entry.yieldFarmId.eq(farm.yieldFarmId),
   )
 }
 
 function JoinedFarmsDetailsRedeposit(props: {
   depositNft: TDeposit
   depositData: TDepositData
-  onSelect: (value: { globalFarm: u32; yieldFarm: u32 }) => void
+  onSelect: (value: { farm: TFarmAprData }) => void
   onTxClose: () => void
 }) {
   const { pool } = usePoolData()
-  const { id: poolId } = pool
+  const { id: poolId, farms } = pool
   const deposit = props.depositData
   const isXYK = isXYKDeposit(deposit)
 
   const { t } = useTranslation()
   const { account } = useAccount()
-  const farms = useFarms([poolId])
 
-  const availableFarms = farms.data?.filter(
+  const availableFarms = farms.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
   )
 
@@ -74,8 +71,7 @@ function JoinedFarmsDetailsRedeposit(props: {
             farm={farm}
             onSelect={() =>
               props.onSelect({
-                globalFarm: farm.globalFarm.id,
-                yieldFarm: farm.yieldFarm.id,
+                farm,
               })
             }
           />
@@ -108,20 +104,15 @@ function JoinedFarmsDetailsRedeposit(props: {
 function JoinedFarmsDetailsPositions(props: {
   depositNft: TDeposit
   depositData: TDepositData
-  onSelect: (value: {
-    globalFarm: u32
-    yieldFarm: u32
-    depositNft: TDeposit
-  }) => void
+  onSelect: (value: { farm: TFarmAprData; depositNft: TDeposit }) => void
   onTxClose: () => void
 }) {
   const { t } = useTranslation()
   const { pool } = usePoolData()
-  const { meta, id: poolId } = pool
+  const { meta, id: poolId, farms } = pool
   const { account } = useAccount()
-  const farms = useFarms([poolId])
 
-  const joinedFarms = farms.data?.filter((farm) =>
+  const joinedFarms = farms.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
   )
 
@@ -162,7 +153,7 @@ function JoinedFarmsDetailsPositions(props: {
       />
 
       <div sx={{ flex: "column", gap: 12, mt: 12 }}>
-        {joinedFarms?.map((farm, i) => (
+        {joinedFarms.map((farm, i) => (
           <FarmDetailsCard
             key={i}
             farm={farm}
@@ -170,8 +161,7 @@ function JoinedFarmsDetailsPositions(props: {
             depositData={props.depositData}
             onSelect={() =>
               props.onSelect({
-                globalFarm: farm.globalFarm.id,
-                yieldFarm: farm.yieldFarm.id,
+                farm,
                 depositNft: props.depositNft,
               })
             }
@@ -200,35 +190,21 @@ export const JoinedFarmsDetails = (props: {
 }) => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
-  const [selectedFarmIds, setSelectedFarmIds] = useState<{
-    globalFarm: u32
-    yieldFarm: u32
+  const [selectedFarm, setSelectedFarm] = useState<{
+    farm: TFarmAprData
     depositNft?: TDeposit
   } | null>(null)
 
-  const bestNumber = useBestNumber()
-  const { meta, id: poolId } = pool
+  const { getCurrentPeriod } = useFarmCurrentPeriod()
 
-  const farms = useFarms([poolId])
-  const selectedFarm =
-    selectedFarmIds != null
-      ? farms.data?.find(
-          (farm) =>
-            farm.globalFarm.id.eq(selectedFarmIds.globalFarm) &&
-            farm.yieldFarm.id.eq(selectedFarmIds.yieldFarm),
-        )
-      : undefined
-
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
-    .toBigNumber()
-    .dividedToIntegerBy(
-      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
-    )
+  const currentBlock = selectedFarm
+    ? getCurrentPeriod(selectedFarm.farm.blocksPerPeriod)
+    : undefined
 
   const { page, direction, back, next } = useModalPagination()
   const onBack = () => {
     back()
-    setSelectedFarmIds(null)
+    setSelectedFarm(null)
   }
 
   return (
@@ -241,7 +217,7 @@ export const JoinedFarmsDetails = (props: {
         contents={[
           {
             title: t("farms.modal.join.title", {
-              assetSymbol: meta.symbol,
+              assetSymbol: pool.meta.symbol,
             }),
             content: (
               <div sx={{ flex: "column" }}>
@@ -249,7 +225,7 @@ export const JoinedFarmsDetails = (props: {
                   depositNft={props.depositNft}
                   depositData={props.depositData}
                   onSelect={(value) => {
-                    setSelectedFarmIds(value)
+                    setSelectedFarm(value)
                     next()
                   }}
                   onTxClose={props.onClose}
@@ -259,7 +235,7 @@ export const JoinedFarmsDetails = (props: {
                   depositData={props.depositData}
                   depositNft={props.depositNft}
                   onSelect={(value) => {
-                    setSelectedFarmIds(value)
+                    setSelectedFarm(value)
                     next()
                   }}
                   onTxClose={props.onClose}
@@ -270,8 +246,8 @@ export const JoinedFarmsDetails = (props: {
           {
             content: selectedFarm && (
               <FarmDetailsModal
-                farm={selectedFarm}
-                depositNft={selectedFarmIds?.depositNft}
+                farm={selectedFarm.farm}
+                depositNft={selectedFarm?.depositNft}
                 depositData={props.depositData}
                 currentBlock={currentBlock?.toNumber()}
               />

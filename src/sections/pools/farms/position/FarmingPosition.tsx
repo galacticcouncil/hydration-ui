@@ -23,7 +23,7 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 
@@ -107,7 +107,7 @@ export const FarmingPosition = ({
   index: number
   depositNft: TDeposit
   depositData: TDepositData
-  availableYieldFarms: Farm[]
+  availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
 
@@ -139,16 +139,8 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          py: [0, 10],
-        }}
-      >
-        <JoinedFarms depositNft={depositNft} />
-      </div>
+      <JoinedFarms depositNft={depositNft} />
+
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
       <div

@@ -27,7 +27,7 @@ import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
@@ -47,7 +47,7 @@ type Props = {
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
-  farms: Farm[]
+  farms: TFarmAprData[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
@@ -277,14 +277,9 @@ export const AddStablepoolLiquidity = ({
             />
             {isJoinFarms && (
               <div sx={{ flex: "column", gap: 8, mt: 8 }}>
-                {farms.map((farm) => {
-                  return (
-                    <FarmDetailsRow
-                      key={farm.globalFarm.id.toString()}
-                      farm={farm}
-                    />
-                  )
-                })}
+                {farms.map((farm) => (
+                  <FarmDetailsRow key={farm.globalFarmId} farm={farm} />
+                ))}
               </div>
             )}
             {customErrors?.farm && (
