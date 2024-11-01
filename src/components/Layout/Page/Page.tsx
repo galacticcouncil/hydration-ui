@@ -22,6 +22,7 @@ import {
   SSubHeader,
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
+import { usePreviousUrl } from "hooks/usePreviousUrl"
 
 type Props = {
   className?: string
@@ -49,6 +50,8 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const prevUrl = usePreviousUrl()
 
   if (matchRoute({ to: LINKS.trade, fuzzy: true })) {
     const isBondPage = matchRoute({ to: LINKS.bond })
@@ -82,10 +85,15 @@ const useSubheaderComponent = () => {
   }
 
   if (matchRoute({ to: LINKS.lendingMarkets, fuzzy: true })) {
-    return (
+    return prevUrl === LINKS.lendingMarkets ? (
       <BackSubHeader
-        label={t("lending.navigation.back")}
+        label={t("lending.navigation.markets.back")}
         to={LINKS.lendingMarkets}
+      />
+    ) : (
+      <BackSubHeader
+        label={t("lending.navigation.dashboard.back")}
+        to={LINKS.lending}
       />
     )
   }
