@@ -43,6 +43,7 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
+import { useMountedState } from "react-use"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -189,6 +190,8 @@ export const useSendEvmTransactionMutation = (
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
 
+  const isMounted = useMountedState()
+
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
@@ -222,16 +225,19 @@ export const useSendEvmTransactionMutation = (
         })
 
         setIsBroadcasted(true)
+
         const receipt = await evmTx.wait()
 
-        success({
-          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-          link,
-          txHash,
-          hidden: sidebar,
-        })
+        if (isMounted()) {
+          success({
+            title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+            link,
+            txHash,
+            hidden: sidebar,
+          })
 
-        remove(id)
+          remove(id)
+        }
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {

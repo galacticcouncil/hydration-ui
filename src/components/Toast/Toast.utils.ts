@@ -102,6 +102,34 @@ const getExtrinsic = async (indexerUrl: string, hash: string) => {
   }
 }
 
+const getEvmExtrinsic = async (
+  indexerUrl: string,
+  blockNumber: number,
+  index: number,
+) => {
+  return {
+    ...(await request<{
+      extrinsics: TSuccessExtrinsic[]
+    }>(
+      indexerUrl,
+      gql`
+        query GetEvmExtrinsic($blockNumber: Int, $index: Int) {
+          extrinsics(
+            where: {
+              block: { height_eq: $blockNumber }
+              indexInBlock_eq: $index
+            }
+          ) {
+            success
+            error
+          }
+        }
+      `,
+      { blockNumber, index },
+    )),
+  }
+}
+
 const getExtrinsicIndex = (
   { extrinsics }: { extrinsics: TExtrinsic[] },
   i?: number,
@@ -170,6 +198,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
   const indexerUrl = useIndexerUrl()
   const toast = useToast()
   const { transactions } = useStore()
+  const { api, isLoaded } = useRpcProvider()
 
   useQueries({
     queries: toasts.map((toastData) => ({
@@ -194,27 +223,61 @@ export const useProcessToasts = (toasts: ToastData[]) => {
 
           return false
         }
+        const isEvm =
+          toastData.link?.includes("evm") ||
+          toastData.link?.includes("explorer.nice.hydration.cloud")
 
-        const res = await getExtrinsic(indexerUrl, toastData.txHash as string)
-        const isExtrinsic = !!res.extrinsics.length
+        if (isEvm) {
+          const ethTx = await api.rpc.eth.getTransactionByHash(toastData.txHash)
 
-        if (isExtrinsic) {
-          const isSuccess = res.extrinsics[0].success
+          if (ethTx) {
+            const blockNumber = ethTx.blockNumber.toString()
+            const indexInBlock = ethTx.transactionIndex.toString()
 
-          toast.remove(toastData.id)
+            const { extrinsics } = await getEvmExtrinsic(
+              indexerUrl,
+              Number(blockNumber),
+              Number(indexInBlock),
+            )
 
-          if (isSuccess) {
-            toast.add("success", { ...toastData, hidden: true })
-          } else {
-            toast.add("error", { ...toastData, hidden: true })
+            if (!!extrinsics.length) {
+              const isSuccess = extrinsics[0].success
+              toast.remove(toastData.id)
+
+              if (isSuccess) {
+                toast.add("success", { ...toastData, hidden: true })
+              } else {
+                toast.add("error", { ...toastData, hidden: true })
+              }
+
+              return true
+            }
           }
 
-          return true
+          return false
+        } else {
+          const res = await getExtrinsic(indexerUrl, toastData.txHash as string)
+
+          const isExtrinsic = !!res.extrinsics.length
+
+          if (isExtrinsic) {
+            const isSuccess = res.extrinsics[0].success
+
+            toast.remove(toastData.id)
+
+            if (isSuccess) {
+              toast.add("success", { ...toastData, hidden: true })
+            } else {
+              toast.add("error", { ...toastData, hidden: true })
+            }
+
+            return true
+          }
         }
 
         return false
       },
-      refetchInterval: 10000,
+      enabled: isLoaded,
     })),
   })
 }
