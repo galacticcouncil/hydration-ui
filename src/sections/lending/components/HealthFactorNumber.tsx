@@ -3,15 +3,18 @@ import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { getHealthFactorColor } from "sections/lending/utils/utils"
+import { ResponsiveValue } from "utils/responsive"
 
 type HealthFactorNumberProps = {
   value: string
   onInfoClick?: () => void
+  fontSize?: ResponsiveValue<number>
 }
 
 export const HealthFactorNumber = ({
   value,
   onInfoClick,
+  fontSize = 14,
 }: HealthFactorNumberProps) => {
   const formattedHealthFactor = Number(
     valueToBigNumber(value).toFixed(2, BigNumber.ROUND_DOWN),
@@ -31,8 +34,8 @@ export const HealthFactorNumber = ({
         </Text>
       ) : (
         <Text
-          fs={14}
-          lh={20}
+          fs={fontSize}
+          lh={fontSize}
           font="GeistSemiBold"
           css={{ color: healthFactorColor }}
         >
@@ -42,6 +45,7 @@ export const HealthFactorNumber = ({
 
       {onInfoClick && (
         <Button
+          sx={{ mt: -2 }}
           css={{
             color: healthFactorColor,
             borderColor: "currentColor",

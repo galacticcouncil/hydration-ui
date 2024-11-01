@@ -117,6 +117,7 @@ export const DashboardHeaderValues: FC<{
           >
             {currentAccount && user?.healthFactor !== "-1" ? (
               <HealthFactorNumber
+                fontSize={19}
                 value={user?.healthFactor || "-1"}
                 onInfoClick={() => {
                   setOpen(true)
