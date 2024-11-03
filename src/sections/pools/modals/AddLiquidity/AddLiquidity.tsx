@@ -10,7 +10,6 @@ import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
-import { Farm } from "api/farms"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
@@ -30,10 +29,9 @@ export enum Page {
 type Props = {
   isOpen: boolean
   onClose: () => void
-  farms: Farm[]
 }
 
-export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
+export const AddLiquidity = ({ isOpen, onClose }: Props) => {
   const { api } = useRpcProvider()
   const { pool } = usePoolData()
   const { t } = useTranslation()
@@ -41,6 +39,7 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
   const { page, direction, back, paginateTo } = useModalPagination()
   const refetch = useRefetchAccountAssets()
   const isEvm = isEvmAccount(account?.address)
+  const farms = pool.farms
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
@@ -189,7 +188,6 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
               <AddLiquidityFormXYK
                 pool={pool}
                 onClose={onClose}
-                farms={farms}
                 onSuccess={onXykSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 setIsJoinFarms={setIsJoinFarms}
