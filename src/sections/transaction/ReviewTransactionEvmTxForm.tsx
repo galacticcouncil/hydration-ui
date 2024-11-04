@@ -4,11 +4,13 @@ import {
 } from "@ethersproject/providers"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAccountFeePaymentAssets } from "api/payments"
+import { useSpotPrice } from "api/spotPrice"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
+import { useAssets } from "providers/assets"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
@@ -22,7 +24,7 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { NATIVE_EVM_ASSET_ID, NATIVE_EVM_ASSET_SYMBOL } from "utils/evm"
+import { NATIVE_EVM_ASSET_ID } from "utils/evm"
 
 type Props = {
   title?: string
@@ -44,8 +46,18 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useEvmAccount()
+  const { wallet } = useWallet()
+  const { getAsset } = useAssets()
+  const { feePaymentAssetId } = useAccountFeePaymentAssets()
 
-  const { data: fee, isLoading: isFeeLoading } = useQuery(
+  const { data: spotPrice } = useSpotPrice(
+    NATIVE_EVM_ASSET_ID,
+    feePaymentAssetId,
+  )
+
+  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
+
+  const { data: feeWETH, isLoading: isFeeLoading } = useQuery(
     ["evm-fee", tx.data.data?.toString()],
     async () => {
       if (wallet?.signer instanceof EthereumSigner) {
@@ -58,15 +70,10 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
         )
 
         const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
-        return estimatedGas.multipliedBy(effectiveGasPrice)
+        return estimatedGas.multipliedBy(effectiveGasPrice).shiftedBy(-18)
       }
     },
   )
-
-  const { feePaymentAssetId } = useAccountFeePaymentAssets()
-  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
-
-  const { wallet } = useWallet()
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
     if (!account?.address) throw new Error("Missing active account")
@@ -83,6 +90,9 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
       onEvmSigned({ evmTx })
     }
   })
+
+  const feePaymentAsset = feePaymentAssetId ? getAsset(feePaymentAssetId) : null
+  const formattedFee = feeWETH?.multipliedBy(spotPrice?.spotPrice ?? 0)
 
   return (
     <>
@@ -105,17 +115,20 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
               rows={[
                 {
                   label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                  content: isFeeLoading ? (
-                    <Skeleton width={100} height={16} />
-                  ) : (
-                    <Text fs={14}>
-                      {t("liquidity.add.modal.row.transactionCostValue", {
-                        amount: fee,
-                        symbol: NATIVE_EVM_ASSET_SYMBOL,
-                        type: "token",
-                        fixedPointScale: 18,
-                      })}
-                    </Text>
+                  content: (
+                    <>
+                      {isFeeLoading ? (
+                        <Skeleton width={100} height={16} />
+                      ) : (
+                        <Text fs={14}>
+                          {t("liquidity.add.modal.row.transactionCostValue", {
+                            amount: formattedFee,
+                            symbol: feePaymentAsset?.symbol,
+                            type: "token",
+                          })}
+                        </Text>
+                      )}
+                    </>
                   ),
                 },
               ]}
