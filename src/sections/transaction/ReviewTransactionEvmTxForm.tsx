@@ -3,15 +3,15 @@ import {
   TransactionResponse,
 } from "@ethersproject/providers"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { useEvmPaymentFee } from "api/evm"
 import { useAccountFeePaymentAssets } from "api/payments"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
-import { FC, useEffect } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import {
   EthereumSigner,
@@ -45,22 +45,23 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
   const { t } = useTranslation()
   const { account } = useEvmAccount()
 
-  const { data: fee } = useQuery(["evm-fee"], async () => {
-    if (wallet?.signer instanceof EthereumSigner) {
-      const [gas] = await wallet.signer.getGasValues(tx.data)
-      const feeData = await wallet.signer.getFeeData()
-      const estimatedGas = new BigNumber(
-        tx.data?.gasLimit?.toString() ?? gas.toString(),
-      )
-      const baseFee = new BigNumber(feeData?.maxFeePerGas?.toString() ?? "0")
-      const maxPriorityFeePerGas = new BigNumber(
-        feeData?.maxPriorityFeePerGas?.toString() ?? "0",
-      )
+  const { data: fee, isLoading: isFeeLoading } = useQuery(
+    ["evm-fee", tx.data.data?.toString()],
+    async () => {
+      if (wallet?.signer instanceof EthereumSigner) {
+        const [gas] = await wallet.signer.getGasValues(tx.data)
+        const feeData = await wallet.signer.getFeeData()
+        const estimatedGas = new BigNumber(gas.toString())
+        const baseFee = new BigNumber(feeData?.maxFeePerGas?.toString() ?? "0")
+        const maxPriorityFeePerGas = new BigNumber(
+          feeData?.maxPriorityFeePerGas?.toString() ?? "0",
+        )
 
-      const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
-      return estimatedGas.multipliedBy(effectiveGasPrice)
-    }
-  })
+        const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
+        return estimatedGas.multipliedBy(effectiveGasPrice)
+      }
+    },
+  )
 
   const { feePaymentAssetId } = useAccountFeePaymentAssets()
   const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
@@ -104,7 +105,9 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
               rows={[
                 {
                   label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                  content: (
+                  content: isFeeLoading ? (
+                    <Skeleton width={100} height={16} />
+                  ) : (
                     <Text fs={14}>
                       {t("liquidity.add.modal.row.transactionCostValue", {
                         amount: fee,
