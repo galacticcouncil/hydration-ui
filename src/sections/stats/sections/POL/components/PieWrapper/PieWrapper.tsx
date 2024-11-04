@@ -35,7 +35,7 @@ export const PieWrapper = ({
   )
 
   const pieChartData = useMemo(
-    () => data.map((props) => omit(["iconIds"], props)),
+    () => data.map((props) => omit(["iconIds", "farms"], props)),
     [data],
   )
 

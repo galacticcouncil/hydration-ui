@@ -23,7 +23,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { Farm } from "api/farms"
 import { useRefetchAccountAssets } from "api/deposits"
 
 type Props = {
@@ -31,7 +30,6 @@ type Props = {
   pool: TXYKPool
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
-  farms: Farm[]
   setIsJoinFarms: (value: boolean) => void
 }
 
@@ -51,7 +49,6 @@ export const AddLiquidityFormXYK = ({
   onClose,
   onSuccess,
   onSubmitted,
-  farms,
   setIsJoinFarms,
 }: Props) => {
   const { t } = useTranslation()
@@ -59,6 +56,7 @@ export const AddLiquidityFormXYK = ({
 
   const { assets, decimals } = pool.meta
   const [assetA, assetB] = assets
+  const farms = pool.farms ?? []
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms)
@@ -361,7 +359,14 @@ export const AddLiquidityFormXYK = ({
         }}
       />
       {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: 8,
+            justify: "space-between",
+            pb: [10, 0],
+          }}
+        >
           <Button
             variant="secondary"
             name="addLiquidity"

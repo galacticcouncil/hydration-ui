@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { maxBalance, required } from "utils/validators"
 import { BN_0 } from "utils/constants"
-import { Farm, useOraclePrice } from "api/farms"
+import { TFarmAprData, useOraclePrice } from "api/farms"
 import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
@@ -17,7 +17,7 @@ export const useZodSchema = ({
   enabled,
 }: {
   id: string
-  farms: Farm[]
+  farms: TFarmAprData[]
   position?: TLPData
   enabled: boolean
 }) => {
@@ -35,12 +35,12 @@ export const useZodSchema = ({
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(
       (acc, farm) => {
-        const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+        const minDeposit = BigNumber(farm.minDeposit)
 
         return minDeposit.gt(acc.value)
           ? {
               value: minDeposit,
-              assetId: farm.globalFarm.incentivizedAsset.toString(),
+              assetId: farm.incentivizedAsset.toString(),
             }
           : acc
       },
