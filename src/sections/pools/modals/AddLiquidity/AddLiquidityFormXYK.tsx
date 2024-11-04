@@ -359,7 +359,14 @@ export const AddLiquidityFormXYK = ({
         }}
       />
       {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: 8,
+            justify: "space-between",
+            pb: [10, 0],
+          }}
+        >
           <Button
             variant="secondary"
             name="addLiquidity"
