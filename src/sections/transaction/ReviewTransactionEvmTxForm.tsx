@@ -2,14 +2,15 @@ import {
   TransactionRequest,
   TransactionResponse,
 } from "@ethersproject/providers"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useEvmPaymentFee } from "api/evm"
 import { useAccountFeePaymentAssets } from "api/payments"
+import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import {
@@ -44,7 +45,23 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
   const { t } = useTranslation()
   const { account } = useEvmAccount()
 
-  const { data: fee } = useEvmPaymentFee("0xcb0014000000", account?.address)
+  const { data: fee } = useQuery(["evm-fee"], async () => {
+    if (wallet?.signer instanceof EthereumSigner) {
+      const [gas] = await wallet.signer.getGasValues(tx.data)
+      const feeData = await wallet.signer.getFeeData()
+      const estimatedGas = new BigNumber(
+        tx.data?.gasLimit?.toString() ?? gas.toString(),
+      )
+      const baseFee = new BigNumber(feeData?.maxFeePerGas?.toString() ?? "0")
+      const maxPriorityFeePerGas = new BigNumber(
+        feeData?.maxPriorityFeePerGas?.toString() ?? "0",
+      )
+
+      const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
+      return estimatedGas.multipliedBy(effectiveGasPrice)
+    }
+  })
+
   const { feePaymentAssetId } = useAccountFeePaymentAssets()
   const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
 

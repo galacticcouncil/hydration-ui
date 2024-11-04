@@ -60,6 +60,10 @@ export class EthereumSigner {
     ])
   }
 
+  getFeeData() {
+    return this.signer.provider.getFeeData()
+  }
+
   requestNetworkSwitch = async (chain: string) => {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
