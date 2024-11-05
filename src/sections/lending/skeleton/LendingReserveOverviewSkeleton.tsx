@@ -60,7 +60,9 @@ export const LendingReserveOverviewSkeleton = () => {
           <div>
             <Skeleton width="50%" sx={{ mb: 10 }} />
             <Skeleton width="20%" sx={{ mb: [20, 40] }} />
-            <AreaChartSkeleton state="loading" color="basic600" />
+            <div css={{ position: "relative" }}>
+              <AreaChartSkeleton state="loading" color="basic600" />
+            </div>
             <HeaderValuesSkeleton count={4} size="small" sx={{ mt: -50 }} />
           </div>
           <div sx={{ bg: "bg", height: 4, mx: [-20, -30], my: [20, 40] }} />
