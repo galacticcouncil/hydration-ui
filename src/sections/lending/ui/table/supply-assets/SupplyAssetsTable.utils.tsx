@@ -152,6 +152,7 @@ export const useSupplyAssetsTableColumns = () => {
             <div sx={{ flex: "row", align: "center", justify: "end" }}>
               <Button
                 disabled={disableSupply}
+                sx={{ height: "100%" }}
                 onClick={() => openSupply(underlyingAsset)}
                 size="micro"
               >

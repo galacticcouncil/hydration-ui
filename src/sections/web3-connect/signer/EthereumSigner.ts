@@ -133,6 +133,7 @@ export class EthereumSigner {
       } else {
         /* const gas = await this.getGasValues(tx)
         gasLimit = BigNumber(gas[0].toString()) */
+        // Use hardcoded gas limit for now, because the estimator is not working correctly
         gasLimit = BigNumber(1000000)
       }
 

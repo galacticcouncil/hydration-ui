@@ -1,32 +1,23 @@
-import { ChainId } from "@aave/contract-helpers"
-import {
-  UserIncentiveData,
-  normalize,
-  valueToBigNumber,
-} from "@aave/math-utils"
-import { Button } from "components/Button/Button"
+import { valueToBigNumber } from "@aave/math-utils"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
+import { PercentageValue } from "components/PercentageValue"
 import { FC, useState } from "react"
 import { HealthFactorNumber } from "sections/lending/components/HealthFactorNumber"
-import { PercentageValue } from "components/PercentageValue"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-parametres/LiquidationRiskParametresModal"
 
 export const DashboardHeaderValues: FC<{
   className?: string
 }> = ({ className }) => {
-  const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
-  const { user, reserves, loading } = useAppDataContext()
+  const { user, loading } = useAppDataContext()
   const { currentAccount } = useWeb3Context()
   const [open, setOpen] = useState(false)
-  const { openClaimRewards } = useModalContext()
+  //const { openClaimRewards } = useModalContext()
 
-  const { claimableRewardsUsd } = Object.keys(
+  /* const { claimableRewardsUsd } = Object.keys(
     user.calculatedUserIncentives,
   ).reduce(
     (acc, rewardTokenAddress) => {
@@ -72,7 +63,7 @@ export const DashboardHeaderValues: FC<{
       claimableRewardsUsd: number
       assets: string[]
     },
-  )
+  ) */
 
   const loanToValue =
     user?.totalCollateralMarketReferenceCurrency === "0"
@@ -127,7 +118,7 @@ export const DashboardHeaderValues: FC<{
               <NoData />
             )}
           </DataValue>
-          <DataValue
+          {/* <DataValue
             labelColor="brightBlue300"
             label="Available rewards"
             isLoading={loading}
@@ -146,7 +137,7 @@ export const DashboardHeaderValues: FC<{
             ) : (
               <NoData />
             )}
-          </DataValue>
+          </DataValue> */}
         </DataValueList>
       </div>
       <LiquidationRiskParametresInfoModal

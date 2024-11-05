@@ -107,11 +107,12 @@ export const useBorrowAssetsTableColumns = () => {
           const { isFreezed, availableBorrows, underlyingAsset } = row.original
           const disableBorrow = isFreezed || Number(availableBorrows) <= 0
           return (
-            <div sx={{ flex: "row", justify: "end" }}>
+            <div sx={{ flex: "row", align: "center", justify: "end" }}>
               <Button
                 disabled={disableBorrow}
                 onClick={() => openBorrow(underlyingAsset)}
                 size="micro"
+                sx={{ height: "100%" }}
               >
                 {t("lending.borrow")}
               </Button>

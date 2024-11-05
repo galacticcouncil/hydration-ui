@@ -2,10 +2,9 @@ import {
   TransactionRequest,
   TransactionResponse,
 } from "@ethersproject/providers"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useAccountFeePaymentAssets } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
-import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Summary } from "components/Summary/Summary"
@@ -15,6 +14,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
+import { useEvmTxFee } from "sections/transaction/ReviewTransactionEvmTxForm.utils"
 import {
   EthereumSigner,
   PermitResult,
@@ -57,23 +57,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 
   const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
 
-  const { data: feeWETH, isLoading: isFeeLoading } = useQuery(
-    ["evm-fee", tx.data.data?.toString()],
-    async () => {
-      if (wallet?.signer instanceof EthereumSigner) {
-        const [gas] = await wallet.signer.getGasValues(tx.data)
-        const feeData = await wallet.signer.getFeeData()
-        const estimatedGas = new BigNumber(gas.toString())
-        const baseFee = new BigNumber(feeData?.maxFeePerGas?.toString() ?? "0")
-        const maxPriorityFeePerGas = new BigNumber(
-          feeData?.maxPriorityFeePerGas?.toString() ?? "0",
-        )
-
-        const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
-        return estimatedGas.multipliedBy(effectiveGasPrice).shiftedBy(-18)
-      }
-    },
-  )
+  const { data: feeWETH, isLoading: isFeeLoading } = useEvmTxFee(tx.data)
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
     if (!account?.address) throw new Error("Missing active account")
