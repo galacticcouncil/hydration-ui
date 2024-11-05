@@ -49,7 +49,7 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
 }
 
-const isLendingEnabled = import.meta.env.VITE_FF_LENDING_ENABLED === "true"
+const isLendingEnabled = import.meta.env.VITE_FF_MONEY_MARKET_ENABLED === "true"
 
 export const MENU_ITEMS = [
   {
