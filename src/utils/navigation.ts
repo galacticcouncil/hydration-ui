@@ -11,6 +11,7 @@ import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
+import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -83,7 +84,7 @@ export const MENU_ITEMS = [
   {
     key: "lending",
     href: LINKS.lending,
-    Icon: StakingIcon,
+    Icon: IconPercentageSquare,
     subItems: undefined,
     enabled: isLendingEnabled,
     external: false,
