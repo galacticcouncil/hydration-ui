@@ -15,6 +15,7 @@
   "manage": "Manage",
   "close": "Close",
   "submit": "Submit",
+  "continue": "Continue",
   "transfer": "Transfer",
   "24Volume": "24h volume",
   "duration.left": "{{duration}} left",
@@ -1105,5 +1106,15 @@
   "memepad.summary.adminRights.burn": "Burn admin rights",
   "memepad.summary.adminRights.burned": "Admin rights revoked",
   "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
-  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked."
+  "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
+  "claimingRange.button": "Adjust claiming range",
+  "claimingRange.modal.title": "Claiming range setings",
+  "claimingRange.modal.description": "Claim your rewards only when loyalty factor reaches a certain %",
+  "claimingRange.modal.button": "Save settings",
+  "claimingRange.modal.input.label": "Claim at",
+  "claimingRange.modal.input.value": "Default ({{value}}%)",
+  "claimingRange.modal.validation.max": "Max value is {{value}}",
+  "claimingRange.modal.validation.min": "Min value is {{value}}",
+  "claimingRange.modal.warning.title": "Are you sure you want<br /> to claim rewards?",
+  "claimingRange.modal.warning.description": " Don't claim rewards too early. Claiming resets your boost and forfeits potential rewards from multiple farming positions"
 }

@@ -10,6 +10,7 @@ import { theme } from "theme"
 import { STriggerButton } from "./ClaimAllDrowpdown.styled"
 import { ClaimAllContent } from "./ClaimAllContent"
 import { useAccountAssets } from "api/deposits"
+import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -34,46 +35,55 @@ export const ClaimAllDropdown = () => {
     <>
       <HeaderSeparator />
       <div
-        sx={{ flex: "row" }}
-        css={{ textAlign: "right" }}
-        onMouseEnter={handleOpen}
-        onMouseLeave={handleClose}
+        sx={{
+          flex: "column",
+          gap: 8,
+          align: "center",
+        }}
       >
-        <Popover.Root open={open} onOpenChange={(open) => setOpen(open)}>
-          <div sx={{ flex: "column", flexGrow: [1, 0] }}>
-            <STriggerButton>
-              <Text
-                fs={13}
-                lh={13}
-                tTransform="uppercase"
-                css={{ whiteSpace: "nowrap" }}
-              >
-                {t("farms.header.dropdown.label")}
-              </Text>
-              <Icon
-                size={18}
-                icon={
-                  <ChevronRight
-                    css={{ transform: `rotate(${open ? "270" : "90"}deg)` }}
-                  />
-                }
-              />
-            </STriggerButton>
-            {open && !isDesktop && <ClaimAllContent onClose={handleClose} />}
-          </div>
-          {isDesktop && (
-            <Popover.Portal>
-              <Popover.Content
-                css={{ zIndex: theme.zIndices.modal, outline: "none" }}
-                side="bottom"
-                align="end"
-                sideOffset={-2}
-              >
-                <ClaimAllContent onClose={handleClose} />
-              </Popover.Content>
-            </Popover.Portal>
-          )}
-        </Popover.Root>
+        <div
+          sx={{ flex: "row", width: "100%" }}
+          css={{ textAlign: "right" }}
+          onMouseEnter={handleOpen}
+          onMouseLeave={handleClose}
+        >
+          <Popover.Root open={open} onOpenChange={(open) => setOpen(open)}>
+            <div sx={{ flex: "column", flexGrow: [1, 0] }}>
+              <STriggerButton>
+                <Text
+                  fs={13}
+                  lh={13}
+                  tTransform="uppercase"
+                  css={{ whiteSpace: "nowrap" }}
+                >
+                  {t("farms.header.dropdown.label")}
+                </Text>
+                <Icon
+                  size={18}
+                  icon={
+                    <ChevronRight
+                      css={{ transform: `rotate(${open ? "270" : "90"}deg)` }}
+                    />
+                  }
+                />
+              </STriggerButton>
+              {open && !isDesktop && <ClaimAllContent onClose={handleClose} />}
+            </div>
+            {isDesktop && (
+              <Popover.Portal>
+                <Popover.Content
+                  css={{ zIndex: theme.zIndices.modal, outline: "none" }}
+                  side="bottom"
+                  align="end"
+                  sideOffset={-2}
+                >
+                  <ClaimAllContent onClose={handleClose} />
+                </Popover.Content>
+              </Popover.Portal>
+            )}
+          </Popover.Root>
+        </div>
+        <ClaimingRangeButton />
       </div>
     </>
   )

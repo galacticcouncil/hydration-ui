@@ -36,6 +36,7 @@ export const ClaimRewardsCard = (props: {
   const poolClaimableValues = claimableValues?.get(
     isShareToken(meta) ? meta.poolAddress : id,
   )
+
   const claimableDepositValues = props.depositNft
     ? poolClaimableValues?.filter(
         (farm) => farm.depositId === props.depositNft?.id,
@@ -86,9 +87,8 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const claimAll = useClaimFarmMutation(
-    id,
-    props.depositNft,
+  const { claim, isLoading, confirmClaimModal } = useClaimFarmMutation(
+    claimableDepositValues,
     toast,
     props.onTxClose,
     () => {},
@@ -152,12 +152,13 @@ export const ClaimRewardsCard = (props: {
           disabled={
             account?.isExternalWalletConnected || (total && total.isZero())
           }
-          onClick={() => claimAll.mutate()}
-          isLoading={claimAll.isLoading}
+          onClick={claim}
+          isLoading={isLoading}
         >
           {t("farms.claimCard.button.label")}
         </Button>
       </div>
+      {confirmClaimModal}
     </Card>
   )
 }

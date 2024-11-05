@@ -31,6 +31,8 @@ import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
 import { millisecondsInHour } from "date-fns/constants"
+import { getCurrentLoyaltyFactor } from "utils/farms/apr"
+import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -42,13 +44,16 @@ type TActiveFarm = {
   yieldFarm: PalletLiquidityMiningYieldFarmData
 }
 
-type TClaimableFarmValue = {
+export type TClaimableFarmValue = {
   poolId: string
   value: string
   rewardCurrency: string
   yieldFarmId: string
+  globalFarmId: string
   depositId: string
   isXyk: boolean
+  liquidityPositionId?: string
+  shares: string
 }
 
 export type TFarmAprData = {
@@ -536,8 +541,14 @@ export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
+  const { range } = useClaimingRange()
 
-  const { omnipoolDeposits = [], xykDeposits = [], accountAddress } = data ?? {}
+  const {
+    omnipoolDeposits = [],
+    xykDeposits = [],
+    depositLiquidityPositions = [],
+    accountAddress,
+  } = data ?? {}
   const allDeposits = [...omnipoolDeposits, ...xykDeposits]
 
   return useQuery(
@@ -578,6 +589,27 @@ export const useAccountClaimableFarmValues = () => {
           const yieldFarm = yieldFarmRaw.unwrap()
           const rewardCurrency = globalFarm.rewardCurrency.toString()
           const incentivizedAsset = globalFarm.incentivizedAsset.toString()
+
+          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+
+          const currentPeriod = relayChainBlockNumber.dividedToIntegerBy(
+            globalFarm.blocksPerPeriod.toString(),
+          )
+
+          const currentPeriodInFarm = BN(currentPeriod).minus(
+            farmEntry.enteredAt.toString(),
+          )
+          const loyaltyFactor = getCurrentLoyaltyFactor(
+            {
+              initialRewardPercentage:
+                loyaltyCurve.initialRewardPercentage.toString(),
+              scaleCoef: loyaltyCurve.scaleCoef.toString(),
+            },
+            currentPeriodInFarm,
+          )
+
+          // check if loyalty factor match user settings
+          if (BN(range).gt(loyaltyFactor)) return undefined
 
           const accountAddresses: Array<[address: AccountId32, assetId: u32]> =
             [
@@ -623,13 +655,22 @@ export const useAccountClaimableFarmValues = () => {
           if (reward) {
             const meta = getAssetWithFallback(reward.assetId)
 
+            const liquidityPositionId = isXyk
+              ? undefined
+              : depositLiquidityPositions.find(
+                  (lp) => lp.depositId === deposit.id,
+                )
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
               value: scaleHuman(reward.value, meta.decimals).toFixed(8),
               yieldFarmId,
+              globalFarmId,
               depositId: deposit.id,
               isXyk,
+              liquidityPositionId: liquidityPositionId?.id,
+              shares: deposit.data.shares.toString(),
             }
           }
 
