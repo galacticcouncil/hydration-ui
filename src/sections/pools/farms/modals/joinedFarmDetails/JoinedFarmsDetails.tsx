@@ -50,7 +50,7 @@ function JoinedFarmsDetailsRedeposit(props: {
   const joinFarms = useJoinFarms({
     poolId,
     farms: availableFarms,
-    redeposit: {
+    options: {
       onSubmitted: () => props.onTxClose(),
       onBack: () => {},
       onClose: () => props.onTxClose(),

@@ -48,22 +48,22 @@ export const AddLiquidity = ({ isOpen, onClose }: Props) => {
   const isXYK = isXYKPoolType(pool)
   const willJoinFarms = farms.length > 0 && isJoinFarms
 
-  const joinFarms = useJoinFarms({
-    poolId: pool.id,
-    farms,
-    deposit: {
-      onClose,
-      disableAutoClose: farms.length > 1,
-      onSuccess: () => {
-        setCurrentStep(2)
-      },
-      onError: onClose,
-    },
-    redeposit: {
-      onClose,
-      onError: onClose,
-    },
-  })
+  // const joinFarms = useJoinFarms({
+  //   poolId: pool.id,
+  //   farms,
+  //   deposit: {
+  //     onClose,
+  //     disableAutoClose: farms.length > 1,
+  //     onSuccess: () => {
+  //       setCurrentStep(2)
+  //     },
+  //     onError: onClose,
+  //   },
+  //   redeposit: {
+  //     onClose,
+  //     onError: onClose,
+  //   },
+  // })
 
   const onSuccess = async (result: ISubmittableResult, value: string) => {
     if (willJoinFarms) {
@@ -138,44 +138,8 @@ export const AddLiquidity = ({ isOpen, onClose }: Props) => {
     }
   }
 
-  const steps = [
-    {
-      id: 0,
-      label: t("liquidity.add.modal.provideLiquidity"),
-      loadingLabel: t("liquidity.add.modal.provideLiquidity.loading"),
-    },
-    {
-      id: 1,
-      label: t("farms.modal.join.first"),
-      loadingLabel: t("farms.modal.join.first.loading"),
-    },
-    ...(farms.length > 1
-      ? [
-          {
-            id: 2,
-            label: t("farms.modal.join.rest"),
-            loadingLabel: t("farms.modal.join.rest.loading"),
-          },
-        ]
-      : []),
-  ]
-
   return (
-    <Modal
-      open={isOpen}
-      disableCloseOutside
-      onClose={onClose}
-      topContent={
-        willJoinFarms ? (
-          <Stepper
-            steps={steps.map((step) => ({
-              label: step.label,
-              state: getStepState(step.id, currentStep),
-            }))}
-          />
-        ) : undefined
-      }
-    >
+    <Modal open={isOpen} disableCloseOutside onClose={onClose}>
       <ModalContents
         disableAnimation
         page={page}
@@ -195,12 +159,8 @@ export const AddLiquidity = ({ isOpen, onClose }: Props) => {
             ) : (
               <AddLiquidityForm
                 assetId={assetId}
-                onClose={onClose}
                 farms={farms}
-                onSubmitted={() => paginateTo(Page.WAIT)}
-                onSuccess={onSuccess}
-                isJoinFarms={isJoinFarms}
-                setIsJoinFarms={setIsJoinFarms}
+                onClose={onClose}
               />
             ),
           },
@@ -217,11 +177,6 @@ export const AddLiquidity = ({ isOpen, onClose }: Props) => {
                 }}
               />
             ),
-          },
-          {
-            title: steps[currentStep].label,
-            headerVariant: "gradient",
-            content: <LoadingPage title={steps[currentStep].loadingLabel} />,
           },
         ]}
       />
