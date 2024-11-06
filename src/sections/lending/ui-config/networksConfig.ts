@@ -1,4 +1,6 @@
 import { ChainId } from "@aave/contract-helpers"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { EvmParachain } from "@galacticcouncil/xcm-core"
 
 export type ExplorerLinkBuilderProps = {
   tx?: string
@@ -49,19 +51,30 @@ export type NetworkConfig = {
   }
 }
 
+const isTestnet = import.meta.env.VITE_ENV === "development"
+const hydration = (chainsMap.get("hydration") as EvmParachain).client.chain
+const hydrationExplorerLink = isTestnet
+  ? hydration.blockExplorers?.default?.url
+  : "https://explorer.nice.hydration.cloud"
+
+const hydrationRpcUrl = import.meta.env.VITE_PROVIDER_URL.replace(
+  "wss://",
+  "https://",
+)
+
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 
 export const networkConfigs: Record<string, BaseNetworkConfig> = {
   222222: {
     name: "Hydration",
-    privateJsonRPCUrl: "https://ws.nice.hydration.cloud",
-    publicJsonRPCUrl: ["https://ws.nice.hydration.cloud"],
+    privateJsonRPCUrl: hydrationRpcUrl,
+    publicJsonRPCUrl: [hydrationRpcUrl],
     baseUniswapAdapter: "0x0",
     baseAssetSymbol: "",
     wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: "https://explorer.nice.hydration.cloud",
-    isTestnet: true,
+    explorerLink: hydrationExplorerLink ?? "",
+    isTestnet: false,
     networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },
   [ChainId.sepolia]: {
