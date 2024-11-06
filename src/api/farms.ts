@@ -4,7 +4,7 @@ import {
   PalletLiquidityMiningGlobalFarmData,
   PalletLiquidityMiningYieldFarmData,
 } from "@polkadot/types/lookup"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { BLOCK_TIME, BN_0, BN_1, PARACHAIN_BLOCK_TIME } from "utils/constants"
@@ -30,9 +30,10 @@ import { OmnipoolLiquidityMiningClaimSim } from "utils/farms/claiming/claimSimul
 import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -537,6 +538,17 @@ export const getYieldFarmCreated = (indexerUrl: string) => async () => {
   }
 }
 
+export const useRefetchClaimableFarmValues = () => {
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
+
+  return () => {
+    queryClient.resetQueries(
+      QUERY_KEYS.accountClaimableFarmValues(account?.address),
+    )
+  }
+}
+
 export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, getAssetWithFallback } = useAssets()
@@ -697,7 +709,7 @@ export const useAccountClaimableFarmValues = () => {
         }, new Map()),
       enabled: isLoaded && !!allDeposits.length && !!accountAddress,
       staleTime: millisecondsInHour,
-      refetchInterval: 60000,
+      refetchInterval: millisecondsInMinute,
     },
   )
 }

@@ -11,10 +11,8 @@ import { Button } from "components/Button/Button"
 import { required } from "utils/validators"
 import { z } from "zod"
 import { SInputContainer } from "./ClaimingRangeModal.styled"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
+import { useRefetchClaimableFarmValues } from "api/farms"
 
 type ClaimingRangeModalProps = {
   onClose: () => void
@@ -26,8 +24,7 @@ const MAX_VALUE = 99
 export const ClaimingRangeModal = ({ onClose }: ClaimingRangeModalProps) => {
   const { t } = useTranslation()
   const { range, update } = useClaimingRange()
-  const { account } = useAccount()
-  const queryClient = useQueryClient()
+  const refetch = useRefetchClaimableFarmValues()
 
   const form = useForm<{
     value: string
@@ -63,9 +60,7 @@ export const ClaimingRangeModal = ({ onClose }: ClaimingRangeModalProps) => {
           update(BN(value).div(100).toString())
           onClose()
 
-          queryClient.resetQueries(
-            QUERY_KEYS.accountClaimableFarmValues(account?.address ?? ""),
-          )
+          refetch()
         })}
         sx={{ flex: "column", justify: "space-between", gap: 20 }}
         autoComplete="off"

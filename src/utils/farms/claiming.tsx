@@ -8,7 +8,7 @@ import {
 import { useState } from "react"
 import BN from "bignumber.js"
 import { ClaimingWarning } from "sections/pools/farms/components/claimingRange/ClaimingWarning"
-import { TClaimableFarmValue } from "api/farms"
+import { TClaimableFarmValue, useRefetchClaimableFarmValues } from "api/farms"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 
@@ -24,7 +24,8 @@ export const useClaimFarmMutation = (
   const { getShareTokenByAddress } = useAssets()
   const { createTransaction } = useStore()
   const { range } = useClaimingRange()
-  const refetch = useRefetchAccountAssets()
+  const refetchAccountAssets = useRefetchAccountAssets()
+  const refetchClaimableValues = useRefetchClaimableFarmValues()
 
   const [confirmationNeeded, setConfirmationNeeded] = useState(false)
 
@@ -39,43 +40,46 @@ export const useClaimFarmMutation = (
     const createOmnipoolTxs = (farms: TClaimableFarmValue[]) => {
       if (!farms.length) return []
 
-      const { joinEntries, exitFarms } = farms.reduce<{
-        exitFarms: Array<[string, string]>
-        joinEntries: Array<{
+      const farmEntries = farms.reduce<
+        Array<{
           liquidityPositionId: string
-          farms: Array<[string, string]>
+          depositId: string
+          joinFarms: Array<[string, string]>
+          exitFarms: Array<[string]>
         }>
-      }>(
-        (acc, farm) => {
-          const { yieldFarmId, globalFarmId, depositId } = farm
-          const liquidityPositionId = farm.liquidityPositionId!
+      >((acc, farm) => {
+        const { yieldFarmId, globalFarmId, depositId } = farm
+        const liquidityPositionId = farm.liquidityPositionId!
 
-          acc.exitFarms.push([depositId, yieldFarmId])
+        const existingEntry = acc.find(
+          (entry) => entry.liquidityPositionId === liquidityPositionId,
+        )
 
-          const existingEntry = acc.joinEntries.find(
-            (entry) => entry.liquidityPositionId === liquidityPositionId,
-          )
+        if (existingEntry) {
+          existingEntry.joinFarms.push([globalFarmId, yieldFarmId])
+          existingEntry.exitFarms.push([yieldFarmId])
+        } else {
+          acc.push({
+            liquidityPositionId,
+            joinFarms: [[globalFarmId, yieldFarmId]],
+            exitFarms: [[yieldFarmId]],
+            depositId,
+          })
+        }
 
-          if (existingEntry) {
-            existingEntry.farms.push([globalFarmId, yieldFarmId])
-          } else {
-            acc.joinEntries.push({
-              liquidityPositionId,
-              farms: [[globalFarmId, yieldFarmId]],
-            })
-          }
+        return acc
+      }, [])
 
-          return acc
-        },
-        { joinEntries: [], exitFarms: [] },
-      )
-
-      const omnipoolTxs = [
-        api.tx.omnipoolLiquidityMining.exitFarms(exitFarms),
-        ...joinEntries.map(({ farms, liquidityPositionId }) =>
-          api.tx.omnipoolLiquidityMining.joinFarms(farms, liquidityPositionId),
+      const omnipoolTxs = farmEntries.flatMap((farmEntry) => [
+        api.tx.omnipoolLiquidityMining.exitFarms(
+          farmEntry.depositId,
+          farmEntry.exitFarms,
         ),
-      ]
+        api.tx.omnipoolLiquidityMining.joinFarms(
+          farmEntry.joinFarms,
+          farmEntry.liquidityPositionId,
+        ),
+      ])
 
       return omnipoolTxs
     }
@@ -83,56 +87,55 @@ export const useClaimFarmMutation = (
     const createXykTxs = (farms: TClaimableFarmValue[]) => {
       if (!farms.length) return []
 
-      const { exitFarms, joinEntries } = farms.reduce<{
-        exitFarms: Array<[string, string, AssetPair]>
-        joinEntries: Array<{
+      const farmEntries = farms.reduce<
+        Array<{
           depositId: string
-          farms: Array<[string, string]>
+          joinFarms: Array<[string, string]>
+          exitFarms: Array<[string]>
           assetPair: AssetPair
           shares: string
         }>
-      }>(
-        (acc, farm) => {
-          const { yieldFarmId, globalFarmId, depositId, shares, poolId } = farm
-          const meta = getShareTokenByAddress(poolId)
+      >((acc, farm) => {
+        const { yieldFarmId, globalFarmId, depositId, shares, poolId } = farm
+        const meta = getShareTokenByAddress(poolId)
 
-          if (meta) {
-            acc.exitFarms.push([
+        if (meta) {
+          const existingEntry = acc.find(
+            (entry) => entry.depositId === depositId,
+          )
+
+          if (existingEntry) {
+            existingEntry.joinFarms.push([globalFarmId, yieldFarmId])
+            existingEntry.exitFarms.push([yieldFarmId])
+          } else {
+            acc.push({
               depositId,
-              yieldFarmId,
-              { assetIn: meta.assets[0].id, assetOut: meta.assets[1].id },
-            ])
-
-            const existingEntry = acc.joinEntries.find(
-              (entry) => entry.depositId === depositId,
-            )
-
-            if (existingEntry) {
-              existingEntry.farms.push([globalFarmId, yieldFarmId])
-            } else {
-              acc.joinEntries.push({
-                depositId,
-                farms: [[globalFarmId, yieldFarmId]],
-                assetPair: {
-                  assetIn: meta.assets[0].id,
-                  assetOut: meta.assets[1].id,
-                },
-                shares,
-              })
-            }
+              joinFarms: [[globalFarmId, yieldFarmId]],
+              exitFarms: [[yieldFarmId]],
+              assetPair: {
+                assetIn: meta.assets[0].id,
+                assetOut: meta.assets[1].id,
+              },
+              shares,
+            })
           }
+        }
 
-          return acc
-        },
-        { joinEntries: [], exitFarms: [] },
-      )
+        return acc
+      }, [])
 
-      const xykTxs = [
-        api.tx.xykLiquidityMining.exitFarms(exitFarms),
-        ...joinEntries.map(({ farms, assetPair, shares }) =>
-          api.tx.xykLiquidityMining.joinFarms(farms, assetPair, shares),
+      const xykTxs = farmEntries.flatMap((farmEntry) => [
+        api.tx.xykLiquidityMining.exitFarms(
+          farmEntry.depositId,
+          farmEntry.assetPair,
+          farmEntry.exitFarms,
         ),
-      ]
+        api.tx.xykLiquidityMining.joinFarms(
+          farmEntry.joinFarms,
+          farmEntry.assetPair,
+          farmEntry.shares,
+        ),
+      ])
 
       return xykTxs
     }
@@ -147,7 +150,15 @@ export const useClaimFarmMutation = (
         {
           tx: allTxs.length > 1 ? api.tx.utility.batchAll(allTxs) : allTxs[0],
         },
-        { toast, onBack, onClose, onSuccess: refetch },
+        {
+          toast,
+          onBack,
+          onClose,
+          onSuccess: () => {
+            refetchClaimableValues()
+            refetchAccountAssets()
+          },
+        },
       )
     }
   })
