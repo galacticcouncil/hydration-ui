@@ -177,6 +177,7 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,

@@ -17,6 +17,7 @@ import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
+import { scaleHuman } from "utils/balance"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -216,18 +217,19 @@ export const useLockedNativeTokens = () => {
   const locks = useTokenLocks(id)
   const spotPrice = useDisplayPrice(id)
 
-  const lockVesting =
-    locks.data
-      ?.find((lock) => lock.type === "ormlvest")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
-  const lockDemocracy =
-    locks.data
-      ?.find((lock) => lock.type === "democrac")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
-  const lockStaking =
-    locks.data
-      ?.find((lock) => lock.type === "stk_stks")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockVesting = scaleHuman(
+    locks.data?.find((lock) => lock.type === "ormlvest")?.amount ?? "0",
+    decimals,
+  )
+  const lockDemocracy = scaleHuman(
+    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? "0",
+    decimals,
+  )
+
+  const lockStaking = scaleHuman(
+    locks.data?.find((lock) => lock.type === "stk_stks")?.amount ?? "0",
+    decimals,
+  )
 
   const lockVestingDisplay = lockVesting.times(spotPrice.data?.spotPrice ?? 1)
   const lockDemocracyDisplay = lockDemocracy.times(
@@ -252,12 +254,13 @@ export const useUnlockableTokens = () => {
   const votes = useAccountVotes()
   const spotPrice = useDisplayPrice(native.id)
 
-  const lockDemocracy =
-    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? BN_0
+  const lockDemocracy = locks.data?.find(
+    (lock) => lock.type === "democrac",
+  )?.amount
 
-  const value = lockDemocracy.isZero()
+  const value = !lockDemocracy
     ? BN_0
-    : lockDemocracy
+    : BigNumber(lockDemocracy)
         .minus(votes.data?.maxLockedValue ?? 0)
         .shiftedBy(-native.decimals)
   const lockedSeconds = votes.data?.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)

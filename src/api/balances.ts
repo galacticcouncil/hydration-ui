@@ -12,6 +12,7 @@ import {
   PalletBalancesAccountData,
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
+import { millisecondsInMinute } from "date-fns/constants"
 
 export type TBalance = ReturnType<typeof parseBalanceData>
 
@@ -103,7 +104,7 @@ export const useTokenLocks = (id: Maybe<u32 | string>) => {
     account?.address != null
       ? getTokenLock(api, account.address, id?.toString() ?? "")
       : undefinedNoop,
-    { enabled: !!account?.address && !!id },
+    { enabled: !!account?.address && !!id, staleTime: millisecondsInMinute },
   )
 }
 
@@ -116,7 +117,7 @@ export const getTokenLock =
 
     return res.map((lock) => ({
       id: id,
-      amount: lock.amount.toBigNumber(),
+      amount: lock.amount.toString(),
       type: lock.id.toHuman(),
     }))
   }
