@@ -34,16 +34,17 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
               {t("lending.bind.banner.title")}
             </Text>
 
-            <Text fs={12} lh={16} sx={{ opacity: 0.7 }}>
+            <Text fs={12} lh={16} sx={{ opacity: 0.85 }}>
               <Trans t={t} i18nKey="lending.bind.banner.description" />
             </Text>
           </div>
-          <div sx={{ ml: "auto" }} css={{ position: "relative", zIndex: 1 }}>
+          <div css={{ position: "relative", zIndex: 1 }}>
             {!account ? (
               <Web3ConnectModalButton size="small" />
             ) : isBound ? (
               <SBoundButton size="small">
-                <CheckIcon width={14} height={14} /> Account bound
+                <CheckIcon width={14} height={14} />{" "}
+                {t("lending.bind.banner.bound")}
               </SBoundButton>
             ) : (
               <Button variant="primary" size="small" onClick={() => onBind()}>

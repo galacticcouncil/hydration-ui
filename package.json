@@ -109,6 +109,7 @@
     "react-loading-skeleton": "^3.1.0",
     "react-number-format": "^4.9.1",
     "react-remove-scroll": "^2.5.5",
+    "react-timer-hook": "^3.0.8",
     "react-use": "^17.4.0",
     "recharts": "^2.1.13",
     "reflect-metadata": "^0.1.13",

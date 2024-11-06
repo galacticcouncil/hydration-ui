@@ -89,6 +89,10 @@ export const SContent = styled.div`
       width: auto;
       margin-top: 0;
     }
+
+    & > div:nth-of-type(2) {
+      margin-left: auto;
+    }
   }
 `
 
