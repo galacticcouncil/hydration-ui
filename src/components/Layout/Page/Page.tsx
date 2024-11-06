@@ -78,22 +78,22 @@ const useSubheaderComponent = () => {
   }
 
   if (
-    matchRoute({ to: LINKS.lending }) ||
-    matchRoute({ to: LINKS.lendingMarkets })
+    matchRoute({ to: LINKS.borrow }) ||
+    matchRoute({ to: LINKS.borrowMarkets })
   ) {
     return <LendingNavigation />
   }
 
-  if (matchRoute({ to: LINKS.lendingMarkets, fuzzy: true })) {
-    return prevUrl === LINKS.lendingMarkets ? (
+  if (matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })) {
+    return prevUrl === LINKS.borrowMarkets ? (
       <BackSubHeader
         label={t("lending.navigation.markets.back")}
-        to={LINKS.lendingMarkets}
+        to={LINKS.borrowMarkets}
       />
     ) : (
       <BackSubHeader
         label={t("lending.navigation.dashboard.back")}
-        to={LINKS.lending}
+        to={LINKS.borrow}
       />
     )
   }

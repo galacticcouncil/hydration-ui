@@ -35,13 +35,13 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 )
 
 export const ROUTES = {
-  dashboard: "/lending",
-  markets: "/lending/markets",
-  faucet: "/lending/faucet",
-  migrationTool: "/lending/v3-migration",
+  dashboard: "/borrow",
+  markets: "/borrow/markets",
+  faucet: "/borrow/faucet",
+  migrationTool: "/borrow/v3-migration",
   dynamicRenderedProposal: (proposalId: number) =>
-    `/lending/governance/v3/proposal?proposalId=${proposalId}`,
+    `/borrow/governance/v3/proposal?proposalId=${proposalId}`,
   reserveOverview: (underlyingAsset: string, marketName: CustomMarket) =>
-    `/lending/markets/${underlyingAsset}?marketName=${marketName}`,
-  history: "/lending/history",
+    `/borrow/markets/${underlyingAsset}?marketName=${marketName}`,
+  history: "/borrow/history",
 }

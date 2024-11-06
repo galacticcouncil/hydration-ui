@@ -430,7 +430,7 @@ export const routes: Route[] = [
         ),
       },
       {
-        path: LINKS.lendingMarkets.split("/").pop(),
+        path: LINKS.borrowMarkets.split("/").pop(),
         children: [
           {
             path: "/",
