@@ -52,6 +52,7 @@ export const ASSETHUB_ID_BLACKLIST = [
   "22222002",
   "22222003",
   "22222004",
+  "50000019",
 ]
 
 export const assethub = chainsMap.get("assethub") as Parachain
