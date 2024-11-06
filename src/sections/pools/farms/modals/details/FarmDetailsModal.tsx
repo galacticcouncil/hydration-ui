@@ -8,6 +8,7 @@ import { SLoyaltyRewardsContainer } from "./FarmDetailsModal.styled"
 import { FarmDetailsModalValues } from "./FarmDetailsModalValues"
 import { TDeposit } from "api/deposits"
 import { TDepositData } from "sections/pools/farms/position/FarmingPosition.utils"
+import BigNumber from "bignumber.js"
 
 type FarmDetailsModalProps = {
   farm: TFarmAprData
@@ -24,13 +25,11 @@ export const FarmDetailsModal = ({
 }: FarmDetailsModalProps) => {
   const { t } = useTranslation()
 
-  const enteredBlock = depositNft?.data.yieldFarmEntries
-    .find(
-      (entry) =>
-        entry.yieldFarmId.eq(farm.yieldFarmId) &&
-        entry.globalFarmId.eq(farm.globalFarmId),
-    )
-    ?.enteredAt.toBigNumber()
+  const enteredBlock = depositNft?.data.yieldFarmEntries.find(
+    (entry) =>
+      BigNumber(entry.yieldFarmId).eq(farm.yieldFarmId) &&
+      BigNumber(entry.globalFarmId).eq(farm.globalFarmId),
+  )?.enteredAt
 
   const currentBlockRef = useRef<number | undefined>(currentBlock)
 
@@ -63,7 +62,7 @@ export const FarmDetailsModal = ({
         <FarmDetailsModalValues
           depositData={depositData}
           yieldFarmId={farm.yieldFarmId}
-          enteredBlock={enteredBlock}
+          enteredBlock={BigNumber(enteredBlock)}
         />
       ) : (
         <Text sx={{ pt: 30 }} color="basic400" tAlign="center">

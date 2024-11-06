@@ -26,6 +26,7 @@ import { Icon } from "components/Icon/Icon"
 import { TFarmAprData } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
+import BigNumber from "bignumber.js"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -70,7 +71,7 @@ const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
         t={t}
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.data.shares.toBigNumber(),
+          amount: BigNumber(props.depositNft.data.shares),
           fixedPointScale: meta.decimals,
         }}
       >
@@ -114,10 +115,7 @@ export const FarmingPosition = ({
   // use latest entry date
   const enteredDate = useEnteredDate(
     depositNft.data.yieldFarmEntries.reduce(
-      (acc, curr) =>
-        acc.lt(curr.enteredAt.toBigNumber())
-          ? curr.enteredAt.toBigNumber()
-          : acc,
+      (acc, curr) => (acc.lt(curr.enteredAt) ? BigNumber(curr.enteredAt) : acc),
       BN_0,
     ),
   )

@@ -16,6 +16,7 @@ import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
 import { useAccountAssets } from "api/deposits"
+import BigNumber from "bignumber.js"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -44,11 +45,12 @@ export const useAssetsData = ({
 
   const tokensWithBalance = useMemo(() => {
     if (balances.data) {
-      const filteredTokens = balances.data.balances.filter((balance) => {
-        const meta = getAsset(balance.assetId)
+      const filteredTokens =
+        balances.data.balances?.filter((balance) => {
+          const meta = getAsset(balance.assetId)
 
-        return meta?.isToken || meta?.isStableSwap || meta?.isExternal
-      })
+          return meta?.isToken || meta?.isStableSwap || meta?.isExternal
+        }) ?? []
 
       return filteredTokens
     }
@@ -89,16 +91,16 @@ export const useAssetsData = ({
         spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
           ?.spotPrice ?? BN_NAN
 
-      const reserved = balance.reservedBalance.shiftedBy(-decimals)
+      const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
       const reservedDisplay = reserved.times(spotPrice)
 
-      const total = balance.total.shiftedBy(-decimals)
+      const total = BigNumber(balance.total).shiftedBy(-decimals)
       const totalDisplay = total.times(spotPrice)
 
       const transferable = isExternalInvalid
         ? BN_NAN
-        : balance.balance.shiftedBy(-decimals)
-      const transferableDisplay = transferable.times(spotPrice)
+        : BigNumber(balance.balance).shiftedBy(-decimals)
+      const transferableDisplay = transferable.times(spotPrice).toString()
 
       const isAcceptedCurrency = !!acceptedCurrencies.data?.find(
         (acceptedCurrencie) => acceptedCurrencie.id === id,
@@ -164,7 +166,7 @@ export const useAssetsData = ({
                 total: BN_0,
                 totalDisplay: BN_0,
                 transferable: BN_0,
-                transferableDisplay: BN_0,
+                transferableDisplay: "0",
                 tradability,
                 isExternalInvalid,
                 rugCheckData: undefined,

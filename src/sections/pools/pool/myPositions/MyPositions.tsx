@@ -5,7 +5,6 @@ import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrap
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
-import { BN_0 } from "utils/constants"
 import { ReactElement, useState } from "react"
 import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
@@ -18,12 +17,13 @@ import {
 } from "./MyPositions.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
+import BN from "bignumber.js"
 
 export const MyPositions = () => {
   const { t } = useTranslation()
   const { pool } = usePoolData() as { pool: TPoolFullData }
 
-  const stablepoolAmount = pool.balance?.freeBalance ?? BN_0
+  const stablepoolAmount = pool.balance?.freeBalance ?? "0"
   const isPositions = pool.isPositions
 
   return (
@@ -39,7 +39,9 @@ export const MyPositions = () => {
         </Text>
       )}
 
-      {pool.isStablePool && <StablepoolPosition amount={stablepoolAmount} />}
+      {pool.isStablePool && (
+        <StablepoolPosition amount={BN(stablepoolAmount)} />
+      )}
       <LiquidityPositionWrapper />
       <FarmingPositionWrapper />
     </>

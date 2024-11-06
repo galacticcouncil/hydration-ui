@@ -20,16 +20,16 @@ export const parseBalanceData = (
   id: string,
   address: string,
 ) => {
-  const freeBalance = new BigNumber(data.free.toHex())
-  const frozenBalance = new BigNumber(data.frozen.toHex())
-  const reservedBalance = new BigNumber(data.reserved.toHex())
-  const balance = freeBalance.minus(frozenBalance)
+  const freeBalance = data.free.toString()
+  const frozenBalance = data.frozen.toString()
+  const reservedBalance = data.reserved.toString()
+  const balance = BigNumber(freeBalance).minus(frozenBalance).toString()
 
   return {
     accountId: address,
     assetId: id,
     balance,
-    total: freeBalance.plus(reservedBalance),
+    total: BigNumber(freeBalance).plus(reservedBalance).toString(),
     freeBalance,
     reservedBalance,
   }
