@@ -12,7 +12,6 @@ import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
-import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,8 +26,12 @@ type TransferProps = {
   dstChain: string
 }
 
-export const createXcmAssetKey = (id: string, symbol: string) => {
-  return `${symbol.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
+export const createXcmAssetKey = (
+  id: string,
+  symbol: string,
+  parachainId: number,
+) => {
+  return [symbol.toLowerCase(), parachainId, id].join("_")
 }
 
 export const syncAssethubXcmConfig = (

@@ -28,7 +28,6 @@ import { useCrossChainWallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
 
-export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
