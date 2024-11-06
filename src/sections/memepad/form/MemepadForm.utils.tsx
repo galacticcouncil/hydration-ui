@@ -344,7 +344,7 @@ export const useMemepad = () => {
         }
 
         // Transfer created token to Hydration
-        const xcmAssetKey = createXcmAssetKey(id, values.symbol)
+        const xcmAssetKey = createXcmAssetKey(id, values.symbol, values.origin)
         await xTransfer.mutateAsync({
           amount: BN(values.supply).minus(values.deposit).toString(),
           asset: xcmAssetKey,
