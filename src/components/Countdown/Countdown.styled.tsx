@@ -42,6 +42,15 @@ export const SNum = styled.div`
   border-radius: 5px;
 
   background: ${theme.colors.brightBlue300};
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 50% 0px;
+    height: 2px;
+    background-color: rgb(35, 35, 35);
+    opacity: 0.1;
+  }
 `
 
 export const SCountdownDivider = styled.div`

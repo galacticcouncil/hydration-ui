@@ -25,26 +25,15 @@ export const Countdown: React.FC<CountdownProps> = memo(
       [ts],
     )
 
-    const { seconds, minutes, hours, days, isRunning } = useTimer({
+    const { seconds, minutes, hours, days } = useTimer({
       expiryTimestamp: date,
       onExpire: () => setExpired(true),
-    })
-
-    console.log({
-      seconds,
-      minutes,
-      hours,
-      days,
-      isRunning,
-      date: date.getTime(),
-      setTs: new Date(Date.now() + 1000 * 60 * 60 * 24).getTime(),
-      expired,
     })
 
     const hoursTotal = days * 24 + hours
 
     return (
-      <SContainer>
+      <SContainer className={className}>
         {expired && (
           <SContainer css={{ position: "absolute" }}>
             <Text color="brightBlue300" fs={18} tAlign="center">
