@@ -21,6 +21,7 @@ import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 import { pendulum } from "./external/pendulum"
+import { AaveV3Hydration } from "sections/lending/ui-config/addresses"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -35,6 +36,7 @@ export type ProviderProps = {
 export type TFeatureFlags = {
   referrals: boolean
   dispatchPermit: boolean
+  moneyMarket: boolean
 }
 
 export const PROVIDERS: ProviderProps[] = [
@@ -258,9 +260,14 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
+      const [
+        isReferralsEnabled,
+        isDispatchPermitEnabled,
+        moneyMarketPoolContract,
+      ] = await Promise.all([
         api.query.referrals,
         api.tx.multiTransactionPayment.dispatchPermit,
+        api.query.evmAccounts.approvedContract(AaveV3Hydration.POOL),
         tradeRouter.getPools(),
       ])
 
@@ -274,6 +281,7 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
+          moneyMarket: !moneyMarketPoolContract.isEmpty,
         } as TFeatureFlags,
       }
     },

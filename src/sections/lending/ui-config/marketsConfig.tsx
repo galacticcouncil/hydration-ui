@@ -5,18 +5,7 @@ import {
   AaveV3Sepolia,
 } from "@bgd-labs/aave-address-book"
 import { ReactNode } from "react"
-
-const AaveV3Hydration = {
-  POOL_ADDRESSES_PROVIDER: "0x82db570265c37bE24caf5bc943428a6848c3e9a6",
-  POOL: "0xf550bCd9B766843D72fC4C809a839633fD09b643",
-  WETH_GATEWAY: "",
-  FAUCET: "",
-  WALLET_BALANCE_PROVIDER: "0x98C63E4299fF188572Fffdc471f23B39a30342b4",
-  UI_POOL_DATA_PROVIDER: "0x5a21aFD0fF9E5D76F58BEd8aE34AABE0c41e65bc",
-  UI_INCENTIVE_DATA_PROVIDER: "0xc7A1dB5Aa56a5F07E758D8d8804B17B4cA7c889B",
-  GHO_TOKEN_ADDRESS: "",
-  GHO_UI_DATA_PROVIDER: "",
-}
+import { AaveV3Hydration } from "sections/lending/ui-config/addresses"
 
 // Enable for premissioned market
 // import { PermissionView } from 'sections/lending/components/transactions/FlowCommons/PermissionView';

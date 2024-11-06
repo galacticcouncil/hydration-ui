@@ -23,6 +23,7 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
@@ -50,6 +51,7 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { featureFlags } = useRpcProvider()
 
   const prevUrl = usePreviousUrl()
 
@@ -78,13 +80,17 @@ const useSubheaderComponent = () => {
   }
 
   if (
-    matchRoute({ to: LINKS.borrow }) ||
-    matchRoute({ to: LINKS.borrowMarkets })
+    featureFlags.moneyMarket &&
+    (matchRoute({ to: LINKS.borrow }) ||
+      matchRoute({ to: LINKS.borrowMarkets }))
   ) {
     return <LendingNavigation />
   }
 
-  if (matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })) {
+  if (
+    featureFlags.moneyMarket &&
+    matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })
+  ) {
     return prevUrl === LINKS.borrowMarkets ? (
       <BackSubHeader
         label={t("lending.navigation.markets.back")}

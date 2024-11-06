@@ -50,8 +50,6 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
 }
 
-const isLendingEnabled = import.meta.env.VITE_FF_MONEY_MARKET_ENABLED === "true"
-
 export const MENU_ITEMS = [
   {
     key: "trade",
@@ -86,7 +84,7 @@ export const MENU_ITEMS = [
     href: LINKS.borrow,
     Icon: IconPercentageSquare,
     subItems: undefined,
-    enabled: isLendingEnabled,
+    enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: true,

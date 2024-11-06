@@ -2,6 +2,7 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 import LinesSvg from "sections/lending/ui/hollar/hollar-banner/assets/lines.svg"
+import { Button } from "components/Button/Button"
 
 export const SContainer = styled.div`
   container-type: inline-size;
@@ -28,7 +29,8 @@ export const SInnerContainer = styled.div`
 
   background: linear-gradient(
     90deg,
-    rgba(0, 87, 159, 0.66) 25%,
+    rgba(0, 87, 159, 0.66) 15%,
+    rgba(110, 42, 255, 0.33) 50%,
     rgba(110, 42, 255, 0) 100%
   );
 
@@ -104,4 +106,11 @@ export const SValuesContainer = styled.div`
     margin-left: auto;
     margin-top: 0;
   }
+`
+
+export const SBoundButton = styled(Button)`
+  border-color: transparent;
+  color: ${theme.colors.green400};
+  background-color: rgba(${theme.rgbColors.green100}, 0.1);
+  pointer-events: none;
 `
