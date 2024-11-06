@@ -414,7 +414,7 @@ export const routes: Route[] = [
     ),
   },
   {
-    path: LINKS.lending,
+    path: LINKS.borrow,
     element: (
       <Suspense fallback={<LendingDashboardSkeleton />}>
         <LendingPage />
