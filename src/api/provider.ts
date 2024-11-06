@@ -281,7 +281,8 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          moneyMarket: !moneyMarketPoolContract.isEmpty,
+          moneyMarket:
+            !!AaveV3Hydration.POOL && !moneyMarketPoolContract.isEmpty,
         } as TFeatureFlags,
       }
     },
