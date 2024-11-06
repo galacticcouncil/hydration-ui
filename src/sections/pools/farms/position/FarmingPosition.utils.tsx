@@ -179,10 +179,13 @@ export const useFarmDepositsTotal = (address?: string) => {
 
     for (const id in xyk) {
       const xykTotal = xyk[id].reduce((memo, deposit) => {
-        if (deposit.amountUSD) return memo.plus(deposit.amountUSD)
+        if (deposit.amountUSD) {
+          memo = memo.plus(deposit.amountUSD)
+        }
         return memo
       }, BN_0)
-      poolsTotal.plus(xykTotal)
+
+      poolsTotal = poolsTotal.plus(xykTotal)
     }
 
     return poolsTotal
