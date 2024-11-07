@@ -1,7 +1,15 @@
 import { Icon } from "components/Icon/Icon"
+import { MetadataStore } from "@galacticcouncil/ui"
+import { useMemo } from "react"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
-const CDN_BASE_URL =
-  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest"
+const SYMBOL_TO_ASSET_ID_MAP: Record<string, string> = {
+  dot: "5",
+  usdt: "10",
+  usdc: "21",
+  weth: "20",
+  wbtc: "3",
+}
 
 interface TokenIconProps {
   symbol: string
@@ -22,17 +30,13 @@ function SingleTokenIcon({
   size = 24,
   ...rest
 }: TokenIconProps) {
+  useMemo(() => {
+    MetadataStore.getInstance()
+  }, [])
   return (
     <Icon
       size={size}
-      icon={
-        <img
-          src={`${CDN_BASE_URL}/v1/assets/${symbol.toLowerCase()}.svg`}
-          width="100%"
-          height="100%"
-          alt={`${symbol} icon`}
-        />
-      }
+      icon={<AssetLogo id={SYMBOL_TO_ASSET_ID_MAP[symbol?.toLowerCase()]} />}
       {...rest}
     />
   )
