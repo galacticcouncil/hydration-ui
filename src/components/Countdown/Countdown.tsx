@@ -48,21 +48,21 @@ export const Countdown: React.FC<CountdownProps> = memo(
         <SContainer sx={{ opacity: expired ? 0 : 1 }}>
           <SNumContainer>
             {padNumArray(hoursTotal).map((n) => (
-              <SNum>{n}</SNum>
+              <SNum key={n}>{n}</SNum>
             ))}
             <Text>{t("hours")}</Text>
           </SNumContainer>
           <SCountdownDivider />
           <SNumContainer>
             {padNumArray(minutes).map((n) => (
-              <SNum>{n}</SNum>
+              <SNum key={n}>{n}</SNum>
             ))}
             <Text>{t("minutes")}</Text>
           </SNumContainer>
           <SCountdownDivider />
           <SNumContainer>
             {padNumArray(seconds).map((n) => (
-              <SNum>{n}</SNum>
+              <SNum key={n}>{n}</SNum>
             ))}
             <Text>{t("seconds")}</Text>
           </SNumContainer>
