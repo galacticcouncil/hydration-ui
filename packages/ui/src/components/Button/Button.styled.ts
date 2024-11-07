@@ -1,58 +1,74 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
+import { ThemeProps } from "@/theme"
 import { createVariants } from "@/utils"
 
 const defaulStyles = css`
-  font-family: "Arial", sans-serif;
-  color: #fff;
+  display: inline-flex;
+
   text-decoration: none;
-  display: inline-block;
-  border: 0;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+
+  border-radius: 9999px;
+
   cursor: pointer;
-  border-radius: 5px;
-  border: 1px solid transparent;
 `
 
-const variantStyles = createVariants((theme) => ({
-  primary: css`
-    background-color: ${theme.colors.primary};
+const variantStyles = (
+  settings: ThemeProps["Buttons"]["Primary"]["High"],
+) => css`
+  background-color: ${settings.Rest};
+  color: ${settings.onButton};
+  &:hover,
+  &:focus {
+    background-color: ${settings.Hover};
+  }
+`
+
+const variants = createVariants((theme) => ({
+  primary: variantStyles(theme.Buttons.Primary.High),
+  secondary: variantStyles(theme.Buttons.Primary.Medium),
+  tertiary: variantStyles(theme.Buttons.Primary.Low),
+}))
+
+const sizes = createVariants((theme) => ({
+  small: css`
+    font-size: ${theme.paragraphSize.p6};
+    padding: 8px 12px;
   `,
-  secondary: css`
-    background-color: ${theme.colors.secondary};
+  medium: css`
+    font-size: ${theme.paragraphSize.p2};
+    padding: 12px 20px;
+  `,
+  large: css`
+    font-size: ${theme.paragraphSize.p1};
+    padding: 16px 32px;
   `,
 }))
 
-const sizeStyles = {
-  small: css`
-    font-size: 12px;
-    padding: 2px 8px;
-  `,
-  medium: css`
-    font-size: 14px;
-    padding: 8px 12px;
-  `,
-  large: css`
-    font-size: 16px;
-    padding: 15px 30px;
-  `,
-}
+const outlineVariantStyles = (
+  settings: ThemeProps["Buttons"]["Primary"]["High"],
+) => css`
+  background-color: transparent;
+  color: ${settings.Rest};
+  box-shadow: inset 0 0 0 1px ${settings.Rest};
+  &:hover {
+    background-color: ${settings.Rest};
+    color: ${settings.onButton};
+  }
+`
 
-const outlineStyles = createVariants((theme) => ({
-  primary: css`
-    color: ${theme.colors.primary};
-    background-color: transparent;
-    border: 1px solid ${theme.colors.primary};
-  `,
-  secondary: css`
-    color: ${theme.colors.secondary};
-    background-color: transparent;
-    border: 1px solid ${theme.colors.secondary};
-  `,
+const outlineVariants = createVariants((theme) => ({
+  primary: outlineVariantStyles(theme.Buttons.Primary.High),
+  secondary: outlineVariantStyles(theme.Buttons.Primary.Medium),
+  tertiary: outlineVariantStyles(theme.Buttons.Primary.Low),
 }))
 
 export type SButtonProps = {
-  variant?: "primary" | "secondary"
+  variant?: "primary" | "secondary" | "tertiary"
   size?: "small" | "medium" | "large"
   outline?: boolean
 }
@@ -60,9 +76,8 @@ export type SButtonProps = {
 export const SButton = styled.button<SButtonProps>(
   defaulStyles,
   ({ variant = "primary", size = "medium", outline = false }) => [
-    sizeStyles[size],
-    variantStyles(variant),
-    outline && outlineStyles(variant),
+    sizes(size),
+    outline ? outlineVariants(variant) : variants(variant),
   ],
 )
 

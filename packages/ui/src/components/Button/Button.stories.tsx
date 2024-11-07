@@ -7,16 +7,6 @@ type Story = StoryObj<typeof Button>
 
 export default {
   component: Button,
-  argTypes: {
-    variant: {
-      options: ["primary", "secondary"],
-      control: { type: "radio" },
-    },
-    size: {
-      options: ["small", "medium", "large"],
-      control: { type: "radio" },
-    },
-  },
 } satisfies Meta<typeof Button>
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Button>) => (
@@ -38,6 +28,13 @@ export const VariantSecondary: Story = {
   render: Template,
   args: {
     variant: "secondary",
+  },
+}
+
+export const TertiarySecondary: Story = {
+  render: Template,
+  args: {
+    variant: "tertiary",
   },
 }
 

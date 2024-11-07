@@ -4,7 +4,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const fetchPosts = async () => {
   await sleep(1000)
-  return fetch("https://jsonplaceholder.typicode.com/posts").then((res) =>
+  return fetch("https://jsonplaceholder.typicode.com/todos").then((res) =>
     res.json(),
   )
 }

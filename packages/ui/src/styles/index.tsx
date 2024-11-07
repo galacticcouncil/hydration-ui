@@ -7,13 +7,20 @@ const normalize = css`
   *::after {
     box-sizing: border-box;
   }
+
   * {
     margin: 0;
   }
+
   body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
+
+  a {
+    color: unset;
+  }
+
   img,
   picture,
   video,
@@ -22,12 +29,15 @@ const normalize = css`
     display: block;
     max-width: 100%;
   }
+
   input,
   button,
   textarea,
   select {
+    all: unset;
     font: inherit;
   }
+
   p,
   h1,
   h2,
@@ -37,9 +47,11 @@ const normalize = css`
   h6 {
     overflow-wrap: break-word;
   }
+
   p {
     text-wrap: pretty;
   }
+
   h1,
   h2,
   h3,
@@ -68,12 +80,8 @@ export const globalStyles = (theme: Theme) => css`
 
   body {
     font-family: "Arial", sans-serif;
-    background-color: ${theme.colors.background};
-    color: ${theme.colors.text};
-  }
-
-  a {
-    color: ${theme.colors.primary};
+    background-color: ${theme.Surfaces.themeBasePalette.Background};
+    color: ${theme.Text.High};
   }
 `
 

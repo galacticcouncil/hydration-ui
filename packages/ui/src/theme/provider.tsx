@@ -1,8 +1,9 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react"
+import { useTheme as useEmotionTheme } from "@emotion/react"
 import React, { createContext, useContext, useState } from "react"
 
 import { GlobalStyles } from "@/styles"
-import { ThemeName, themes } from "@/theme"
+import { ThemeName, ThemeProps, themes } from "@/theme"
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
 const defaultTheme: ThemeName = prefersDark ? "dark" : "light"
@@ -10,9 +11,11 @@ const defaultTheme: ThemeName = prefersDark ? "dark" : "light"
 const ThemeContext = createContext<{
   theme: ThemeName
   setTheme: (theme: ThemeName) => void
+  themeProps: ThemeProps
 }>({
   theme: defaultTheme,
   setTheme: () => {},
+  themeProps: {} as ThemeProps,
 })
 
 type ThemeProviderProps = {
@@ -25,9 +28,10 @@ export function useTheme() {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeName>(defaultTheme)
+  const themeProps = useEmotionTheme()
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, themeProps }}>
       <EmotionThemeProvider theme={themes[theme]}>
         <GlobalStyles />
         {children}

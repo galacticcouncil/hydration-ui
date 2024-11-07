@@ -9,7 +9,8 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "preview": "turbo preview",
-    "lint": "turbo lint"
+    "lint": "turbo lint",
+    "i18n": "turbo i18n"
   },
   "devDependencies": {
     "eslint": "8.57.0",

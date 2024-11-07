@@ -27,20 +27,22 @@ function RootComponent() {
   const { theme, setTheme } = useTheme()
   return (
     <div css={{ maxWidth: 1240, margin: "auto", padding: 20 }}>
-      <Button
-        size="small"
-        outline={theme !== "light"}
-        onClick={() => setTheme("light")}
-      >
-        light
-      </Button>{" "}
-      <Button
-        size="small"
-        outline={theme !== "dark"}
-        onClick={() => setTheme("dark")}
-      >
-        dark
-      </Button>
+      <div css={{ position: "sticky", top: 0 }}>
+        <Button
+          size="small"
+          outline={theme !== "light"}
+          onClick={() => setTheme("light")}
+        >
+          light
+        </Button>{" "}
+        <Button
+          size="small"
+          outline={theme !== "dark"}
+          onClick={() => setTheme("dark")}
+        >
+          dark
+        </Button>
+      </div>
       <div>
         <Link
           to="/"
