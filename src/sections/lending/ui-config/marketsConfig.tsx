@@ -78,7 +78,7 @@ export const marketsData: {
     marketTitle: "Hydration",
     market: CustomMarket.hydration_v3,
     v3: true,
-    chainId: 222222 as ChainId,
+    chainId: parseInt(import.meta.env.VITE_EVM_CHAIN_ID) as ChainId,
     addresses: {
       LENDING_POOL_ADDRESS_PROVIDER: AaveV3Hydration.POOL_ADDRESSES_PROVIDER,
       LENDING_POOL: AaveV3Hydration.POOL,

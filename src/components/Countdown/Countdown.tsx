@@ -13,10 +13,11 @@ export type CountdownProps = {
   ts: number
   className?: string
   expiredMessage?: React.ReactNode
+  onExpire?: () => void
 }
 
 export const Countdown: React.FC<CountdownProps> = memo(
-  ({ ts, className, expiredMessage }) => {
+  ({ ts, className, expiredMessage, onExpire }) => {
     const { t } = useTranslation()
     const [expired, setExpired] = useState(false)
 
@@ -27,14 +28,17 @@ export const Countdown: React.FC<CountdownProps> = memo(
 
     const { seconds, minutes, hours, days } = useTimer({
       expiryTimestamp: date,
-      onExpire: () => setExpired(true),
+      onExpire: () => {
+        onExpire?.()
+        setExpired(true)
+      },
     })
 
     const hoursTotal = days * 24 + hours
 
     return (
       <SContainer className={className}>
-        {expired && (
+        {expired && expiredMessage && (
           <SContainer css={{ position: "absolute" }}>
             <Text color="brightBlue300" fs={18} tAlign="center">
               {expiredMessage}

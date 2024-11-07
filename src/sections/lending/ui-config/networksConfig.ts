@@ -65,7 +65,7 @@ const hydrationRpcUrl = import.meta.env.VITE_PROVIDER_URL.replace(
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 
 export const networkConfigs: Record<string, BaseNetworkConfig> = {
-  222222: {
+  [hydration.id]: {
     name: "Hydration",
     privateJsonRPCUrl: hydrationRpcUrl,
     publicJsonRPCUrl: [hydrationRpcUrl],

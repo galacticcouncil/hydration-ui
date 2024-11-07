@@ -218,9 +218,9 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           : undefined,
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-          refetchPoolData && refetchPoolData()
-          refetchIncentiveData && refetchIncentiveData()
-          refetchGhoData && refetchGhoData()
+          refetchPoolData?.()
+          refetchIncentiveData?.()
+          refetchGhoData?.()
         },
       }
 
@@ -260,13 +260,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
       )
 
       return {} as TransactionResponse
-
-      /* const signer = provider.getSigner(txData.from)
-      const txResponse: TransactionResponse = await signer.sendTransaction({
-        ...txData,
-        value: txData.value ? BigNumber.from(txData.value) : undefined,
-      })
-      return txResponse */
     },
     [
       api,

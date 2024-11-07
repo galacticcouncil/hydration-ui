@@ -4,11 +4,12 @@ import BigNumber from "bignumber.js"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useEvmTxFee = (tx: TransactionRequest) => {
   const { wallet } = useWallet()
   return useQuery(
-    ["evm-fee", tx.data?.toString()],
+    QUERY_KEYS.evmPaymentFee(tx.data?.toString() ?? "", tx.from),
     async () => {
       if (wallet?.signer instanceof EthereumSigner) {
         const [gas] = await wallet.signer.getGasValues(tx)

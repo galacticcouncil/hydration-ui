@@ -4,7 +4,7 @@ import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Countdown } from "components/Countdown/Countdown"
 import { Text } from "components/Typography/Text/Text"
-import React, { useMemo, useRef } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
 import { PARACHAIN_BLOCK_TIME } from "utils/constants"
@@ -30,19 +30,23 @@ export const MoneyMarketCountdown = () => {
   const { t } = useTranslation()
   const now = useRef(Date.now())
   const bestNumber = useBestNumber()
+  const [expired, setExpired] = useState(false)
 
   const referendumInfo = useReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)
 
-  const diff = useMemo(() => {
+  const timestampDiff = useMemo(() => {
     if (bestNumber?.data && referendumInfo?.data) {
       return BN(referendumInfo?.data?.onchainData.meta.end ?? 0)
         .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
         .times(PARACHAIN_BLOCK_TIME)
+        .times(1000)
         .toNumber()
     }
 
     return 0
   }, [bestNumber, referendumInfo])
+
+  const isExpired = timestampDiff <= 0 || expired
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
@@ -58,17 +62,19 @@ export const MoneyMarketCountdown = () => {
             width: ["100%", "30%"],
           }}
         >
-          {now.current && diff > 0 && (
+          {now.current && !isExpired ? (
             <div
               sx={{ flex: ["column", "row"], align: "center", gap: 16, mb: 40 }}
             >
               <PeepoAnimation sx={{ mb: [20, 0] }} />
               <Countdown
-                ts={now.current + diff * 1000}
-                expiredMessage={t("lending.countdown.expired")}
+                ts={now.current + timestampDiff}
+                onExpire={() => setExpired(true)}
               />
               <PeepoAnimation sx={{ display: ["none", "block"] }} />
             </div>
+          ) : (
+            <PeepoAnimation sx={{ mb: 20 }} />
           )}
 
           <Text
@@ -80,7 +86,9 @@ export const MoneyMarketCountdown = () => {
             sx={{ mb: 20 }}
             css={{ textWrap: "balance" }}
           >
-            {t("lending.countdown.title")}
+            {isExpired
+              ? t("lending.countdown.expired.title")
+              : t("lending.countdown.ongoing.title")}
           </Text>
           <Text
             fs={14}

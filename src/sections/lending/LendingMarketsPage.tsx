@@ -32,7 +32,6 @@ export const LendingMarketsPage = () => {
   return (
     <>
       <MarketsHeaderValues sx={{ mb: [10, 40] }} />
-      {/* <HollarBanner sx={{ mb: [20, 30] }} /> */}
       <Search
         name="market-search"
         placeholder="Search by token name, symbol or address"
