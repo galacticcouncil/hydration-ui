@@ -11,8 +11,7 @@ export const SContainer = styled.div`
 
 export const SNumContainer = styled.div`
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 2px;
 
   & > p {

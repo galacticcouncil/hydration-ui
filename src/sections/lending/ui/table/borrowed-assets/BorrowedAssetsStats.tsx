@@ -22,7 +22,7 @@ export const BorrowedAssetsStats = () => {
       <DataValue
         size="small"
         font="Geist"
-        labelColor="basic600"
+        labelColor="basic400"
         label={t("lending.balance")}
         isLoading={loading}
       >
@@ -31,7 +31,7 @@ export const BorrowedAssetsStats = () => {
       <DataValue
         size="small"
         font="Geist"
-        labelColor="basic600"
+        labelColor="basic400"
         label={t("lending.apy")}
         tooltip={t("lending.tooltip.apy")}
         isLoading={loading}
@@ -41,7 +41,7 @@ export const BorrowedAssetsStats = () => {
       <DataValue
         size="small"
         font="Geist"
-        labelColor="basic600"
+        labelColor="basic400"
         label={t("lending.borrowPower")}
         tooltip={t("lending.tooltip.borrowPower")}
         isLoading={loading}
