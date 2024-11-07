@@ -21,8 +21,6 @@ import {
   getFunctionDefsFromAbi,
   hexToAscii,
 } from "sections/lending/utils/utils"
-
-// import { isLedgerDappBrowserProvider } from 'web3-ledgerhq-frame-connector';
 import { useQueryClient } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
