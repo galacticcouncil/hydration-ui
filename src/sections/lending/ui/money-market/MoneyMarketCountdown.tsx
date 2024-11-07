@@ -10,7 +10,7 @@ import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketB
 import { PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContent } from "./MoneyMarketCountdown.styled"
 
-const MONEY_MARKET_REFERENDUM_INDEX = "187"
+const MONEY_MARKET_REFERENDUM_INDEX = ""
 const MONEY_MARKET_REFERENDUM_LINK = `${import.meta.env.VITE_REFERENDUM_LINK}/${MONEY_MARKET_REFERENDUM_INDEX}`
 
 const PeepoAnimation: React.FC<{ className?: string }> = ({ className }) => (
@@ -90,24 +90,17 @@ export const MoneyMarketCountdown = () => {
               ? t("lending.countdown.expired.title")
               : t("lending.countdown.ongoing.title")}
           </Text>
-          <Text
-            fs={14}
-            lh={18}
-            color="darkBlue100"
-            tAlign="center"
-            sx={{ mb: 40 }}
-          >
-            {t("lending.countdown.description")}
-          </Text>
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href={MONEY_MARKET_REFERENDUM_LINK}
-          >
-            <Button variant="secondary" size="small" as="div">
-              {t("lending.countdown.button")}
-            </Button>
-          </a>
+          {MONEY_MARKET_REFERENDUM_INDEX && (
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={MONEY_MARKET_REFERENDUM_LINK}
+            >
+              <Button variant="secondary" size="small" as="div">
+                {t("lending.countdown.button")}
+              </Button>
+            </a>
+          )}
         </div>
       </SContent>
     </div>
