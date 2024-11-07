@@ -30,36 +30,20 @@ import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset, useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 
-export const getAddToOmnipoolFee = (api: ApiPromise, farms: TFarmAprData[]) => {
-  const txs = [api.tx.omnipool.addLiquidity("0", "1")]
-  const [firstFarm, ...restFarm] = farms
-
-  if (firstFarm)
-    txs.push(
-      api.tx.omnipoolLiquidityMining.depositShares(
-        firstFarm.globalFarmId,
-        firstFarm.yieldFarmId,
+export const getAddToOmnipoolFee = (
+  api: ApiPromise,
+  isJoinFarms: boolean,
+  farms: TFarmAprData[],
+) => {
+  const tx = isJoinFarms
+    ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+        farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
         "0",
-      ),
-    )
+        "1",
+      )
+    : api.tx.omnipool.addLiquidity("0", "1")
 
-  if (restFarm.length) {
-    const restFarmTxs = restFarm.map((farm) =>
-      api.tx.omnipoolLiquidityMining.redepositShares(
-        farm.globalFarmId,
-        farm.yieldFarmId,
-        "0",
-      ),
-    )
-
-    txs.push(
-      restFarmTxs.length > 1
-        ? api.tx.utility.batch(restFarmTxs)
-        : restFarmTxs[0],
-    )
-  }
-
-  return txs
+  return [tx]
 }
 
 const getSharesToGet = (

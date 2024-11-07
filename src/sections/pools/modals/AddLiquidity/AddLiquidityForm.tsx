@@ -30,6 +30,7 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { useEffect, useState } from "react"
 import { useAssets } from "providers/assets"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
+import { useRefetchAccountAssets } from "api/deposits"
 
 type Props = {
   assetId: string
@@ -54,6 +55,7 @@ export const AddLiquidityForm = ({
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
+  const refetchAccountAssets = useRefetchAccountAssets()
 
   const zodSchema = useAddToOmnipoolZod(assetId, farms)
   const form = useForm<{
@@ -71,7 +73,9 @@ export const AddLiquidityForm = ({
   const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
     useAddLiquidity(assetId, debouncedAmount)
 
-  const estimatedFees = useEstimatedFees(getAddToOmnipoolFee(api, farms))
+  const estimatedFees = useEstimatedFees(
+    getAddToOmnipoolFee(api, isJoinFarms, farms),
+  )
 
   const balance = assetBalance?.balance ?? BN_0
   const balanceMax =
@@ -98,6 +102,7 @@ export const AddLiquidityForm = ({
       },
       {
         onSuccess: (result) => {
+          refetchAccountAssets()
           onSuccess?.(result, amount)
         },
         onSubmitted: () => {
