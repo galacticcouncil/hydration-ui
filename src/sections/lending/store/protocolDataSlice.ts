@@ -1,5 +1,4 @@
-import { providers, utils } from "ethers"
-import { permitByChainAndToken } from "sections/lending/ui-config/permitConfig"
+import { providers } from "ethers"
 import {
   availableMarkets,
   getNetworkConfig,
@@ -65,26 +64,9 @@ export const createProtocolDataSlice: StateCreator<
         currentNetworkConfig: getNetworkConfig(nextMarketData.chainId),
       })
     },
-    tryPermit: ({ reserveAddress, isWrappedBaseAsset }: TypePermitParams) => {
-      const currentNetworkConfig = get().currentNetworkConfig
-      const currentMarketData = get().currentMarketData
-      // current chain id, or underlying chain id for fork networks
-      const underlyingChainId = currentNetworkConfig.isFork
-        ? currentNetworkConfig.underlyingChainId
-        : currentMarketData.chainId
-      // enable permit for all v3 test network assets (except WrappedBaseAssets) or v3 production assets included in permitConfig)
-      const testnetPermitEnabled = Boolean(
-        currentMarketData.v3 &&
-          currentNetworkConfig.isTestnet &&
-          !isWrappedBaseAsset,
-      )
-      const productionPermitEnabled = Boolean(
-        currentMarketData.v3 &&
-          underlyingChainId &&
-          permitByChainAndToken[underlyingChainId]?.[
-            utils.getAddress(reserveAddress).toLowerCase()
-          ],
-      )
+    tryPermit: (_: TypePermitParams) => {
+      const testnetPermitEnabled = false
+      const productionPermitEnabled = false
       return testnetPermitEnabled || productionPermitEnabled
     },
   }
