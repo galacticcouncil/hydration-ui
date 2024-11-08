@@ -2205,10 +2205,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.2.0.tgz#c9bc191ccd732adcb7f3b50ecbff6d3a9923d391"
   integrity sha512-6NlzDthJOByf+yARUT+l5PnHASXQRGjXRhFaXofGUhP7tqD8t29eEudzKVXJL1iabpn22ebKPscSw2H+lNQiyQ==
 
-"@galacticcouncil/apps@8.0.4":
-  version "8.0.4"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-8.0.4.tgz#a520c996e73d2b47a721c1c8ad13eae4c20ed779"
-  integrity sha512-i4fs5xX0lW8RHVcY3g2hQfAzM7U4unl+/CQndaLZcOAfW5NPN/5J1iCoglDkQzOjOlwWM8iiRIgBMNt7Jk009A==
+"@galacticcouncil/apps@8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-8.1.0.tgz#6b457000cfddc2c33e93281abac41fef8936400c"
+  integrity sha512-sWRR6IMNshlicapiZujtMo6OHfQ3t/sujP6eRLHdpmoLJ76lxwKb5gRy/C4Aa9iaxw2jU/eJnP2netErqkqQ2w==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2251,10 +2251,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.2.1.tgz#a6ae0159a7792ecea20bbc1c672177480b8d7ef2"
-  integrity sha512-C5krWoCdSxYt4ovGeeIzt8Te0jtrk8FdTeSNZwRU9MuFs554LujtSq8PbcbjP9PH3o5zqBBKkBbg5Drjc06LDg==
+"@galacticcouncil/sdk@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.4.0.tgz#1b314882c18eee7c517b429756f45c0d49514ca5"
+  integrity sha512-MEP/s1+7qzoGrOIBRS23ryoX3bnyQ4W80kJF28HnxyI56somfBvRgoWKT8ubhnxjH+yJPJccwBmlz6mjQdaMWg==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2295,10 +2295,10 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.2.0.tgz#909a5029a46e7752411b6115b42399f910b5f0e6"
-  integrity sha512-S6r87q0DtWbhO/wOlgIvKSGjWqS2r3LFIHxZFlhShEEeSrtU8tr3HvNV5IoUXXVhum3NLbMOLrdbvW7IEBMlzg==
+"@galacticcouncil/xcm-sdk@^6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.2.1.tgz#ed4ffa035a2558bb68ab482213bb7ec81844a769"
+  integrity sha512-9KaAuCqrTnNrOxiLndSWtCIT60TdfoySp+tyAzd5/jN+eb9owaPGBpN/uti6qvsU2il6mUj32N6Ovv0YXi/2Ug==
   dependencies:
     "@galacticcouncil/xcm-core" "^5.2.0"
 
