@@ -107,6 +107,8 @@ export const RepayModalContent = ({
 
   const isMaxSelected = _amount === "-1"
   const amount = isMaxSelected ? maxAmountToRepay.toString(10) : _amount
+  const isMaxExceeded =
+    !!amount && BigNumber(amount).gt(maxAmountToRepay.toString(10))
 
   const handleChange = (value: string) => {
     const maxSelected = value === "-1"
@@ -277,6 +279,9 @@ export const RepayModalContent = ({
         maxValue={maxAmountToRepay.toString(10)}
         balanceText={<span>Wallet balance</span>}
         sx={{ mb: 20 }}
+        error={
+          isMaxExceeded ? "Insufficient balance on your account." : undefined
+        }
       />
 
       {maxRepayWithDustRemaining && (
@@ -322,6 +327,7 @@ export const RepayModalContent = ({
         symbol={modalSymbol}
         debtType={debtType}
         repayWithATokens={repayWithATokens}
+        blocked={isMaxExceeded}
       />
     </>
   )

@@ -22,6 +22,7 @@ import { useWithdrawError } from "./WithdrawError"
 import { calculateMaxWithdrawAmount } from "./utils"
 import { Text } from "components/Typography/Text/Text"
 import { CheckBox } from "components/CheckBox/CheckBox"
+import BigNumber from "bignumber.js"
 
 export enum ErrorType {
   CAN_NOT_WITHDRAW_THIS_AMOUNT,
@@ -61,6 +62,9 @@ export const WithdrawModalContent = ({
   const withdrawAmount = isMaxSelected
     ? maxAmountToWithdraw.toString(10)
     : _amount
+
+  const isMaxExceeded =
+    !!withdrawAmount && BigNumber(withdrawAmount).gt(maxAmountToWithdraw)
 
   const handleChange = (value: string) => {
     const maxSelected = value === "-1"
@@ -141,6 +145,9 @@ export const WithdrawModalContent = ({
           )
         }
         sx={{ mb: 20 }}
+        error={
+          isMaxExceeded ? "Insufficient balance on your account." : undefined
+        }
       />
 
       {blockingError !== undefined && (
@@ -204,7 +211,8 @@ export const WithdrawModalContent = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayRiskCheckbox && !riskCheckboxAccepted)
+          (displayRiskCheckbox && !riskCheckboxAccepted) ||
+          isMaxExceeded
         }
         sx={displayRiskCheckbox ? { mt: 0 } : {}}
       />

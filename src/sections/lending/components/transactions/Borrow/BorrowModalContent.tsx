@@ -31,6 +31,7 @@ import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { BorrowActions } from "./BorrowActions"
 import { BorrowAmountWarning } from "./BorrowAmountWarning"
 import { ParameterChangewarning } from "./ParameterChangewarning"
+import BigNumber from "bignumber.js"
 
 export enum ErrorType {
   STABLE_RATE_NOT_ENABLED,
@@ -127,6 +128,7 @@ export const BorrowModalContent = ({
   }
 
   const isMaxSelected = amount === maxAmountToBorrow
+  const isMaxExceeded = !!amount && BigNumber(amount).gt(maxAmountToBorrow)
 
   // health factor calculations
   const amountToBorrowInUsd = valueToBigNumber(amount)
@@ -262,6 +264,9 @@ export const BorrowModalContent = ({
         maxValue={maxAmountToBorrow}
         balanceText={<span>Available</span>}
         sx={{ mb: 20 }}
+        error={
+          isMaxExceeded ? "Insufficient balance on your account." : undefined
+        }
       />
 
       {blockingError !== undefined && (
@@ -317,7 +322,8 @@ export const BorrowModalContent = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayRiskCheckbox && !riskCheckboxAccepted)
+          (displayRiskCheckbox && !riskCheckboxAccepted) ||
+          isMaxExceeded
         }
         sx={displayRiskCheckbox ? { mt: 0 } : {}}
       />

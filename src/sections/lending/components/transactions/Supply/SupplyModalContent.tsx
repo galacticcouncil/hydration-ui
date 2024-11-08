@@ -136,6 +136,7 @@ export const SupplyModalContent = React.memo(
       : "-1"
 
     const isMaxSelected = amount === maxAmountToSupply
+    const isMaxExceeded = !!amount && BigNumber(amount).gt(maxAmountToSupply)
 
     let healthFactorAfterDeposit = user
       ? valueToBigNumber(user.healthFactor)
@@ -198,7 +199,7 @@ export const SupplyModalContent = React.memo(
       symbol: supplyUnWrapped
         ? currentNetworkConfig.baseAssetSymbol
         : poolReserve.symbol,
-      blocked: false,
+      blocked: isMaxExceeded,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
     }
@@ -249,6 +250,9 @@ export const SupplyModalContent = React.memo(
           disabled={supplyTxState.loading}
           maxValue={maxAmountToSupply}
           sx={{ mb: 20 }}
+          error={
+            isMaxExceeded ? "Insufficient balance on your account." : undefined
+          }
         />
 
         <TxModalDetails>

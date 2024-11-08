@@ -11,6 +11,7 @@ import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { theme } from "theme"
 import { SContainer } from "./AssetInput.styled"
 import { Spinner } from "components/Spinner/Spinner"
+import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 
 interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void
@@ -75,6 +76,7 @@ export interface AssetInputProps<T extends Asset = Asset> {
   balanceText?: ReactNode
   loading?: boolean
   className?: string
+  error?: string
 }
 
 export const AssetInput = <T extends Asset = Asset>({
@@ -93,6 +95,7 @@ export const AssetInput = <T extends Asset = Asset>({
   loading = false,
   className,
   balanceText,
+  error,
 }: AssetInputProps<T>) => {
   const { t } = useTranslation()
   const handleSelect = (symbol: string) => {
@@ -110,98 +113,62 @@ export const AssetInput = <T extends Asset = Asset>({
       : assets && (assets.find((asset) => asset.symbol === selectedSymbol) as T)
 
   return (
-    <SContainer htmlFor={name} className={className}>
-      <div
-        sx={{
-          flex: "row",
-          align: "center",
-          justify: "space-between",
-          mb: 16,
-        }}
-      >
-        <Text fs={12} color="whiteish500" css={{ textTransform: "uppercase" }}>
-          {inputTitle ? inputTitle : <>Amount</>}
-        </Text>
-        {asset.balance && onChange && (
-          <>
-            <Text as="div" fs={12}>
-              <span sx={{ opacity: 0.7 }}>{balanceText ?? "Balance"}: </span>{" "}
-              <span>{t("value.token", { value: asset.balance })}</span>
-              {!disableInput && (
-                <Button
-                  size="small"
-                  sx={{
-                    ml: 7,
-                    px: 4,
-                    py: 1,
-                    color: "white",
-                    fontSize: 11,
-                  }}
-                  css={{
-                    borderColor: "transparent",
-                    background: `rgba(${theme.rgbColors.primaryA0}, 0.35)`,
-                  }}
-                  onClick={() => onChange("-1")}
-                  disabled={disabled || isMaxSelected}
-                >
-                  Max
-                </Button>
-              )}
-            </Text>
-          </>
-        )}
-      </div>
-
-      <div
-        sx={{
-          flex: "row",
-          align: "center",
-          justify: "space-between",
-        }}
-      >
-        {!onSelect || assets.length === 1 ? (
-          <div sx={{ flex: "row", align: "center" }}>
-            <TokenIcon
-              aToken={asset.aToken}
-              symbol={asset.iconSymbol || asset.symbol}
-              size={28}
-              sx={{ mr: 8 }}
-            />
-            <Text font="GeistSemiBold">{asset.symbol}</Text>
-          </div>
-        ) : (
-          <Dropdown
-            onSelect={(item) => handleSelect(item.key)}
-            asChild
-            items={assets.map((asset) => ({
-              key: asset.symbol,
-              label: (
-                <span>
-                  {asset.symbol}{" "}
-                  {asset.balance && (
-                    <span css={{ opacity: 0.7, display: "block" }}>
-                      Balance:{" "}
-                      {t("value.token", {
-                        value: +asset.balance,
-                      })}
-                    </span>
-                  )}
-                </span>
-              ),
-              icon: (
-                <TokenIcon
-                  aToken={asset.aToken}
-                  symbol={asset.iconSymbol || asset.symbol}
-                  size={28}
-                  sx={{ mr: 8 }}
-                />
-              ),
-            }))}
+    <div className={className}>
+      <SContainer htmlFor={name} error={!!error}>
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            justify: "space-between",
+            mb: 16,
+          }}
+        >
+          <Text
+            fs={12}
+            color="whiteish500"
+            css={{ textTransform: "uppercase" }}
           >
-            <ButtonTransparent
-              sx={{ flex: "row", align: "center" }}
-              css={{ '&[data-state="open"] > svg': { rotate: "180deg" } }}
-            >
+            {inputTitle ? inputTitle : <>Amount</>}
+          </Text>
+          {asset.balance && onChange && (
+            <>
+              <Text as="div" fs={12}>
+                <span sx={{ opacity: 0.7 }}>{balanceText ?? "Balance"}: </span>{" "}
+                <span>{t("value.token", { value: asset.balance })}</span>
+                {!disableInput && (
+                  <Button
+                    size="small"
+                    sx={{
+                      ml: 7,
+                      px: 4,
+                      py: 1,
+                      color: "white",
+                      fontSize: 11,
+                    }}
+                    css={{
+                      borderColor: "transparent",
+                      background: `rgba(${theme.rgbColors.primaryA0}, 0.35)`,
+                    }}
+                    onClick={() => onChange("-1")}
+                    disabled={disabled || isMaxSelected}
+                  >
+                    Max
+                  </Button>
+                )}
+              </Text>
+            </>
+          )}
+        </div>
+
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            justify: "space-between",
+          }}
+        >
+          {!onSelect || assets.length === 1 ? (
+            <div sx={{ flex: "row", align: "center" }}>
               <TokenIcon
                 aToken={asset.aToken}
                 symbol={asset.iconSymbol || asset.symbol}
@@ -209,40 +176,80 @@ export const AssetInput = <T extends Asset = Asset>({
                 sx={{ mr: 8 }}
               />
               <Text font="GeistSemiBold">{asset.symbol}</Text>
-              <ChevronDown sx={{ color: "white" }} />
-            </ButtonTransparent>
-          </Dropdown>
-        )}
+            </div>
+          ) : (
+            <Dropdown
+              onSelect={(item) => handleSelect(item.key)}
+              asChild
+              items={assets.map((asset) => ({
+                key: asset.symbol,
+                label: (
+                  <span>
+                    {asset.symbol}{" "}
+                    {asset.balance && (
+                      <span css={{ opacity: 0.7, display: "block" }}>
+                        Balance:{" "}
+                        {t("value.token", {
+                          value: +asset.balance,
+                        })}
+                      </span>
+                    )}
+                  </span>
+                ),
+                icon: (
+                  <TokenIcon
+                    aToken={asset.aToken}
+                    symbol={asset.iconSymbol || asset.symbol}
+                    size={28}
+                    sx={{ mr: 8 }}
+                  />
+                ),
+              }))}
+            >
+              <ButtonTransparent
+                sx={{ flex: "row", align: "center" }}
+                css={{ '&[data-state="open"] > svg': { rotate: "180deg" } }}
+              >
+                <TokenIcon
+                  aToken={asset.aToken}
+                  symbol={asset.iconSymbol || asset.symbol}
+                  size={28}
+                  sx={{ mr: 8 }}
+                />
+                <Text font="GeistSemiBold">{asset.symbol}</Text>
+                <ChevronDown sx={{ color: "white" }} />
+              </ButtonTransparent>
+            </Dropdown>
+          )}
 
-        {loading ? (
-          <div sx={{ py: 2 }}>
-            <Spinner size={25} />
-          </div>
-        ) : (
-          <div sx={{ flex: "column", justify: "end" }}>
-            <NumberFormatCustom
-              id={name}
-              name={name}
-              placeholder="0.00"
-              disabled={disabled || disableInput}
-              value={value}
-              onChange={(e) => {
-                if (!onChange) return
-                if (Number(e.target.value) > Number(maxValue)) {
-                  onChange("-1")
-                } else {
-                  onChange(e.target.value)
-                }
-              }}
-            />
-            <Text tAlign="right" color="darkBlue200" fs={11}>
-              <DisplayValue
-                value={isNaN(Number(usdValue)) ? 0 : Number(usdValue)}
+          {loading ? (
+            <div sx={{ py: 2 }}>
+              <Spinner size={25} />
+            </div>
+          ) : (
+            <div sx={{ flex: "column", justify: "end" }}>
+              <NumberFormatCustom
+                id={name}
+                name={name}
+                placeholder="0.00"
+                disabled={disabled || disableInput}
+                value={value}
+                onChange={(e) => {
+                  onChange?.(e.target.value)
+                }}
               />
-            </Text>
-          </div>
-        )}
-      </div>
-    </SContainer>
+              <Text tAlign="right" color="darkBlue200" fs={11}>
+                <DisplayValue
+                  value={isNaN(Number(usdValue)) ? 0 : Number(usdValue)}
+                />
+              </Text>
+            </div>
+          )}
+        </div>
+      </SContainer>
+      {error && (
+        <SErrorMessage css={{ textAlign: "end" }}>{error}</SErrorMessage>
+      )}
+    </div>
   )
 }
