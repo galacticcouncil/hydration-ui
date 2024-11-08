@@ -9,6 +9,7 @@ import { BN_0 } from "utils/constants"
 import { PROVIDERS, useActiveProvider, useIndexerUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
+import { millisecondsInMinute } from "date-fns/constants"
 
 export type TradeType = {
   name:
@@ -389,7 +390,7 @@ export const useVolume = (assetId?: string | "all") => {
           return data
         }
       : undefinedNoop,
-    { enabled: !!assetId },
+    { enabled: !!assetId, refetchInterval: millisecondsInMinute },
   )
 }
 

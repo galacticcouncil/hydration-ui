@@ -2276,17 +2276,17 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.1.1.tgz#688d1775e1f2de5f1e22b98abfe170fe648e5ee0"
-  integrity sha512-gaQZjYKY4hrlXEBLMfAkeJ7ybAc9/OHGsFPNCG6j2HUVlO6fgFuiGL+3smy7hpbW5psmyty5GiMsjAqLAtFIdA==
+"@galacticcouncil/xcm-cfg@^5.3.2":
+  version "5.3.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.3.2.tgz#1720f43fc7b8939da9d008838ebac6799a7b26c1"
+  integrity sha512-GY/iavGl4i6rYsD8N6LXV5oykZ/4HwV/hj3NzStBtHGaelawI+GpxKyl/onbeVGjzeamKnff5EwJs2r2MV8qqg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^5.0.0"
+    "@galacticcouncil/xcm-core" "^5.2.0"
 
-"@galacticcouncil/xcm-core@^5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-5.0.0.tgz#35cfc7b3ae44ead62d5b37328524e05223e1356d"
-  integrity sha512-rtV7VrLLwfGdrIOsw9tv29MJAz/JXidWPSme6koojiQI9I2CiasKIYIF+Gc4kKE2nAomXU1JdDOezpTwBc8ILQ==
+"@galacticcouncil/xcm-core@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-5.2.0.tgz#e57a64406ef8818bf84634b46363ad70f8e1c001"
+  integrity sha512-u4USn15BnGozzZVc/BaVrdgVZ05jvxygVMunO4k+jgzOurNI/8YBmLlMnV0QRvP9CxfY3yo6Eq6v19vv9svF4Q==
   dependencies:
     "@wormhole-foundation/sdk-base" "^0.5.2"
     "@wormhole-foundation/sdk-connect" "^0.5.2"
@@ -2295,12 +2295,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.0.0.tgz#a034885a226344c8277cc04bb5f9e236346eb816"
-  integrity sha512-mDS8b4DPnJe2dvDyDCs/wEg2cE4itOShUFY0rayw1R26CB5NozOkzn0vynOa7IrdrxnDAtLYZcr5N439ltQiZg==
+"@galacticcouncil/xcm-sdk@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.2.0.tgz#909a5029a46e7752411b6115b42399f910b5f0e6"
+  integrity sha512-S6r87q0DtWbhO/wOlgIvKSGjWqS2r3LFIHxZFlhShEEeSrtU8tr3HvNV5IoUXXVhum3NLbMOLrdbvW7IEBMlzg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^5.0.0"
+    "@galacticcouncil/xcm-core" "^5.2.0"
 
 "@graphql-typed-document-node/core@^3.2.0":
   version "3.2.0"
