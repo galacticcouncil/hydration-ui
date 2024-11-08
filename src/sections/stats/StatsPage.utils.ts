@@ -95,13 +95,13 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       const pol = valueOfLiquidityPositions.plus(valueOfShares)
 
       const tvl = BN(
-        tvls?.data?.find((tvl) => tvl.asset_id === Number(omnipoolAssetId))
+        tvls?.data?.find((tvl) => tvl?.asset_id === Number(omnipoolAssetId))
           ?.tvl_usd ?? BN_NAN,
       )
 
       const volume = BN(
         volumes?.data?.find(
-          (volume) => volume.asset_id === Number(omnipoolAssetId),
+          (volume) => volume?.asset_id === Number(omnipoolAssetId),
         )?.volume_usd ?? BN_NAN,
       )
       const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
@@ -113,7 +113,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
           ? BN_0
           : BN(
               fees?.data?.find(
-                (fee) => fee.asset_id === Number(omnipoolAssetId),
+                (fee) => fee?.asset_id === Number(omnipoolAssetId),
               )?.projected_apr_perc ?? BN_NAN,
             )
 
