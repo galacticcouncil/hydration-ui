@@ -17,6 +17,13 @@ export const Default: Story = {
   render: Template,
 }
 
+export const Disabled: Story = {
+  render: Template,
+  args: {
+    disabled: true,
+  },
+}
+
 export const VariantPrimary: Story = {
   render: Template,
   args: {

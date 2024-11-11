@@ -6,7 +6,9 @@ export type ButtonProps = SButtonProps &
   React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ type = "button", ...props }) => <SButton type={type} {...props} />,
+  ({ type = "button", ...props }, ref) => (
+    <SButton type={type} ref={ref} {...props} />
+  ),
 )
 
 Button.displayName = "Button"

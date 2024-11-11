@@ -2,7 +2,12 @@ import fs from "node:fs/promises"
 import path from "node:path"
 
 import { permutateThemes, register } from "@tokens-studio/sd-transforms"
+import { dirname } from "path"
 import StyleDictionary from "style-dictionary"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 register(StyleDictionary)
 
@@ -10,7 +15,6 @@ const fetchTokens = async () => {
   const res = await fetch(
     "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json",
   )
-
   return res.json()
 }
 
@@ -30,14 +34,14 @@ async function run() {
   await Promise.all(tokenFiles)
 
   const $themes = JSON.parse(
-    await fs.readFile(path.resolve(import.meta.dirname, "tokens/$themes.json")),
+    await fs.readFile(path.resolve(__dirname, "tokens/$themes.json")),
   )
 
   const themes = permutateThemes($themes)
 
   const configs = Object.entries(themes).map(([theme, sets]) => ({
     source: sets.map((tokenset) =>
-      path.resolve(import.meta.dirname, `tokens/${tokenset}.json`),
+      path.resolve(__dirname, `tokens/${tokenset}.json`),
     ),
     preprocessors: ["tokens-studio"],
     platforms: {

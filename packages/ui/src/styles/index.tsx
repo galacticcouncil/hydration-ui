@@ -75,7 +75,7 @@ const normalize = css`
   }
 `
 
-export const globalStyles = (theme: Theme) => css`
+const globalStyles = (theme: Theme) => css`
   ${normalize}
 
   body {

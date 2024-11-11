@@ -15,6 +15,8 @@ const defaulStyles = css`
   border-radius: 9999px;
 
   cursor: pointer;
+
+  transition: all 0.15s ease-in-out;
 `
 
 const variantStyles = (
@@ -22,9 +24,17 @@ const variantStyles = (
 ) => css`
   background-color: ${settings.Rest};
   color: ${settings.onButton};
-  &:hover,
-  &:focus {
+  &:not(:disabled):hover,
+  &:not(:disabled):focus {
     background-color: ${settings.Hover};
+  }
+`
+
+const disabledStyles = css`
+  &:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.2;
   }
 `
 
@@ -79,6 +89,7 @@ export const SButton = styled.button<SButtonProps>(
     sizes(size),
     outline ? outlineVariants(variant) : variants(variant),
   ],
+  disabledStyles,
 )
 
 export const SLinkButton = SButton.withComponent("a")
