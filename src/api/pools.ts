@@ -6,6 +6,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
 import { useAccountAssets } from "./deposits"
+import BN from "bignumber.js"
 
 export const useShareOfPools = (assets: string[]) => {
   const totalIssuances = useTotalIssuances()
@@ -23,7 +24,7 @@ export const useShareOfPools = (assets: string[]) => {
 
         const calculateTotalShare = () => {
           if (balance && totalIssuance) {
-            return balance.total.div(totalIssuance).multipliedBy(100)
+            return BN(balance.total).div(totalIssuance).multipliedBy(100)
           }
           return null
         }

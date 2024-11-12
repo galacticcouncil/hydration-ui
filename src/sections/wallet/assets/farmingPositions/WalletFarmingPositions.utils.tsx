@@ -206,10 +206,7 @@ export const useFarmingPositionsData = ({
 
         const { symbol, decimals, name, id } = meta
         const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
-          (acc, curr) =>
-            acc.lt(curr.enteredAt.toBigNumber())
-              ? curr.enteredAt.toBigNumber()
-              : acc,
+          (acc, curr) => (acc.lt(curr.enteredAt) ? BN(curr.enteredAt) : acc),
           BN_0,
         )
 
@@ -217,10 +214,7 @@ export const useFarmingPositionsData = ({
           latestEnteredAtBlock,
           bestNumber.data.relaychainBlockNumber.toBigNumber(),
         )
-        const shares = getFloatingPointAmount(
-          deposit.data.shares.toBigNumber(),
-          decimals,
-        )
+        const shares = getFloatingPointAmount(deposit.data.shares, decimals)
 
         let position: XYKPosition | TLPData
         if (isXyk) {

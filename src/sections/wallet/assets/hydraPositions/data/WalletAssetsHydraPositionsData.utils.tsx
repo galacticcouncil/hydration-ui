@@ -8,6 +8,7 @@ import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
+import BigNumber from "bignumber.js"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -100,10 +101,11 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
                 (balance) => balance.assetId === asset.id,
               )?.freeBalance
 
-        const myShare = myPool.balance.total.div(totalIssuance ?? 1)
+        const myShare = BigNumber(myPool.balance.total).div(totalIssuance ?? 1)
 
-        const balanceHuman =
-          balance?.shiftedBy(-asset.decimals).multipliedBy(myShare) ?? BN_NAN
+        const balanceHuman = balance
+          ? BigNumber(balance).shiftedBy(-asset.decimals).multipliedBy(myShare)
+          : BN_NAN
 
         return { amount: balanceHuman, symbol: asset.symbol }
       })
@@ -114,7 +116,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
       const amount =
         totalIssuance
-          ?.times(myPool.balance.total.div(totalIssuance ?? 1))
+          ?.times(BigNumber(myPool.balance.total).div(totalIssuance ?? 1))
           .shiftedBy(-myPool.asset.decimals) ?? BN_NAN
 
       const valueDisplay = amount.multipliedBy(spotPrice?.spotPrice ?? 1)
