@@ -48,7 +48,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   const isNativePaymentAssetFee = feePaymentAssetId === NATIVE_ASSET_ID
   const amountMax =
     isNativePaymentAssetFee && tokenBalance?.balance && feePaymentValue
-      ? tokenBalance.balance.minus(feePaymentValue)
+      ? BN(tokenBalance.balance).minus(feePaymentValue)
       : tokenBalance?.balance ?? BN_0
 
   useDebounce(

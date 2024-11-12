@@ -9,7 +9,7 @@ export const usePartialFillFormSchema = ({
   assetInDecimals,
 }: {
   offeringAmount: BigNumber
-  assetInBalance: BigNumber
+  assetInBalance: string
   assetInDecimals: number
 }) => {
   const { t } = useTranslation()

@@ -100,12 +100,12 @@ export const usePools = () => {
       )?.spotPrice
 
       const tvlDisplay = BN(
-        tvls.data?.find((tvl) => tvl.asset_id === Number(asset.id))?.tvl_usd ??
+        tvls.data?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
       const volume = volumes.data?.find(
-        (volume) => volume.asset_id.toString() === asset.id,
+        (volume) => volume?.asset_id?.toString() === asset.id,
       )?.volume_usd
 
       const isFeeLoading = fees?.isLoading || isAllFarmsLoading
@@ -116,7 +116,7 @@ export const usePools = () => {
         native.id === asset.id
           ? BN_0
           : BN(
-              fees.data?.find((fee) => fee.asset_id.toString() === asset.id)
+              fees.data?.find((fee) => fee?.asset_id?.toString() === asset.id)
                 ?.projected_apr_perc ?? BN_NAN,
             )
 

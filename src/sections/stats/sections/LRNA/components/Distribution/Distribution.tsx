@@ -16,6 +16,7 @@ import { useTotalIssuances } from "api/totalIssuance"
 import { useTokenBalance } from "api/balances"
 import { BN_0 } from "utils/constants"
 import { useAssets } from "providers/assets"
+import BN from "bignumber.js"
 
 export const Distribution = () => {
   const { t } = useTranslation()
@@ -47,7 +48,9 @@ export const Distribution = () => {
 
   const outsidePercent = makePercent(outsideOmnipool, issuance ?? BN_0)
   const insidePercent = makePercent(
-    omnipoolBalanceQuery.data?.total ?? BN_0,
+    omnipoolBalanceQuery.data?.total
+      ? BN(omnipoolBalanceQuery.data.total)
+      : BN_0,
     issuance ?? BN_0,
   )
 
@@ -68,7 +71,7 @@ export const Distribution = () => {
       >
         <TotalValue
           title={t("stats.lrna.pie.values.inside")}
-          data={omnipoolBalanceQuery.data?.total}
+          data={BN(omnipoolBalanceQuery.data?.total ?? "0")}
           isLoading={omnipoolBalanceQuery.isLoading}
           compact={true}
         />

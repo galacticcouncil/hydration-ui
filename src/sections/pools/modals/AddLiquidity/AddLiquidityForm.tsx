@@ -1,6 +1,5 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
-import BigNumber from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import BN from "bignumber.js"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -78,12 +77,13 @@ export const AddLiquidityForm = ({
 
   const estimatedFees = useEstimatedFees(getAddToOmnipoolFee(api, farms))
 
-  const balance = assetBalance?.balance ?? BN_0
+  const balance = assetBalance?.balance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === assetMeta.id
-      ? balance
+      ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(assetMeta.existentialDeposit)
+          .toString()
       : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
@@ -178,8 +178,8 @@ export const AddLiquidityForm = ({
               onBlur={onChange}
               onChange={onChange}
               asset={assetId}
-              balance={balance}
-              balanceMax={balanceMax}
+              balance={BN(balance)}
+              balanceMax={BN(balanceMax)}
               error={error?.message}
               onAssetOpen={onAssetOpen}
             />
@@ -269,7 +269,7 @@ export const AddLiquidityForm = ({
                   })
                 : t("value.percentage", {
                     numberPrefix: "<",
-                    value: BigNumber(0.01),
+                    value: BN(0.01),
                   }),
             },
           ]}

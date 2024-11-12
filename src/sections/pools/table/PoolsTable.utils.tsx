@@ -233,8 +233,8 @@ const ManageLiquidityButton: React.FC<{
   const isXykPool = isXYKPoolType(pool)
 
   const userStablePoolBalance = pool.meta.isStableSwap
-    ? pool.balance?.freeBalance
-    : BN_0
+    ? pool.balance?.freeBalance ?? "0"
+    : "0"
 
   let positionsAmount: BN = BN_0
 
@@ -245,7 +245,7 @@ const ManageLiquidityButton: React.FC<{
   } else {
     positionsAmount = BN(pool.omnipoolPositions.length)
       .plus(pool.miningPositions.length)
-      .plus(userStablePoolBalance?.gt(0) ? 1 : 0)
+      .plus(BN(userStablePoolBalance).gt(0) ? 1 : 0)
   }
 
   const isPositions = positionsAmount.gt(0)

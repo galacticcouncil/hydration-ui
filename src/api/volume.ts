@@ -243,7 +243,7 @@ export const useVolume = (assetId?: string | "all") => {
           return data
         }
       : undefinedNoop,
-    { enabled: !!assetId },
+    { enabled: !!assetId, refetchInterval: millisecondsInMinute },
   )
 }
 
