@@ -21,6 +21,7 @@ import { TableLabel } from "sections/pools/components/TableLabel"
 import { LINKS } from "utils/navigation"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BigNumber from "bignumber.js"
 
 export const MyLiquidity = () => {
   const { account } = useAccount()
@@ -102,9 +103,11 @@ const MyLiquidityData = () => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
         if (xykPool.isPositions) {
-          const myTotalDisplay = xykPool.tvlDisplay
-            ?.div(100)
-            .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
+          const myTotalDisplay = xykPool.shareTokenIssuance?.myPoolShare
+            ? xykPool.tvlDisplay
+                ?.div(100)
+                .times(xykPool.shareTokenIssuance.myPoolShare)
+            : BN_0
 
           return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
         }
@@ -120,7 +123,7 @@ const MyLiquidityData = () => {
       return pools.data.reduce((acc, pool) => {
         if (pool.meta.isStableSwap && pool.balance && pool.spotPrice) {
           acc = acc.plus(
-            pool.balance.freeBalance
+            BigNumber(pool.balance.freeBalance)
               .shiftedBy(-pool.meta.decimals)
               .times(pool.spotPrice),
           )
