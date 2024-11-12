@@ -31,7 +31,7 @@ export const JoinedFarms = ({ depositNft }: JoinedFarmsProps) => {
         const currentPeriod = getCurrentPeriod(farm.blocksPerPeriod)
 
         const currentPeriodInFarm = currentPeriod
-          ? BN(currentPeriod).minus(joinedYieldFarm.enteredAt.toBigNumber())
+          ? BN(currentPeriod).minus(joinedYieldFarm.enteredAt)
           : undefined
 
         const currentApr =

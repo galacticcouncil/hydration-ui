@@ -82,13 +82,13 @@ export const useWalletAssetsTotals = ({
   const xykTotal = useMemo(() => {
     if (!shareTokenBalances || !spotPrices.data) return BN_0
     return shareTokenBalances.reduce<BN>((acc, { asset, balance }) => {
-      if (balance.freeBalance.gt(0)) {
+      if (BN(balance.freeBalance).gt(0)) {
         const meta = asset
         const spotPrice = spotPrices.data.find(
           (spotPrice) => spotPrice.tokenIn === meta.id,
         )
 
-        const value = balance.freeBalance
+        const value = BN(balance.freeBalance)
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? BN_NAN)
 

@@ -107,8 +107,8 @@ export const FarmingPositionWrapper = () => {
           (farm) =>
             !position.data.yieldFarmEntries.some(
               (entry) =>
-                entry.globalFarmId.eq(farm.globalFarmId) &&
-                entry.yieldFarmId.eq(farm.yieldFarmId),
+                BN(entry.globalFarmId).eq(farm.globalFarmId) &&
+                BN(entry.yieldFarmId).eq(farm.yieldFarmId),
             ),
         ) ?? []
 

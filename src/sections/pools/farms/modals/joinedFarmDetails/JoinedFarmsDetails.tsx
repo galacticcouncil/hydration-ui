@@ -20,12 +20,13 @@ import {
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import { useJoinFarms } from "utils/farms/deposit"
+import BigNumber from "bignumber.js"
 
 function isFarmJoined(depositNft: TDeposit, farm: TFarmAprData) {
   return depositNft.data.yieldFarmEntries.find(
     (entry) =>
-      entry.globalFarmId.eq(farm.globalFarmId) &&
-      entry.yieldFarmId.eq(farm.yieldFarmId),
+      BigNumber(entry.globalFarmId).eq(farm.globalFarmId) &&
+      BigNumber(entry.yieldFarmId).eq(farm.yieldFarmId),
   )
 }
 
@@ -123,7 +124,7 @@ function JoinedFarmsDetailsPositions(props: {
         t={t}
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.data.shares.toBigNumber(),
+          amount: BigNumber(props.depositNft.data.shares),
           fixedPointScale: meta.decimals,
         }}
       >

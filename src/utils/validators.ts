@@ -15,14 +15,14 @@ export const positive = z
   .pipe(validNumber)
   .refine((value) => BigNumber(value).gt(0), i18n.t("error.positive"))
 
-export const maxBalance = (balance: BigNumber, decimals: number) => {
+export const maxBalance = (balance: string, decimals: number) => {
   return z
     .string()
     .pipe(positive)
     .refine(
       (value) =>
         Number.isFinite(decimals) &&
-        BigNumber(value).lte(balance.shiftedBy(-decimals)),
+        BigNumber(value).lte(BigNumber(balance).shiftedBy(-decimals)),
       i18n.t("error.maxBalance"),
     )
 }

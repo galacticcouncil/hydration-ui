@@ -4,7 +4,6 @@ import { QUERY_KEYS, WS_QUERY_KEYS } from "utils/queryKeys"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { useEffect } from "react"
 import { VoidFn } from "@polkadot/api/types"
@@ -168,8 +167,8 @@ export const useAllLiquidityPositions = () => {
 
       const data = positions.reduce<
         {
-          amount: BigNumber
-          shares: BigNumber
+          amount: string
+          shares: string
           price: string[]
           assetId: string
           owner: string
@@ -189,8 +188,8 @@ export const useAllLiquidityPositions = () => {
           const data = dataRaw.unwrap()
 
           acc.push({
-            amount: data.amount.toBigNumber(),
-            shares: data.shares.toBigNumber(),
+            amount: data.amount.toString(),
+            shares: data.shares.toString(),
             price: data.price.map((e) => e.toString()),
             assetId: data.assetId.toString(),
             owner,
