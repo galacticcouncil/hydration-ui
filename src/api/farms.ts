@@ -329,7 +329,7 @@ function getFarmApr(
     yieldFarm: PalletLiquidityMiningYieldFarmData
   },
   priceAdjustment: BigNumber,
-  potBalance?: BigNumber,
+  potBalance?: string,
 ) {
   const { globalFarm, yieldFarm } = farm
   const { rewardCurrency, incentivizedAsset } = globalFarm

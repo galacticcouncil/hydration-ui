@@ -13,6 +13,7 @@ import {
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
 import { BalanceClient } from "@galacticcouncil/sdk"
+import { millisecondsInMinute } from "date-fns/constants"
 
 export type TBalance = ReturnType<typeof parseBalanceData>
 
@@ -21,16 +22,16 @@ export const parseBalanceData = (
   id: string,
   address: string,
 ) => {
-  const freeBalance = new BigNumber(data.free.toHex())
-  const frozenBalance = new BigNumber(data.frozen.toHex())
-  const reservedBalance = new BigNumber(data.reserved.toHex())
-  const balance = freeBalance.minus(frozenBalance)
+  const freeBalance = data.free.toString()
+  const frozenBalance = data.frozen.toString()
+  const reservedBalance = data.reserved.toString()
+  const balance = BigNumber(freeBalance).minus(frozenBalance).toString()
 
   return {
     accountId: address,
     assetId: id,
     balance,
-    total: freeBalance.plus(reservedBalance),
+    total: BigNumber(freeBalance).plus(reservedBalance).toString(),
     freeBalance,
     reservedBalance,
   }
@@ -107,7 +108,7 @@ export const useTokenLocks = (id: Maybe<u32 | string>) => {
     account?.address != null
       ? getTokenLock(api, account.address, id?.toString() ?? "")
       : undefinedNoop,
-    { enabled: !!account?.address && !!id },
+    { enabled: !!account?.address && !!id, staleTime: millisecondsInMinute },
   )
 }
 
@@ -120,7 +121,7 @@ export const getTokenLock =
 
     return res.map((lock) => ({
       id: id,
-      amount: lock.amount.toBigNumber(),
+      amount: lock.amount.toString(),
       type: lock.id.toHuman(),
     }))
   }

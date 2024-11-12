@@ -141,7 +141,7 @@ export const useAccountFeePaymentAssets = () => {
     }
 
     const assetIds =
-      accountAssets.data?.balances.map((balance) => balance.assetId) ?? []
+      accountAssets.data?.balances?.map((balance) => balance.assetId) ?? []
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
   }, [
     account?.address,

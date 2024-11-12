@@ -34,7 +34,11 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountAssets: (address: string | undefined) => ["accountAssets", address],
+  accountAssets: (address: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "accountAssets",
+    address,
+  ],
   accountClaimableFarmValues: (address: string | undefined) => [
     "accountClaimableFarmValues",
     address,
@@ -173,6 +177,7 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
