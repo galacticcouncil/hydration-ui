@@ -20,6 +20,7 @@ import { pluck } from "utils/rx"
 import { DOC_LINK } from "utils/constants"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import BN from "bignumber.js"
 
 export const WhyBonds = () => {
   const { t } = useTranslation()
@@ -33,7 +34,7 @@ export const WhyBonds = () => {
     (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )
 
-  const hasBonds = balances.some((balance) => balance?.total.gt(0))
+  const hasBonds = balances.some((balance) => BN(balance?.total ?? "0").gt(0))
 
   useEffect(() => {
     if (hasBonds !== undefined && expanded === undefined) {

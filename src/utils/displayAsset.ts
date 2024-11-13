@@ -84,7 +84,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
 
             if (!assetA) return undefined
 
-            const assetABalance = assetA.freeBalance.shiftedBy(
+            const assetABalance = BigNumber(assetA.freeBalance).shiftedBy(
               -getAssetWithFallback(assetA.assetId).decimals,
             )
 

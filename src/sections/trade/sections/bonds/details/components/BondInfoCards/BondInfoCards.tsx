@@ -81,7 +81,9 @@ export const BondInfoCards = ({
     ? accumulatedAssetBalance
       ? BN(accumulatedAssetBalance).minus(initialAccumulatedAssetValue ?? 0)
       : undefined
-    : tokenBalance.data?.freeBalance.minus(initialAccumulatedAssetValue ?? 0)
+    : BN(tokenBalance.data?.freeBalance ?? "0").minus(
+        initialAccumulatedAssetValue ?? 0,
+      )
 
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 

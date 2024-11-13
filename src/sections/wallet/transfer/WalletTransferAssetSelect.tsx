@@ -28,7 +28,7 @@ export const WalletTransferAssetSelect = (props: {
   const accountAssets = useAccountAssets()
   const balance = accountAssets.data?.accountAssetsMap.get(
     props.asset.toString(),
-  )?.balance
+  )?.balance?.balance
 
   return (
     <AssetSelect
@@ -39,7 +39,7 @@ export const WalletTransferAssetSelect = (props: {
       onChange={props.onChange}
       onBlur={props.onBlur}
       id={props.asset.toString()}
-      balance={props.balance ?? balance?.balance}
+      balance={props.balance ?? BN(balance ?? "0")}
       balanceMax={props.balanceMax}
       onSelectAssetClick={props.onAssetOpen}
       error={props.error}
