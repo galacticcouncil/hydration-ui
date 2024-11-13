@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { useShallow } from "hooks/useShallow"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { Transaction, useSettingsStore, useStore } from "state/store"
-import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
@@ -31,9 +30,9 @@ export type CreateXYKPoolFormData = {
 }
 
 export const createXYKPoolFormSchema = (
-  balanceA: BigNumber,
+  balanceA: string,
   decimalsA: number,
-  balanceB: BigNumber,
+  balanceB: string,
   decimalsB: number,
 ): ZodType<CreateXYKPoolFormData> =>
   z.object({
@@ -77,9 +76,10 @@ export const useAllowedXYKPoolAssets = () => {
   return useMemo(() => {
     return [...all.values()].filter((asset) => {
       const isTradable = asset.isTradable
-      const hasBalance = data?.accountAssetsMap
-        .get(asset.id)
-        ?.balance?.freeBalance.gt(0)
+      const hasBalance = BN(
+        data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
+      ).gt(0)
+
       const isNotTradableWithBalance = !isTradable && hasBalance
 
       const shouldBeVisible = isTradable || isNotTradableWithBalance
@@ -112,9 +112,9 @@ export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
     mode: "onChange",
     resolver: zodResolver(
       createXYKPoolFormSchema(
-        balanceA?.balance ?? BN_0,
+        balanceA?.balance ?? "0",
         assetAMeta?.decimals ?? 0,
-        balanceB?.balance ?? BN_0,
+        balanceB?.balance ?? "0",
         assetBMeta?.decimals ?? 0,
       ),
     ),
@@ -134,9 +134,9 @@ export const createXYKpool = (
 ) => {
   return api.tx.xyk.createPool(
     assetA.id,
-    new BigNumber(assetA.amount).shiftedBy(assetA.decimals).toFixed(),
+    BN(assetA.amount).shiftedBy(assetA.decimals).toFixed(),
     assetB.id,
-    new BigNumber(assetB.amount).shiftedBy(assetB.decimals).toFixed(),
+    BN(assetB.amount).shiftedBy(assetB.decimals).toFixed(),
   )
 }
 

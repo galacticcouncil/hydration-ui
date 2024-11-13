@@ -58,9 +58,6 @@ export const PlaceOrder = ({
     ? accountAssets.data?.accountAssetsMap.get(aOut.toString())?.balance
     : undefined
   const assetInMeta = aIn ? getAssetWithFallback(aIn.toString()) : undefined
-  const assetInBalance = aIn
-    ? accountAssets.data?.accountAssetsMap.get(aIn.toString())?.balance
-    : undefined
 
   useEffect(() => {
     form.trigger()
@@ -203,7 +200,7 @@ export const PlaceOrder = ({
                           if (
                             balance &&
                             decimals &&
-                            balance.gte(
+                            BigNumber(balance).gte(
                               new BigNumber(value).multipliedBy(
                                 BN_10.pow(decimals),
                               ),
@@ -231,7 +228,6 @@ export const PlaceOrder = ({
                         }}
                         onOpen={() => paginateTo(2)}
                         asset={aOut}
-                        balance={assetOutBalance?.balance}
                         error={error?.message}
                       />
                     )}
@@ -281,7 +277,6 @@ export const PlaceOrder = ({
                         }}
                         onOpen={() => paginateTo(1)}
                         asset={aIn}
-                        balance={assetInBalance?.balance}
                         error={error?.message}
                       />
                     )}

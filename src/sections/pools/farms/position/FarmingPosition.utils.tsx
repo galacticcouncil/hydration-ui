@@ -109,8 +109,8 @@ export const useAllXYKDeposits = (address?: string) => {
 
           if (shareTokenIssuance && pool) {
             const index = asset.id
-            const shares = depositNft.data.shares.toBigNumber()
-            const ratio = shares.div(shareTokenIssuance)
+            const shares = depositNft.data.shares
+            const ratio = BN(shares).div(shareTokenIssuance)
             const amountUSD = scaleHuman(shareTokenIssuance, asset.decimals)
               .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
               .times(ratio)
@@ -179,10 +179,13 @@ export const useFarmDepositsTotal = (address?: string) => {
 
     for (const id in xyk) {
       const xykTotal = xyk[id].reduce((memo, deposit) => {
-        if (deposit.amountUSD) return memo.plus(deposit.amountUSD)
+        if (deposit.amountUSD) {
+          memo = memo.plus(deposit.amountUSD)
+        }
         return memo
       }, BN_0)
-      poolsTotal.plus(xykTotal)
+
+      poolsTotal = poolsTotal.plus(xykTotal)
     }
 
     return poolsTotal

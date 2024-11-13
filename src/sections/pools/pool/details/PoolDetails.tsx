@@ -90,7 +90,7 @@ export const PoolDetails = () => {
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              <MultipleAssetLogo iconId={meta.iconId} size={26} />
+              <MultipleAssetLogo iconId={meta?.iconId} size={26} />
               <div sx={{ flex: "column", gap: 0, width: "max-content" }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
                   {meta.symbol}

@@ -118,12 +118,12 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = balance?.freeBalance
+  const rawAvailableBalance = BN(balance?.freeBalance ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
 
-  const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
+  const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
   const queries = [
     stake,
@@ -289,7 +289,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
@@ -482,7 +482,7 @@ export const useClaimReward = () => {
       actionPointsWeight,
     } = stakingConsts.data
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
 

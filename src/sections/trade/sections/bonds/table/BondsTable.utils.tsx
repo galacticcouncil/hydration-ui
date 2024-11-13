@@ -31,7 +31,7 @@ import { useAssets } from "providers/assets"
 export type BondTableItem = {
   assetId: string
   maturity?: number
-  balance?: BN
+  balance?: string
   price: string
   balanceHuman?: string
   bondId: string

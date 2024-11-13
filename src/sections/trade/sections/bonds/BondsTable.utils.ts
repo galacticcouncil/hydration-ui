@@ -33,7 +33,9 @@ export const useBondsTableData = ({
     (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )
 
-  const bondsBalances = balances.filter((balance) => balance?.total.gt(0))
+  const bondsBalances = balances.filter((balance) =>
+    BN(balance?.total ?? "0").gt(0),
+  )
 
   const bondEvents = useBondsEvents(
     bondsBalances.map((bondBalance) => bondBalance?.assetId.toString()) ?? [],
@@ -139,7 +141,9 @@ export const useBondsTableData = ({
         assetIn: accumulatedAssetId,
         maturity: bondMap.get(id)?.maturity,
         balance: bondBalance?.total,
-        balanceHuman: bondBalance?.total?.shiftedBy(-bond.decimals).toString(),
+        balanceHuman: bondBalance?.total
+          ? BN(bondBalance.total).shiftedBy(-bond.decimals).toString()
+          : undefined,
         price: "",
         bondId: bond.id,
         isSale,
@@ -178,7 +182,7 @@ export const useBondsTableData = ({
           assetId: bond.underlyingAssetId,
           assetIn,
           maturity: bondMap.get(id)?.maturity,
-          balance: BN_0,
+          balance: "0",
           balanceHuman: "0",
           price: "",
           bondId: id,
