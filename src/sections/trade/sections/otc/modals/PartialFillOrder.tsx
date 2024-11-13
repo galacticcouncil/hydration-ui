@@ -52,7 +52,7 @@ export const PartialFillOrder = ({
 
   const formSchema = usePartialFillFormSchema({
     offeringAmount: offering.amount,
-    assetInBalance: assetInBalance?.balance ?? BN_0,
+    assetInBalance: assetInBalance?.balance ?? "0",
     assetInDecimals: assetInMeta.decimals,
   })
 
@@ -223,7 +223,6 @@ export const PartialFillOrder = ({
                 handleFreeChange()
               }}
               asset={accepting.asset}
-              balance={assetInBalance?.balance}
               error={error?.message}
             />
           )}

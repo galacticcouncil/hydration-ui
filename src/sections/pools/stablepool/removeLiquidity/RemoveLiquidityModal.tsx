@@ -10,8 +10,7 @@ import { RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
-import { BN_0 } from "utils/constants"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
@@ -47,7 +46,7 @@ export const RemoveLiquidityModal = ({
   const isRemovingOmnipoolPosition = !!position
 
   const stablepoolPosition = pool.balance
-  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? BN_0
+  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? "0"
 
   const { t } = useTranslation()
   const { page, direction, paginateTo } = useModalPagination(
@@ -158,7 +157,7 @@ export const RemoveLiquidityModal = ({
                 position={position}
                 onSubmitted={(shares) => {
                   if (selectedOption === "STABLE") {
-                    if (stablepoolPositionAmount.isZero()) {
+                    if (BN(stablepoolPositionAmount).isZero()) {
                       setRemoveAll(true)
                       setSharesAmount(shares)
                     } else {
@@ -215,8 +214,8 @@ export const RemoveLiquidityModal = ({
                   poolId: pool.id,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll
-                      ? BigNumber(sharesAmount ?? 0)
-                      : stablepoolPositionAmount,
+                      ? BN(sharesAmount ?? 0)
+                      : BN(stablepoolPositionAmount),
                 }}
                 onSuccess={() => {
                   onSuccess()

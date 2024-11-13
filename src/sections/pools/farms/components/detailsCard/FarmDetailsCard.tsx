@@ -54,8 +54,8 @@ export const FarmDetailsCard = ({
     if (depositNft) {
       const depositYield = depositNft.data.yieldFarmEntries.find(
         (entry) =>
-          entry.yieldFarmId.eq(farm.yieldFarmId) &&
-          entry.globalFarmId.eq(farm.globalFarmId),
+          BN(entry.yieldFarmId).eq(farm.yieldFarmId) &&
+          BN(entry.globalFarmId).eq(farm.globalFarmId),
       )
 
       const currentPeriod = getCurrentPeriod(farm.blocksPerPeriod)
@@ -65,7 +65,7 @@ export const FarmDetailsCard = ({
 
       const currentLoyaltyFactor = getCurrentLoyaltyFactor(
         farm.loyaltyCurve,
-        BN(currentPeriod).minus(depositYield?.enteredAt.toBigNumber()),
+        BN(currentPeriod).minus(depositYield?.enteredAt),
       )
 
       return BN(farm.apr).times(currentLoyaltyFactor)

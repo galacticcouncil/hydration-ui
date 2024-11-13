@@ -1,5 +1,5 @@
 import { useAccountsBalances } from "api/accountBalances"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { derivePoolAccount } from "sections/pools/PoolsPage.utils"
 import { BN_0, BN_1 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
@@ -17,16 +17,16 @@ export const StablePoolsTotal = () => {
   const stablePoolBalances = useAccountsBalances(stablepoolIds)
 
   const totalBalances =
-    stablePoolBalances.data?.reduce<Record<string, BigNumber>>(
+    stablePoolBalances.data?.reduce<Record<string, BN>>(
       (memo, stablePoolBalance) => {
         stablePoolBalance.balances.forEach((balance) => {
           const id = balance.assetId.toString()
           const free = balance.freeBalance
 
           if (memo[id]) {
-            memo[id] = memo[id].plus(free)
+            memo[id] = BN(memo[id]).plus(free)
           } else {
-            memo[id] = free
+            memo[id] = BN(free)
           }
         })
 
@@ -69,7 +69,7 @@ export const useMyStablePoolaTotal = () => {
     const stablepoolBalances = []
     if (data) {
       for (const [key, value] of data.accountStableswapMap) {
-        if (value.balance.freeBalance.gt(0)) {
+        if (BN(value.balance.freeBalance).gt(0)) {
           stablepoolIds.push(key)
           stablepoolBalances.push(value)
         }
@@ -92,7 +92,7 @@ export const useMyStablePoolaTotal = () => {
 
         const meta = balance.asset
 
-        const balanceDisplay = freeBalance
+        const balanceDisplay = BN(freeBalance)
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice)
 

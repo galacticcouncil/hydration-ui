@@ -6,7 +6,6 @@ import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAssets } from "providers/assets"
 import { useDisplayPrices } from "utils/displayAsset"
-import { BN_0 } from "utils/constants"
 import BN from "bignumber.js"
 import { useAccountAssets } from "api/deposits"
 import { TBalance } from "api/balances"
@@ -75,13 +74,13 @@ export const useAssetsModal = ({
 
 type TAssetSelector = {
   meta: TAsset
-  balance: BN
-  displayValue: BN
+  balance: string
+  displayValue: string
 }
 
 const getAssetBalances = (
   assets: TAsset[],
-  assetsWithBalance: { meta: TAsset; balance: BN; displayValue: BN }[],
+  assetsWithBalance: { meta: TAsset; balance: string; displayValue: string }[],
 ) =>
   assets.map((asset) => {
     const tokenWithBalance = assetsWithBalance.find(
@@ -90,8 +89,8 @@ const getAssetBalances = (
 
     return {
       meta: asset,
-      balance: tokenWithBalance?.balance ?? BN_0,
-      displayValue: tokenWithBalance?.displayValue ?? BN_0,
+      balance: tokenWithBalance?.balance ?? "0",
+      displayValue: tokenWithBalance?.displayValue ?? "0",
     }
   })
 
@@ -214,9 +213,10 @@ export const useAssetsData = ({
           (sp) => sp?.tokenIn === asset.id,
         )?.spotPrice
 
-        const displayValue = balance
+        const displayValue = BN(balance)
           .shiftedBy(-asset.decimals)
           .times(spotPrice ?? 1)
+          .toString()
 
         return { meta: asset, balance, displayValue }
       },
@@ -255,9 +255,11 @@ export const useAssetsData = ({
           (sp) => sp?.tokenIn === id,
         )?.spotPrice
 
-        const displayValue = balance
+        const displayValue = BN(balance)
           .shiftedBy(-asset.decimals)
           .times(spotPrice ?? 1)
+          .toString()
+
         return { meta: asset, balance, displayValue }
       },
     )
