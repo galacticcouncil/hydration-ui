@@ -8,7 +8,7 @@ import { TFarmAprData } from "api/farms"
 type LoyaltyGraphProps = {
   farm: TFarmAprData
   loyaltyCurve: { initialRewardPercentage: string; scaleCoef: string }
-  enteredAt?: BigNumber
+  enteredAt?: string
   currentBlock: number
 }
 

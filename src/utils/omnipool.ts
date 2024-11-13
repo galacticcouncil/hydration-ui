@@ -81,7 +81,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
       let totalValueShifted = valueShifted
 
       const amount = position.amount
-      const amountShifted = amount.shiftedBy(-meta.decimals)
+      const amountShifted = BN(amount).shiftedBy(-meta.decimals)
       const amountDisplay = amountShifted.times(spotPrice)
 
       if (liquidityOutResult !== "-1") {

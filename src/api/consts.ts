@@ -14,6 +14,7 @@ import {
 import { useTokenBalance } from "./balances"
 import { useAssets } from "providers/assets"
 import { Permill } from "@polkadot/types/interfaces"
+import BN from "bignumber.js"
 
 export const useMinWithdrawalFee = () => {
   const { api } = useRpcProvider()
@@ -79,7 +80,7 @@ export const useInsufficientFee = (assetId: string, address: string) => {
 
   if (isSufficient) return undefined
 
-  if (!balance || balance.gt(0)) return undefined
+  if (!balance || BN(balance).gt(0)) return undefined
 
   return fee
     ? {

@@ -109,8 +109,8 @@ export const useAllXYKDeposits = (address?: string) => {
 
           if (shareTokenIssuance && pool) {
             const index = asset.id
-            const shares = depositNft.data.shares.toBigNumber()
-            const ratio = shares.div(shareTokenIssuance)
+            const shares = depositNft.data.shares
+            const ratio = BN(shares).div(shareTokenIssuance)
             const amountUSD = scaleHuman(shareTokenIssuance, asset.decimals)
               .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
               .times(ratio)
