@@ -12,12 +12,14 @@ import { useTranslation } from "react-i18next"
 import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 import { AllAssets, Assets } from "./WalletSections"
+import { usePriceFeeInfo } from "api/spotPrice"
 
 export const WalletAssets = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { isLoaded } = useRpcProvider()
-
+  const { data } = usePriceFeeInfo()
+  console.log(data, "data")
   const { category } = useWalletAssetsFilters()
 
   const isAssetsVisible = category === "assets"
