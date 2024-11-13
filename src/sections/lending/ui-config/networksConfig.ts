@@ -54,13 +54,12 @@ export type NetworkConfig = {
 const isTestnet = import.meta.env.VITE_ENV === "development"
 const hydration = (chainsMap.get("hydration") as EvmParachain).client.chain
 const hydrationExplorerLink = isTestnet
-  ? hydration.blockExplorers?.default?.url
-  : "https://explorer.nice.hydration.cloud"
+  ? "https://explorer.nice.hydration.cloud"
+  : hydration.blockExplorers?.default?.url
 
-const hydrationRpcUrl = import.meta.env.VITE_PROVIDER_URL.replace(
-  "wss://",
-  "https://",
-)
+const hydrationRpcUrl = isTestnet
+  ? import.meta.env.VITE_PROVIDER_URL.replace("wss://", "https://")
+  : hydration.rpcUrls.default.http[0]
 
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 
