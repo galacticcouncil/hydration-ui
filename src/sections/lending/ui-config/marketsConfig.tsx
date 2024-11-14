@@ -5,8 +5,6 @@ import {
 } from "sections/lending/ui-config/addresses"
 import { ChainId } from "sections/lending/ui-config/networksConfig"
 
-// Enable for premissioned market
-// import { PermissionView } from 'sections/lending/components/transactions/FlowCommons/PermissionView';
 export type MarketDataType = {
   v3?: boolean
   marketTitle: string
@@ -63,7 +61,6 @@ export enum CustomMarket {
   hydration_testnet_v3 = "hydration_testnet_v3",
 }
 
-// @ts-ignore
 export const marketsData: {
   [key in keyof typeof CustomMarket]: MarketDataType
 } = {

@@ -27,11 +27,6 @@ export type Pool = {
 
 window.global ||= window
 
-export const DEV_ENV = import.meta.env.VITE_ENV === "development"
-export const STAGING_ENV = import.meta.env.VITE_ENV === "rococo"
-export const PROD_ENV = import.meta.env.VITE_ENV === "production"
-export const ENABLE_TESTNET = false
-
 export const networkConfigs = Object.keys(_networkConfigs).reduce(
   (acc, value) => {
     acc[value] = _networkConfigs[value]
@@ -139,11 +134,9 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
     }
     if (config.publicJsonRPCUrl.length) {
       const rpcUrls = getRpcUrls().map(wssToHttps)
-      const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort((a, b) => {
-        const indexA = rpcUrls.indexOf(a)
-        const indexB = rpcUrls.indexOf(b)
-        return indexA - indexB
-      })
+      const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort(
+        (a, b) => rpcUrls.indexOf(a) - rpcUrls.indexOf(b),
+      )
       rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
     }
     if (!chainProviders.length) {
