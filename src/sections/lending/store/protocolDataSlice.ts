@@ -1,6 +1,7 @@
 import { providers } from "ethers"
 import {
   availableMarkets,
+  getInitialMarket,
   getNetworkConfig,
   getProvider,
   marketsData,
@@ -42,7 +43,7 @@ export const createProtocolDataSlice: StateCreator<
   [],
   ProtocolDataSlice
 > = (set, get) => {
-  const initialMarket = availableMarkets[0]
+  const initialMarket = getInitialMarket()
   const initialMarketData = marketsData[initialMarket]
   return {
     currentMarket: initialMarket,
