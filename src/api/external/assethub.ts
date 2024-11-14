@@ -24,7 +24,6 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
-import { useCrossChainWallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
 
@@ -53,6 +52,11 @@ export const ASSETHUB_ID_BLACKLIST = [
   "22222003",
   "22222004",
   "50000019",
+  "50000030",
+  "50000031",
+  "50000032",
+  "50000033",
+  "50000034",
 ]
 
 export const assethub = chainsMap.get("assethub") as Parachain
@@ -372,12 +376,11 @@ export const useCreateAssetHubToken = ({
   const { account } = useAccount()
   const { data: api } = useExternalApi("assethub")
   const { data: nativeBalance } = useAssetHubNativeBalance(account?.address)
-  const wallet = useCrossChainWallet()
 
   // DOT to USDT spot price
   const { data: spotPrice } = useSpotPrice("10", "5")
 
-  return useMutation(async (values: CreateTokenValues) => {
+  return useMutation(async (values: CreateTokenValues & { wallet: Wallet }) => {
     if (!account) throw new Error("Missing account")
     if (!api) throw new Error("Asset Hub is not connected")
 
@@ -403,16 +406,20 @@ export const useCreateAssetHubToken = ({
     })
 
     // Transfer half of the USDT to Hydration
-    const usdtTransferCall = await getAssetHubXcmOutTransfer(api, wallet, {
-      asset: usdt,
-      address: account.address,
-      amount: usdtAmount.div(2).toString(),
-      dstChain: "hydration",
-    })
+    const usdtTransferCall = await getAssetHubXcmOutTransfer(
+      api,
+      values.wallet,
+      {
+        asset: usdt,
+        address: account.address,
+        amount: usdtAmount.div(2).toString(),
+        dstChain: "hydration",
+      },
+    )
 
     // Transfer DOT from AH to Polkadot
     const dotTransferCall = values.dotAmount
-      ? await getAssetHubXcmOutTransfer(api, wallet, {
+      ? await getAssetHubXcmOutTransfer(api, values.wallet, {
           asset: assethubNativeToken,
           address: account.address,
           amount: values.dotAmount,
