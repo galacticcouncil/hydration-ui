@@ -1,3 +1,4 @@
+import { Text } from "@galacticcouncil/ui/components"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
@@ -10,7 +11,9 @@ export const WalletPage = () => {
 
   return (
     <div>
-      <h1>{t("wallet:title")}</h1>
+      <Text as="h1" fs={40} fw={600} font="Primary-Font">
+        {t("wallet:title")}
+      </Text>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   )

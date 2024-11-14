@@ -1,6 +1,7 @@
 import "@/i18n"
+import "@galacticcouncil/ui/fonts.css"
 
-import { ThemeProvider } from "@galacticcouncil/ui"
+import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 

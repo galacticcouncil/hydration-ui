@@ -79,7 +79,10 @@ const globalStyles = (theme: Theme) => css`
   ${normalize}
 
   body {
-    font-family: "Arial", sans-serif;
+    font-family: ${theme.fontFamilies1.Secondary};
+    font-size: 14px;
+    font-weight: 400;
+
     background-color: ${theme.Surfaces.themeBasePalette.Background};
     color: ${theme.Text.High};
   }

@@ -6,6 +6,8 @@ import { withThemeFromJSXProvider } from "@storybook/addon-themes"
 import { GlobalStyles } from "../src/styles"
 import { themes } from "../src/theme"
 
+import "../src/assets/fonts/fonts.css"
+
 const ThemeProvider = ({ children, theme }) => {
   return <EmotionThemeProvider theme={theme}>{children}</EmotionThemeProvider>
 }
