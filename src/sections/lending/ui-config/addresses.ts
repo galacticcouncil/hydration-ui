@@ -1,4 +1,4 @@
-const AaveV3HydrationTestnet = {
+export const AaveV3HydrationTestnet = {
   POOL_ADDRESSES_PROVIDER: "0x82db570265c37bE24caf5bc943428a6848c3e9a6",
   POOL: "0xf550bCd9B766843D72fC4C809a839633fD09b643",
   WETH_GATEWAY: "",
@@ -10,7 +10,7 @@ const AaveV3HydrationTestnet = {
   GHO_UI_DATA_PROVIDER: "",
 }
 
-const AaveV3HydrationMainnet = {
+export const AaveV3HydrationMainnet = {
   POOL_ADDRESSES_PROVIDER: "0xf3Ba4D1b50f78301BDD7EAEa9B67822A15FCA691",
   POOL: "0x1b02E051683b5cfaC5929C25E84adb26ECf87B38",
   WETH_GATEWAY: "",
@@ -21,8 +21,3 @@ const AaveV3HydrationMainnet = {
   GHO_TOKEN_ADDRESS: "",
   GHO_UI_DATA_PROVIDER: "",
 }
-
-export const AaveV3Hydration =
-  import.meta.env.VITE_ENV === "production"
-    ? AaveV3HydrationMainnet
-    : AaveV3HydrationTestnet

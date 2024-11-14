@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { omit, pick, shuffleArray } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -21,7 +21,10 @@ import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 import { pendulum } from "./external/pendulum"
-import { AaveV3Hydration } from "sections/lending/ui-config/addresses"
+import {
+  AaveV3HydrationMainnet,
+  AaveV3HydrationTestnet,
+} from "sections/lending/ui-config/addresses"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -80,15 +83,6 @@ export const PROVIDERS: ProviderProps[] = [
     env: ["development"],
     dataEnv: "testnet",
   },
-  {
-    name: "Rococo via GC",
-    url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
-    env: ["rococo", "development"],
-    dataEnv: "testnet",
-  },
 ]
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
@@ -105,6 +99,7 @@ export const isTestnetRpcUrl = (url: string) =>
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    rpcUrlList: string[]
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
     getDataEnv: () => TEnv
@@ -114,6 +109,7 @@ export const useProviderRpcUrlStore = create(
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      rpcUrlList: shuffleArray(PROVIDER_URLS),
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setAutoMode: (state) => set({ autoMode: state }),
@@ -129,7 +125,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.1,
+      version: 2.2,
       getStorage: () => ({
         async getItem(name: string) {
           return window.localStorage.getItem(name)
@@ -149,10 +145,10 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
-    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? PROVIDER_URLS : [rpcUrl]
+  return autoMode ? rpcUrlList : [rpcUrl]
 }
 
 export const useIsTestnet = () => {
@@ -218,6 +214,7 @@ export const useProviderAssets = () => {
 
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
+  const isTestnet = useIsTestnet()
   const { setRpcUrl } = useProviderRpcUrlStore()
 
   return useQuery(
@@ -260,6 +257,10 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
+      const aavePoolContract = isTestnet
+        ? AaveV3HydrationTestnet.POOL
+        : AaveV3HydrationMainnet.POOL
+
       const [
         isReferralsEnabled,
         isDispatchPermitEnabled,
@@ -267,7 +268,7 @@ export const useProviderData = () => {
       ] = await Promise.all([
         api.query.referrals,
         api.tx.multiTransactionPayment.dispatchPermit,
-        api.query.evmAccounts.approvedContract(AaveV3Hydration.POOL),
+        api.query.evmAccounts.approvedContract(aavePoolContract),
         tradeRouter.getPools(),
       ])
 
@@ -281,8 +282,7 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          moneyMarket:
-            !!AaveV3Hydration.POOL && !moneyMarketPoolContract.isEmpty,
+          moneyMarket: aavePoolContract && !moneyMarketPoolContract.isEmpty,
         } as TFeatureFlags,
       }
     },

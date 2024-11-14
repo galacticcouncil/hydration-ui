@@ -1,4 +1,5 @@
-import { ChainId, ChainIdToNetwork } from "@aave/contract-helpers"
+import { ChainIdToNetwork } from "@aave/contract-helpers"
+
 import { StaticJsonRpcProvider } from "@ethersproject/providers"
 
 import {
@@ -8,25 +9,20 @@ import {
 } from "sections/lending/ui-config/marketsConfig"
 import {
   BaseNetworkConfig,
+  ChainId,
   ExplorerLinkBuilderConfig,
   ExplorerLinkBuilderProps,
   NetworkConfig,
   networkConfigs as _networkConfigs,
 } from "sections/lending/ui-config/networksConfig"
 import { RotationProvider } from "./rotationProvider"
-import { ProviderWithSend } from "sections/lending/utils/utils"
+import { ProviderWithSend, wssToHttps } from "sections/lending/utils/utils"
+import { isTestnetRpcUrl, useProviderRpcUrlStore } from "api/provider"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useEffect } from "react"
 
 export type Pool = {
   address: string
-}
-
-export const PROCESS_MOCK = {
-  env: {
-    NEXT_PUBLIC_FORK_URL_RPC: "",
-    NEXT_PUBLIC_FORK_BASE_CHAIN_ID: "",
-    NEXT_PUBLIC_FORK_CHAIN_ID: "",
-    NEXT_PUBLIC_FORK_URL_WS_RPC: "",
-  },
 }
 
 window.global ||= window
@@ -36,70 +32,17 @@ export const STAGING_ENV = import.meta.env.VITE_ENV === "rococo"
 export const PROD_ENV = import.meta.env.VITE_ENV === "production"
 export const ENABLE_TESTNET = false
 
-// determines if forks should be shown
-export const FORK_ENABLED =
-  !!PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_RPC ||
-  global?.window?.localStorage.getItem("forkEnabled") === "true"
-// specifies which network was forked
-const FORK_BASE_CHAIN_ID =
-  Number(PROCESS_MOCK.env.NEXT_PUBLIC_FORK_BASE_CHAIN_ID) ||
-  Number(global?.window?.localStorage.getItem("forkBaseChainId") || 1)
-// specifies on which chainId the fork is running
-const FORK_CHAIN_ID =
-  Number(PROCESS_MOCK.env.NEXT_PUBLIC_FORK_CHAIN_ID) ||
-  Number(global?.window?.localStorage.getItem("forkNetworkId") || 3030)
-const FORK_RPC_URL =
-  PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_RPC ||
-  global?.window?.localStorage.getItem("forkRPCUrl") ||
-  "http://127.0.0.1:8545"
-const FORK_WS_RPC_URL =
-  PROCESS_MOCK.env.NEXT_PUBLIC_FORK_URL_WS_RPC ||
-  global?.window?.localStorage.getItem("forkWsRPCUrl") ||
-  "ws://127.0.0.1:8545"
-
-/**
- * Generates network configs based on networkConfigs & fork settings.
- * Forks will have a rpcOnly clone of their underlying base network config.
- */
 export const networkConfigs = Object.keys(_networkConfigs).reduce(
   (acc, value) => {
     acc[value] = _networkConfigs[value]
-    if (FORK_ENABLED && Number(value) === FORK_BASE_CHAIN_ID) {
-      acc[FORK_CHAIN_ID] = {
-        ..._networkConfigs[value],
-        name: `${_networkConfigs[value].name} Fork`,
-        isFork: true,
-        privateJsonRPCUrl: FORK_RPC_URL,
-        privateJsonRPCWSUrl: FORK_WS_RPC_URL,
-        publicJsonRPCUrl: [],
-        publicJsonRPCWSUrl: "",
-        underlyingChainId: FORK_BASE_CHAIN_ID,
-      }
-    }
     return acc
   },
   {} as { [key: string]: BaseNetworkConfig },
 )
 
-/**
- * Generates network configs based on marketsData & fork settings.
- * Fork markets are generated for all markets on the underlying base chain.
- */
-
 export const marketsData = Object.keys(_marketsData).reduce(
   (acc, value) => {
     acc[value] = _marketsData[value as keyof typeof CustomMarket]
-    if (
-      FORK_ENABLED &&
-      _marketsData[value as keyof typeof CustomMarket].chainId ===
-        FORK_BASE_CHAIN_ID
-    ) {
-      acc[`fork_${value}`] = {
-        ..._marketsData[value as keyof typeof CustomMarket],
-        chainId: FORK_CHAIN_ID,
-        isFork: true,
-      }
-    }
     return acc
   },
   {} as { [key: string]: MarketDataType },
@@ -109,39 +52,33 @@ export function getDefaultChainId() {
   return marketsData[availableMarkets[0]].chainId
 }
 
-export function getSupportedChainIds(): number[] {
-  return Array.from(
-    Object.keys(marketsData)
-      .filter((value) => {
-        const isTestnet =
-          networkConfigs[
-            marketsData[value as keyof typeof CustomMarket].chainId
-          ].isTestnet
-
-        // If this is a staging environment, or the testnet toggle is on, only show testnets
-        if (STAGING_ENV || ENABLE_TESTNET) {
-          return isTestnet
-        }
-
-        return !isTestnet
-      })
-      .reduce(
-        (acc, value) =>
-          acc.add(marketsData[value as keyof typeof CustomMarket].chainId),
-        new Set<number>(),
-      ),
-  )
+export const getRpcUrls = () => {
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore.getState()
+  return autoMode ? rpcUrlList : [rpcUrl]
 }
 
-/**
- * selectable markets (markets in a available network + forks when enabled)
- */
+export function getSupportedChainIds(): number[] {
+  return Array.from(
+    Object.keys(marketsData).reduce(
+      (acc, value) =>
+        acc.add(marketsData[value as keyof typeof CustomMarket].chainId),
+      new Set<number>(),
+    ),
+  )
+}
 
 export const availableMarkets = Object.keys(marketsData).filter((key) =>
   getSupportedChainIds().includes(
     marketsData[key as keyof typeof CustomMarket].chainId,
   ),
 ) as CustomMarket[]
+
+export const getInitialMarket = () => {
+  const isTestnet = isTestnetRpcUrl(getRpcUrls()[0])
+  return isTestnet
+    ? CustomMarket.hydration_testnet_v3
+    : CustomMarket.hydration_v3
+}
 
 const linkBuilder =
   ({
@@ -201,7 +138,13 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
       chainProviders.push(config.privateJsonRPCUrl)
     }
     if (config.publicJsonRPCUrl.length) {
-      config.publicJsonRPCUrl.map((rpc) => chainProviders.push(rpc))
+      const rpcUrls = getRpcUrls().map(wssToHttps)
+      const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort((a, b) => {
+        const indexA = rpcUrls.indexOf(a)
+        const indexB = rpcUrls.indexOf(b)
+        return indexA - indexB
+      })
+      rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
     }
     if (!chainProviders.length) {
       throw new Error(`${chainId} has no jsonRPCUrl configured`)
@@ -212,71 +155,29 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
       providers[chainId] = new RotationProvider(chainProviders, chainId)
     }
   }
+
   return providers[chainId]
 }
 
-export const getENSProvider = () => {
-  const chainId = 1
-  const config = getNetworkConfig(chainId)
-  return new StaticJsonRpcProvider(config.publicJsonRPCUrl[0], chainId)
+export const useMarketChangeSubscription = () => {
+  const { setCurrentMarket } = useProtocolDataContext()
+  useEffect(() => {
+    return useProviderRpcUrlStore.subscribe((state, prevState) => {
+      const autoModeChanged = prevState.autoMode !== state.autoMode
+      const rpcUrlChanged = prevState.rpcUrl !== state.rpcUrl
+
+      if (autoModeChanged || rpcUrlChanged) {
+        const newUrl = state.autoMode ? state.rpcUrlList[0] : state.rpcUrl
+        const isTestnet = isTestnetRpcUrl(newUrl)
+        setCurrentMarket(
+          isTestnet
+            ? CustomMarket.hydration_testnet_v3
+            : CustomMarket.hydration_v3,
+        )
+      }
+    })
+  }, [setCurrentMarket])
 }
 
-const ammDisableProposal =
-  "https://governance-v2.aave.com/governance/proposal/44"
-const ustDisableProposal =
-  "https://governance-v2.aave.com/governance/proposal/75"
-const kncDisableProposal =
-  "https://governance-v2.aave.com/governance/proposal/69"
-const v2MainnetDisableProposal =
-  "https://governance-v2.aave.com/governance/proposal/111"
-const v2MainnetDisableProposal2 =
-  "https://governance-v2.aave.com/governance/proposal/125"
-
-export const frozenProposalMap: Record<string, string> = {
-  ["UST" + CustomMarket.proto_mainnet]: ustDisableProposal,
-  ["KNC" + CustomMarket.proto_mainnet]: kncDisableProposal,
-  ["UNIDAIUSDC" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIWBTCUSDC" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIDAIWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIUSDCWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIAAVEWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIBATWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNICRVWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNILINKWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIMKRWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIRENWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNISNXWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIUNIWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIWBTCWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["UNIYFIWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["BPTWBTCWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["BPTBALWETH" + CustomMarket.proto_mainnet]: ammDisableProposal,
-  ["BAL" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal,
-  ["CVX" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal,
-  ["REN" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal,
-  ["YFI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["CRV" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["ZRX" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["MANA" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["1INCH" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["BAT" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["SUSD" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["ENJ" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["GUSD" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["AMPL" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["RAI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["USDP" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["LUSD" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["XSUSHI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["DPI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["RENFIL" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["MKR" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["ENS" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["LINK" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["UNI" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-  ["SNX" + CustomMarket.proto_mainnet]: v2MainnetDisableProposal2,
-}
-
-// reexport so we can forbit config import
 export { CustomMarket }
 export type { MarketDataType, NetworkConfig }

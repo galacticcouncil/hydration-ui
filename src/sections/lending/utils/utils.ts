@@ -138,3 +138,5 @@ export const getLtvColor = (
 
   return ltvColor
 }
+
+export const wssToHttps = (url: string) => url.replace("wss://", "https://")

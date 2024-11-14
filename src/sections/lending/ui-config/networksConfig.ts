@@ -1,6 +1,13 @@
-import { ChainId } from "@aave/contract-helpers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { PROVIDERS } from "api/provider"
+import { wssToHttps } from "sections/lending/utils/utils"
+import { groupBy } from "utils/rx"
+
+export enum ChainId {
+  hydration = 222222,
+  hydration_testnet = 333333,
+}
 
 export type ExplorerLinkBuilderProps = {
   tx?: string
@@ -51,73 +58,36 @@ export type NetworkConfig = {
   }
 }
 
-const isTestnet = import.meta.env.VITE_ENV === "development"
 const hydration = (chainsMap.get("hydration") as EvmParachain).client.chain
-const hydrationExplorerLink = isTestnet
-  ? "https://explorer.nice.hydration.cloud"
-  : hydration.blockExplorers?.default?.url
-
-const hydrationRpcUrl = isTestnet
-  ? import.meta.env.VITE_PROVIDER_URL.replace("wss://", "https://")
-  : hydration.rpcUrls.default.http[0]
 
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 
+const providers = groupBy(PROVIDERS, ({ dataEnv }) => dataEnv)
+
+const testnetProviders = providers.testnet.map(({ url }) => wssToHttps(url))
+const mainnetProviders = providers.mainnet.map(({ url }) => wssToHttps(url))
+
 export const networkConfigs: Record<string, BaseNetworkConfig> = {
-  [hydration.id]: {
+  [ChainId.hydration]: {
     name: "Hydration",
-    privateJsonRPCUrl: hydrationRpcUrl,
-    publicJsonRPCUrl: [hydrationRpcUrl],
+    publicJsonRPCUrl: mainnetProviders,
     baseUniswapAdapter: "0x0",
     baseAssetSymbol: "",
     wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: hydrationExplorerLink ?? "",
+    explorerLink: hydration.blockExplorers?.default?.url ?? "",
     isTestnet: false,
     networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },
-  [ChainId.sepolia]: {
-    name: "Ethereum Sepolia",
-    privateJsonRPCUrl:
-      "https://eth-sepolia.g.alchemy.com/v2/VAfNJrTN-TopQjFDwcdLeeDOLDiFQcBP",
-    publicJsonRPCUrl: [
-      "https://eth-sepolia.public.blastapi.io",
-      "https://rpc.sepolia.org",
-      "https://rpc2.sepolia.org",
-      "https://rpc.sepolia.online",
-      "https://www.sepoliarpc.space",
-    ],
-    // publicJsonRPCWSUrl: 'wss://eth-goerli.public.blastapi.io',
-    // protocolDataUrl: '',
+  [ChainId.hydration_testnet]: {
+    name: "Hydration Testnet",
+    publicJsonRPCUrl: testnetProviders,
     baseUniswapAdapter: "0x0",
-    baseAssetSymbol: "ETH",
-    wrappedBaseAssetSymbol: "WETH",
+    baseAssetSymbol: "",
+    wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: "https://sepolia.etherscan.io",
-    // usdMarket: true,
+    explorerLink: "https://explorer.nice.hydration.cloud",
     isTestnet: true,
-    networkLogoPath: "https://app.aave.com/icons/networks/ethereum.svg",
-  },
-  [ChainId.mainnet]: {
-    name: "Ethereum",
-    privateJsonRPCUrl:
-      "https://eth-mainnet.rpc.grove.city/v1/62b3314e123e6f00397f19ca",
-    publicJsonRPCUrl: [
-      "https://rpc.ankr.com/eth",
-      "https://rpc.flashbots.net",
-      "https://eth-mainnet.public.blastapi.io",
-      "https://cloudflare-eth.com/v1/mainnet",
-    ],
-    publicJsonRPCWSUrl: "wss://eth-mainnet.alchemyapi.io/v2/demo",
-    // cachingServerUrl: 'https://cache-api-1.aave.com/graphql',
-    // cachingWSServerUrl: 'wss://cache-api-1.aave.com/graphql',
-    // protocolDataUrl: 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2',
-    baseUniswapAdapter: "0xc3efa200a60883a96ffe3d5b492b121d6e9a1f3f",
-    baseAssetSymbol: "ETH",
-    wrappedBaseAssetSymbol: "WETH",
-    baseAssetDecimals: 18,
-    explorerLink: "https://etherscan.io",
-    ratesHistoryApiUrl: "https://aave-api-v2.aave.com/data/rates-history",
-    networkLogoPath: "https://app.aave.com/icons/networks/ethereum.svg",
+    networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },
 } as const

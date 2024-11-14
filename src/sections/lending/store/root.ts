@@ -12,7 +12,6 @@ import { createTransactionsSlice, TransactionsSlice } from "./transactionsSlice"
 import { createSingletonSubscriber } from "./utils/createSingletonSubscriber"
 import { getQueryParameter } from "./utils/queryParams"
 import { createV3MigrationSlice, V3MigrationSlice } from "./v3MigrationSlice"
-import { createWalletDomainsSlice, WalletDomainsSlice } from "./walletDomains"
 import { createWalletSlice, WalletSlice } from "./walletSlice"
 
 enableMapSet()
@@ -23,7 +22,6 @@ export type RootStore = ProtocolDataSlice &
   IncentiveSlice &
   V3MigrationSlice &
   GhoSlice &
-  WalletDomainsSlice &
   TransactionsSlice &
   LayoutSlice
 
@@ -37,7 +35,6 @@ export const useRootStore = create<RootStore>()(
         ...createIncentiveSlice(...args),
         ...createV3MigrationSlice(...args),
         ...createGhoSlice(...args),
-        ...createWalletDomainsSlice(...args),
         ...createTransactionsSlice(...args),
         ...createLayoutSlice(...args),
       }
@@ -86,15 +83,3 @@ export const useCurrentMarketData = () => {
     .get(currentMarketData.chainId)
     ?.get(currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER)
 }
-
-useRootStore.subscribe(
-  (state) => state.account,
-  (account) => {
-    if (account) {
-      useRootStore.getState().fetchConnectedWalletDomains()
-    } else {
-      useRootStore.getState().clearWalletDomains()
-    }
-  },
-  { fireImmediately: true },
-)

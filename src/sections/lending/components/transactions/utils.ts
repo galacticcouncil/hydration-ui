@@ -36,17 +36,8 @@ export const checkRequiresApproval = ({
   signedAmount: string
   amount: string
 }) => {
-  // Returns false if the user has a max approval, an approval > amountToSupply, or a valid signature for amountToSupply
-  if (
-    approvedAmount === "-1" ||
-    signedAmount === "-1" ||
-    (approvedAmount !== "0" && Number(approvedAmount) >= Number(amount)) ||
-    Number(signedAmount) >= Number(amount)
-  ) {
-    return false
-  } else {
-    return true
-  }
+  // Hydration doesn't require approvals so we override it here
+  return false
 }
 
 export const zeroLTVBlockingWithdraw = (

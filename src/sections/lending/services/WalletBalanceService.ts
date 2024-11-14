@@ -1,6 +1,7 @@
-import { ChainId, WalletBalanceProvider } from "@aave/contract-helpers"
+import { WalletBalanceProvider } from "@aave/contract-helpers"
 import { Provider } from "@ethersproject/providers"
 import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
+import { ChainId } from "sections/lending/ui-config/networksConfig"
 
 export interface GovernanceTokensBalance {
   aave: string
