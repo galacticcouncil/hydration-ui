@@ -59,14 +59,8 @@ export type MarketDataType = {
   }
 }
 export enum CustomMarket {
-  // v3 test networks, all v3.0.1
   hydration_v3 = "hydration_v3",
   hydration_testnet_v3 = "hydration_testnet_v3",
-  proto_sepolia_v3 = "proto_sepolia_v3",
-  // v3 mainnets
-  proto_mainnet_v3 = "proto_mainnet_v3",
-  // v2
-  proto_mainnet = "proto_mainnet",
 }
 
 // @ts-ignore
