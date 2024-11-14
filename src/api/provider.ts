@@ -25,6 +25,7 @@ import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
+import { useSearch } from "@tanstack/react-location"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -216,6 +217,13 @@ export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
   const isTestnet = useIsTestnet()
   const { setRpcUrl } = useProviderRpcUrlStore()
+  const { mm } = useSearch<{
+    Search: {
+      mm?: number
+    }
+  }>()
+
+  const moneyMarketOverride = mm === 1
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
@@ -282,7 +290,9 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          moneyMarket: aavePoolContract && !moneyMarketPoolContract.isEmpty,
+          moneyMarket:
+            moneyMarketOverride ||
+            (aavePoolContract && !moneyMarketPoolContract.isEmpty),
         } as TFeatureFlags,
       }
     },
