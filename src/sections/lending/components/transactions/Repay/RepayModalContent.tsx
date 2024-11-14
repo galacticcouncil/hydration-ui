@@ -279,9 +279,7 @@ export const RepayModalContent = ({
         maxValue={maxAmountToRepay.toString(10)}
         balanceText={<span>Wallet balance</span>}
         sx={{ mb: 20 }}
-        error={
-          isMaxExceeded ? "Insufficient balance on your account." : undefined
-        }
+        error={isMaxExceeded ? "Remaining debt exceeded" : undefined}
       />
 
       {maxRepayWithDustRemaining && (

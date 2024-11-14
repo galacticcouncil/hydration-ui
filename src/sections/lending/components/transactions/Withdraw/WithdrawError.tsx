@@ -52,27 +52,15 @@ export const useWithdrawError = ({
   }
 
   const errors = {
-    [ErrorType.CAN_NOT_WITHDRAW_THIS_AMOUNT]: (
-      <span>
-        You can not withdraw this amount because it will cause collateral call
-      </span>
-    ),
-    [ErrorType.POOL_DOES_NOT_HAVE_ENOUGH_LIQUIDITY]: (
-      <span>
-        These funds have been borrowed and are not available for withdrawal at
-        this time.
-      </span>
-    ),
-    [ErrorType.ZERO_LTV_WITHDRAW_BLOCKED]: (
-      <span>
-        Assets with zero LTV ({assetsBlockingWithdraw}) must be withdrawn or
-        disabled as collateral to perform this action
-      </span>
-    ),
+    [ErrorType.CAN_NOT_WITHDRAW_THIS_AMOUNT]:
+      "You can not withdraw this amount because it will cause collateral call",
+    [ErrorType.POOL_DOES_NOT_HAVE_ENOUGH_LIQUIDITY]:
+      "These funds have been borrowed and are not available for withdrawal at this time.",
+    [ErrorType.ZERO_LTV_WITHDRAW_BLOCKED]: `Assets with zero LTV (${assetsBlockingWithdraw}) must be withdrawn or disabled as collateral to perform this action`,
   }
 
   return {
     blockingError,
-    errorComponent: blockingError ? errors[blockingError] : null,
+    errorText: blockingError ? errors[blockingError] : undefined,
   }
 }

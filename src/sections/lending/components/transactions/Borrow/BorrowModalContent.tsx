@@ -31,9 +31,9 @@ import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { BorrowActions } from "./BorrowActions"
 import { BorrowAmountWarning } from "./BorrowAmountWarning"
 import { ParameterChangewarning } from "./ParameterChangewarning"
-import BigNumber from "bignumber.js"
 
 export enum ErrorType {
+  MAX_EXCEEDED,
   STABLE_RATE_NOT_ENABLED,
   NOT_ENOUGH_LIQUIDITY,
   BORROWING_NOT_AVAILABLE,
@@ -128,7 +128,6 @@ export const BorrowModalContent = ({
   }
 
   const isMaxSelected = amount === maxAmountToBorrow
-  const isMaxExceeded = !!amount && BigNumber(amount).gt(maxAmountToBorrow)
 
   // health factor calculations
   const amountToBorrowInUsd = valueToBigNumber(amount)
@@ -151,7 +150,9 @@ export const BorrowModalContent = ({
 
   // error types handling
   let blockingError: ErrorType | undefined = undefined
-  if (
+  if (!!amount && valueToBigNumber(amount).gt(maxAmountToBorrow)) {
+    blockingError = ErrorType.MAX_EXCEEDED
+  } else if (
     interestRateMode === InterestRate.Stable &&
     !poolReserve.stableBorrowRateEnabled
   ) {
@@ -170,36 +171,20 @@ export const BorrowModalContent = ({
     blockingError = ErrorType.BORROWING_NOT_AVAILABLE
   }
 
-  // error render handling
   const handleBlocked = () => {
     switch (blockingError) {
+      case ErrorType.MAX_EXCEEDED:
+        return "Maximum available amount exceeded"
       case ErrorType.BORROWING_NOT_AVAILABLE:
-        return (
-          <span>
-            Borrowing is currently unavailable for {poolReserve.symbol}.
-          </span>
-        )
+        return `Borrowing is currently unavailable for ${poolReserve.symbol}.`
       case ErrorType.NOT_ENOUGH_BORROWED:
-        return (
-          <span>
-            You can borrow this asset with a stable rate only if you borrow more
-            than the amount you are supplying as collateral.
-          </span>
-        )
+        return "You can borrow this asset with a stable rate only if you borrow more than the amount you are supplying as collateral."
       case ErrorType.NOT_ENOUGH_LIQUIDITY:
-        return (
-          <>
-            <span>
-              There are not enough funds in the
-              {poolReserve.symbol}
-              reserve to borrow
-            </span>
-          </>
-        )
+        return "There are not enough funds in the {poolReserve.symbol} reserve to borrow"
       case ErrorType.STABLE_RATE_NOT_ENABLED:
-        return <span>The Stable Rate is not enabled for this currency</span>
+        return "The Stable Rate is not enabled for this currency"
       default:
-        return null
+        return
     }
   }
 
@@ -264,16 +249,8 @@ export const BorrowModalContent = ({
         maxValue={maxAmountToBorrow}
         balanceText={<span>Available</span>}
         sx={{ mb: 20 }}
-        error={
-          isMaxExceeded ? "Insufficient balance on your account." : undefined
-        }
+        error={handleBlocked()}
       />
-
-      {blockingError !== undefined && (
-        <Text fs={12} color="red400">
-          {handleBlocked()} asddas d
-        </Text>
-      )}
 
       {poolReserve.isWrappedBaseAsset && (
         <DetailsUnwrapSwitch
@@ -322,8 +299,7 @@ export const BorrowModalContent = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayRiskCheckbox && !riskCheckboxAccepted) ||
-          isMaxExceeded
+          (displayRiskCheckbox && !riskCheckboxAccepted)
         }
         sx={displayRiskCheckbox ? { mt: 0 } : {}}
       />
