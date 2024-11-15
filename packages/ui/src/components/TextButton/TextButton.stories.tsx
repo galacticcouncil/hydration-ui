@@ -23,3 +23,19 @@ export const Underline: Story = {
     variant: "underline",
   },
 }
+
+export const UnderlineInternal: Story = {
+  render: Template,
+  args: {
+    variant: "underline",
+    direction: "internal",
+  },
+}
+
+export const UnderlineExternal: Story = {
+  render: Template,
+  args: {
+    variant: "underline",
+    direction: "external",
+  },
+}

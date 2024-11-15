@@ -2,6 +2,7 @@ import { join, dirname } from "path"
 import type { StorybookConfig } from "@storybook/react-vite"
 import react from "@vitejs/plugin-react"
 import tsconfigPaths from "vite-tsconfig-paths"
+import svgr from "vite-plugin-svgr"
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -32,6 +33,7 @@ const config: StorybookConfig = {
           plugins: ["@emotion/babel-plugin"],
         },
       }),
+      svgr(),
       tsconfigPaths(),
       ...(config.plugins || []),
     ]
