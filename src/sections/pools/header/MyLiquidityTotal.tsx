@@ -20,9 +20,11 @@ export const MyLiquidityTotal = () => {
     if (xykPools.data) {
       return xykPools.data.reduce((acc, xykPool) => {
         if (xykPool.isPositions) {
-          const myTotalDisplay = xykPool.tvlDisplay
-            ?.div(100)
-            .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
+          const myTotalDisplay = xykPool.shareTokenIssuance?.myPoolShare
+            ? xykPool.tvlDisplay
+                ?.div(100)
+                .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
+            : BN_0
 
           return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
         }

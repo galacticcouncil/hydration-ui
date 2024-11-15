@@ -23,9 +23,10 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
+import BigNumber from "bignumber.js"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -70,7 +71,7 @@ const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
         t={t}
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.data.shares.toBigNumber(),
+          amount: BigNumber(props.depositNft.data.shares),
           fixedPointScale: meta.decimals,
         }}
       >
@@ -107,17 +108,14 @@ export const FarmingPosition = ({
   index: number
   depositNft: TDeposit
   depositData: TDepositData
-  availableYieldFarms: Farm[]
+  availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
 
   // use latest entry date
   const enteredDate = useEnteredDate(
     depositNft.data.yieldFarmEntries.reduce(
-      (acc, curr) =>
-        acc.lt(curr.enteredAt.toBigNumber())
-          ? curr.enteredAt.toBigNumber()
-          : acc,
+      (acc, curr) => (acc.lt(curr.enteredAt) ? BigNumber(curr.enteredAt) : acc),
       BN_0,
     ),
   )
@@ -139,16 +137,8 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          py: [0, 10],
-        }}
-      >
-        <JoinedFarms depositNft={depositNft} />
-      </div>
+      <JoinedFarms depositNft={depositNft} />
+
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
       <div

@@ -34,15 +34,20 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountAssets: (address: string | undefined) => ["accountAssets", address],
+  accountAssets: (address: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "accountAssets",
+    address,
+  ],
+  accountClaimableFarmValues: (address: string | undefined) => [
+    "accountClaimableFarmValues",
+    address,
+  ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
     ids.join("."),
   ],
-  accountAssetBalances: (
-    pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
-  ) => [QUERY_KEY_PREFIX, "accountAssetBalances", pairs],
   pools: [QUERY_KEY_PREFIX, "pools"],
   poolShareToken: (poolId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
@@ -71,29 +76,10 @@ export const QUERY_KEYS = {
     "deposits",
     poolId?.toString(),
   ],
-  activeYieldFarms: (poolId: Maybe<u32 | string>) => [
-    "activeYieldFarms",
-    poolId?.toString(),
-  ],
-  activeYieldFarmsXYK: (poolId: Maybe<u32 | string>) => [
-    "activeYieldFarmsXYK",
-    poolId?.toString(),
-  ],
-  globalFarm: (id: string, poolId: string) => [
-    QUERY_KEY_PREFIX,
-    "globalFarm",
-    id,
-    poolId,
-  ],
-  globalFarmXYK: (id: string, poolId: string) => [
-    QUERY_KEY_PREFIX,
-    "globalFarmXYK",
-    id,
-    poolId,
-  ],
-  yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
-  yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
-  activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
+  omnipoolActiveFarms: ["omnipoolActiveFarms"],
+  omnipoolFarms: [QUERY_KEY_PREFIX, "omnipoolFarms"],
+  xykActiveFarms: ["xykActiveFarms"],
+  xykFarms: [QUERY_KEY_PREFIX, "xykFarms"],
   totalIssuances: ["totalIssuances"],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -148,9 +134,9 @@ export const QUERY_KEYS = {
     account?.toString(),
   ],
   mathLoyaltyRates: (
-    plannedYieldingPeriods: u32,
-    initialRewardPercentage: Maybe<u128>,
-    scaleCoef: Maybe<u32>,
+    plannedYieldingPeriods: string,
+    initialRewardPercentage: Maybe<string>,
+    scaleCoef: Maybe<string>,
     periodsInFarm: Maybe<string>,
   ) => [
     "mathLoyaltyRates",
@@ -191,6 +177,7 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
@@ -324,10 +311,6 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
-  inactiveYieldFarms: (poolId: AccountId32 | string) => [
-    "inactiveYieldFarms",
-    poolId.toString(),
-  ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
   pendulumAssetRegistry: ["pendulumAssetRegistry"],

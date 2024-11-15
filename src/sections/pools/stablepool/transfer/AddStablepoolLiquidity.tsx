@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
@@ -20,14 +20,14 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
@@ -38,7 +38,7 @@ import { useAccountAssets } from "api/deposits"
 
 type Props = {
   poolId: string
-  fee: BigNumber
+  fee: BN
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
@@ -47,12 +47,12 @@ type Props = {
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
-  farms: Farm[]
+  farms: TFarmAprData[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
 
-const createFormSchema = (balance: BigNumber, decimals: number) =>
+const createFormSchema = (balance: string, decimals: number) =>
   z.object({
     value: required.pipe(maxBalance(balance, decimals)),
   })
@@ -93,12 +93,13 @@ export const AddStablepoolLiquidity = ({
 
   const estimatedFees = useEstimatedFees(estimationTxs)
 
-  const balance = walletBalance?.balance ?? BN_0
+  const balance = walletBalance?.balance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === asset.id
-      ? balance
+      ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(asset.existentialDeposit)
+          .toString()
       : balance
 
   const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
@@ -235,8 +236,8 @@ export const AddStablepoolLiquidity = ({
                 onChange(v)
                 handleShares(v)
               }}
-              balance={balance}
-              balanceMax={balanceMax}
+              balance={BN(balance)}
+              balanceMax={BN(balanceMax)}
               asset={asset.id}
               error={error?.message}
               onAssetOpen={onAssetOpen}
@@ -277,14 +278,9 @@ export const AddStablepoolLiquidity = ({
             />
             {isJoinFarms && (
               <div sx={{ flex: "column", gap: 8, mt: 8 }}>
-                {farms.map((farm) => {
-                  return (
-                    <FarmDetailsRow
-                      key={farm.globalFarm.id.toString()}
-                      farm={farm}
-                    />
-                  )
-                })}
+                {farms.map((farm) => (
+                  <FarmDetailsRow key={farm.globalFarmId} farm={farm} />
+                ))}
               </div>
             )}
             {customErrors?.farm && (

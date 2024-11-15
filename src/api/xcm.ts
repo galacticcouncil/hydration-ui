@@ -7,12 +7,10 @@ import {
 } from "@galacticcouncil/xcm-cfg"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
-import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,8 +25,12 @@ type TransferProps = {
   dstChain: string
 }
 
-export const createXcmAssetKey = (id: string, symbol: string) => {
-  return `${symbol.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
+export const createXcmAssetKey = (
+  id: string,
+  symbol: string,
+  parachainId: number,
+) => {
+  return [symbol.toLowerCase(), parachainId, id].join("_")
 }
 
 export const syncAssethubXcmConfig = (
@@ -57,21 +59,6 @@ export const useCrossChainWallet = () => {
   }, [poolService])
 }
 
-export const useCrossChainTransfer = ({
-  asset,
-  srcAddr,
-  srcChain,
-  dstAddr,
-  dstChain,
-}: TransferProps) => {
-  const wallet = useCrossChainWallet()
-  return useQuery(
-    QUERY_KEYS.xcmTransfer(asset, srcAddr, srcChain, dstAddr, dstChain),
-    async () =>
-      await wallet.transfer(asset, srcAddr, srcChain, dstAddr, dstChain),
-  )
-}
-
 export const useCrossChainTransaction = ({
   steps,
 }: {
@@ -79,10 +66,11 @@ export const useCrossChainTransaction = ({
 } = {}) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
-  const wallet = useCrossChainWallet()
 
   return useMutation(
-    async (values: TransferProps & { amount: number | string }) => {
+    async (
+      values: TransferProps & { amount: number | string; wallet: Wallet },
+    ) => {
       const srcChain = chainsMap.get(values.srcChain)
       const dstChain = chainsMap.get(values.dstChain)
 
@@ -94,7 +82,7 @@ export const useCrossChainTransaction = ({
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(srcChain.ws)
 
-      const xTransfer = await wallet.transfer(
+      const xTransfer = await values.wallet.transfer(
         values.asset,
         values.srcAddr,
         values.srcChain,

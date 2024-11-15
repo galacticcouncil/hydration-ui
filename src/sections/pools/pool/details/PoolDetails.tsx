@@ -32,7 +32,6 @@ import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { useFarms } from "api/farms"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -46,18 +45,17 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const farms = useFarms([pool.id])
-  const isFarms = farms.data.length
+  const isFarms = pool.farms?.length
 
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
         defaultPage={Page.OPTIONS}
         onClose={() => setOpen(false)}
-        farms={farms.data}
+        farms={pool.farms ?? []}
       />
     ) : (
-      <AddLiquidity isOpen onClose={() => setOpen(false)} farms={farms.data} />
+      <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
 
@@ -92,7 +90,7 @@ export const PoolDetails = () => {
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              <MultipleAssetLogo iconId={meta.iconId} size={26} />
+              <MultipleAssetLogo iconId={meta?.iconId} size={26} />
               <div sx={{ flex: "column", gap: 0, width: "max-content" }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
                   {meta.symbol}

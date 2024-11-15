@@ -1,11 +1,11 @@
 import { z } from "zod"
 import { maxBalance, required } from "utils/validators"
 import { BN_0 } from "utils/constants"
-import { Farm, useOraclePrice } from "api/farms"
+import { TFarmAprData, useOraclePrice } from "api/farms"
 import { useMemo } from "react"
 import { scale, scaleHuman } from "utils/balance"
 import { useTranslation } from "react-i18next"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
@@ -17,7 +17,7 @@ export const useZodSchema = ({
   enabled,
 }: {
   id: string
-  farms: Farm[]
+  farms: TFarmAprData[]
   position?: TLPData
   enabled: boolean
 }) => {
@@ -33,14 +33,14 @@ export const useZodSchema = ({
     : undefined
 
   const minDeposit = useMemo(() => {
-    return farms.reduce<{ value: BigNumber; assetId?: string }>(
+    return farms.reduce<{ value: BN; assetId?: string }>(
       (acc, farm) => {
-        const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+        const minDeposit = BN(farm.minDeposit)
 
         return minDeposit.gt(acc.value)
           ? {
               value: minDeposit,
-              assetId: farm.globalFarm.incentivizedAsset.toString(),
+              assetId: farm.incentivizedAsset.toString(),
             }
           : acc
       },
@@ -65,7 +65,7 @@ export const useZodSchema = ({
     .refine(
       () => {
         if (position?.amount) {
-          const valueInIncentivizedAsset = position.amount
+          const valueInIncentivizedAsset = BN(position.amount)
             .times(oraclePrice.data?.price?.n ?? 1)
             .div(oraclePrice.data?.price?.d ?? 1)
 
@@ -75,7 +75,7 @@ export const useZodSchema = ({
         return true
       },
       () => {
-        const maxValue = BigNumber.max(
+        const maxValue = BN.max(
           minDeposit.value
             .times(oraclePrice.data?.price?.d ?? 1)
             .div(oraclePrice.data?.price?.n ?? 1),
@@ -106,6 +106,6 @@ export const useZodSchema = ({
   return z.object({
     amount: position
       ? rule
-      : rule.pipe(maxBalance(balance?.balance ?? BN_0, meta.decimals)),
+      : rule.pipe(maxBalance(balance?.balance ?? "0", meta.decimals)),
   })
 }

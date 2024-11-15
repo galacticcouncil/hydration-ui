@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod"
 import { maxBalance, positive, required } from "utils/validators"
 import { scale, scaleHuman } from "utils/balance"
-import { Farm, useOraclePrice } from "api/farms"
+import { TFarmAprData, useOraclePrice } from "api/farms"
 import { BN_0, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
@@ -30,15 +30,15 @@ import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset, useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 
-export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
+export const getAddToOmnipoolFee = (api: ApiPromise, farms: TFarmAprData[]) => {
   const txs = [api.tx.omnipool.addLiquidity("0", "1")]
   const [firstFarm, ...restFarm] = farms
 
   if (firstFarm)
     txs.push(
       api.tx.omnipoolLiquidityMining.depositShares(
-        firstFarm.globalFarm.id,
-        firstFarm.yieldFarm.id,
+        firstFarm.globalFarmId,
+        firstFarm.yieldFarmId,
         "0",
       ),
     )
@@ -46,8 +46,8 @@ export const getAddToOmnipoolFee = (api: ApiPromise, farms: Farm[]) => {
   if (restFarm.length) {
     const restFarmTxs = restFarm.map((farm) =>
       api.tx.omnipoolLiquidityMining.redepositShares(
-        farm.globalFarm.id,
-        farm.yieldFarm.id,
+        farm.globalFarmId,
+        farm.yieldFarmId,
         "0",
       ),
     )
@@ -123,7 +123,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
 
 export const useAddToOmnipoolZod = (
   assetId: string,
-  farms: Farm[],
+  farms: TFarmAprData[],
   isStablepool?: boolean,
 ) => {
   const { t } = useTranslation()
@@ -152,12 +152,12 @@ export const useAddToOmnipoolZod = (
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(
       (acc, farm) => {
-        const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+        const minDeposit = BN(farm.minDeposit)
 
         return minDeposit.gt(acc.value)
           ? {
               value: minDeposit,
-              assetId: farm.globalFarm.incentivizedAsset.toString(),
+              assetId: farm.incentivizedAsset,
             }
           : acc
       },
@@ -194,7 +194,7 @@ export const useAddToOmnipoolZod = (
     .pipe(
       isStablepool
         ? z.string()
-        : maxBalance(assetBalance?.balance ?? BN_0, decimals),
+        : maxBalance(assetBalance?.balance ?? "0", decimals),
     )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
@@ -307,7 +307,7 @@ export const useXYKZodSchema = (
   assetAMeta: TAsset,
   assetBMeta: TAsset,
   meta: TAsset,
-  farms: Farm[],
+  farms: TFarmAprData[],
 ) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
@@ -330,28 +330,34 @@ export const useXYKZodSchema = (
   const assetBBalances =
     accountAssets.data?.accountAssetsMap.get(assetBId)?.balance
 
-  const balanceA = assetABalances?.balance ?? BN_0
-  const balanceB = assetBBalances?.balance ?? BN_0
+  const balanceA = assetABalances?.balance ?? "0"
+  const balanceB = assetBBalances?.balance ?? "0"
 
   const balanceAMax =
     estimatedFees.accountCurrencyId === assetAId
-      ? balanceA.minus(feeWithBuffer).minus(assetAMeta.existentialDeposit)
+      ? BN(balanceA)
+          .minus(feeWithBuffer)
+          .minus(assetAMeta.existentialDeposit)
+          .toString()
       : balanceA
 
   const balanceBMax =
     estimatedFees.accountCurrencyId === assetBId
-      ? balanceB.minus(feeWithBuffer).minus(assetBMeta.existentialDeposit)
+      ? BN(balanceB)
+          .minus(feeWithBuffer)
+          .minus(assetBMeta.existentialDeposit)
+          .toString()
       : balanceB
 
   const minDeposit = useMemo(() => {
     return farms.reduce<{ value: BigNumber; assetId?: string }>(
       (acc, farm) => {
-        const minDeposit = farm.globalFarm.minDeposit.toBigNumber()
+        const minDeposit = BN(farm.minDeposit)
 
         return minDeposit.gt(acc.value)
           ? {
               value: minDeposit,
-              assetId: farm.globalFarm.incentivizedAsset.toString(),
+              assetId: farm.incentivizedAsset,
             }
           : acc
       },

@@ -1,5 +1,5 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -23,7 +23,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { Farm } from "api/farms"
 import { useRefetchAccountAssets } from "api/deposits"
 
 type Props = {
@@ -31,7 +30,6 @@ type Props = {
   pool: TXYKPool
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
-  farms: Farm[]
   setIsJoinFarms: (value: boolean) => void
 }
 
@@ -51,7 +49,6 @@ export const AddLiquidityFormXYK = ({
   onClose,
   onSuccess,
   onSubmitted,
-  farms,
   setIsJoinFarms,
 }: Props) => {
   const { t } = useTranslation()
@@ -59,6 +56,7 @@ export const AddLiquidityFormXYK = ({
 
   const { assets, decimals } = pool.meta
   const [assetA, assetB] = assets
+  const farms = pool.farms ?? []
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms)
@@ -202,8 +200,8 @@ export const AddLiquidityFormXYK = ({
       if (currReserves && nextReserves) {
         const pairTokenValue = scaleHuman(
           xyk.calculate_liquidity_in(
-            currReserves.balance.toFixed(),
-            nextReserves.balance.toFixed(),
+            currReserves.balance,
+            nextReserves.balance,
             scale(value, assetDecimals).toFixed(),
           ),
           pairAssetDecimals,
@@ -225,10 +223,7 @@ export const AddLiquidityFormXYK = ({
             totalShare.toString(),
           )
 
-          const ratio = getXYKPoolShare(
-            totalShare,
-            BigNumber(shares),
-          ).toString()
+          const ratio = getXYKPoolShare(totalShare, BN(shares)).toString()
 
           form.setValue("shares", shares, { shouldValidate: true })
           form.setValue("ratio", ratio)
@@ -281,8 +276,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetA.id}
               error={error?.message}
               disabled={!assetAReserve}
-              balance={balanceA}
-              balanceMax={balanceAMax}
+              balance={balanceA ? BN(balanceA) : undefined}
+              balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
             />
           )}
         />
@@ -305,8 +300,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetB.id}
               error={error?.message}
               disabled={!assetBReserve}
-              balance={balanceB}
-              balanceMax={balanceBMax}
+              balance={balanceB ? BN(balanceB) : undefined}
+              balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
             />
           )}
         />
@@ -361,7 +356,14 @@ export const AddLiquidityFormXYK = ({
         }}
       />
       {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: 8,
+            justify: "space-between",
+            pb: [10, 0],
+          }}
+        >
           <Button
             variant="secondary"
             name="addLiquidity"
