@@ -87,25 +87,21 @@ const AllPoolsData = () => {
   const pools = usePools()
   const xykPools = useXYKPools()
 
-  const omnipoolTotals = useMemo(
-    () =>
-      pools.data
-        ? pools.data.reduce(
-            (acc, pool) => {
-              acc.tvl = acc.tvl.plus(
-                !pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0,
-              )
-              acc.volume = acc.volume.plus(pool.volume ?? 0)
+  const omnipoolTotals = useMemo(() => {
+    if (!pools.data) return { tvl: BN_0, volume: BN_0 }
+    return pools.data.reduce(
+      (acc, pool) => {
+        acc.tvl = acc.tvl.plus(
+          !pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0,
+        )
+        acc.volume = acc.volume.plus(pool.volume ?? 0)
 
-              return acc
-            },
+        return acc
+      },
 
-            { tvl: BN_0, volume: BN_0 },
-          )
-        : { tvl: BN_0, volume: BN_0 },
-
-    [pools.data],
-  )
+      { tvl: BN_0, volume: BN_0 },
+    )
+  }, [pools.data])
 
   const xykTotals = useMemo(() => {
     if (xykPools.data) {
