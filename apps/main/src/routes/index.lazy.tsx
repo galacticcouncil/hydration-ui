@@ -1,4 +1,5 @@
 import { useTheme } from "@emotion/react"
+import { Text } from "@galacticcouncil/ui/components"
 import { createLazyFileRoute } from "@tanstack/react-router"
 import { entries, fromEntries, isObjectType, isString, pipe } from "remeda"
 
@@ -29,7 +30,9 @@ const Page = () => {
   const flatTheme = flattenObject(theme)
   return (
     <div>
-      <h1>Homepage</h1>
+      <Text as="h1" fs={40} fw={600} font="Primary-Font">
+        Homepage
+      </Text>
       <div css={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
         {Object.entries(flatTheme).map(([key, value]) => (
           <div
