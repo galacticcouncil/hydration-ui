@@ -3,8 +3,7 @@ import styled from "@emotion/styled"
 
 export type CustomTextButtonProps = {
   variant?: "plain" | "underline"
-  direction?: "internal" | "external"
-  withArrow?: boolean
+  direction?: "none" | "internal" | "external"
 }
 
 export const STextButton = styled.p<CustomTextButtonProps>(

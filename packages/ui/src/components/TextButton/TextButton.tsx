@@ -11,20 +11,24 @@ import {
 export type TextButtonProps = React.ComponentPropsWithoutRef<"p"> &
   CustomTextButtonProps
 
+const TextButtonIcon = ({
+  direction,
+}: {
+  direction: TextButtonProps["direction"]
+}) => {
+  if (direction === "internal")
+    return <ChevronRight size={10} strokeWidth={3} />
+
+  if (direction === "external") return <MoveUpRight size={10} strokeWidth={3} />
+
+  return null
+}
+
 export const TextButton = forwardRef<HTMLParagraphElement, TextButtonProps>(
-  ({ direction = "internal", withArrow = false, ...props }, ref) => (
-    <STextButton
-      ref={ref}
-      direction={direction}
-      withArrow={withArrow}
-      {...props}
-    >
+  ({ direction = "internal", ...props }, ref) => (
+    <STextButton ref={ref} direction={direction} {...props}>
       {props.children}
-      {withArrow && direction === "internal" ? (
-        <ChevronRight size={10} strokeWidth={3} />
-      ) : (
-        <MoveUpRight size={10} strokeWidth={3} />
-      )}
+      <TextButtonIcon direction={direction} />
     </STextButton>
   ),
 )

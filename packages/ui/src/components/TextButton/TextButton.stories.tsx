@@ -21,6 +21,7 @@ export const Underline: Story = {
   render: Template,
   args: {
     variant: "underline",
+    direction: "none",
   },
 }
 
@@ -28,7 +29,6 @@ export const UnderlineWithIcon: Story = {
   render: Template,
   args: {
     variant: "underline",
-    withArrow: true,
   },
 }
 
@@ -37,6 +37,5 @@ export const ExternalWithIcon: Story = {
   args: {
     variant: "underline",
     direction: "external",
-    withArrow: true,
   },
 }
