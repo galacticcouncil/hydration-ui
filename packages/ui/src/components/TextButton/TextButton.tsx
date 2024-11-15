@@ -25,7 +25,7 @@ const TextButtonIcon = ({
 }
 
 export const TextButton = forwardRef<HTMLParagraphElement, TextButtonProps>(
-  ({ direction = "internal", ...props }, ref) => (
+  ({ direction = "none", ...props }, ref) => (
     <STextButton ref={ref} direction={direction} {...props}>
       {props.children}
       <TextButtonIcon direction={direction} />

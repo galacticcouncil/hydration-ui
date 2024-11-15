@@ -21,18 +21,18 @@ export const Underline: Story = {
   render: Template,
   args: {
     variant: "underline",
-    direction: "none",
   },
 }
 
-export const UnderlineWithIcon: Story = {
+export const UnderlineInternal: Story = {
   render: Template,
   args: {
     variant: "underline",
+    direction: "internal",
   },
 }
 
-export const ExternalWithIcon: Story = {
+export const UnderlineExternal: Story = {
   render: Template,
   args: {
     variant: "underline",
