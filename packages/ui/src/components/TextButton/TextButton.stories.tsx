@@ -23,3 +23,20 @@ export const Underline: Story = {
     variant: "underline",
   },
 }
+
+export const UnderlineWithIcon: Story = {
+  render: Template,
+  args: {
+    variant: "underline",
+    withArrow: true,
+  },
+}
+
+export const ExternalWithIcon: Story = {
+  render: Template,
+  args: {
+    variant: "underline",
+    direction: "external",
+    withArrow: true,
+  },
+}

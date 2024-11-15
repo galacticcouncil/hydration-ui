@@ -14,6 +14,7 @@ export const STextButton = styled.p<CustomTextButtonProps>(
     line-height: 120%;
 
     display: inline-flex;
+    align-items: center;
 
     transition: all 0.15s ease-in-out;
 

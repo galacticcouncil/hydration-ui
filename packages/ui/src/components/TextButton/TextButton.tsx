@@ -1,5 +1,7 @@
 import { forwardRef } from "react"
 
+import { ChevronRight, MoveUpRight } from "@/assets/icons/index"
+
 import {
   CustomTextButtonProps,
   SLinkTextButton,
@@ -18,21 +20,10 @@ export const TextButton = forwardRef<HTMLParagraphElement, TextButtonProps>(
       {...props}
     >
       {props.children}
-      {withArrow && (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="25"
-          height="24"
-          viewBox="0 0 25 24"
-          fill="none"
-        >
-          <path
-            d="M8.03906 10.5L12.0443 13.5L16.0496 10.5"
-            stroke="#BDCCD4"
-            strokeWidth="2"
-            strokeLinecap="square"
-          />
-        </svg>
+      {withArrow && direction === "internal" ? (
+        <ChevronRight size={10} strokeWidth={3} />
+      ) : (
+        <MoveUpRight size={10} strokeWidth={3} />
       )}
     </STextButton>
   ),
