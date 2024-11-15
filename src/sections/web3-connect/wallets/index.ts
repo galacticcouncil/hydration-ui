@@ -169,7 +169,6 @@ const eip6963ProvidersByRdns = new Map([
  * For more information, refer to https://eips.ethereum.org/EIPS/eip-6963
  */
 export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
-  console.log(event.detail)
   const provider = eip6963ProvidersByRdns.get(event.detail.info.rdns)
 
   if (provider) {

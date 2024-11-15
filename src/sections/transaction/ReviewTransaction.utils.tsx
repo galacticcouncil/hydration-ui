@@ -1,4 +1,5 @@
 import {
+  JsonRpcProvider,
   TransactionReceipt,
   TransactionResponse,
   Web3Provider,
@@ -27,13 +28,12 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import {
-  EthereumSigner,
-  PermitResult,
-} from "sections/web3-connect/signer/EthereumSigner"
+import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
 import {
+  CALL_PERMIT_ABI,
+  CALL_PERMIT_ADDRESS,
   H160,
   getEvmChainById,
   getEvmTxLink,
@@ -43,7 +43,9 @@ import {
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useIsTestnet } from "api/provider"
+import { useActiveProvider, useIsTestnet } from "api/provider"
+import BigNumber from "bignumber.js"
+import { Contract } from "ethers"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -237,17 +239,27 @@ export const useSendEvmTransactionMutation = (
 }
 
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
-  const { wallet } = useWallet()
-
+  const activeProvider = useActiveProvider()
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
       if (!account) throw new Error("Missing address")
-      if (!wallet?.signer) throw new Error("Missing wallet signer")
-      if (!(wallet?.signer instanceof EthereumSigner))
-        throw new Error("Invalid signer")
 
-      return wallet.signer.getPermitNonce()
+      const provider = new JsonRpcProvider(
+        activeProvider.url.replace("wss", "https"),
+      )
+
+      const callPermit = new Contract(
+        CALL_PERMIT_ADDRESS,
+        CALL_PERMIT_ABI,
+        provider,
+      )
+
+      const nonce = await callPermit.nonces(
+        H160.fromAccount(account.toString()),
+      )
+
+      return BigNumber(nonce.toString())
     },
     {
       refetchInterval: EVM_PERMIT_BLOCKTIME,

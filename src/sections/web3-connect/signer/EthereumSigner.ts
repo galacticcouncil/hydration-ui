@@ -6,19 +6,16 @@ import {
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
 import BigNumber from "bignumber.js"
-import { Contract, Signature } from "ethers"
+import { Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
-import {
-  CALL_PERMIT_ABI,
-  CALL_PERMIT_ADDRESS,
-  DISPATCH_ADDRESS,
-} from "utils/evm"
+import { CALL_PERMIT_ADDRESS, DISPATCH_ADDRESS } from "utils/evm"
 import {
   MetaMaskLikeProvider,
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { sleep } from "utils/helpers"
 
 type PermitMessage = {
   from: string
@@ -64,11 +61,12 @@ export class EthereumSigner {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
-        onSwitch: () => {
-          // update signer after network switch
-          this.signer = this.getSigner(this.provider)
-        },
       })
+      // update signer after network switch
+      // give some leeway for the network switch to take effect,
+      // some wallets like Coinbase dont reflect the change inside provider immediately
+      await sleep(200)
+      this.signer = this.getSigner(this.provider)
     }
   }
 
@@ -79,19 +77,6 @@ export class EthereumSigner {
       from: this.address,
       chain,
     })
-  }
-
-  getPermitNonce = async (): Promise<BigNumber> => {
-    await this.requestNetworkSwitch("hydration")
-    const callPermit = new Contract(
-      CALL_PERMIT_ADDRESS,
-      CALL_PERMIT_ABI,
-      this.signer.provider,
-    )
-
-    const nonce = await callPermit.nonces(this.address)
-
-    return BigNumber(nonce.toString())
   }
 
   getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
