@@ -15,6 +15,7 @@ import { Summary } from "components/Summary/Summary"
 import Skeleton from "react-loading-skeleton"
 import { Spacer } from "components/Spacer/Spacer"
 import { useAccountAssets } from "api/deposits"
+import BN from "bignumber.js"
 
 type FillOrderProps = {
   orderId: string
@@ -54,10 +55,12 @@ export const FillOrder = ({
     if (assetInBalance?.balance == null)
       throw new Error("Missing assetIn balance")
 
-    const aInBalance = assetInBalance?.balance
+    const aInBalance = assetInBalance.balance
     const aInDecimals = assetInMeta.decimals
 
-    if (aInBalance.gte(accepting.amount.multipliedBy(BN_10.pow(aInDecimals)))) {
+    if (
+      BN(aInBalance).gte(accepting.amount.multipliedBy(BN_10.pow(aInDecimals)))
+    ) {
       setError(undefined)
     } else {
       setError(t("otc.order.fill.validation.notEnoughBalance"))
@@ -105,10 +108,11 @@ export const FillOrder = ({
     )
   }
 
-  const isDisabled =
-    assetInBalance?.balance?.lt(
-      accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
-    ) ?? false
+  const isDisabled = assetInBalance?.balance
+    ? BN(assetInBalance.balance).lt(
+        accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
+      )
+    : false
 
   return (
     <Modal
@@ -132,7 +136,6 @@ export const FillOrder = ({
           title={t("otc.order.fill.payTitle")}
           value={accepting.amount.toFixed()}
           asset={accepting.asset}
-          balance={assetInBalance?.balance}
           readonly={true}
           error={error}
         />

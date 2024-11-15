@@ -9,7 +9,6 @@ export function OrderAssetSelect(props: {
   value: string
   title?: string
   asset?: string | u32
-  balance?: BN | undefined
   onChange: (value: string) => void
   onOpen: () => void
   error?: string
@@ -32,7 +31,6 @@ export function OrderAssetPay(props: {
   title?: string
   value: string
   asset: string | u32
-  balance?: BN | undefined
   onChange?: (value: string) => void
   error?: string
   readonly?: boolean

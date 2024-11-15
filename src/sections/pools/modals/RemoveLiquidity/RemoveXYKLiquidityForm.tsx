@@ -15,6 +15,7 @@ import { useXYKTotalLiquidity } from "api/xyk"
 import { useAccountBalances } from "api/accountBalances"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import BN from "bignumber.js"
 
 type RemoveLiquidityProps = {
   onClose: () => void
@@ -47,9 +48,9 @@ export const RemoveXYKLiquidityForm = ({
 
   const value = form.watch("value")
 
-  const removeShareToken =
-    shareTokenBalance?.balance?.multipliedBy(value).dividedToIntegerBy(100) ??
-    BN_0
+  const removeShareToken = shareTokenBalance?.balance
+    ? BN(shareTokenBalance.balance).multipliedBy(value).dividedToIntegerBy(100)
+    : BN_0
 
   const removeAmount = assets.map((asset) => {
     const isNative = asset.id === native.id
