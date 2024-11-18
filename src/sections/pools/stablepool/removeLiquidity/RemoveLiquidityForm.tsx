@@ -4,7 +4,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { getFloatingPointAmount, normalizeBigNumber } from "utils/balance"
 import {
@@ -20,6 +20,8 @@ import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/Rem
 import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
+import { scale } from "utils/balance"
+import { createToastMessages } from "state/toasts"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -86,7 +88,7 @@ export const RemoveStablepoolLiquidityForm = ({
           position.poolId,
           assetId,
           removeSharesValue.dp(0).toString(),
-          minAmountOut.dp(0).toString(),
+          scale(minAmountOut, asset.decimals).dp(0).toString(),
         ),
       },
       {
@@ -97,38 +99,16 @@ export const RemoveStablepoolLiquidityForm = ({
           onClose()
           form.reset()
         },
-        toast: {
-          onLoading: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.stablepool.remove.onLoading"
-              tOptions={{
-                out: liquidityOut,
-                amount: removeSharesValue,
-                fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                symbol: asset?.symbol,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-          onSuccess: (
-            <Trans
-              t={t}
-              i18nKey="liquidity.stablepool.remove.onSuccess"
-              tOptions={{
-                out: liquidityOut,
-                amount: removeSharesValue,
-                fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                symbol: asset?.symbol,
-              }}
-            >
-              <span />
-              <span className="highlight" />
-            </Trans>
-          ),
-        },
+        toast: createToastMessages("liquidity.stablepool.remove", {
+          t,
+          tOptions: {
+            out: liquidityOut,
+            amount: removeSharesValue,
+            fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
+            symbol: asset?.symbol,
+          },
+          components: ["span", "span.highlight"],
+        }),
       },
     )
   }
