@@ -277,13 +277,12 @@ export const RepayModalContent = ({
         onSelect={setTokenToRepayWith}
         isMaxSelected={isMaxSelected}
         maxValue={maxAmountToRepay.toString(10)}
-        balanceText={<span>Wallet balance</span>}
         sx={{ mb: 20 }}
         error={isMaxExceeded ? "Remaining debt exceeded" : undefined}
       />
 
       {maxRepayWithDustRemaining && (
-        <Alert variant="warning" sx={{ mt: 12 }}>
+        <Alert variant="warning" sx={{ mb: 20 }}>
           You don&apos;t have enough funds in your wallet to repay the full
           amount. If you proceed to repay with your current amount of funds, you
           will still have a small borrowing position in your dashboard.
