@@ -10,7 +10,7 @@ import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketB
 import { PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContent } from "./MoneyMarketCountdown.styled"
 
-const MONEY_MARKET_REFERENDUM_INDEX = ""
+const MONEY_MARKET_REFERENDUM_INDEX = "189"
 const MONEY_MARKET_REFERENDUM_LINK = `${import.meta.env.VITE_REFERENDUM_LINK}/${MONEY_MARKET_REFERENDUM_INDEX}`
 
 const PeepoAnimation: React.FC<{ className?: string }> = ({ className }) => (
@@ -95,6 +95,7 @@ export const MoneyMarketCountdown = () => {
               target="_blank"
               rel="noreferrer"
               href={MONEY_MARKET_REFERENDUM_LINK}
+              sx={{ mt: 20 }}
             >
               <Button variant="secondary" size="small" as="div">
                 {t("lending.countdown.button")}
