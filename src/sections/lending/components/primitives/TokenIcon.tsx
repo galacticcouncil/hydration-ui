@@ -3,13 +3,26 @@ import { MetadataStore } from "@galacticcouncil/ui"
 import { useMemo } from "react"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 
-const SYMBOL_TO_ASSET_ID_MAP: Record<string, string> = {
+const SYMBOL_TO_ASSET_ID_MAP_TESTNET: Record<string, string> = {
   dot: "5",
   usdt: "10",
   usdc: "21",
   weth: "20",
   wbtc: "3",
 }
+
+const SYMBOL_TO_ASSET_ID_MAP_MAINNET: Record<string, string> = {
+  dot: "5",
+  usdt: "10",
+  usdc: "22",
+  weth: "20",
+  wbtc: "19",
+}
+
+const SYMBOL_TO_ASSET_ID_MAP =
+  import.meta.env.VITE_ENV === "production"
+    ? SYMBOL_TO_ASSET_ID_MAP_MAINNET
+    : SYMBOL_TO_ASSET_ID_MAP_TESTNET
 
 interface TokenIconProps {
   symbol: string

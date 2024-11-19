@@ -20,9 +20,9 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
   // aUSDT
   "1002": "10",
   // aUSDC
-  "1003": "21",
+  "1003": "22",
   // aWBTC
-  "1004": "3",
+  "1004": "19",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =
