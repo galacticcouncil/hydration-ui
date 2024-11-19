@@ -95,7 +95,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                         {t("value.token", {
                           value: amount,
                           fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                          numberSuffix: `${t(
+                          numberSuffix: ` ${t(
                             "liquidity.stablepool.position.token",
                           )}`,
                         })}
