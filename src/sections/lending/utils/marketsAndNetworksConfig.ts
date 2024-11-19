@@ -134,10 +134,14 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
     }
     if (config.publicJsonRPCUrl.length) {
       const rpcUrls = getRpcUrls().map(wssToHttps)
-      const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort(
-        (a, b) => rpcUrls.indexOf(a) - rpcUrls.indexOf(b),
-      )
-      rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
+      if (rpcUrls.length === 1) {
+        chainProviders.push(rpcUrls[0])
+      } else {
+        const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort(
+          (a, b) => rpcUrls.indexOf(a) - rpcUrls.indexOf(b),
+        )
+        rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
+      }
     }
     if (!chainProviders.length) {
       throw new Error(`${chainId} has no jsonRPCUrl configured`)
