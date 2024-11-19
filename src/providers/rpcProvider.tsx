@@ -28,14 +28,14 @@ export const useRpcProvider = () => useContext(ProviderContext)
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry.getState()
   const isAssets = !!assets.length
-  const providerData = useProviderData()
+  const { data: providerData } = useProviderData()
   const displayAsset = useDisplayAssetStore()
   useProviderAssets()
   useShareTokens()
 
   useWindowFocus({
     onFocus: () => {
-      const provider = providerData.data?.api
+      const provider = providerData?.api
 
       if (provider && !provider.isConnected) {
         provider.connect()
@@ -44,7 +44,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   })
 
   const value = useMemo(() => {
-    if (!!providerData.data && isAssets) {
+    if (!!providerData && isAssets) {
       const {
         isStableCoin,
         stableCoinId: chainStableCoinId,
@@ -73,10 +73,10 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return {
-        poolService: providerData.data.poolService,
-        api: providerData.data.api,
-        tradeRouter: providerData.data.tradeRouter,
-        featureFlags: providerData.data.featureFlags,
+        poolService: providerData.poolService,
+        api: providerData.api,
+        tradeRouter: providerData.tradeRouter,
+        featureFlags: providerData.featureFlags,
         isLoaded: true,
       }
     }
@@ -92,7 +92,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       poolService: {} as TProviderContext["poolService"],
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayAsset, isAssets, providerData.data])
+  }, [displayAsset, isAssets, providerData])
 
   return (
     <ProviderContext.Provider value={value}>

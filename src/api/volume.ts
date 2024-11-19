@@ -1,15 +1,16 @@
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { gql, request } from "graphql-request"
-import { Maybe, normalizeId, undefinedNoop } from "utils/helpers"
+import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { u32 } from "@polkadot/types-codec"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useActiveProvider, useIndexerUrl } from "./provider"
+import { PROVIDERS, useActiveProvider } from "./provider"
 import { u8aToHex } from "@polkadot/util"
-import { decodeAddress } from "@polkadot/util-crypto"
-import { millisecondsInMinute } from "date-fns/constants"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { useBestNumber } from "./chain"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 
 export type TradeType = {
   name:
@@ -113,75 +114,6 @@ export const getTradeVolume =
     }
   }
 
-export const getXYKTradeVolume =
-  (indexerUrl: string, poolAddress: string) => async () => {
-    const poolHex = u8aToHex(decodeAddress(poolAddress))
-
-    const after = addDays(new Date(), -1).toISOString()
-
-    // This is being typed manually, as GraphQL schema does not
-    // describe the event arguments at all
-    return {
-      poolAddress: poolAddress,
-      ...(await request<{
-        events: Array<
-          | {
-              name: "XYK.SellExecuted"
-              args: {
-                who: string
-                assetOut: number
-                assetIn: number
-                amount: string
-                salePrice: string
-                feeAsset: number
-                feeAmount: string
-                pool: string
-              }
-              block: {
-                timestamp: string
-              }
-            }
-          | {
-              name: "XYK.BuyExecuted"
-              args: {
-                who: string
-                assetOut: number
-                assetIn: number
-                amount: string
-                buyPrice: string
-                feeAsset: number
-                feeAmount: string
-                pool: string
-              }
-              block: {
-                timestamp: string
-              }
-            }
-        >
-      }>(
-        indexerUrl,
-        gql`
-          query TradeVolume($poolHex: String!, $after: DateTime!) {
-            events(
-              where: {
-                args_jsonContains: { pool: $poolHex }
-                name_in: ["XYK.SellExecuted", "XYK.BuyExecuted"]
-                block: { timestamp_gte: $after }
-              }
-            ) {
-              name
-              args
-              block {
-                timestamp
-              }
-            }
-          }
-        `,
-        { poolHex, after },
-      )),
-    }
-  }
-
 export const getAllTrades =
   (indexerUrl: string, assetId?: number) => async () => {
     const after = addDays(new Date(), -1).toISOString()
@@ -253,50 +185,6 @@ export const getAllTrades =
     }
   }
 
-export function useTradeVolumes(
-  assetIds: Maybe<u32 | string>[],
-  noRefresh?: boolean,
-) {
-  const activeProvider = useActiveProvider()
-  const selectedProvider = PROVIDERS.find(
-    (provider) =>
-      activeProvider &&
-      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
-  )
-
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
-
-  return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: noRefresh
-        ? QUERY_KEYS.tradeVolume(assetId)
-        : QUERY_KEYS.tradeVolumeLive(assetId),
-      queryFn:
-        assetId != null
-          ? getTradeVolume(indexerUrl, assetId.toString())
-          : undefinedNoop,
-      enabled: !!assetId,
-    })),
-  })
-}
-
-export function useXYKTradeVolumes(assetIds: Maybe<u32 | string>[]) {
-  const indexerUrl = useIndexerUrl()
-
-  return useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: QUERY_KEYS.xykTradeVolume(assetId),
-      queryFn:
-        assetId != null
-          ? getXYKTradeVolume(indexerUrl, assetId.toString())
-          : undefinedNoop,
-      enabled: !!assetId,
-      refetchInterval: 30000,
-    })),
-  })
-}
-
 export function useAllTrades(assetId?: number) {
   const activeProvider = useActiveProvider()
   const selectedProvider = PROVIDERS.find(
@@ -344,41 +232,6 @@ export function getVolumeAssetTotalValue(
   )
 }
 
-export function getXYKVolumeAssetTotalValue(
-  volume?: Awaited<ReturnType<ReturnType<typeof getXYKTradeVolume>>>,
-) {
-  if (!volume) return
-
-  return (
-    volume.events.reduce<Record<string, BN>>((memo, item) => {
-      const assetIn = item.args.assetIn.toString()
-      const assetOut = item.args.assetOut.toString()
-
-      const amount = item.args.amount
-
-      if (memo[assetIn] == null) memo[assetIn] = BN_0
-
-      if (item.name === "XYK.BuyExecuted") {
-        if (memo[assetOut]) {
-          memo[assetOut] = memo[assetOut].plus(amount)
-        } else {
-          memo[assetOut] = BN(amount)
-        }
-      }
-
-      if (item.name === "XYK.SellExecuted") {
-        if (memo[assetIn]) {
-          memo[assetIn] = memo[assetIn].plus(amount)
-        } else {
-          memo[assetIn] = BN(amount)
-        }
-      }
-
-      return memo
-    }, {}) ?? {}
-  )
-}
-
 export const useVolume = (assetId?: string | "all") => {
   return useQuery(
     QUERY_KEYS.volumeDaily(assetId),
@@ -403,4 +256,72 @@ const getVolumeDaily = async (assetId?: string) => {
   const data: Promise<{ volume_usd: number; asset_id: number }[]> = res.json()
 
   return data
+}
+
+const squidUrl =
+  "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+const VOLUME_BLOCK_COUNT = 7200 //24 hours
+
+export const useXYKSquidVolumes = (addresses: string[]) => {
+  const { data: bestNumber } = useBestNumber()
+
+  return useQuery(
+    QUERY_KEYS.xykSquidVolumes(addresses),
+    bestNumber
+      ? async () => {
+          const hexAddresses = addresses.map((address) =>
+            u8aToHex(decodeAddress(address)),
+          )
+          const startBlockNumber =
+            bestNumber.parachainBlockNumber.toNumber() - VOLUME_BLOCK_COUNT
+
+          const { xykPoolHistoricalVolumesByPeriod } = await request<{
+            xykPoolHistoricalVolumesByPeriod: {
+              nodes: {
+                poolId: string
+                assetAId: number
+                assetAVolume: string
+                assetBId: number
+                assetBVolume: string
+              }[]
+            }
+          }>(
+            squidUrl,
+            gql`
+              query XykVolume($poolIds: [String!]!, $startBlockNumber: Int!) {
+                xykPoolHistoricalVolumesByPeriod(
+                  filter: {
+                    poolIds: $poolIds
+                    startBlockNumber: $startBlockNumber
+                  }
+                ) {
+                  nodes {
+                    poolId
+                    assetAId
+                    assetAVolume
+                    assetBId
+                    assetBVolume
+                  }
+                }
+              }
+            `,
+            { poolIds: hexAddresses, startBlockNumber },
+          )
+
+          const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+
+          return nodes.map((node) => ({
+            poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
+            assetId: node.assetAId.toString(),
+            assetIdB: node.assetBId.toString(),
+            volume: node.assetAVolume,
+          }))
+        }
+      : undefinedNoop,
+    {
+      enabled: !!bestNumber && !!addresses.length,
+      staleTime: millisecondsInHour,
+      refetchInterval: millisecondsInMinute,
+    },
+  )
 }
