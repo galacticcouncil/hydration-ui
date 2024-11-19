@@ -4,11 +4,19 @@ import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Countdown } from "components/Countdown/Countdown"
 import { Text } from "components/Typography/Text/Text"
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
 import { PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContent } from "./MoneyMarketCountdown.styled"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useIsTestnet } from "api/provider"
+import {
+  AaveV3HydrationMainnet,
+  AaveV3HydrationTestnet,
+} from "sections/lending/ui-config/addresses"
+import { VoidFn } from "@polkadot/api/types"
+import { Codec } from "@polkadot/types/types"
 
 const MONEY_MARKET_REFERENDUM_INDEX = "189"
 const MONEY_MARKET_REFERENDUM_LINK = `${import.meta.env.VITE_REFERENDUM_LINK}/${MONEY_MARKET_REFERENDUM_INDEX}`
@@ -27,12 +35,44 @@ const PeepoAnimation: React.FC<{ className?: string }> = ({ className }) => (
 )
 
 export const MoneyMarketCountdown = () => {
+  const { api } = useRpcProvider()
+  const isTestnet = useIsTestnet()
   const { t } = useTranslation()
   const now = useRef(Date.now())
   const bestNumber = useBestNumber()
   const [expired, setExpired] = useState(false)
 
   const referendumInfo = useReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)
+
+  useEffect(() => {
+    const aavePoolContract = isTestnet
+      ? AaveV3HydrationTestnet.POOL
+      : AaveV3HydrationMainnet.POOL
+
+    let result: Codec | VoidFn | undefined = undefined
+
+    async function checkApprovedContract() {
+      const unsub = await api.query.evmAccounts.approvedContract(
+        aavePoolContract,
+        async (result: Codec) => {
+          if (!result.isEmpty) {
+            // reload the page when the AAVE Pool contract is approved
+            window.location.reload()
+          }
+        },
+      )
+
+      result = unsub
+    }
+
+    checkApprovedContract()
+
+    return () => {
+      if (typeof result === "function") {
+        result()
+      }
+    }
+  }, [api.query.evmAccounts, isTestnet])
 
   const timestampDiff = useMemo(() => {
     if (bestNumber?.data && referendumInfo?.data) {
