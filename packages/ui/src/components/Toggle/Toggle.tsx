@@ -1,16 +1,22 @@
+import { forwardRef } from "react"
+
 import { SThumb, SToggle, ToggleProps } from "./Toggle.styled"
 
-export const Toggle = ({
-  checked = false,
-  disabled,
-  name,
-  size = "medium",
-  className,
-  onCheckedChange,
-  ...props
-}: ToggleProps) => {
-  return (
+export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
+  (
+    {
+      checked = false,
+      disabled,
+      name,
+      size = "medium",
+      className,
+      onCheckedChange,
+      ...props
+    },
+    ref,
+  ) => (
     <SToggle
+      ref={ref}
       className={className}
       checked={checked}
       onCheckedChange={onCheckedChange}
@@ -22,5 +28,7 @@ export const Toggle = ({
     >
       <SThumb checked={checked} disabled={disabled} />
     </SToggle>
-  )
-}
+  ),
+)
+
+Toggle.displayName = "Toggle"
