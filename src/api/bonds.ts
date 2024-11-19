@@ -18,7 +18,7 @@ export type Bond = {
 }
 
 export const useLbpPool = (params?: { id?: string }) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   const { id } = params ?? {}
 
@@ -49,7 +49,7 @@ export const useLbpPool = (params?: { id?: string }) => {
       return data
     },
     {
-      enabled: !(params && !id),
+      enabled: !(params && !id) && isLoaded,
       select: (pools) => {
         if (id) {
           const pool = pools.find((pool) =>
