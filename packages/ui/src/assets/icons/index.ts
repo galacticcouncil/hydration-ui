@@ -1,1 +1,7 @@
+export { default as CircleAlert } from "./CircleAlert.svg?react"
+export { default as CircleCheck } from "./CircleCheck.svg?react"
+export { default as CircleClose } from "./CircleClose.svg?react"
+export { default as Send } from "./Send.svg?react"
+export { default as SquareQuestion } from "./SquareQuestion.svg?react"
+export { default as TriangleAlert } from "./TriangleAlert.svg?react"
 export * from "lucide-react"

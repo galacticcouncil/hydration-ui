@@ -92,4 +92,20 @@ export const SButton = styled.button<SButtonProps>(
   disabledStyles,
 )
 
-export const SLinkButton = SButton.withComponent("a")
+export const SButtonTransparent = styled.button`
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  &[disabled] {
+    cursor: unset;
+  }
+`
+
+export const SButtonLink = SButton.withComponent("a")
