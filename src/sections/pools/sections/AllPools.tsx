@@ -185,7 +185,7 @@ const AllPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading || xykPools.isInitialLoading}
-                value={xykTotals.volume.plus(omnipoolTotals.volume)}
+                value={xykTotals.volume.plus(omnipoolTotals.volume.div(2))}
                 fontSize={[19, 24]}
               />
             ),
