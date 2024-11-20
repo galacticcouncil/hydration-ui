@@ -1,17 +1,18 @@
-import { CloseNotification } from "@/assets/icons"
 import {
-  FailedNotification,
-  SubmittedNotification,
-  SuccessNotification,
-  UnknownNotification,
-  WarningNotification,
+  CircleAlert,
+  CircleCheck,
+  CircleClose,
+  Send,
+  SquareQuestion,
+  TriangleAlert,
 } from "@/assets/icons"
 
 import { ButtonTransparent } from "../Button"
-import { Icon } from "../Icon"
 import { Text } from "../Text"
 import {
   CustomToastProps,
+  SCloseIcon,
+  SIconVariant,
   SNotification,
   SProgress,
   SProgressContainer,
@@ -21,12 +22,12 @@ import {
 const DEFAULT_AUTO_CLOSE_TIME = 3
 
 const getNotificationIcon = (variant: ToastVariant) => {
-  if (variant === "success") return SuccessNotification
-  if (variant === "error") return FailedNotification
-  if (variant === "submitted") return SubmittedNotification
-  if (variant === "warning") return WarningNotification
+  if (variant === "success") return CircleCheck
+  if (variant === "error") return CircleAlert
+  if (variant === "submitted") return Send
+  if (variant === "warning") return TriangleAlert
 
-  return UnknownNotification
+  return SquareQuestion
 }
 
 export const Notification = ({
@@ -45,7 +46,11 @@ export const Notification = ({
           gap: 8,
         }}
       >
-        <Icon component={getNotificationIcon(variant)} size={16} />
+        <SIconVariant
+          component={getNotificationIcon(variant)}
+          variant={variant}
+          size={16}
+        />
         <Text font="Secondary" fw={400} fs={12}>
           {content}
         </Text>
@@ -67,11 +72,7 @@ export const Notification = ({
         role="button"
         aria-label="Close Notification"
       >
-        <Icon
-          component={CloseNotification}
-          size={18}
-          css={{ position: "absolute", right: 5, top: 4 }}
-        />
+        <SCloseIcon component={CircleClose} size={18} />
       </ButtonTransparent>
     </SNotification>
   )

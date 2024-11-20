@@ -108,4 +108,4 @@ export const SButtonTransparent = styled.button`
   }
 `
 
-export const SLinkButton = SButton.withComponent("a")
+export const SButtonLink = SButton.withComponent("a")

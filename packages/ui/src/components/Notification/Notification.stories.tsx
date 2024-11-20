@@ -10,32 +10,31 @@ export default {
 
 const Template = (
   args: React.ComponentPropsWithoutRef<typeof Notification>,
-) => <Notification {...args} />
+) => <Notification {...args} content="Transaction has been submitted" />
 
 export const Success: Story = {
   render: Template,
   args: {
-    content: "Transaction has been submitted",
     variant: "success",
   },
 }
 
 export const Error: Story = {
   render: Template,
-  args: { content: "Transaction has been submitted", variant: "error" },
+  args: { variant: "error" },
 }
 
 export const Warning: Story = {
   render: Template,
-  args: { content: "Transaction has been submitted", variant: "warning" },
+  args: { variant: "warning" },
 }
 
 export const Submitted: Story = {
   render: Template,
-  args: { content: "Transaction has been submitted", variant: "submitted" },
+  args: { variant: "submitted" },
 }
 
 export const Unknown: Story = {
   render: Template,
-  args: { content: "Transaction has been submitted", variant: "unknown" },
+  args: { variant: "unknown" },
 }

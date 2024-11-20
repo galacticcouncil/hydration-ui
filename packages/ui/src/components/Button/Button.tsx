@@ -2,9 +2,9 @@ import React, { forwardRef } from "react"
 
 import {
   SButton,
+  SButtonLink,
   SButtonProps,
   SButtonTransparent,
-  SLinkButton,
 } from "./Button.styled"
 
 export type ButtonProps = SButtonProps &
@@ -20,11 +20,11 @@ Button.displayName = "Button"
 
 export type LinkButtonProps = React.ComponentPropsWithoutRef<"a"> & SButtonProps
 
-export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
-  (props, ref) => <SLinkButton ref={ref} {...props} />,
+export const ButtonLink = forwardRef<HTMLAnchorElement, LinkButtonProps>(
+  (props, ref) => <SButtonLink ref={ref} {...props} />,
 )
 
-LinkButton.displayName = "LinkButton"
+ButtonLink.displayName = "ButtonLink"
 
 export const ButtonTransparent = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {

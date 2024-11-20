@@ -3,6 +3,8 @@ import styled from "@emotion/styled"
 
 import { createVariants } from "@/utils"
 
+import { Icon } from "../Icon"
+
 export type ToastVariant =
   | "submitted"
   | "success"
@@ -51,23 +53,24 @@ export const SProgressContainer = styled.div(
   `,
 )
 
-const colors = createVariants((theme) => ({
-  success: css`
-    background: ${theme.Accents.success.onPrimary};
-  `,
-  error: css`
-    background: ${theme.Accents.Danger.Primary};
-  `,
-  submitted: css`
-    background: ${theme.Buttons.Primary.Medium.Rest};
-  `,
-  unknown: css`
-    background: ${theme.Colors.greys[300]};
-  `,
-  warning: css`
-    background: ${theme.Colors.utility["warning-yellow"][500]};
-  `,
-}))
+const getColor = (cssKey: string) =>
+  createVariants((theme) => ({
+    success: css`
+      ${cssKey}: ${theme.Accents.success.onPrimary};
+    `,
+    error: css`
+      ${cssKey}: ${theme.Accents.Danger.Primary};
+    `,
+    submitted: css`
+      ${cssKey}:${theme.Buttons.Primary.Medium.Rest};
+    `,
+    unknown: css`
+      ${cssKey}: ${theme.Colors.greys[300]};
+    `,
+    warning: css`
+      ${cssKey}:${theme.Colors.utility["warning-yellow"][500]};
+    `,
+  }))
 
 export const SProgress = styled.div<{
   closeTime: number
@@ -93,5 +96,19 @@ export const SProgress = styled.div<{
     position: relative;
     float: right;
   `,
-  colors(variant),
+  getColor("background")(variant),
 ])
+
+export const SIconVariant = styled(Icon)<{ variant: ToastVariant }>(
+  ({ variant }) => [getColor("color")(variant)],
+)
+
+export const SCloseIcon = styled(Icon)(
+  ({ theme }) => css`
+    position: absolute;
+    top: 4px;
+    right: 5px;
+
+    color: ${theme.Icons.onContainer};
+  `,
+)
