@@ -12,15 +12,11 @@ export const useEvmTxFee = (tx: TransactionRequest) => {
     QUERY_KEYS.evmPaymentFee(tx.data?.toString() ?? "", tx.from),
     async () => {
       if (wallet?.signer instanceof EthereumSigner) {
-        const [gas] = await wallet.signer.getGasValues(tx)
-        const feeData = await wallet.signer.getFeeData()
+        const { gas, maxFeePerGas, maxPriorityFeePerGas } =
+          await wallet.signer.getGasValues(tx)
         const estimatedGas = new BigNumber(gas.toString())
-        const baseFee = new BigNumber(feeData?.maxFeePerGas?.toString() ?? "0")
-        const maxPriorityFeePerGas = new BigNumber(
-          feeData?.maxPriorityFeePerGas?.toString() ?? "0",
-        )
-
-        const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas)
+        const baseFee = new BigNumber(maxFeePerGas?.toString() ?? "0")
+        const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas.toString())
         return estimatedGas.multipliedBy(effectiveGasPrice).shiftedBy(-18)
       }
 

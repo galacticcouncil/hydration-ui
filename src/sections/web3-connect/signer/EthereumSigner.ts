@@ -53,15 +53,21 @@ export class EthereumSigner {
     this.address = address
   }
 
-  getGasValues(tx: TransactionRequest) {
-    return Promise.all([
+  async getGasValues(tx: TransactionRequest) {
+    const [gas, gasPrice] = await Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
     ])
-  }
 
-  getFeeData() {
-    return this.signer.provider.getFeeData()
+    const onePrc = gasPrice.div(100)
+    const gasPricePlus = gasPrice.add(onePrc)
+
+    return {
+      gas,
+      gasPrice,
+      maxPriorityFeePerGas: gasPricePlus,
+      maxFeePerGas: gasPricePlus,
+    }
   }
 
   requestNetworkSwitch = async (chain: string) => {
@@ -250,14 +256,12 @@ export class EthereumSigner {
     await this.requestNetworkSwitch(from)
 
     if (from === "hydration") {
-      const [gas, gasPrice] = await this.getGasValues(tx)
-
-      const onePrc = gasPrice.div(100)
-      const gasPricePlus = gasPrice.add(onePrc)
+      const { gas, maxFeePerGas, maxPriorityFeePerGas } =
+        await this.getGasValues(tx)
 
       return await this.signer.sendTransaction({
-        maxPriorityFeePerGas: gasPricePlus,
-        maxFeePerGas: gasPricePlus,
+        maxPriorityFeePerGas,
+        maxFeePerGas,
         gasLimit: gas.mul(12).div(10), // add 20%
         ...tx,
       })

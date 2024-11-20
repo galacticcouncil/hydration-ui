@@ -1002,17 +1002,19 @@ export const createPoolSlice: StateCreator<
         estimatedGas = BigNumber.from("500000")
       }
 
-      const feeData = await provider.getFeeData()
-
       estimatedGas = estimatedGas.mul(2)
       // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
       tx.gasLimit = estimatedGas.gt(defaultGasLimit)
         ? estimatedGas
         : defaultGasLimit
 
+      const gasPrice = await provider.getGasPrice()
+      const gasOnePrc = gasPrice.div(100)
+      const gasPricePlus = gasPrice.add(gasOnePrc)
+
       Object.assign(tx, {
-        maxFeePerGas: feeData.maxFeePerGas,
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        maxFeePerGas: gasPricePlus,
+        maxPriorityFeePerGas: gasPricePlus,
       })
 
       return tx

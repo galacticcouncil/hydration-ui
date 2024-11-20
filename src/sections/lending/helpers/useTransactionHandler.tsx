@@ -356,10 +356,12 @@ export const useTransactionHandler = ({
         delete params.gasPrice
         delete params.gasLimit
         params.gasLimit = BigNumber.from(gasLimit).mul(12).div(10)
-        const feeData = await jsonRpcProvider().getFeeData()
+        const gasPrice = await jsonRpcProvider().getGasPrice()
+        const gasOnePrc = gasPrice.div(100)
+        const gasPricePlus = gasPrice.add(gasOnePrc)
         Object.assign(params, {
-          maxFeePerGas: feeData.maxFeePerGas,
-          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+          maxFeePerGas: gasPricePlus,
+          maxPriorityFeePerGas: gasPricePlus,
         })
         return processTx({
           tx: () => sendTx(params as PopulatedTransaction, protocolAction),
