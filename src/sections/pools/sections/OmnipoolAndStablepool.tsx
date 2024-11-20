@@ -128,7 +128,7 @@ const OmnipoolAndStablepoolData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.volume}
+                value={omnipoolTotals.volume.div(2)}
                 fontSize={[19, 24]}
               />
             ),
