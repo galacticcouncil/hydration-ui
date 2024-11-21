@@ -1,4 +1,4 @@
-import { Button } from "@galacticcouncil/ui/components"
+import { Box, Button } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { QueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
@@ -26,9 +26,10 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { theme, setTheme } = useTheme()
+
   return (
-    <div css={{ maxWidth: 1240, margin: "auto", padding: 20 }}>
-      <div css={{ position: "sticky", top: 0 }}>
+    <Box sx={{ maxWidth: 1240, m: "auto", p: 20 }}>
+      <Box sx={{ position: "sticky", top: 0 }}>
         <Button
           size="small"
           outline={theme !== "light"}
@@ -43,8 +44,8 @@ function RootComponent() {
         >
           dark
         </Button>
-      </div>
-      <div>
+      </Box>
+      <Box>
         <Link
           to="/"
           activeProps={{
@@ -74,11 +75,11 @@ function RootComponent() {
         >
           Liquidity
         </Link>
-      </div>
+      </Box>
       <Outlet />
       <ScrollRestoration />
       <ReactQueryDevtools buttonPosition="bottom-left" />
       <TanStackRouterDevtools position="bottom-right" />
-    </div>
+    </Box>
   )
 }

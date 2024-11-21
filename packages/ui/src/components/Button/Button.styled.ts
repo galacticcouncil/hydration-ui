@@ -46,7 +46,7 @@ const variants = createVariants((theme) => ({
 
 const sizes = createVariants((theme) => ({
   small: css`
-    font-size: ${theme.paragraphSize.p6};
+    font-size: ${theme.paragraphSize.p3};
     padding: 8px 12px;
   `,
   medium: css`

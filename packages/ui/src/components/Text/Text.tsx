@@ -1,15 +1,34 @@
-import styled from "@emotion/styled"
+import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/core"
+import React, { forwardRef } from "react"
 
-import { ThemeProps } from "@/theme"
+import { ThemeColor, ThemeFont } from "@/theme"
 
-export type TextProps = {
-  font?: keyof ThemeProps["fontFamilies1"]
-  fs?: number
-  fw?: 400 | 500 | 600
+import { SText, STextProps } from "./Text.styled"
+
+export type TextProps = STextProps & {
+  as?: React.ElementType
+  children: React.ReactNode
+  fw?: ResponsiveStyleValue<400 | 500 | 600>
+  fs?: ResponsiveStyleValue<string | number>
+  font?: ThemeFont
+  color?: ThemeColor | ThemeUICSSProperties["color"]
 }
 
-export const Text = styled.p<TextProps>`
-  font-family: ${({ theme, font = "Secondary" }) => theme.fontFamilies1[font]};
-  font-weight: ${({ fw = 400 }) => fw};
-  font-size: ${({ fs }) => (fs ? `${fs}px` : "inherit")};
-`
+export const Text = forwardRef<HTMLParagraphElement, TextProps>(
+  ({ color, as = "p", fs, fw, ...props }, ref) => {
+    return (
+      <SText
+        as={as}
+        ref={ref}
+        sx={{
+          color,
+          fontSize: fs,
+          fontWeight: fw,
+        }}
+        {...props}
+      />
+    )
+  },
+)
+
+Text.displayName = "Text"

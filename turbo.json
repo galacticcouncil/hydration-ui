@@ -13,8 +13,12 @@
         "build/**"
       ]
     },
-    "lint": {},
-    "i18n": {},
+    "lint": {
+      "cache": false
+    },
+    "i18n": {
+      "cache": false
+    },
     "preview": {
       "cache": false,
       "persistent": true
