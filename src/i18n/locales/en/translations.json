@@ -1092,7 +1092,7 @@
   "lending.bind.toast.onSuccess": "Account successfully bound.",
   "lending.bind.banner.title": "Borrow on Hydration",
   "lending.bind.banner.bound": "Account bound",
-  "lending.bind.banner.description": "Bind your EVM account to participate in Borrowing.<br /> Deploy your assets into a lending pool, borrow against your positions and generate revenue.",
+  "lending.bind.banner.description": "Bind your account to continue.<br /> Supply your crypto into a lending pool, accumulate rewards and borrow against your positions.",
   "lending.bind.banner.button": "Enable Borrowing",
   "lending.hollar.banner.title": "Meet HOLLAR",
   "lending.hollar.banner.description": "HOLLAR is a native decentralized, collateral-backed digital asset",
