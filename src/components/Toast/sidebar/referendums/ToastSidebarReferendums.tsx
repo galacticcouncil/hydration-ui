@@ -2,17 +2,14 @@ import { useReferendums } from "api/democracy"
 import { ReferendumCard } from "components/ReferendumCard/ReferendumCard"
 import { useTranslation } from "react-i18next"
 import { ToastSidebarGroup } from "components/Toast/sidebar/group/ToastSidebarGroup"
-import { useProviderRpcUrlStore } from "api/provider"
+import { PASEO_WS_URL, useProviderRpcUrlStore } from "api/provider"
 import { ReferendumCardRococo } from "components/ReferendumCard/ReferendumCardRococo"
 
 export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
   const referendums = useReferendums("ongoing")
   const providers = useProviderRpcUrlStore()
-  const rococoProvider = [
-    "hydradx-rococo-rpc.play.hydration.cloud",
-    "mining-rpc.hydradx.io",
-  ].find(
+  const rococoProvider = [PASEO_WS_URL, "mining-rpc.hydradx.io"].find(
     (rpc) =>
       (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
       `wss://${rpc}`,
