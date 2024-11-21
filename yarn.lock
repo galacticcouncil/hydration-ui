@@ -1687,6 +1687,21 @@
   resolved "https://registry.npmjs.org/@testing-library/user-event/-/user-event-14.5.2.tgz"
   integrity sha512-YAh82Wh4TIrxYLmfGcixwD18oIjyC1pFQC2Y01F2lzV2HTMiYrI0nze0FD0ocB//CKS/7jIUgae+adPqxK5yCQ==
 
+"@theme-ui/core@^0.17.1":
+  version "0.17.1"
+  resolved "https://registry.yarnpkg.com/@theme-ui/core/-/core-0.17.1.tgz#391da3c95aab0a160b79dba2a8be67e0f5cac064"
+  integrity sha512-mYUt91bBUxp2j377As2T906O8zEHMQik7e2riXbe7D3c7q0EUjgSN4tidiYKlgvHQD9depJ2HtdxTZ3EiQJleg==
+  dependencies:
+    "@theme-ui/css" "^0.17.1"
+    deepmerge "^4.2.2"
+
+"@theme-ui/css@^0.17.1":
+  version "0.17.1"
+  resolved "https://registry.yarnpkg.com/@theme-ui/css/-/css-0.17.1.tgz#9f27914557417d5e4fac9263ac5ea3bacdc464ef"
+  integrity sha512-pTJBItdzcEa7KQlfTs1t9M4pd5KWtmSwrA2bLJJVeD0oHnpMCIjThlHY27UFwOTUopInT0Oa3fhF4/n9jVbN8A==
+  dependencies:
+    csstype "^3.0.10"
+
 "@tokens-studio/sd-transforms@^1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@tokens-studio/sd-transforms/-/sd-transforms-1.2.6.tgz#ee8d0470a98ece687d2f1ae2ce857a90199a4aba"
@@ -2854,7 +2869,7 @@ css.escape@^1.5.1:
   resolved "https://registry.npmjs.org/css.escape/-/css.escape-1.5.1.tgz"
   integrity sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==
 
-csstype@^3.0.2, csstype@^3.1.2:
+csstype@^3.0.10, csstype@^3.0.2, csstype@^3.1.2:
   version "3.1.3"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.3.tgz"
   integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
@@ -2917,7 +2932,7 @@ deep-is@^0.1.3:
   resolved "https://registry.npmjs.org/deep-is/-/deep-is-0.1.4.tgz"
   integrity sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==
 
-deepmerge@^4.3.1:
+deepmerge@^4.2.2, deepmerge@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.3.1.tgz#44b5f2147cd3b00d4b56137685966f26fd25dd4a"
   integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==

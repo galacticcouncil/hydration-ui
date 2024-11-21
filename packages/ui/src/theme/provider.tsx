@@ -1,5 +1,4 @@
-import { ThemeProvider as EmotionThemeProvider } from "@emotion/react"
-import { useTheme as useEmotionTheme } from "@emotion/react"
+import { ThemeProvider as ThemeUIProvider } from "@theme-ui/core"
 import React, { createContext, useContext, useState } from "react"
 
 import { GlobalStyles } from "@/styles"
@@ -28,14 +27,16 @@ export function useTheme() {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeName>(defaultTheme)
-  const themeProps = useEmotionTheme()
+  const currentTheme = themes[theme]
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, themeProps }}>
-      <EmotionThemeProvider theme={themes[theme]}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme, themeProps: currentTheme }}
+    >
+      <ThemeUIProvider theme={currentTheme}>
         <GlobalStyles />
         {children}
-      </EmotionThemeProvider>
+      </ThemeUIProvider>
     </ThemeContext.Provider>
   )
 }

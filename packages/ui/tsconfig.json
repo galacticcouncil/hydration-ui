@@ -4,7 +4,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "./build",
-    "jsxImportSource": "@emotion/react",
+    "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {

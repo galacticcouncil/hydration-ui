@@ -13,7 +13,7 @@ register(StyleDictionary)
 
 const fetchTokens = async () => {
   const res = await fetch(
-    "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json",
+    "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/ad538c202127107a694fb300237a47d211b7b1dc/tokens.json",
   )
   return res.json()
 }

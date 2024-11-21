@@ -1,4 +1,5 @@
 import { Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 export const LiquidityPage = () => {
@@ -8,7 +9,11 @@ export const LiquidityPage = () => {
       <Text as="h1" fs={40} fw={600} font="Primary-Font">
         {t("liquidity:title")}
       </Text>
-      <p>
+      <p
+        sx={{
+          color: getToken("Colors.aubergine.500"),
+        }}
+      >
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
         laudantium voluptates ipsa temporibus quibusdam animi nostrum in ut
         magni, reprehenderit vel architecto quisquam, fugit eum, assumenda

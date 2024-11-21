@@ -9,7 +9,7 @@ export default defineConfig({
   },
   plugins: [
     react({
-      jsxImportSource: "@emotion/react",
+      jsxImportSource: "@galacticcouncil/ui/jsx",
       babel: {
         plugins: ["@emotion/babel-plugin"],
       },
