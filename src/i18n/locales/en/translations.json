@@ -1109,7 +1109,7 @@
   "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
   "claimingRange.button": "Adjust Claim threshold",
   "claimingRange.modal.title": "Claim threshold",
-  "claimingRange.modal.description": "Adjust which positions are claimed based on the % of claimable rewards",
+  "claimingRange.modal.description": "Adjust which positions are claimed based on the % claimable rewards",
   "claimingRange.modal.button": "Save settings",
   "claimingRange.modal.input.label": "% claimable rewards",
   "claimingRange.modal.input.value": "Default ({{value}}%)",
