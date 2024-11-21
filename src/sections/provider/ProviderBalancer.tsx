@@ -2,30 +2,21 @@ import { PROVIDER_URLS, useProviderRpcUrlStore } from "api/provider"
 import { AppLoader } from "components/AppLoader/AppLoader"
 import { useShallow } from "hooks/useShallow"
 import { PropsWithChildren, useEffect } from "react"
+import { identity } from "utils/helpers"
 import { pingRpc } from "utils/rpc"
-import { pick } from "utils/rx"
+import { pick, uniqBy } from "utils/rx"
 
 async function pingAllAndSort() {
-  const timings = await Promise.all(
+  const timing = await Promise.race(
     PROVIDER_URLS.map(async (url) => {
       const time = await pingRpc(url)
       return { url, time }
     }),
   )
 
-  const sortedRpcList = timings.sort((a, b) => a.time - b.time)
-
-  const fastestRpc = sortedRpcList[0]
-  console.log("RPC timings", timings)
-  console.log(
-    "Connecting to the fastest RPC:",
-    fastestRpc.url,
-    `${fastestRpc.time} ms`,
-  )
-
-  useProviderRpcUrlStore
-    .getState()
-    .setRpcUrlList(sortedRpcList.map((rpc) => rpc.url))
+  const sortedRpcList = uniqBy(identity, [timing.url, ...PROVIDER_URLS])
+  console.log("Connecting to the fastest RPC:", timing.url, `${timing.time} ms`)
+  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList)
 }
 
 export const ProviderBalancer: React.FC<PropsWithChildren> = ({ children }) => {
