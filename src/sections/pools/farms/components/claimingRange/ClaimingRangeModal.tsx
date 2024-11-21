@@ -111,10 +111,11 @@ export const ClaimingRangeModal = ({ onClose }: ClaimingRangeModalProps) => {
         />
 
         <Text fs={14} color="basic400">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vel
-          augue tincidunt, tincidunt dolor aliquam, viverra justo. Morbi
-          fringilla enim mauris, a posuere velit efficitur nec. Maecenas
-          dignissim neque vitae ex vestibulum finibus.{" "}
+          {t("claimingRange.modal.description1")}
+        </Text>
+
+        <Text fs={14} color="basic400">
+          {t("claimingRange.modal.description2")}
         </Text>
 
         <div

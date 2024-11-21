@@ -1107,14 +1107,16 @@
   "memepad.summary.adminRights.burned": "Admin rights revoked",
   "memepad.summary.adminRights.toast.onLoading": "Revoking admin rights...",
   "memepad.summary.adminRights.toast.onSuccess": "Admin rights revoked.",
-  "claimingRange.button": "Adjust claiming range",
-  "claimingRange.modal.title": "Claiming range setings",
-  "claimingRange.modal.description": "Claim your rewards only when loyalty factor reaches a certain %",
+  "claimingRange.button": "Adjust Claim threshold",
+  "claimingRange.modal.title": "Claim threshold",
+  "claimingRange.modal.description": "Adjust which positions are claimed based on the % of claimable rewards",
   "claimingRange.modal.button": "Save settings",
-  "claimingRange.modal.input.label": "Claim at",
+  "claimingRange.modal.input.label": "% claimable rewards",
   "claimingRange.modal.input.value": "Default ({{value}}%)",
   "claimingRange.modal.validation.max": "Max value is {{value}}",
   "claimingRange.modal.validation.min": "Min value is {{value}}",
-  "claimingRange.modal.warning.title": "Are you sure you want<br /> to claim rewards?",
-  "claimingRange.modal.warning.description": " Don't claim rewards too early. Claiming resets your boost and forfeits potential rewards from multiple farming positions"
+  "claimingRange.modal.warning.title": "Are you sure?",
+  "claimingRange.modal.warning.description": " Don't claim rewards too early. Claiming forfeits any non-claimable rewards to the other LPs. Before claiming, make sure that your claim threshold is configured accordingly.",
+  "claimingRange.modal.description1": "After joining a farm, a portion of the accumulated rewards is locked. These rewards unlock over time as you remain in the farm (loyalty factor curve)",
+  "claimingRange.modal.description2": "Using this tool, you can set which positions are claimed based on the % claimable rewards. This allows you to compound your rewards without giving up more locked rewards than configured on this page."
 }
