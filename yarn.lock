@@ -2251,10 +2251,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@4.5.2":
-  version "4.5.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.5.2.tgz#5834f74ae3e06355eb1109cc177053f3dbe153bd"
-  integrity sha512-7T/3D2g+l9j/tru3YMYu7jYADUgR635HDzgi37ucUUMTRpOlTn/EsQAHmdp9zutxd2oi7k5/B3DMU75Vs/myMQ==
+"@galacticcouncil/sdk@4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-4.6.0.tgz#8987373ca2c6e849257f74c80cd940ca2bef12b0"
+  integrity sha512-+mLxetXIkdvwyZIT0IdFX5JFb+cxYnzoSNhDRMxk+/YYPffQ5ZJ/C4ErE+b6SVNX0LZFLQG4uMzODdfcWKTcmw==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2262,6 +2262,7 @@
     "@galacticcouncil/math-stableswap" "^1.0.0"
     "@galacticcouncil/math-xyk" "^1.0.0"
     "@thi.ng/cache" "^2.1.35"
+    "@thi.ng/memoize" "^4.0.2"
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
@@ -2283,7 +2284,7 @@
   dependencies:
     "@galacticcouncil/xcm-core" "^5.3.1"
 
-"@galacticcouncil/xcm-core@^5.3.0", "@galacticcouncil/xcm-core@^5.3.1":
+"@galacticcouncil/xcm-core@^5.3.1":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-5.3.1.tgz#3faff5d1744cab84aea6fd6f493c5ac43079d961"
   integrity sha512-TL2XONZ6/x+bIvhcIy09moDRXe5N9McHtNXKPwyC2icJd1qxXlS/l3mITugdsi7rcf2isWZ6/NUxEIZP4B3QoQ==
@@ -2295,12 +2296,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^6.3.1":
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.3.1.tgz#199a38d9780d7b942e88cf85774446eb730e4541"
-  integrity sha512-8VDoz2YyRzrBGRh59ZuGzusxHdD5pbGlx1XJOcozi8kFgiW0lRbqJ9AcLhDfH41EYB6csVdZQLde2kcXsfvR0w==
+"@galacticcouncil/xcm-sdk@^6.3.2":
+  version "6.3.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-6.3.2.tgz#fd46536fe6da62d3d3a6d47495c73928612a2ee2"
+  integrity sha512-D1+grKizYSEZcOH9y8H+hm4mFd/W3Rn8BYUUyACvIcDFUeJ4ZnPBdXnM9sGJ7GVGFmaWh3tm5ThohHIkHhlaNQ==
   dependencies:
-    "@galacticcouncil/xcm-core" "^5.3.0"
+    "@galacticcouncil/xcm-core" "^5.3.1"
 
 "@graphql-typed-document-node/core@^3.2.0":
   version "3.2.0"
@@ -5418,6 +5419,11 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
+"@thi.ng/api@^8.11.12":
+  version "8.11.12"
+  resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.12.tgz#4126fd878b9c506bc322c111c10ba7cfcaa6c0ad"
+  integrity sha512-qSOeCu1unXFF3NRQFEqdxgMlSAty/4G58rhjugW7IVEP/N8kuKuzfqxYrHRsZ3k1G8b/UtxSUBqgYH2OmLnbsw==
+
 "@thi.ng/api@^8.11.4":
   version "8.11.4"
   resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.4.tgz#d023ef8751e1360a4c9d2dcca7a3d1e359cfed2f"
@@ -5533,6 +5539,13 @@
   integrity sha512-szssAVDjTUrbjMBlpAT8sbn0R0XaEW+z62SGS0a4lcGRIvf9HcDUdgj6H8PWjNNMzPMQcIUHFOZIN8QeGl4uMw==
   dependencies:
     "@thi.ng/api" "^8.11.4"
+
+"@thi.ng/memoize@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@thi.ng/memoize/-/memoize-4.0.2.tgz#310b53fdd57d86b3612a256d993f7c7f7d92c243"
+  integrity sha512-PuYKQ6qDRwEahTX2mpT18j5+qE7QPBw0KRKWA6fdUPtif4nzkpk5N1tYy9P1/oMEww5FAY5FhAnCQqFB1jg6gw==
+  dependencies:
+    "@thi.ng/api" "^8.11.12"
 
 "@thi.ng/paths@^5.1.84":
   version "5.1.84"
