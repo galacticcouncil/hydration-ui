@@ -140,10 +140,10 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
-    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? PROVIDER_URLS : [rpcUrl]
+  return autoMode ? rpcUrlList : [rpcUrl]
 }
 
 export const useIsTestnet = () => {
