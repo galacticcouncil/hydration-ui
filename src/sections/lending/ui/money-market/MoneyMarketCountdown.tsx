@@ -18,7 +18,7 @@ import {
 import { VoidFn } from "@polkadot/api/types"
 import { Codec } from "@polkadot/types/types"
 
-const MONEY_MARKET_REFERENDUM_INDEX = "189"
+const MONEY_MARKET_REFERENDUM_INDEX = "191"
 const MONEY_MARKET_REFERENDUM_LINK = `${import.meta.env.VITE_REFERENDUM_LINK}/${MONEY_MARKET_REFERENDUM_INDEX}`
 
 const PeepoAnimation: React.FC<{ className?: string }> = ({ className }) => (
