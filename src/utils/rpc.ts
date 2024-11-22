@@ -1,4 +1,4 @@
-import { WsProvider } from "@polkadot/api"
+import { wsToHttp } from "utils/formatting"
 
 /**
  * Sends a ping request to the specified URL and measures the round-trip time.
@@ -8,24 +8,26 @@ import { WsProvider } from "@polkadot/api"
  */
 export async function pingRpc(url: string, timeoutMs = 5000): Promise<number> {
   const start = performance.now()
-  const provider = new WsProvider(url, false)
 
   try {
     const end = await Promise.race([
-      new Promise<number>((resolve) => {
-        provider.connect()
-        provider.on("connected", () => {
-          provider.disconnect()
-          resolve(performance.now())
+      new Promise<number>(async (resolve) => {
+        const res = await fetch(wsToHttp(url), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: 1,
+            jsonrpc: "2.0",
+            method: "chain_getBlockHash",
+            params: [],
+          }),
         })
-        provider.on("error", () => {
-          provider.disconnect()
-          resolve(Infinity)
-        })
+        resolve(res.ok ? performance.now() : Infinity)
       }),
       new Promise<number>((resolve) => {
         setTimeout(() => {
-          provider.disconnect()
           resolve(Infinity)
         }, timeoutMs)
       }),
