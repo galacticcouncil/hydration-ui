@@ -15,6 +15,7 @@ import { BN_0 } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
 import { millisecondsInHour } from "date-fns/constants"
+import { getAccountBalanceData } from "api/accountBalances"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -179,7 +180,7 @@ const parseDepositData = (
 
 export const useAccountAssets = (givenAddress?: string) => {
   const { account } = useAccount()
-  const { api, balanceClient, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, getShareTokenByAddress, isShareToken } =
     useAssets()
 
@@ -194,7 +195,7 @@ export const useAccountAssets = (givenAddress?: string) => {
               api.consts.omnipool.nftCollectionId,
               api.consts.omnipoolLiquidityMining.nftCollectionId,
               api.consts.xykLiquidityMining.nftCollectionId,
-              balanceClient.getAccountBalanceData(address),
+              getAccountBalanceData(api, address),
             ])
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([

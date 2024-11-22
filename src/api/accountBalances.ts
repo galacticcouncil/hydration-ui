@@ -4,49 +4,55 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { u32 } from "@polkadot/types"
+import { u32, Vec } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { parseBalanceData } from "./balances"
-import { BalanceClient } from "@galacticcouncil/sdk"
+import { ITuple } from "@polkadot/types-codec/types"
+import { OrmlTokensAccountData } from "@polkadot/types/lookup"
 
 export const useAccountBalances = (
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) => {
-  const { balanceClient, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh
       ? QUERY_KEYS.accountBalances(address)
       : QUERY_KEYS.accountBalancesLive(address),
-    !!address ? getAccountBalances(balanceClient, address) : undefinedNoop,
+    !!address ? getAccountBalances(api, address) : undefinedNoop,
     { enabled: address != null && isLoaded },
   )
 }
 
 export const useAccountsBalances = (addresses: string[]) => {
-  const { balanceClient } = useRpcProvider()
+  const { api } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.accountsBalances(addresses),
     () =>
       Promise.all(
-        addresses.map((address) =>
-          getAccountBalances(balanceClient, address)(),
-        ),
+        addresses.map((address) => getAccountBalances(api, address)()),
       ),
     { enabled: !!addresses.length },
   )
 }
 
+export const getAccountBalanceData = async (
+  api: ApiPromise,
+  accountId: AccountId32 | string,
+) => {
+  return await api.call.currenciesApi.accounts<
+    Vec<ITuple<[u32, OrmlTokensAccountData]>>
+  >(accountId.toString())
+}
+
 export const getAccountBalances = (
-  balanceClient: BalanceClient,
+  api: ApiPromise,
   accountId: AccountId32 | string,
 ) => {
   return async () => {
-    const tokens = await balanceClient.getAccountBalanceData(
-      accountId.toString(),
-    )
+    const tokens = await getAccountBalanceData(api, accountId.toString())
 
     const balances = tokens.map(([id, data]) => {
       return parseBalanceData(data, id.toString(), accountId.toString())
