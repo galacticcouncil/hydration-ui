@@ -7,15 +7,14 @@ import { pingRpc } from "utils/rpc"
 import { pick, uniqBy } from "utils/rx"
 
 async function pingAllAndSort() {
-  const timing = await Promise.race(
+  const fastestRpc = await Promise.race(
     PROVIDER_URLS.map(async (url) => {
       const time = await pingRpc(url)
       return { url, time }
     }),
   )
 
-  const sortedRpcList = uniqBy(identity, [timing.url, ...PROVIDER_URLS])
-  console.log("Connecting to the fastest RPC:", timing.url, `${timing.time} ms`)
+  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
   useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList)
 }
 
