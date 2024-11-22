@@ -19,6 +19,7 @@ import {
 } from "api/farms"
 import { BN_0 } from "utils/constants"
 import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
+import BigNumber from "bignumber.js"
 
 type Props = { onClose: () => void }
 
@@ -112,7 +113,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
 
               <Text fs={14} sx={{ mt: 6 }}>
                 <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-                  <DisplayValue value={total} />
+                  <DisplayValue value={BigNumber(total)} />
                 </Trans>
               </Text>
 
@@ -122,20 +123,17 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
                 fw={300}
                 css={{
                   borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
-                  borderBottom: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
                 }}
               >
                 <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
-                  <DisplayValue value={diffRewards} />
+                  <DisplayValue value={BigNumber(diffRewards)} />
                 </Trans>
               </Text>
-
-              <ClaimingRangeButton />
 
               <SClaimButton
                 disabled={
                   !claimableValues ||
-                  total.isZero() ||
+                  BigNumber(total).isZero() ||
                   account?.isExternalWalletConnected
                 }
                 onClick={claim}
@@ -144,6 +142,10 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
                   {t("farms.claimCard.button.label")}
                 </Text>
               </SClaimButton>
+
+              <Spacer size={12} />
+
+              <ClaimingRangeButton />
             </div>
           </SContent>
         </LazyMotion>

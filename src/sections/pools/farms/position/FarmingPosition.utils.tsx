@@ -203,7 +203,7 @@ export const getFarmingPositionCardHeight = (
   let height = isDesktop ? 380 : 350
 
   if (!isXyk) {
-    height += 80
+    height += 60
   }
 
   if (isAvailableFarms) {

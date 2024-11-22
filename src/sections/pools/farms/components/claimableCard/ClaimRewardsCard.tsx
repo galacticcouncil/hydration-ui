@@ -133,7 +133,7 @@ export const ClaimRewardsCard = (props: {
             css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-              <DisplayValue value={total} />
+              <DisplayValue value={BN(total)} />
             </Trans>
           </Text>
 
@@ -146,7 +146,7 @@ export const ClaimRewardsCard = (props: {
             }}
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
-              <DisplayValue value={diffRewards} />
+              <DisplayValue value={BN(diffRewards)} />
             </Trans>
           </Text>
         </div>
@@ -154,9 +154,7 @@ export const ClaimRewardsCard = (props: {
           variant="primary"
           size="small"
           sx={{ height: "fit-content", width: ["100%", 275] }}
-          disabled={
-            account?.isExternalWalletConnected || (total && total.isZero())
-          }
+          disabled={account?.isExternalWalletConnected || BN(total).isZero()}
           onClick={claim}
           isLoading={isLoading}
         >

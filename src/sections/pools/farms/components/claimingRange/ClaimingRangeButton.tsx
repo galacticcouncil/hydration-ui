@@ -14,7 +14,7 @@ export const ClaimingRangeButton = () => {
     <>
       <ButtonTransparent
         name="Adjust claiming range"
-        sx={{ flex: "row", gap: 4, align: "top", pb: 10 }}
+        sx={{ flex: "row", gap: 4, align: "top" }}
         css={{ "&:hover": { opacity: 0.8 }, outline: "none" }}
         onClick={() => setOpen(true)}
       >

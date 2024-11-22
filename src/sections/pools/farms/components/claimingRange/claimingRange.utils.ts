@@ -9,7 +9,7 @@ type ClaimingRangeStore = {
 export const useClaimingRange = create<ClaimingRangeStore>()(
   persist(
     (set) => ({
-      range: "0.95",
+      range: "0.99",
       update: (value) => set(() => ({ range: value })),
     }),
     {
@@ -19,4 +19,4 @@ export const useClaimingRange = create<ClaimingRangeStore>()(
 )
 
 export const WARNING_LIMIT = 50
-export const DEFAULT_VALUE = 95
+export const DEFAULT_VALUE = 99

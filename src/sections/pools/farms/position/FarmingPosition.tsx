@@ -132,10 +132,9 @@ export const FarmingPosition = ({
   const poolClaimableValues = claimableValues
     ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
     ?.filter((farm) => farm.depositId === depositData.depositId)
-  console.log(poolClaimableValues, "poolClaimableValues")
-  const { total, maxTotal, claimableAssetValues } = useSummarizeClaimableValues(
-    poolClaimableValues ?? [],
-  )
+
+  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
+    useSummarizeClaimableValues(poolClaimableValues ?? [])
 
   const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
     const asset = getAssetWithFallback(key)
@@ -158,7 +157,7 @@ export const FarmingPosition = ({
   const maxTotalRewardsValue = claimableAssets
     .map((claimableAsset) =>
       t("value.tokenWithSymbol", {
-        value: claimableAsset.value.maxRewards,
+        value: BigNumber(claimableAsset.value.maxRewards),
         symbol: claimableAsset.symbol,
       }),
     )
@@ -199,17 +198,20 @@ export const FarmingPosition = ({
           {t("farms.positions.claimableRewards")}
         </Text>
         <div sx={{ flex: ["column", "row"], gap: 8 }}>
-          {claimableAssets.map((claimableAsset, index) => {
-            const percentage = BigNumber(claimableAsset.value.rewards)
-              .div(claimableAsset.value.maxRewards)
+          {totalsByYieldFarms.map((claimableAsset, index) => {
+            const percentage = BigNumber(claimableAsset.total)
+              .div(claimableAsset.maxTotal)
               .times(100)
 
             return (
               <div
-                key={`${claimableAsset.id}_${index}`}
+                key={`${claimableAsset.yieldFarmId}_${index}`}
                 sx={{ flex: "row", gap: 8, align: "center", flexGrow: 1 }}
               >
-                <Icon size={20} icon={<AssetLogo id={claimableAsset.id} />} />
+                <Icon
+                  size={20}
+                  icon={<AssetLogo id={claimableAsset.assetId} />}
+                />
                 <LinearProgress
                   size="small"
                   color="brightBlue300"
@@ -271,25 +273,23 @@ export const FarmingPosition = ({
           </Text>
           <div sx={{ flex: "column", align: "flex-end" }}>
             {isDesktop && <Text fs={14}>{maxTotalRewardsValue}</Text>}
-            {maxTotal && (
-              <div sx={{ flex: "row", gap: 4 }}>
-                <DollarAssetValue
-                  value={maxTotal}
-                  wrapper={(children) => (
-                    <Text
-                      fs={[14, 11]}
-                      lh={[14, 12]}
-                      color={["basic100", "whiteish500"]}
-                    >
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={maxTotal} />
-                </DollarAssetValue>
-                {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
-              </div>
-            )}
+            <div sx={{ flex: "row", gap: 4 }}>
+              <DollarAssetValue
+                value={BigNumber(maxTotal)}
+                wrapper={(children) => (
+                  <Text
+                    fs={[14, 11]}
+                    lh={[14, 12]}
+                    color={["basic100", "whiteish500"]}
+                  >
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={BigNumber(maxTotal)} />
+              </DollarAssetValue>
+              {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
+            </div>
           </div>
         </SValueContainer>
         <SSeparator />
@@ -299,26 +299,23 @@ export const FarmingPosition = ({
           </Text>
           <div sx={{ flex: "column", align: "flex-end" }}>
             {isDesktop && <Text fs={14}>{totalRewardsValue}</Text>}
-
-            {total && (
-              <div sx={{ flex: "row", gap: 4 }}>
-                <DollarAssetValue
-                  value={total}
-                  wrapper={(children) => (
-                    <Text
-                      fs={[14, 11]}
-                      lh={[14, 12]}
-                      color={["basic100", "whiteish500"]}
-                    >
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={total} />
-                </DollarAssetValue>
-                {!isDesktop && <InfoTooltip text={totalRewardsValue} />}
-              </div>
-            )}
+            <div sx={{ flex: "row", gap: 4 }}>
+              <DollarAssetValue
+                value={BigNumber(total)}
+                wrapper={(children) => (
+                  <Text
+                    fs={[14, 11]}
+                    lh={[14, 12]}
+                    color={["basic100", "whiteish500"]}
+                  >
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={BigNumber(total)} />
+              </DollarAssetValue>
+              {!isDesktop && <InfoTooltip text={totalRewardsValue} />}
+            </div>
           </div>
         </SValueContainer>
         <SSeparator />

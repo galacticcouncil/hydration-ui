@@ -719,21 +719,6 @@ export const useAccountClaimableFarmValues = () => {
 export const useSummarizeClaimableValues = (
   claimableValues: TClaimableFarmValue[],
 ) => {
-  // const claimableAssetValues = claimableValues.reduce<
-  //   Record<string, { rewards: number; maxRewards: number }>
-  // >((acc, farm) => {
-  //   const { rewardCurrency, value, maxValue } = farm
-
-  //   if (!acc[rewardCurrency]) {
-  //     acc[rewardCurrency] = { rewards: 0, maxRewards: 0 }
-  //   }
-
-  //   acc[rewardCurrency].rewards += parseFloat(value)
-  //   acc[rewardCurrency].maxRewards += parseFloat(maxValue)
-
-  //   return acc
-  // }, {})
-
   const assetsId = Array.from(
     new Set(
       claimableValues.map((claimableValue) => claimableValue.rewardCurrency),
@@ -742,111 +727,93 @@ export const useSummarizeClaimableValues = (
 
   const { data: spotPrices } = useDisplayPrices(assetsId)
 
-  const { total, maxTotal, claimableAssetValues, totalsByDepositId } =
+  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
     useMemo(() => {
       if (!spotPrices) {
         return {
-          total: BN_0,
-          maxTotal: BN_0,
+          total: "0",
+          maxTotal: "0",
           claimableAssetValues: {},
-          totalsByDepositId: {},
+          totalsByYieldFarms: [],
         }
       }
 
       return claimableValues.reduce<{
-        total: BN
-        maxTotal: BN
+        total: string
+        maxTotal: string
         claimableAssetValues: Record<
           string,
-          { rewards: number; maxRewards: number }
+          { rewards: string; maxRewards: string }
         >
-        totalsByDepositId: Record<string, { total: BN; maxTotal: BN }>
+        totalsByYieldFarms: Array<{
+          yieldFarmId: string
+          total: string
+          maxTotal: string
+          assetId: string
+        }>
       }>(
         (acc, farm) => {
-          const { rewardCurrency, value, maxValue, depositId } = farm
+          const { rewardCurrency, value, maxValue, yieldFarmId } = farm
 
-          // Initialize the asset if it doesn't exist in the accumulator
           if (!acc.claimableAssetValues[rewardCurrency]) {
             acc.claimableAssetValues[rewardCurrency] = {
-              rewards: 0,
-              maxRewards: 0,
+              rewards: "0",
+              maxRewards: "0",
             }
           }
 
-          // Initialize the depositId if it doesn't exist in the accumulator
-          if (!acc.totalsByDepositId[depositId]) {
-            acc.totalsByDepositId[depositId] = { total: BN_0, maxTotal: BN_0 }
-          }
+          const rewards = BN(value)
+          const maxRewards = BN(maxValue)
 
-          // Update claimable values
-          const rewards = parseFloat(value)
-          const maxRewards = parseFloat(maxValue)
-          acc.claimableAssetValues[rewardCurrency].rewards += rewards
-          acc.claimableAssetValues[rewardCurrency].maxRewards += maxRewards
+          acc.claimableAssetValues[rewardCurrency].rewards = new BN(
+            acc.claimableAssetValues[rewardCurrency].rewards,
+          )
+            .plus(rewards)
+            .toString()
 
-          // Find the spot price for the current reward currency
+          acc.claimableAssetValues[rewardCurrency].maxRewards = new BN(
+            acc.claimableAssetValues[rewardCurrency].maxRewards,
+          )
+            .plus(maxRewards)
+            .toString()
+
           const { spotPrice } =
             spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
 
-          // Update totals if the spot price is available
           if (spotPrice) {
-            const rewardTotal = spotPrice.times(rewards)
-            const maxRewardTotal = spotPrice.times(maxRewards)
+            const rewardTotal = spotPrice.times(rewards).toString()
+            const maxRewardTotal = spotPrice.times(maxRewards).toString()
 
-            // Update the overall totals
-            acc.total = acc.total.plus(rewardTotal)
-            acc.maxTotal = acc.maxTotal.plus(maxRewardTotal)
+            acc.total = BN(acc.total).plus(rewardTotal).toString()
+            acc.maxTotal = BN(acc.maxTotal).plus(maxRewardTotal).toString()
 
-            // Update totals by depositId
-            acc.totalsByDepositId[depositId].total =
-              acc.totalsByDepositId[depositId].total.plus(rewardTotal)
-            acc.totalsByDepositId[depositId].maxTotal =
-              acc.totalsByDepositId[depositId].maxTotal.plus(maxRewardTotal)
+            acc.totalsByYieldFarms.push({
+              yieldFarmId,
+              total: rewardTotal,
+              maxTotal: maxRewardTotal,
+              assetId: rewardCurrency,
+            })
           }
 
           return acc
         },
         {
-          total: BN_0,
-          maxTotal: BN_0,
+          total: "0",
+          maxTotal: "0",
           claimableAssetValues: {},
-          totalsByDepositId: {},
+          totalsByYieldFarms: [],
         },
       )
     }, [claimableValues, spotPrices])
 
-  const totals = useMemo(() => {
-    if (spotPrices) {
-      let total = BN_0
-      let maxTotal = BN_0
-      for (const rewardCurrency in claimableAssetValues) {
-        if (claimableAssetValues.hasOwnProperty(rewardCurrency)) {
-          const assetAmount = claimableAssetValues[rewardCurrency].rewards
-          const maxAssetAmount = claimableAssetValues[rewardCurrency].maxRewards
+  const diffRewards = BN(maxTotal).minus(total).toString()
 
-          const { spotPrice } =
-            spotPrices.find(
-              (spotPrice) => spotPrice?.tokenIn === rewardCurrency,
-            ) ?? {}
-
-          if (spotPrice) {
-            total = total.plus(spotPrice.times(assetAmount))
-            maxTotal = maxTotal.plus(spotPrice.times(maxAssetAmount))
-          }
-        }
-      }
-
-      const diffRewards = maxTotal.minus(total)
-
-      return { total, maxTotal, diffRewards }
-    }
-  }, [claimableAssetValues, spotPrices])
-  console.log(claimableAssetValues, totalsByDepositId, "claimableAssetValues")
   return {
-    total: totals?.total,
-    maxTotal: totals?.maxTotal,
-    diffRewards: totals?.diffRewards,
+    total,
+    maxTotal,
+    diffRewards,
     claimableAssetValues,
+    totalsByYieldFarms,
   }
 }
 

@@ -120,13 +120,6 @@ export const FarmingPositionWrapper = () => {
 
       const isXYK = position.isXyk
       const joinedFarmsCount = farms.length - availableYieldFarms.length
-      // const cardHeight = availableYieldFarms.length
-      //   ? isXYK
-      //     ? 406
-      //     : 472
-      //   : isXYK
-      //     ? 350
-      //     : 430
 
       const cardHeight = getFarmingPositionCardHeight(
         !!availableYieldFarms.length,
@@ -135,23 +128,12 @@ export const FarmingPositionWrapper = () => {
         joinedFarmsCount,
       )
 
-      console.log(
-        isDesktop,
-        getFarmingPositionCardHeight(
-          !!availableYieldFarms.length,
-          isXYK,
-          isDesktop,
-          joinedFarmsCount,
-        ),
-        cardHeight,
-      )
-
       const depositData = isXYK
         ? xykDeposits.find((xykDeposit) => xykDeposit.depositId === position.id)
         : omnipoolDeposits.find(
             (omnipoolDeposit) => omnipoolDeposit.depositId === position.id,
           )
-      console.log(depositData, farms, "depositData")
+
       if (depositData) {
         acc.positions.push({
           element: (
