@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick, shuffleArray } from "utils/rx"
+import { omit, pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -28,6 +28,7 @@ import {
 import { useSearch } from "@tanstack/react-location"
 import { getReferendumInfo } from "api/democracy"
 import { MONEY_MARKET_REFERENDUM_INDEX } from "sections/lending/ui-config/misc"
+import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -106,6 +107,7 @@ export const useProviderRpcUrlStore = create(
     rpcUrlList: string[]
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setRpcUrlList: (rpcUrlList: string[]) => void
     getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
@@ -113,9 +115,10 @@ export const useProviderRpcUrlStore = create(
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
-      rpcUrlList: shuffleArray(PROVIDER_URLS),
+      rpcUrlList: [],
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setRpcUrlList: (rpcUrlList) => set({ rpcUrlList }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
@@ -129,18 +132,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.2,
-      getStorage: () => ({
-        async getItem(name: string) {
-          return window.localStorage.getItem(name)
-        },
-        setItem(name, value) {
-          window.localStorage.setItem(name, value)
-        },
-        removeItem(name) {
-          window.localStorage.removeItem(name)
-        },
-      }),
+      version: 3,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -368,4 +360,15 @@ export function getProviderInstance(api: ApiPromise) {
   // @ts-ignore
   const options = api?._options
   return options?.provider as WsProvider
+}
+
+export const useProviderPing = (urls: string[], timeoutMs?: number) => {
+  return useQuery(["providerPing", urls], async () => {
+    return Promise.all(
+      urls.map(async (url) => {
+        const time = await pingRpc(url, timeoutMs)
+        return { url, time }
+      }),
+    )
+  })
 }
