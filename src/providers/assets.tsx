@@ -5,13 +5,11 @@ import {
   useContext,
   useMemo,
 } from "react"
-import BN from "bignumber.js"
 import { TAssetStored, useAssetRegistry, useSettingsStore } from "state/store"
 import { Bond } from "@galacticcouncil/sdk"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
-import { BN_0 } from "utils/constants"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
 import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
@@ -61,7 +59,7 @@ const getFullAsset = (asset: TAssetStored) => {
   return {
     ...asset,
     parachainId: asset.origin?.toString(),
-    existentialDeposit: BN(asset.existentialDeposit),
+    existentialDeposit: asset.existentialDeposit,
     isToken,
     isBond,
     isStableSwap,
@@ -75,7 +73,7 @@ const fallbackAsset: TAsset = {
   name: "N/A",
   symbol: "N/a",
   decimals: 12,
-  existentialDeposit: BN_0,
+  existentialDeposit: "0",
   parachainId: undefined,
   isToken: false,
   isBond: false,

@@ -149,18 +149,9 @@ export const QUERY_KEYS = {
   allTrades: (assetId?: number) => ["allTrades", assetId],
   allOmnipoolTrades: ["allOmnipoolTrades"],
   allStableswapTrades: ["allStableswapTrades"],
-  tradeVolume: (poolId: Maybe<string | u32>) => [
-    "tradeVolume",
-    poolId?.toString(),
-  ],
-  xykTradeVolume: (poolId: Maybe<string | u32>) => [
-    "xykTradeVolume",
-    poolId?.toString(),
-  ],
-  tradeVolumeLive: (poolId: Maybe<string | u32>) => [
-    QUERY_KEY_PREFIX,
-    "tradeVolume",
-    poolId?.toString(),
+  xykSquidVolumes: (addresses: string[]) => [
+    "xykSquidVolumes",
+    addresses.join(","),
   ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null

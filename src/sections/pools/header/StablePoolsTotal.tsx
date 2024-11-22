@@ -5,8 +5,6 @@ import { BN_0, BN_1 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
-import { useMemo } from "react"
 
 export const StablePoolsTotal = () => {
   const { getAssetWithFallback, stableswap } = useAssets()
@@ -59,51 +57,4 @@ export const StablePoolsTotal = () => {
   return (
     <HeaderTotalData isLoading={isLoading} value={total} fontSize={[19, 24]} />
   )
-}
-
-export const useMyStablePoolaTotal = () => {
-  const { data } = useAccountAssets()
-
-  const { stablepoolIds, stablepoolBalances } = useMemo(() => {
-    const stablepoolIds = []
-    const stablepoolBalances = []
-    if (data) {
-      for (const [key, value] of data.accountStableswapMap) {
-        if (BN(value.balance.freeBalance).gt(0)) {
-          stablepoolIds.push(key)
-          stablepoolBalances.push(value)
-        }
-      }
-    }
-    return { stablepoolIds, stablepoolBalances }
-  }, [data])
-
-  const spotPrices = useDisplayPrices(stablepoolIds, true)
-  const isLoading = spotPrices.isInitialLoading
-
-  const value = !isLoading
-    ? stablepoolBalances.reduce((memo, balance) => {
-        const { assetId, freeBalance } = balance.balance
-
-        const spotPrice =
-          spotPrices.data?.find(
-            (spotPrices) => spotPrices?.tokenIn === assetId.toString(),
-          )?.spotPrice ?? BN_1
-
-        const meta = balance.asset
-
-        const balanceDisplay = BN(freeBalance)
-          .shiftedBy(-meta.decimals)
-          .multipliedBy(spotPrice)
-
-        return memo.plus(balanceDisplay)
-      }, BN_0)
-    : BN_0
-
-  return { value, isLoading }
-}
-
-export const MyStablePoolsTotal = () => {
-  const { value, isLoading } = useMyStablePoolaTotal()
-  return <HeaderTotalData isLoading={isLoading} value={value} fontSize={19} />
 }
