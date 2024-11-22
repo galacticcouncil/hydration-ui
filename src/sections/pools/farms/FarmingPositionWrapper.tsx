@@ -13,17 +13,23 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { ReactElement, useMemo } from "react"
 import { BN_0 } from "utils/constants"
-import { useAllFarmDeposits } from "./position/FarmingPosition.utils"
+import {
+  getFarmingPositionCardHeight,
+  useAllFarmDeposits,
+} from "./position/FarmingPosition.utils"
 import { Separator } from "components/Separator/Separator"
 import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const FarmingPositionWrapper = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { pool, isXYK } = usePoolData()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const farms = pool.farms
 
@@ -113,20 +119,39 @@ export const FarmingPositionWrapper = () => {
         ) ?? []
 
       const isXYK = position.isXyk
-      const cardHeight = availableYieldFarms.length
-        ? isXYK
-          ? 406
-          : 472
-        : isXYK
-          ? 350
-          : 390
+      const joinedFarmsCount = farms.length - availableYieldFarms.length
+      // const cardHeight = availableYieldFarms.length
+      //   ? isXYK
+      //     ? 406
+      //     : 472
+      //   : isXYK
+      //     ? 350
+      //     : 430
+
+      const cardHeight = getFarmingPositionCardHeight(
+        !!availableYieldFarms.length,
+        isXYK,
+        isDesktop,
+        joinedFarmsCount,
+      )
+
+      console.log(
+        isDesktop,
+        getFarmingPositionCardHeight(
+          !!availableYieldFarms.length,
+          isXYK,
+          isDesktop,
+          joinedFarmsCount,
+        ),
+        cardHeight,
+      )
 
       const depositData = isXYK
         ? xykDeposits.find((xykDeposit) => xykDeposit.depositId === position.id)
         : omnipoolDeposits.find(
             (omnipoolDeposit) => omnipoolDeposit.depositId === position.id,
           )
-
+      console.log(depositData, farms, "depositData")
       if (depositData) {
         acc.positions.push({
           element: (

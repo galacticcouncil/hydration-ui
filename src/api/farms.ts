@@ -719,24 +719,101 @@ export const useAccountClaimableFarmValues = () => {
 export const useSummarizeClaimableValues = (
   claimableValues: TClaimableFarmValue[],
 ) => {
-  const claimableAssetValues = claimableValues.reduce<
-    Record<string, { rewards: number; maxRewards: number }>
-  >((acc, farm) => {
-    const { rewardCurrency, value, maxValue } = farm
+  // const claimableAssetValues = claimableValues.reduce<
+  //   Record<string, { rewards: number; maxRewards: number }>
+  // >((acc, farm) => {
+  //   const { rewardCurrency, value, maxValue } = farm
 
-    if (!acc[rewardCurrency]) {
-      acc[rewardCurrency] = { rewards: 0, maxRewards: 0 }
-    }
+  //   if (!acc[rewardCurrency]) {
+  //     acc[rewardCurrency] = { rewards: 0, maxRewards: 0 }
+  //   }
 
-    acc[rewardCurrency].rewards += parseFloat(value)
-    acc[rewardCurrency].maxRewards += parseFloat(maxValue)
+  //   acc[rewardCurrency].rewards += parseFloat(value)
+  //   acc[rewardCurrency].maxRewards += parseFloat(maxValue)
 
-    return acc
-  }, {})
+  //   return acc
+  // }, {})
 
-  const assetsId = Object.keys(claimableAssetValues)
+  const assetsId = Array.from(
+    new Set(
+      claimableValues.map((claimableValue) => claimableValue.rewardCurrency),
+    ),
+  )
 
   const { data: spotPrices } = useDisplayPrices(assetsId)
+
+  const { total, maxTotal, claimableAssetValues, totalsByDepositId } =
+    useMemo(() => {
+      if (!spotPrices) {
+        return {
+          total: BN_0,
+          maxTotal: BN_0,
+          claimableAssetValues: {},
+          totalsByDepositId: {},
+        }
+      }
+
+      return claimableValues.reduce<{
+        total: BN
+        maxTotal: BN
+        claimableAssetValues: Record<
+          string,
+          { rewards: number; maxRewards: number }
+        >
+        totalsByDepositId: Record<string, { total: BN; maxTotal: BN }>
+      }>(
+        (acc, farm) => {
+          const { rewardCurrency, value, maxValue, depositId } = farm
+
+          // Initialize the asset if it doesn't exist in the accumulator
+          if (!acc.claimableAssetValues[rewardCurrency]) {
+            acc.claimableAssetValues[rewardCurrency] = {
+              rewards: 0,
+              maxRewards: 0,
+            }
+          }
+
+          // Initialize the depositId if it doesn't exist in the accumulator
+          if (!acc.totalsByDepositId[depositId]) {
+            acc.totalsByDepositId[depositId] = { total: BN_0, maxTotal: BN_0 }
+          }
+
+          // Update claimable values
+          const rewards = parseFloat(value)
+          const maxRewards = parseFloat(maxValue)
+          acc.claimableAssetValues[rewardCurrency].rewards += rewards
+          acc.claimableAssetValues[rewardCurrency].maxRewards += maxRewards
+
+          // Find the spot price for the current reward currency
+          const { spotPrice } =
+            spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
+
+          // Update totals if the spot price is available
+          if (spotPrice) {
+            const rewardTotal = spotPrice.times(rewards)
+            const maxRewardTotal = spotPrice.times(maxRewards)
+
+            // Update the overall totals
+            acc.total = acc.total.plus(rewardTotal)
+            acc.maxTotal = acc.maxTotal.plus(maxRewardTotal)
+
+            // Update totals by depositId
+            acc.totalsByDepositId[depositId].total =
+              acc.totalsByDepositId[depositId].total.plus(rewardTotal)
+            acc.totalsByDepositId[depositId].maxTotal =
+              acc.totalsByDepositId[depositId].maxTotal.plus(maxRewardTotal)
+          }
+
+          return acc
+        },
+        {
+          total: BN_0,
+          maxTotal: BN_0,
+          claimableAssetValues: {},
+          totalsByDepositId: {},
+        },
+      )
+    }, [claimableValues, spotPrices])
 
   const totals = useMemo(() => {
     if (spotPrices) {
@@ -764,7 +841,7 @@ export const useSummarizeClaimableValues = (
       return { total, maxTotal, diffRewards }
     }
   }, [claimableAssetValues, spotPrices])
-
+  console.log(claimableAssetValues, totalsByDepositId, "claimableAssetValues")
   return {
     total: totals?.total,
     maxTotal: totals?.maxTotal,
