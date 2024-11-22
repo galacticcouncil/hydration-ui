@@ -18,6 +18,7 @@ import {
   useSummarizeClaimableValues,
 } from "api/farms"
 import { BN_0 } from "utils/constants"
+import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 type Props = { onClose: () => void }
 
@@ -36,8 +37,11 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
         )
       : []
 
-    const { total = BN_0, claimableAssetValues } =
-      useSummarizeClaimableValues(claimableValues)
+    const {
+      total = BN_0,
+      claimableAssetValues,
+      diffRewards,
+    } = useSummarizeClaimableValues(claimableValues)
 
     const claimableAssets = Object.keys(claimableAssetValues ?? {}).map(
       (key) => {
@@ -84,15 +88,15 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
             }}
             css={{ overflow: "hidden" }}
           >
-            <div sx={{ p: 40, flex: "column" }}>
-              <Text>{t("farms.claimCard.title")}</Text>
+            <div sx={{ p: 34, flex: "column" }}>
+              <Text font="GeistMonoSemiBold">{t("farms.claimCard.title")}</Text>
               <Spacer size={16} />
               {isLoading && <Skeleton height={25} width={150} />}
               {claimableAssets.map((claimableAsset, index) => (
                 <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
-                  <Text fs={19} lh={19} sx={{ mb: 8 }}>
+                  <Text fs={16} lh={19} sx={{ mb: 8 }} font="GeistMedium">
                     {t("value.tokenWithSymbol", {
-                      value: claimableAsset.value,
+                      value: claimableAsset.value.rewards,
                       symbol: claimableAsset.symbol,
                     })}
                   </Text>
@@ -105,12 +109,29 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
                   )}
                 </div>
               ))}
+
               <Text fs={14} sx={{ mt: 6 }}>
                 <Trans t={t} i18nKey="farms.claimCard.claim.usd">
                   <DisplayValue value={total} />
                 </Trans>
               </Text>
-              <Spacer size={18} />
+
+              <Text
+                fs={14}
+                sx={{ py: 8, mt: 8, mb: 10 }}
+                fw={300}
+                css={{
+                  borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
+                  borderBottom: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
+                }}
+              >
+                <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
+                  <DisplayValue value={diffRewards} />
+                </Trans>
+              </Text>
+
+              <ClaimingRangeButton />
+
               <SClaimButton
                 disabled={
                   !claimableValues ||

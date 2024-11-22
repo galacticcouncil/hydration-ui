@@ -115,11 +115,11 @@ export const FarmingPositionWrapper = () => {
       const isXYK = position.isXyk
       const cardHeight = availableYieldFarms.length
         ? isXYK
-          ? 346
-          : 392
+          ? 406
+          : 472
         : isXYK
-          ? 270
-          : 312
+          ? 350
+          : 390
 
       const depositData = isXYK
         ? xykDeposits.find((xykDeposit) => xykDeposit.depositId === position.id)

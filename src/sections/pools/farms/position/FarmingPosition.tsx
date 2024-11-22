@@ -23,10 +23,15 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { TFarmAprData } from "api/farms"
+import {
+  TFarmAprData,
+  useAccountClaimableFarmValues,
+  useSummarizeClaimableValues,
+} from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import BigNumber from "bignumber.js"
+import { useAssets } from "providers/assets"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -111,6 +116,27 @@ export const FarmingPosition = ({
   availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
+  const { isShareToken, getAssetWithFallback } = useAssets()
+  const {
+    pool: { meta },
+  } = usePoolData()
+  const { data: claimableValues } = useAccountClaimableFarmValues()
+
+  const poolClaimableValues = claimableValues
+    ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
+    ?.filter((farm) => farm.depositId === depositData.depositId)
+
+  const { total, maxTotal, claimableAssetValues } = useSummarizeClaimableValues(
+    poolClaimableValues ?? [],
+  )
+
+  const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
+    const asset = getAssetWithFallback(key)
+    return {
+      value: claimableAssetValues[key],
+      symbol: asset.symbol,
+    }
+  })
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -139,7 +165,9 @@ export const FarmingPosition = ({
 
       <JoinedFarms depositNft={depositNft} />
 
-      <SSeparator sx={{ width: "70%", mx: "auto" }} />
+      <SSeparator
+        sx={{ width: "70%", mx: "auto", display: ["none", "inherit"] }}
+      />
 
       <div
         sx={{
@@ -157,6 +185,68 @@ export const FarmingPosition = ({
               date: enteredDate.data,
             })}
           </Text>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.totalRewards")}
+          </Text>
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            <div sx={{ flex: "row", gap: 4 }}>
+              {claimableAssets.map((claimableAsset, index) => (
+                <Text fs={14} key={claimableAsset.symbol}>
+                  {t("value.tokenWithSymbol", {
+                    value: claimableAsset.value.maxRewards,
+                    symbol: claimableAsset.symbol,
+                  })}
+                  {index < claimableAssets.length - 1 && " +"}
+                </Text>
+              ))}
+            </div>
+            {maxTotal && (
+              <DollarAssetValue
+                value={maxTotal}
+                wrapper={(children) => (
+                  <Text fs={11} lh={12} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={maxTotal} />
+              </DollarAssetValue>
+            )}
+          </div>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.claimableRewards")}
+          </Text>
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            <div sx={{ flex: "row", gap: 4 }}>
+              {claimableAssets.map((claimableAsset, index) => (
+                <Text fs={14} key={claimableAsset.symbol}>
+                  {t("value.tokenWithSymbol", {
+                    value: claimableAsset.value.rewards,
+                    symbol: claimableAsset.symbol,
+                  })}
+                  {index < claimableAssets.length - 1 && " +"}
+                </Text>
+              ))}
+            </div>
+            {total && (
+              <DollarAssetValue
+                value={total}
+                wrapper={(children) => (
+                  <Text fs={11} lh={12} color="whiteish500">
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={total} />
+              </DollarAssetValue>
+            )}
+          </div>
         </SValueContainer>
         <SSeparator />
         {isXYKDeposit(depositData) ? (

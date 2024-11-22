@@ -12,7 +12,6 @@ import { required } from "utils/validators"
 import { z } from "zod"
 import { SInputContainer } from "./ClaimingRangeModal.styled"
 import { BoxSwitch } from "components/BoxSwitch/BoxSwitch"
-import { useRefetchClaimableFarmValues } from "api/farms"
 
 type ClaimingRangeModalProps = {
   onClose: () => void
@@ -24,7 +23,6 @@ const MAX_VALUE = 99
 export const ClaimingRangeModal = ({ onClose }: ClaimingRangeModalProps) => {
   const { t } = useTranslation()
   const { range, update } = useClaimingRange()
-  const refetch = useRefetchClaimableFarmValues()
 
   const form = useForm<{
     value: string
@@ -59,8 +57,6 @@ export const ClaimingRangeModal = ({ onClose }: ClaimingRangeModalProps) => {
         onSubmit={form.handleSubmit(({ value }) => {
           update(BN(value).div(100).toString())
           onClose()
-
-          refetch()
         })}
         sx={{ flex: "column", justify: "space-between", gap: 20 }}
         autoComplete="off"

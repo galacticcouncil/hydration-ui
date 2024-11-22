@@ -42,8 +42,8 @@ export const MyPositions = () => {
       {pool.isStablePool && (
         <StablepoolPosition amount={BN(stablepoolAmount)} />
       )}
-      <LiquidityPositionWrapper />
       <FarmingPositionWrapper />
+      <LiquidityPositionWrapper />
     </>
   )
 }
@@ -68,9 +68,8 @@ export const MyXYKPositions = () => {
       >
         {t("liquidity.pool.positions.title")}
       </Text>
-
-      <XYKPosition pool={pool} />
       <FarmingPositionWrapper />
+      <XYKPosition pool={pool} />
     </>
   )
 }

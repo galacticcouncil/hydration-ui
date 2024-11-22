@@ -10,7 +10,6 @@ import { theme } from "theme"
 import { STriggerButton } from "./ClaimAllDrowpdown.styled"
 import { ClaimAllContent } from "./ClaimAllContent"
 import { useAccountAssets } from "api/deposits"
-import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 export const ClaimAllDropdown = () => {
   const { t } = useTranslation()
@@ -83,7 +82,6 @@ export const ClaimAllDropdown = () => {
             )}
           </Popover.Root>
         </div>
-        <ClaimingRangeButton />
       </div>
     </>
   )

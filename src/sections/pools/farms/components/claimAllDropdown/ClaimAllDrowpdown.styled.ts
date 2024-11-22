@@ -77,6 +77,8 @@ export const SContent = styled(motion.div)`
 
   box-shadow: 0px 50px 44px rgba(0, 0, 0, 0.54);
 
+  max-width: 275px;
+
   background: linear-gradient(
       359.21deg,
       #111320 -1.12%,

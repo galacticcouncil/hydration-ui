@@ -14,16 +14,12 @@ export const ClaimingRangeButton = () => {
     <>
       <ButtonTransparent
         name="Adjust claiming range"
-        sx={{ flex: "row", gap: 4, align: "top" }}
-        css={{ "&:hover": { opacity: 0.8 } }}
+        sx={{ flex: "row", gap: 4, align: "top", pb: 10 }}
+        css={{ "&:hover": { opacity: 0.8 }, outline: "none" }}
         onClick={() => setOpen(true)}
       >
-        <Icon
-          sx={{ color: "brightBlue300" }}
-          size={14}
-          icon={<SettingsIcon />}
-        />
-        <Text fs={12} color="brightBlue300">
+        <Icon sx={{ color: "darkBlue100" }} size={14} icon={<SettingsIcon />} />
+        <Text fs={12} color="darkBlue100">
           {t("claimingRange.button")}
         </Text>
       </ButtonTransparent>

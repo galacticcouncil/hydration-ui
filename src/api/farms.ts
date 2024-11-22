@@ -48,6 +48,7 @@ type TActiveFarm = {
 export type TClaimableFarmValue = {
   poolId: string
   value: string
+  maxValue: string
   rewardCurrency: string
   yieldFarmId: string
   globalFarmId: string
@@ -541,10 +542,11 @@ export const getYieldFarmCreated = (indexerUrl: string) => async () => {
 export const useRefetchClaimableFarmValues = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
+  const { range } = useClaimingRange()
 
   return () => {
     queryClient.resetQueries(
-      QUERY_KEYS.accountClaimableFarmValues(account?.address),
+      QUERY_KEYS.accountClaimableFarmValues(account?.address, range),
     )
   }
 }
@@ -564,7 +566,7 @@ export const useAccountClaimableFarmValues = () => {
   const allDeposits = [...omnipoolDeposits, ...xykDeposits]
 
   return useQuery(
-    QUERY_KEYS.accountClaimableFarmValues(accountAddress),
+    QUERY_KEYS.accountClaimableFarmValues(accountAddress, range),
     async () => {
       const accountResolver = getAccountResolver(api.registry)
 
@@ -620,9 +622,6 @@ export const useAccountClaimableFarmValues = () => {
             currentPeriodInFarm,
           )
 
-          // check if loyalty factor match user settings
-          if (BN(range).gt(loyaltyFactor)) return undefined
-
           const accountAddresses: Array<[address: AccountId32, assetId: u32]> =
             [
               [accountResolver(0, isXyk), globalFarm.rewardCurrency],
@@ -676,7 +675,10 @@ export const useAccountClaimableFarmValues = () => {
             return {
               poolId,
               rewardCurrency: reward.assetId,
-              value: scaleHuman(reward.value, meta.decimals).toFixed(8),
+              value: BN(range).gt(loyaltyFactor)
+                ? "0"
+                : scaleHuman(reward.reward, meta.decimals).toFixed(8),
+              maxValue: scaleHuman(reward.maxReward, meta.decimals).toFixed(8),
               yieldFarmId,
               globalFarmId,
               depositId: deposit.id,
@@ -717,27 +719,33 @@ export const useAccountClaimableFarmValues = () => {
 export const useSummarizeClaimableValues = (
   claimableValues: TClaimableFarmValue[],
 ) => {
-  const claimableAssetValues = claimableValues.reduce<Record<string, number>>(
-    (acc, farm) => {
-      const { rewardCurrency, value } = farm
+  const claimableAssetValues = claimableValues.reduce<
+    Record<string, { rewards: number; maxRewards: number }>
+  >((acc, farm) => {
+    const { rewardCurrency, value, maxValue } = farm
 
-      acc[rewardCurrency] = (acc[rewardCurrency] || 0) + parseFloat(value)
+    if (!acc[rewardCurrency]) {
+      acc[rewardCurrency] = { rewards: 0, maxRewards: 0 }
+    }
 
-      return acc
-    },
-    {},
-  )
+    acc[rewardCurrency].rewards += parseFloat(value)
+    acc[rewardCurrency].maxRewards += parseFloat(maxValue)
+
+    return acc
+  }, {})
 
   const assetsId = Object.keys(claimableAssetValues)
 
   const { data: spotPrices } = useDisplayPrices(assetsId)
 
-  const total = useMemo(() => {
+  const totals = useMemo(() => {
     if (spotPrices) {
       let total = BN_0
+      let maxTotal = BN_0
       for (const rewardCurrency in claimableAssetValues) {
         if (claimableAssetValues.hasOwnProperty(rewardCurrency)) {
-          const assetAmount = claimableAssetValues[rewardCurrency]
+          const assetAmount = claimableAssetValues[rewardCurrency].rewards
+          const maxAssetAmount = claimableAssetValues[rewardCurrency].maxRewards
 
           const { spotPrice } =
             spotPrices.find(
@@ -746,15 +754,23 @@ export const useSummarizeClaimableValues = (
 
           if (spotPrice) {
             total = total.plus(spotPrice.times(assetAmount))
+            maxTotal = maxTotal.plus(spotPrice.times(maxAssetAmount))
           }
         }
       }
 
-      return total
+      const diffRewards = maxTotal.minus(total)
+
+      return { total, maxTotal, diffRewards }
     }
   }, [claimableAssetValues, spotPrices])
 
-  return { total, claimableAssetValues }
+  return {
+    total: totals?.total,
+    maxTotal: totals?.maxTotal,
+    diffRewards: totals?.diffRewards,
+    claimableAssetValues,
+  }
 }
 
 export const getTotalAPR = (farms: TFarmAprData[]) => {

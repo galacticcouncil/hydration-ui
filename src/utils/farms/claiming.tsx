@@ -45,7 +45,7 @@ export const useClaimFarmMutation = (
           liquidityPositionId: string
           depositId: string
           joinFarms: Array<[string, string]>
-          exitFarms: Array<[string]>
+          exitFarms: Array<string>
         }>
       >((acc, farm) => {
         const { yieldFarmId, globalFarmId, depositId } = farm
@@ -57,12 +57,12 @@ export const useClaimFarmMutation = (
 
         if (existingEntry) {
           existingEntry.joinFarms.push([globalFarmId, yieldFarmId])
-          existingEntry.exitFarms.push([yieldFarmId])
+          existingEntry.exitFarms.push(yieldFarmId)
         } else {
           acc.push({
             liquidityPositionId,
             joinFarms: [[globalFarmId, yieldFarmId]],
-            exitFarms: [[yieldFarmId]],
+            exitFarms: [yieldFarmId],
             depositId,
           })
         }
@@ -91,7 +91,7 @@ export const useClaimFarmMutation = (
         Array<{
           depositId: string
           joinFarms: Array<[string, string]>
-          exitFarms: Array<[string]>
+          exitFarms: Array<string>
           assetPair: AssetPair
           shares: string
         }>
@@ -106,12 +106,12 @@ export const useClaimFarmMutation = (
 
           if (existingEntry) {
             existingEntry.joinFarms.push([globalFarmId, yieldFarmId])
-            existingEntry.exitFarms.push([yieldFarmId])
+            existingEntry.exitFarms.push(yieldFarmId)
           } else {
             acc.push({
               depositId,
               joinFarms: [[globalFarmId, yieldFarmId]],
-              exitFarms: [[yieldFarmId]],
+              exitFarms: [yieldFarmId],
               assetPair: {
                 assetIn: meta.assets[0].id,
                 assetOut: meta.assets[1].id,
