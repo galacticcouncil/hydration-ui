@@ -1,0 +1,1 @@
+export const MONEY_MARKET_REFERENDUM_INDEX = "192"

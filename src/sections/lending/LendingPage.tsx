@@ -1,4 +1,4 @@
-import { Outlet } from "@tanstack/react-location"
+import { Navigate, Outlet } from "@tanstack/react-location"
 import { useRpcProvider } from "providers/rpcProvider"
 
 import { LendingPageProviders } from "sections/lending/providers/LendingPageProviders"
@@ -15,7 +15,11 @@ export const LendingPage = () => {
     return <LendingDashboardSkeleton />
   }
 
-  if (!featureFlags.moneyMarket) {
+  if (!featureFlags.borrow) {
+    return <Navigate to="/" />
+  }
+
+  if (!featureFlags.borrowContractApproved) {
     return <MoneyMarketCountdown />
   }
   return (

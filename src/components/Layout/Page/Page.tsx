@@ -80,7 +80,7 @@ const useSubheaderComponent = () => {
   }
 
   if (
-    featureFlags.moneyMarket &&
+    featureFlags.borrow &&
     (matchRoute({ to: LINKS.borrow }) ||
       matchRoute({ to: LINKS.borrowMarkets }))
   ) {
@@ -88,7 +88,7 @@ const useSubheaderComponent = () => {
   }
 
   if (
-    featureFlags.moneyMarket &&
+    featureFlags.borrow &&
     matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })
   ) {
     return prevUrl === LINKS.borrowMarkets ? (

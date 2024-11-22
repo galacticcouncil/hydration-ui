@@ -89,7 +89,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 4,
-    asyncEnabled: false,
+    asyncEnabled: true,
   },
   {
     key: "liquidity",
