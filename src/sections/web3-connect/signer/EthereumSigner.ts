@@ -5,7 +5,6 @@ import {
 } from "@ethersproject/providers"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
 import { Contract, Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
@@ -19,6 +18,7 @@ import {
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 type PermitMessage = {
   from: string
@@ -53,21 +53,11 @@ export class EthereumSigner {
     this.address = address
   }
 
-  async getGasValues(tx: TransactionRequest) {
-    const [gas, gasPrice] = await Promise.all([
+  getGasValues(tx: TransactionRequest) {
+    return Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
     ])
-
-    const onePrc = gasPrice.div(100)
-    const gasPricePlus = gasPrice.add(onePrc)
-
-    return {
-      gas,
-      gasPrice,
-      maxPriorityFeePerGas: gasPricePlus,
-      maxFeePerGas: gasPricePlus,
-    }
   }
 
   requestNetworkSwitch = async (chain: string) => {
@@ -92,7 +82,6 @@ export class EthereumSigner {
   }
 
   getPermitNonce = async (): Promise<BigNumber> => {
-    await this.requestNetworkSwitch("hydration")
     const callPermit = new Contract(
       CALL_PERMIT_ADDRESS,
       CALL_PERMIT_ABI,
@@ -104,50 +93,22 @@ export class EthereumSigner {
     return BigNumber(nonce.toString())
   }
 
-  getPermit = async (
-    data: string | TransactionRequest,
-    nonce: BigNumber,
-  ): Promise<PermitResult> => {
+  getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
     if (this.provider && this.address) {
       await this.requestNetworkSwitch("hydration")
-      const tx =
-        typeof data === "string"
-          ? {
-              from: this.address,
-              to: DISPATCH_ADDRESS,
-              data,
-            }
-          : {
-              from: data?.from ?? "",
-              to: data?.to ?? "",
-              data: data.data?.toString() ?? "",
-              gasLimit: data.gasLimit?.toString() ?? "0",
-            }
-
-      if (!tx.from)
-        throw new Error("Permit transaction must have a 'from' field")
-      if (!tx.to) throw new Error("Permit transaction must have a 'to' field")
-      if (!tx.data)
-        throw new Error("Permit transaction must have a 'data' field")
-
-      let gasLimit = BigNumber(0)
-      if (tx.gasLimit) {
-        gasLimit = BigNumber(tx.gasLimit.toString())
-          .multipliedBy(12)
-          .dividedBy(10)
-          .decimalPlaces(0)
-      } else {
-        /* const gas = await this.getGasValues(tx)
-        gasLimit = BigNumber(gas[0].toString()) */
-        // Use hardcoded gas limit for now, because the estimator is not working correctly
-        gasLimit = BigNumber(1000000)
+      const tx = {
+        from: this.address,
+        to: DISPATCH_ADDRESS,
+        data,
       }
+
+      const [gas] = await this.getGasValues(tx)
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: gasLimit.toNumber(),
+          gaslimit: gas.mul(11).div(10).toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }
@@ -256,13 +217,15 @@ export class EthereumSigner {
     await this.requestNetworkSwitch(from)
 
     if (from === "hydration") {
-      const { gas, maxFeePerGas, maxPriorityFeePerGas } =
-        await this.getGasValues(tx)
+      const [gas, gasPrice] = await this.getGasValues(tx)
+
+      const onePrc = gasPrice.div(100)
+      const gasPricePlus = gasPrice.add(onePrc)
 
       return await this.signer.sendTransaction({
-        maxPriorityFeePerGas,
-        maxFeePerGas,
-        gasLimit: gas.mul(12).div(10), // add 20%
+        maxPriorityFeePerGas: gasPricePlus,
+        maxFeePerGas: gasPricePlus,
+        gasLimit: gas.mul(11).div(10), // add 10%
         ...tx,
       })
     } else {

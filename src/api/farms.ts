@@ -31,7 +31,6 @@ import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
 import { millisecondsInHour } from "date-fns/constants"
-import { BalanceClient } from "@galacticcouncil/sdk"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -127,7 +126,6 @@ const getActiveFarms =
 const getFarmsData =
   (
     api: ApiPromise,
-    balanceClient: BalanceClient,
     activeFarms: TActiveFarm[],
     getAsset: (id: string) => TAsset,
     isXyk: boolean = false,
@@ -147,7 +145,7 @@ const getFarmsData =
       const incentivizedAsset = globalFarm.incentivizedAsset.toString()
 
       const balance = await getTokenBalance(
-        balanceClient,
+        api,
         activeFarm.potAddress,
         rewardCurrency,
       )()
@@ -223,7 +221,7 @@ const select = (data: TFarmAprData[] | undefined) => {
 }
 
 export const useOmnipoolFarms = (ids: string[]) => {
-  const { api, balanceClient, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
   const { data: activeFarms } = useQuery(
@@ -235,7 +233,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   return useQuery(
     QUERY_KEYS.omnipoolFarms,
     activeFarms
-      ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
+      ? getFarmsData(api, activeFarms, getAssetWithFallback)
       : undefinedNoop,
     {
       enabled: !!activeFarms?.length && isLoaded,
@@ -246,7 +244,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 }
 
 export const useXYKFarms = (ids: string[]) => {
-  const { api, balanceClient, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
   const { data: activeFarms } = useQuery(
@@ -258,13 +256,7 @@ export const useXYKFarms = (ids: string[]) => {
   return useQuery(
     QUERY_KEYS.xykFarms,
     activeFarms
-      ? getFarmsData(
-          api,
-          balanceClient,
-          activeFarms,
-          getAssetWithFallback,
-          true,
-        )
+      ? getFarmsData(api, activeFarms, getAssetWithFallback, true)
       : undefinedNoop,
     {
       enabled: !!activeFarms?.length && isLoaded,

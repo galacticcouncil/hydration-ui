@@ -17,7 +17,6 @@ export type ButtonVariant =
 export type ButtonSize = "small" | "medium" | "compact" | "micro"
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  as?: React.ElementType
   variant?: ButtonVariant
   size?: ButtonSize
   text?: string
