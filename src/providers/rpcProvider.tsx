@@ -1,8 +1,4 @@
-import {
-  type TradeRouter,
-  type PoolService,
-  type BalanceClient,
-} from "@galacticcouncil/sdk"
+import { type TradeRouter, type PoolService } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
@@ -16,7 +12,6 @@ type TProviderContext = {
   api: ApiPromise
   tradeRouter: TradeRouter
   poolService: PoolService
-  balanceClient: BalanceClient
   isLoaded: boolean
   featureFlags: TFeatureFlags
 }
@@ -26,7 +21,6 @@ const ProviderContext = createContext<TProviderContext>({
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
   poolService: {} as TProviderContext["poolService"],
-  balanceClient: {} as TProviderContext["balanceClient"],
 })
 
 export const useRpcProvider = () => useContext(ProviderContext)
@@ -82,7 +76,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         poolService: providerData.poolService,
         api: providerData.api,
         tradeRouter: providerData.tradeRouter,
-        balanceClient: providerData.balanceClient,
         featureFlags: providerData.featureFlags,
         isLoaded: true,
       }
@@ -92,13 +85,9 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       isLoaded: false,
       api: {} as TProviderContext["api"],
       tradeRouter: {} as TradeRouter,
-      balanceClient: {} as BalanceClient,
       featureFlags: {
         referrals: true,
         dispatchPermit: true,
-        moneyMarket: false,
-        borrow: false,
-        borrowContractApproved: false,
       } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }

@@ -1,43 +1,40 @@
-import { TransactionRequest } from "@ethersproject/providers"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
-import CopyIcon from "assets/icons/CopyIcon.svg?react"
-import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
-import { Button } from "components/Button/Button"
-import { Dropdown } from "components/Dropdown/Dropdown"
 import { Separator } from "components/Separator/Separator"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import React, { FC, Fragment, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMeasure } from "react-use"
 import {
-  decodeEvmCall,
-  getCallDataHex,
   splitHexByZeroes,
+  decodeXCallEvm,
 } from "sections/transaction/ReviewTransactionData.utils"
-import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
-import { isAnyParachain } from "utils/helpers"
+import { isEvmAccount, isEvmAddress } from "utils/evm"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import {
   SContainer,
   SExpandableContainer,
   SExpandButton,
-  SModeButton,
   SRawData,
   SScrollableContent,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
+import { Button } from "components/Button/Button"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import { Dropdown } from "components/Dropdown/Dropdown"
+import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { isAnyParachain } from "utils/helpers"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
+  address?: string
   tx?: SubmittableExtrinsic
-  evmTx?: {
-    abi?: string
-    data: `0x${string}` | TransactionRequest
-  }
+  xcallEvm?: XCallEvm
   xcallMeta?: Record<string, string>
 }
 
@@ -138,27 +135,19 @@ const TransactionExpander: FC<{
   )
 }
 
-export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
+export const ReviewTransactionData: FC<Props> = ({
+  tx,
+  xcallEvm,
+  xcallMeta,
+  address = "",
+}) => {
   const { t } = useTranslation()
   const [, copyToClipboard] = useCopyToClipboard()
   const [copied, setCopied] = useState(false)
 
-  const txJson = tx ? getTransactionJSON(tx) : null
-
-  const evmTxJson = evmTx ? decodeEvmCall(evmTx) : null
-  const evmTxData = evmTx ? getCallDataHex(evmTx.data) : ""
-
-  const isSubstrateTx = !!tx && !!txJson
-  const isEvmTx = !!evmTx && !!evmTxJson
-  const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
-
-  const [mode, setMode] = useState<"auto" | "evm" | "substrate">(
-    isWrappedEvmTx ? "evm" : "auto",
-  )
-
-  const shouldRenderEvm = isEvmTx && (mode === "evm" || mode === "auto")
-  const shouldRenderSubstrate =
-    isSubstrateTx && (mode === "substrate" || mode === "auto")
+  const isEVM = isEvmAccount(address) || isEvmAddress(address)
+  const json = tx ? getTransactionJSON(tx) : null
+  const decodedEvmData = isEVM && xcallEvm ? decodeXCallEvm(xcallEvm) : null
 
   useEffect(() => {
     if (!copied) return
@@ -179,24 +168,24 @@ export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
       setCopied(true)
     }
 
-    if (shouldRenderEvm) {
+    if (xcallEvm && decodedEvmData) {
       items.push({
         key: "json-evm",
         label: t("liquidity.reviewTransaction.dropdown.json"),
         onSelect: () => {
-          copy(JSON.stringify(evmTxJson.data, null, 2))
+          copy(JSON.stringify(decodedEvmData.data, null, 2))
         },
       })
       items.push({
         key: "calldata-evm",
         label: t("liquidity.reviewTransaction.dropdown.calldata"),
         onSelect: () => {
-          copy(evmTxData)
+          copy(xcallEvm.data)
         },
       })
     }
 
-    if (shouldRenderSubstrate) {
+    if (tx) {
       items.push({
         key: "json",
         label: t("liquidity.reviewTransaction.dropdown.json"),
@@ -244,50 +233,28 @@ export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
     }
 
     return items
-  }, [
-    copyToClipboard,
-    evmTxJson?.data,
-    evmTxData,
-    shouldRenderEvm,
-    shouldRenderSubstrate,
-    t,
-    tx,
-    xcallMeta?.srcChain,
-  ])
+  }, [copyToClipboard, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
 
   return (
     <SContainer>
       <SScrollableContent>
-        {mode !== "auto" && (
-          <div sx={{ flex: "row", gap: 12, mb: 12, mt: -8 }}>
-            <SModeButton active={mode === "evm"} onClick={() => setMode("evm")}>
-              EVM
-            </SModeButton>
-            <SModeButton
-              active={mode === "substrate"}
-              onClick={() => setMode("substrate")}
-            >
-              SUBSTRATE
-            </SModeButton>
-          </div>
-        )}
-        {shouldRenderEvm && (
+        {isEVM && xcallEvm && decodedEvmData ? (
           <TransactionExpander
             decodedCall={
-              <TransactionCode name={evmTxJson.method} src={evmTxJson.data} />
+              <TransactionCode
+                name={decodedEvmData.method}
+                src={decodedEvmData.data}
+              />
             }
-            encodedCall={<TransactionData data={evmTxData} />}
+            encodedCall={<TransactionData data={xcallEvm.data} />}
           />
-        )}
-        {shouldRenderSubstrate && (
+        ) : json && tx ? (
           <TransactionExpander
-            decodedCall={
-              <TransactionCode name={txJson.method} src={txJson.args} />
-            }
+            decodedCall={<TransactionCode name={json.method} src={json.args} />}
             encodedCall={<TransactionData data={tx.method.toHex()} />}
             encodedCallHash={<TransactionData data={tx.method.hash.toHex()} />}
           />
-        )}
+        ) : null}
       </SScrollableContent>
       <Dropdown
         asChild

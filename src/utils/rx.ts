@@ -107,12 +107,3 @@ export const arrayToMap = <T extends object>(prop: keyof T, arr?: T[]) => {
 export function zipArrays<A, B>(a: A[], b: B[]): [A, B][] {
   return a.map((item, index) => [item, b[index]])
 }
-
-export function shuffleArray(arr: any[]) {
-  const newArr = arr.slice()
-  for (let i = newArr.length - 1; i > 0; i--) {
-    const rand = Math.floor(Math.random() * (i + 1))
-    ;[newArr[i], newArr[rand]] = [newArr[rand], newArr[i]]
-  }
-  return newArr
-}

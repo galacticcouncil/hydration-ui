@@ -10,7 +10,6 @@ import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
-import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -137,7 +136,6 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionForm
             tx={props.tx}
             xcallMeta={props.xcallMeta}
-            evmTx={props.evmTx}
             isProxy={props.isProxy}
             overrides={props.overrides}
             onCancel={onClose}
@@ -154,19 +152,6 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
             onSignError={setSignError}
-          />
-        ) : props.evmTx ? (
-          <ReviewTransactionEvmTxForm
-            tx={props.evmTx}
-            onCancel={onClose}
-            onEvmSigned={(data) => {
-              props.onSubmitted?.()
-              sendEvmTx(data)
-            }}
-            onPermitDispatched={(permit) => {
-              props.onSubmitted?.()
-              sendPermitTx(permit)
-            }}
           />
         ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
           <ReviewTransactionXCallForm
