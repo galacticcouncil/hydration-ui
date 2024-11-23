@@ -269,6 +269,7 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmAccountBinding: (address: string) => [address, "evmAccountBinding"],
   evmWalletReadiness: (address: string) => ["evmWalletReadiness", address],
   evmPaymentFee: (txHex: string, address?: string) => [
     "evmPaymentFee",
