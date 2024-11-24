@@ -10,6 +10,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
+  BalanceClient,
   PoolService,
   PoolType,
   TradeRouter,
@@ -20,6 +21,14 @@ import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 import { pendulum } from "./external/pendulum"
+import {
+  AaveV3HydrationMainnet,
+  AaveV3HydrationTestnet,
+} from "sections/lending/ui-config/addresses"
+import { useSearch } from "@tanstack/react-location"
+import { getReferendumInfo } from "api/democracy"
+import { MONEY_MARKET_REFERENDUM_INDEX } from "sections/lending/ui-config/misc"
+import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -34,6 +43,8 @@ export type ProviderProps = {
 export type TFeatureFlags = {
   referrals: boolean
   dispatchPermit: boolean
+  borrow: boolean
+  borrowContractApproved: boolean
 }
 
 export const PROVIDERS: ProviderProps[] = [
@@ -77,15 +88,6 @@ export const PROVIDERS: ProviderProps[] = [
     env: ["development"],
     dataEnv: "testnet",
   },
-  {
-    name: "Rococo via GC",
-    url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
-    squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
-    env: ["rococo", "development"],
-    dataEnv: "testnet",
-  },
 ]
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
@@ -102,8 +104,10 @@ export const isTestnetRpcUrl = (url: string) =>
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    rpcUrlList: string[]
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setRpcUrlList: (rpcUrlList: string[]) => void
     getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
@@ -111,8 +115,10 @@ export const useProviderRpcUrlStore = create(
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      rpcUrlList: [],
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setRpcUrlList: (rpcUrlList) => set({ rpcUrlList }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
@@ -126,18 +132,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.1,
-      getStorage: () => ({
-        async getItem(name: string) {
-          return window.localStorage.getItem(name)
-        },
-        setItem(name, value) {
-          window.localStorage.setItem(name, value)
-        },
-        removeItem(name) {
-          window.localStorage.removeItem(name)
-        },
-      }),
+      version: 3,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -146,10 +141,10 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
-    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? PROVIDER_URLS : [rpcUrl]
+  return autoMode ? rpcUrlList : [rpcUrl]
 }
 
 export const useIsTestnet = () => {
@@ -215,7 +210,15 @@ export const useProviderAssets = () => {
 
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
+  const isTestnet = useIsTestnet()
   const { setRpcUrl } = useProviderRpcUrlStore()
+  const { mm } = useSearch<{
+    Search: {
+      mm?: number
+    }
+  }>()
+
+  const borrowOverride = mm === 1
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
@@ -257,19 +260,37 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
+      const aavePoolContract = isTestnet
+        ? AaveV3HydrationTestnet.POOL
+        : AaveV3HydrationMainnet.POOL
+
+      const [
+        isReferralsEnabled,
+        isDispatchPermitEnabled,
+        borrowContract,
+        borrowReferendum,
+      ] = await Promise.all([
         api.query.referrals,
         api.tx.multiTransactionPayment.dispatchPermit,
+        api.query.evmAccounts.approvedContract(aavePoolContract),
+        getReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)(),
         tradeRouter.getPools(),
       ])
+
+      const balanceClient = new BalanceClient(api)
+
+      const isBorrowContractApproved = borrowOverride || !borrowContract.isEmpty
 
       return {
         api,
         tradeRouter,
         poolService,
+        balanceClient,
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
+          borrow: isBorrowContractApproved || !!borrowReferendum,
+          borrowContractApproved: isBorrowContractApproved,
         } as TFeatureFlags,
       }
     },
@@ -339,4 +360,15 @@ export function getProviderInstance(api: ApiPromise) {
   // @ts-ignore
   const options = api?._options
   return options?.provider as WsProvider
+}
+
+export const useProviderPing = (urls: string[], timeoutMs?: number) => {
+  return useQuery(["providerPing", urls], async () => {
+    return Promise.all(
+      urls.map(async (url) => {
+        const time = await pingRpc(url, timeoutMs)
+        return { url, time }
+      }),
+    )
+  })
 }
