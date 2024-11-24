@@ -34,6 +34,7 @@ import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BalanceClient } from "@galacticcouncil/sdk"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
