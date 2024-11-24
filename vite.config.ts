@@ -58,7 +58,6 @@ export default defineConfig(({ mode }) => {
       logOverride: { "this-is-undefined-in-esm": "silent" },
     },
     plugins: [
-      splitVendorChunkPlugin(),
       tsconfigPaths(),
       react({
         jsxImportSource: "@basilisk/jsx",
