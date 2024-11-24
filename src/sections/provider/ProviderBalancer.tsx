@@ -24,6 +24,7 @@ export const ProviderBalancer: React.FC<PropsWithChildren> = ({ children }) => {
   )
 
   const shouldPing = rpcUrlList.length === 0
+  console.log("Should ping:", shouldPing)
 
   useEffect(() => {
     if (shouldPing) {
