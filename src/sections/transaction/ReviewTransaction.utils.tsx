@@ -38,10 +38,11 @@ import {
   getEvmChainById,
   getEvmTxLink,
   isEvmAccount,
+  isEvmAddress,
   isEvmWalletExtension,
 } from "utils/evm"
 import { isAnyParachain, Maybe } from "utils/helpers"
-import { createSubscanLink } from "utils/formatting"
+import { createSubscanLink, wsToHttp } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useActiveProvider, useIsTestnet } from "api/provider"
 import BigNumber from "bignumber.js"
@@ -240,14 +241,15 @@ export const useSendEvmTransactionMutation = (
 
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
   const activeProvider = useActiveProvider()
+
+  const address = account?.toString() ?? ""
+
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
       if (!account) throw new Error("Missing address")
 
-      const provider = new JsonRpcProvider(
-        activeProvider.url.replace("wss", "https"),
-      )
+      const provider = new JsonRpcProvider(wsToHttp(activeProvider.url))
 
       const callPermit = new Contract(
         CALL_PERMIT_ADDRESS,
@@ -256,7 +258,9 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       )
 
       const nonce = await callPermit.nonces(
-        H160.fromAccount(account.toString()),
+        isEvmAddress(account.toString())
+          ? account
+          : H160.fromAccount(account.toString()),
       )
 
       return BigNumber(nonce.toString())
@@ -266,7 +270,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       refetchOnWindowFocus: false,
       cacheTime: 0,
       staleTime: 0,
-      enabled: isEvmAccount(account?.toString()),
+      enabled: isEvmAddress(address) || isEvmAccount(address),
     },
   )
 }

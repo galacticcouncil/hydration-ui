@@ -13,6 +13,8 @@ import { MultiCurrencyContainer } from "utils/farms/claiming/multiCurrency"
 import * as liquidityMining from "@galacticcouncil/math-liquidity-mining"
 import { TYieldFarmEntry } from "api/deposits"
 
+const MAX_LOYALTY_FACTOR = "999999999999999999"
+
 export class OmnipoolLiquidityMiningClaimSim {
   protected get_account: (sub: u32 | number) => AccountId32
   protected multiCurrency: MultiCurrencyContainer
@@ -247,10 +249,24 @@ export class OmnipoolLiquidityMiningClaimSim {
       ),
     )
 
+    const maxReward = new BN(
+      liquidityMining.calculate_user_reward(
+        farmEntry.accumulatedRpvs,
+        farmEntry.valuedShares,
+        farmEntry.accumulatedClaimedRewards,
+        yield_farm.accumulatedRpvs.toFixed(),
+        MAX_LOYALTY_FACTOR,
+      ),
+    )
+
     if (!reward.isZero()) {
       yield_farm.leftToDistribute = yield_farm.leftToDistribute.minus(reward)
     }
 
-    return { value: reward, assetId: global_farm.rewardCurrency.toString() }
+    return {
+      reward,
+      maxReward,
+      assetId: global_farm.rewardCurrency.toString(),
+    }
   }
 }

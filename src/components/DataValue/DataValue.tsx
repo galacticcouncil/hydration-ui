@@ -9,7 +9,7 @@ type DataValueSize = "small" | "medium" | "large" | "extra-large"
 
 const LABEL_SIZES: Record<DataValueSize, TextProps> = {
   small: {
-    fs: 12,
+    fs: 13,
     lh: 16,
   },
   medium: {
@@ -49,7 +49,7 @@ export type DataValueProps = {
   label: ReactNode
   children?: ReactNode
   className?: string
-  tooltip?: string
+  tooltip?: ReactNode
   size?: DataValueSize
   font?: TextProps["font"]
   labelColor?: TextProps["color"]
@@ -62,7 +62,7 @@ export const DataValue: React.FC<DataValueProps> = ({
   className,
   tooltip,
   size = "medium",
-  font = "GeistMono",
+  font = "GeistMedium",
   labelColor = "white",
   isLoading = false,
 }) => {
@@ -72,6 +72,7 @@ export const DataValue: React.FC<DataValueProps> = ({
         <SText
           as="div"
           color={labelColor}
+          font="GeistMono"
           {...LABEL_SIZES[size]}
           sx={{ flex: "row", gap: 4, align: "center" }}
         >
