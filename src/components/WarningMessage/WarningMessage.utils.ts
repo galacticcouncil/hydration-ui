@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware"
 
 type TWarningStore = {
   warnings: {
+    unifiedAddresses: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
     hdxLiquidity: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
   }
   setWarnings: (key: TWarningsType, isOpen: boolean) => void
@@ -15,6 +16,10 @@ export const useWarningsStore = create(
   persist<TWarningStore>(
     (set) => ({
       warnings: {
+        unifiedAddresses: {
+          visible: undefined,
+          visibility: [],
+        },
         hdxLiquidity: {
           visible: undefined,
           visibility: [

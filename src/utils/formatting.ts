@@ -248,9 +248,13 @@ export function shortenAccountAddress(address: string, length = 6) {
 export function safeConvertAddressSS58(
   address: Maybe<string>,
   ss58prefix: number,
+  useUnifiedFormat = true,
 ) {
   try {
-    return encodeAddress(decodeAddress(address), ss58prefix)
+    return encodeAddress(
+      decodeAddress(address),
+      useUnifiedFormat ? 0 : ss58prefix,
+    )
   } catch {
     return null
   }
