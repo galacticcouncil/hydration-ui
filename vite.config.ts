@@ -41,10 +41,6 @@ export default defineConfig(({ mode }) => {
             if (id.includes("src/assets")) {
               return "assets"
             }
-
-            if (id.includes("@radix")) {
-              return "@radix"
-            }
           },
         },
       },
