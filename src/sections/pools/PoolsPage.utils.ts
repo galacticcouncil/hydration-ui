@@ -184,7 +184,7 @@ export const usePools = () => {
 }
 
 export const usePoolDetails = (assetId: string) => {
-  const { getAsset } = useAssets()
+  const { getAsset, native } = useAssets()
   const meta = getAsset(assetId)
   const isStablePool = meta?.isStableSwap
 
@@ -203,16 +203,18 @@ export const usePoolDetails = (assetId: string) => {
     )
 
     const reserves = isStablePool
-      ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
-          const id = balance.assetId.toString()
-          const meta = getAsset(id) as TAsset
+      ? (stablePoolBalance.data?.balances ?? [])
+          .map((balance) => {
+            const id = balance.assetId.toString()
+            const meta = getAsset(id) as TAsset
 
-          return {
-            asset_id: Number(id),
-            decimals: meta.decimals,
-            amount: balance.freeBalance.toString(),
-          }
-        })
+            return {
+              asset_id: Number(id),
+              decimals: meta.decimals,
+              amount: balance.freeBalance.toString(),
+            }
+          })
+          .filter((balance) => balance.asset_id.toString() !== native.id)
       : []
 
     return {
@@ -231,6 +233,7 @@ export const usePoolDetails = (assetId: string) => {
     omnipoolPositions.data,
     stablePoolBalance.data?.balances,
     stablepool.data?.fee,
+    native,
   ])
 
   return { data, isInitialLoading }

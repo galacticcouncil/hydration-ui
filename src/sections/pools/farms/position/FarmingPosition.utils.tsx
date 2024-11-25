@@ -193,3 +193,26 @@ export const useFarmDepositsTotal = (address?: string) => {
 
   return { isLoading: isLoading, value: total }
 }
+
+export const getFarmingPositionCardHeight = (
+  isAvailableFarms: boolean,
+  isXyk: boolean,
+  isDesktop: boolean,
+  joinedFarmsCount: number,
+) => {
+  let height = isDesktop ? 380 : 350
+
+  if (!isXyk) {
+    height += 60
+  }
+
+  if (isAvailableFarms) {
+    height += 76
+  }
+
+  if (!isDesktop) {
+    height += (joinedFarmsCount - 1) * 30
+  }
+
+  return height
+}

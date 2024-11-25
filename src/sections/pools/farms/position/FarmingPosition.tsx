@@ -23,10 +23,21 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { TFarmAprData } from "api/farms"
+import {
+  TFarmAprData,
+  useAccountClaimableFarmValues,
+  useSummarizeClaimableValues,
+} from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import BigNumber from "bignumber.js"
+import { useAssets } from "providers/assets"
+import { LinearProgress } from "components/Progress"
+import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Separator } from "components/Separator/Separator"
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -111,6 +122,46 @@ export const FarmingPosition = ({
   availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { isShareToken, getAssetWithFallback } = useAssets()
+  const {
+    pool: { meta },
+  } = usePoolData()
+  const { data: claimableValues } = useAccountClaimableFarmValues()
+
+  const poolClaimableValues = claimableValues
+    ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
+    ?.filter((farm) => farm.depositId === depositData.depositId)
+
+  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
+    useSummarizeClaimableValues(poolClaimableValues ?? [])
+
+  const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
+    const asset = getAssetWithFallback(key)
+    return {
+      value: claimableAssetValues[key],
+      symbol: asset.symbol,
+      id: asset.id,
+    }
+  })
+
+  const totalRewardsValue = claimableAssets
+    .map((claimableAsset) =>
+      t("value.tokenWithSymbol", {
+        value: claimableAsset.value.rewards,
+        symbol: claimableAsset.symbol,
+      }),
+    )
+    .join(" + ")
+
+  const maxTotalRewardsValue = claimableAssets
+    .map((claimableAsset) =>
+      t("value.tokenWithSymbol", {
+        value: BigNumber(claimableAsset.value.maxRewards),
+        symbol: claimableAsset.symbol,
+      }),
+    )
+    .join(" + ")
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -123,7 +174,12 @@ export const FarmingPosition = ({
   return (
     <>
       <div
-        sx={{ flex: ["column", "row"], gap: [6, 0], justify: "space-between" }}
+        sx={{
+          flex: ["column", "row"],
+          gap: [6, 0],
+          justify: "space-between",
+          align: ["stretch", "center"],
+        }}
       >
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
@@ -137,9 +193,53 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <JoinedFarms depositNft={depositNft} />
+      <div sx={{ flex: "column", gap: 8 }}>
+        <Text fs={14} color="basic500">
+          {t("farms.positions.claimableRewards")}
+        </Text>
+        <div sx={{ flex: ["column", "row"], gap: 8 }}>
+          {totalsByYieldFarms.map((claimableAsset, index) => {
+            const percentage = BigNumber(claimableAsset.total)
+              .div(claimableAsset.maxTotal)
+              .times(100)
 
-      <SSeparator sx={{ width: "70%", mx: "auto" }} />
+            return (
+              <div
+                key={`${claimableAsset.yieldFarmId}_${index}`}
+                sx={{ flex: "row", gap: 8, align: "center", flexGrow: 1 }}
+              >
+                <Icon
+                  size={20}
+                  icon={<AssetLogo id={claimableAsset.assetId} />}
+                />
+                <LinearProgress
+                  size="small"
+                  color="brightBlue300"
+                  withoutLabel
+                  percent={percentage.toNumber()}
+                  css={{ flexGrow: 1, width: "100%" }}
+                />
+                <Text fs={11} color="darkBlue200">
+                  {t("value.percentage", { value: percentage })}
+                </Text>
+                {index < claimableAssets.length - 1 && (
+                  <Separator
+                    orientation="vertical"
+                    sx={{
+                      display: ["none", "inherit"],
+                      height: "100%",
+                      color: "white",
+                    }}
+                    opacity={0.6}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <SSeparator sx={{ mx: "auto", display: ["none", "inherit"] }} />
 
       <div
         sx={{
@@ -150,6 +250,14 @@ export const FarmingPosition = ({
       >
         <SValueContainer>
           <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.apr")}
+          </Text>
+          <JoinedFarms depositNft={depositNft} />
+        </SValueContainer>
+        <SSeparator />
+
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.enterDate")}
           </Text>
           <Text fs={14}>
@@ -157,6 +265,58 @@ export const FarmingPosition = ({
               date: enteredDate.data,
             })}
           </Text>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.totalRewards")}
+          </Text>
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            {isDesktop && <Text fs={14}>{maxTotalRewardsValue}</Text>}
+            <div sx={{ flex: "row", gap: 4 }}>
+              <DollarAssetValue
+                value={BigNumber(maxTotal)}
+                wrapper={(children) => (
+                  <Text
+                    fs={[14, 11]}
+                    lh={[14, 12]}
+                    color={["basic100", "whiteish500"]}
+                  >
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={BigNumber(maxTotal)} />
+              </DollarAssetValue>
+              {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
+            </div>
+          </div>
+        </SValueContainer>
+        <SSeparator />
+        <SValueContainer>
+          <Text color="basic500" fs={14} lh={16}>
+            {t("farms.positions.labels.claimableRewards")}
+          </Text>
+          <div sx={{ flex: "column", align: "flex-end" }}>
+            {isDesktop && <Text fs={14}>{totalRewardsValue}</Text>}
+            <div sx={{ flex: "row", gap: 4 }}>
+              <DollarAssetValue
+                value={BigNumber(total)}
+                wrapper={(children) => (
+                  <Text
+                    fs={[14, 11]}
+                    lh={[14, 12]}
+                    color={["basic100", "whiteish500"]}
+                  >
+                    {children}
+                  </Text>
+                )}
+              >
+                <DisplayValue value={BigNumber(total)} />
+              </DollarAssetValue>
+              {!isDesktop && <InfoTooltip text={totalRewardsValue} />}
+            </div>
+          </div>
         </SValueContainer>
         <SSeparator />
         {isXYKDeposit(depositData) ? (
@@ -203,7 +363,7 @@ const OmnipoolFields = ({ depositData }: { depositData: TOmniDepositData }) => {
       </SValueContainer>
       <SSeparator />
       <SValueContainer>
-        <div sx={{ flex: "row" }}>
+        <div sx={{ flex: "row", gap: 4 }}>
           <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.currentValue")}
           </Text>
@@ -239,7 +399,19 @@ const OmnipoolFields = ({ depositData }: { depositData: TOmniDepositData }) => {
 
 const XYKFields = ({ depositData }: { depositData: TXYKDepositData }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const { amountUSD, assetA, assetB } = depositData
+
+  const value =
+    t("value.tokenWithSymbol", {
+      value: assetA.amount,
+      symbol: assetA.symbol,
+    }) +
+    " | " +
+    t("value.tokenWithSymbol", {
+      value: assetB.amount,
+      symbol: assetB.symbol,
+    })
 
   return (
     <SValueContainer>
@@ -247,20 +419,24 @@ const XYKFields = ({ depositData }: { depositData: TXYKDepositData }) => {
         {t("farms.positions.labels.currentValue")}
       </Text>
       <div sx={{ flex: "column", align: "flex-end" }}>
-        <Text fs={14}>
-          {t("value.tokenWithSymbol", {
-            value: assetA.amount,
-            symbol: assetA.symbol,
-          })}{" "}
-          |{" "}
-          {t("value.tokenWithSymbol", {
-            value: assetB.amount,
-            symbol: assetB.symbol,
-          })}
-        </Text>
-        <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
-          <DisplayValue value={amountUSD} />
-        </Text>
+        {isDesktop && <Text fs={14}>{value}</Text>}
+        <div sx={{ flex: "row", gap: 4 }}>
+          <DollarAssetValue
+            value={amountUSD}
+            wrapper={(children) => (
+              <Text
+                fs={[14, 11]}
+                lh={[14, 12]}
+                color={["basic100", "whiteish500"]}
+              >
+                {children}
+              </Text>
+            )}
+          >
+            <DisplayValue value={amountUSD} />
+          </DollarAssetValue>
+          {!isDesktop && <InfoTooltip text={value} />}
+        </div>
       </div>
     </SValueContainer>
   )

@@ -18,6 +18,8 @@ import {
   useSummarizeClaimableValues,
 } from "api/farms"
 import { BN_0 } from "utils/constants"
+import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
+import BigNumber from "bignumber.js"
 
 type Props = { onClose: () => void }
 
@@ -27,13 +29,20 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
     const { t } = useTranslation()
     const { getAssetWithFallback } = useAssets()
 
-    const { data: claimableValues, isLoading } = useAccountClaimableFarmValues()
+    const { data: claimableValuesMap, isLoading } =
+      useAccountClaimableFarmValues()
 
-    const { total = BN_0, claimableAssetValues } = useSummarizeClaimableValues(
-      claimableValues
-        ? Array.from(claimableValues.entries()).flatMap(([key, value]) => value)
-        : [],
-    )
+    const claimableValues = claimableValuesMap
+      ? Array.from(claimableValuesMap.entries()).flatMap(
+          ([key, value]) => value,
+        )
+      : []
+
+    const {
+      total = BN_0,
+      claimableAssetValues,
+      diffRewards,
+    } = useSummarizeClaimableValues(claimableValues)
 
     const claimableAssets = Object.keys(claimableAssetValues ?? {}).map(
       (key) => {
@@ -58,68 +67,90 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
       return memo
     }, {} as ToastMessage)
 
-    const claimAll = useClaimFarmMutation(undefined, undefined, toast)
+    const { claim, confirmClaimModal } = useClaimFarmMutation(
+      claimableValues,
+      toast,
+      onClose,
+    )
 
     return (
-      <LazyMotion features={domAnimation}>
-        <SContent
-          ref={ref}
-          initial={{ height: 0 }}
-          animate={{ height: "auto" }}
-          transition={{
-            type: "spring",
-            mass: 1,
-            stiffness: 300,
-            damping: 20,
-            duration: 0.3,
-          }}
-          css={{ overflow: "hidden" }}
-        >
-          <div sx={{ p: 40, flex: "column" }}>
-            <Text>{t("farms.claimCard.title")}</Text>
-            <Spacer size={16} />
-            {isLoading && <Skeleton height={25} width={150} />}
-            {claimableAssets.map((claimableAsset, index) => (
-              <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
-                <Text fs={19} lh={19} sx={{ mb: 8 }}>
-                  {t("value.tokenWithSymbol", {
-                    value: claimableAsset.value,
-                    symbol: claimableAsset.symbol,
-                  })}
-                </Text>
-                {index < claimableAssets.length - 1 && (
-                  <Separator
-                    css={{
-                      background: `rgba(${theme.rgbColors.white}, 0.06)`,
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-            <Text fs={14} sx={{ mt: 6 }}>
-              <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-                <DisplayValue value={total} />
-              </Trans>
-            </Text>
-            <Spacer size={18} />
-            <SClaimButton
-              disabled={
-                !claimableValues ||
-                total.isZero() ||
-                account?.isExternalWalletConnected
-              }
-              onClick={() => {
-                claimAll.mutate()
-                onClose()
-              }}
-            >
-              <Text fs={13} tTransform="uppercase" tAlign="center">
-                {t("farms.claimCard.button.label")}
+      <>
+        <LazyMotion features={domAnimation}>
+          <SContent
+            ref={ref}
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            transition={{
+              type: "spring",
+              mass: 1,
+              stiffness: 300,
+              damping: 20,
+              duration: 0.3,
+            }}
+            css={{ overflow: "hidden" }}
+          >
+            <div sx={{ p: 34, flex: "column" }}>
+              <Text font="GeistMonoSemiBold">{t("farms.claimCard.title")}</Text>
+              <Spacer size={16} />
+              {isLoading && <Skeleton height={25} width={150} />}
+              {claimableAssets.map((claimableAsset, index) => (
+                <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
+                  <Text fs={16} lh={19} sx={{ mb: 8 }} font="GeistMedium">
+                    {t("value.tokenWithSymbol", {
+                      value: claimableAsset.value.rewards,
+                      symbol: claimableAsset.symbol,
+                    })}
+                  </Text>
+                  {index < claimableAssets.length - 1 && (
+                    <Separator
+                      css={{
+                        background: `rgba(${theme.rgbColors.white}, 0.06)`,
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+
+              <Text fs={14} sx={{ mt: 6 }}>
+                <Trans t={t} i18nKey="farms.claimCard.claim.usd">
+                  <DisplayValue value={BigNumber(total)} />
+                </Trans>
               </Text>
-            </SClaimButton>
-          </div>
-        </SContent>
-      </LazyMotion>
+
+              <Text
+                fs={14}
+                sx={{ py: 8, mt: 8, mb: 10 }}
+                fw={300}
+                css={{
+                  borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
+                }}
+              >
+                <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
+                  <DisplayValue value={BigNumber(diffRewards)} />
+                </Trans>
+              </Text>
+
+              <SClaimButton
+                disabled={
+                  !claimableValues ||
+                  BigNumber(total).isZero() ||
+                  account?.isExternalWalletConnected
+                }
+                onClick={claim}
+              >
+                <Text fs={13} tTransform="uppercase" tAlign="center">
+                  {t("farms.claimCard.button.label")}
+                </Text>
+              </SClaimButton>
+
+              <Spacer size={12} />
+
+              <ClaimingRangeButton />
+            </div>
+          </SContent>
+        </LazyMotion>
+        {confirmClaimModal}
+      </>
     )
   },
 )
