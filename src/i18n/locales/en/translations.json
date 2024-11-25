@@ -721,7 +721,7 @@
   "farms.claimCard.button.label": "Claim all",
   "farms.claimCard.claim.asset": "{{num}}{{denom}} {{symbol}}",
   "farms.claimCard.claim.usd": "Total of ≈ <0/>",
-  "farms.claimCard.claim.diffRewards": "  Total below claimable threshold ≈ <0/>",
+  "farms.claimCard.claim.diffRewards": "Current accumulated rewards ≈ <0/>",
   "farms.claimCard.toast.onLoading": "<0>Claiming farm rewards for </0>",
   "farms.claimCard.toast.onSuccess": "<0>Farm rewards claimed for </0>",
   "farms.claimCard.toast.asset": "<1>{{num}}{{denom}} {{symbol}}</1>.",
