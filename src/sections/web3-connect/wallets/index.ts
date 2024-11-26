@@ -19,7 +19,7 @@ import {
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
 import { CoinbaseWallet } from "sections/web3-connect/wallets/CoinbaseWallet"
-import { NightlyEvm } from "sections/web3-connect/wallets/NightlyEvm"
+// import { NightlyEvm } from "sections/web3-connect/wallets/NightlyEvm"
 import { Nightly } from "sections/web3-connect/wallets/Nightly"
 
 export type WalletProvider = {
@@ -84,9 +84,9 @@ const coinbaseWallet: Wallet = new CoinbaseWallet({
 })
 
 const nightly: Wallet = new Nightly()
-const nightlyEvm: Wallet = new NightlyEvm({
+/* const nightlyEvm: Wallet = new NightlyEvm({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.NightlyEvm),
-})
+}) */
 
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
@@ -119,7 +119,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   subwallet,
   coinbaseWallet,
   nightly,
-  nightlyEvm,
+  // nightlyEvm,
   //trustWallet,
   novaWallet,
   walletConnect,
@@ -171,7 +171,7 @@ const eip6963ProvidersByRdns = new Map([
     "com.coinbase.wallet",
     { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
   ],
-  ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }],
+  /* ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }], */
 ])
 
 /**
