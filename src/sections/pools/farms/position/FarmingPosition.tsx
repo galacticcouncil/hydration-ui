@@ -129,12 +129,13 @@ export const FarmingPosition = ({
   } = usePoolData()
   const { data: claimableValues } = useAccountClaimableFarmValues()
 
-  const poolClaimableValues = claimableValues
-    ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
-    ?.filter((farm) => farm.depositId === depositData.depositId)
+  const poolClaimableValues =
+    claimableValues
+      ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
+      ?.filter((farm) => farm.depositId === depositData.depositId) ?? []
 
-  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
-    useSummarizeClaimableValues(poolClaimableValues ?? [])
+  const { total, maxTotal, claimableAssetValues } =
+    useSummarizeClaimableValues(poolClaimableValues)
 
   const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
     const asset = getAssetWithFallback(key)
@@ -198,19 +199,19 @@ export const FarmingPosition = ({
           {t("farms.positions.claimableRewards")}
         </Text>
         <div sx={{ flex: ["column", "row"], gap: 8 }}>
-          {totalsByYieldFarms.map((claimableAsset, index) => {
-            const percentage = BigNumber(claimableAsset.total)
-              .div(claimableAsset.maxTotal)
-              .times(100)
+          {poolClaimableValues.map((poolClaimableValue, index) => {
+            const percentage = BigNumber(
+              poolClaimableValue.loyaltyFactor,
+            ).times(100)
 
             return (
               <div
-                key={`${claimableAsset.yieldFarmId}_${index}`}
+                key={`${poolClaimableValue.yieldFarmId}_${index}`}
                 sx={{ flex: "row", gap: 8, align: "center", flexGrow: 1 }}
               >
                 <Icon
                   size={20}
-                  icon={<AssetLogo id={claimableAsset.assetId} />}
+                  icon={<AssetLogo id={poolClaimableValue.rewardCurrency} />}
                 />
                 <LinearProgress
                   size="small"

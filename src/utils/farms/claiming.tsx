@@ -164,7 +164,7 @@ export const useClaimFarmMutation = (
   })
 
   const claim = () => {
-    if (BN(range).times(100).lt(WARNING_LIMIT)) {
+    if (BN(range).times(100).lte(WARNING_LIMIT)) {
       setConfirmationNeeded(true)
     } else {
       mutation.mutate()
