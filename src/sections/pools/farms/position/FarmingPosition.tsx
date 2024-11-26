@@ -6,7 +6,11 @@ import { Trans, useTranslation } from "react-i18next"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
-import { SSeparator, SValueContainer } from "./FarmingPosition.styled"
+import {
+  SSeparator,
+  SSkeletonContainer,
+  SValueContainer,
+} from "./FarmingPosition.styled"
 import {
   isXYKDeposit,
   TDepositData,
@@ -38,6 +42,9 @@ import { Separator } from "components/Separator/Separator"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import Skeleton from "react-loading-skeleton"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -123,18 +130,31 @@ export const FarmingPosition = ({
 }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { range } = useClaimingRange()
   const { isShareToken, getAssetWithFallback } = useAssets()
   const {
     pool: { meta },
   } = usePoolData()
   const { data: claimableValues } = useAccountClaimableFarmValues()
 
-  const poolClaimableValues = claimableValues
-    ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
-    ?.filter((farm) => farm.depositId === depositData.depositId)
+  const poolClaimableValues =
+    claimableValues
+      ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
+      ?.filter((farm) => farm.depositId === depositData.depositId) ?? []
 
-  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
-    useSummarizeClaimableValues(poolClaimableValues ?? [])
+  const { total, maxTotal, claimableAssetValues, isLoading } =
+    useSummarizeClaimableValues(poolClaimableValues)
+
+  const isClaimable = poolClaimableValues.length
+    ? poolClaimableValues.some((value) => value.isClaimable)
+    : undefined
+
+  const color =
+    isClaimable === undefined
+      ? "basic500"
+      : isClaimable
+        ? "green600"
+        : "warning300"
 
   const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
     const asset = getAssetWithFallback(key)
@@ -198,19 +218,19 @@ export const FarmingPosition = ({
           {t("farms.positions.claimableRewards")}
         </Text>
         <div sx={{ flex: ["column", "row"], gap: 8 }}>
-          {totalsByYieldFarms.map((claimableAsset, index) => {
-            const percentage = BigNumber(claimableAsset.total)
-              .div(claimableAsset.maxTotal)
-              .times(100)
+          {poolClaimableValues.map((poolClaimableValue, index) => {
+            const percentage = BigNumber(
+              poolClaimableValue.loyaltyFactor,
+            ).times(100)
 
             return (
               <div
-                key={`${claimableAsset.yieldFarmId}_${index}`}
+                key={`${poolClaimableValue.yieldFarmId}_${index}`}
                 sx={{ flex: "row", gap: 8, align: "center", flexGrow: 1 }}
               >
                 <Icon
                   size={20}
-                  icon={<AssetLogo id={claimableAsset.assetId} />}
+                  icon={<AssetLogo id={poolClaimableValue.rewardCurrency} />}
                 />
                 <LinearProgress
                   size="small"
@@ -271,52 +291,105 @@ export const FarmingPosition = ({
           <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.totalRewards")}
           </Text>
-          <div sx={{ flex: "column", align: "flex-end" }}>
-            {isDesktop && <Text fs={14}>{maxTotalRewardsValue}</Text>}
-            <div sx={{ flex: "row", gap: 4 }}>
-              <DollarAssetValue
-                value={BigNumber(maxTotal)}
-                wrapper={(children) => (
-                  <Text
-                    fs={[14, 11]}
-                    lh={[14, 12]}
-                    color={["basic100", "whiteish500"]}
-                  >
-                    {children}
-                  </Text>
-                )}
-              >
-                <DisplayValue value={BigNumber(maxTotal)} />
-              </DollarAssetValue>
-              {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
+
+          {isLoading ? (
+            <SSkeletonContainer>
+              <Skeleton width={100} height={14} css={{ height: 14 }} />
+              <Skeleton width={40} height={10} />
+            </SSkeletonContainer>
+          ) : (
+            <div sx={{ flex: "column", align: "flex-end" }}>
+              {isDesktop && <Text fs={14}>{maxTotalRewardsValue}</Text>}
+              <div sx={{ flex: "row", gap: 4 }}>
+                <DollarAssetValue
+                  value={BigNumber(maxTotal)}
+                  wrapper={(children) => (
+                    <Text
+                      fs={[14, 11]}
+                      lh={[14, 12]}
+                      color={["basic100", "whiteish500"]}
+                    >
+                      {children}
+                    </Text>
+                  )}
+                >
+                  <DisplayValue value={BigNumber(maxTotal)} />
+                </DollarAssetValue>
+                {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
+              </div>
             </div>
-          </div>
+          )}
         </SValueContainer>
         <SSeparator />
+
         <SValueContainer>
-          <Text color="basic500" fs={14} lh={16}>
-            {t("farms.positions.labels.claimableRewards")}
+          <Text color={color} fs={14} lh={16}>
+            {isClaimable || isClaimable === undefined
+              ? t("farms.positions.labels.claimableRewards")
+              : t("farms.positions.labels.NonClaimableRewards")}
           </Text>
-          <div sx={{ flex: "column", align: "flex-end" }}>
-            {isDesktop && <Text fs={14}>{totalRewardsValue}</Text>}
+
+          {isLoading ? (
+            <SSkeletonContainer>
+              <Skeleton width={100} height={14} css={{ height: 14 }} />
+              <Skeleton width={40} height={10} />
+            </SSkeletonContainer>
+          ) : (
             <div sx={{ flex: "row", gap: 4 }}>
-              <DollarAssetValue
-                value={BigNumber(total)}
-                wrapper={(children) => (
-                  <Text
-                    fs={[14, 11]}
-                    lh={[14, 12]}
-                    color={["basic100", "whiteish500"]}
-                  >
-                    {children}
+              {!!isClaimable && (
+                <Icon size={12} icon={<SuccessIcon />} sx={{ mt: 2 }} />
+              )}
+              <div sx={{ flex: "column", align: "flex-end" }}>
+                {isDesktop && (
+                  <Text fs={14} color={color}>
+                    {totalRewardsValue}
                   </Text>
                 )}
-              >
-                <DisplayValue value={BigNumber(total)} />
-              </DollarAssetValue>
-              {!isDesktop && <InfoTooltip text={totalRewardsValue} />}
+                <div sx={{ flex: "row", gap: 4 }}>
+                  <DollarAssetValue
+                    value={BigNumber(total)}
+                    wrapper={(children) => (
+                      <Text
+                        fs={[14, 11]}
+                        lh={[14, 12]}
+                        color={[color, "whiteish500"]}
+                      >
+                        {children}
+                      </Text>
+                    )}
+                  >
+                    <DisplayValue value={BigNumber(total)} />
+                  </DollarAssetValue>
+                  {!isDesktop && (
+                    <InfoTooltip
+                      text={
+                        <div>
+                          <Text fs={12} lh={16}>
+                            {t(
+                              "farms.positions.labels.claimableRewards.tooltip",
+                              {
+                                value: BigNumber(range).times(100).toString(),
+                              },
+                            )}
+                          </Text>
+                          <Text fs={12} lh={16}>
+                            {totalRewardsValue}
+                          </Text>
+                        </div>
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+              {isDesktop && (
+                <InfoTooltip
+                  text={t("farms.positions.labels.claimableRewards.tooltip", {
+                    value: BigNumber(range).times(100).toString(),
+                  })}
+                />
+              )}
             </div>
-          </div>
+          )}
         </SValueContainer>
         <SSeparator />
         {isXYKDeposit(depositData) ? (

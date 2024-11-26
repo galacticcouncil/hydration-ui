@@ -19,6 +19,7 @@ import {
   useSummarizeClaimableValues,
 } from "api/farms"
 import BN from "bignumber.js"
+import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 export const ClaimRewardsCard = (props: {
   depositNft?: TDeposit
@@ -42,7 +43,7 @@ export const ClaimRewardsCard = (props: {
       )
     : poolClaimableValues
 
-  const { total, diffRewards, claimableAssetValues } =
+  const { claimableTotal, diffRewards, claimableAssetValues } =
     useSummarizeClaimableValues(claimableDepositValues ?? [])
 
   const { claimableAssets, toastValue } = useMemo(() => {
@@ -50,9 +51,12 @@ export const ClaimRewardsCard = (props: {
 
     for (let key in claimableAssetValues) {
       const asset = getAssetWithFallback(key)
-      const balance = separateBalance(BN(claimableAssetValues[key].rewards), {
-        type: "token",
-      })
+      const balance = separateBalance(
+        BN(claimableAssetValues[key].claimableRewards),
+        {
+          type: "token",
+        },
+      )
 
       claimableAssets.push({ ...balance, symbol: asset?.symbol })
     }
@@ -107,7 +111,13 @@ export const ClaimRewardsCard = (props: {
         }}
       >
         <div
-          sx={{ flex: "column", gap: 3, mb: [16, 0], maxWidth: ["auto", 300] }}
+          sx={{
+            flex: "column",
+            gap: 3,
+            mb: [16, 0],
+            maxWidth: ["auto", 300],
+            width: ["100%", "auto"],
+          }}
           css={{ alignSelf: "start" }}
         >
           <Text color="white" sx={{ mb: 7 }}>
@@ -133,7 +143,7 @@ export const ClaimRewardsCard = (props: {
             css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-              <DisplayValue value={BN(total)} />
+              <DisplayValue value={BN(claimableTotal)} />
             </Trans>
           </Text>
 
@@ -150,16 +160,21 @@ export const ClaimRewardsCard = (props: {
             </Trans>
           </Text>
         </div>
-        <Button
-          variant="primary"
-          size="small"
-          sx={{ height: "fit-content", width: ["100%", 275] }}
-          disabled={account?.isExternalWalletConnected || BN(total).isZero()}
-          onClick={claim}
-          isLoading={isLoading}
-        >
-          {t("farms.claimCard.button.label")}
-        </Button>
+        <div sx={{ flex: "column", gap: 12, width: ["100%", 275] }}>
+          <Button
+            variant="primary"
+            size="small"
+            sx={{ height: "fit-content" }}
+            disabled={
+              account?.isExternalWalletConnected || BN(claimableTotal).isZero()
+            }
+            onClick={claim}
+            isLoading={isLoading}
+          >
+            {t("farms.claimCard.button.label")}
+          </Button>
+          <ClaimingRangeButton />
+        </div>
       </div>
       {confirmClaimModal}
     </Card>
