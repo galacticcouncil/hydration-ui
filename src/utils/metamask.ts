@@ -14,6 +14,7 @@ const METAMASK_LIKE_CHECKS = [
   "isBraveWallet",
   "isEnkrypt",
   "isCoinbaseWallet",
+  "isNightly",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -69,7 +70,6 @@ export function isMetaMaskLike(
 ): provider is Required<MetaMaskLikeProvider> {
   return (
     !!provider &&
-    typeof provider?.isMetaMask === "boolean" &&
     METAMASK_LIKE_CHECKS.some(
       (key) => !!(provider as MetaMaskLikeProvider)?.[key],
     )
@@ -100,6 +100,10 @@ export function isBraveWallet(provider: Maybe<ExternalProvider>) {
 
 export function isCoinbaseWallet(provider: Maybe<ExternalProvider>) {
   return isMetaMaskLike(provider) && !!provider?.isCoinbaseWallet
+}
+
+export function isNightly(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isNightly
 }
 
 export function isEnkrypt(provider: Maybe<ExternalProvider>) {
@@ -207,6 +211,11 @@ function normalizeChainSwitchError(
 ) {
   if (!provider) return
   let message: Record<string, any> = {}
+
+  if (typeof error === "string") {
+    return "CHAIN_NOT_FOUND"
+  }
+
   try {
     message =
       typeof error?.message === "string" ? JSON.parse(error.message) : {}
