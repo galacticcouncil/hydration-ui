@@ -1,5 +1,4 @@
 import { useBestNumber } from "api/chain"
-import { useReferendumInfo } from "api/democracy"
 import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Countdown } from "components/Countdown/Countdown"
@@ -7,7 +6,6 @@ import { Text } from "components/Typography/Text/Text"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
-import { PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContent } from "./MoneyMarketCountdown.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useIsTestnet } from "api/provider"
@@ -17,9 +15,14 @@ import {
 } from "sections/lending/ui-config/addresses"
 import { VoidFn } from "@polkadot/api/types"
 import { Codec } from "@polkadot/types/types"
-import { MONEY_MARKET_REFERENDUM_INDEX } from "sections/lending/ui-config/misc"
+import {
+  MONEY_MARKET_LAUNCH_BLOCK_NUMBER,
+  MONEY_MARKET_REFERENDUM_INDEX,
+} from "sections/lending/ui-config/misc"
 
 const MONEY_MARKET_REFERENDUM_LINK = `${import.meta.env.VITE_REFERENDUM_LINK}/${MONEY_MARKET_REFERENDUM_INDEX}`
+
+const AVG_BLOCK_TIME = 13.9
 
 const PeepoAnimation: React.FC<{ className?: string }> = ({ className }) => (
   <video
@@ -41,8 +44,6 @@ export const MoneyMarketCountdown = () => {
   const now = useRef(Date.now())
   const bestNumber = useBestNumber()
   const [expired, setExpired] = useState(false)
-
-  const referendumInfo = useReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)
 
   useEffect(() => {
     const aavePoolContract = isTestnet
@@ -75,16 +76,15 @@ export const MoneyMarketCountdown = () => {
   }, [api.query.evmAccounts, isTestnet])
 
   const timestampDiff = useMemo(() => {
-    if (bestNumber?.data && referendumInfo?.data) {
-      return BN(referendumInfo?.data?.onchainData.meta.end ?? 0)
+    if (bestNumber?.data) {
+      return BN(MONEY_MARKET_LAUNCH_BLOCK_NUMBER)
         .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
-        .times(PARACHAIN_BLOCK_TIME)
-        .times(1000)
+        .times(AVG_BLOCK_TIME * 1000)
         .toNumber()
     }
 
     return 0
-  }, [bestNumber, referendumInfo])
+  }, [bestNumber])
 
   const isExpired = timestampDiff <= 0 || expired
 

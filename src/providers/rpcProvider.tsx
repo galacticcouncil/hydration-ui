@@ -96,8 +96,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       featureFlags: {
         referrals: true,
         dispatchPermit: true,
-        moneyMarket: false,
-        borrow: false,
+        borrow: true,
         borrowContractApproved: false,
       } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
