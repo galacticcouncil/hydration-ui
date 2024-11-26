@@ -59,6 +59,7 @@ export type TClaimableFarmValue = {
   liquidityPositionId?: string
   shares: string
   loyaltyFactor: string
+  isClaimable: boolean
 }
 
 export type TFarmAprData = {
@@ -682,11 +683,13 @@ export const useAccountClaimableFarmValues = () => {
                   (lp) => lp.depositId === deposit.id,
                 )
 
+            const isClaimable = BN(loyaltyFactor).gt(range)
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
               value: scaleHuman(reward.reward, meta.decimals).toFixed(8),
-              claimableValue: BN(range).gt(loyaltyFactor)
+              claimableValue: !isClaimable
                 ? "0"
                 : scaleHuman(reward.reward, meta.decimals).toFixed(8),
               maxValue: scaleHuman(reward.maxReward, meta.decimals).toFixed(8),
@@ -697,6 +700,7 @@ export const useAccountClaimableFarmValues = () => {
               liquidityPositionId: liquidityPositionId?.id,
               shares: deposit.data.shares.toString(),
               loyaltyFactor,
+              isClaimable,
             }
           }
 

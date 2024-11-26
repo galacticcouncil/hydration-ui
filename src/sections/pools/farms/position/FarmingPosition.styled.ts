@@ -15,3 +15,12 @@ export const SValueContainer = styled.div`
 
   width: 100%;
 `
+
+export const SSkeletonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  & > span {
+    height: 14px;
+  }
+`
