@@ -26,8 +26,6 @@ import {
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { useSearch } from "@tanstack/react-location"
-import { getReferendumInfo } from "api/democracy"
-import { MONEY_MARKET_REFERENDUM_INDEX } from "sections/lending/ui-config/misc"
 import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
@@ -264,18 +262,13 @@ export const useProviderData = () => {
         ? AaveV3HydrationTestnet.POOL
         : AaveV3HydrationMainnet.POOL
 
-      const [
-        isReferralsEnabled,
-        isDispatchPermitEnabled,
-        borrowContract,
-        borrowReferendum,
-      ] = await Promise.all([
-        api.query.referrals,
-        api.tx.multiTransactionPayment.dispatchPermit,
-        api.query.evmAccounts.approvedContract(aavePoolContract),
-        getReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)(),
-        tradeRouter.getPools(),
-      ])
+      const [isReferralsEnabled, isDispatchPermitEnabled, borrowContract] =
+        await Promise.all([
+          api.query.referrals,
+          api.tx.multiTransactionPayment.dispatchPermit,
+          api.query.evmAccounts.approvedContract(aavePoolContract),
+          tradeRouter.getPools(),
+        ])
 
       const balanceClient = new BalanceClient(api)
 
@@ -289,7 +282,7 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          borrow: isBorrowContractApproved || !!borrowReferendum,
+          borrow: true,
           borrowContractApproved: isBorrowContractApproved,
         } as TFeatureFlags,
       }
