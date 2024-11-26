@@ -49,6 +49,7 @@ type TActiveFarm = {
 export type TClaimableFarmValue = {
   poolId: string
   value: string
+  claimableValue: string
   maxValue: string
   rewardCurrency: string
   yieldFarmId: string
@@ -57,6 +58,8 @@ export type TClaimableFarmValue = {
   isXyk: boolean
   liquidityPositionId?: string
   shares: string
+  loyaltyFactor: string
+  isClaimable: boolean
 }
 
 export type TFarmAprData = {
@@ -680,10 +683,13 @@ export const useAccountClaimableFarmValues = () => {
                   (lp) => lp.depositId === deposit.id,
                 )
 
+            const isClaimable = BN(loyaltyFactor).gt(range)
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
-              value: BN(range).gt(loyaltyFactor)
+              value: scaleHuman(reward.reward, meta.decimals).toFixed(8),
+              claimableValue: !isClaimable
                 ? "0"
                 : scaleHuman(reward.reward, meta.decimals).toFixed(8),
               maxValue: scaleHuman(reward.maxReward, meta.decimals).toFixed(8),
@@ -693,6 +699,8 @@ export const useAccountClaimableFarmValues = () => {
               isXyk,
               liquidityPositionId: liquidityPositionId?.id,
               shares: deposit.data.shares.toString(),
+              loyaltyFactor,
+              isClaimable,
             }
           }
 
@@ -733,95 +741,126 @@ export const useSummarizeClaimableValues = (
     ),
   )
 
-  const { data: spotPrices } = useDisplayPrices(assetsId)
+  const { data: spotPrices, isLoading } = useDisplayPrices(assetsId)
 
-  const { total, maxTotal, claimableAssetValues, totalsByYieldFarms } =
-    useMemo(() => {
-      if (!spotPrices) {
-        return {
-          total: "0",
-          maxTotal: "0",
-          claimableAssetValues: {},
-          totalsByYieldFarms: [],
-        }
+  const {
+    total,
+    maxTotal,
+    claimableTotal,
+    claimableAssetValues,
+    totalsByYieldFarms,
+  } = useMemo(() => {
+    if (!spotPrices) {
+      return {
+        total: "0",
+        maxTotal: "0",
+        claimableTotal: "0",
+        claimableAssetValues: {},
+        totalsByYieldFarms: [],
       }
+    }
 
-      return claimableValues.reduce<{
-        total: string
-        maxTotal: string
-        claimableAssetValues: Record<
-          string,
-          { rewards: string; maxRewards: string }
-        >
-        totalsByYieldFarms: Array<{
-          yieldFarmId: string
-          total: string
-          maxTotal: string
-          assetId: string
-        }>
-      }>(
-        (acc, farm) => {
-          const { rewardCurrency, value, maxValue, yieldFarmId } = farm
-
-          if (!acc.claimableAssetValues[rewardCurrency]) {
-            acc.claimableAssetValues[rewardCurrency] = {
-              rewards: "0",
-              maxRewards: "0",
-            }
-          }
-
-          const rewards = BN(value)
-          const maxRewards = BN(maxValue)
-
-          acc.claimableAssetValues[rewardCurrency].rewards = new BN(
-            acc.claimableAssetValues[rewardCurrency].rewards,
-          )
-            .plus(rewards)
-            .toString()
-
-          acc.claimableAssetValues[rewardCurrency].maxRewards = new BN(
-            acc.claimableAssetValues[rewardCurrency].maxRewards,
-          )
-            .plus(maxRewards)
-            .toString()
-
-          const { spotPrice } =
-            spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
-
-          if (spotPrice) {
-            const rewardTotal = spotPrice.times(rewards).toString()
-            const maxRewardTotal = spotPrice.times(maxRewards).toString()
-
-            acc.total = BN(acc.total).plus(rewardTotal).toString()
-            acc.maxTotal = BN(acc.maxTotal).plus(maxRewardTotal).toString()
-
-            acc.totalsByYieldFarms.push({
-              yieldFarmId,
-              total: rewardTotal,
-              maxTotal: maxRewardTotal,
-              assetId: rewardCurrency,
-            })
-          }
-
-          return acc
-        },
+    return claimableValues.reduce<{
+      total: string
+      claimableTotal: string
+      maxTotal: string
+      claimableAssetValues: Record<
+        string,
         {
-          total: "0",
-          maxTotal: "0",
-          claimableAssetValues: {},
-          totalsByYieldFarms: [],
-        },
-      )
-    }, [claimableValues, spotPrices])
+          rewards: string
+          claimableRewards: string
+          maxRewards: string
+        }
+      >
+      totalsByYieldFarms: Array<{
+        yieldFarmId: string
+        total: string
+        claimableTotal: string
+        maxTotal: string
+        assetId: string
+      }>
+    }>(
+      (acc, farm) => {
+        const { rewardCurrency, value, maxValue, claimableValue, yieldFarmId } =
+          farm
 
-  const diffRewards = BN(maxTotal).minus(total).toString()
+        if (!acc.claimableAssetValues[rewardCurrency]) {
+          acc.claimableAssetValues[rewardCurrency] = {
+            rewards: "0",
+            maxRewards: "0",
+            claimableRewards: "0",
+          }
+        }
+
+        const rewards = BN(value)
+        const claimableRewards = BN(claimableValue)
+        const maxRewards = BN(maxValue)
+
+        acc.claimableAssetValues[rewardCurrency].rewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].rewards,
+        )
+          .plus(rewards)
+          .toString()
+
+        acc.claimableAssetValues[rewardCurrency].claimableRewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].claimableRewards,
+        )
+          .plus(claimableRewards)
+          .toString()
+
+        acc.claimableAssetValues[rewardCurrency].maxRewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].maxRewards,
+        )
+          .plus(maxRewards)
+          .toString()
+
+        const { spotPrice } =
+          spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
+
+        if (spotPrice) {
+          const rewardTotal = spotPrice.times(rewards).toString()
+          const claimableRewardTotal = spotPrice
+            .times(claimableRewards)
+            .toString()
+          const maxRewardTotal = spotPrice.times(maxRewards).toString()
+
+          acc.total = BN(acc.total).plus(rewardTotal).toString()
+          acc.claimableTotal = BN(acc.claimableTotal)
+            .plus(claimableRewardTotal)
+            .toString()
+          acc.maxTotal = BN(acc.maxTotal).plus(maxRewardTotal).toString()
+
+          acc.totalsByYieldFarms.push({
+            yieldFarmId,
+            total: rewardTotal,
+            claimableTotal: claimableRewardTotal,
+            maxTotal: maxRewardTotal,
+            assetId: rewardCurrency,
+          })
+        }
+
+        return acc
+      },
+      {
+        total: "0",
+        claimableTotal: "0",
+        maxTotal: "0",
+        claimableAssetValues: {},
+        totalsByYieldFarms: [],
+      },
+    )
+  }, [claimableValues, spotPrices])
+
+  const diffRewards = BN(maxTotal).minus(claimableTotal).toString()
 
   return {
     total,
+    claimableTotal,
     maxTotal,
     diffRewards,
     claimableAssetValues,
     totalsByYieldFarms,
+    isLoading,
   }
 }
 
