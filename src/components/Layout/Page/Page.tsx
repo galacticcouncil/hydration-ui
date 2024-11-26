@@ -80,17 +80,13 @@ const useSubheaderComponent = () => {
   }
 
   if (
-    featureFlags.borrow &&
-    (matchRoute({ to: LINKS.borrow }) ||
-      matchRoute({ to: LINKS.borrowMarkets }))
+    matchRoute({ to: LINKS.borrow }) ||
+    matchRoute({ to: LINKS.borrowMarkets })
   ) {
     return <LendingNavigation />
   }
 
-  if (
-    featureFlags.borrow &&
-    matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })
-  ) {
+  if (matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })) {
     return prevUrl === LINKS.borrowMarkets ? (
       <BackSubHeader
         label={t("lending.navigation.markets.back")}
