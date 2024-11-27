@@ -140,12 +140,28 @@ export async function requestNetworkSwitch(
 
     if (errorType === "CHAIN_NOT_FOUND") {
       try {
-        await provider
-          .request({
+        await Promise.race([
+          provider.request({
             method: "wallet_addEthereumChain",
             params: [params],
-          })
-          .then(options?.onSwitch)
+          }),
+          new Promise((resolve) => {
+            const id = setInterval(async () => {
+              const chainId = await provider.request({ method: "eth_chainId" })
+              if (chainId === params.chainId) {
+                resolve(true)
+                clearInterval(id)
+              } else {
+                await provider.request({
+                  method: "wallet_switchEthereumChain",
+                  params: [params],
+                })
+              }
+            }, 5000)
+          }),
+        ])
+
+        options?.onSwitch?.()
       } catch (err) {}
     } else {
       throw new Error(error)
