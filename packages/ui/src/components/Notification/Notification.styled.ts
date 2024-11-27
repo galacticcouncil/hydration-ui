@@ -53,7 +53,7 @@ export const SProgressContainer = styled.div(
   `,
 )
 
-const getColor = (cssKey: string) =>
+const getColor = (cssKey: "color" | "background") =>
   createVariants((theme) => ({
     success: css`
       ${cssKey}: ${theme.Accents.success.onPrimary};

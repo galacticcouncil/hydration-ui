@@ -6,9 +6,8 @@ import {
   SquareQuestion,
   TriangleAlert,
 } from "@/assets/icons"
+import { ButtonTransparent, Flex, Text } from "@/components"
 
-import { ButtonTransparent } from "../Button"
-import { Text } from "../Text"
 import {
   CustomToastProps,
   SCloseIcon,
@@ -40,7 +39,7 @@ export const Notification = ({
 }: CustomToastProps) => {
   return (
     <SNotification className={className}>
-      <div
+      <Flex
         css={{
           display: "flex",
           gap: 8,
@@ -55,7 +54,7 @@ export const Notification = ({
           {content}
         </Text>
         {/*Place for link button */}
-      </div>
+      </Flex>
 
       {autoClose && (
         <SProgressContainer>
