@@ -18,5 +18,5 @@ export const useClaimingRange = create<ClaimingRangeStore>()(
   ),
 )
 
-export const WARNING_LIMIT = 50
+export const WARNING_LIMIT = 80
 export const DEFAULT_VALUE = 99
