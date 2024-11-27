@@ -25,8 +25,6 @@ import { useState } from "react"
 import { Asset } from "@galacticcouncil/sdk"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 
-const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
-
 const SwapApp = createComponent({
   tagName: "gc-trade",
   elementClass: Apps.TradeApp,
@@ -118,9 +116,7 @@ export function SwapPage() {
   const assetIn =
     search.success && search.data.assetIn
       ? search.data.assetIn
-      : isEvm
-        ? defaultEvmTokenId
-        : stableCoinId ?? stableCoinAssetId
+      : stableCoinId ?? stableCoinAssetId
 
   const assetOut =
     search.success && search.data.assetOut
