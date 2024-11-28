@@ -10,7 +10,7 @@ import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useExternalAssetsWhiteList } from "api/external"
-import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { findNestedKey, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
 import { ResponsiveValue } from "utils/responsive"
 import { useAssets } from "providers/assets"
 import { Icon } from "components/Icon/Icon"
@@ -88,11 +88,45 @@ export const AssetLogo = ({ id }: { id?: string }) => {
 
   const { details, badgeVariant } = asset
 
-  const underlyingAssetId =
-    details && isErc20(details) ? details.underlyingAssetId : undefined
-
   if (details) {
+    const underlyingAssetId = isErc20(details)
+      ? details.underlyingAssetId
+      : undefined
+
+    const ethereumNetworkEntry = findNestedKey(details.location, "ethereum")
+
+    if (ethereumNetworkEntry) {
+      const { ethereum } = ethereumNetworkEntry
+      const ethereumChain = findNestedKey(ethereum, "chainId")
+      const ethereumAsset = findNestedKey(details.location, "key")
+
+      return (
+        <UigcAssetId
+          css={{ "& uigc-logo-chain": { display: "none" } }}
+          ref={(el) => {
+            el &&
+              ethereumChain.chainId &&
+              el.setAttribute("chainOrigin", ethereumChain.chainId)
+            el && el.setAttribute("fit", "")
+          }}
+          ecosystem="ethereum"
+          asset={ethereumAsset.key}
+          chain={ethereumChain.chainId}
+          chainOrigin={ethereumChain.chainId}
+        >
+          {badgeVariant && (
+            <UigcAssetBadge
+              slot="badge"
+              variant={badgeVariant}
+              text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+            />
+          )}
+        </UigcAssetId>
+      )
+    }
+
     const Wrapper = underlyingAssetId ? SATokenWrapper : React.Fragment
+
     return (
       <Wrapper>
         <UigcAssetId
