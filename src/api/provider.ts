@@ -21,11 +21,6 @@ import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
 import { pendulum } from "./external/pendulum"
-import {
-  AaveV3HydrationMainnet,
-  AaveV3HydrationTestnet,
-} from "sections/lending/ui-config/addresses"
-import { useSearch } from "@tanstack/react-location"
 import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
@@ -41,8 +36,6 @@ export type ProviderProps = {
 export type TFeatureFlags = {
   referrals: boolean
   dispatchPermit: boolean
-  borrow: boolean
-  borrowContractApproved: boolean
 }
 
 export const PROVIDERS: ProviderProps[] = [
@@ -208,15 +201,7 @@ export const useProviderAssets = () => {
 
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
-  const isTestnet = useIsTestnet()
   const { setRpcUrl } = useProviderRpcUrlStore()
-  const { mm } = useSearch<{
-    Search: {
-      mm?: number
-    }
-  }>()
-
-  const borrowOverride = mm === 1
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
@@ -258,21 +243,13 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const aavePoolContract = isTestnet
-        ? AaveV3HydrationTestnet.POOL
-        : AaveV3HydrationMainnet.POOL
-
-      const [isReferralsEnabled, isDispatchPermitEnabled, borrowContract] =
-        await Promise.all([
-          api.query.referrals,
-          api.tx.multiTransactionPayment.dispatchPermit,
-          api.query.evmAccounts.approvedContract(aavePoolContract),
-          tradeRouter.getPools(),
-        ])
+      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
+        api.query.referrals,
+        api.tx.multiTransactionPayment.dispatchPermit,
+        tradeRouter.getPools(),
+      ])
 
       const balanceClient = new BalanceClient(api)
-
-      const isBorrowContractApproved = borrowOverride || !borrowContract.isEmpty
 
       return {
         api,
@@ -282,8 +259,6 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          borrow: true,
-          borrowContractApproved: isBorrowContractApproved,
         } as TFeatureFlags,
       }
     },

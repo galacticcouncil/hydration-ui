@@ -53,41 +53,6 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
           />
         </DataValue>
       </DataValueList>
-      <Text color="basic400" fs={14} sx={{ mt: 20 }}>
-        <span>
-          E-Mode increases your LTV for a selected category of assets, meaning
-          that when E-mode is enabled, you will have higher borrowing power over
-          assets of the same E-mode category which are defined by Hydration
-          governance. You can enter E-Mode from your{" "}
-          <a
-            target="_blank"
-            href={ROUTES.dashboard}
-            css={{ textDecoration: "underline" }}
-            rel="noreferrer"
-          >
-            Dashboard
-          </a>
-          . To learn more about E-Mode and applied restrictions in{" "}
-          <a
-            target="_blank"
-            href="https://docs.aave.com/faq/aave-v3-features#high-efficiency-mode-e-mode"
-            css={{ textDecoration: "underline" }}
-            rel="noreferrer"
-          >
-            FAQ
-          </a>{" "}
-          or{" "}
-          <a
-            target="_blank"
-            href="https://github.com/aave/aave-v3-core/blob/master/techpaper/Aave_V3_Technical_Paper.pdf"
-            css={{ textDecoration: "underline" }}
-            rel="noreferrer"
-          >
-            Aave V3 Technical Paper
-          </a>
-          .
-        </span>
-      </Text>
     </div>
   )
 }
