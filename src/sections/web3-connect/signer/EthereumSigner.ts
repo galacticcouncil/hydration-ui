@@ -57,8 +57,8 @@ export class EthereumSigner {
       this.signer.provider.getFeeData(),
     ])
 
-    const onePrc = gasPrice.div(100)
-    const gasPricePlus = gasPrice.add(onePrc)
+    const twoPrc = gasPrice.div(100).mul(2)
+    const gasPricePlus = gasPrice.add(twoPrc)
 
     return {
       gas,
