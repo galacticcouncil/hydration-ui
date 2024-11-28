@@ -1234,5 +1234,12 @@
   "claimingRange.modal.warning.title": "Are you sure?",
   "claimingRange.modal.warning.description": " Don't claim rewards too early. Claiming forfeits any non-claimable rewards to the other LPs. Before claiming, make sure that your claim threshold is configured accordingly.",
   "claimingRange.modal.description1": "After joining a farm, a portion of the accumulated rewards is locked. These rewards unlock over time as you remain in the farm and follow loyalty factor curve",
-  "claimingRange.modal.description2": "Claiming forfeits the locked part of the rewards. Use this setting to tweak your preference over claiming faster or losing less rewards (default). This allows you to compound your rewards with ease."
+  "claimingRange.modal.description2": "Claiming forfeits the locked part of the rewards. Use this setting to tweak your preference over claiming faster or losing less rewards (default). This allows you to compound your rewards with ease.",
+  "unifiedAddresses.banner.title": "Polkadot introduces new address formatting",
+  "unifiedAddresses.modal.title": "Unified address formatting",
+  "unifiedAddresses.modal.description1": "With the Polkadot ecosystem introducing a new address format and chain prefixes, Hydration is leading the way in implementing this change.",
+  "unifiedAddresses.modal.description2": "You’ll now encounter the updated format when performing transfers and other actions involving addresses.<br /><br />While other DEXs and CEXs are still in the process of adopting this update, the old address format will remain available for copying.",
+  "unifiedAddresses.modal.cta1": "Love it",
+  "unifiedAddresses.modal.cta2": "Close but also love it"
+  
 }
