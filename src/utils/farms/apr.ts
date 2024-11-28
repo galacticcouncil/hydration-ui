@@ -14,5 +14,5 @@ export const getCurrentLoyaltyFactor = (
     ),
   )
     .div(BN_QUINTILL)
-    .toNumber()
+    .toString()
 }

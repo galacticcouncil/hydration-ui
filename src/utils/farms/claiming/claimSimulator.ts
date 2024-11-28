@@ -13,7 +13,7 @@ import { MultiCurrencyContainer } from "utils/farms/claiming/multiCurrency"
 import * as liquidityMining from "@galacticcouncil/math-liquidity-mining"
 import { TYieldFarmEntry } from "api/deposits"
 
-const MAX_LOYALTY_FACTOR = "999999999999999999"
+const MAX_LOYALTY_FACTOR = "1000000000000000000"
 
 export class OmnipoolLiquidityMiningClaimSim {
   protected get_account: (sub: u32 | number) => AccountId32

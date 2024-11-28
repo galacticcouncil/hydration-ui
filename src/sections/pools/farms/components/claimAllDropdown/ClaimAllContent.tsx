@@ -17,7 +17,6 @@ import {
   useAccountClaimableFarmValues,
   useSummarizeClaimableValues,
 } from "api/farms"
-import { BN_0 } from "utils/constants"
 import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 import BigNumber from "bignumber.js"
 
@@ -38,11 +37,8 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
         )
       : []
 
-    const {
-      total = BN_0,
-      claimableAssetValues,
-      diffRewards,
-    } = useSummarizeClaimableValues(claimableValues)
+    const { claimableTotal, claimableAssetValues, diffRewards } =
+      useSummarizeClaimableValues(claimableValues)
 
     const claimableAssets = Object.keys(claimableAssetValues ?? {}).map(
       (key) => {
@@ -61,7 +57,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
           <Trans i18nKey={`farms.claimCard.toast.${msType}`}>
             <span />
           </Trans>
-          <DisplayValue value={total} type="token" />
+          <DisplayValue value={claimableTotal} type="token" />
         </>
       )
       return memo
@@ -97,7 +93,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
                 <div key={claimableAsset.symbol} sx={{ mt: 8 }}>
                   <Text fs={16} lh={19} sx={{ mb: 8 }} font="GeistMedium">
                     {t("value.tokenWithSymbol", {
-                      value: claimableAsset.value.rewards,
+                      value: claimableAsset.value.claimableRewards,
                       symbol: claimableAsset.symbol,
                     })}
                   </Text>
@@ -113,7 +109,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
 
               <Text fs={14} sx={{ mt: 6 }}>
                 <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-                  <DisplayValue value={BigNumber(total)} />
+                  <DisplayValue value={BigNumber(claimableTotal)} />
                 </Trans>
               </Text>
 
@@ -133,7 +129,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
               <SClaimButton
                 disabled={
                   !claimableValues ||
-                  BigNumber(total).isZero() ||
+                  BigNumber(claimableTotal).isZero() ||
                   account?.isExternalWalletConnected
                 }
                 onClick={claim}
