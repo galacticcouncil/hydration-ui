@@ -6,6 +6,7 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
+import { TransactionRequest } from "@ethersproject/providers"
 import { XCallEvm } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
@@ -28,6 +29,10 @@ export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic
+  evmTx?: {
+    data: TransactionRequest
+    abi?: string
+  }
   xcall?: XCallEvm
   xcallMeta?: Record<string, string>
   overrides?: {

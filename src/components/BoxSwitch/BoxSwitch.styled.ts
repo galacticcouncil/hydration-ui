@@ -3,12 +3,13 @@ import { theme } from "theme"
 import { Text } from "components/Typography/Text/Text"
 
 export const SSwitch = styled.div`
-  --btn-size: 56px;
+  --btn-height: 56px;
+  --btn-width: 56px;
   --btn-gap: 8px;
 
   position: relative;
   z-index: ${theme.zIndices.boxSwitch};
-  height: var(--btn-size);
+  height: var(--btn-height);
 
   display: flex;
   gap: var(--btn-gap);
@@ -17,8 +18,8 @@ export const SSwitch = styled.div`
 export const SButton = styled.button<{ isActive: boolean }>`
   all: unset;
 
-  width: var(--btn-size);
-  height: var(--btn-size);
+  width: var(--btn-width);
+  height: var(--btn-height);
 
   display: flex;
   align-items: center;
@@ -51,11 +52,11 @@ export const SButtonBackground = styled.div<{ index: number }>`
 
   position: absolute;
   top: 0;
-  left: calc(${({ index }) => index} * (var(--btn-size) + var(--btn-gap)));
+  left: calc(${({ index }) => index} * (var(--btn-width) + var(--btn-gap)));
   z-index: -1;
 
-  width: var(--btn-size);
-  height: var(--btn-size);
+  width: var(--btn-width);
+  height: var(--btn-height);
 
   background: linear-gradient(0deg, #fc408c -3.48%, #ffb0e4 111.82%);
   border-radius: 4px;

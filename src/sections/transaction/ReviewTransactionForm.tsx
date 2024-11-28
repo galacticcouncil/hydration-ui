@@ -251,8 +251,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
           <ReviewTransactionData
-            address={account?.address}
             tx={tx}
+            evmTx={props.evmTx}
             xcallMeta={props.xcallMeta}
           />
         }

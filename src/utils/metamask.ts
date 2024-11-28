@@ -39,7 +39,7 @@ export interface AddEvmChainParams {
 }
 
 const chainIconMap: { [key: string]: string[] } = {
-  hydradx: ["https://app.hydration.net/favicon.ico"],
+  hydradx: ["https://app.hydration.net/favicon/apple-touch-icon.png"],
 }
 
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {

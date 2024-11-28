@@ -127,7 +127,7 @@ test("create mock type registry", () => {
     [
       {
         id: "0",
-        existentialDeposit: new BigNumber("1000000000000"),
+        existentialDeposit: "1000000000000",
       },
     ],
   )
@@ -149,6 +149,6 @@ test("create mock type registry", () => {
     new BigNumber("3897022160208644"),
   )
 
-  expect(result?.value.toString()).toEqual("222,635".replaceAll(",", ""))
+  expect(result?.reward.toString()).toEqual("222,635".replaceAll(",", ""))
   expect(result?.assetId.toString()).toEqual("0")
 })

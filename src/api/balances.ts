@@ -12,6 +12,7 @@ import {
   PalletBalancesAccountData,
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
+import { BalanceClient } from "@galacticcouncil/sdk"
 import { millisecondsInMinute } from "date-fns/constants"
 
 export type TBalance = ReturnType<typeof parseBalanceData>
@@ -36,31 +37,32 @@ export const parseBalanceData = (
   }
 }
 
-export const getTokenBalance =
-  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
-  async () => {
-    if (id.toString() === NATIVE_ASSET_ID) {
-      const res = await api.query.system.account(account)
-
-      return parseBalanceData(res.data, id.toString(), account.toString())
-    }
-
-    const res = await api.query.tokens.accounts(account, id)
+export const getTokenBalance = (
+  balanceClient: BalanceClient,
+  account: AccountId32 | string,
+  id: string | u32,
+) => {
+  return async () => {
+    const res = await balanceClient.getTokenBalanceData(
+      account.toString(),
+      id.toString(),
+    )
 
     return parseBalanceData(res, id.toString(), account.toString())
   }
+}
 
 export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    enabled ? getTokenBalance(api, address, id) : undefinedNoop,
+    enabled ? getTokenBalance(balanceClient, address, id) : undefinedNoop,
     { enabled },
   )
 }
@@ -70,14 +72,16 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
-      queryFn: address ? getTokenBalance(api, address, id) : undefinedNoop,
+      queryFn: address
+        ? getTokenBalance(balanceClient, address, id)
+        : undefinedNoop,
       enabled: !!id && !!address && isLoaded,
     })),
   })

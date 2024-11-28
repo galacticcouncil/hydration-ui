@@ -88,13 +88,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={
-          <ReviewTransactionData
-            address={account?.address}
-            xcallEvm={xcall}
-            xcallMeta={xcallMeta}
-          />
-        }
+        content={<ReviewTransactionData evmTx={xcall} xcallMeta={xcallMeta} />}
         footer={
           <>
             <div sx={{ mt: 15 }}>

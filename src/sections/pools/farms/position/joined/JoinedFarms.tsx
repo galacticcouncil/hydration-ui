@@ -1,10 +1,8 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useFarmCurrentPeriod } from "api/farms"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { isNotNil } from "utils/helpers"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import BN from "bignumber.js"
@@ -50,31 +48,11 @@ export const JoinedFarms = ({ depositNft }: JoinedFarmsProps) => {
   )
 
   return (
-    <div sx={{ flex: "column", gap: 6 }}>
-      <Text fs={14} color="basic500">
-        {t("farms.positions.labels.joinedFarms.title")}
-      </Text>
-      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-        <MultipleIcons
-          size={22}
-          icons={joinedFarmsAprs.map((joinedFarmsApr) => ({
-            icon: (
-              <AssetLogo
-                key={joinedFarmsApr.assetId}
-                id={joinedFarmsApr.assetId}
-              />
-            ),
-          }))}
-        />
-        <Text fs={16} color="white">
-          {aprs
-            .map((apr) =>
-              t("value.percentage", { value: apr, decimalPlaces: 1 }),
-            )
-            .join(" + ")}{" "}
-          {t("apr")}
-        </Text>
-      </div>
-    </div>
+    <Text fs={14}>
+      {aprs
+        .map((apr) => t("value.percentage", { value: apr, decimalPlaces: 1 }))
+        .join(" + ")}{" "}
+      {t("apr")}
+    </Text>
   )
 }
