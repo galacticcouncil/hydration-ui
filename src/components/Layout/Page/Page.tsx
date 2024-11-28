@@ -23,15 +23,14 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
-import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
 }
 
-const ReferralsConnectWrapper = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnectWrapper"))
-    .ReferralsConnectWrapper,
+const ReferralsConnect = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnect"))
+    .ReferralsConnect,
 }))
 
 const Transactions = lazy(async () => ({
@@ -51,7 +50,6 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { featureFlags } = useRpcProvider()
 
   const prevUrl = usePreviousUrl()
 
@@ -124,7 +122,7 @@ export const Page = ({ className }: Props) => {
       <Suspense>
         <Web3Connect />
         <Transactions />
-        <ReferralsConnectWrapper />
+        <ReferralsConnect />
         <QuerySubscriptions />
       </Suspense>
     </>

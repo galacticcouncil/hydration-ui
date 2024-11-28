@@ -161,7 +161,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 6,
-    asyncEnabled: true,
+    asyncEnabled: false,
   },
   {
     key: "memepad",
