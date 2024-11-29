@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -19,8 +19,7 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
-import { pendulum } from "./external/pendulum"
+import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
@@ -180,15 +179,11 @@ export const useProviderAssets = () => {
                 (tradeAsset) => tradeAsset.id === asset.id,
               )
               return {
-                ...omit(["externalId"], asset),
+                ...asset,
                 symbol: asset.symbol ?? "",
                 decimals: asset.decimals ?? 0,
                 name: asset.name ?? "",
-                externalId:
-                  asset.origin === pendulum.parachainId &&
-                  typeof asset.externalId === "object"
-                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                    : asset.externalId?.toString(),
+                externalId: getExternalId(asset),
                 isTradable,
               }
             }),
