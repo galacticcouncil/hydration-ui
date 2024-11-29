@@ -15,7 +15,12 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { H160, isEvmAccount } from "utils/evm"
+import {
+  H160,
+  isEvmAccount,
+  isEvmAddress,
+  safeConvertAddressH160,
+} from "utils/evm"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 export const formatNum = (
@@ -260,10 +265,20 @@ export function safeConvertAddressSS58(
   }
 }
 
-export function getChainSpecificAddress(address: string) {
-  return isEvmAccount(address)
-    ? H160.fromAccount(address)
-    : getAddressVariants(address).hydraAddress
+export function getChainSpecificAddress(
+  address: string,
+  useUnifiedFormat = true,
+) {
+  if (isEvmAccount(address)) {
+    return H160.fromAccount(address)
+  }
+
+  if (isEvmAddress(address)) {
+    return safeConvertAddressH160(address) ?? ""
+  }
+
+  const variants = getAddressVariants(address)
+  return useUnifiedFormat ? variants.polkadotAddress : variants.hydraAddress
 }
 
 /**
@@ -282,11 +297,9 @@ export const getAddressVariants = (address: string) => {
   const isHydraVariant = isHydraAddress(address)
   const hydraAddress = isHydraVariant
     ? address
-    : encodeAddress(decodeAddress(address), HYDRA_ADDRESS_PREFIX)
+    : safeConvertAddressSS58(address, HYDRA_ADDRESS_PREFIX, false) ?? ""
 
-  const polkadotAddress = isHydraVariant
-    ? encodeAddress(decodeAddress(address))
-    : address
+  const polkadotAddress = safeConvertAddressSS58(address, 0) ?? ""
 
   return { hydraAddress, polkadotAddress }
 }

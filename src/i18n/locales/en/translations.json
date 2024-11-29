@@ -514,6 +514,7 @@
   "wallet.assets.transfer.transaction_cost": "Transaction cost:",
   "wallet.assets.transfer.cancel": "Cancel",
   "wallet.assets.transfer.submit": "Transfer",
+  "wallet.assets.transfer.submit.disabled": "Check disclaimer",
   "wallet.assets.transfer.error.required": "This field is required.",
   "wallet.assets.transfer.error.validAddress": "The address is incorrect. Please review it and try again.",
   "wallet.assets.transfer.error.notSame": "Sending and receiving address cannot be the same.",

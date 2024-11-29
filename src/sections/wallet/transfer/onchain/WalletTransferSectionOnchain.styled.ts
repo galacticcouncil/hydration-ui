@@ -17,3 +17,14 @@ export const PasteAddressIcon = styled(PasteIcon)`
     cursor: pointer;
   }
 `
+
+export const SDiclaimerContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 12px;
+  border-radius: 8px;
+
+  background: rgba(133, 209, 255, 0.1);
+`
