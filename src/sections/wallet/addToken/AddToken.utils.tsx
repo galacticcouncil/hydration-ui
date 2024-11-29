@@ -408,9 +408,9 @@ export const useExternalTokenMeta = () => {
 
       if (meta?.isExternal && meta.externalId) {
         for (const parachain in externalRegistry) {
-          const externalAsset = externalRegistry[Number(parachain)]?.data?.get(
-            meta.externalId,
-          )
+          const registry = externalRegistry[Number(parachain)]
+          const externalAsset = registry?.data?.get(meta.externalId)
+
           if (externalAsset) {
             const meta = getExternalByExternalId(externalAsset.id)
 

@@ -6,7 +6,7 @@ import {
   useMemo,
 } from "react"
 import { TAssetStored, useAssetRegistry, useSettingsStore } from "state/store"
-import { Bond } from "@galacticcouncil/sdk"
+import { Bond, findNestedKey } from "@galacticcouncil/sdk"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
@@ -56,9 +56,11 @@ const getFullAsset = (asset: TAssetStored) => {
   const isErc20 = asset.type === "Erc20"
   const isShareToken = false
 
+  const parachainEntry = findNestedKey(asset.location, "parachain")
+
   return {
     ...asset,
-    parachainId: asset.origin?.toString(),
+    parachainId: parachainEntry?.parachain,
     existentialDeposit: asset.existentialDeposit,
     isToken,
     isBond,
