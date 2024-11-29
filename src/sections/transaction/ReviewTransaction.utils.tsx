@@ -44,6 +44,7 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
+import { tags } from "@galacticcouncil/xcm-cfg"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -195,7 +196,7 @@ export const useSendEvmTransactionMutation = (
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+        const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
 
         if (isSnowBridge) {
           setIsSnowbridge(true)
@@ -346,7 +347,7 @@ export const useSendDispatchPermit = (
           const isInBlock = result.status.type === "InBlock"
 
           if (isMounted()) {
-            const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+            const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
 
             if (isSnowBridge) {
               setIsSnowbridge(true)
@@ -464,7 +465,7 @@ export const useSendTransactionMutation = (
           if (!result || !result.status) return
 
           if (isMounted()) {
-            const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+            const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
 
             if (isSnowBridge) {
               setIsSnowbridge(true)

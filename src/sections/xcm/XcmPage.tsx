@@ -24,6 +24,7 @@ import { genesisHashToChain } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
+import { tags } from "@galacticcouncil/xcm-cfg"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -75,7 +76,7 @@ export function XcmPage() {
   const rpcUrlList = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    const isSnowbridge = e.detail?.meta?.tags === "Snowbridge"
+    const isSnowbridge = e.detail?.meta?.tags === tags.Tag.Snowbridge
     const isApprove = e.detail.transaction.hex.startsWith("0x095ea7b3")
 
     await createTransaction(
