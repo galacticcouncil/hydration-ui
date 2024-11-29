@@ -39,12 +39,7 @@ export const Notification = ({
 }: CustomToastProps) => {
   return (
     <SNotification className={className}>
-      <Flex
-        css={{
-          display: "flex",
-          gap: 8,
-        }}
-      >
+      <Flex gap={8}>
         <SIconVariant
           component={getNotificationIcon(variant)}
           variant={variant}

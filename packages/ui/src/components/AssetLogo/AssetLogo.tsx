@@ -33,14 +33,12 @@ export const AssetLogo = ({
       />
       {chainSrc && <SChainLogo loading="lazy" src={chainSrc} alt={assetId} />}
 
-      <Badge badge={badge} tooltip={badgeTooltip} />
+      {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
     </Box>
   )
 }
 
-const Badge = ({ badge, tooltip }: { badge?: TBadge; tooltip?: string }) => {
-  if (!badge) return null
-
+const Badge = ({ badge, tooltip }: { badge: TBadge; tooltip?: string }) => {
   const BadgeComp = (
     <SAssetBadge component={TriangleAlert} size="100%" type={badge} />
   )
