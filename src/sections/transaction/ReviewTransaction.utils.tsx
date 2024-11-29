@@ -187,6 +187,7 @@ export const useSendEvmTransactionMutation = (
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
     undefined,
   )
+  const [isSnowbridge, setIsSnowbridge] = useState(false)
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
@@ -194,6 +195,12 @@ export const useSendEvmTransactionMutation = (
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
+        const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+
+        if (isSnowBridge) {
+          setIsSnowbridge(true)
+        }
+
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
         setTxData(evmTx?.data)
@@ -210,7 +217,9 @@ export const useSendEvmTransactionMutation = (
 
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
   const txLink =
-    txHash && chain ? getEvmTxLink(txHash, txData, chain.key, isTestnet) : ""
+    txHash && chain
+      ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowbridge)
+      : ""
 
   const isApproveTx = txData?.startsWith("0x095ea7b3")
 
@@ -226,12 +235,13 @@ export const useSendEvmTransactionMutation = (
     txState,
     txLink,
     txHash,
-    bridge: isApproveTx ? undefined : bridge,
+    bridge: isApproveTx || isSnowbridge ? undefined : bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
       setCallMeta(undefined)
       sendTx.reset()
+      setIsSnowbridge(false)
     },
   }
 }
@@ -313,6 +323,7 @@ export const useSendDispatchPermit = (
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
     undefined,
   )
+  const [isSnowbridge, setIsSnowbridge] = useState(false)
   const isMounted = useMountedState()
 
   const sendTx = useMutation(async ({ permit, xcallMeta }) => {
@@ -335,6 +346,12 @@ export const useSendDispatchPermit = (
           const isInBlock = result.status.type === "InBlock"
 
           if (isMounted()) {
+            const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+
+            if (isSnowBridge) {
+              setIsSnowbridge(true)
+            }
+
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
             setCallMeta(xcallMeta)
@@ -403,7 +420,8 @@ export const useSendDispatchPermit = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+  const bridge =
+    destChain?.isEvmChain() && !isSnowbridge ? "substrate" : undefined
 
   return {
     ...sendTx,
@@ -415,6 +433,7 @@ export const useSendDispatchPermit = (
       setTxState(null)
       setTxHash("")
       sendTx.reset()
+      setIsSnowbridge(false)
     },
   }
 }
@@ -436,6 +455,7 @@ export const useSendTransactionMutation = (
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
     undefined,
   )
+  const [isSnowbridge, setIsSnowbridge] = useState(false)
 
   const sendTx = useMutation(async ({ tx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
@@ -444,6 +464,12 @@ export const useSendTransactionMutation = (
           if (!result || !result.status) return
 
           if (isMounted()) {
+            const isSnowBridge = xcallMeta?.tags === "Snowbridge"
+
+            if (isSnowBridge) {
+              setIsSnowbridge(true)
+            }
+
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
             setCallMeta(xcallMeta)
@@ -488,7 +514,8 @@ export const useSendTransactionMutation = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+  const bridge =
+    destChain?.isEvmChain() && !isSnowbridge ? "substrate" : undefined
 
   return {
     ...sendTx,
@@ -501,6 +528,7 @@ export const useSendTransactionMutation = (
       setTxHash("")
       setCallMeta(undefined)
       sendTx.reset()
+      setIsSnowbridge(false)
     },
   }
 }

@@ -75,6 +75,9 @@ export function XcmPage() {
   const rpcUrlList = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+    const isSnowbridge = e.detail?.meta?.tags === "Snowbridge"
+    const isApprove = e.detail.transaction.hex.startsWith("0x095ea7b3")
+
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
@@ -83,7 +86,10 @@ export function XcmPage() {
       {
         onSuccess: () => {},
         onSubmitted: () => {},
-        toast: getNotificationToastTemplates(e.detail),
+        toast:
+          !isSnowbridge || isApprove
+            ? getNotificationToastTemplates(e.detail)
+            : undefined,
       },
     )
   }
