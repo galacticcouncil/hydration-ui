@@ -34,20 +34,6 @@ export default defineConfig(({ mode }) => {
     build: {
       target: "esnext",
       outDir: "build",
-      rollupOptions: {
-        output: {
-          experimentalMinChunkSize: 200_000,
-          manualChunks(id) {
-            if (id.includes("src/assets")) {
-              return "assets"
-            }
-
-            if (id.includes("@radix")) {
-              return "@radix"
-            }
-          },
-        },
-      },
     },
     optimizeDeps: {
       esbuildOptions: {

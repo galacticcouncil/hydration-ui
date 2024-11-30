@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -19,15 +19,7 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
-import { pendulum } from "./external/pendulum"
-import {
-  AaveV3HydrationMainnet,
-  AaveV3HydrationTestnet,
-} from "sections/lending/ui-config/addresses"
-import { useSearch } from "@tanstack/react-location"
-import { getReferendumInfo } from "api/democracy"
-import { MONEY_MARKET_REFERENDUM_INDEX } from "sections/lending/ui-config/misc"
+import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
@@ -43,8 +35,6 @@ export type ProviderProps = {
 export type TFeatureFlags = {
   referrals: boolean
   dispatchPermit: boolean
-  borrow: boolean
-  borrowContractApproved: boolean
 }
 
 export const PROVIDERS: ProviderProps[] = [
@@ -189,15 +179,11 @@ export const useProviderAssets = () => {
                 (tradeAsset) => tradeAsset.id === asset.id,
               )
               return {
-                ...omit(["externalId"], asset),
+                ...asset,
                 symbol: asset.symbol ?? "",
                 decimals: asset.decimals ?? 0,
                 name: asset.name ?? "",
-                externalId:
-                  asset.origin === pendulum.parachainId &&
-                  typeof asset.externalId === "object"
-                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                    : asset.externalId?.toString(),
+                externalId: getExternalId(asset),
                 isTradable,
               }
             }),
@@ -210,15 +196,7 @@ export const useProviderAssets = () => {
 
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
-  const isTestnet = useIsTestnet()
   const { setRpcUrl } = useProviderRpcUrlStore()
-  const { mm } = useSearch<{
-    Search: {
-      mm?: number
-    }
-  }>()
-
-  const borrowOverride = mm === 1
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
@@ -260,26 +238,13 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const aavePoolContract = isTestnet
-        ? AaveV3HydrationTestnet.POOL
-        : AaveV3HydrationMainnet.POOL
-
-      const [
-        isReferralsEnabled,
-        isDispatchPermitEnabled,
-        borrowContract,
-        borrowReferendum,
-      ] = await Promise.all([
+      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
         api.query.referrals,
         api.tx.multiTransactionPayment.dispatchPermit,
-        api.query.evmAccounts.approvedContract(aavePoolContract),
-        getReferendumInfo(MONEY_MARKET_REFERENDUM_INDEX)(),
         tradeRouter.getPools(),
       ])
 
       const balanceClient = new BalanceClient(api)
-
-      const isBorrowContractApproved = borrowOverride || !borrowContract.isEmpty
 
       return {
         api,
@@ -289,8 +254,6 @@ export const useProviderData = () => {
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
-          borrow: isBorrowContractApproved || !!borrowReferendum,
-          borrowContractApproved: isBorrowContractApproved,
         } as TFeatureFlags,
       }
     },
