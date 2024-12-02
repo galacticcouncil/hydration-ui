@@ -48,6 +48,8 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
           rpcProviderUrl: provider.url,
           specVersion: api.runtimeVersion.specVersion.toString(),
           blockNumber: bestNumber?.parachainBlockNumber.toString() ?? "",
+          path: window.location.pathname,
+          commitHash: import.meta.env.VITE_COMMIT_HASH,
           ...(error instanceof TransactionError ? error.data : {}),
         }),
       )
