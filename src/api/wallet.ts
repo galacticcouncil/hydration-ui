@@ -20,7 +20,7 @@ import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { Parachain } from "@galacticcouncil/xcm-core"
 import { TAsset, useAssets } from "providers/assets"
 
@@ -182,13 +182,13 @@ const getAddressFromDest = (dest: string | TransferParachainDest) => {
 
 const addressToDisplayAddress = (
   address: string,
-  chainKey = HYDRADX_CHAIN_KEY,
+  chainKey = HYDRATION_CHAIN_KEY,
 ) => {
   const chain = chainKey
     ? (chainsMap.get(chainKey) as Parachain | undefined)
     : null
 
-  const isEvmChain = chain?.isEvmParachain() || chainKey === HYDRADX_CHAIN_KEY
+  const isEvmChain = chain?.isEvmParachain() || chainKey === HYDRATION_CHAIN_KEY
 
   if (isEvmAccount(address) && isEvmChain) {
     return H160.fromAccount(address)
@@ -287,7 +287,7 @@ const getChainFromDest = (
   dest: string | TransferParachainDest | TransferPolkadotDest,
 ) => {
   if (!dest || typeof dest === "string") {
-    return chainsMap.get(HYDRADX_CHAIN_KEY)
+    return chainsMap.get(HYDRATION_CHAIN_KEY)
   }
 
   if (isPolkadotTransfer(dest)) {
@@ -481,11 +481,11 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
             const sourceChain =
               type === "withdraw"
-                ? chainsMap.get(HYDRADX_CHAIN_KEY)
+                ? chainsMap.get(HYDRATION_CHAIN_KEY)
                 : getChainById(parachainId)
             const destChain =
               type === "deposit"
-                ? chainsMap.get(HYDRADX_CHAIN_KEY)
+                ? chainsMap.get(HYDRATION_CHAIN_KEY)
                 : getChainById(parachainId)
 
             const sourceAddr =
@@ -539,7 +539,7 @@ export function useAccountTransfers(address: string, noRefresh?: boolean) {
 
           const amount = BN(args?.amount ?? args?.value ?? 0)
 
-          const sourceChain = chainsMap.get(HYDRADX_CHAIN_KEY)
+          const sourceChain = chainsMap.get(HYDRATION_CHAIN_KEY)
           const destChain = getChainFromDest(dest)
 
           const sourceAddr =

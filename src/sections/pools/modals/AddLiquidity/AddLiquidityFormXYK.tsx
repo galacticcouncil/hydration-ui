@@ -1,5 +1,5 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -13,28 +13,23 @@ import { scale, scaleHuman } from "utils/balance"
 import { ToastMessage, useStore } from "state/store"
 import { BaseSyntheticEvent, useCallback, useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
 import * as xyk from "@galacticcouncil/math-xyk"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { TOAST_MESSAGES } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { Farm } from "api/farms"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 
 type Props = {
   onClose: () => void
   pool: TXYKPool
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
-  farms: Farm[]
   setIsJoinFarms: (value: boolean) => void
 }
 
@@ -54,16 +49,14 @@ export const AddLiquidityFormXYK = ({
   onClose,
   onSuccess,
   onSubmitted,
-  farms,
   setIsJoinFarms,
 }: Props) => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
   const { t } = useTranslation()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
 
   const { assets, decimals } = pool.meta
   const [assetA, assetB] = assets
+  const farms = pool.farms ?? []
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms)
@@ -166,9 +159,6 @@ export const AddLiquidityFormXYK = ({
       {
         onSuccess: (result) => {
           refetch()
-          queryClient.refetchQueries(
-            QUERY_KEYS.tokenBalance(pool.id, account?.address),
-          )
           onSuccess(result, scale(shares, decimals).toString())
         },
         onSubmitted: () => {
@@ -210,8 +200,8 @@ export const AddLiquidityFormXYK = ({
       if (currReserves && nextReserves) {
         const pairTokenValue = scaleHuman(
           xyk.calculate_liquidity_in(
-            currReserves.balance.toFixed(),
-            nextReserves.balance.toFixed(),
+            currReserves.balance,
+            nextReserves.balance,
             scale(value, assetDecimals).toFixed(),
           ),
           pairAssetDecimals,
@@ -233,10 +223,7 @@ export const AddLiquidityFormXYK = ({
             totalShare.toString(),
           )
 
-          const ratio = getXYKPoolShare(
-            totalShare,
-            BigNumber(shares),
-          ).toString()
+          const ratio = getXYKPoolShare(totalShare, BN(shares)).toString()
 
           form.setValue("shares", shares, { shouldValidate: true })
           form.setValue("ratio", ratio)
@@ -289,8 +276,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetA.id}
               error={error?.message}
               disabled={!assetAReserve}
-              balance={balanceA}
-              balanceMax={balanceAMax}
+              balance={balanceA ? BN(balanceA) : undefined}
+              balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
             />
           )}
         />
@@ -313,8 +300,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetB.id}
               error={error?.message}
               disabled={!assetBReserve}
-              balance={balanceB}
-              balanceMax={balanceBMax}
+              balance={balanceB ? BN(balanceB) : undefined}
+              balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
             />
           )}
         />
@@ -369,7 +356,14 @@ export const AddLiquidityFormXYK = ({
         }}
       />
       {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
+        <div
+          sx={{
+            flex: ["column", "row"],
+            gap: 8,
+            justify: "space-between",
+            pb: [10, 0],
+          }}
+        >
           <Button
             variant="secondary"
             name="addLiquidity"

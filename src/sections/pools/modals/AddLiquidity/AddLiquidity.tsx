@@ -10,12 +10,11 @@ import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { AddLiquidityForm } from "./AddLiquidityForm"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
-import { Farm } from "api/farms"
 import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useJoinFarms } from "utils/farms/deposit"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 import { isEvmAccount } from "utils/evm"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { scaleHuman } from "utils/balance"
@@ -30,17 +29,17 @@ export enum Page {
 type Props = {
   isOpen: boolean
   onClose: () => void
-  farms: Farm[]
 }
 
-export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
+export const AddLiquidity = ({ isOpen, onClose }: Props) => {
   const { api } = useRpcProvider()
   const { pool } = usePoolData()
   const { t } = useTranslation()
   const { account } = useAccount()
   const { page, direction, back, paginateTo } = useModalPagination()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
   const isEvm = isEvmAccount(account?.address)
+  const farms = pool.farms
 
   const [assetId, setAssetId] = useState<string>(pool.id)
   const [currentStep, setCurrentStep] = useState(0)
@@ -189,7 +188,6 @@ export const AddLiquidity = ({ isOpen, onClose, farms }: Props) => {
               <AddLiquidityFormXYK
                 pool={pool}
                 onClose={onClose}
-                farms={farms}
                 onSuccess={onXykSuccess}
                 onSubmitted={() => paginateTo(Page.WAIT)}
                 setIsJoinFarms={setIsJoinFarms}

@@ -1,4 +1,3 @@
-import { useFarms } from "api/farms"
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
@@ -7,6 +6,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TLPData } from "utils/omnipool"
+import { usePoolData } from "sections/pools/pool/Pool"
 
 export const JoinFarmsButton = (props: {
   poolId: string
@@ -16,14 +16,16 @@ export const JoinFarmsButton = (props: {
   const { t } = useTranslation()
   const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
-  const farms = useFarms([props.poolId])
+  const {
+    pool: { farms },
+  } = usePoolData()
 
   return (
     <>
       <Button
         variant="primary"
         size="compact"
-        disabled={!farms.data?.length || account?.isExternalWalletConnected}
+        disabled={!farms.length || account?.isExternalWalletConnected}
         onClick={() => setJoinFarm(true)}
         css={{ flex: "1 0 0" }}
       >
@@ -31,9 +33,8 @@ export const JoinFarmsButton = (props: {
         {t("liquidity.asset.actions.joinFarms")}
       </Button>
 
-      {joinFarm && farms.data && (
+      {joinFarm && (
         <JoinFarmModal
-          farms={farms.data}
           onClose={() => setJoinFarm(false)}
           position={props.position}
         />

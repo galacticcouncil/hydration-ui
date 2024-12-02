@@ -1,5 +1,4 @@
 import { u32 } from "@polkadot/types"
-import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
@@ -18,8 +17,8 @@ import { OrderAssetSelect } from "./cmp/AssetSelect"
 import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -37,7 +36,6 @@ export const PlaceOrder = ({
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
 
   const [aOut, setAOut] = useState(assetOut)
@@ -54,10 +52,12 @@ export const PlaceOrder = ({
   })
 
   const { api } = useRpcProvider()
+  const accountAssets = useAccountAssets()
   const assetOutMeta = aOut ? getAssetWithFallback(aOut.toString()) : undefined
-  const assetOutBalance = useTokenBalance(aOut, account?.address)
+  const assetOutBalance = aOut
+    ? accountAssets.data?.accountAssetsMap.get(aOut.toString())?.balance
+    : undefined
   const assetInMeta = aIn ? getAssetWithFallback(aIn.toString()) : undefined
-  const assetInBalance = useTokenBalance(aIn, account?.address)
 
   useEffect(() => {
     form.trigger()
@@ -195,12 +195,12 @@ export const PlaceOrder = ({
                       required: true,
                       validate: {
                         maxBalance: (value) => {
-                          const balance = assetOutBalance.data?.balance
+                          const balance = assetOutBalance?.balance
                           const decimals = assetOutMeta?.decimals
                           if (
                             balance &&
                             decimals &&
-                            balance.gte(
+                            BigNumber(balance).gte(
                               new BigNumber(value).multipliedBy(
                                 BN_10.pow(decimals),
                               ),
@@ -228,7 +228,6 @@ export const PlaceOrder = ({
                         }}
                         onOpen={() => paginateTo(2)}
                         asset={aOut}
-                        balance={assetOutBalance.data?.balance}
                         error={error?.message}
                       />
                     )}
@@ -278,7 +277,6 @@ export const PlaceOrder = ({
                         }}
                         onOpen={() => paginateTo(1)}
                         asset={aIn}
-                        balance={assetInBalance.data?.balance}
                         error={error?.message}
                       />
                     )}

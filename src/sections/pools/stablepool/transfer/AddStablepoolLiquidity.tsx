@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
@@ -13,33 +13,32 @@ import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquid
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
-import { useTokenBalance } from "api/balances"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
 import { Switch } from "components/Switch/Switch"
 import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 import { Separator } from "components/Separator/Separator"
+import { useAccountAssets } from "api/deposits"
 
 type Props = {
   poolId: string
-  fee: BigNumber
+  fee: BN
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
@@ -48,12 +47,12 @@ type Props = {
   onSubmitted: (shares?: string) => void
   reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
-  farms: Farm[]
+  farms: TFarmAprData[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
 
-const createFormSchema = (balance: BigNumber, decimals: number) =>
+const createFormSchema = (balance: string, decimals: number) =>
   z.object({
     value: required.pipe(maxBalance(balance, decimals)),
   })
@@ -75,11 +74,13 @@ export const AddStablepoolLiquidity = ({
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const accountBalances = useAccountAssets()
 
   const { t } = useTranslation()
 
-  const { account } = useAccount()
-  const walletBalance = useTokenBalance(asset.id, account?.address)
+  const walletBalance = accountBalances.data?.accountAssetsMap.get(
+    asset.id,
+  )?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -92,12 +93,13 @@ export const AddStablepoolLiquidity = ({
 
   const estimatedFees = useEstimatedFees(estimationTxs)
 
-  const balance = walletBalance.data?.balance ?? BN_0
+  const balance = walletBalance?.balance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === asset.id
-      ? balance
+      ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(asset.existentialDeposit)
+          .toString()
       : balance
 
   const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
@@ -234,8 +236,8 @@ export const AddStablepoolLiquidity = ({
                 onChange(v)
                 handleShares(v)
               }}
-              balance={balance}
-              balanceMax={balanceMax}
+              balance={BN(balance)}
+              balanceMax={BN(balanceMax)}
               asset={asset.id}
               error={error?.message}
               onAssetOpen={onAssetOpen}
@@ -276,14 +278,9 @@ export const AddStablepoolLiquidity = ({
             />
             {isJoinFarms && (
               <div sx={{ flex: "column", gap: 8, mt: 8 }}>
-                {farms.map((farm) => {
-                  return (
-                    <FarmDetailsRow
-                      key={farm.globalFarm.id.toString()}
-                      farm={farm}
-                    />
-                  )
-                })}
+                {farms.map((farm) => (
+                  <FarmDetailsRow key={farm.globalFarmId} farm={farm} />
+                ))}
               </div>
             )}
             {customErrors?.farm && (

@@ -31,7 +31,7 @@ import { useAssets } from "providers/assets"
 export type BondTableItem = {
   assetId: string
   maturity?: number
-  balance?: BN
+  balance?: string
   price: string
   balanceHuman?: string
   bondId: string
@@ -47,6 +47,7 @@ export type Config = {
   showTransactions?: boolean
   enableAnimation?: boolean
   showTransfer?: boolean
+  showTrade?: boolean
   onTransfer: (assetId: string) => void
 }
 
@@ -164,7 +165,7 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
 
           return (
             <div sx={{ flex: "row", gap: 10, justify: "end", pr: 16 }}>
-              {config.showTransfer && (
+              {config.showTrade && (
                 <TableAction
                   onClick={() =>
                     navigate({
@@ -177,20 +178,18 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
                   {t("bonds.btn")}
                 </TableAction>
               )}
-              {
-                <TableAction
-                  variant={config.showTransfer ? "secondary" : "primary"}
-                  isLoading={claim.isLoading}
-                  disabled={isClaimDisabled}
-                  onClick={() =>
-                    bondId &&
-                    balance &&
-                    claim.mutate({ bondId, amount: balance.toString() })
-                  }
-                >
-                  {t("bonds.table.claim")}
-                </TableAction>
-              }
+              <TableAction
+                variant={config.showTransfer ? "secondary" : "primary"}
+                isLoading={claim.isLoading}
+                disabled={isClaimDisabled}
+                onClick={() =>
+                  bondId &&
+                  balance &&
+                  claim.mutate({ bondId, amount: balance.toString() })
+                }
+              >
+                {t("bonds.table.claim")}
+              </TableAction>
               {config.showTransfer && bondId && (
                 <TableAction
                   icon={<TransferIcon />}

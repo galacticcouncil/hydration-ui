@@ -25,6 +25,7 @@ import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -97,7 +98,8 @@ export const useStakeData = () => {
   const { account } = useAccount()
   const stake = useStake(account?.address)
   const circulatingSupply = useCirculatingSupply()
-  const balance = useTokenBalance(native.id, account?.address)
+  const accountAssets = useAccountAssets()
+
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
   const positionBalances = useStakingPositionBalances(
@@ -105,6 +107,7 @@ export const useStakeData = () => {
   )
   const referendas = useReferendums("finished")
 
+  const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -115,21 +118,21 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = balance.data?.freeBalance
+  const rawAvailableBalance = BN(balance?.freeBalance ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
 
-  const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
+  const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
   const queries = [
     stake,
     circulatingSupply,
-    balance,
     locks,
     spotPrice,
     positionBalances,
     referendas,
+    accountAssets,
   ]
 
   const isLoading = queries.some((query) => query.isInitialLoading)
@@ -286,7 +289,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
@@ -479,7 +482,7 @@ export const useClaimReward = () => {
       actionPointsWeight,
     } = stakingConsts.data
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
