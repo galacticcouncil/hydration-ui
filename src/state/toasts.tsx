@@ -28,6 +28,7 @@ type ToastParams = {
   txHash?: string
   hideTime?: number
   hidden?: boolean
+  xcm?: "evm" | "substrate"
 }
 
 export type ToastData = ToastParams & {

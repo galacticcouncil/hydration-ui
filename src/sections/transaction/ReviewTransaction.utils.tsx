@@ -210,6 +210,8 @@ export const useSendEvmTransactionMutation = (
           ? chainsMap.get(xcallMeta.dstChain)
           : undefined
 
+        const xcm = xcallMeta ? "evm" : undefined
+
         const bridge =
           chain?.isEvmChain() || destChain?.isEvmChain()
             ? chain?.key
@@ -222,13 +224,14 @@ export const useSendEvmTransactionMutation = (
           txHash,
           bridge: isApproveTx ? undefined : bridge,
           hidden: true,
+          xcm,
         })
 
         setIsBroadcasted(true)
 
         const receipt = await evmTx.wait()
 
-        if (isMounted()) {
+        if (isMounted() && !xcm) {
           success({
             title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
             link,
@@ -335,6 +338,8 @@ const getTransactionData = (
 
   const bridge = xcmDstChain?.isEvmChain() ? "substrate" : undefined
 
+  const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
+
   return {
     status,
     txHash,
@@ -342,6 +347,7 @@ const getTransactionData = (
     xcmDstChain,
     link,
     bridge,
+    xcm,
   }
 }
 
@@ -387,7 +393,7 @@ export const useSendDispatchPermit = (
 
           const isInBlock = result.status.type === "InBlock"
 
-          const { status, txHash, link, bridge } = getTransactionData(
+          const { status, txHash, link, bridge, xcm } = getTransactionData(
             result,
             xcallMeta,
           )
@@ -400,6 +406,7 @@ export const useSendDispatchPermit = (
               txHash,
               bridge,
               hidden: true,
+              xcm,
             })
 
             isLoadingNotified = true
@@ -439,14 +446,16 @@ export const useSendDispatchPermit = (
               reject(e)
             },
             onSuccess: async (result) => {
-              success({
-                title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-                link,
-                txHash,
-                hidden: sidebar,
-              })
+              if (!xcm) {
+                success({
+                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                  link,
+                  txHash,
+                  hidden: sidebar,
+                })
 
-              remove(id)
+                remove(id)
+              }
 
               resolve(result)
             },
@@ -521,10 +530,8 @@ export const useSendTransactionMutation = (
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
-          const { status, txHash, srcChain, link, bridge } = getTransactionData(
-            result,
-            xcallMeta,
-          )
+          const { status, txHash, srcChain, link, bridge, xcm } =
+            getTransactionData(result, xcallMeta)
 
           if (status.isBroadcast && txHash && !isLoadingNotified) {
             loading({
@@ -534,6 +541,7 @@ export const useSendTransactionMutation = (
               txHash,
               bridge,
               hidden: true,
+              xcm,
             })
 
             isLoadingNotified = true
@@ -562,14 +570,16 @@ export const useSendTransactionMutation = (
               reject(e)
             },
             onSuccess: (result) => {
-              success({
-                title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-                link,
-                txHash,
-                hidden: sidebar,
-              })
+              if (!xcm) {
+                success({
+                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                  link,
+                  txHash,
+                  hidden: sidebar,
+                })
 
-              remove(id)
+                remove(id)
+              }
 
               resolve(result)
             },
