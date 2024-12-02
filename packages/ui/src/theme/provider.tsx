@@ -1,5 +1,7 @@
 import { ThemeProvider as ThemeUIProvider } from "@theme-ui/core"
-import React, { createContext, useContext, useState } from "react"
+import React, { createContext, useContext } from "react"
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
 import { GlobalStyles } from "@/styles"
 import { ThemeName, ThemeProps, themes } from "@/theme"
@@ -25,8 +27,26 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
+type ThemeStore = {
+  theme: ThemeName
+  setTheme: (theme: ThemeName) => void
+}
+
+export const useThemeStore = create<ThemeStore>()(
+  persist(
+    (set) => ({
+      theme: defaultTheme,
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: "theme",
+      version: 0,
+    },
+  ),
+)
+
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeName>(defaultTheme)
+  const { theme, setTheme } = useThemeStore()
   const currentTheme = themes[theme]
 
   return (

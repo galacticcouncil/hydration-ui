@@ -22,6 +22,7 @@ module.exports = {
   },
   rules: {
     "react/react-in-jsx-scope": "off",
+    'react/prop-types': "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "react-hooks/rules-of-hooks": "error",

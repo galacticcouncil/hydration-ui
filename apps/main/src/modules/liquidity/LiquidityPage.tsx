@@ -9,16 +9,14 @@ export const LiquidityPage = () => {
       <Text as="h1" fs={40} fw={600} font="Primary-Font">
         {t("liquidity:title")}
       </Text>
-      <p
-        sx={{
-          color: getToken("Colors.aubergine.500"),
-        }}
-      >
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
-        laudantium voluptates ipsa temporibus quibusdam animi nostrum in ut
-        magni, reprehenderit vel architecto quisquam, fugit eum, assumenda
-        delectus soluta repellat voluptatibus.
-      </p>
+      {Array.from({ length: 100 }).map((_, i) => (
+        <Text key={i} mt={20} color={getToken("Text.Medium")}>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
+          laudantium voluptates ipsa temporibus quibusdam animi nostrum in ut
+          magni, reprehenderit vel architecto quisquam, fugit eum, assumenda
+          delectus soluta repellat voluptatibus.
+        </Text>
+      ))}
     </div>
   )
 }

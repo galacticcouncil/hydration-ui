@@ -1,27 +1,25 @@
-import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/core"
+import { ResponsiveStyleValue } from "@theme-ui/core"
 import React, { forwardRef } from "react"
 
-import { ThemeColor, ThemeFont } from "@/theme"
+import { Box, BoxProps } from "@/components"
+import { ThemeFont } from "@/theme"
 
-import { SText, STextProps } from "./Text.styled"
-
-export type TextProps = STextProps & {
+export type TextProps = BoxProps & {
   as?: React.ElementType
   children: React.ReactNode
   fw?: ResponsiveStyleValue<400 | 500 | 600>
   fs?: ResponsiveStyleValue<string | number>
   font?: ThemeFont
-  color?: ThemeColor | ThemeUICSSProperties["color"]
 }
 
 export const Text = forwardRef<HTMLParagraphElement, TextProps>(
-  ({ color, as = "p", fs, fw, ...props }, ref) => {
+  ({ as = "p", fs, fw, font, ...props }, ref) => {
     return (
-      <SText
+      <Box
         as={as}
         ref={ref}
         sx={{
-          color,
+          fontFamily: font,
           fontSize: fs,
           fontWeight: fw,
         }}
