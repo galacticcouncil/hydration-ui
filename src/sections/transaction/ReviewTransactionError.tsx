@@ -8,8 +8,13 @@ import { Heading } from "components/Typography/Heading/Heading"
 import { useCopyToClipboard } from "react-use"
 import { FC, useState } from "react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useActiveProvider } from "api/provider"
+import { useBestNumber } from "api/chain"
+import {
+  TransactionError,
+  TTxErrorData,
+} from "sections/transaction/ReviewTransaction.utils"
 
 type ReviewTransactionErrorProps = {
   onClose: () => void
@@ -24,6 +29,9 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
 }) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
+  const { data: bestNumber } = useBestNumber()
+
+  const provider = useActiveProvider()
 
   const [errorCopied, setErrorCopied] = useState(false)
   const { account } = useAccount()
@@ -33,11 +41,15 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
   function copyError() {
     if (error) {
       copyToClipboard(
-        getErrorTemplate(
-          account,
-          error,
-          api.runtimeVersion.specVersion.toString(),
-        ),
+        getErrorTemplate({
+          address: account?.address ?? "",
+          message: parseErrorMessage(error),
+          walletProvider: account?.provider ?? "",
+          rpcProviderUrl: provider.url,
+          specVersion: api.runtimeVersion.specVersion.toString(),
+          blockNumber: bestNumber?.parachainBlockNumber.toString() ?? "",
+          ...(error instanceof TransactionError ? error.data : {}),
+        }),
       )
       setErrorCopied(true)
     }
@@ -97,20 +109,22 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
   )
 }
 
-function getErrorTemplate(
-  account: Account | null,
-  error: unknown,
-  specVersion: string = "",
-) {
+function parseErrorMessage(error: unknown) {
   let message = ""
   try {
     message =
-      error instanceof Error
+      error instanceof TransactionError || error instanceof Error
         ? error.message || error.toString()
         : typeof error === "object"
           ? JSON.stringify(error)
           : `${error}`
   } catch (err) {}
 
-  return `Address: ${account?.address}\nProvider: ${account?.provider}\nMessage: ${message}\nSpec Version: ${specVersion}`
+  return message
+}
+
+function getErrorTemplate(data: TTxErrorData = {}) {
+  return Object.entries(data)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n")
 }

@@ -57,6 +57,22 @@ function isTxMethod(x: AnyJson): x is TxMethod {
   return typeof x === "object" && x != null && "method" in x && "section" in x
 }
 
+export type TTxErrorData = {
+  [key: string]: string | number | boolean | null | undefined
+}
+
+export class TransactionError extends Error {
+  data: TTxErrorData
+
+  constructor(message: string, data: TTxErrorData) {
+    super(message)
+    this.name = "TransactionError"
+    this.data = data
+
+    Object.setPrototypeOf(this, TransactionError.prototype)
+  }
+}
+
 type TxHuman = Record<string, { args: TxMethod["args"] }>
 
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
@@ -203,7 +219,15 @@ export const useSendEvmTransactionMutation = (
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(err?.toString() ?? "Unknown error", {
+            from: evmTx.from,
+            to: evmTx.to,
+            gasLimit: evmTx.gasLimit?.toString(),
+            data: evmTx.data,
+            ...xcallMeta,
+          }),
+        )
       }
     })
   }, options)
@@ -387,7 +411,12 @@ export const useSendDispatchPermit = (
           return onComplete(result)
         })
       } catch (err) {
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(
+            err?.toString() ?? "Unknown error",
+            permit.message,
+          ),
+        )
       }
     })
   }, options)
@@ -472,7 +501,13 @@ export const useSendTransactionMutation = (
           return onComplete(result)
         })
       } catch (err) {
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(err?.toString() ?? "Unknown error", {
+            method: getTransactionJSON(tx)?.method,
+            call: tx.method.toHex(),
+            callHash: tx.method.hash.toHex(),
+          }),
+        )
       }
     })
   }, options)
