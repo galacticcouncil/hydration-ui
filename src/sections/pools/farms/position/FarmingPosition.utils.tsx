@@ -109,8 +109,8 @@ export const useAllXYKDeposits = (address?: string) => {
 
           if (shareTokenIssuance && pool) {
             const index = asset.id
-            const shares = depositNft.data.shares.toBigNumber()
-            const ratio = shares.div(shareTokenIssuance)
+            const shares = depositNft.data.shares
+            const ratio = BN(shares).div(shareTokenIssuance)
             const amountUSD = scaleHuman(shareTokenIssuance, asset.decimals)
               .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
               .times(ratio)
@@ -192,4 +192,27 @@ export const useFarmDepositsTotal = (address?: string) => {
   }, [omnipool, xyk])
 
   return { isLoading: isLoading, value: total }
+}
+
+export const getFarmingPositionCardHeight = (
+  isAvailableFarms: boolean,
+  isXyk: boolean,
+  isDesktop: boolean,
+  joinedFarmsCount: number,
+) => {
+  let height = isDesktop ? 380 : 350
+
+  if (!isXyk) {
+    height += 60
+  }
+
+  if (isAvailableFarms) {
+    height += 76
+  }
+
+  if (!isDesktop) {
+    height += (joinedFarmsCount - 1) * 30
+  }
+
+  return height
 }

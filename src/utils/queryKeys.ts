@@ -34,10 +34,15 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountAssets: (address: string | undefined) => ["accountAssets", address],
-  accountClaimableFarmValues: (address: string | undefined) => [
+  accountAssets: (address: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "accountAssets",
+    address,
+  ],
+  accountClaimableFarmValues: (address: string | undefined, range: string) => [
     "accountClaimableFarmValues",
     address,
+    range,
   ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
@@ -145,18 +150,9 @@ export const QUERY_KEYS = {
   allTrades: (assetId?: number) => ["allTrades", assetId],
   allOmnipoolTrades: ["allOmnipoolTrades"],
   allStableswapTrades: ["allStableswapTrades"],
-  tradeVolume: (poolId: Maybe<string | u32>) => [
-    "tradeVolume",
-    poolId?.toString(),
-  ],
-  xykTradeVolume: (poolId: Maybe<string | u32>) => [
-    "xykTradeVolume",
-    poolId?.toString(),
-  ],
-  tradeVolumeLive: (poolId: Maybe<string | u32>) => [
-    QUERY_KEY_PREFIX,
-    "tradeVolume",
-    poolId?.toString(),
+  xykSquidVolumes: (addresses: string[]) => [
+    "xykSquidVolumes",
+    addresses.join(","),
   ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
@@ -173,6 +169,7 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
@@ -192,7 +189,7 @@ export const QUERY_KEYS = {
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
-  acceptedCurrencies: ["acceptedCurrencies"],
+  acceptedCurrencies: (ids: string[]) => ["acceptedCurrencies", ids.join(",")],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
     "accountCurrency",
     address,
@@ -273,6 +270,7 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmAccountBinding: (address: string) => [address, "evmAccountBinding"],
   evmWalletReadiness: (address: string) => ["evmWalletReadiness", address],
   evmPaymentFee: (txHex: string, address?: string) => [
     "evmPaymentFee",

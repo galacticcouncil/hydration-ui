@@ -26,7 +26,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
@@ -237,8 +237,8 @@ const ManageLiquidityButton: React.FC<{
   const isXykPool = isXYKPoolType(pool)
 
   const userStablePoolBalance = pool.meta.isStableSwap
-    ? pool.balance?.freeBalance
-    : BN_0
+    ? pool.balance?.freeBalance ?? "0"
+    : "0"
 
   let positionsAmount: BN = BN_0
 
@@ -249,7 +249,7 @@ const ManageLiquidityButton: React.FC<{
   } else {
     positionsAmount = BN(pool.omnipoolPositions.length)
       .plus(pool.miningPositions.length)
-      .plus(userStablePoolBalance?.gt(0) ? 1 : 0)
+      .plus(BN(userStablePoolBalance).gt(0) ? 1 : 0)
   }
 
   const isPositions = positionsAmount.gt(0)
@@ -378,13 +378,20 @@ export const usePoolTable = (
               id: "spotPrice",
               header: t("liquidity.table.header.price"),
               sortingFn: (a, b) =>
-                (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
+                BN(a.original.spotPrice ?? 1).gt(b.original.spotPrice ?? 1)
                   ? 1
                   : -1,
               cell: ({ row }) => (
                 <NonClickableContainer>
                   <Text color="white" fs={14}>
-                    <DisplayValue value={row.original.spotPrice} type="token" />
+                    <DisplayValue
+                      value={
+                        row.original.spotPrice
+                          ? BN(row.original.spotPrice)
+                          : BN_NAN
+                      }
+                      type="token"
+                    />
                   </Text>
                 </NonClickableContainer>
               ),
@@ -394,7 +401,8 @@ export const usePoolTable = (
       accessor("id", {
         id: "volume",
         header: t("liquidity.table.header.volume"),
-        sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
+        sortingFn: (a, b) =>
+          BN(a.original.volume ?? 0).gt(b.original.volume ?? 0) ? 1 : -1,
         cell: ({ row }) => {
           const pool = row.original
           const isInvalid = isXYKPoolType(pool) && pool.isInvalid
@@ -410,7 +418,9 @@ export const usePoolTable = (
               }}
             >
               <Text color="white" fs={14}>
-                <DisplayValue value={isInvalid ? BN_NAN : pool.volume} />
+                <DisplayValue
+                  value={isInvalid || !pool.volume ? BN_NAN : BN(pool.volume)}
+                />
               </Text>
 
               {isInvalid && (

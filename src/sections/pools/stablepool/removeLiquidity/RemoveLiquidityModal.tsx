@@ -3,15 +3,14 @@ import { useTranslation } from "react-i18next"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useState } from "react"
 import { Modal } from "components/Modal/Modal"
-import { Stepper } from "components/Stepper/Stepper"
+import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { RemoveLiquidityForm } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidityForm"
 import { RemoveStablepoolLiquidityForm } from "./RemoveLiquidityForm"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { RemoveOption, RemoveOptions } from "./RemoveOptions"
 import { Button } from "components/Button/Button"
-import { BN_0 } from "utils/constants"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
@@ -47,7 +46,7 @@ export const RemoveLiquidityModal = ({
   const isRemovingOmnipoolPosition = !!position
 
   const stablepoolPosition = pool.balance
-  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? BN_0
+  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? "0"
 
   const { t } = useTranslation()
   const { page, direction, paginateTo } = useModalPagination(
@@ -60,6 +59,7 @@ export const RemoveLiquidityModal = ({
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [removeAll, setRemoveAll] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
 
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
@@ -71,6 +71,7 @@ export const RemoveLiquidityModal = ({
     }
 
     paginateTo(page - 1)
+    setCurrentStep((step) => step - 1)
   }
 
   const steps = [
@@ -79,14 +80,6 @@ export const RemoveLiquidityModal = ({
     t("liquidity.stablepool.remove.removing"),
     t("liquidity.stablepool.remove.stablepool"),
   ]
-
-  const getStepState = (stepPage: RemoveStablepoolLiquidityPage) => {
-    if (stepPage === page) {
-      return "active" as const
-    }
-
-    return page > stepPage ? ("done" as const) : ("todo" as const)
-  }
 
   const canGoBack =
     isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
@@ -104,7 +97,7 @@ export const RemoveLiquidityModal = ({
             sx={{ px: [10] }}
             steps={steps.map((step, idx) => ({
               label: step,
-              state: getStepState(idx),
+              state: getStepState(idx, currentStep),
             }))}
           />
         ) : null
@@ -131,11 +124,12 @@ export const RemoveLiquidityModal = ({
                 <Button
                   variant="primary"
                   sx={{ mt: 21 }}
-                  onClick={() =>
+                  onClick={() => {
                     paginateTo(
                       RemoveStablepoolLiquidityPage.REMOVE_FROM_OMNIPOOL,
                     )
-                  }
+                    setCurrentStep((step) => step + 1)
+                  }}
                 >
                   {t("next")}
                 </Button>
@@ -158,7 +152,7 @@ export const RemoveLiquidityModal = ({
                 position={position}
                 onSubmitted={(shares) => {
                   if (selectedOption === "STABLE") {
-                    if (stablepoolPositionAmount.isZero()) {
+                    if (BN(stablepoolPositionAmount).isZero()) {
                       setRemoveAll(true)
                       setSharesAmount(shares)
                     } else {
@@ -166,11 +160,13 @@ export const RemoveLiquidityModal = ({
                     }
 
                     paginateTo(RemoveStablepoolLiquidityPage.WAIT)
+                    setCurrentStep((step) => step + 1)
                   }
                 }}
                 onSuccess={() => {
                   if (selectedOption === "STABLE") {
                     refetch()
+                    setCurrentStep((step) => step + 1)
                     paginateTo(
                       RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
                     )
@@ -215,8 +211,8 @@ export const RemoveLiquidityModal = ({
                   poolId: pool.id,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll
-                      ? BigNumber(sharesAmount ?? 0)
-                      : stablepoolPositionAmount,
+                      ? BN(sharesAmount ?? 0)
+                      : BN(stablepoolPositionAmount),
                 }}
                 onSuccess={() => {
                   onSuccess()

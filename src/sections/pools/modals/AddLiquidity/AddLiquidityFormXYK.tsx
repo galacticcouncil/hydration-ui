@@ -1,5 +1,5 @@
 import { Controller, useForm } from "react-hook-form"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -176,8 +176,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
       if (currReserves && nextReserves) {
         const pairTokenValue = scaleHuman(
           calculate_liquidity_in(
-            currReserves.balance.toFixed(),
-            nextReserves.balance.toFixed(),
+            currReserves.balance,
+            nextReserves.balance,
             scale(value, assetDecimals).toFixed(),
           ),
           pairAssetDecimals,
@@ -199,10 +199,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
             totalShare.toString(),
           )
 
-          const ratio = getXYKPoolShare(
-            totalShare,
-            BigNumber(shares),
-          ).toString()
+          const ratio = getXYKPoolShare(totalShare, BN(shares)).toString()
 
           form.setValue("shares", shares, { shouldValidate: true })
           form.setValue("ratio", ratio)
@@ -266,8 +263,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
               asset={assetA.id}
               error={error?.message}
               disabled={!assetAReserve}
-              balance={balanceA}
-              balanceMax={balanceAMax}
+              balance={balanceA ? BN(balanceA) : undefined}
+              balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
             />
           )}
         />
@@ -290,8 +287,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
               asset={assetB.id}
               error={error?.message}
               disabled={!assetBReserve}
-              balance={balanceB}
-              balanceMax={balanceBMax}
+              balance={balanceB ? BN(balanceB) : undefined}
+              balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
             />
           )}
         />

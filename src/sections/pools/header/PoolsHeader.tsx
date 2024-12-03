@@ -95,6 +95,7 @@ export const HeaderValues = ({
         align: ["normal", "start"],
         justify: "space-between",
       }}
+      css={{ rowGap: 12 }}
       className={className}
     >
       {headerValues}

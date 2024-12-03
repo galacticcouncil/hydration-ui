@@ -5,7 +5,6 @@ import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrap
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
 import { StablepoolPosition } from "sections/pools/stablepool/positions/StablepoolPosition"
-import { BN_0 } from "utils/constants"
 import { ReactElement, useState } from "react"
 import { ButtonTransparent } from "components/Button/Button"
 import { theme } from "theme"
@@ -18,12 +17,13 @@ import {
 } from "./MyPositions.styled"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
+import BN from "bignumber.js"
 
 export const MyPositions = () => {
   const { t } = useTranslation()
   const { pool } = usePoolData() as { pool: TPoolFullData }
 
-  const stablepoolAmount = pool.balance?.freeBalance ?? BN_0
+  const stablepoolAmount = pool.balance?.freeBalance ?? "0"
   const isPositions = pool.isPositions
 
   return (
@@ -39,9 +39,11 @@ export const MyPositions = () => {
         </Text>
       )}
 
-      {pool.isStablePool && <StablepoolPosition amount={stablepoolAmount} />}
-      <LiquidityPositionWrapper />
+      {pool.isStablePool && (
+        <StablepoolPosition amount={BN(stablepoolAmount)} />
+      )}
       <FarmingPositionWrapper />
+      <LiquidityPositionWrapper />
     </>
   )
 }
@@ -66,9 +68,8 @@ export const MyXYKPositions = () => {
       >
         {t("liquidity.pool.positions.title")}
       </Text>
-
-      <XYKPosition pool={pool} />
       <FarmingPositionWrapper />
+      <XYKPosition pool={pool} />
     </>
   )
 }
@@ -82,6 +83,7 @@ export const CollapsedPositionsList = ({
   const [collapsed, setCollapsed] = useState(false)
 
   const positionsNumber = positions.length
+  const animationCardNumber = Math.min(positionsNumber, 3)
   const isCollapsing = positionsNumber > 1
 
   return (
@@ -96,7 +98,7 @@ export const CollapsedPositionsList = ({
         <ButtonTransparent onClick={() => setCollapsed(!collapsed)}>
           <Text fs={14} font="GeistMono" tTransform="uppercase">
             {t(`liquidity.pool.positions.${collapsed ? "hide" : "show"}.btn`, {
-              number: positionsNumber,
+              number: positions.length,
             })}
           </Text>
           <Icon
@@ -111,11 +113,11 @@ export const CollapsedPositionsList = ({
       )}
       <LazyMotion features={domAnimation}>
         <SWrapperContainer
-          initial={{ height: positionsNumber * 20 }}
+          initial={{ height: animationCardNumber * 20 }}
           animate={
             isCollapsing
               ? {
-                  height: collapsed ? "auto" : positionsNumber * 20 + 20,
+                  height: collapsed ? "auto" : animationCardNumber * 20 + 20,
                 }
               : { height: "auto" }
           }

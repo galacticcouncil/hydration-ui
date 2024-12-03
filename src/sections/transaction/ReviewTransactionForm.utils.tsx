@@ -210,7 +210,7 @@ export const useTransactionValues = ({
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
     isEnoughPaymentBalance = feeAssetBalance?.balance
-      ? feeAssetBalance.balance
+      ? BigNumber(feeAssetBalance.balance)
           .shiftedBy(-feePaymentMeta.decimals)
           .minus(displayFeePaymentValue ?? 0)
           .minus(displayFeeExtra ?? 0)
@@ -266,6 +266,7 @@ export const useEditFeePaymentAsset = (
     defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets: acceptedFeePaymentAssets,
     onSelect: (asset) => feeAsPayment.mutate(asset.id),
+    withExternal: true,
   })
 
   return {

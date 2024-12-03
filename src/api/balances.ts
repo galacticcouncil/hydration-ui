@@ -12,6 +12,8 @@ import {
   PalletBalancesAccountData,
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
+import { BalanceClient } from "@galacticcouncil/sdk"
+import { millisecondsInMinute } from "date-fns/constants"
 
 export type TBalance = ReturnType<typeof parseBalanceData>
 
@@ -20,46 +22,47 @@ export const parseBalanceData = (
   id: string,
   address: string,
 ) => {
-  const freeBalance = new BigNumber(data.free.toHex())
-  const frozenBalance = new BigNumber(data.frozen.toHex())
-  const reservedBalance = new BigNumber(data.reserved.toHex())
-  const balance = freeBalance.minus(frozenBalance)
+  const freeBalance = data.free.toString()
+  const frozenBalance = data.frozen.toString()
+  const reservedBalance = data.reserved.toString()
+  const balance = BigNumber(freeBalance).minus(frozenBalance).toString()
 
   return {
     accountId: address,
     assetId: id,
     balance,
-    total: freeBalance.plus(reservedBalance),
+    total: BigNumber(freeBalance).plus(reservedBalance).toString(),
     freeBalance,
     reservedBalance,
   }
 }
 
-export const getTokenBalance =
-  (api: ApiPromise, account: AccountId32 | string, id: string | u32) =>
-  async () => {
-    if (id.toString() === NATIVE_ASSET_ID) {
-      const res = await api.query.system.account(account)
-
-      return parseBalanceData(res.data, id.toString(), account.toString())
-    }
-
-    const res = await api.query.tokens.accounts(account, id)
+export const getTokenBalance = (
+  balanceClient: BalanceClient,
+  account: AccountId32 | string,
+  id: string | u32,
+) => {
+  return async () => {
+    const res = await balanceClient.getTokenBalanceData(
+      account.toString(),
+      id.toString(),
+    )
 
     return parseBalanceData(res, id.toString(), account.toString())
   }
+}
 
 export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    enabled ? getTokenBalance(api, address, id) : undefinedNoop,
+    enabled ? getTokenBalance(balanceClient, address, id) : undefinedNoop,
     { enabled },
   )
 }
@@ -69,14 +72,16 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { api, isLoaded } = useRpcProvider()
+  const { balanceClient, isLoaded } = useRpcProvider()
 
   return useQueries({
     queries: tokenIds.map((id) => ({
       queryKey: noRefresh
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
-      queryFn: address ? getTokenBalance(api, address, id) : undefinedNoop,
+      queryFn: address
+        ? getTokenBalance(balanceClient, address, id)
+        : undefinedNoop,
       enabled: !!id && !!address && isLoaded,
     })),
   })
@@ -103,7 +108,7 @@ export const useTokenLocks = (id: Maybe<u32 | string>) => {
     account?.address != null
       ? getTokenLock(api, account.address, id?.toString() ?? "")
       : undefinedNoop,
-    { enabled: !!account?.address && !!id },
+    { enabled: !!account?.address && !!id, staleTime: millisecondsInMinute },
   )
 }
 
@@ -116,7 +121,7 @@ export const getTokenLock =
 
     return res.map((lock) => ({
       id: id,
-      amount: lock.amount.toBigNumber(),
+      amount: lock.amount.toString(),
       type: lock.id.toHuman(),
     }))
   }

@@ -28,6 +28,7 @@ import { usePaymentInfo } from "api/transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import BN from "bignumber.js"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
@@ -63,7 +64,7 @@ export const CodeForm = () => {
 
   const isLinkFeeBalance =
     registrationFee.data && linkFeeBalance
-      ? linkFeeBalance.balance
+      ? BN(linkFeeBalance.balance)
           .shiftedBy(-registrationFee.data.decimals)
           .minus(registrationFee.data.amount)
           .minus(
@@ -90,7 +91,7 @@ export const CodeForm = () => {
   }
 
   const isBalance = balances.data
-    ? balances.data.balances.some((balance) => balance.balance.gt(0))
+    ? balances.data.balances?.some((balance) => BN(balance.balance).gt(0))
     : undefined
 
   const isBalanceLoading = balances.isInitialLoading

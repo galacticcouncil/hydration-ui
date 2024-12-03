@@ -11,6 +11,7 @@ import {
 } from "sections/pools/navigation/Navigation"
 import { Navigation as TradeNavigation } from "sections/trade/navigation/Navigation"
 import { Navigation as WalletNavigation } from "sections/wallet/navigation/Navigation"
+import { Navigation as LendingNavigation } from "sections/lending/ui/navigation/Navigation"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
 import {
@@ -21,6 +22,8 @@ import {
   SSubHeader,
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
+import { usePreviousUrl } from "hooks/usePreviousUrl"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
@@ -48,6 +51,9 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { featureFlags } = useRpcProvider()
+
+  const prevUrl = usePreviousUrl()
 
   if (matchRoute({ to: LINKS.trade, fuzzy: true })) {
     const isBondPage = matchRoute({ to: LINKS.bond })
@@ -71,6 +77,27 @@ const useSubheaderComponent = () => {
 
   if (matchRoute({ to: LINKS.statsOmnipool })) {
     return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
+  }
+
+  if (
+    matchRoute({ to: LINKS.borrow }) ||
+    matchRoute({ to: LINKS.borrowMarkets })
+  ) {
+    return <LendingNavigation />
+  }
+
+  if (matchRoute({ to: LINKS.borrowMarkets, fuzzy: true })) {
+    return prevUrl === LINKS.borrowMarkets ? (
+      <BackSubHeader
+        label={t("lending.navigation.markets.back")}
+        to={LINKS.borrowMarkets}
+      />
+    ) : (
+      <BackSubHeader
+        label={t("lending.navigation.dashboard.back")}
+        to={LINKS.borrow}
+      />
+    )
   }
 }
 

@@ -178,7 +178,7 @@ export const useAddToOmnipoolZod = (
     .pipe(
       isStablepool
         ? z.string()
-        : maxBalance(assetBalance?.balance ?? BN_0, decimals),
+        : maxBalance(assetBalance?.balance ?? "0", decimals),
     )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
@@ -314,17 +314,23 @@ export const useXYKZodSchema = (
   const assetBBalances =
     accountAssets.data?.accountAssetsMap.get(assetBId)?.balance
 
-  const balanceA = assetABalances?.balance ?? BN_0
-  const balanceB = assetBBalances?.balance ?? BN_0
+  const balanceA = assetABalances?.balance ?? "0"
+  const balanceB = assetBBalances?.balance ?? "0"
 
   const balanceAMax =
     estimatedFees.accountCurrencyId === assetAId
-      ? balanceA.minus(feeWithBuffer).minus(assetAMeta.existentialDeposit)
+      ? BN(balanceA)
+          .minus(feeWithBuffer)
+          .minus(assetAMeta.existentialDeposit)
+          .toString()
       : balanceA
 
   const balanceBMax =
     estimatedFees.accountCurrencyId === assetBId
-      ? balanceB.minus(feeWithBuffer).minus(assetBMeta.existentialDeposit)
+      ? BN(balanceB)
+          .minus(feeWithBuffer)
+          .minus(assetBMeta.existentialDeposit)
+          .toString()
       : balanceB
 
   const minDeposit = useMemo(() => {
