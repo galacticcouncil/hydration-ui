@@ -36,8 +36,8 @@ export const Header = () => {
     <Flex
       p={20}
       borderBottom={1}
-      borderColor={getToken("Details.separators")}
-      bg={getToken("Surfaces.themeBasePalette.Background")}
+      borderColor={getToken("details.separators")}
+      bg={getToken("surfaces.themeBasePalette.background")}
       sx={{ position: "sticky", top: 0, zIndex: 100 }}
       justify="space-between"
     >

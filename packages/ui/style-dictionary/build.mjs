@@ -13,7 +13,7 @@ register(StyleDictionary)
 
 const fetchTokens = async () => {
   const res = await fetch(
-    "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/ad538c202127107a694fb300237a47d211b7b1dc/tokens.json",
+    "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json",
   )
   return res.json()
 }
@@ -39,10 +39,16 @@ async function run() {
 
   const themes = permutateThemes($themes)
 
+  delete themes["Core-Light-Mobile"]
+  delete themes["Core-Dark-Mobile"]
+
   const configs = Object.entries(themes).map(([theme, sets]) => ({
     source: sets.map((tokenset) =>
       path.resolve(__dirname, `tokens/${tokenset}.json`),
     ),
+    log: {
+      verbosity: "verbose",
+    },
     preprocessors: ["tokens-studio"],
     platforms: {
       js: {
@@ -51,7 +57,7 @@ async function run() {
         files: [
           {
             format: "json/nested",
-            destination: `theme/tokens/${theme}.json`,
+            destination: `theme/tokens/${theme.split("-")[1].toLowerCase()}.json`,
           },
         ],
       },

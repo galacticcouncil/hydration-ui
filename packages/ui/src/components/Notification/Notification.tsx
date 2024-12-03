@@ -45,7 +45,7 @@ export const Notification = ({
           variant={variant}
           size={16}
         />
-        <Text font="Secondary" fw={400} fs={12}>
+        <Text fw={400} fs={12}>
           {content}
         </Text>
         {/*Place for link button */}

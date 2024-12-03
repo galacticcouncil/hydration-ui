@@ -20,13 +20,13 @@ const defaulStyles = css`
 `
 
 const variantStyles = (
-  settings: ThemeProps["Buttons"]["Primary"]["High"],
+  settings: ThemeProps["buttons"]["primary"]["low"],
 ) => css`
-  background-color: ${settings.Rest};
+  background-color: ${settings.rest};
   color: ${settings.onButton};
   &:not(:disabled):hover,
   &:not(:disabled):focus {
-    background-color: ${settings.Hover};
+    background-color: ${settings.hover};
   }
 `
 
@@ -39,9 +39,9 @@ const disabledStyles = css`
 `
 
 const variants = createVariants((theme) => ({
-  primary: variantStyles(theme.Buttons.Primary.High),
-  secondary: variantStyles(theme.Buttons.Primary.Medium),
-  tertiary: variantStyles(theme.Buttons.Primary.Low),
+  primary: variantStyles(theme.buttons.primary.high),
+  secondary: variantStyles(theme.buttons.primary.medium),
+  tertiary: variantStyles(theme.buttons.primary.low),
 }))
 
 const sizes = createVariants((theme) => ({
@@ -60,21 +60,21 @@ const sizes = createVariants((theme) => ({
 }))
 
 const outlineVariantStyles = (
-  settings: ThemeProps["Buttons"]["Primary"]["High"],
+  settings: ThemeProps["buttons"]["primary"]["low"],
 ) => css`
   background-color: transparent;
-  color: ${settings.Rest};
-  box-shadow: inset 0 0 0 1px ${settings.Rest};
+  color: ${settings.rest};
+  box-shadow: inset 0 0 0 1px ${settings.rest};
   &:hover {
-    background-color: ${settings.Rest};
+    background-color: ${settings.rest};
     color: ${settings.onButton};
   }
 `
 
 const outlineVariants = createVariants((theme) => ({
-  primary: outlineVariantStyles(theme.Buttons.Primary.High),
-  secondary: outlineVariantStyles(theme.Buttons.Primary.Medium),
-  tertiary: outlineVariantStyles(theme.Buttons.Primary.Low),
+  primary: outlineVariantStyles(theme.buttons.primary.high),
+  secondary: outlineVariantStyles(theme.buttons.primary.medium),
+  tertiary: outlineVariantStyles(theme.buttons.primary.low),
 }))
 
 export type SButtonProps = {

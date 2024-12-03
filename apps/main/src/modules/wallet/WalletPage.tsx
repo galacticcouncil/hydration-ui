@@ -11,7 +11,7 @@ export const WalletPage = () => {
 
   return (
     <div>
-      <Text as="h4" fs={40} fw={600} font="Primary-Font">
+      <Text as="h4" fs={40} fw={600} font="primary">
         {t("wallet:title")}
       </Text>
       <pre>{JSON.stringify(data, null, 2)}</pre>

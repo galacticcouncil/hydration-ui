@@ -18,17 +18,17 @@ export const STextButton = styled.p<CustomTextButtonProps>(
     transition: all 0.15s ease-in-out;
 
     font-size: ${theme.paragraphSize.p5};
-    font-family: ${theme.fontFamilies1.Secondary};
+    font-family: ${theme.fontFamilies1.secondary};
     border-bottom: ${variant === "underline"
-      ? `1px solid ${theme.Text.Medium}`
+      ? `1px solid ${theme.text.medium}`
       : "transaprent"};
 
-    color: ${theme.Text.Medium};
+    color: ${theme.text.medium};
 
     &:hover {
-      color: ${theme.Buttons.Primary.Medium.Rest};
+      color: ${theme.buttons.primary.medium.rest};
       border-bottom: ${variant === "underline"
-        ? `1px solid ${theme.Buttons.Primary.Medium.Rest}`
+        ? `1px solid ${theme.buttons.primary.medium.rest}`
         : "transaprent"};
     }
   `,

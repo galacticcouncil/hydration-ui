@@ -30,7 +30,7 @@ const Page = () => {
   const flatTheme = flattenObject(theme)
   return (
     <div>
-      <Text as="h1" fs={40} fw={600} font="Primary-Font">
+      <Text as="h1" fs={40} fw={600} font="primary">
         Homepage
       </Text>
       <div css={{ display: "flex", flexWrap: "wrap", gap: 20 }}>

@@ -52,10 +52,10 @@ export const SToggle = styled(Switch, {
     position: relative;
     display: block;
 
-    border-radius: ${theme.Containers["Corner radius"]["buttons-primary"]}px;
-    border: 1px solid ${theme.Colors["dark-blue"].alpha[100]};
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+    border: 1px solid ${theme.colors.darkBlue.alpha[100]};
 
-    background: ${theme.Controls.Dim.Rest.Default};
+    background: ${theme.controls.dim.base};
 
     cursor: pointer;
 
@@ -65,21 +65,21 @@ export const SToggle = styled(Switch, {
 
     ${checked
       ? css`
-          border-color: ${theme.Controls.Outline.Active.Default};
-          background: ${theme.Controls.Dim.Active.Default};
+          border-color: ${theme.controls.outline.active};
+          background: ${theme.controls.dim.active};
           :not(:disabled):hover {
-            border-color: ${theme.Controls.Outline.Active.Hover};
+            border-color: ${theme.controls.outline.hover};
 
             > * {
-              background: ${theme.Controls.Fill.Active.Hover};
+              background: ${theme.controls.solid.hover};
             }
           }
         `
       : css`
           :not(:disabled):hover {
-            border-color: ${theme.Controls.Outline.Rest.Hover};
+            border-color: ${theme.controls.outline.hover};
             > * {
-              background: ${theme.Controls.Fill.Rest.Hover};
+              background: ${theme.controls.solid.hover};
             }
           }
         `}
@@ -94,10 +94,10 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
       top: 3px;
       left: 3px;
 
-      border-radius: ${theme.Containers["Corner radius"]["buttons-primary"]}px;
+      border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
       border: 1px solid transparent;
 
-      background: ${theme.Controls.Fill.Rest.Default};
+      background: ${theme.controls.solid.base};
 
       width: var(--switch-thumb-size);
       height: var(--switch-thumb-size);
@@ -107,7 +107,7 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
       ${checked &&
       css`
         transform: translateX(calc(var(--switch-thumb-size) * ${1.5}));
-        background: ${theme.Controls.Fill.Active.Default};
+        background: ${theme.controls.solid.active};
       `};
     `,
     disabled && disabledStyles,

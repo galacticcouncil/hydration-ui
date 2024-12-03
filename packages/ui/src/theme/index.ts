@@ -1,15 +1,16 @@
-export type ThemeProps = typeof light
-export type ThemeName = keyof typeof themes
-export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
-export type ThemeToken = Join<Paths<ThemeProps>, ".">
-export type ThemeFont = keyof ThemeProps["fontFamilies1"]
-
 import { makeTheme } from "@theme-ui/css/utils"
 
 import { Join, Paths } from "@/types"
 
-import darkJSON from "./tokens/Core tokens-Dark-Desktop.json"
-import lightJSON from "./tokens/Core tokens-Light-Desktop.json"
+import darkJSON from "./tokens/dark.json"
+import lightJSON from "./tokens/light.json"
+
+export type ThemeBaseProps = Omit<typeof base, "buttons" | "text">
+export type ThemeProps = ThemeBaseProps & typeof lightJSON
+export type ThemeName = keyof typeof themes
+export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
+export type ThemeToken = Join<Paths<ThemeProps>, ".">
+export type ThemeFont = keyof ThemeProps["fontFamilies1"]
 
 const base = makeTheme({
   space: [],
@@ -27,17 +28,15 @@ const base = makeTheme({
   },
 })
 
-const light = makeTheme({
+const light = {
   ...base,
   ...lightJSON,
-  colors: lightJSON.Colors,
-})
+} as unknown as ThemeProps
 
-const dark = makeTheme({
+const dark = {
   ...base,
   ...darkJSON,
-  colors: darkJSON.Colors,
-}) as unknown as ThemeProps
+} as unknown as ThemeProps
 
 export const themes = {
   light,
