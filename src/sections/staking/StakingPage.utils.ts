@@ -543,9 +543,9 @@ export const useClaimReward = () => {
         stakePosition.accumulatedSlashPoints.toString(),
       )
 
-      const extraPaylablePercentage = wasm.sigmoid(extraPoints, a, b)
+      const extraPayablePercentage = wasm.sigmoid(extraPoints, a, b)
 
-      extraPayablePercentageHuman = scaleHuman(extraPaylablePercentage, "q")
+      extraPayablePercentageHuman = scaleHuman(extraPayablePercentage, "q")
         .multipliedBy(100)
         .toString()
     }
@@ -571,7 +571,7 @@ export const useClaimReward = () => {
         BN(payablePercentageHuman).gte(chartPoints.y) &&
         (arr[i + 1] ? BN(payablePercentageHuman).lt(arr[i + 1].y) : true)
 
-      //calculate paylable percentage if vote ongoing referendas
+      // calculate payable percentage if vote ongoing referendas
       const currentSecondary = extraPayablePercentageHuman
         ? BN(extraPayablePercentageHuman).gte(chartPoints.y) &&
           (arr[i + 1] ? BN(extraPayablePercentageHuman).lt(arr[i + 1].y) : true)
