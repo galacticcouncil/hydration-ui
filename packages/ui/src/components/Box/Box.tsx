@@ -31,6 +31,22 @@ const boxSystemProps = [
   "size",
 ] as const
 
+const borderProps = [
+  "border",
+  "borderTop",
+  "borderBottom",
+  "borderLeft",
+  "borderRight",
+  "borderStyle",
+  "borderColor",
+  "borderTopRadius",
+  "borderBottomRadius",
+  "borderLeftRadius",
+  "borderRightRadius",
+]
+
+const allBoxProps = [...boxSystemProps, ...borderProps]
+
 type BoxSystemPropsKeys = (typeof boxSystemProps)[number]
 type BoxSystemProps = Pick<ThemeUICSSProperties, BoxSystemPropsKeys>
 
@@ -41,15 +57,21 @@ export type BoxOwnProps = {
   bg?: ThemeColor | ThemeUICSSProperties["backgroundColor"]
   color?: ThemeColor | ThemeUICSSProperties["color"]
   border?: ResponsiveStyleValue<number>
+  borderTop?: ResponsiveStyleValue<number>
+  borderBottom?: ResponsiveStyleValue<number>
+  borderLeft?: ResponsiveStyleValue<number>
+  borderRight?: ResponsiveStyleValue<number>
   borderStyle?: ThemeUICSSProperties["borderStyle"]
   borderColor?: ThemeColor | ThemeUICSSProperties["borderColor"]
   borderTopRadius?: ResponsiveStyleValue<string | number>
   borderBottomRadius?: ResponsiveStyleValue<string | number>
+  borderLeftRadius?: ResponsiveStyleValue<string | number>
+  borderRightRadius?: ResponsiveStyleValue<string | number>
 }
 
 export type BoxProps = BoxOwnProps &
   Omit<BoxSystemProps, "bg" | "color" | "borderColor"> &
-  React.HTMLAttributes<HTMLElement>
+  Omit<React.HTMLAttributes<HTMLElement>, "color">
 
 const pickSystemProps = (props: BoxProps) => {
   const res: Partial<Pick<BoxSystemProps, (typeof boxSystemProps)[number]>> = {}
@@ -62,7 +84,18 @@ const pickSystemProps = (props: BoxProps) => {
 }
 
 const pickBorderStyles = (props: BoxProps) => {
-  const { border, borderStyle, borderTopRadius, borderBottomRadius } = props
+  const {
+    border,
+    borderTop,
+    borderBottom,
+    borderLeft,
+    borderRight,
+    borderStyle,
+    borderTopRadius,
+    borderBottomRadius,
+    borderLeftRadius,
+    borderRightRadius,
+  } = props
 
   const res: Partial<
     Pick<
@@ -75,9 +108,13 @@ const pickBorderStyles = (props: BoxProps) => {
       | "borderBottomRightRadius"
     >
   > = {}
-  if (border) {
+  if (border || borderTop || borderBottom || borderLeft || borderRight) {
     Object.assign(res, {
-      borderWidth: border,
+      borderWidth: border ?? 0,
+      borderTopWidth: borderTop,
+      borderBottomWidth: borderBottom,
+      borderLeftWidth: borderLeft,
+      borderRightWidth: borderRight,
       borderStyle: borderStyle ?? "solid",
     })
   }
@@ -96,6 +133,20 @@ const pickBorderStyles = (props: BoxProps) => {
     })
   }
 
+  if (borderLeftRadius) {
+    Object.assign(res, {
+      borderTopLeftRadius: borderLeftRadius,
+      borderBottomLeftRadius: borderLeftRadius,
+    })
+  }
+
+  if (borderRightRadius) {
+    Object.assign(res, {
+      borderTopRightRadius: borderRightRadius,
+      borderBottomRightRadius: borderRightRadius,
+    })
+  }
+
   return res
 }
 
@@ -109,7 +160,7 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
 
     const styles = [cssProp, sxPropStyles, systemStyles, borderStyles]
 
-    boxSystemProps.forEach((name) => {
+    allBoxProps.forEach((name) => {
       delete (rest as Record<string, unknown>)[name]
     })
 

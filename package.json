@@ -19,5 +19,8 @@
     "typescript": "5.5.4",
     "vite-plugin-svgr": "^4.3.0"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@1.22.22",
+  "dependencies": {
+    "zustand": "^5.0.1"
+  }
 }
