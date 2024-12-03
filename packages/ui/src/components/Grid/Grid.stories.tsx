@@ -18,7 +18,7 @@ const Template = (args: Story["args"]) => {
           p={30}
           align="center"
           justify="center"
-          bg="sky-blue.600"
+          bg="skyBlue.600"
           color="white"
           borderRadius="lg"
         >

@@ -21,18 +21,18 @@ export const SContent = styled(Content)`
 
   padding: 12px 16px;
 
-  background: ${({ theme }) => theme.Details.tooltips};
+  background: ${({ theme }) => theme.details.tooltips};
   box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
   border-radius: 8px;
 `
 
 export const SInfoIcon = styled(Icon)(
   ({ theme }) => css`
-    color: ${theme.Icons.onContainer};
+    color: ${theme.icons.onContainer};
     cursor: pointer;
 
     [data-state*="open"] > & {
-      color: ${theme.Icons.onSurfaceHover};
+      color: ${theme.icons.onSurfaceHover};
     }
   `,
 )

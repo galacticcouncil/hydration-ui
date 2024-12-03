@@ -19,7 +19,7 @@ export const Default: Story = {
 export const PrimaryRegular: Story = {
   args: {
     children: PANGRAM,
-    font: "Primary-Font",
+    font: "primary",
     fw: 400,
   },
 }
@@ -27,7 +27,7 @@ export const PrimaryRegular: Story = {
 export const PrimaryMedium: Story = {
   args: {
     children: PANGRAM,
-    font: "Primary-Font",
+    font: "primary",
     fw: 500,
   },
 }
@@ -35,7 +35,7 @@ export const PrimaryMedium: Story = {
 export const PrimaryBold: Story = {
   args: {
     children: PANGRAM,
-    font: "Primary-Font",
+    font: "primary",
     fw: 600,
   },
 }
@@ -43,7 +43,7 @@ export const PrimaryBold: Story = {
 export const SecondaryRegular: Story = {
   args: {
     children: PANGRAM,
-    font: "Secondary",
+    font: "secondary",
     fw: 400,
   },
 }
@@ -51,7 +51,7 @@ export const SecondaryRegular: Story = {
 export const SecondaryMedium: Story = {
   args: {
     children: PANGRAM,
-    font: "Secondary",
+    font: "secondary",
     fw: 500,
   },
 }
@@ -59,7 +59,7 @@ export const SecondaryMedium: Story = {
 export const SecondaryBold: Story = {
   args: {
     children: PANGRAM,
-    font: "Secondary",
+    font: "secondary",
     fw: 600,
   },
 }
@@ -67,7 +67,7 @@ export const SecondaryBold: Story = {
 export const Responsive: Story = {
   args: {
     children: PANGRAM,
-    font: "Secondary",
+    font: "secondary",
     fw: [400, 500, 600],
     fs: [14, 22, 30],
   },
@@ -79,13 +79,13 @@ export const Colors: Story = {
       <Text {...args} color="coral.700">
         {PANGRAM}
       </Text>
-      <Text {...args} color="utility.warning-orange.300">
+      <Text {...args} color="utility.warningPrimary.300">
         {PANGRAM}
       </Text>
-      <Text {...args} color="sky-blue.600">
+      <Text {...args} color="skyBlue.600">
         {PANGRAM}
       </Text>
-      <Text {...args} color="success-green.400">
+      <Text {...args} color="successGreen.400">
         {PANGRAM}
       </Text>
     </>

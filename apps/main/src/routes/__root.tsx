@@ -16,7 +16,7 @@ export const Route = createRootRouteWithContext<{
   notFoundComponent: () => {
     return (
       <Flex justify="center">
-        <Text as="h1" font="Primary-Font" fs={40}>
+        <Text as="h1" font="primary" fs={40}>
           404 - Not Found
         </Text>
       </Flex>

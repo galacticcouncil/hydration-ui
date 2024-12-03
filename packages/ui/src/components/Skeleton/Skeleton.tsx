@@ -9,11 +9,11 @@ export type SkeletonProps = React.ComponentPropsWithoutRef<
 >
 
 export const Skeleton: React.FC<SkeletonProps> = (props) => {
-  const { themeProps } = useTheme()
+  const { getToken } = useTheme()
   return (
     <SkeletonPrimitive
-      baseColor={themeProps.Details.Skeleton}
-      highlightColor={themeProps.Details.Skeleton}
+      baseColor={getToken("details.skeleton")}
+      highlightColor={getToken("details.skeleton")}
       {...props}
     />
   )

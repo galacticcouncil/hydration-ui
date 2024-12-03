@@ -62,8 +62,8 @@ export const SAssetBadge = styled(Icon)<{ type: "red" | "yellow" }>(
     filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.85));
 
     color: ${type === "red"
-      ? theme.Accents.Danger.Primary
-      : theme.Colors.utility["warning-yellow"][500]};
+      ? theme.colors.utility.warningPrimary[500]
+      : theme.colors.utility.warningSecondary[500]};
   `,
 )
 

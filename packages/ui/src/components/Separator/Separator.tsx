@@ -19,7 +19,7 @@ export const Separator: React.FC<SeparatorProps> = ({ size = 1, ...props }) => (
     <Box
       width={props.orientation === "vertical" ? size : "auto"}
       height={props.orientation === "vertical" ? "auto" : size}
-      bg={getToken("Details.separators")}
+      bg={getToken("details.separators")}
     />
   </RadixSeparator.Root>
 )

@@ -36,8 +36,8 @@ export const SNotification = styled.div(
     overflow: hidden;
 
     border-radius: 16px;
-    border: 1px solid ${theme.Details.borders};
-    background: ${theme.Surfaces.containers.High.Primary};
+    border: 1px solid ${theme.details.borders};
+    background: ${theme.surfaces.containers.high.primary};
   `,
 )
 
@@ -46,7 +46,7 @@ export const SProgressContainer = styled.div(
     height: 2px;
     width: 100%;
 
-    background: ${theme.Buttons.Secondary.Outline.Fill};
+    background: ${theme.buttons.secondary.outline.fill};
 
     position: absolute;
     bottom: 0;
@@ -56,19 +56,19 @@ export const SProgressContainer = styled.div(
 const getColor = (cssKey: "color" | "background") =>
   createVariants((theme) => ({
     success: css`
-      ${cssKey}: ${theme.Accents.success.onPrimary};
+      ${cssKey}: ${theme.accents.success.emphasis};
     `,
     error: css`
-      ${cssKey}: ${theme.Accents.Danger.Primary};
+      ${cssKey}: ${theme.accents.danger.secondary};
     `,
     submitted: css`
-      ${cssKey}:${theme.Buttons.Primary.Medium.Rest};
+      ${cssKey}:${theme.text.tint.secondary};
     `,
     unknown: css`
-      ${cssKey}: ${theme.Colors.greys[300]};
+      ${cssKey}: ${theme.icons.onContainer};
     `,
     warning: css`
-      ${cssKey}:${theme.Colors.utility["warning-yellow"][500]};
+      ${cssKey}:${theme.accents.alertAlt.primary};
     `,
   }))
 
@@ -109,6 +109,6 @@ export const SCloseIcon = styled(Icon)(
     top: 4px;
     right: 5px;
 
-    color: ${theme.Icons.onContainer};
+    color: ${theme.icons.onContainer};
   `,
 )

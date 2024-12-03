@@ -17,7 +17,7 @@ const Template = (args: Story["args"]) => {
           size={hasAlign ? 80 - i * 12 : 80}
           align="center"
           justify="center"
-          bg="sky-blue.600"
+          bg="skyBlue.600"
           color="white"
           borderRadius="lg"
         >

@@ -40,18 +40,18 @@ export const SRoot = styled(Root)<{ size: CheckboxSize }>(
     css`
       display: block;
 
-      border: 1px solid ${theme.Controls.Outline.Rest.Default};
+      border: 1px solid ${theme.controls.outline.base};
       border-radius: 4px;
 
-      background: ${theme.Controls.Dim.Rest.Default};
+      background: ${theme.controls.dim.base};
 
       cursor: pointer;
 
       transition: all 0.15s ease-in-out;
 
       :not(:disabled):hover {
-        border-color: ${theme.Controls.Outline.Rest.Hover};
-        background: ${theme.Controls.Dim.Rest.Hover};
+        border-color: ${theme.controls.outline.hover};
+        background: ${theme.controls.dim.hover};
       }
     `,
     getRootSize(size),
@@ -62,7 +62,7 @@ export const SRoot = styled(Root)<{ size: CheckboxSize }>(
 export const SIndicator = styled.div(
   ({ theme }) => css`
     margin: auto;
-    background: ${theme.Controls.Fill.Active.Default};
+    background: ${theme.controls.solid.active};
     width: 50%;
     height: 50%;
 

@@ -3,6 +3,7 @@ import React, { forwardRef } from "react"
 
 import { Box, BoxProps } from "@/components"
 import { ThemeFont } from "@/theme"
+import { getToken } from "@/utils"
 
 export type TextProps = BoxProps & {
   as?: React.ElementType
@@ -13,13 +14,13 @@ export type TextProps = BoxProps & {
 }
 
 export const Text = forwardRef<HTMLParagraphElement, TextProps>(
-  ({ as = "p", fs, fw, font, ...props }, ref) => {
+  ({ as = "p", fs, fw, font = "secondary", ...props }, ref) => {
     return (
       <Box
         as={as}
         ref={ref}
         sx={{
-          fontFamily: font,
+          fontFamily: getToken(`fontFamilies1.${font}`),
           fontSize: fs,
           fontWeight: fw,
         }}

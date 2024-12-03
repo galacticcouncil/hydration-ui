@@ -38,19 +38,19 @@ const variants = createVariants((theme) => ({
     }
   `,
   standalone: css`
-    background-color: ${theme.Buttons.outlineDark.Rest};
-    border: 1px solid ${theme.Buttons.outlineDark.Rest};
-    border-radius: ${theme.Containers["Corner radius"]["buttons-primary"]}px;
+    background-color: ${theme.buttons.outlineDark.rest};
+    border: 1px solid ${theme.buttons.outlineDark.rest};
+    border-radius: ${theme.radii.full}px;
 
     :focus,
     :focus-visible {
       outline: none;
-      background-color: ${theme.Buttons.outlineDark.Hover};
-      border-color: ${theme.Buttons.Secondary.Outline.Outline};
+      background-color: ${theme.buttons.outlineDark.hover};
+      border-color: ${theme.buttons.secondary.outline.outline};
     }
 
     :hover {
-      background-color: ${theme.Buttons.outlineDark.Hover};
+      background-color: ${theme.buttons.outlineDark.hover};
       outline: none;
     }
   `,
@@ -77,16 +77,16 @@ export const SInput = styled.input<CustomInputProps>(
       align-items: center;
       align-self: stretch;
 
-      padding: 0px ${theme.Containers.Paddings.tertiary}px;
+      padding: 0px ${theme.containers.paddings.tertiary}px;
 
       font-size: ${theme.paragraphSize.p5};
-      font-family: ${theme.fontFamilies1.Secondary};
+      font-family: ${theme.fontFamilies1.secondary};
 
-      caret-color: ${theme.Text.tint.Tertiary};
+      caret-color: ${theme.text.tint.Tertiary};
 
       ::placeholder {
         font-family: Geist;
-        color: ${theme.Text.Medium};
+        color: ${theme.text.medium};
       }
 
       cursor: pointer;
@@ -97,7 +97,7 @@ export const SInput = styled.input<CustomInputProps>(
 
       transition: all 0.15s ease-in-out;
 
-      color: ${isError ? theme.Accents.Danger.Primary : theme.Text.High};
+      color: ${isError ? theme.accents.danger.secondary : theme.text.high};
     `,
     disabledStyles,
   ],

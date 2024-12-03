@@ -79,12 +79,12 @@ const globalStyles = (theme: Theme) => css`
   ${normalize}
 
   body {
-    font-family: ${theme.fontFamilies1.Secondary};
+    font-family: ${theme.fontFamilies1.secondary};
     font-size: 14px;
     font-weight: 400;
 
-    background-color: ${theme.Surfaces.themeBasePalette.Background};
-    color: ${theme.Text.High};
+    background-color: ${theme.surfaces.themeBasePalette.background};
+    color: ${theme.text.high};
   }
 `
 
