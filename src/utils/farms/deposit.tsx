@@ -1,4 +1,4 @@
-import { TFarmAprData } from "api/farms"
+import { TFarmAprData, useAccountClaimableFarmValues } from "api/farms"
 import { Trans } from "react-i18next"
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -72,6 +72,7 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
   const { api } = useRpcProvider()
   const refetchAccountAssets = useRefetchAccountAssets()
   const { getAsset } = useAssets()
+  const { refetch: refetchClaimableValues } = useAccountClaimableFarmValues()
 
   const { createTransaction } = useStore()
 
@@ -117,7 +118,7 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
           ...options,
           onSuccess: (result) => {
             refetchAccountAssets()
-
+            refetchClaimableValues()
             options?.onSuccess?.(result)
           },
         },
@@ -166,6 +167,7 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
           ...options,
           onSuccess: async (result) => {
             refetchAccountAssets()
+            refetchClaimableValues()
             options?.onSuccess?.(result)
           },
         },
