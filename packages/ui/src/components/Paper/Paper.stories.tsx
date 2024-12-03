@@ -19,3 +19,10 @@ const Template = (args: Story["args"]) => (
 export const Default: Story = {
   render: Template,
 }
+
+export const Plain: Story = {
+  render: Template,
+  args: {
+    variant: "plain",
+  },
+}
