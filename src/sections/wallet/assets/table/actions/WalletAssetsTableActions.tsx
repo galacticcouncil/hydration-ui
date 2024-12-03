@@ -84,7 +84,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       icon: <TransferIcon />,
       label: t("wallet.assets.table.actions.transfer"),
       onSelect: () => props.onTransferClick(),
-      disabled: account?.isExternalWalletConnected,
+      disabled: account?.isExternalWalletConnected || props.asset.meta.isErc20,
     },
     {
       key: "deposit",
@@ -176,8 +176,10 @@ export const WalletAssetsTableActions = (props: Props) => {
             account?.isExternalWalletConnected
               ? []
               : [
-                  ...buttons.filter((button) =>
-                    hiddenElementsKeys.includes(button.key),
+                  ...buttons.filter(
+                    (button) =>
+                      hiddenElementsKeys.includes(button.key) &&
+                      !button.disabled,
                   ),
                   ...actionItems,
                 ]
