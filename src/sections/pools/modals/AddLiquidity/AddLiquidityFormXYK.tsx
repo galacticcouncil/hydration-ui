@@ -133,7 +133,10 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
               inputData.assetB.id,
               inputData.assetA.amount.toFixed(),
               inputData.assetB.amount.toFixed(),
-              farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
+              farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
             )
           : api.tx.xyk.addLiquidity(
               inputData.assetA.id,

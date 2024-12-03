@@ -131,7 +131,10 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
         const { assets } = meta as TShareToken
 
         tx = api.tx.xykLiquidityMining.joinFarms(
-          farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
+          farms.map<[string, string]>((farm) => [
+            farm.globalFarmId,
+            farm.yieldFarmId,
+          ]),
           {
             assetIn: assets[0].id,
             assetOut: assets[1].id,
@@ -140,7 +143,10 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
         )
       } else {
         tx = api.tx.omnipoolLiquidityMining.joinFarms(
-          farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
+          farms.map<[string, string]>((farm) => [
+            farm.globalFarmId,
+            farm.yieldFarmId,
+          ]),
           data.positionId,
         )
       }

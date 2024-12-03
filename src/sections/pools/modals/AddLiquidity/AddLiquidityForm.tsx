@@ -94,7 +94,10 @@ export const AddLiquidityForm = ({
       {
         tx: isJoinFarms
           ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
-              farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
+              farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
               assetId,
               amount,
             )

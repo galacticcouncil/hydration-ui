@@ -128,12 +128,15 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
       }
     }
 
-    if (shares) {
+    if (shares && assetId) {
       await createTransaction(
         {
           tx: isJoinFarms
             ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
-                farms.map((farm) => [farm.globalFarmId, farm.yieldFarmId]),
+                farms.map<[string, string]>((farm) => [
+                  farm.globalFarmId,
+                  farm.yieldFarmId,
+                ]),
                 assetId,
                 shares,
               )
