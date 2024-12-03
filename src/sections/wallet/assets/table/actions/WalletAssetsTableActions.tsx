@@ -91,7 +91,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       icon: <PlusIcon />,
       label: t("wallet.assets.table.actions.deposit"),
       onSelect: () => navigate({ to: LINKS.cross_chain }),
-      disabled: account?.isExternalWalletConnected,
+      disabled: account?.isExternalWalletConnected || props.asset.meta.isErc20,
     },
   ]
 
