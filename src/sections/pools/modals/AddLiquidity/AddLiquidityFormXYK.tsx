@@ -329,18 +329,13 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
           label="Received amount of Pool Shares:"
           content={t("value.token", {
             value: shares,
-            //fixedPointScale: decimals,
+            fixedPointScale: decimals,
           })}
         />
 
         {minAddLiquidityValidation && (
           <Alert variant="warning" css={{ marginBottom: 8 }}>
             {t("liquidity.xyk.addLiquidity.warning")}
-          </Alert>
-        )}
-        {customErrors?.farm && (
-          <Alert variant="warning" css={{ margin: "20px 0" }}>
-            {customErrors.farm.message}
           </Alert>
         )}
         <Spacer size={20} />
