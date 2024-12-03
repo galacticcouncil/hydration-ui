@@ -84,7 +84,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       icon: <TransferIcon />,
       label: t("wallet.assets.table.actions.transfer"),
       onSelect: () => props.onTransferClick(),
-      disabled: account?.isExternalWalletConnected || props.asset.meta.isErc20,
+      disabled: account?.isExternalWalletConnected,
     },
     {
       key: "deposit",

@@ -120,10 +120,10 @@ export function WalletTransferSectionOnchain({
     return await createTransaction(
       {
         tx:
-          asset.toString() === native.id
+          asset.toString() === native.id || assetMeta.isErc20
             ? api.tx.currencies.transfer(
                 normalizedDest,
-                native.id,
+                asset.toString(),
                 amount.toFixed(),
               )
             : api.tx.tokens.transfer(normalizedDest, asset, amount.toFixed()),

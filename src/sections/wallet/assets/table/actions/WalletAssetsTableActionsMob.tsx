@@ -180,9 +180,7 @@ export const WalletAssetsTableActionsMob = ({
                 <Button
                   sx={{ width: "100%" }}
                   size="small"
-                  disabled={
-                    account?.isExternalWalletConnected || row.meta.isErc20
-                  }
+                  disabled={account?.isExternalWalletConnected}
                   onClick={() => onTransferClick(row.id)}
                 >
                   <TransferIcon />
