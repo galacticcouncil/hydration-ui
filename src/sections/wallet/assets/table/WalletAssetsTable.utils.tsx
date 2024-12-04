@@ -73,7 +73,7 @@ export const useAssetsTable = (
           >
             <WalletAssetsTableBalance
               balance={row.original.transferable}
-              balanceDisplay={BigNumber(row.original.transferableDisplay)}
+              balanceDisplay={row.original.transferableDisplay}
             />
             {!isDesktop && (
               <ButtonTransparent css={{ color: theme.colors.iconGray }}>
@@ -90,7 +90,9 @@ export const useAssetsTable = (
         id: "total",
         header: t("wallet.assets.table.header.total"),
         sortingFn: (a, b) =>
-          a.original.totalDisplay.gt(b.original.totalDisplay) ? 1 : -1,
+          BigNumber(a.original.totalDisplay).gt(b.original.totalDisplay)
+            ? 1
+            : -1,
         cell: ({ row }) => (
           <WalletAssetsTableBalance
             balance={row.original.total}

@@ -71,12 +71,12 @@ const WalletAssetsHeaderDisplay = ({
 }: {
   isLoading: boolean
   fontSize?: [number, number]
-  value: BN
+  value: string
 }) => {
   return (
     <div sx={{ flex: ["row", "column"], justify: "space-between" }}>
       <HeaderTotalData
-        value={value}
+        value={BN(value)}
         isLoading={isLoading}
         fontSize={fontSize}
       />

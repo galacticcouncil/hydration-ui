@@ -253,8 +253,8 @@ const NativeLocks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -416,10 +416,10 @@ const NativeLocks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay)} />
         </Text>
       </div>
 
@@ -460,8 +460,8 @@ const Locks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay: string
 }) => {
   const { t } = useTranslation()
 
@@ -472,10 +472,10 @@ const Locks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay)} />
         </Text>
       </div>
     </div>

@@ -342,7 +342,7 @@ export const isJson = (item: string) => {
 
 export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
   assets: Array<T>,
-  balanceKey: Extract<KeyOfType<T, string>, string>,
+  balanceKey: Extract<KeyOfType<T, string | undefined>, string>,
   firstAssetId?: string,
 ) => {
   const tickerOrder = [

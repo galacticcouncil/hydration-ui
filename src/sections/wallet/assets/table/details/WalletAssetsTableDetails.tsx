@@ -61,8 +61,8 @@ const NativeAssetDetails = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -198,10 +198,10 @@ const NativeAssetDetails = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={16} lh={18} fw={400} color="white" sx={{ mt: 4 }}>
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay)} />
         </Text>
       </div>
       <div>
@@ -232,8 +232,8 @@ const AssetDetails = ({
   reservedDisplay,
   id,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay: string
   id: string
 }) => {
   const { t } = useTranslation()
@@ -279,10 +279,10 @@ const AssetDetails = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={16} lh={18} fw={400} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay)} />
         </Text>
       </div>
     </SContainer>
