@@ -195,7 +195,9 @@ export const WalletAssetsTableActionsMob = ({
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    disabled={account?.isExternalWalletConnected}
+                    disabled={
+                      account?.isExternalWalletConnected || row.meta.isErc20
+                    }
                   >
                     <PlusIcon />
                     {t("wallet.assets.table.actions.deposit")}

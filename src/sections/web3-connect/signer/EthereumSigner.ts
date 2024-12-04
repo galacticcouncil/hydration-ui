@@ -119,21 +119,19 @@ export class EthereumSigner {
       let gasLimit = BigNumber(0)
       if (tx.gasLimit) {
         gasLimit = BigNumber(tx.gasLimit.toString())
-          .multipliedBy(12)
-          .dividedBy(10)
-          .decimalPlaces(0)
       } else {
-        /* const gas = await this.getGasValues(tx)
-        gasLimit = BigNumber(gas[0].toString()) */
-        // Use hardcoded gas limit for now, because the estimator is not working correctly
-        gasLimit = BigNumber(1000000)
+        const { gas } = await this.getGasValues(tx)
+        gasLimit = BigNumber(gas.toString())
       }
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: gasLimit.toNumber(),
+          gaslimit: gasLimit
+            .multipliedBy(1.2) // add 20%
+            .decimalPlaces(0)
+            .toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }
