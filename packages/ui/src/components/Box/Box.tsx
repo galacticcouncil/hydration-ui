@@ -1,4 +1,5 @@
 import { Interpolation } from "@emotion/react"
+import { Slot } from "@radix-ui/react-slot"
 import { ResponsiveStyleValue, Theme, useThemeUI } from "@theme-ui/core"
 import { css, ThemeUICSSProperties, ThemeUIStyleObject } from "@theme-ui/css"
 import React, { forwardRef } from "react"
@@ -51,6 +52,7 @@ type BoxSystemPropsKeys = (typeof boxSystemProps)[number]
 type BoxSystemProps = Pick<ThemeUICSSProperties, BoxSystemPropsKeys>
 
 export type BoxOwnProps = {
+  asChild?: boolean
   as?: React.ElementType
   css?: Interpolation<unknown>
   sx?: ThemeUIStyleObject<Theme>
@@ -67,6 +69,7 @@ export type BoxOwnProps = {
   borderBottomRadius?: ResponsiveStyleValue<string | number>
   borderLeftRadius?: ResponsiveStyleValue<string | number>
   borderRightRadius?: ResponsiveStyleValue<string | number>
+  children?: React.ReactNode
 }
 
 export type BoxProps = BoxOwnProps &
@@ -151,7 +154,10 @@ const pickBorderStyles = (props: BoxProps) => {
 }
 
 export const Box = forwardRef<HTMLElement, BoxProps>(
-  ({ css: cssProp, sx, as: Component = "div", ...rest }, ref) => {
+  (
+    { css: cssProp, sx, as: Component = "div", asChild = false, ...rest },
+    ref,
+  ) => {
     const { theme } = useThemeUI()
 
     const sxPropStyles = css(sx)(theme)
@@ -164,7 +170,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       delete (rest as Record<string, unknown>)[name]
     })
 
-    return <Component ref={ref} css={styles} {...rest} />
+    const SlottedComponent = asChild ? Slot : Component
+
+    return <SlottedComponent ref={ref} css={styles} {...rest} />
   },
 )
 
