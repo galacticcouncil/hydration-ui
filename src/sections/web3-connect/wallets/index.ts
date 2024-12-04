@@ -18,6 +18,9 @@ import {
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
+import { CoinbaseWallet } from "sections/web3-connect/wallets/CoinbaseWallet"
+import { NightlyEvm } from "sections/web3-connect/wallets/NightlyEvm"
+import { Nightly } from "sections/web3-connect/wallets/Nightly"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -74,6 +77,17 @@ const metaMask: Wallet = new MetaMask({
   ),
 }) */
 
+const coinbaseWallet: Wallet = new CoinbaseWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.CoinbaseWallet,
+  ),
+})
+
+const nightly: Wallet = new Nightly()
+const nightlyEvm: Wallet = new NightlyEvm({
+  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.NightlyEvm),
+})
+
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
@@ -103,6 +117,9 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
+  coinbaseWallet,
+  nightly,
+  nightlyEvm,
   //trustWallet,
   novaWallet,
   walletConnect,
@@ -150,6 +167,11 @@ const eip6963ProvidersByRdns = new Map([
     "com.brave.wallet",
     { Wallet: BraveWallet, type: WalletProviderType.BraveWallet },
   ],
+  [
+    "com.coinbase.wallet",
+    { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
+  ],
+  ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }],
 ])
 
 /**
