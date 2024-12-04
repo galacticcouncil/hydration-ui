@@ -243,10 +243,15 @@ export class EthereumSigner {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
 
+      console.log({
+        maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+        maxFeePerGas: maxFeePerGas.toString(),
+      })
+
       return await this.signer.sendTransaction({
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(12).div(10), // add 20%
+        gasLimit: gas.mul(13).div(10), // add 30%
         ...tx,
       })
     } else {
