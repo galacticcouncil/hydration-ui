@@ -431,3 +431,9 @@ export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms))
+
+export const sortDisplayValues = (valueA?: string, valueB?: string) => {
+  if (valueA === undefined || valueB === undefined) return -1
+
+  return BN(valueA).gt(valueB) ? 1 : -1
+}

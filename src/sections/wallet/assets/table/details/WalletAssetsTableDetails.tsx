@@ -15,7 +15,7 @@ import {
 import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
@@ -62,7 +62,7 @@ const NativeAssetDetails = ({
   reservedDisplay,
 }: {
   reserved: string
-  reservedDisplay: string
+  reservedDisplay?: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -201,7 +201,7 @@ const NativeAssetDetails = ({
           {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={BN(reservedDisplay)} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
       <div>
@@ -233,7 +233,7 @@ const AssetDetails = ({
   id,
 }: {
   reserved: string
-  reservedDisplay: string
+  reservedDisplay?: string
   id: string
 }) => {
   const { t } = useTranslation()
@@ -282,7 +282,7 @@ const AssetDetails = ({
           {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={BN(reservedDisplay)} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
     </SContainer>

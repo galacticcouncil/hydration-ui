@@ -22,7 +22,7 @@ import {
   defaultPaginationState,
   useTablePagination,
 } from "components/Table/TablePagination"
-import BigNumber from "bignumber.js"
+import { sortDisplayValues } from "utils/helpers"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -57,11 +57,10 @@ export const useAssetsTable = (
         id: "transferable",
         header: t("wallet.assets.table.header.transferable"),
         sortingFn: (a, b) =>
-          BigNumber(a.original.transferableDisplay).gt(
+          sortDisplayValues(
+            a.original.transferableDisplay,
             b.original.transferableDisplay,
-          )
-            ? 1
-            : -1,
+          ),
         cell: ({ row }) => (
           <div
             sx={{
@@ -90,9 +89,7 @@ export const useAssetsTable = (
         id: "total",
         header: t("wallet.assets.table.header.total"),
         sortingFn: (a, b) =>
-          BigNumber(a.original.totalDisplay).gt(b.original.totalDisplay)
-            ? 1
-            : -1,
+          sortDisplayValues(a.original.totalDisplay, b.original.totalDisplay),
         cell: ({ row }) => (
           <WalletAssetsTableBalance
             balance={row.original.total}
