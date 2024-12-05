@@ -1,3 +1,4 @@
+import { HydrationLogoFull } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Toggle } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -15,6 +16,7 @@ export const Header = () => {
       sx={{ position: "sticky", top: 0, zIndex: 100 }}
       justify="space-between"
     >
+      <HydrationLogoFull />
       <Navigation />
       <Flex gap={8}>
         Dark Mode

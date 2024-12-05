@@ -1,3 +1,5 @@
+import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
+
 export const LINKS = {
   // t('navigation.home')
   home: "/",
@@ -67,7 +69,7 @@ type NavigationItem = {
   key: keyof typeof LINKS
   href: string
   enabled?: boolean
-  order?: number[]
+  order?: ResponsiveStyleValue<number>
   children?: NavigationItem[]
 }
 
