@@ -201,7 +201,7 @@ const getFarmsData =
         parachainBlockNumber.toBigNumber(),
         {
           globalFarm,
-          yieldFarm: yieldFarm,
+          yieldFarm,
         },
         price.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
         balance.freeBalance,
