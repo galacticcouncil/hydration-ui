@@ -345,7 +345,7 @@ export const useXYKPools = () => {
           balance,
           isPositions,
           totalFee,
-          farms: !totalApr || totalApr === "0" ? [] : farms,
+          farms,
           isFeeLoading,
         }
       })

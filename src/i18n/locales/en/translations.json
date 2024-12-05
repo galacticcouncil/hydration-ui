@@ -687,6 +687,7 @@
   "farms.details.card.locked.label": "Value locked",
   "farms.details.card.currentApr.label": "Current APR (est.)",
   "farms.details.card.end.value": "Expected end {{ end, d.M.yyyy }}",
+  "farms.details.card.end.badge": "Farm stopped",
   "farms.modal.join.title": "{{assetSymbol}} farms",
   "farms.modal.join.description": "You can join a {{assets}} farm with same amount that you have provided to other farms.",
   "farms.modal.join.button.label_one": "Join farm",
