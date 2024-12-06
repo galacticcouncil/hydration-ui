@@ -1,11 +1,9 @@
 import { css } from "@emotion/react"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMedia } from "react-use"
-import { shortenAccountAddress } from "utils/formatting"
+import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
@@ -14,6 +12,16 @@ import { BN_BILL } from "utils/constants"
 import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAddress } from "utils/evm"
 import { Badge } from "components/Badge/Badge"
+import * as Tooltip from "@radix-ui/react-tooltip"
+import {
+  SCopyDropdownContent,
+  SCopyDropdownItem,
+} from "sections/web3-connect/accounts/Web3ConnectAccountSelect.styled"
+import { ButtonTransparent } from "components/Button/Button"
+import React, { useEffect, useState } from "react"
+import CheckIcon from "assets/icons/CheckIcon.svg?react"
+import { Icon } from "components/Icon/Icon"
+import { genesisHashToChain } from "utils/helpers"
 
 type Props = {
   name: string
@@ -26,6 +34,48 @@ type Props = {
   isActive?: boolean
 }
 
+const CopyButton: React.FC<{
+  address: string
+  className?: string
+  children?: React.ReactNode
+  wrapper?: React.ElementType
+}> = ({ address, children, className, wrapper }) => {
+  const [copied, setCopied] = useState(false)
+  const [, copyToClipboard] = useCopyToClipboard()
+
+  useEffect(() => {
+    if (!copied) return
+    const id = setTimeout(() => {
+      setCopied(false)
+    }, 5000)
+
+    return () => {
+      clearTimeout(id)
+      setCopied(false)
+    }
+  }, [copied])
+
+  const Wrapper = wrapper || ButtonTransparent
+
+  function copy(e: React.MouseEvent) {
+    e.stopPropagation()
+    copyToClipboard(address)
+    setCopied(true)
+  }
+
+  return (
+    <Wrapper className={className} onClick={copy}>
+      <span>{children}</span>
+      <Icon
+        sx={{ ml: [50, 100], color: "brightBlue200" }}
+        css={{ cursor: "pointer" }}
+        size={18}
+        icon={copied ? <CheckIcon sx={{ color: "green400" }} /> : <CopyIcon />}
+      />
+    </Wrapper>
+  )
+}
+
 export const Web3ConnectAccountSelect = ({
   name,
   genesisHash,
@@ -35,11 +85,15 @@ export const Web3ConnectAccountSelect = ({
   isActive,
   provider,
 }: Props) => {
-  const { t } = useTranslation()
-  const [{ value }, copy] = useCopyToClipboard()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
+
+  const addressOldFormat = safeConvertAddressSS58(
+    address,
+    genesisHashToChain(genesisHash).prefix,
+    false,
+  )
 
   return (
     <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
@@ -89,26 +143,47 @@ export const Web3ConnectAccountSelect = ({
           >
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
-          <InfoTooltip
-            text={
-              value
-                ? t("wallet.header.copyAddress.click")
-                : t("wallet.header.copyAddress.hover")
-            }
-          >
-            <CopyIcon
-              width={18}
-              height={18}
-              sx={{ color: isActive ? "brightBlue200" : "darkBlue200", mt: -4 }}
-              css={{
-                cursor: "pointer",
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                copy(address.toString())
-              }}
-            />
-          </InfoTooltip>
+          <div sx={{ mt: -4 }}>
+            {isEvm ? (
+              <CopyButton
+                address={address}
+                sx={{
+                  color: isActive ? "brightBlue200" : "darkBlue200",
+                }}
+              />
+            ) : (
+              <Tooltip.Root delayDuration={0}>
+                <Tooltip.Trigger asChild>
+                  <ButtonTransparent onClick={(e) => e.stopPropagation()}>
+                    <CopyIcon
+                      width={18}
+                      height={18}
+                      sx={{
+                        color: isActive ? "brightBlue200" : "darkBlue200",
+                      }}
+                    />
+                  </ButtonTransparent>
+                </Tooltip.Trigger>
+                <SCopyDropdownContent
+                  align="end"
+                  side="bottom"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <CopyButton wrapper={SCopyDropdownItem} address={address}>
+                    New Polkadot format
+                  </CopyButton>
+                  {addressOldFormat && (
+                    <CopyButton
+                      wrapper={SCopyDropdownItem}
+                      address={addressOldFormat}
+                    >
+                      Old format (for CEXES)
+                    </CopyButton>
+                  )}
+                </SCopyDropdownContent>
+              </Tooltip.Root>
+            )}
+          </div>
         </div>
       </div>
     </div>
