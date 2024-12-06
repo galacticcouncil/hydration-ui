@@ -163,8 +163,8 @@ export const AssetInput = <T extends Asset = Asset>({
         <div
           sx={{
             flex: "row",
-            align: "center",
             justify: "space-between",
+            gap: 10
           }}
         >
           {!onSelect || assets.length === 1 ? (
@@ -232,6 +232,7 @@ export const AssetInput = <T extends Asset = Asset>({
                 id={name}
                 name={name}
                 placeholder="0.00"
+                sx={{ width: "100%" }}
                 disabled={disabled || disableInput}
                 value={value}
                 onChange={(e) => {
