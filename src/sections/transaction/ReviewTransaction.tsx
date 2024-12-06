@@ -14,6 +14,7 @@ import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransacti
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
 import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { tags } from "@galacticcouncil/xcm-cfg"
 
 export const ReviewTransaction = (props: Transaction) => {
   const { isLoaded } = useRpcProvider()
@@ -89,7 +90,7 @@ export const ReviewTransaction = (props: Transaction) => {
     reset()
     setMinimizeModal(true)
   }
-
+  console.log(props.xcallMeta?.tags === tags.Tag.Snowbridge)
   return (
     <>
       {minimizeModal && (
