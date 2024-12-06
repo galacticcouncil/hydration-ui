@@ -19,7 +19,7 @@ type Props = {
   name: string
   genesisHash?: `0x${string}`
   address: string
-  balance?: BigNumber
+  balance?: string
   onClick?: () => void
   provider?: WalletProviderType | null
   isProxy?: boolean
@@ -72,8 +72,11 @@ export const Web3ConnectAccountSelect = ({
             )}
           </div>
           <Text fs={14} color="graySoft">
-            {balance?.isFinite() && (
-              <DisplayValue value={balance} compact={balance.gt(BN_BILL)} />
+            {balance && (
+              <DisplayValue
+                value={BigNumber(balance)}
+                compact={BigNumber(balance).gt(BN_BILL)}
+              />
             )}
           </Text>
         </div>

@@ -33,24 +33,25 @@ export const useDisplayValue = (props: Props) => {
 
 export const useDisplayPrice = (id: string | u32 | undefined) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(id, displayAsset.id)
-  const usdPrice = useCoingeckoUsdPrice()
+  const { data: spotPrice, isInitialLoading: isSpotPriceInitialLoading } =
+    useSpotPrice(id, displayAsset.id)
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
 
-  const isLoading = spotPrice.isInitialLoading || usdPrice.isInitialLoading
-
+  const isLoading = isSpotPriceInitialLoading || isUsdPriceInitialLoading
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
-      return spotPrice.data
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrice
         ? {
-            ...spotPrice.data,
-            spotPrice: spotPrice.data.spotPrice.times(usdPrice.data),
+            ...spotPrice,
+            spotPrice: spotPrice.spotPrice.times(usdPrice),
           }
         : undefined
 
-    return spotPrice.data
-  }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
+    return spotPrice
+  }, [displayAsset.isRealUSD, isLoading, spotPrice, usdPrice])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
@@ -145,23 +146,24 @@ export const useDisplayPrices = (
 ) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
-  const usdPrice = useCoingeckoUsdPrice()
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
 
   const isLoading =
-    spotPrices.some((q) => q.isInitialLoading) || usdPrice.isInitialLoading
+    spotPrices.some((q) => q.isInitialLoading) || isUsdPriceInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isRealUSD && usdPrice)
       return spotPrices.map((sp) =>
         sp.data
-          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice.data) }
+          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice) }
           : undefined,
       )
 
     return spotPrices.map((sp) => sp.data)
-  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice.data])
+  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }

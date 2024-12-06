@@ -23,7 +23,6 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
-import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
@@ -51,7 +50,6 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { featureFlags } = useRpcProvider()
 
   const prevUrl = usePreviousUrl()
 

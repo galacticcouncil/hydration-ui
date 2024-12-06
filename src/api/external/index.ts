@@ -14,13 +14,14 @@ import {
   TRegisteredAsset,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
-import { BN_0, HYDRATION_PARACHAIN_ID } from "utils/constants"
+import { HYDRATION_PARACHAIN_ID } from "utils/constants"
 import { isAnyParachain, isNotNil } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { assethub, useAssetHubAssetRegistry } from "./assethub"
 import { pendulum, usePendulumAssetRegistry } from "./pendulum"
 import { usePolkadotRegistry } from "./polkadot"
 import { useAssets } from "providers/assets"
+import BigNumber from "bignumber.js"
 
 export { assethub, pendulum }
 
@@ -180,11 +181,11 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
 
         const totalSupplyExternal =
           !shouldIgnoreRugCheck && externalToken.supply
-            ? BN(externalToken.supply)
+            ? externalToken.supply
             : null
 
         const totalSupplyInternal =
-          !shouldIgnoreRugCheck && issuance ? BN(issuance) : null
+          !shouldIgnoreRugCheck && issuance ? issuance.toString() : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -241,8 +242,8 @@ const createRugWarningList = ({
   storedToken,
   externalToken,
 }: {
-  totalSupplyExternal: BN | null
-  totalSupplyInternal: BN | null
+  totalSupplyExternal: string | null
+  totalSupplyInternal: string | null
   externalToken: TExternalAsset
   storedToken?: TRegisteredAsset
 }) => {
@@ -251,12 +252,12 @@ const createRugWarningList = ({
   if (
     totalSupplyExternal &&
     totalSupplyInternal &&
-    totalSupplyExternal.lt(totalSupplyInternal)
+    BigNumber(totalSupplyExternal).lt(totalSupplyInternal)
   ) {
     warnings.push({
       type: "supply",
       severity: "high",
-      diff: [totalSupplyInternal ?? BN_0, totalSupplyExternal ?? BN_0],
+      diff: [totalSupplyInternal ?? "0", totalSupplyExternal ?? "0"],
     })
   }
 

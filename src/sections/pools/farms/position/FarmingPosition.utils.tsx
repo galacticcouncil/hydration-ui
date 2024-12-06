@@ -188,7 +188,7 @@ export const useFarmDepositsTotal = (address?: string) => {
       poolsTotal = poolsTotal.plus(xykTotal)
     }
 
-    return poolsTotal
+    return poolsTotal.toString()
   }, [omnipool, xyk])
 
   return { isLoading: isLoading, value: total }
