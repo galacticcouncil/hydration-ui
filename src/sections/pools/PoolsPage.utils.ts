@@ -143,7 +143,9 @@ export const usePools = () => {
           : undefined,
         isVolumeLoading: volumes?.isLoading,
         farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
-        allFarms: farms.filter((farm) => BN(farm.apr).gt(0)),
+        allFarms: farms.filter((farm) =>
+          farm.isActive ? BN(farm.apr).gt(0) : true,
+        ),
         fee,
         totalFee,
         isFeeLoading,
@@ -347,7 +349,9 @@ export const useXYKPools = () => {
           isPositions,
           totalFee,
           farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
-          allFarms: farms.filter((farm) => BN(farm.apr).gt(0)),
+          allFarms: farms.filter((farm) =>
+            farm.isActive ? BN(farm.apr).gt(0) : true,
+          ),
           isFeeLoading,
         }
       })
