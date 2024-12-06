@@ -3,7 +3,7 @@ import {
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { chainsMap, tags } from "@galacticcouncil/xcm-cfg"
 import { AccountId32, Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
@@ -55,6 +55,22 @@ type TxMethod = AnyJson & {
 
 function isTxMethod(x: AnyJson): x is TxMethod {
   return typeof x === "object" && x != null && "method" in x && "section" in x
+}
+
+export type TTxErrorData = {
+  [key: string]: string | number | boolean | null | undefined
+}
+
+export class TransactionError extends Error {
+  data: TTxErrorData
+
+  constructor(message: string, data: TTxErrorData) {
+    super(message)
+    this.name = "TransactionError"
+    this.data = data
+
+    Object.setPrototypeOf(this, TransactionError.prototype)
+  }
 }
 
 type TxHuman = Record<string, { args: TxMethod["args"] }>
@@ -177,11 +193,11 @@ export const useSendEvmTransactionMutation = (
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
-      xcallMeta?: Record<string, string>
     }
   > = {},
   id: string,
   toast?: ToastMessage,
+  xcallMeta?: Record<string, string>,
 ) => {
   const { t } = useTranslation()
   const { loading, success, error, remove, sidebar } = useToast()
@@ -192,16 +208,17 @@ export const useSendEvmTransactionMutation = (
 
   const isMounted = useMountedState()
 
-  const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
+  const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         const txHash = evmTx?.hash
         const txData = evmTx?.data
 
+        const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
         const chain = account?.chainId ? getEvmChainById(account.chainId) : null
         const link =
           txHash && chain
-            ? getEvmTxLink(txHash, txData, chain.key, isTestnet)
+            ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
             : ""
 
         const isApproveTx = txData?.startsWith("0x095ea7b3")
@@ -222,7 +239,7 @@ export const useSendEvmTransactionMutation = (
           title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
           link,
           txHash,
-          bridge: isApproveTx ? undefined : bridge,
+          bridge: isApproveTx || isSnowBridge ? undefined : bridge,
           hidden: true,
           xcm,
         })
@@ -248,7 +265,15 @@ export const useSendEvmTransactionMutation = (
           title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
           hidden: sidebar,
         })
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(err?.toString() ?? "Unknown error", {
+            from: evmTx.from,
+            to: evmTx.to,
+            gasLimit: evmTx.gasLimit?.toString(),
+            data: evmTx.data,
+            ...xcallMeta,
+          }),
+        )
       }
     })
   }, options)
@@ -336,7 +361,10 @@ const getTransactionData = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const bridge = xcmDstChain?.isEvmChain() ? "substrate" : undefined
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
+
+  const bridge =
+    xcmDstChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
 
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
 
@@ -357,11 +385,11 @@ export const useSendDispatchPermit = (
     unknown,
     {
       permit: PermitResult
-      xcallMeta?: Record<string, string>
     }
   > = {},
   id: string,
   toast?: ToastMessage,
+  xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
   const { wallet } = useWallet()
@@ -372,7 +400,7 @@ export const useSendDispatchPermit = (
 
   const unsubscribeRef = useRef<null | (() => void)>(null)
 
-  const sendTx = useMutation(async ({ permit, xcallMeta }) => {
+  const sendTx = useMutation(async ({ permit }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         let isLoadingNotified = false
@@ -486,7 +514,12 @@ export const useSendDispatchPermit = (
           title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
           hidden: sidebar,
         })
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(
+            err?.toString() ?? "Unknown error",
+            permit.message,
+          ),
+        )
       }
     })
   }, options)
@@ -509,11 +542,11 @@ export const useSendTransactionMutation = (
     unknown,
     {
       tx: SubmittableExtrinsic<"promise">
-      xcallMeta?: Record<string, string>
     }
   > = {},
   id: string,
   toast?: ToastMessage,
+  xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
@@ -522,7 +555,7 @@ export const useSendTransactionMutation = (
 
   const unsubscribeRef = useRef<null | (() => void)>(null)
 
-  const sendTx = useMutation(async ({ tx, xcallMeta }) => {
+  const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         let isLoadingNotified = false
@@ -595,7 +628,13 @@ export const useSendTransactionMutation = (
           title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
           hidden: sidebar,
         })
-        reject(err?.toString() ?? "Unknown error")
+        reject(
+          new TransactionError(err?.toString() ?? "Unknown error", {
+            method: getTransactionJSON(tx)?.method,
+            call: tx.method.toHex(),
+            callHash: tx.method.hash.toHex(),
+          }),
+        )
       }
     })
   }, options)
@@ -732,11 +771,13 @@ export const useSendTx = ({
   toast,
   onSuccess,
   onError,
+  xcallMeta,
 }: {
   id: string
   toast?: ToastMessage
   onSuccess?: (data: ISubmittableResult) => void
   onError?: () => void
+  xcallMeta?: Record<string, string>
 }) => {
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
@@ -760,6 +801,7 @@ export const useSendTx = ({
     },
     id,
     toast,
+    xcallMeta,
   )
 
   const sendEvmTx = useSendEvmTransactionMutation(
@@ -779,6 +821,7 @@ export const useSendTx = ({
     },
     id,
     toast,
+    xcallMeta,
   )
 
   const sendPermitTx = useSendDispatchPermit(
@@ -791,6 +834,7 @@ export const useSendTx = ({
     },
     id,
     toast,
+    xcallMeta,
   )
 
   const activeMutation =

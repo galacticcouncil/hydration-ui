@@ -1,6 +1,5 @@
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { Link } from "sections/lending/components/primitives/Link"
 import { Text } from "components/Typography/Text/Text"
 
 type DebtCeilingMaxedTooltipProps = {
@@ -16,16 +15,8 @@ export const DebtCeilingMaxedTooltip = ({
     <InfoTooltip
       text={
         <Text>
-          <span>
-            Protocol debt ceiling is at 100% for this asset. Futher borrowing
-            against this asset is unavailable.
-          </span>{" "}
-          <Link
-            href="https://docs.aave.com/faq/aave-v3-features#how-does-isolation-mode-affect-my-borrowing-power"
-            css={{ textDecoration: "underline" }}
-          >
-            <span>Learn more</span>
-          </Link>
+          Protocol debt ceiling is at 100% for this asset. Futher borrowing
+          against this asset is unavailable.
         </Text>
       }
     />

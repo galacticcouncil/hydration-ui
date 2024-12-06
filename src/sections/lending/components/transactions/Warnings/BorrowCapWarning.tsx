@@ -1,6 +1,5 @@
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { Alert } from "components/Alert"
-import { Link } from "sections/lending/components/primitives/Link"
 
 type BorrowCapWarningProps = {
   borrowCap: AssetCapData
@@ -29,13 +28,7 @@ export const BorrowCapWarning = ({
 
   return (
     <Alert {...rest} variant="warning">
-      {renderText()}{" "}
-      <Link
-        href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-        css={{ textDecoration: "underline" }}
-      >
-        <span>Learn more</span>
-      </Link>
+      {renderText()}
     </Alert>
   )
 }

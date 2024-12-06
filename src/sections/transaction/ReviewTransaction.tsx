@@ -35,6 +35,7 @@ export const ReviewTransaction = (props: Transaction) => {
     toast: props.toast,
     onSuccess: (data) => props.onSuccess?.(data),
     onError: props.onError,
+    xcallMeta: props.xcallMeta,
   })
 
   if (!isLoaded) return null
@@ -113,9 +114,9 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
-            onSigned={(tx, xcallMeta) => {
+            onSigned={(tx) => {
               props.onSubmitted?.()
-              sendTx({ tx, xcallMeta })
+              sendTx({ tx })
             }}
             onPermitDispatched={(permit) => {
               props.onSubmitted?.()
