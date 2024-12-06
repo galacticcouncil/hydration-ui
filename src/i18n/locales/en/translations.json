@@ -844,7 +844,7 @@
   "staking.dashboard.rewards.legend.current": "Current rewards",
   "staking.dashboard.rewards.legend.future": "Rewards after voting",
   "staking.dashboard.rewards.legend.tooltip": "You have to vote max conviction with whole staking position",
-  "staking.dashboard.graph.axisY": "Paylable Percentage",
+  "staking.dashboard.graph.axisY": "Payable Percentage",
   "staking.dashboard.graph.axisX": "Days",
   "staking.dashboard.rewards.button": "Claim",
   "staking.dashboard.stats.chart.label": "Staked HDX",

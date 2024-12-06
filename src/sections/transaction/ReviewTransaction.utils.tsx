@@ -44,6 +44,7 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
+import { tags } from "@galacticcouncil/xcm-cfg"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -193,27 +194,23 @@ export const useSendEvmTransactionMutation = (
     {
       evmTx: TransactionResponse
       tx?: SubmittableExtrinsic<"promise">
-      xcallMeta?: Record<string, string>
     }
   > = {},
+  xcallMeta?: Record<string, string>,
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
   const [txData, setTxData] = useState<string>()
-  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
-    undefined,
-  )
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
 
-  const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
+  const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
         setTxData(evmTx?.data)
-        setCallMeta(xcallMeta)
         const receipt = await evmTx.wait()
         setTxState("InBlock")
 
@@ -232,9 +229,12 @@ export const useSendEvmTransactionMutation = (
     })
   }, options)
 
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
   const txLink =
-    txHash && chain ? getEvmTxLink(txHash, txData, chain.key, isTestnet) : ""
+    txHash && chain
+      ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
+      : ""
 
   const isApproveTx = txData?.startsWith("0x095ea7b3")
 
@@ -250,11 +250,10 @@ export const useSendEvmTransactionMutation = (
     txState,
     txLink,
     txHash,
-    bridge: isApproveTx ? undefined : bridge,
+    bridge: isApproveTx || isSnowBridge ? undefined : bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
-      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -325,21 +324,19 @@ export const useSendDispatchPermit = (
     unknown,
     {
       permit: PermitResult
-      xcallMeta?: Record<string, string>
     }
   > = {},
+  xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
   const { wallet } = useWallet()
   const queryClient = useQueryClient()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
-  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
-    undefined,
-  )
+
   const isMounted = useMountedState()
 
-  const sendTx = useMutation(async ({ permit, xcallMeta }) => {
+  const sendTx = useMutation(async ({ permit }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         const extrinsic = api.tx.multiTransactionPayment.dispatchPermit(
@@ -361,7 +358,6 @@ export const useSendDispatchPermit = (
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
-            setCallMeta(xcallMeta)
           }
 
           const account = new H160(permit.message.from).toAccount()
@@ -421,6 +417,8 @@ export const useSendDispatchPermit = (
     })
   }, options)
 
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
+
   const destChain = xcallMeta?.dstChain
     ? chainsMap.get(xcallMeta.dstChain)
     : undefined
@@ -432,7 +430,8 @@ export const useSendDispatchPermit = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+  const bridge =
+    destChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
 
   return {
     ...sendTx,
@@ -454,19 +453,16 @@ export const useSendTransactionMutation = (
     unknown,
     {
       tx: SubmittableExtrinsic<"promise">
-      xcallMeta?: Record<string, string>
     }
   > = {},
+  xcallMeta?: Record<string, string>,
 ) => {
   const { api } = useRpcProvider()
   const isMounted = useMountedState()
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
-  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
-    undefined,
-  )
 
-  const sendTx = useMutation(async ({ tx, xcallMeta }) => {
+  const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       try {
         const unsubscribe = await tx.send(async (result) => {
@@ -475,7 +471,6 @@ export const useSendTransactionMutation = (
           if (isMounted()) {
             setTxHash(result.txHash.toHex())
             setTxState(result.status.type)
-            setCallMeta(xcallMeta)
           }
 
           const externalChain =
@@ -512,6 +507,8 @@ export const useSendTransactionMutation = (
     })
   }, options)
 
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
+
   const destChain = xcallMeta?.dstChain
     ? chainsMap.get(xcallMeta.dstChain)
     : undefined
@@ -523,7 +520,8 @@ export const useSendTransactionMutation = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const bridge = destChain?.isEvmChain() ? "substrate" : undefined
+  const bridge =
+    destChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
 
   return {
     ...sendTx,
@@ -534,7 +532,6 @@ export const useSendTransactionMutation = (
     reset: () => {
       setTxState(null)
       setTxHash("")
-      setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -655,7 +652,7 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
-export const useSendTx = () => {
+export const useSendTx = (xcallMeta?: Record<string, string>) => {
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
@@ -663,31 +660,40 @@ export const useSendTx = () => {
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
 
-  const sendTx = useSendTransactionMutation({
-    onMutate: ({ tx }) => {
-      boundReferralToast.onLoading(tx)
-      storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
-      setTxType("default")
-    },
-    onSuccess: boundReferralToast.onSuccess,
-  })
-
-  const sendEvmTx = useSendEvmTransactionMutation({
-    onMutate: ({ tx }) => {
-      if (tx) {
+  const sendTx = useSendTransactionMutation(
+    {
+      onMutate: ({ tx }) => {
         boundReferralToast.onLoading(tx)
         storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
-      }
-      setTxType("evm")
+        setTxType("default")
+      },
+      onSuccess: boundReferralToast.onSuccess,
     },
-    onSuccess: boundReferralToast.onSuccess,
-  })
+    xcallMeta,
+  )
 
-  const sendPermitTx = useSendDispatchPermit({
-    onMutate: () => {
-      setTxType("permit")
+  const sendEvmTx = useSendEvmTransactionMutation(
+    {
+      onMutate: ({ tx }) => {
+        if (tx) {
+          boundReferralToast.onLoading(tx)
+          storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        }
+        setTxType("evm")
+      },
+      onSuccess: boundReferralToast.onSuccess,
     },
-  })
+    xcallMeta,
+  )
+
+  const sendPermitTx = useSendDispatchPermit(
+    {
+      onMutate: () => {
+        setTxType("permit")
+      },
+    },
+    xcallMeta,
+  )
 
   const activeMutation =
     txType === "default" ? sendTx : txType === "evm" ? sendEvmTx : sendPermitTx
