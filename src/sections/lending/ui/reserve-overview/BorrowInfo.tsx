@@ -95,15 +95,7 @@ export const BorrowInfo = ({
                         <InfoTooltip
                           text={
                             <Text fs={12}>
-                              {t("lending.tooltip.borrowCap")}{" "}
-                              <a
-                                css={{ textDecoration: "underline" }}
-                                target="_blank"
-                                href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-                                rel="noreferrer"
-                              >
-                                {t("lending.learnMore")}
-                              </a>
+                              {t("lending.tooltip.borrowCap")}
                             </Text>
                           }
                         >
