@@ -188,7 +188,6 @@ export const useSendEvmTransactionMutation = (
   const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
     undefined,
   )
-  const [isSnowbridge, setIsSnowbridge] = useState(false)
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
@@ -196,12 +195,6 @@ export const useSendEvmTransactionMutation = (
   const sendTx = useMutation(async ({ evmTx, xcallMeta }) => {
     return await new Promise(async (resolve, reject) => {
       try {
-        const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-
-        if (isSnowBridge) {
-          setIsSnowbridge(true)
-        }
-
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
         setTxData(evmTx?.data)
@@ -216,10 +209,11 @@ export const useSendEvmTransactionMutation = (
     })
   }, options)
 
+  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
   const chain = account?.chainId ? getEvmChainById(account.chainId) : null
   const txLink =
     txHash && chain
-      ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowbridge)
+      ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
       : ""
 
   const isApproveTx = txData?.startsWith("0x095ea7b3")
@@ -231,18 +225,18 @@ export const useSendEvmTransactionMutation = (
   const bridge =
     chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
 
+  console.log(isSnowBridge, "isSnowBridge in mutation")
   return {
     ...sendTx,
     txState,
     txLink,
     txHash,
-    bridge: isApproveTx || isSnowbridge ? undefined : bridge,
+    bridge: isApproveTx || isSnowBridge ? undefined : bridge,
     reset: () => {
       setTxState(null)
       setTxHash("")
       setCallMeta(undefined)
       sendTx.reset()
-      setIsSnowbridge(false)
     },
   }
 }
