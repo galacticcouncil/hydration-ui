@@ -142,7 +142,8 @@ export const usePools = () => {
               .toFixed(3)
           : undefined,
         isVolumeLoading: volumes?.isLoading,
-        farms: !totalApr || totalApr === "0" ? [] : farms,
+        farms: farms.filter((farm) => farm.isActive),
+        allFarms: farms,
         fee,
         totalFee,
         isFeeLoading,
@@ -345,7 +346,8 @@ export const useXYKPools = () => {
           balance,
           isPositions,
           totalFee,
-          farms,
+          farms: farms.filter((farm) => farm.isActive),
+          allFarms: farms,
           isFeeLoading,
         }
       })
