@@ -2268,7 +2268,7 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^5.1.0":
+"@galacticcouncil/sdk@^5.0.1":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.1.0.tgz#20471487117d78a7d77e2dfb3b5452fe50b08f29"
   integrity sha512-+/t5KX69fSYmSoDlPXL5xYtcIwKCcVU+3xuOjYTdi84gMbCR2ny7p0tzzgnDc+FIV64JRlUqaATWfawiVNAJ+Q==
@@ -2294,7 +2294,7 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^5.7.1":
+"@galacticcouncil/xcm-cfg@^5.6.0":
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.7.1.tgz#6675625ddafbb3937233b7318ce6104975dda669"
   integrity sha512-Be+lNGcfx96Q3wWpaC460AcNcSawJNJrPF8FgIXmoFcXTFcCXzG/Ut75CYGv67Z/3Z//jjIVXJFB5X08QlmVPw==
@@ -5427,10 +5427,10 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@thi.ng/api@^8.11.12":
-  version "8.11.12"
-  resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.12.tgz#4126fd878b9c506bc322c111c10ba7cfcaa6c0ad"
-  integrity sha512-qSOeCu1unXFF3NRQFEqdxgMlSAty/4G58rhjugW7IVEP/N8kuKuzfqxYrHRsZ3k1G8b/UtxSUBqgYH2OmLnbsw==
+"@thi.ng/api@^8.11.13":
+  version "8.11.13"
+  resolved "https://registry.yarnpkg.com/@thi.ng/api/-/api-8.11.13.tgz#6c372f0b05a95166c0f9b587822125b0a9b0aa8e"
+  integrity sha512-/BI1M8dIazn/6TJbV4v9lQ6KhswObw2xpcZ5FlAa2sZgiOdvSvYxeLr5NzUGWbs8O/bWRSQNU7dv2e12Yrpjfw==
 
 "@thi.ng/api@^8.11.4":
   version "8.11.4"
@@ -5549,11 +5549,11 @@
     "@thi.ng/api" "^8.11.4"
 
 "@thi.ng/memoize@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@thi.ng/memoize/-/memoize-4.0.2.tgz#310b53fdd57d86b3612a256d993f7c7f7d92c243"
-  integrity sha512-PuYKQ6qDRwEahTX2mpT18j5+qE7QPBw0KRKWA6fdUPtif4nzkpk5N1tYy9P1/oMEww5FAY5FhAnCQqFB1jg6gw==
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@thi.ng/memoize/-/memoize-4.0.3.tgz#ad616be6c853ca338bc9a9b372feb65cf10b1e6b"
+  integrity sha512-J/aBY19TfUwzRArylqxsVyEsxoPi20AGGkuP6lqRKzkh+f/XYQ1uNoyO3JiAmCT2G21h0UDT0vgzDEWgIZcIyw==
   dependencies:
-    "@thi.ng/api" "^8.11.12"
+    "@thi.ng/api" "^8.11.13"
 
 "@thi.ng/paths@^5.1.84":
   version "5.1.84"
