@@ -78,6 +78,7 @@ export function getEvmTxLink(
   txData: string | undefined,
   chainKey = "hydration",
   isTestnet = false,
+  isSnowbridge: boolean,
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -86,7 +87,7 @@ export function getEvmTxLink(
   if (chain.isEvmChain()) {
     const isApproveTx = txData?.startsWith("0x095ea7b3")
 
-    return isApproveTx
+    return isApproveTx || isSnowbridge
       ? `https://etherscan.io/tx/${txHash}`
       : `https://wormholescan.io/#/tx/${txHash}`
   }
