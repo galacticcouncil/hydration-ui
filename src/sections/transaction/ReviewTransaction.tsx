@@ -36,7 +36,7 @@ export const ReviewTransaction = (props: Transaction) => {
     txLink,
     txHash,
     bridge,
-  } = useSendTx()
+  } = useSendTx(props.xcallMeta)
 
   if (!isLoaded) return null
 

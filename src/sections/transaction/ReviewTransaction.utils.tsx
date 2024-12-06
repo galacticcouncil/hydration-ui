@@ -181,13 +181,14 @@ export const useSendEvmTransactionMutation = (
       xcallMeta?: Record<string, string>
     }
   > = {},
+  xcallMeta,
 ) => {
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
   const [txData, setTxData] = useState<string>()
-  const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
-    undefined,
-  )
+  // const [xcallMeta, setCallMeta] = useState<Record<string, string> | undefined>(
+  //   undefined,
+  // )
 
   const { account } = useEvmAccount()
   const isTestnet = useIsTestnet()
@@ -198,7 +199,7 @@ export const useSendEvmTransactionMutation = (
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
         setTxData(evmTx?.data)
-        setCallMeta(xcallMeta)
+        // setCallMeta(xcallMeta)
         const receipt = await evmTx.wait()
         setTxState("InBlock")
 
@@ -225,7 +226,7 @@ export const useSendEvmTransactionMutation = (
   const bridge =
     chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
 
-  console.log(isSnowBridge, "isSnowBridge in mutation")
+  console.log(isSnowBridge, xcallMeta, "isSnowBridge in mutation")
   return {
     ...sendTx,
     txState,
@@ -235,7 +236,7 @@ export const useSendEvmTransactionMutation = (
     reset: () => {
       setTxState(null)
       setTxHash("")
-      setCallMeta(undefined)
+      //setCallMeta(undefined)
       sendTx.reset()
     },
   }
@@ -643,7 +644,7 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
-export const useSendTx = () => {
+export const useSendTx = (xcallMeta) => {
   const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
     null,
   )
@@ -660,16 +661,19 @@ export const useSendTx = () => {
     onSuccess: boundReferralToast.onSuccess,
   })
 
-  const sendEvmTx = useSendEvmTransactionMutation({
-    onMutate: ({ tx }) => {
-      if (tx) {
-        boundReferralToast.onLoading(tx)
-        storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
-      }
-      setTxType("evm")
+  const sendEvmTx = useSendEvmTransactionMutation(
+    {
+      onMutate: ({ tx }) => {
+        if (tx) {
+          boundReferralToast.onLoading(tx)
+          storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        }
+        setTxType("evm")
+      },
+      onSuccess: boundReferralToast.onSuccess,
     },
-    onSuccess: boundReferralToast.onSuccess,
-  })
+    xcallMeta,
+  )
 
   const sendPermitTx = useSendDispatchPermit({
     onMutate: () => {

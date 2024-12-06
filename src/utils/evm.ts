@@ -78,7 +78,7 @@ export function getEvmTxLink(
   txData: string | undefined,
   chainKey = "hydration",
   isTestnet = false,
-  isSnowbridge = false,
+  isSnowbridge: boolean,
 ) {
   const chain = chainsMap.get(chainKey)
 
