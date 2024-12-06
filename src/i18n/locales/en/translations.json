@@ -880,6 +880,7 @@
   "addressbook.remove.cancel": "Back",
   "addressbook.remove.submit": "Yes, remove",
   "warningMessage.hdxLiquidity.title": "Your HDX LP position is not yielding rewards - to earn rewards on HDX you can use staking",
+  "warningMessage.btcFarms.title": "Farms were stopped fo 2-Pool (WBTC, iBTC) and no longer generating new rewards, please consider withdrawing your shares",
   "bond": "Bond",
   "bonds": "Bonds",
   "bonds.maturity": "Maturity",
