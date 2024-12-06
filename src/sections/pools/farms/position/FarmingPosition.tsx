@@ -165,23 +165,27 @@ export const FarmingPosition = ({
     }
   })
 
-  const totalRewardsValue = claimableAssets
-    .map((claimableAsset) =>
-      t("value.tokenWithSymbol", {
-        value: claimableAsset.value.rewards,
-        symbol: claimableAsset.symbol,
-      }),
-    )
-    .join(" + ")
+  const totalRewardsValue = claimableAssets.length
+    ? claimableAssets
+        .map((claimableAsset) =>
+          t("value.tokenWithSymbol", {
+            value: claimableAsset.value.rewards,
+            symbol: claimableAsset.symbol,
+          }),
+        )
+        .join(" + ")
+    : "0"
 
-  const maxTotalRewardsValue = claimableAssets
-    .map((claimableAsset) =>
-      t("value.tokenWithSymbol", {
-        value: BigNumber(claimableAsset.value.maxRewards),
-        symbol: claimableAsset.symbol,
-      }),
-    )
-    .join(" + ")
+  const maxTotalRewardsValue = claimableAssets.length
+    ? claimableAssets
+        .map((claimableAsset) =>
+          t("value.tokenWithSymbol", {
+            value: BigNumber(claimableAsset.value.maxRewards),
+            symbol: claimableAsset.symbol,
+          }),
+        )
+        .join(" + ")
+    : "0"
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -341,7 +345,10 @@ export const FarmingPosition = ({
               )}
               <div sx={{ flex: "column", align: "flex-end" }}>
                 {isDesktop && (
-                  <Text fs={14} color={color}>
+                  <Text
+                    fs={14}
+                    color={isClaimable === undefined ? "white" : color}
+                  >
                     {totalRewardsValue}
                   </Text>
                 )}
