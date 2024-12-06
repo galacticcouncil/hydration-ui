@@ -222,7 +222,6 @@ export const useSendEvmTransactionMutation = (
   const bridge =
     chain?.isEvmChain() || destChain?.isEvmChain() ? chain?.key : undefined
 
-  console.log(isSnowBridge, xcallMeta, "isSnowBridge in mutation")
   return {
     ...sendTx,
     txState,
