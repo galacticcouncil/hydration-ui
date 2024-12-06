@@ -156,7 +156,7 @@ function syncSupportedWalletProviders(wallet: Wallet) {
 const eip6963ProvidersByRdns = new Map([
   ["io.metamask", { Wallet: MetaMask, type: WalletProviderType.MetaMask }],
   [
-     "com.trustwallet.app",
+    "com.trustwallet.app",
     { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
   ],
   [
