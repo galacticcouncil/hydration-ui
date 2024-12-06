@@ -137,7 +137,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                   farm.globalFarmId,
                   farm.yieldFarmId,
                 ]),
-                assetId,
+                pool.id,
                 shares,
               )
             : api.tx.omnipool.addLiquidity(pool.id, shares),
