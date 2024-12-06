@@ -164,7 +164,7 @@ export const AssetInput = <T extends Asset = Asset>({
           sx={{
             flex: "row",
             justify: "space-between",
-            gap: 10
+            gap: 10,
           }}
         >
           {!onSelect || assets.length === 1 ? (
