@@ -4,7 +4,7 @@ import {
   PalletLiquidityMiningGlobalFarmData,
   PalletLiquidityMiningYieldFarmData,
 } from "@polkadot/types/lookup"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { BLOCK_TIME, BN_0, BN_1, PARACHAIN_BLOCK_TIME } from "utils/constants"
@@ -30,7 +30,11 @@ import { OmnipoolLiquidityMiningClaimSim } from "utils/farms/claiming/claimSimul
 import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
+import { getCurrentLoyaltyFactor } from "utils/farms/apr"
+import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BalanceClient } from "@galacticcouncil/sdk"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -42,13 +46,20 @@ type TActiveFarm = {
   yieldFarm: PalletLiquidityMiningYieldFarmData
 }
 
-type TClaimableFarmValue = {
+export type TClaimableFarmValue = {
   poolId: string
   value: string
+  claimableValue: string
+  maxValue: string
   rewardCurrency: string
   yieldFarmId: string
+  globalFarmId: string
   depositId: string
   isXyk: boolean
+  liquidityPositionId?: string
+  shares: string
+  loyaltyFactor: string
+  isClaimable: boolean
 }
 
 export type TFarmAprData = {
@@ -126,6 +137,7 @@ const getActiveFarms =
 const getFarmsData =
   (
     api: ApiPromise,
+    balanceClient: BalanceClient,
     activeFarms: TActiveFarm[],
     getAsset: (id: string) => TAsset,
     isXyk: boolean = false,
@@ -145,7 +157,7 @@ const getFarmsData =
       const incentivizedAsset = globalFarm.incentivizedAsset.toString()
 
       const balance = await getTokenBalance(
-        api,
+        balanceClient,
         activeFarm.potAddress,
         rewardCurrency,
       )()
@@ -221,7 +233,7 @@ const select = (data: TFarmAprData[] | undefined) => {
 }
 
 export const useOmnipoolFarms = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api, balanceClient, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
   const { data: activeFarms } = useQuery(
@@ -233,7 +245,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   return useQuery(
     QUERY_KEYS.omnipoolFarms,
     activeFarms
-      ? getFarmsData(api, activeFarms, getAssetWithFallback)
+      ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
       : undefinedNoop,
     {
       enabled: !!activeFarms?.length && isLoaded,
@@ -244,7 +256,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 }
 
 export const useXYKFarms = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api, balanceClient, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
   const { data: activeFarms } = useQuery(
@@ -256,7 +268,13 @@ export const useXYKFarms = (ids: string[]) => {
   return useQuery(
     QUERY_KEYS.xykFarms,
     activeFarms
-      ? getFarmsData(api, activeFarms, getAssetWithFallback, true)
+      ? getFarmsData(
+          api,
+          balanceClient,
+          activeFarms,
+          getAssetWithFallback,
+          true,
+        )
       : undefinedNoop,
     {
       enabled: !!activeFarms?.length && isLoaded,
@@ -532,16 +550,34 @@ export const getYieldFarmCreated = (indexerUrl: string) => async () => {
   }
 }
 
+export const useRefetchClaimableFarmValues = () => {
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
+  const { range } = useClaimingRange()
+
+  return () => {
+    queryClient.resetQueries(
+      QUERY_KEYS.accountClaimableFarmValues(account?.address, range),
+    )
+  }
+}
+
 export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
+  const { range } = useClaimingRange()
 
-  const { omnipoolDeposits = [], xykDeposits = [], accountAddress } = data ?? {}
+  const {
+    omnipoolDeposits = [],
+    xykDeposits = [],
+    depositLiquidityPositions = [],
+    accountAddress,
+  } = data ?? {}
   const allDeposits = [...omnipoolDeposits, ...xykDeposits]
 
   return useQuery(
-    QUERY_KEYS.accountClaimableFarmValues(accountAddress),
+    QUERY_KEYS.accountClaimableFarmValues(accountAddress, range),
     async () => {
       const accountResolver = getAccountResolver(api.registry)
 
@@ -578,6 +614,24 @@ export const useAccountClaimableFarmValues = () => {
           const yieldFarm = yieldFarmRaw.unwrap()
           const rewardCurrency = globalFarm.rewardCurrency.toString()
           const incentivizedAsset = globalFarm.incentivizedAsset.toString()
+
+          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+
+          const currentPeriod = relayChainBlockNumber.dividedToIntegerBy(
+            globalFarm.blocksPerPeriod.toString(),
+          )
+
+          const currentPeriodInFarm = BN(currentPeriod).minus(
+            farmEntry.enteredAt.toString(),
+          )
+          const loyaltyFactor = getCurrentLoyaltyFactor(
+            {
+              initialRewardPercentage:
+                loyaltyCurve.initialRewardPercentage.toString(),
+              scaleCoef: loyaltyCurve.scaleCoef.toString(),
+            },
+            currentPeriodInFarm,
+          )
 
           const accountAddresses: Array<[address: AccountId32, assetId: u32]> =
             [
@@ -623,13 +677,30 @@ export const useAccountClaimableFarmValues = () => {
           if (reward) {
             const meta = getAssetWithFallback(reward.assetId)
 
+            const liquidityPositionId = isXyk
+              ? undefined
+              : depositLiquidityPositions.find(
+                  (lp) => lp.depositId === deposit.id,
+                )
+
+            const isClaimable = BN(loyaltyFactor).gt(range)
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
-              value: scaleHuman(reward.value, meta.decimals).toFixed(8),
+              value: scaleHuman(reward.reward, meta.decimals).toFixed(8),
+              claimableValue: !isClaimable
+                ? "0"
+                : scaleHuman(reward.reward, meta.decimals).toFixed(8),
+              maxValue: scaleHuman(reward.maxReward, meta.decimals).toFixed(8),
               yieldFarmId,
+              globalFarmId,
               depositId: deposit.id,
               isXyk,
+              liquidityPositionId: liquidityPositionId?.id,
+              shares: deposit.data.shares.toString(),
+              loyaltyFactor,
+              isClaimable,
             }
           }
 
@@ -656,7 +727,7 @@ export const useAccountClaimableFarmValues = () => {
         }, new Map()),
       enabled: isLoaded && !!allDeposits.length && !!accountAddress,
       staleTime: millisecondsInHour,
-      refetchInterval: 60000,
+      refetchInterval: millisecondsInMinute,
     },
   )
 }
@@ -664,44 +735,133 @@ export const useAccountClaimableFarmValues = () => {
 export const useSummarizeClaimableValues = (
   claimableValues: TClaimableFarmValue[],
 ) => {
-  const claimableAssetValues = claimableValues.reduce<Record<string, number>>(
-    (acc, farm) => {
-      const { rewardCurrency, value } = farm
-
-      acc[rewardCurrency] = (acc[rewardCurrency] || 0) + parseFloat(value)
-
-      return acc
-    },
-    {},
+  const assetsId = Array.from(
+    new Set(
+      claimableValues.map((claimableValue) => claimableValue.rewardCurrency),
+    ),
   )
 
-  const assetsId = Object.keys(claimableAssetValues)
+  const { data: spotPrices, isLoading } = useDisplayPrices(assetsId)
 
-  const { data: spotPrices } = useDisplayPrices(assetsId)
+  const {
+    total,
+    maxTotal,
+    claimableTotal,
+    claimableAssetValues,
+    totalsByYieldFarms,
+  } = useMemo(() => {
+    if (!spotPrices) {
+      return {
+        total: "0",
+        maxTotal: "0",
+        claimableTotal: "0",
+        claimableAssetValues: {},
+        totalsByYieldFarms: [],
+      }
+    }
 
-  const total = useMemo(() => {
-    if (spotPrices) {
-      let total = BN_0
-      for (const rewardCurrency in claimableAssetValues) {
-        if (claimableAssetValues.hasOwnProperty(rewardCurrency)) {
-          const assetAmount = claimableAssetValues[rewardCurrency]
+    return claimableValues.reduce<{
+      total: string
+      claimableTotal: string
+      maxTotal: string
+      claimableAssetValues: Record<
+        string,
+        {
+          rewards: string
+          claimableRewards: string
+          maxRewards: string
+        }
+      >
+      totalsByYieldFarms: Array<{
+        yieldFarmId: string
+        total: string
+        claimableTotal: string
+        maxTotal: string
+        assetId: string
+      }>
+    }>(
+      (acc, farm) => {
+        const { rewardCurrency, value, maxValue, claimableValue, yieldFarmId } =
+          farm
 
-          const { spotPrice } =
-            spotPrices.find(
-              (spotPrice) => spotPrice?.tokenIn === rewardCurrency,
-            ) ?? {}
-
-          if (spotPrice) {
-            total = total.plus(spotPrice.times(assetAmount))
+        if (!acc.claimableAssetValues[rewardCurrency]) {
+          acc.claimableAssetValues[rewardCurrency] = {
+            rewards: "0",
+            maxRewards: "0",
+            claimableRewards: "0",
           }
         }
-      }
 
-      return total
-    }
-  }, [claimableAssetValues, spotPrices])
+        const rewards = BN(value)
+        const claimableRewards = BN(claimableValue)
+        const maxRewards = BN(maxValue)
 
-  return { total, claimableAssetValues }
+        acc.claimableAssetValues[rewardCurrency].rewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].rewards,
+        )
+          .plus(rewards)
+          .toString()
+
+        acc.claimableAssetValues[rewardCurrency].claimableRewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].claimableRewards,
+        )
+          .plus(claimableRewards)
+          .toString()
+
+        acc.claimableAssetValues[rewardCurrency].maxRewards = new BN(
+          acc.claimableAssetValues[rewardCurrency].maxRewards,
+        )
+          .plus(maxRewards)
+          .toString()
+
+        const { spotPrice } =
+          spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
+
+        if (spotPrice) {
+          const rewardTotal = spotPrice.times(rewards).toString()
+          const claimableRewardTotal = spotPrice
+            .times(claimableRewards)
+            .toString()
+          const maxRewardTotal = spotPrice.times(maxRewards).toString()
+
+          acc.total = BN(acc.total).plus(rewardTotal).toString()
+          acc.claimableTotal = BN(acc.claimableTotal)
+            .plus(claimableRewardTotal)
+            .toString()
+          acc.maxTotal = BN(acc.maxTotal).plus(maxRewardTotal).toString()
+
+          acc.totalsByYieldFarms.push({
+            yieldFarmId,
+            total: rewardTotal,
+            claimableTotal: claimableRewardTotal,
+            maxTotal: maxRewardTotal,
+            assetId: rewardCurrency,
+          })
+        }
+
+        return acc
+      },
+      {
+        total: "0",
+        claimableTotal: "0",
+        maxTotal: "0",
+        claimableAssetValues: {},
+        totalsByYieldFarms: [],
+      },
+    )
+  }, [claimableValues, spotPrices])
+
+  const diffRewards = BN(maxTotal).minus(claimableTotal).toString()
+
+  return {
+    total,
+    claimableTotal,
+    maxTotal,
+    diffRewards,
+    claimableAssetValues,
+    totalsByYieldFarms,
+    isLoading,
+  }
 }
 
 export const getTotalAPR = (farms: TFarmAprData[]) => {

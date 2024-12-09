@@ -16,6 +16,7 @@ import { POLKADOT_APP_NAME } from "utils/api"
 import {
   H160,
   getEvmAddress,
+  isEvmAccount,
   isEvmAddress,
   isEvmWalletExtension,
 } from "utils/evm"
@@ -41,6 +42,7 @@ import {
   requestNetworkSwitch,
 } from "utils/metamask"
 import { genesisHashToChain, isNotNil } from "utils/helpers"
+import { useIsEvmAccountBound } from "api/evm"
 import {
   EIP6963AnnounceProviderEvent,
   WalletAccount,
@@ -58,7 +60,6 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmChain } from "@galacticcouncil/xcm-core"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { create } from "zustand"
-import BN from "bignumber.js"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -66,7 +67,7 @@ export const useWallet = () => {
   const providerType = useWeb3ConnectStore(
     useShallow((state) => state.account?.provider),
   )
-  return useMemo(() => getWalletProviderByType(providerType), [providerType])
+  return getWalletProviderByType(providerType)
 }
 
 export const useAccount = () => {
@@ -78,7 +79,18 @@ export const useEvmAccount = () => {
   const { account } = useAccount()
   const { wallet } = useWallet()
 
-  const address = account?.displayAddress ?? ""
+  const address = account?.address ?? ""
+
+  const isEvm = isEvmAccount(address)
+
+  const evmAddress = useMemo(() => {
+    if (!address) return ""
+    if (isEvm) return H160.fromAccount(address)
+    return H160.fromSS58(address)
+  }, [isEvm, address])
+
+  const accountBinding = useIsEvmAccountBound(evmAddress)
+  const isBound = isEvm ? true : !!accountBinding.data
 
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
@@ -92,21 +104,29 @@ export const useEvmAccount = () => {
       }
     },
     {
-      enabled: !!address,
+      enabled: !!address && !!wallet?.extension,
     },
   )
 
   if (!address) {
     return {
+      isBound: false,
+      isLoading: false,
       account: null,
     }
   }
 
   return {
+    isBound,
+    isLoading: isEvm
+      ? evm.isLoading
+      : accountBinding.isLoading || evm.isLoading,
     account: {
-      ...evm.data,
+      chainId: isEvm
+        ? evm.data?.chainId ?? null
+        : parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
       name: account?.name ?? "",
-      address: account?.displayAddress,
+      address: isBound ? evmAddress : "",
     },
   }
 }
@@ -315,6 +335,10 @@ export const useEnableWallet = (
   >,
 ) => {
   const { wallet } = getWalletProviderByType(provider)
+  const disconnect = useWeb3ConnectStore(
+    useShallow((state) => state.disconnect),
+  )
+
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
   const { mutate: enable, ...mutation } = useMutation<
@@ -366,6 +390,7 @@ export const useEnableWallet = (
 
   return {
     enable,
+    disconnect,
     ...mutation,
   }
 }
@@ -552,8 +577,8 @@ export function getWalletModeIcon(mode: WalletMode) {
 }
 
 export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, BN>
-  setBalanceMap: (address: string, balance: BN) => void
+  balanceMap: Map<string, string>
+  setBalanceMap: (address: string, balance: string) => void
 }>((set) => ({
   balanceMap: new Map(),
   setBalanceMap: (address, balance) => {

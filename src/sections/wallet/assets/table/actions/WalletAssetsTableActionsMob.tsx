@@ -30,7 +30,7 @@ import { isEvmAccount } from "utils/evm"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
@@ -195,7 +195,9 @@ export const WalletAssetsTableActionsMob = ({
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    disabled={account?.isExternalWalletConnected}
+                    disabled={
+                      account?.isExternalWalletConnected || row.meta.isErc20
+                    }
                   >
                     <PlusIcon />
                     {t("wallet.assets.table.actions.deposit")}
@@ -251,8 +253,8 @@ const NativeLocks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -414,10 +416,10 @@ const NativeLocks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
 
@@ -458,8 +460,8 @@ const Locks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
 }) => {
   const { t } = useTranslation()
 
@@ -470,10 +472,10 @@ const Locks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
     </div>

@@ -33,6 +33,7 @@ export const useAssetsData = ({
     tradable,
     stableswap,
     external,
+    erc20,
     getAsset,
     tokens,
     getAssetWithFallback,
@@ -41,40 +42,48 @@ export const useAssetsData = ({
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const balances = useAccountAssets(address)
+  const { data: balances, isLoading: isBalancesLoading } =
+    useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
 
   const tokensWithBalance = useMemo(() => {
-    if (balances.data) {
+    if (balances) {
       const filteredTokens =
-        balances.data.balances?.filter((balance) => {
+        balances.balances?.filter((balance) => {
           const meta = getAsset(balance.assetId)
 
-          return meta?.isToken || meta?.isStableSwap || meta?.isExternal
+          return (
+            meta?.isToken ||
+            meta?.isStableSwap ||
+            meta?.isExternal ||
+            meta?.isErc20
+          )
         }) ?? []
 
       return filteredTokens
     }
 
     return []
-  }, [balances.data, getAsset])
+  }, [balances, getAsset])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
     (tokenWithBalance) => tokenWithBalance.assetId,
   )
 
-  const currencyId = useAccountCurrency(address).data
-  const acceptedCurrencies = useAcceptedCurrencies(tokensWithBalanceIds)
+  const { data: currencyId } = useAccountCurrency(address)
+  const { data: acceptedCurrencies } =
+    useAcceptedCurrencies(tokensWithBalanceIds)
 
   const spotPrices = useDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
-    () => [...tokens, ...stableswap, ...external],
-    [external, stableswap, tokens],
+    () => [...tokens, ...stableswap, ...external, ...erc20],
+    [external, stableswap, tokens, erc20],
   )
 
   const data = useMemo(() => {
-    if (balances.isInitialLoading || !spotPrices.data) return []
+    if (isBalancesLoading || !spotPrices.data) return []
+
     const rowsWithBalance = tokensWithBalance.map((balance) => {
       const asset = getAssetWithFallback(balance.assetId)
       const isExternalInvalid = asset.isExternal && !asset.symbol
@@ -88,22 +97,28 @@ export const useAssetsData = ({
 
       const { decimals, id, name, symbol } = meta
       const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
-      const spotPrice =
-        spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
-          ?.spotPrice ?? BN_NAN
+      const spotPrice = spotPrices.data?.find(
+        (spotPrice) => spotPrice?.tokenIn === id,
+      )?.spotPrice
 
       const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
-      const reservedDisplay = reserved.times(spotPrice)
+      const reservedDisplay = spotPrice?.isFinite()
+        ? reserved.times(spotPrice).toString()
+        : undefined
 
       const total = BigNumber(balance.total).shiftedBy(-decimals)
-      const totalDisplay = total.times(spotPrice)
+      const totalDisplay = spotPrice?.isFinite()
+        ? total.times(spotPrice).toString()
+        : undefined
 
       const transferable = isExternalInvalid
         ? BN_NAN
         : BigNumber(balance.balance).shiftedBy(-decimals)
-      const transferableDisplay = transferable.times(spotPrice).toString()
+      const transferableDisplay = spotPrice?.isFinite()
+        ? transferable.times(spotPrice).toString()
+        : undefined
 
-      const isAcceptedCurrency = !!acceptedCurrencies.data?.find(
+      const isAcceptedCurrency = !!acceptedCurrencies?.find(
         (acceptedCurrencie) => acceptedCurrencie.id === id,
       )?.accepted
 
@@ -123,11 +138,11 @@ export const useAssetsData = ({
         meta,
         isPaymentFee,
         couldBeSetAsPaymentFee,
-        reserved,
+        reserved: reserved.toString(),
         reservedDisplay,
-        total,
+        total: total.toString(),
         totalDisplay,
-        transferable,
+        transferable: transferable.toString(),
         transferableDisplay,
         tradability,
         isExternalInvalid,
@@ -162,11 +177,11 @@ export const useAssetsData = ({
                 meta,
                 isPaymentFee: false,
                 couldBeSetAsPaymentFee: false,
-                reserved: BN_0,
-                reservedDisplay: BN_0,
-                total: BN_0,
-                totalDisplay: BN_0,
-                transferable: BN_0,
+                reserved: "0",
+                reservedDisplay: "0",
+                total: "0",
+                totalDisplay: "0",
+                transferable: "0",
                 transferableDisplay: "0",
                 tradability,
                 isExternalInvalid,
@@ -199,13 +214,13 @@ export const useAssetsData = ({
     getAssetWithFallback,
     getExternalMeta,
     tradable,
-    acceptedCurrencies.data,
+    acceptedCurrencies,
     currencyId,
-    balances.isInitialLoading,
+    isBalancesLoading,
     rugCheck.tokensMap,
   ])
 
-  return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
+  return { data, isLoading: isBalancesLoading || spotPrices.isInitialLoading }
 }
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]

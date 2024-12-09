@@ -3,37 +3,24 @@ import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/
 import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
-import { useMyStablePoolaTotal } from "./StablePoolsTotal"
-import { useXYKPools } from "sections/pools/PoolsPage.utils"
 import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Trans, useTranslation } from "react-i18next"
+import BN from "bignumber.js"
+import BigNumber from "bignumber.js"
 
-export const MyLiquidityTotal = () => {
+export const MyLiquidityTotal = ({
+  xykTotal,
+  stablePoolTotal,
+  isLoading,
+}: {
+  xykTotal: BN
+  stablePoolTotal: BN
+  isLoading: boolean
+}) => {
   const { t } = useTranslation()
   const omnipoolPositions = useOmnipoolPositionsData()
   const totalFarms = useFarmDepositsTotal()
-  const stablePoolTotal = useMyStablePoolaTotal()
-  const xykPools = useXYKPools()
-
-  const xykTotal = useMemo(() => {
-    if (xykPools.data) {
-      return xykPools.data.reduce((acc, xykPool) => {
-        if (xykPool.isPositions) {
-          const myTotalDisplay = xykPool.shareTokenIssuance?.myPoolShare
-            ? xykPool.tvlDisplay
-                ?.div(100)
-                .times(xykPool.shareTokenIssuance?.myPoolShare ?? 1)
-            : BN_0
-
-          return acc.plus(!myTotalDisplay.isNaN() ? myTotalDisplay : BN_0)
-        }
-
-        return acc
-      }, BN_0)
-    }
-    return BN_0
-  }, [xykPools.data])
 
   const totalOmnipool = useMemo(() => {
     return omnipoolPositions.data.reduce((acc, position) => {
@@ -43,22 +30,19 @@ export const MyLiquidityTotal = () => {
 
   const total = xykTotal
     .plus(totalOmnipool)
-    .plus(stablePoolTotal.value)
+    .plus(stablePoolTotal)
     .plus(totalFarms.value)
 
   return (
     <HeaderTotalData
       isLoading={
-        omnipoolPositions.isInitialLoading ||
-        stablePoolTotal.isLoading ||
-        xykPools.isInitialLoading ||
-        totalFarms.isLoading
+        isLoading || omnipoolPositions.isInitialLoading || totalFarms.isLoading
       }
       value={total}
       subValue={
         <Text fs={12} color="white" css={{ opacity: "0.6" }}>
           <Trans t={t} i18nKey="liquidity.header.farms">
-            <DisplayValue value={totalFarms.value} />
+            <DisplayValue value={BigNumber(totalFarms.value)} />
           </Trans>
         </Text>
       }

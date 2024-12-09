@@ -14,18 +14,17 @@ import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useAccountBalances } from "api/accountBalances"
-import { isNotNil } from "utils/helpers"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useVolume } from "api/volume"
 import BN from "bignumber.js"
-import { useGetXYKPools, useXYKConsts } from "api/xyk"
+import { useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
 import { useAccountAssets } from "api/deposits"
-import { TAsset, useAssets } from "providers/assets"
+import { TAsset, TShareToken, useAssets } from "providers/assets"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
@@ -105,11 +104,9 @@ export const usePools = () => {
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
-      const volume = BN(
-        volumes.data?.find(
-          (volume) => volume?.asset_id?.toString() === asset.id,
-        )?.volume_usd ?? BN_NAN,
-      ).multipliedBy(apiSpotPrice ?? 1)
+      const volume = volumes.data?.find(
+        (volume) => volume?.asset_id?.toString() === asset.id,
+      )?.volume_usd
 
       const isFeeLoading = fees?.isLoading || isAllFarmsLoading
 
@@ -136,10 +133,14 @@ export const usePools = () => {
         iconId: meta.iconId,
         meta,
         tvlDisplay,
-        spotPrice,
+        spotPrice: spotPrice?.isNaN() ? undefined : spotPrice?.toFixed(6),
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
-        volume,
+        volume: volume
+          ? BN(volume)
+              .multipliedBy(apiSpotPrice ?? 1)
+              .toFixed(3)
+          : undefined,
         isVolumeLoading: volumes?.isLoading,
         farms: !totalApr || totalApr === "0" ? [] : farms,
         fee,
@@ -183,7 +184,7 @@ export const usePools = () => {
 }
 
 export const usePoolDetails = (assetId: string) => {
-  const { getAsset } = useAssets()
+  const { getAsset, native } = useAssets()
   const meta = getAsset(assetId)
   const isStablePool = meta?.isStableSwap
 
@@ -202,16 +203,18 @@ export const usePoolDetails = (assetId: string) => {
     )
 
     const reserves = isStablePool
-      ? (stablePoolBalance.data?.balances ?? []).map((balance) => {
-          const id = balance.assetId.toString()
-          const meta = getAsset(id) as TAsset
+      ? (stablePoolBalance.data?.balances ?? [])
+          .map((balance) => {
+            const id = balance.assetId.toString()
+            const meta = getAsset(id) as TAsset
 
-          return {
-            asset_id: Number(id),
-            decimals: meta.decimals,
-            amount: balance.freeBalance.toString(),
-          }
-        })
+            return {
+              asset_id: Number(id),
+              decimals: meta.decimals,
+              amount: balance.freeBalance.toString(),
+            }
+          })
+          .filter((balance) => balance.asset_id.toString() !== native.id)
       : []
 
     return {
@@ -230,63 +233,70 @@ export const usePoolDetails = (assetId: string) => {
     omnipoolPositions.data,
     stablePoolBalance.data?.balances,
     stablepool.data?.fee,
+    native,
   ])
 
   return { data, isInitialLoading }
 }
 
 export const useXYKPools = () => {
-  const pools = useGetXYKPools()
-  const xykConsts = useXYKConsts()
-  const { getShareTokenByAddress, shareTokens } = useAssets()
-
-  const shareTokensId = shareTokens.map((shareToken) => shareToken.id) ?? []
-
-  const totalIssuances = useShareOfPools(shareTokensId)
-  const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
-
-  const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
-    pools.data?.map((pool) => pool.poolAddress) ?? [],
-  )
-
-  const fee = xykConsts.data?.fee ? getTradeFee(xykConsts.data?.fee) : BN_NAN
-
-  const volumes = useXYKPoolTradeVolumes(
-    shareTokens.length
-      ? shareTokens.map((shareToken) => shareToken.poolAddress)
-      : [],
-  )
-
-  const accountAssets = useAccountAssets()
-  const queries = [pools, xykConsts, shareTokeSpotPrices, totalIssuances]
-
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const { data: xykConsts } = useXYKConsts()
+  const { shareTokens } = useAssets()
+  const { data: accountAssets } = useAccountAssets()
 
   const whitelist = useMemo(
     () => MetadataStore.getInstance().externalWhitelist(),
     [],
   )
 
-  const data = useMemo(() => {
-    if (
-      !pools.data ||
-      !shareTokens.length ||
-      !shareTokeSpotPrices.data ||
-      !totalIssuances.data
-    )
-      return undefined
-
-    return pools.data
-      .map((pool) => {
-        const shareToken = getShareTokenByAddress(pool.poolAddress)
-
-        if (!shareToken) return undefined
-
-        const accountAsset = accountAssets.data?.accountAssetsMap.get(
-          shareToken.id,
+  const { validShareTokens, allShareTokens } = useMemo(() => {
+    return shareTokens.reduce<{
+      allShareTokens: Array<TShareToken & { isInvalid: boolean }>
+      validShareTokens: Array<TShareToken>
+    }>(
+      (acc, shareToken) => {
+        const isInvalid = !shareToken.assets.some(
+          (asset) => asset.isSufficient || whitelist.includes(asset.id),
         )
 
-        const shareTokenId = shareToken.id
+        if (!isInvalid) acc.validShareTokens.push(shareToken)
+
+        acc.allShareTokens.push({ ...shareToken, isInvalid })
+        return acc
+      },
+      {
+        allShareTokens: [],
+        validShareTokens: [],
+      },
+    )
+  }, [shareTokens, whitelist])
+
+  const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
+    allShareTokens.map((pool) => pool.poolAddress) ?? [],
+  )
+
+  const shareTokensId = shareTokens.map((shareToken) => shareToken.id) ?? []
+
+  const totalIssuances = useShareOfPools(shareTokensId)
+  const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
+
+  const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
+
+  const { data: volumes, isLoading: isVolumeLoading } =
+    useXYKPoolTradeVolumes(validShareTokens)
+
+  const queries = [shareTokeSpotPrices, totalIssuances]
+
+  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+
+  const data = useMemo(() => {
+    if (!shareTokeSpotPrices.data || !totalIssuances.data) return undefined
+
+    return allShareTokens
+      .map((shareToken) => {
+        const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
+
+        const { id: shareTokenId, poolAddress, isInvalid } = shareToken
 
         const shareTokenIssuance = totalIssuances.data?.find(
           (issuance) => issuance.asset === shareTokenId,
@@ -296,22 +306,18 @@ export const useXYKPools = () => {
           (shareTokeSpotPrice) => shareTokeSpotPrice.tokenIn === shareTokenId,
         )
 
-        let isInvalid = !shareToken.assets.some(
-          (asset) => asset.isSufficient || whitelist.includes(asset.id),
-        )
-
         const tvlDisplay =
           shareTokenIssuance?.totalShare
             ?.shiftedBy(-shareToken.decimals)
             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? 1) ?? BN_0
 
-        const volume =
-          volumes.data?.find(
-            (volume) => volume.poolAddress === pool.poolAddress,
-          )?.volume ?? BN_NAN
+        const volume = volumes?.find(
+          (volume) => volume.poolAddress === poolAddress,
+        )?.volume
 
         const isFeeLoading = isLoadingAllFarms
-        const { totalApr, farms = [] } = allFarms?.get(pool.poolAddress) ?? {}
+        const { totalApr, farms = [] } =
+          allFarms?.get(shareToken.poolAddress) ?? {}
         const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
 
         const miningPositions = accountAsset?.xykDeposits ?? []
@@ -328,12 +334,12 @@ export const useXYKPools = () => {
           spotPrice: shareTokenSpotPrice?.spotPrice,
           fee,
           isXykPool: true,
-          poolAddress: pool.poolAddress,
+          poolAddress,
           canAddLiquidity: true,
           canRemoveLiquidity: true,
           shareTokenIssuance,
           volume,
-          isVolumeLoading: volumes.isLoading,
+          isVolumeLoading,
           miningPositions,
           isInvalid,
           balance,
@@ -343,7 +349,6 @@ export const useXYKPools = () => {
           isFeeLoading,
         }
       })
-      .filter(isNotNil)
       .sort((a, b) => {
         if (a.isInvalid) return 1
         if (b.isInvalid) return -1
@@ -351,18 +356,15 @@ export const useXYKPools = () => {
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
   }, [
-    pools.data,
-    shareTokens.length,
     shareTokeSpotPrices.data,
     totalIssuances.data,
-    getShareTokenByAddress,
-    accountAssets.data?.accountAssetsMap,
-    volumes.data,
-    volumes.isLoading,
-    fee,
-    whitelist,
+    allShareTokens,
+    accountAssets?.accountAssetsMap,
+    volumes,
     isLoadingAllFarms,
     allFarms,
+    fee,
+    isVolumeLoading,
   ])
 
   return { data, isInitialLoading }

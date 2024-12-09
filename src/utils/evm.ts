@@ -1,4 +1,5 @@
 import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
+import { u8aToHex } from "@polkadot/util"
 import { Buffer } from "buffer"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
@@ -64,6 +65,12 @@ export class H160 {
       safeConvertAddressH160(Buffer.from(addressBytes).toString("hex")) ?? ""
     )
   }
+
+  static fromSS58 = (address: string) => {
+    const decodedBytes = decodeAddress(address)
+    const slicedBytes = decodedBytes.slice(0, 20)
+    return u8aToHex(slicedBytes)
+  }
 }
 
 export function getEvmTxLink(
@@ -71,6 +78,7 @@ export function getEvmTxLink(
   txData: string | undefined,
   chainKey = "hydration",
   isTestnet = false,
+  isSnowbridge: boolean,
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -79,7 +87,7 @@ export function getEvmTxLink(
   if (chain.isEvmChain()) {
     const isApproveTx = txData?.startsWith("0x095ea7b3")
 
-    return isApproveTx
+    return isApproveTx || isSnowbridge
       ? `https://etherscan.io/tx/${txHash}`
       : `https://wormholescan.io/#/tx/${txHash}`
   }

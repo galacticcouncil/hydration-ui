@@ -4,14 +4,15 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
+import { BN_NAN } from "utils/constants"
 
 export const WalletAssetsTableBalance = (props: {
-  balance: BN
-  balanceDisplay: BN
+  balance: string
+  balanceDisplay?: string
 }) => {
   const { t } = useTranslation()
 
-  const usdValue = props.balanceDisplay || "-"
+  const usdValue = BN(props.balanceDisplay ?? BN_NAN)
 
   return (
     <div
@@ -27,7 +28,7 @@ export const WalletAssetsTableBalance = (props: {
       }}
     >
       <Text fs={14} lh={16} fw={500} color="white" font="GeistMedium">
-        {t("value.token", { value: props.balance })}
+        {t("value.token", { value: BN(props.balance) })}
       </Text>
 
       <DollarAssetValue

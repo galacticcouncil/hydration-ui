@@ -47,22 +47,12 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 
 type Props = TxProps & {
   onCancel: () => void
-  onPermitDispatched: ({
-    permit,
-    xcallMeta,
-  }: {
-    permit: PermitResult
-    xcallMeta?: Record<string, string>
-  }) => void
+  onPermitDispatched: ({ permit }: { permit: PermitResult }) => void
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
-    xcallMeta?: Record<string, string>
   }) => void
-  onSigned: (
-    signed: SubmittableExtrinsic<"promise">,
-    xcallMeta?: Record<string, string>,
-  ) => void
+  onSigned: (signed: SubmittableExtrinsic<"promise">) => void
   onSignError?: (error: unknown) => void
 }
 
@@ -141,7 +131,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,
-              xcallMeta: props.xcallMeta,
             })
           }
 
@@ -149,7 +138,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             txData,
             props.xcallMeta?.srcChain,
           )
-          return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
+          return props.onEvmSigned({ evmTx, tx })
         }
 
         const srcChain = props?.xcallMeta?.srcChain
@@ -171,7 +160,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           withSignedTransaction: true,
         })
 
-        return props.onSigned(signature, props.xcallMeta)
+        return props.onSigned(signature)
       } catch (error) {
         props.onSignError?.(error)
       }
@@ -238,8 +227,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
           <ReviewTransactionData
-            address={account?.address}
             tx={tx}
+            evmTx={props.evmTx}
             xcallMeta={props.xcallMeta}
           />
         }

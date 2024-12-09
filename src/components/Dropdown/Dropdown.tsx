@@ -17,6 +17,8 @@ export type DropdownProps = {
   onSelect: (key: TDropdownItem) => void
   asChild?: boolean
   align?: "start" | "center" | "end"
+  header?: ReactNode
+  footer?: ReactNode
   disabled?: boolean
 }
 
@@ -26,6 +28,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   onSelect,
   asChild,
   align,
+  header,
+  footer,
   disabled,
 }) => {
   return (
@@ -37,6 +41,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       )}
       <DropdownMenu.Portal>
         <SContent sideOffset={8} align={align}>
+          {header}
           {items.map((i) => (
             <SItem
               key={i.key}
@@ -49,6 +54,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               {i.label}
             </SItem>
           ))}
+          {footer}
         </SContent>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

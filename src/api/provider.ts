@@ -5,11 +5,12 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
+  BalanceClient,
   PoolService,
   PoolType,
   TradeRouter,
@@ -18,8 +19,8 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
-import { pendulum } from "./external/pendulum"
+import { getExternalId } from "utils/externalAssets"
+import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -109,8 +110,10 @@ export const isTestnetRpcUrl = (url: string) =>
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    rpcUrlList: string[]
     autoMode: boolean
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setRpcUrlList: (rpcUrlList: string[]) => void
     getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
@@ -118,8 +121,10 @@ export const useProviderRpcUrlStore = create(
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      rpcUrlList: [],
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setRpcUrlList: (rpcUrlList) => set({ rpcUrlList }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
@@ -133,18 +138,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.1,
-      getStorage: () => ({
-        async getItem(name: string) {
-          return window.localStorage.getItem(name)
-        },
-        setItem(name, value) {
-          window.localStorage.setItem(name, value)
-        },
-        removeItem(name) {
-          window.localStorage.removeItem(name)
-        },
-      }),
+      version: 3,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -153,10 +147,10 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
-    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? PROVIDER_URLS : [rpcUrl]
+  return autoMode ? rpcUrlList : [rpcUrl]
 }
 
 export const useIsTestnet = () => {
@@ -201,15 +195,11 @@ export const useProviderAssets = () => {
                 (tradeAsset) => tradeAsset.id === asset.id,
               )
               return {
-                ...omit(["externalId"], asset),
+                ...asset,
                 symbol: asset.symbol ?? "",
                 decimals: asset.decimals ?? 0,
                 name: asset.name ?? "",
-                externalId:
-                  asset.origin === pendulum.parachainId &&
-                  typeof asset.externalId === "object"
-                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                    : asset.externalId?.toString(),
+                externalId: getExternalId(asset),
                 isTradable,
               }
             }),
@@ -270,10 +260,13 @@ export const useProviderData = () => {
         tradeRouter.getPools(),
       ])
 
+      const balanceClient = new BalanceClient(api)
+
       return {
         api,
         tradeRouter,
         poolService,
+        balanceClient,
         featureFlags: {
           referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
@@ -346,4 +339,15 @@ export function getProviderInstance(api: ApiPromise) {
   // @ts-ignore
   const options = api?._options
   return options?.provider as WsProvider
+}
+
+export const useProviderPing = (urls: string[], timeoutMs?: number) => {
+  return useQuery(["providerPing", urls], async () => {
+    return Promise.all(
+      urls.map(async (url) => {
+        const time = await pingRpc(url, timeoutMs)
+        return { url, time }
+      }),
+    )
+  })
 }
