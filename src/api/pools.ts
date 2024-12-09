@@ -1,12 +1,18 @@
 import { useMemo } from "react"
 import { useTotalIssuances } from "./totalIssuance"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
 import { useAccountAssets } from "./deposits"
 import BN from "bignumber.js"
+import { PoolToken, PoolType } from "@galacticcouncil/sdk"
+import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
+import { millisecondsInMinute } from "date-fns"
+import { omit } from "utils/rx"
+import { TOmnipoolAssetsData } from "./omnipool"
+import { HUB_ID } from "utils/api"
 
 export const useShareOfPools = (assets: string[]) => {
   const totalIssuances = useTotalIssuances()
@@ -45,13 +51,71 @@ export const useShareOfPools = (assets: string[]) => {
 
 export const useSDKPools = () => {
   const { isLoaded, tradeRouter } = useRpcProvider()
+  const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: QUERY_KEYS.pools,
     queryFn: async () => {
-      return await tradeRouter.getPools()
+      const pools = await tradeRouter.getPools()
+
+      const omnipoolTokens = (
+        pools.find((pool) => pool.type === PoolType.Omni)
+          ?.tokens as OmniPoolToken[]
+      ).map((token) => {
+        return {
+          ...omit(["hubReserves"], token),
+          shares: token.shares?.toString(),
+          protocolShares: token.protocolShares?.toString(),
+          cap: token.cap?.toString(),
+          hubReserves: token.hubReserves?.toString(),
+        }
+      })
+
+      const { tokens, hub } = omnipoolTokens.reduce<{
+        tokens: TOmnipoolAssetsData
+        hub: PoolToken
+      }>(
+        (acc, token) => {
+          if (token.id === HUB_ID) {
+            acc.hub = token
+          } else {
+            const {
+              id,
+              hubReserves,
+              cap,
+              protocolShares,
+              shares,
+              tradeable,
+              balance,
+            } = token
+
+            acc.tokens.push({
+              id,
+              hubReserve: hubReserves,
+              cap,
+              protocolShares,
+              shares,
+              bits: tradeable,
+              balance,
+            } as TOmnipoolAssetsData[number])
+          }
+
+          return acc
+        },
+        { tokens: [], hub: {} as PoolToken },
+      )
+
+      const xykPools = pools.filter((pool) => pool.type === PoolType.XYK)
+
+      console.log("refetched", xykPools)
+      queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, tokens)
+      queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
+      queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
+
+      return false
     },
     enabled: isLoaded,
+    staleTime: millisecondsInMinute,
   })
 }
 
