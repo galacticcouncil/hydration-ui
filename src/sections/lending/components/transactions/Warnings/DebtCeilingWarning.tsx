@@ -1,6 +1,5 @@
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { Alert } from "components/Alert"
-import { Link } from "sections/lending/components/primitives/Link"
 
 type DebtCeilingWarningProps = {
   debtCeiling: AssetCapData
@@ -29,13 +28,7 @@ export const DebtCeilingWarning = ({
 
   return (
     <Alert variant={debtCeiling.isMaxed ? "error" : "warning"} {...rest}>
-      {renderText()}{" "}
-      <Link
-        href="https://docs.aave.com/faq/aave-v3-features#how-does-isolation-mode-affect-my-borrowing-power"
-        css={{ textDecoration: "underline" }}
-      >
-        <span>Learn more</span>
-      </Link>
+      {renderText()}
     </Alert>
   )
 }

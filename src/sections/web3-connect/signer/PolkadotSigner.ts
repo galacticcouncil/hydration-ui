@@ -37,18 +37,24 @@ export class PolkadotSigner implements Signer {
     const chain = genesisHashToChain(payload.genesisHash as `0x${string}`)
     const chainId = POLKADOT_CAIP_ID_MAP[chain?.network]
 
-    let request = {
-      topic: this.session.topic,
-      chainId,
-      request: {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "polkadot_signTransaction",
-        params: { address: payload.address, transactionPayload: payload },
-      },
+    try {
+      let request = {
+        topic: this.session.topic,
+        chainId,
+        request: {
+          id: 1,
+          jsonrpc: "2.0",
+          method: "polkadot_signTransaction",
+          params: { address: payload.address, transactionPayload: payload },
+        },
+      }
+      let { signature } = await this.client.request<Signature>(request)
+      return { id: ++this.id, signature }
+    } catch (err) {
+      throw new Error(
+        `Failed to sign transaction (${payload.genesisHash} ${chain?.network}): ${err}`,
+      )
     }
-    let { signature } = await this.client.request<Signature>(request)
-    return { id: ++this.id, signature }
   }
 
   // this method is set this way to be bound to this class.

@@ -1,5 +1,4 @@
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
-import { Link } from "sections/lending/components/primitives/Link"
 import { Alert } from "components/Alert"
 
 type SupplyCapWarningProps = {
@@ -33,13 +32,7 @@ export const SupplyCapWarning = ({
 
   return (
     <Alert variant={severity} {...rest}>
-      {renderText()}{" "}
-      <Link
-        href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-        css={{ textDecoration: "underline" }}
-      >
-        <span>Learn more</span>
-      </Link>
+      {renderText()}
     </Alert>
   )
 }
