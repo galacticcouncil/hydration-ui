@@ -59,6 +59,7 @@ export type TClaimableFarmValue = {
   shares: string
   loyaltyFactor: string
   isClaimable: boolean
+  isActiveFarm: boolean
 }
 
 export type TFarmAprData = {
@@ -761,6 +762,8 @@ export const useAccountClaimableFarmValues = () => {
 
             const isClaimable = BN(loyaltyFactor).gt(range)
 
+            const isActiveFarm = yieldFarm.state.isActive
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
@@ -777,6 +780,7 @@ export const useAccountClaimableFarmValues = () => {
               shares: deposit.data.shares.toString(),
               loyaltyFactor,
               isClaimable,
+              isActiveFarm,
             }
           }
 
