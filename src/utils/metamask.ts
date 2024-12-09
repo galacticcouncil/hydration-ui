@@ -15,6 +15,7 @@ const METAMASK_LIKE_CHECKS = [
   "isEnkrypt",
   "isCoinbaseWallet",
   "isNightly",
+  "isRabby",
 ] as const
 type MetaMaskLikeChecksValues = (typeof METAMASK_LIKE_CHECKS)[number]
 
@@ -104,6 +105,10 @@ export function isCoinbaseWallet(provider: Maybe<ExternalProvider>) {
 
 export function isNightly(provider: Maybe<ExternalProvider>) {
   return isMetaMaskLike(provider) && !!provider?.isNightly
+}
+
+export function isRabbyWallet(provider: Maybe<ExternalProvider>) {
+  return isMetaMaskLike(provider) && !!provider?.isRabby
 }
 
 export function isEnkrypt(provider: Maybe<ExternalProvider>) {

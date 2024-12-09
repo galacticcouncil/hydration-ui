@@ -21,6 +21,7 @@ import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm
 import { CoinbaseWallet } from "sections/web3-connect/wallets/CoinbaseWallet"
 import { NightlyEvm } from "sections/web3-connect/wallets/NightlyEvm"
 import { Nightly } from "sections/web3-connect/wallets/Nightly"
+import { RabbyWallet } from "sections/web3-connect/wallets/RabbyWallet"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -88,6 +89,12 @@ const nightlyEvm: Wallet = new NightlyEvm({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.NightlyEvm),
 })
 
+const rabbyWallet: Wallet = new RabbyWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.RabbyWallet,
+  ),
+})
+
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
     if (!session) {
@@ -120,6 +127,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   coinbaseWallet,
   nightly,
   nightlyEvm,
+  rabbyWallet,
   trustWallet,
   novaWallet,
   walletConnect,
@@ -172,6 +180,7 @@ const eip6963ProvidersByRdns = new Map([
     { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
   ],
   ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }],
+  ["io.rabby", { Wallet: RabbyWallet, type: WalletProviderType.RabbyWallet }],
 ])
 
 /**
