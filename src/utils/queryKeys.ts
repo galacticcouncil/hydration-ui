@@ -50,6 +50,8 @@ export const QUERY_KEYS = {
     ids.join("."),
   ],
   pools: [QUERY_KEY_PREFIX, "pools"],
+  omnipoolTokens: ["omnipoolTokens"],
+  hubToken: ["hubToken"],
   poolShareToken: (poolId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
     "poolShareToken",
@@ -260,7 +262,7 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  xykPools: ["xykPools"], //TODO: refresh each block??
+  xykPools: ["xykPools"],
   xykConsts: ["xykConsts"],
   shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
@@ -338,7 +340,3 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
 } as const
-
-export const WS_QUERY_KEYS = {
-  omnipoolAssets: ["omnipoolAssets_"],
-}

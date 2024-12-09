@@ -3,11 +3,11 @@ import { TDeposit, useAccountAssets } from "api/deposits"
 import { useMemo } from "react"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { BN_0 } from "utils/constants"
-import { useSDKPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import { scaleHuman } from "utils/balance"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useXYKPools } from "api/xyk"
 
 type TokenAmount = {
   id: string
@@ -89,10 +89,10 @@ export const useAllXYKDeposits = (address?: string) => {
 
   const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
-  const pools = useSDKPools()
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKPools()
 
   const isLoading =
-    pools.isInitialLoading ||
+    isXykPoolsLoading ||
     issuances.isInitialLoading ||
     shareTokeSpotPrices.isInitialLoading
 
@@ -103,7 +103,7 @@ export const useAllXYKDeposits = (address?: string) => {
           const { asset, depositNft } = deposit
           const shareTokenIssuance = issuances.data?.get(asset.id)
 
-          const pool = pools.data?.find(
+          const pool = xykPools?.find(
             (pool) => pool.address === asset.poolAddress,
           )
 
@@ -145,7 +145,7 @@ export const useAllXYKDeposits = (address?: string) => {
         },
         {},
       ),
-    [depositNftsData, issuances.data, pools.data, shareTokeSpotPrices.data],
+    [depositNftsData, issuances.data, xykPools, shareTokeSpotPrices.data],
   )
 
   return { data, isLoading }
