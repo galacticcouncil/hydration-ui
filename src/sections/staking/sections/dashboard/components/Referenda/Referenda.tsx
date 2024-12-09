@@ -7,7 +7,7 @@ import { SContainer } from "sections/staking/StakingPage.styled"
 import GovernanceIcon from "assets/icons/GovernanceIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { ReferendumCardRococo } from "components/ReferendumCard/ReferendumCardRococo"
-import { useProviderRpcUrlStore } from "api/provider"
+import { PASEO_WS_URL, useProviderRpcUrlStore } from "api/provider"
 import { theme } from "theme"
 
 type ReferendaProps = {
@@ -24,10 +24,7 @@ export const ReferendaWrapper = () => {
 export const Referenda = ({ data, loading }: ReferendaProps) => {
   const { t } = useTranslation()
   const providers = useProviderRpcUrlStore()
-  const rococoProvider = [
-    "hydradx-rococo-rpc.play.hydration.cloud",
-    "mining-rpc.hydradx.io",
-  ].find(
+  const rococoProvider = [PASEO_WS_URL, "mining-rpc.hydradx.io"].find(
     (rpc) =>
       (providers.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL) ===
       `wss://${rpc}`,

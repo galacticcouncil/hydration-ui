@@ -30,6 +30,7 @@ import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import { isEvmAccount } from "utils/evm"
+import BigNumber from "bignumber.js"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -125,7 +126,7 @@ export const Web3ConnectAccountList: FC<{
       const aBalance = balanceMap.get(a.address)
       const bBalance = balanceMap.get(b.address)
       if (!aBalance || !bBalance) return 0
-      return bBalance.comparedTo(aBalance)
+      return BigNumber(bBalance).comparedTo(aBalance)
     })
   }, [account, accounts, balanceMap, isReady, filter, search])
 

@@ -37,12 +37,15 @@ export type TFeatureFlags = {
   dispatchPermit: boolean
 }
 
+export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -50,7 +53,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -58,7 +62,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -66,7 +71,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dotters",
     url: "wss://hydration.dotters.network",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -74,8 +80,18 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: ["development"],
+    dataEnv: "testnet",
+  },
+  {
+    name: "Paseo",
+    url: `wss://${PASEO_WS_URL}`,
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
+    env: ["rococo", "development"],
     dataEnv: "testnet",
   },
 ]

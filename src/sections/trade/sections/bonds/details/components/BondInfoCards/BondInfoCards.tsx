@@ -74,7 +74,7 @@ export const BondInfoCards = ({
     ? getAsset(accumulatedAssetId.toString())
     : undefined
   const accumulatedAssetBalance = isPast
-    ? hisroticalBalance.data?.pools[0]?.historicalBalances[0].assetABalance
+    ? hisroticalBalance.data?.lbpPoolHistoricalData.nodes[0]?.assetABalance
     : undefined
 
   const currentAccumulatedAssetValue = removeBlock
