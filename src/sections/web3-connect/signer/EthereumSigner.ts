@@ -7,18 +7,15 @@ import UniversalProvider from "@walletconnect/universal-provider/dist/types/Univ
 
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
-import { Contract, Signature } from "ethers"
+import { Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
-import {
-  CALL_PERMIT_ABI,
-  CALL_PERMIT_ADDRESS,
-  DISPATCH_ADDRESS,
-} from "utils/evm"
+import { CALL_PERMIT_ADDRESS, DISPATCH_ADDRESS } from "utils/evm"
 import {
   MetaMaskLikeProvider,
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
+import { sleep } from "utils/helpers"
 
 type PermitMessage = {
   from: string
@@ -57,10 +54,11 @@ export class EthereumSigner {
     const [gas, gasPrice] = await Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
+      this.signer.provider.getFeeData(),
     ])
 
-    const onePrc = gasPrice.div(100)
-    const gasPricePlus = gasPrice.add(onePrc)
+    const twoPrc = gasPrice.div(100).mul(2)
+    const gasPricePlus = gasPrice.add(twoPrc)
 
     return {
       gas,
@@ -74,11 +72,12 @@ export class EthereumSigner {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
-        onSwitch: () => {
-          // update signer after network switch
-          this.signer = this.getSigner(this.provider)
-        },
       })
+      // update signer after network switch
+      // give some leeway for the network switch to take effect,
+      // some wallets like Coinbase dont reflect the change inside provider immediately
+      await sleep(200)
+      this.signer = this.getSigner(this.provider)
     }
   }
 
@@ -89,19 +88,6 @@ export class EthereumSigner {
       from: this.address,
       chain,
     })
-  }
-
-  getPermitNonce = async (): Promise<BigNumber> => {
-    await this.requestNetworkSwitch("hydration")
-    const callPermit = new Contract(
-      CALL_PERMIT_ADDRESS,
-      CALL_PERMIT_ABI,
-      this.signer.provider,
-    )
-
-    const nonce = await callPermit.nonces(this.address)
-
-    return BigNumber(nonce.toString())
   }
 
   getPermit = async (
@@ -260,7 +246,7 @@ export class EthereumSigner {
       return await this.signer.sendTransaction({
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(12).div(10), // add 20%
+        gasLimit: gas.mul(13).div(10), // add 30%
         ...tx,
       })
     } else {
