@@ -59,6 +59,7 @@ export type TClaimableFarmValue = {
   shares: string
   loyaltyFactor: string
   isClaimable: boolean
+  isActiveFarm: boolean
 }
 
 export type TFarmAprData = {
@@ -114,51 +115,51 @@ const getActiveFarms =
     return await Promise.all(activeFarmIds)
   }
 
+const getStoppedFarms = (deposits: TDeposit[], activeFarms: TFarmIds[]) =>
+  deposits.reduce<TFarmIds[]>((result, deposit) => {
+    const missingEntries = deposit.data.yieldFarmEntries.filter((entry) => {
+      const isActive = activeFarms.some(
+        (activeFarm) =>
+          activeFarm.poolId === deposit.data.ammPoolId &&
+          activeFarm.yieldFarmId === entry.yieldFarmId &&
+          activeFarm.globalFarmId === entry.globalFarmId,
+      )
+      return !isActive
+    })
+
+    missingEntries.forEach((entry) => {
+      const isAlreadyInResult = result.some(
+        (item) =>
+          item.yieldFarmId === entry.yieldFarmId &&
+          item.poolId === deposit.data.ammPoolId &&
+          item.globalFarmId === entry.globalFarmId,
+      )
+
+      if (!isAlreadyInResult) {
+        result.push({
+          yieldFarmId: entry.yieldFarmId,
+          poolId: deposit.data.ammPoolId,
+          globalFarmId: entry.globalFarmId,
+          isActive: false,
+        })
+      }
+    })
+
+    return result
+  }, [])
+
 const getFarmsData =
   (
     api: ApiPromise,
     balanceClient: BalanceClient,
     activeFarms: TFarmIds[],
     getAsset: (id: string) => TAsset,
-    deposits: TDeposit[],
     isXyk: boolean = false,
   ) =>
   async () => {
     const accountResolver = getAccountResolver(api.registry)
 
-    const stoppedFarms = deposits.reduce<TFarmIds[]>((result, deposit) => {
-      const missingEntries = deposit.data.yieldFarmEntries.filter((entry) => {
-        const isActive = activeFarms.some(
-          (activeFarm) =>
-            activeFarm.poolId === deposit.data.ammPoolId &&
-            activeFarm.yieldFarmId === entry.yieldFarmId &&
-            activeFarm.globalFarmId === entry.globalFarmId,
-        )
-        return !isActive
-      })
-
-      missingEntries.forEach((entry) => {
-        const isAlreadyInResult = result.some(
-          (item) =>
-            item.yieldFarmId === entry.yieldFarmId &&
-            item.poolId === deposit.data.ammPoolId &&
-            item.globalFarmId === entry.globalFarmId,
-        )
-
-        if (!isAlreadyInResult) {
-          result.push({
-            yieldFarmId: entry.yieldFarmId,
-            poolId: deposit.data.ammPoolId,
-            globalFarmId: entry.globalFarmId,
-            isActive: false,
-          })
-        }
-      })
-
-      return result
-    }, [])
-
-    const farmsData = [...activeFarms, ...stoppedFarms].map(async (farm) => {
+    const farmsData = activeFarms.map(async (farm) => {
       const { isActive, globalFarmId, yieldFarmId, poolId } = farm
       const yieldFarmRaw = isXyk
         ? await api.query.xykWarehouseLM.yieldFarm(
@@ -266,9 +267,9 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { account } = useAccount()
   const { api, balanceClient, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { data, isSuccess: isAccountAssets } = useAccountAssets()
+  const { data } = useAccountAssets()
 
-  const { omnipoolDeposits } = data ?? {}
+  const { omnipoolDeposits = [] } = data ?? {}
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
@@ -276,32 +277,45 @@ export const useOmnipoolFarms = (ids: string[]) => {
     { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
-  return useQuery(
-    QUERY_KEYS.omnipoolFarms(account?.address),
-    activeFarms && omnipoolDeposits
-      ? getFarmsData(
-          api,
-          balanceClient,
-          activeFarms,
-          getAssetWithFallback,
-          omnipoolDeposits,
-        )
-      : undefinedNoop,
+  const stoppedFarms = useMemo(
+    () => getStoppedFarms(omnipoolDeposits, activeFarms ?? []),
+    [activeFarms, omnipoolDeposits],
+  )
+
+  const { data: stoppedFarmsData = [] } = useQuery(
+    QUERY_KEYS.stoppedOmnipoolFarms(account?.address),
+    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback),
     {
-      enabled: isActiveFarms && isLoaded && isAccountAssets,
-      select,
+      enabled:
+        isActiveFarms &&
+        isLoaded &&
+        !!account?.address &&
+        !!stoppedFarms.length,
       staleTime: millisecondsInHour,
     },
   )
+
+  const { data: activeFarmsData = [], isLoading } = useQuery(
+    QUERY_KEYS.omnipoolFarms,
+    activeFarms
+      ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
+      : undefinedNoop,
+    {
+      enabled: isActiveFarms && isLoaded,
+      staleTime: millisecondsInHour,
+    },
+  )
+
+  return { data: select([...activeFarmsData, ...stoppedFarmsData]), isLoading }
 }
 
 export const useXYKFarms = (ids: string[]) => {
   const { account } = useAccount()
   const { api, balanceClient, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { data, isSuccess: isAccountAssets } = useAccountAssets()
+  const { data } = useAccountAssets()
 
-  const { xykDeposits } = data ?? {}
+  const { xykDeposits = [] } = data ?? {}
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.xykActiveFarms,
@@ -309,24 +323,42 @@ export const useXYKFarms = (ids: string[]) => {
     { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
-  return useQuery(
-    QUERY_KEYS.xykFarms(account?.address),
-    activeFarms && xykDeposits
+  const stoppedFarms = useMemo(
+    () => getStoppedFarms(xykDeposits, activeFarms ?? []),
+    [activeFarms, xykDeposits],
+  )
+
+  const { data: stoppedFarmsData = [] } = useQuery(
+    QUERY_KEYS.stoppedXykFarms(account?.address),
+    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback, true),
+    {
+      enabled:
+        isActiveFarms &&
+        isLoaded &&
+        !!account?.address &&
+        !!stoppedFarms.length,
+      staleTime: millisecondsInHour,
+    },
+  )
+
+  const { data: activeFarmsData = [], isLoading } = useQuery(
+    QUERY_KEYS.xykFarms,
+    activeFarms
       ? getFarmsData(
           api,
           balanceClient,
           activeFarms,
           getAssetWithFallback,
-          xykDeposits,
           true,
         )
       : undefinedNoop,
     {
-      enabled: isActiveFarms && isAccountAssets && isLoaded,
-      select,
+      enabled: isActiveFarms && isLoaded,
       staleTime: millisecondsInHour,
     },
   )
+
+  return { data: select([...activeFarmsData, ...stoppedFarmsData]), isLoading }
 }
 
 export const useFarmCurrentPeriod = () => {
@@ -730,6 +762,8 @@ export const useAccountClaimableFarmValues = () => {
 
             const isClaimable = BN(loyaltyFactor).gt(range)
 
+            const isActiveFarm = yieldFarm.state.isActive
+
             return {
               poolId,
               rewardCurrency: reward.assetId,
@@ -746,6 +780,7 @@ export const useAccountClaimableFarmValues = () => {
               shares: deposit.data.shares.toString(),
               loyaltyFactor,
               isClaimable,
+              isActiveFarm,
             }
           }
 
