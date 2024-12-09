@@ -2222,10 +2222,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.0.tgz#1377809cf125941410eea6ad97b4da0ca1eabb6c"
   integrity sha512-f14ftbivheBK8kSnqd8hSQlMPuVLY9571S5yx0LPU6K6m78F3pDPl09OEuJ+dSKHOw8hWzmFxiv0wRMYvDkeKA==
 
-"@galacticcouncil/apps@9.1.0-pr157-d0957d6":
-  version "9.1.0-pr157-d0957d6"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-9.1.0-pr157-d0957d6.tgz#d15e2728a80986426275192120bcfb69305e7244"
-  integrity sha512-iv4OQB4VPPFMcWBvY1atuYtO8qfyb55cR0WKtSp5KCNo77exihhhPy9eZWpu0yFV6SI19ML/08ynoCekYCSorA==
+"@galacticcouncil/apps@^9.1.0":
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-9.1.0.tgz#4c2d18242053318e7131038619c44ffbf744dfb9"
+  integrity sha512-lAb3VYNy1oLUIgOZx7MkwpF0mgz8LQbXSTXHW8ESw46I8tALo0bqonb4X17y4ZfWgv88OcoOzdORwJboPWmpUg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2268,10 +2268,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.0.1.tgz#0d4490e0ca32e8975a0554aa94277d589d6fd907"
-  integrity sha512-TPIxweaNMPtj1FyRzyXwdhU4GghIUGSOrrrKilpiRUkaL6TABH4MRw8zYDXsh5b1XD1pRu6cA0hgZYIZRg6+CQ==
+"@galacticcouncil/sdk@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.1.0.tgz#20471487117d78a7d77e2dfb3b5452fe50b08f29"
+  integrity sha512-+/t5KX69fSYmSoDlPXL5xYtcIwKCcVU+3xuOjYTdi84gMbCR2ny7p0tzzgnDc+FIV64JRlUqaATWfawiVNAJ+Q==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2294,10 +2294,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^5.6.0":
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.6.0.tgz#c58f1a6931d374b34c0ad6012b3eb1dc3392c964"
-  integrity sha512-y42O/L2rkYAkio+lxMpRLwDVCAKD43IJ5NrnIGy4i2lvGyH6PcuKGaB7szHxM6QGUPyL4IMXGaNdxoe9IfeStA==
+"@galacticcouncil/xcm-cfg@^5.7.1":
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-5.7.1.tgz#6675625ddafbb3937233b7318ce6104975dda669"
+  integrity sha512-Be+lNGcfx96Q3wWpaC460AcNcSawJNJrPF8FgIXmoFcXTFcCXzG/Ut75CYGv67Z/3Z//jjIVXJFB5X08QlmVPw==
   dependencies:
     "@galacticcouncil/xcm-core" "^5.4.0"
 
@@ -2992,7 +2992,7 @@
     "@polkadot/util-crypto" "13.2.3"
     tslib "^2.8.0"
 
-"@polkadot/networks@13.2.3", "@polkadot/networks@^13.1.1":
+"@polkadot/networks@13.2.3", "@polkadot/networks@^13.1.1", "@polkadot/networks@^13.2.3":
   version "13.2.3"
   resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-13.2.3.tgz#c9d63b7de7ae67cf0d776471287e67ed747940f7"
   integrity sha512-mG+zkXg/33AyPrkv2xBbAo3LBUwOwBn6qznBU/4jxiZPnVvCwMaxE7xHM22B5riItbNJ169FXv3wy0v6ZmkFbw==
@@ -3009,15 +3009,6 @@
     "@polkadot/util" "12.6.2"
     "@substrate/ss58-registry" "^1.44.0"
     tslib "^2.6.2"
-
-"@polkadot/networks@^13.2.2":
-  version "13.2.2"
-  resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-13.2.2.tgz#6c8e6340fc718da925f5aab0c91c69f2971ca3f0"
-  integrity sha512-di3dLB9BcLQ9ARcDe/nizl7jZZnQbQlxB8kXtAXqTIVFtshtKT+zYcji6dTX7xX9/O9tZB7qnrvuIuI0MkwJ5A==
-  dependencies:
-    "@polkadot/util" "13.2.2"
-    "@substrate/ss58-registry" "^1.51.0"
-    tslib "^2.8.0"
 
 "@polkadot/react-identicon@^3.5.1":
   version "3.6.6"
@@ -3175,7 +3166,7 @@
     "@scure/base" "^1.1.7"
     tslib "^2.8.0"
 
-"@polkadot/util@12.6.2", "@polkadot/util@13.2.2", "@polkadot/util@13.2.3", "@polkadot/util@^10.4.2", "@polkadot/util@^12.0.1", "@polkadot/util@^12.3.2", "@polkadot/util@^12.6.2", "@polkadot/util@^13.1.1":
+"@polkadot/util@12.6.2", "@polkadot/util@13.2.3", "@polkadot/util@^10.4.2", "@polkadot/util@^12.0.1", "@polkadot/util@^12.3.2", "@polkadot/util@^12.6.2", "@polkadot/util@^13.1.1":
   version "13.2.3"
   resolved "https://registry.yarnpkg.com/@polkadot/util/-/util-13.2.3.tgz#2bdd753f920d466ca8fb1f812f913304471dd38c"
   integrity sha512-pioNnsig3qHXrfOKMe4Yqos8B8N3/EZUpS+WfTpWnn1VjYban/0GrTXeavPlAwggnY27b8fS6rBzQBhnVYDw8g==

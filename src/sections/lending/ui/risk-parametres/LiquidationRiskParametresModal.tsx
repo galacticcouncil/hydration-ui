@@ -47,14 +47,6 @@ export const LiquidationRiskParametresInfoModal = ({
               <>
                 <Text color="basic400" fs={14} lh={20} sx={{ mb: 32 }}>
                   {t("lending.risk.description")}
-                  <br />
-                  <a
-                    href="https://docs.aave.com/faq/"
-                    css={{ textDecoration: "underline" }}
-                    sx={{ color: "brightBlue100" }}
-                  >
-                    {t("lending.learnMore")}
-                  </a>
                 </Text>
                 <InfoWrapper
                   topTitle={t("lending.risk.hf.title")}
