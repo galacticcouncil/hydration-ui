@@ -10,7 +10,6 @@ import BN from "bignumber.js"
 import { PoolToken, PoolType } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import { millisecondsInMinute } from "date-fns"
-import { omit } from "utils/rx"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 
@@ -63,7 +62,7 @@ export const useSDKPools = () => {
           ?.tokens as OmniPoolToken[]
       ).map((token) => {
         return {
-          ...omit(["hubReserves"], token),
+          ...token,
           shares: token.shares?.toString(),
           protocolShares: token.protocolShares?.toString(),
           cap: token.cap?.toString(),
@@ -107,7 +106,6 @@ export const useSDKPools = () => {
 
       const xykPools = pools.filter((pool) => pool.type === PoolType.XYK)
 
-      console.log("refetched", xykPools)
       queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, tokens)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
