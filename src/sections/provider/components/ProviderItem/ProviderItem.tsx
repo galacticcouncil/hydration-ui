@@ -19,8 +19,9 @@ type ProviderItemProps = {
   url: string
   isActive?: boolean
   custom?: boolean
-  onClick: () => void
+  onClick?: () => void
   onRemove?: (id: string) => void
+  className?: string
 }
 
 export const ProviderItem = ({
@@ -30,6 +31,7 @@ export const ProviderItem = ({
   custom,
   onClick,
   onRemove,
+  className,
 }: ProviderItemProps) => {
   const [isEdit, setIsEdit] = useState(false)
   const store = useProviderRpcUrlStore()
@@ -47,7 +49,7 @@ export const ProviderItem = ({
     )
 
   return (
-    <SItem onClick={onClick}>
+    <SItem onClick={onClick} className={className}>
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
