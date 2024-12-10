@@ -22,6 +22,7 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "seconds": "Seconds",
+  "connecting": "Connecting",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
   "toast.counter": "{{ index }} of {{ count }}",

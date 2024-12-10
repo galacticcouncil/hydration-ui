@@ -1,4 +1,3 @@
-import { Navigate } from "@tanstack/react-location"
 import { CodeForm } from "./components/CodeForm/CodeForm"
 import { ReferralsTableTableWrapper } from "./components/ReferralsTable/ReferralsTableWrapper"
 import { FaqAccordion } from "./components/FaqAccordion/FaqAccordion"
@@ -13,11 +12,9 @@ import { getChainSpecificAddress } from "utils/formatting"
 import { ReferralsSkeleton } from "./ReferralsSkeleton"
 
 export const ReferralsWrapper = () => {
-  const { isLoaded, featureFlags } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
 
   if (!isLoaded) return <ReferralsSkeleton />
-
-  if (!featureFlags.referrals) return <Navigate to="/trade" />
 
   return <ReferralsPage />
 }
