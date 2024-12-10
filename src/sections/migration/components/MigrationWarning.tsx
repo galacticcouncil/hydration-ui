@@ -10,6 +10,7 @@ import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BigNumber from "bignumber.js"
 
 export type MigrationWarningProps = {
   onClick: () => void
@@ -27,7 +28,7 @@ export const MigrationWarning: React.FC<MigrationWarningProps> = ({
     address: account?.address,
   })
 
-  if (isLoading || balanceTotal?.isZero()) return null
+  if (isLoading || BigNumber(balanceTotal).isZero()) return null
 
   return (
     <SWarningMessageContainer onClick={onClick} variant="pink">

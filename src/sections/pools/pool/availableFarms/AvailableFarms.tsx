@@ -12,18 +12,18 @@ export const AvailableFarms = () => {
   const { t } = useTranslation()
   const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
   const {
-    pool: { farms },
+    pool: { allFarms },
   } = usePoolData()
 
   const { getCurrentPeriod } = useFarmCurrentPeriod()
 
-  if (!farms.length) return null
+  if (!allFarms.length) return null
 
   const currentBlock = selectedFarm
     ? getCurrentPeriod(selectedFarm.blocksPerPeriod)
     : undefined
 
-  const isMultipleFarms = farms.length > 1
+  const isMultipleFarms = allFarms.length > 1
 
   return (
     <>
@@ -47,7 +47,7 @@ export const AvailableFarms = () => {
             gap: 20,
           }}
         >
-          {farms.map((farm, i) => (
+          {allFarms.map((farm, i) => (
             <FarmDetailsCard
               compact
               key={i}
