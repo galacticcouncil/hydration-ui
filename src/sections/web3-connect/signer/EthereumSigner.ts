@@ -55,11 +55,10 @@ export class EthereumSigner {
     const [gas, gasPrice] = await Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
-      this.signer.provider.getFeeData(),
     ])
 
-    const twoPrc = gasPrice.div(100).mul(2)
-    const gasPricePlus = gasPrice.add(twoPrc)
+    const fivePrc = gasPrice.div(100).mul(5)
+    const gasPricePlus = gasPrice.add(fivePrc)
 
     return {
       gas,
@@ -245,12 +244,16 @@ export class EthereumSigner {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
 
+      const chainId = chainCfg.evmChain.id
+      const nonce = await this.signer.getTransactionCount()
+
       return await this.signer.sendTransaction({
-        chainId: chainCfg.evmChain.id,
-        nonce: tx?.nonce ?? (await this.signer.getTransactionCount()),
+        chainId,
+        nonce,
+        value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(12).div(10), // add 20%
+        gasLimit: gas.mul(13).div(10), // add 30%
         ...tx,
       })
     } else {
