@@ -16,6 +16,7 @@ import {
   requestNetworkSwitch,
 } from "utils/metamask"
 import { sleep } from "utils/helpers"
+import { EvmChain } from "@galacticcouncil/xcm-core"
 
 type PermitMessage = {
   from: string
@@ -235,7 +236,8 @@ export class EthereumSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && chainsMap.get(chain) ? chain : "hydration"
+    const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
+    const chainCfg = chainsMap.get(from) as EvmChain
 
     await this.requestNetworkSwitch(from)
 
@@ -244,9 +246,11 @@ export class EthereumSigner {
         await this.getGasValues(tx)
 
       return await this.signer.sendTransaction({
+        chainId: chainCfg.evmChain.id,
+        nonce: tx?.nonce ?? (await this.signer.getTransactionCount()),
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(13).div(10), // add 30%
+        gasLimit: gas.mul(12).div(10), // add 20%
         ...tx,
       })
     } else {
