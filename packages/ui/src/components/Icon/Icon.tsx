@@ -1,24 +1,23 @@
-type IconProps = {
-  component: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
-  size?: number | string
-  color?: string
-  className?: string
+import { Box, BoxProps } from "@/components"
+
+type IconProps = BoxProps & {
+  component: React.ComponentType
 }
 
-export const Icon = ({
+export const Icon: React.FC<IconProps> = ({
   component: SvgComponent,
   size = 24,
   color = "currentColor",
-  className,
-}: IconProps) => (
-  <p
+  ...props
+}) => (
+  <Box
+    color={color}
+    size={size}
     css={{
-      width: size,
-      height: size,
-      " & > *": { width: size, height: size },
+      "& > *": { width: "100%", height: "100%" },
     }}
-    className={className}
+    {...props}
   >
-    <SvgComponent color={color} />
-  </p>
+    <SvgComponent />
+  </Box>
 )

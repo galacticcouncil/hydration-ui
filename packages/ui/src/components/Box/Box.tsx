@@ -29,6 +29,8 @@ const boxSystemProps = [
   "opacity",
   "width",
   "height",
+  "maxWidth",
+  "maxHeight",
   "size",
 ] as const
 

@@ -1,73 +1,49 @@
+import {
+  PixelDollarBadge,
+  TwoColorCirclePercentage,
+  TwoColorClock,
+  TwoColorSwap,
+  TwoColorUsers,
+} from "@galacticcouncil/ui/assets/icons"
 import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 
 export const LINKS = {
-  // t('navigation.home')
   home: "/",
-  // t('navigation.liquidity')
   liquidity: "/liquidity",
-  // t('navigation.myLiquidity')
   myLiquidity: "/liquidity/my-liquidity",
-  // t('navigation.allPools')
   allPools: "/liquidity/all-pools",
-  // t('navigation.omnipool')
   omnipool: "/liquidity/omnipool-stablepools",
-  // t('navigation.isolated')
   isolated: "/liquidity/isolated",
-  // t('navigation.lbp')
   lbp: "/liquidity/lbp",
-  // t('navigation.swap')
   swap: "/trade/swap",
-  // t('navigation.wallet')
   wallet: "/wallet",
-  // t('navigation.walletAssets')
   walletAssets: "/wallet/assets",
-  // t('navigation.walletTransactions')
   walletTransactions: "/wallet/transactions",
-  // t('navigation.walletVesting')
   walletVesting: "/wallet/vesting",
-  // t('navigation.crossChain')
   crossChain: "/cross-chain",
-  // t('navigation.bridge')
   bridge: "/bridge",
-  // t('navigation.trade')
   trade: "/trade",
-  // t('navigation.otc')
   otc: "/trade/otc",
-  // t('navigation.dca')
   dca: "/trade/dca",
-  // t('navigation.yieldDca')
   yieldDca: "/trade/yield-dca",
-  // t('navigation.bonds')
   bonds: "/trade/bonds",
-  // t('navigation.bond')
   bond: "/trade/bond",
-  // t('navigation.stats')
   stats: "/stats",
-  // t('navigation.statsOverview')
   statsOverview: "/stats/overview",
-  // t('navigation.statsPOL')
-  statsPOL: "/stats/treasury",
-  // t('navigation.statsLRNA')
-  statsLRNA: "/stats/LRNA",
-  // t('navigation.statsOmnipool')
-  statsOmnipool: "/stats/asset",
-  // t('navigation.staking')
+  statsTreasury: "/stats/treasury",
   staking: "/staking",
-  // t('navigation.stakingDashboard')
   stakingDashboard: "/staking/dashboard",
-  // t('navigation.stakingGovernance')
   stakingGovernance: "/staking/governance",
-  // t('navigation.referrals')
   referrals: "/referrals",
-  // t('navigation.memepad')
+  borrow: "/borrow",
   memepad: "/memepad",
-  // t('navigation.submitTransaction')
   submitTransaction: "/submit-transaction",
 }
 
 type NavigationItem = {
   key: keyof typeof LINKS
-  href: string
+  to: string
+  icon?: React.ComponentType
   enabled?: boolean
   order?: ResponsiveStyleValue<number>
   children?: NavigationItem[]
@@ -76,67 +52,70 @@ type NavigationItem = {
 export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
-    href: LINKS.trade,
+    to: LINKS.trade,
     children: [
-      { key: "swap", href: LINKS.swap },
-      { key: "dca", href: LINKS.dca },
-      { key: "yieldDca", href: LINKS.yieldDca },
-      { key: "otc", href: LINKS.otc },
-      { key: "bonds", href: LINKS.bonds },
+      { key: "swap", icon: TwoColorSwap, to: LINKS.swap },
+      { key: "dca", icon: TwoColorClock, to: LINKS.dca },
+      { key: "yieldDca", icon: TwoColorCirclePercentage, to: LINKS.yieldDca },
+      { key: "otc", icon: TwoColorUsers, to: LINKS.otc },
+      { key: "bonds", icon: PixelDollarBadge, to: LINKS.bonds },
     ],
     order: [1],
   },
   {
-    key: "liquidity",
-    href: LINKS.liquidity,
+    key: "borrow",
+    to: LINKS.borrow,
     order: [2],
+  },
+  {
+    key: "liquidity",
+    to: LINKS.liquidity,
+    order: [3],
     children: [
-      { key: "myLiquidity", href: LINKS.myLiquidity },
-      { key: "allPools", href: LINKS.allPools },
-      { key: "omnipool", href: LINKS.omnipool },
-      { key: "isolated", href: LINKS.isolated },
-      { key: "lbp", href: LINKS.lbp },
+      { key: "myLiquidity", to: LINKS.myLiquidity },
+      { key: "allPools", to: LINKS.allPools },
+      { key: "omnipool", to: LINKS.omnipool },
+      { key: "isolated", to: LINKS.isolated },
+      { key: "lbp", to: LINKS.lbp },
     ],
   },
   {
     key: "wallet",
-    href: LINKS.wallet,
-    order: [3],
+    to: LINKS.wallet,
+    order: [4],
     children: [
-      { key: "walletAssets", href: LINKS.walletAssets },
-      { key: "walletTransactions", href: LINKS.walletTransactions },
-      { key: "walletVesting", href: LINKS.walletVesting },
+      { key: "walletAssets", to: LINKS.walletAssets },
+      { key: "walletTransactions", to: LINKS.walletTransactions },
+      { key: "walletVesting", to: LINKS.walletVesting },
     ],
   },
   {
     key: "crossChain",
-    href: LINKS.crossChain,
-    order: [5, 4],
+    to: LINKS.crossChain,
+    order: [5],
   },
   {
     key: "stats",
-    href: LINKS.stats,
-    order: [3, 5],
+    to: LINKS.stats,
+    order: [3, 6],
     children: [
-      { key: "statsOverview", href: LINKS.statsOverview },
-      { key: "statsPOL", href: LINKS.statsPOL },
-      { key: "statsLRNA", href: LINKS.statsLRNA },
-      { key: "statsOmnipool", href: LINKS.statsOmnipool },
+      { key: "statsOverview", to: LINKS.statsOverview },
+      { key: "statsTreasury", to: LINKS.statsTreasury },
     ],
   },
   {
     key: "staking",
-    href: LINKS.staking,
-    order: [4, 6],
+    to: LINKS.staking,
+    order: [4, 7],
   },
   {
     key: "referrals",
-    href: LINKS.referrals,
-    order: [7],
+    to: LINKS.referrals,
+    order: [8],
   },
   {
     key: "memepad",
-    href: LINKS.memepad,
-    order: [8],
+    to: LINKS.memepad,
+    order: [9],
   },
 ] as const
