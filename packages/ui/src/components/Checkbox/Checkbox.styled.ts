@@ -47,7 +47,7 @@ export const SRoot = styled(Root)<{ size: CheckboxSize }>(
 
       cursor: pointer;
 
-      transition: all 0.15s ease-in-out;
+      transition: ${theme.transitions.colors};
 
       :not(:disabled):hover {
         border-color: ${theme.controls.outline.hover};

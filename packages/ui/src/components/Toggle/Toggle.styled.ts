@@ -59,7 +59,7 @@ export const SToggle = styled(Switch, {
 
     cursor: pointer;
 
-    transition: all 0.15s ease-in-out;
+    transition: ${theme.transitions.colors};
 
     ${getRootSize(size)}
 
@@ -102,7 +102,7 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
       width: var(--switch-thumb-size);
       height: var(--switch-thumb-size);
 
-      transition: all 0.15s ease-in-out;
+      transition: ${theme.transitions.colors}, ${theme.transitions.transform};
 
       ${checked &&
       css`

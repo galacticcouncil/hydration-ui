@@ -46,9 +46,6 @@ async function run() {
     source: sets.map((tokenset) =>
       path.resolve(__dirname, `tokens/${tokenset}.json`),
     ),
-    log: {
-      verbosity: "verbose",
-    },
     preprocessors: ["tokens-studio"],
     platforms: {
       js: {

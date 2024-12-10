@@ -1,4 +1,3 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
 import { QueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import {
@@ -13,15 +12,6 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
   component: RootComponent,
-  notFoundComponent: () => {
-    return (
-      <Flex justify="center">
-        <Text as="h1" font="primary" fs={40}>
-          404 - Not Found
-        </Text>
-      </Flex>
-    )
-  },
 })
 
 function RootComponent() {

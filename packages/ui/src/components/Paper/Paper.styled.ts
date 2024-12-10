@@ -9,7 +9,6 @@ import { PaperProps } from "./Paper"
 const variants = createVariants((theme) => ({
   bordered: css`
     border: 1px solid ${theme.details.borders};
-    border-radius: ${theme.radii.xl}px;
 
     box-shadow:
       0px 3px 9px 0px rgba(0, 0, 0, 0.04),
@@ -22,7 +21,6 @@ export const SPaper = styled(Box)<PaperProps>(
   ({ theme, variant = "bordered" }) => [
     variants(variant),
     css`
-      border-radius: ${theme.radii.xl}px;
       background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
     `,
   ],

@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import React from "react"
+import { Download } from "lucide-react"
+
+import { Flex } from "@/components"
 
 import { Button } from "./Button"
 
@@ -9,8 +11,33 @@ export default {
   component: Button,
 } satisfies Meta<typeof Button>
 
-const Template = (args: React.ComponentPropsWithoutRef<typeof Button>) => (
-  <Button {...args}>Button</Button>
+const Template = (args: Story["args"]) => <Button {...args}>Button</Button>
+
+const VariantTemplate = (args: Story["args"]) => (
+  <Flex direction="column" gap={20}>
+    <Flex align="center" gap={20}>
+      <Button {...args} size="large">
+        Button
+      </Button>
+      <Button {...args} size="medium">
+        Button
+      </Button>
+      <Button {...args} size="small">
+        Button
+      </Button>
+    </Flex>
+    <Flex align="center" gap={20}>
+      <Button {...args} outline size="large">
+        Button
+      </Button>
+      <Button {...args} outline size="medium">
+        Button
+      </Button>
+      <Button {...args} outline size="small">
+        Button
+      </Button>
+    </Flex>
+  </Flex>
 )
 
 export const Default: Story = {
@@ -24,52 +51,60 @@ export const Disabled: Story = {
   },
 }
 
-export const VariantPrimary: Story = {
-  render: Template,
+export const IconStart: Story = {
+  render: VariantTemplate,
+  args: {
+    iconStart: Download,
+    variant: "primary",
+  },
+}
+
+export const IconEnd: Story = {
+  render: VariantTemplate,
+  args: {
+    iconEnd: Download,
+    variant: "primary",
+  },
+}
+
+export const Primary: Story = {
+  render: VariantTemplate,
   args: {
     variant: "primary",
   },
 }
 
-export const VariantSecondary: Story = {
-  render: Template,
+export const Secondary: Story = {
+  render: VariantTemplate,
   args: {
     variant: "secondary",
   },
 }
 
-export const TertiarySecondary: Story = {
-  render: Template,
+export const Tertiary: Story = {
+  render: VariantTemplate,
   args: {
     variant: "tertiary",
   },
 }
 
-export const SizeSmall: Story = {
-  render: Template,
+export const Danger: Story = {
+  render: VariantTemplate,
   args: {
-    size: "small",
+    variant: "danger",
   },
 }
 
-export const SizeMedium: Story = {
-  render: Template,
+export const Emphasis: Story = {
+  render: VariantTemplate,
   args: {
-    size: "medium",
+    variant: "emphasis",
   },
 }
 
-export const SizeLarge: Story = {
-  render: Template,
+export const Accent: Story = {
+  render: VariantTemplate,
   args: {
-    size: "large",
+    variant: "accent",
   },
 }
-
-/* export const Outline: Story = {
-  render: Template,
-  args: {
-    outline: true,
-  },
-}
- */

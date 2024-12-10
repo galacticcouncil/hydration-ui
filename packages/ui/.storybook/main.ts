@@ -40,7 +40,11 @@ const config: StorybookConfig = {
           plugins: ["@emotion/babel-plugin"],
         },
       }),
-      svgr(),
+      svgr({
+        svgrOptions: {
+          svgo: true,
+        },
+      }),
       tsconfigPaths(),
       ...(config.plugins || []),
     ]

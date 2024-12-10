@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { postsQuery } from "@/api/posts"
 
-const WalletPageSkeleton = () => (
+const WalletAssetsSkeleton = () => (
   <>
     <Text as="h1" mb={20}>
       <Skeleton />
@@ -14,14 +14,8 @@ const WalletPageSkeleton = () => (
   </>
 )
 
-export const Route = createFileRoute("/wallet/")({
-  pendingComponent: WalletPageSkeleton,
-  errorComponent: ({ error }) => (
-    <div>
-      <p>Something went wrong. Please try again later</p>
-      <pre>{error?.message}</pre>
-    </div>
-  ),
+export const Route = createFileRoute("/_wallet/wallet/assets")({
+  pendingComponent: WalletAssetsSkeleton,
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(postsQuery),
 })

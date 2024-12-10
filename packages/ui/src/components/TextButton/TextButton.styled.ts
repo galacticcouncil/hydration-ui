@@ -15,7 +15,7 @@ export const STextButton = styled.p<CustomTextButtonProps>(
     display: inline-flex;
     align-items: center;
 
-    transition: all 0.15s ease-in-out;
+    transition: ${theme.transitions.colors};
 
     font-size: ${theme.paragraphSize.p5};
     font-family: ${theme.fontFamilies1.secondary};
