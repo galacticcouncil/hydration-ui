@@ -18,7 +18,7 @@ export type Bond = {
 }
 
 export const useLbpPool = (params?: { id?: string }) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   const { id } = params ?? {}
 
@@ -49,7 +49,7 @@ export const useLbpPool = (params?: { id?: string }) => {
       return data
     },
     {
-      enabled: !(params && !id),
+      enabled: !(params && !id) && isLoaded,
       select: (pools) => {
         if (id) {
           const pool = pools.find((pool) =>
@@ -355,31 +355,38 @@ export const useHistoricalPoolBalance = (pool?: string, block?: number) => {
 }
 
 type THistoricalPoolBalance = {
-  id: string
+  poolId: string
   assetBId: number
   assetAId: number
-  historicalBalances: Array<{
-    assetABalance: string
-    assetBBalance: string
-  }>
+  paraChainBlockHeight: number
+  assetBBalance: string
+  assetABalance: string
 }
 
 const getHistoricalPoolBalance =
   (url: string, pool: string, block: number) => async () => {
     return {
       ...(await request<{
-        pools: Array<THistoricalPoolBalance>
+        lbpPoolHistoricalData: { nodes: Array<THistoricalPoolBalance> }
       }>(
         url,
         gql`
           query PoolHistoricalBalance($pool: String, $block: Int) {
-            pools(where: { id_eq: $pool }) {
-              id
-              assetBId
-              assetAId
-              historicalBalances(where: { paraChainBlockHeight_eq: $block }) {
-                assetABalance
+            lbpPoolHistoricalData(
+              filter: {
+                poolId: { equalTo: $pool }
+                paraChainBlockHeight: { lessThanOrEqualTo: $block }
+              }
+              orderBy: PARA_CHAIN_BLOCK_HEIGHT_DESC
+              first: 1
+            ) {
+              nodes {
                 assetBBalance
+                assetABalance
+                assetAId
+                assetBId
+                paraChainBlockHeight
+                poolId
               }
             }
           }
@@ -391,13 +398,23 @@ const getHistoricalPoolBalance =
 
 export const useLBPAveragePrice = (poolAddress?: string) => {
   const { getAssets } = useAssets()
+  const url = useSquidUrl()
+
   return useQuery(
     QUERY_KEYS.lbpAveragePrice(poolAddress),
     poolAddress
       ? async () => {
-          const { historicalVolumes } = await getLBPAveragePrice(poolAddress)()
-          const { assetAId, assetBId, averagePrice, id } =
-            historicalVolumes?.[0] ?? []
+          const { lbpPoolHistoricalVolumes } = await getLBPAveragePrice(
+            url,
+            poolAddress,
+          )()
+
+          const {
+            assetAId,
+            assetBId,
+            averagePrice,
+            poolId: id,
+          } = lbpPoolHistoricalVolumes?.edges?.[0].node ?? {}
           const [assetAMeta, assetBMeta] = getAssets([
             assetAId?.toString(),
             assetBId?.toString(),
@@ -414,34 +431,43 @@ export const useLBPAveragePrice = (poolAddress?: string) => {
   )
 }
 
-const getLBPAveragePrice = (poolAddress: string) => async () => {
-  return {
-    ...(await request<{
-      historicalVolumes: Array<{
-        averagePrice: number
-        assetAId: number
-        assetBId: number
-        id: string
-      }>
-    }>(
-      "https://squid.subsquid.io/hydradx-lbp-squid/graphql",
-      gql`
-        query LBPAveragePrice($poolAddress: String) {
-          historicalVolumes(
-            orderBy: id_DESC
-            limit: 1
-            where: { id_contains: $poolAddress }
-          ) {
-            averagePrice
-            assetAId
-            assetBId
-            id
-          }
+const getLBPAveragePrice =
+  (indexerUrl: string, poolAddress: string) => async () => {
+    return {
+      ...(await request<{
+        lbpPoolHistoricalVolumes: {
+          edges: Array<{
+            node: {
+              averagePrice: string
+              assetAId: string
+              assetBId: string
+              poolId: string
+            }
+          }>
         }
-      `,
-      {
-        poolAddress,
-      },
-    )),
+      }>(
+        indexerUrl,
+        gql`
+          query LBPAveragePrice($poolAddress: String) {
+            lbpPoolHistoricalVolumes(
+              filter: { poolId: { equalTo: $poolAddress } }
+              orderBy: ID_DESC
+              last: 1
+            ) {
+              edges {
+                node {
+                  averagePrice
+                  assetAId
+                  assetBId
+                  poolId
+                }
+              }
+            }
+          }
+        `,
+        {
+          poolAddress,
+        },
+      )),
+    }
   }
-}
