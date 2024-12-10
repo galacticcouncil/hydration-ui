@@ -49,7 +49,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const chainStored = [...external, ...externalInvalid].find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
-      chainAsset.parachainId === asset.origin.toString(),
+      chainAsset.parachainId === asset.origin,
   )
 
   const userStored = getTokenByInternalId(chainStored?.id ?? "")

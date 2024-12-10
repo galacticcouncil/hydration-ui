@@ -262,6 +262,7 @@ export const useEditFeePaymentAsset = (
     defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets: acceptedFeePaymentAssets,
     onSelect: (asset) => feeAsPayment.mutate(asset.id),
+    withExternal: true,
   })
 
   return {

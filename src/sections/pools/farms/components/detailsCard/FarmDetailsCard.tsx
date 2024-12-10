@@ -7,6 +7,7 @@ import { addSeconds } from "date-fns"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import Distribution from "assets/icons/Distribution.svg?react"
 import CalendarIcon from "assets/icons/CalendarIcon.svg?react"
+import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import Hydrated from "assets/icons/Hydrated.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
@@ -25,6 +26,7 @@ import { TDeposit } from "api/deposits"
 import { LinearProgress } from "components/Progress"
 import { theme } from "theme"
 import BN from "bignumber.js"
+import { Badge } from "components/Badge/Badge"
 
 type FarmDetailsCardProps = {
   depositNft?: TDeposit
@@ -211,6 +213,26 @@ export const FarmDetailsCard = ({
               })}
           </Text>
         </SRow>
+        {!farm.isActive && (
+          <Badge
+            size="medium"
+            variant="orange"
+            css={{
+              marginTop: 12,
+              width: "fit-content",
+              fontFamily: "GeistSemiBold",
+            }}
+          >
+            <div sx={{ flex: "row", gap: 4 }}>
+              <Icon
+                size={12}
+                css={{ color: `rgba(247, 191, 6, 1)` }}
+                icon={<WarningIcon />}
+              />
+              {t("farms.details.card.end.badge")}
+            </div>
+          </Badge>
+        )}
       </div>
       {onSelect && (
         <SIcon

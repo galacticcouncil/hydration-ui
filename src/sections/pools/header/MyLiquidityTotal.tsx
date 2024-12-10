@@ -7,6 +7,7 @@ import { Text } from "components/Typography/Text/Text"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Trans, useTranslation } from "react-i18next"
 import BN from "bignumber.js"
+import BigNumber from "bignumber.js"
 
 export const MyLiquidityTotal = ({
   xykTotal,
@@ -41,7 +42,7 @@ export const MyLiquidityTotal = ({
       subValue={
         <Text fs={12} color="white" css={{ opacity: "0.6" }}>
           <Trans t={t} i18nKey="liquidity.header.farms">
-            <DisplayValue value={totalFarms.value} />
+            <DisplayValue value={BigNumber(totalFarms.value)} />
           </Trans>
         </Text>
       }
