@@ -214,7 +214,7 @@ export const useSendEvmTransactionMutation = (
         setTxState("Broadcast")
         setTxHash(evmTx?.hash ?? "")
         setTxData(evmTx?.data)
-        const receipt = await evmTx.wait()
+        const receipt = await evmTx.wait(1)
         setTxState("InBlock")
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
