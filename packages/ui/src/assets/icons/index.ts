@@ -1,3 +1,4 @@
+export { default as ChevronDown } from "./ChevronDown.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"
 export { default as CircleCheck } from "./CircleCheck.svg?react"
 export { default as CircleClose } from "./CircleClose.svg?react"
