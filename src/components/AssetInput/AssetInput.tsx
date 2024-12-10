@@ -17,7 +17,7 @@ export type AssetInputProps = {
   onChange: (val: string) => void
   name: string
   label: string
-  displayValue?: BigNumber | 0 | null
+  displayValue?: string
   unit?: Maybe<string>
   type?: string
   placeholder?: string
@@ -56,7 +56,7 @@ export const AssetInput = forwardRef<HTMLInputElement, AssetInputProps>(
           </SInputWrapper>
           {props.displayValue != null ? (
             <SDollars>
-              ≈ <DisplayValue value={props.displayValue} />
+              ≈ <DisplayValue value={BigNumber(props.displayValue)} />
             </SDollars>
           ) : null}
         </SLabelWrapper>
