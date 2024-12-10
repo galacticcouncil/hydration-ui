@@ -10,13 +10,13 @@ import { ChartLabel } from "./ChartLabel"
 import { DoughnutChart } from "sections/stats/components/DoughnutChart/DoughnutChart"
 import { makePercent } from "./Distribution.utils"
 import { DistributionSliceLabel } from "./DistributionSliceLabel"
-import { DEPOSIT_CLASS_ID, OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
+import { DEPOSIT_CLASS_ID } from "utils/api"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useTokenBalance } from "api/balances"
 import { BN_0 } from "utils/constants"
 import { useAssets } from "providers/assets"
 import BN from "bignumber.js"
+import { useOmnipoolDataObserver } from "api/omnipool"
 
 export const Distribution = () => {
   const { t } = useTranslation()
@@ -28,29 +28,21 @@ export const Distribution = () => {
   const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
   const issuance = issuances?.get(meta.id)
 
-  const omnipoolBalanceQuery = useTokenBalance(
-    meta.id,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
-
-  const symbol = meta?.symbol
+  const omnipoolAssets = useOmnipoolDataObserver()
+  const hubBalance = omnipoolAssets.hubToken?.balance
 
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
   )
 
-  const isLoading = omnipoolBalanceQuery.isLoading
+  const isLoading = omnipoolAssets.isLoading
 
   const outsideOmnipool =
-    issuance && omnipoolBalanceQuery.data
-      ? issuance.minus(omnipoolBalanceQuery.data.total)
-      : undefined
+    issuance && hubBalance ? issuance.minus(hubBalance) : undefined
 
   const outsidePercent = makePercent(outsideOmnipool, issuance ?? BN_0)
   const insidePercent = makePercent(
-    omnipoolBalanceQuery.data?.total
-      ? BN(omnipoolBalanceQuery.data.total)
-      : BN_0,
+    hubBalance ? BN(hubBalance) : BN_0,
     issuance ?? BN_0,
   )
 
@@ -71,8 +63,8 @@ export const Distribution = () => {
       >
         <TotalValue
           title={t("stats.lrna.pie.values.inside")}
-          data={BN(omnipoolBalanceQuery.data?.total ?? "0")}
-          isLoading={omnipoolBalanceQuery.isLoading}
+          data={BN(hubBalance ?? "0")}
+          isLoading={omnipoolAssets.isLoading}
           compact={true}
         />
         <TotalValue
@@ -100,7 +92,7 @@ export const Distribution = () => {
                   label: (
                     <DistributionSliceLabel
                       text={t("stats.lrna.distribution.inside")}
-                      symbol={symbol}
+                      symbol={meta.symbol}
                       percentage={insidePercent?.toNumber() ?? 0}
                     />
                   ),
@@ -113,7 +105,7 @@ export const Distribution = () => {
                   label: (
                     <DistributionSliceLabel
                       text={t("stats.lrna.distribution.outside")}
-                      symbol={symbol}
+                      symbol={meta.symbol}
                       percentage={outsidePercent?.toNumber() ?? 0}
                     />
                   ),
