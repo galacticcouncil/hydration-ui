@@ -118,4 +118,4 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.memepad,
     order: [9],
   },
-] as const
+]
