@@ -1,6 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { Box, Text } from "@galacticcouncil/ui/components"
+import { Text } from "@galacticcouncil/ui/components"
 
 export const SHeaderMenuItem = styled(Text)(
   ({ theme }) => css`
@@ -15,23 +15,6 @@ export const SHeaderMenuItem = styled(Text)(
     &.active,
     &:hover {
       color: ${theme.text.high};
-    }
-  `,
-)
-
-export const SHeaderSubmenuItem = styled(Box)(
-  ({ theme }) => css`
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 16px;
-    border-radius: ${theme.radii.xl}px;
-
-    text-decoration: none;
-
-    &:hover {
-      background: ${theme.surfaces.containers.high.hover};
     }
   `,
 )
