@@ -78,13 +78,19 @@ export const QUERY_KEYS = {
     poolId?.toString(),
   ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
-  omnipoolFarms: (address?: string) => [
+  omnipoolFarms: [QUERY_KEY_PREFIX, "omnipoolFarms"],
+  stoppedOmnipoolFarms: (address?: string) => [
     QUERY_KEY_PREFIX,
-    "omnipoolFarms",
+    "stoppedOmnipoolFarms",
     address,
   ],
   xykActiveFarms: ["xykActiveFarms"],
-  xykFarms: (address?: string) => [QUERY_KEY_PREFIX, "xykFarms", address],
+  xykFarms: [QUERY_KEY_PREFIX, "xykFarms"],
+  stoppedXykFarms: (address?: string) => [
+    QUERY_KEY_PREFIX,
+    "stoppedXykFarms",
+    address,
+  ],
   totalIssuances: ["totalIssuances"],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
