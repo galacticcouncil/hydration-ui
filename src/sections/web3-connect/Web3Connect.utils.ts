@@ -60,7 +60,6 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmChain } from "@galacticcouncil/xcm-core"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { create } from "zustand"
-import BN from "bignumber.js"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -578,8 +577,8 @@ export function getWalletModeIcon(mode: WalletMode) {
 }
 
 export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, BN>
-  setBalanceMap: (address: string, balance: BN) => void
+  balanceMap: Map<string, string>
+  setBalanceMap: (address: string, balance: string) => void
 }>((set) => ({
   balanceMap: new Map(),
   setBalanceMap: (address, balance) => {
