@@ -11,6 +11,7 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
+import { useMemo } from "react"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -37,12 +38,18 @@ export const useOmnipoolDataObserver = () => {
     },
   )
 
+  const dataMap = useMemo(
+    () =>
+      omnipoolTokens
+        ? new Map(omnipoolTokens.map((asset) => [asset.id, asset]))
+        : undefined,
+    [omnipoolTokens],
+  )
+
   return {
     data: omnipoolTokens,
     hubToken,
-    dataMap: omnipoolTokens
-      ? new Map(omnipoolTokens.map((asset) => [asset.id, asset]))
-      : undefined,
+    dataMap,
     isLoading: isHubTokenLoading || isOmnipoolTokensLoading,
   }
 }
