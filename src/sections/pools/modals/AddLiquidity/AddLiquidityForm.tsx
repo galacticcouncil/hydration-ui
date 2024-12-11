@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BN from "bignumber.js"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -136,6 +136,15 @@ export const AddLiquidityForm = ({
       }
     | undefined
 
+  const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
+    if (
+      !isJoinFarms &&
+      (errors.amount as { farm?: { message: string } }).farm
+    ) {
+      onSubmit(form.getValues())
+    }
+  }
+
   const isJoinFarmDisabled = !!customErrors?.farm
   const isSubmitDisabled = isJoinFarms
     ? !!Object.keys(formState.errors).length
@@ -154,7 +163,7 @@ export const AddLiquidityForm = ({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
