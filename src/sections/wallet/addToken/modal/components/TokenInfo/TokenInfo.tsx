@@ -9,7 +9,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useMemo } from "react"
-import { useXYKPools } from "api/xyk"
+import { useAllXykPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_0 } from "utils/constants"
 import { useExternalXYKVolume } from "./TokenInfo.utils"
@@ -45,7 +45,7 @@ export const TokenInfo = ({
   const { setIsWhiteListed } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
-  const { data: xykPools } = useXYKPools()
+  const { data: xykPools } = useAllXykPools()
   const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
   const externalAssetRegistry = useExternalAssetRegistry()
   const refetchAssetHub = externalAssetRegistry[assethub.parachainId].refetch
@@ -79,13 +79,13 @@ export const TokenInfo = ({
 
     if (chainAsset) {
       const filteredXykPools = xykPools.filter((shareToken) =>
-        shareToken.tokens.some((token) => token.id === chainAsset.id),
+        shareToken.assets.includes(chainAsset.id),
       )
 
       return {
         chainAsset,
         isXYKPool: filteredXykPools.length,
-        pools: filteredXykPools.map((pool) => pool.address),
+        pools: filteredXykPools.map((pool) => pool.poolAddress),
       }
     }
 

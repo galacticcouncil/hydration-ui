@@ -269,6 +269,7 @@ export const QUERY_KEYS = {
     block,
   ],
   xykPools: ["xykPools"],
+  allXykPools: ["allXykPools"],
   xykConsts: ["xykConsts"],
   shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
