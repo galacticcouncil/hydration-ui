@@ -95,7 +95,7 @@ export const SInput = styled.input<CustomInputProps>(
 
       display: inline-flex;
 
-      transition: all 0.15s ease-in-out;
+      transition: transition: ${theme.transitions.colors};
 
       color: ${isError ? theme.accents.danger.secondary : theme.text.high};
     `,

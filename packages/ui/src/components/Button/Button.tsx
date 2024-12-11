@@ -1,30 +1,38 @@
 import React, { forwardRef } from "react"
 
-import {
-  SButton,
-  SButtonLink,
-  SButtonProps,
-  SButtonTransparent,
-} from "./Button.styled"
+import { BoxProps } from "@/components/Box"
 
-export type ButtonProps = SButtonProps &
+import { SButton, SButtonProps, SButtonTransparent } from "./Button.styled"
+
+type ButtonOwnProps = {
+  iconStart?: React.ComponentType
+  iconEnd?: React.ComponentType
+}
+
+export type ButtonProps = BoxProps &
+  ButtonOwnProps &
+  SButtonProps &
   React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ type = "button", ...props }, ref) => (
-    <SButton type={type} ref={ref} {...props} />
-  ),
+  ({ children, iconStart: IconStart, iconEnd: IconEnd, ...props }, ref) => {
+    return (
+      <SButton as="button" type="button" ref={ref} {...props}>
+        {props.asChild ? (
+          children
+        ) : (
+          <>
+            {IconStart && <IconStart />}
+            {children}
+            {IconEnd && <IconEnd />}
+          </>
+        )}
+      </SButton>
+    )
+  },
 )
 
 Button.displayName = "Button"
-
-export type LinkButtonProps = React.ComponentPropsWithoutRef<"a"> & SButtonProps
-
-export const ButtonLink = forwardRef<HTMLAnchorElement, LinkButtonProps>(
-  (props, ref) => <SButtonLink ref={ref} {...props} />,
-)
-
-ButtonLink.displayName = "ButtonLink"
 
 export const ButtonTransparent = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {

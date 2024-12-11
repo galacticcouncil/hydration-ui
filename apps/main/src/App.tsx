@@ -2,8 +2,11 @@ import "@/i18n"
 import "@galacticcouncil/ui/fonts.css"
 
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
+import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
+
+import { Page404 } from "@/components/Page404"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -17,6 +20,7 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
   defaultPendingMs: 0,
+  defaultNotFoundComponent: Page404,
 })
 
 declare module "@tanstack/react-router" {
@@ -29,7 +33,9 @@ export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <TooltipProvider delayDuration={0}>
+          <RouterProvider router={router} />
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

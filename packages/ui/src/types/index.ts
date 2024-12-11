@@ -1,3 +1,5 @@
+export type { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/css"
+
 export type Paths<T> = T extends string
   ? []
   : {

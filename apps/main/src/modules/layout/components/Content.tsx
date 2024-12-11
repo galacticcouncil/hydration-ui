@@ -11,7 +11,7 @@ export const Content: React.FC<ContentProps> = ({
   return (
     <Box
       sx={{ maxWidth: fluid ? "auto" : 1100, mx: "auto" }}
-      py={40}
+      py={20}
       {...props}
     />
   )

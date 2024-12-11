@@ -11,7 +11,7 @@ export default {
 } satisfies Meta<typeof Tooltip>
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Tooltip>) => (
-  <TooltipProvider>
+  <TooltipProvider delayDuration={0}>
     <Tooltip {...args} />
   </TooltipProvider>
 )
