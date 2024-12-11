@@ -1,7 +1,11 @@
+import { ThemeUICSSProperties } from "@theme-ui/css"
+
+import { ThemeColor } from "@/theme"
+
 type IconProps = {
   component: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
   size?: number | string
-  color?: string
+  color?: ThemeColor | ThemeUICSSProperties["color"]
   className?: string
 }
 
@@ -19,6 +23,6 @@ export const Icon = ({
     }}
     className={className}
   >
-    <SvgComponent color={color} />
+    <SvgComponent color={color as string} />
   </p>
 )

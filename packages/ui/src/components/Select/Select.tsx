@@ -1,7 +1,7 @@
 import { ItemText, Root, SelectProps, Value } from "@radix-ui/react-select"
 
 import { ChevronDown } from "@/assets/icons"
-import { useThemeUI } from "@/theme/provider"
+import { getToken } from "@/utils"
 
 import { Icon } from "../Icon"
 import { Text } from "../Text"
@@ -19,13 +19,11 @@ export const Select = ({
   items,
   ...props
 }: SelectPropsCustom) => {
-  const { theme } = useThemeUI()
-
   return (
     <Root {...props}>
       <SelectTrigger>
         {label && (
-          <Text fs={12} fw={600} color={theme.text.medium}>
+          <Text fs={12} fw={600} color={getToken("text.medium")}>
             {label}
           </Text>
         )}
@@ -33,7 +31,7 @@ export const Select = ({
         <Icon
           size={18}
           component={ChevronDown}
-          color={theme.colors.greys[400]}
+          color={getToken("colors.greys.400")}
         />
       </SelectTrigger>
 
