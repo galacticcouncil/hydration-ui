@@ -32,7 +32,6 @@ import { TDeposit, useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BalanceClient } from "@galacticcouncil/sdk"
 
@@ -630,11 +629,10 @@ export const getYieldFarmCreated = (indexerUrl: string) => async () => {
 export const useRefetchClaimableFarmValues = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const { range } = useClaimingRange()
 
   return () => {
     queryClient.resetQueries(
-      QUERY_KEYS.accountClaimableFarmValues(account?.address, range),
+      QUERY_KEYS.accountClaimableFarmValues(account?.address),
     )
   }
 }
@@ -643,7 +641,6 @@ export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
-  const { range } = useClaimingRange()
 
   const {
     omnipoolDeposits = [],
@@ -654,7 +651,7 @@ export const useAccountClaimableFarmValues = () => {
   const allDeposits = [...omnipoolDeposits, ...xykDeposits]
 
   return useQuery(
-    QUERY_KEYS.accountClaimableFarmValues(accountAddress, range),
+    QUERY_KEYS.accountClaimableFarmValues(accountAddress),
     async () => {
       const accountResolver = getAccountResolver(api.registry)
 
@@ -760,7 +757,7 @@ export const useAccountClaimableFarmValues = () => {
                   (lp) => lp.depositId === deposit.id,
                 )
 
-            const isClaimable = BN(loyaltyFactor).gt(range)
+            const isClaimable = true
 
             const isActiveFarm = yieldFarm.state.isActive
 
