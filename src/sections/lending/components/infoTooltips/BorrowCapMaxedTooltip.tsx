@@ -1,6 +1,5 @@
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
-import { Link } from "sections/lending/components/primitives/Link"
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 
 type BorrowCapMaxedTooltipProps = {
@@ -16,16 +15,8 @@ export const BorrowCapMaxedTooltip = ({
     <InfoTooltip
       text={
         <Text>
-          <span>
-            Protocol borrow cap at 100% for this asset. Further borrowing
-            unavailable.
-          </span>{" "}
-          <Link
-            href="https://docs.aave.com/developers/whats-new/supply-borrow-caps"
-            css={{ textDecoration: "underline" }}
-          >
-            <span>Learn more</span>
-          </Link>
+          Protocol borrow cap at 100% for this asset. Further borrowing
+          unavailable.
         </Text>
       }
     />

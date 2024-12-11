@@ -1,4 +1,4 @@
-import { defineConfig, splitVendorChunkPlugin, Plugin } from "vite"
+import { defineConfig, Plugin } from "vite"
 import react from "@vitejs/plugin-react"
 import wasm from "vite-plugin-wasm"
 import svgr from "vite-plugin-svgr"
@@ -7,6 +7,8 @@ import fs from "fs/promises"
 import { resolve } from "node:path"
 import { exec } from "child_process"
 import Unfonts from "unplugin-fonts/vite"
+
+import * as child from "child_process"
 
 type Metadata = {
   title?: string
@@ -28,9 +30,17 @@ export const SEO_METADATA = {
   },
 } satisfies MetadataMap
 
+const commitHash = child
+  .execSync("git rev-parse --short HEAD")
+  .toString()
+  .trim()
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   return {
+    define: {
+      "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
+    },
     build: {
       target: "esnext",
       outDir: "build",

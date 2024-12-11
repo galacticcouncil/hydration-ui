@@ -1,7 +1,6 @@
 import { DataValue, DataValueList } from "components/DataValue"
 import { Text } from "components/Typography/Text/Text"
 import { PercentageValue } from "components/PercentageValue"
-import { ROUTES } from "sections/lending/components/primitives/Link"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 

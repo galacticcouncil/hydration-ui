@@ -129,19 +129,6 @@ const IsolationModeTooltipTemplate = ({ content }: { content: ReactNode }) => {
       <Text fs={12} lh={18} sx={{ mb: 6 }}>
         {content}
       </Text>
-      <Text fs={12} lh={18}>
-        <span>
-          Learn more in our{" "}
-          <a
-            target="_blank"
-            href="https://docs.aave.com/faq/aave-v3-features#isolation-mode"
-            rel="noreferrer"
-            css={{ textDecoration: "underline" }}
-          >
-            FAQ guide
-          </a>
-        </span>
-      </Text>
     </div>
   )
 }

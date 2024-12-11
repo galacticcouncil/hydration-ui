@@ -314,18 +314,8 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       {user.userEmodeCategoryId === 0 && (
         <Alert variant="warning" sx={{ mt: 12 }}>
           <Text>
-            <span>
-              Enabling E-Mode only allows you to borrow assets belonging to the
-              selected category. Please visit our{" "}
-              <a
-                href="https://docs.aave.com/faq/aave-v3-features#high-efficiency-mode-e-mode"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                FAQ guide
-              </a>{" "}
-              to learn more about how it works and the applied restrictions.
-            </span>
+            Enabling E-Mode only allows you to borrow assets belonging to the
+            selected category.
           </Text>
         </Alert>
       )}

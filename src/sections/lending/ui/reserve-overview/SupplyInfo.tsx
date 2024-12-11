@@ -187,14 +187,7 @@ export const SupplyInfo = ({
                 {t("lending.supply.isolatedCollateral.title")}
               </Text>
               <Text fs={13}>
-                {t("lending.supply.isolatedCollateral.description")}{" "}
-                <a
-                  target="_blank"
-                  href="https://docs.aave.com/faq/aave-v3-features#isolation-mode"
-                  rel="noreferrer"
-                >
-                  {t("lending.learnMore")}
-                </a>
+                {t("lending.supply.isolatedCollateral.description")}
               </Text>
             </Alert>
           </div>

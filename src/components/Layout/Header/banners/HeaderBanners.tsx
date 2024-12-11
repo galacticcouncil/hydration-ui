@@ -26,6 +26,13 @@ export const HeaderBanners = () => {
         />
       )}
 
+      {warnings.warnings.btcFarms.visible && (
+        <WarningMessage
+          text={t("warningMessage.btcFarms.title")}
+          type="btcFarms"
+        />
+      )}
+
       {isLoaded && <NewFarmsBanner />}
     </>
   )

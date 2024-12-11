@@ -217,7 +217,7 @@ const LiquidityModalWrapper: React.FC<{
         defaultPage={
           pool?.meta.isStableSwap ? Page.ADD_LIQUIDITY : Page.MOVE_TO_OMNIPOOL
         }
-        farms={pool.farms ?? []}
+        farms={pool.farms}
         onClose={onClose}
       />
     </PoolContext.Provider>

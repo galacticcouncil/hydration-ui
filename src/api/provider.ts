@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -19,8 +19,7 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
-import { pendulum } from "./external/pendulum"
+import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
@@ -38,12 +37,15 @@ export type TFeatureFlags = {
   dispatchPermit: boolean
 }
 
+export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -51,7 +53,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -59,7 +62,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -67,7 +71,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dotters",
     url: "wss://hydration.dotters.network",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -75,8 +80,18 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: ["development"],
+    dataEnv: "testnet",
+  },
+  {
+    name: "Paseo",
+    url: `wss://${PASEO_WS_URL}`,
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
+    env: ["rococo", "development"],
     dataEnv: "testnet",
   },
 ]
@@ -180,15 +195,11 @@ export const useProviderAssets = () => {
                 (tradeAsset) => tradeAsset.id === asset.id,
               )
               return {
-                ...omit(["externalId"], asset),
+                ...asset,
                 symbol: asset.symbol ?? "",
                 decimals: asset.decimals ?? 0,
                 name: asset.name ?? "",
-                externalId:
-                  asset.origin === pendulum.parachainId &&
-                  typeof asset.externalId === "object"
-                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                    : asset.externalId?.toString(),
+                externalId: getExternalId(asset),
                 isTradable,
               }
             }),
