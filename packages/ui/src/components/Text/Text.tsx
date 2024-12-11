@@ -1,5 +1,5 @@
 import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/core"
-import React, { forwardRef } from "react"
+import { forwardRef } from "react"
 
 import { Box, BoxProps } from "@/components"
 import { ThemeFont } from "@/theme"

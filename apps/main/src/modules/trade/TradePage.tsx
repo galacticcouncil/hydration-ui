@@ -1,6 +1,6 @@
 import { Grid, Paper, Separator } from "@galacticcouncil/ui/components"
 
-export const TradePage = () => {
+export const SwapPage = () => {
   return (
     <div>
       <Grid columns={12} gap={20}>

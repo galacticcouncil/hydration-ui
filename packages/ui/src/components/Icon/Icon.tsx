@@ -1,28 +1,23 @@
-import { ThemeUICSSProperties } from "@theme-ui/css"
+import { Box, BoxProps } from "@/components"
 
-import { ThemeColor } from "@/theme"
-
-type IconProps = {
-  component: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
-  size?: number | string
-  color?: ThemeColor | ThemeUICSSProperties["color"]
-  className?: string
+type IconProps = BoxProps & {
+  component: React.ComponentType
 }
 
-export const Icon = ({
+export const Icon: React.FC<IconProps> = ({
   component: SvgComponent,
   size = 24,
   color = "currentColor",
-  className,
-}: IconProps) => (
-  <p
+  ...props
+}) => (
+  <Box
+    color={color}
+    size={size}
     css={{
-      width: size,
-      height: size,
-      " & > *": { width: size, height: size },
+      "& > *": { width: "100%", height: "100%" },
     }}
-    className={className}
+    {...props}
   >
-    <SvgComponent color={color as string} />
-  </p>
+    <SvgComponent />
+  </Box>
 )
