@@ -4082,6 +4082,105 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.18.0.tgz#5d694d345ce36b6ecf657349e03eb87297e68da4"
   integrity sha512-UOo5FdvOL0+eIVTgS4tIdbW+TtnBLWg1YBCcU2KWM7nuNwRz9bksDX1bekJJCpu25N1DVWaCwnT39dVQxzqS8g==
 
+"@rpldy/abort@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/abort/-/abort-1.8.3.tgz#c31ada6be40519ccc88d713d5d461cedbb4b62b7"
+  integrity sha512-vDbXvXGpd+JQ4xyIr8NlzgEkdRhv+krPigb/R0Lbu+jj0eWq0QHUHOI/Bz7KBJTW+Q171+Kw81M29QHRArsKSQ==
+  dependencies:
+    "@rpldy/raw-uploader" "^1.8.3"
+    "@rpldy/shared" "^1.8.3"
+    "@rpldy/simple-state" "^1.8.3"
+
+"@rpldy/life-events@1.8.3", "@rpldy/life-events@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/life-events/-/life-events-1.8.3.tgz#fcd435c96e84f95ea5c1339072a8f373d47f09db"
+  integrity sha512-lHXTSaIRop2jIviZWRXUtDyUd4u1QnyY75iOZE3BgHK1hp9onhdhwia2vyGHMQtsq0XaqTb68CsKzGs4oibi4w==
+  dependencies:
+    "@rpldy/shared" "^1.8.3"
+
+"@rpldy/raw-uploader@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/raw-uploader/-/raw-uploader-1.8.3.tgz#d55150ad5234b90a7a259bb6b9c9e155e9793f30"
+  integrity sha512-3VtOMuGYWnPc0mwPc7Kh167W3FsKFECEuHDwqIo4lQ1GJnwuBeoUckU9qR/gdNY5yG9BR1usF4WqyPYqEkjL7Q==
+  dependencies:
+    "@rpldy/life-events" "^1.8.3"
+    "@rpldy/shared" "^1.8.3"
+
+"@rpldy/sender@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/sender/-/sender-1.8.3.tgz#6455726e54c3b089eaff59e777264ad13c6e92db"
+  integrity sha512-VlinXCPAuzJGIkh/0VBAylH8vtXzNJ9gKGc/LC+6pzelCyPZyMZbYOJqE1tvOgEik16jyUO2Zo6Qvsl1a9hH6A==
+  dependencies:
+    "@rpldy/shared" "^1.8.3"
+
+"@rpldy/shared-ui@1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/shared-ui/-/shared-ui-1.8.3.tgz#a6ac19cd696caddc925ba69580511fa881c8d4a8"
+  integrity sha512-kN9Rx1YZoUsq+dcihGbN7qpdtaP3kMagP5b4DrFNrHmeR68MtAYzDbJdrLl46DOXgfks6ZZI32fIy352yTfgrw==
+  dependencies:
+    "@rpldy/shared" "1.8.3"
+    "@rpldy/uploader" "1.8.3"
+
+"@rpldy/shared@1.8.3", "@rpldy/shared@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/shared/-/shared-1.8.3.tgz#dd4285b5a14ace55efdf0270afb18c9163b49686"
+  integrity sha512-UIli2+ryxrJDzfQqDGdg5VWwB7dpyMrGmf/ST1e9xvuL6nQRO/oYJN5c2zwzHqOY5AKV3NN34HJrABM0XM4Eaw==
+  dependencies:
+    invariant "^2.2.4"
+    just-throttle "^4.2.0"
+
+"@rpldy/simple-state@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/simple-state/-/simple-state-1.8.3.tgz#5c98224e996ea1fa0152f03e6d6ef0162a7b0692"
+  integrity sha512-I2qwsLNk3B0o7CeSHv0eFzGWe/SRxVU3e1zdiY9/nGwnlkvajWMxDb58sLkiL5U+50ljfb6a/39x89c0JQSYDQ==
+  dependencies:
+    "@rpldy/shared" "^1.8.3"
+
+"@rpldy/upload-button@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/upload-button/-/upload-button-1.8.3.tgz#97a833781573384edea9965061b3aa9708a55b5c"
+  integrity sha512-Y+idyOLEiywZX+Eh3JUphVe1F1KQM2MWwLTsmlhLQxCv8HXKPi/4ceDfbnB0vqKbz4ujt6+4XTNE1hyn3MTUVQ==
+  dependencies:
+    "@rpldy/shared-ui" "1.8.3"
+
+"@rpldy/upload-drop-zone@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/upload-drop-zone/-/upload-drop-zone-1.8.3.tgz#c6b2539df404d0c54d21bb5970c6c9678811c2b0"
+  integrity sha512-Im0OITy+cNeiicBOt6cgAo50XnaSSKCqfu6sb95Oj4PDVXycXcJFeTPPaGJuwicvrw/5Y8xpwW0imyKoBlEQaA==
+  dependencies:
+    "@rpldy/shared-ui" "1.8.3"
+    html-dir-content "^0.3.2"
+
+"@rpldy/upload-preview@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/upload-preview/-/upload-preview-1.8.3.tgz#a9766c646987b682b4acf8ccffe264237a6c2e1e"
+  integrity sha512-zwXmsEpvyGMQ3E472Dsdh79k3GCViIbttLr7aC3DvrkTgeoXhFkLBri91LnKvudIfsaBSG72QB5c36SHJs/ijg==
+  dependencies:
+    "@rpldy/shared" "1.8.3"
+    "@rpldy/shared-ui" "1.8.3"
+
+"@rpldy/uploader@1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/uploader/-/uploader-1.8.3.tgz#e79ca665e13f5bc02a4b1218ef3afca22153a937"
+  integrity sha512-5NmcvdwuclNPU0DJM9DLMjNRr3YkJ95wqAjIlaWpnchFFWtwKDNLoUZC6AA2lATJ5+Y+ykowobnXtUHaO5IGCQ==
+  dependencies:
+    "@rpldy/abort" "^1.8.3"
+    "@rpldy/life-events" "^1.8.3"
+    "@rpldy/raw-uploader" "^1.8.3"
+    "@rpldy/sender" "^1.8.3"
+    "@rpldy/shared" "^1.8.3"
+    "@rpldy/simple-state" "^1.8.3"
+
+"@rpldy/uploady@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@rpldy/uploady/-/uploady-1.8.3.tgz#5e5013a01f8b4d336b01a8f4b8e73f4cb677f38a"
+  integrity sha512-FkJghfbaTAIJfEIphpXiR/yl4A9UjQoMSMvymv7mf3Jjl2Ww/3ZJ9YJJQUTUx4a91F0PHM1cOncHJnUGLoz3nA==
+  dependencies:
+    "@rpldy/life-events" "1.8.3"
+    "@rpldy/shared" "1.8.3"
+    "@rpldy/shared-ui" "1.8.3"
+    "@rpldy/uploader" "1.8.3"
+
 "@rushstack/eslint-patch@^1.1.0":
   version "1.10.3"
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.10.3.tgz#391d528054f758f81e53210f1a1eebcf1a8b1d20"
@@ -9552,6 +9651,11 @@ hosted-git-info@^2.1.4:
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
   integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
+html-dir-content@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/html-dir-content/-/html-dir-content-0.3.2.tgz#3fed73cf7b6c11e882fcfda38b32a2e9c58d1339"
+  integrity sha512-a1EJZbvBGmmFwk9VxFhEgaHkyXUXKTkw0jr0FCvXKCqgzO1H0wbFQbbzRA6FhR3twxAyjqVc80bzGHEmKrYsSw==
+
 html-parse-stringify@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/html-parse-stringify/-/html-parse-stringify-3.0.1.tgz#dfc1017347ce9f77c8141a507f233040c59c55d2"
@@ -10313,6 +10417,11 @@ jsonfile@^6.0.1:
     array.prototype.flat "^1.3.1"
     object.assign "^4.1.4"
     object.values "^1.1.6"
+
+just-throttle@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/just-throttle/-/just-throttle-4.2.0.tgz#5a22da10a4bdb906d2583400eff2fe3fbd9f9662"
+  integrity sha512-/iAZv1953JcExpvsywaPKjSzfTiCLqeguUTE6+VmK15mOcwxBx7/FHrVvS4WEErMR03TRazH8kcBSHqMagYIYg==
 
 keyv@^4.5.3:
   version "4.5.4"

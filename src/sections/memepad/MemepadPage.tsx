@@ -69,8 +69,6 @@ const MemepadPageContent = () => {
 }
 
 export const MemepadPage = () => {
-  const { account } = useAccount()
-
   const [degenModalOpen, setDegenModalOpen] = useState(false)
   const { degenMode, toggleDegenMode } = useSettingsStore()
   const initialDegenModeState = useRef(degenMode)
@@ -89,7 +87,7 @@ export const MemepadPage = () => {
 
   return (
     <>
-      <MemepadFormProvider key={account?.address}>
+      <MemepadFormProvider>
         <MemepadPageContent />
       </MemepadFormProvider>
 
