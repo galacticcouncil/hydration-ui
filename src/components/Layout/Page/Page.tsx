@@ -103,7 +103,6 @@ export const Page = ({ className }: Props) => {
   const matchRoute = useMatchRoute()
   const ref = useControlScroll()
   const subHeaderComponent = useSubheaderComponent()
-
   const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (

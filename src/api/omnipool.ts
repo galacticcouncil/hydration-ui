@@ -1,19 +1,17 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
-import { QUERY_KEYS, WS_QUERY_KEYS } from "utils/queryKeys"
+import { QUERY_KEYS } from "utils/queryKeys"
 import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
-import { useAssets } from "providers/assets"
-import { useEffect } from "react"
-import { VoidFn } from "@polkadot/api/types"
-import { arraysEqual } from "utils/helpers"
+
 import {
   is_add_liquidity_allowed,
   is_buy_allowed,
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
+import { PoolToken } from "@galacticcouncil/sdk"
+import { useMemo } from "react"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -26,100 +24,34 @@ export type TOmnipoolAssetsData = Array<{
 }>
 
 export const useOmnipoolDataObserver = () => {
-  const { data, isLoading } = useQuery<TOmnipoolAssetsData>(
-    WS_QUERY_KEYS.omnipoolAssets,
+  const { data: omnipoolTokens, isLoading: isOmnipoolTokensLoading } =
+    useQuery<TOmnipoolAssetsData>(QUERY_KEYS.omnipoolTokens, {
+      enabled: false,
+      staleTime: Infinity,
+    })
+
+  const { data: hubToken, isLoading: isHubTokenLoading } = useQuery<PoolToken>(
+    QUERY_KEYS.hubToken,
     {
       enabled: false,
       staleTime: Infinity,
     },
   )
 
+  const dataMap = useMemo(
+    () =>
+      omnipoolTokens
+        ? new Map(omnipoolTokens.map((asset) => [asset.id, asset]))
+        : undefined,
+    [omnipoolTokens],
+  )
+
   return {
-    data,
-    dataMap: data ? new Map(data.map((asset) => [asset.id, asset])) : undefined,
-    isLoading,
+    data: omnipoolTokens,
+    hubToken,
+    dataMap,
+    isLoading: isHubTokenLoading || isOmnipoolTokensLoading,
   }
-}
-
-export const useOmnipoolAssetsSubsciption = () => {
-  const {
-    native: { id: nativeId },
-  } = useAssets()
-  const { api, isLoaded } = useRpcProvider()
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    if (!isLoaded) return undefined
-
-    let unsubAssets: VoidFn | undefined
-
-    const loadAssets = async () => {
-      const keys = (await api.query.omnipool.assets.keys()).map((key) =>
-        key.args[0].toString(),
-      )
-      const balanceKeys = keys.map((key) => [OMNIPOOL_ACCOUNT_ADDRESS, key])
-
-      unsubAssets = await api.query.omnipool.assets.multi(
-        keys,
-        async (assets) => {
-          const [nativeBalance, balancesRaw] = await Promise.all([
-            api.query.system.account(OMNIPOOL_ACCOUNT_ADDRESS),
-            api.query.tokens.accounts.multi(balanceKeys),
-          ])
-
-          const balances = new Map(
-            balancesRaw.map((d, i) => {
-              const id = keys[i]
-              const balance = d.free
-                .toBigNumber()
-                .minus(d.frozen.toBigNumber())
-                .toString()
-
-              return [id, balance]
-            }),
-          )
-
-          const data: TOmnipoolAssetsData = assets.map((dataRaw, i) => {
-            const asset = dataRaw.unwrap()
-            const id = keys[i]
-            const balance =
-              id === nativeId
-                ? nativeBalance.data.free
-                    .toBigNumber()
-                    .minus(nativeBalance.data.frozen.toString())
-                    .toString()
-                : (balances.get(id) as string)
-
-            return {
-              id,
-              hubReserve: asset.hubReserve.toString(),
-              shares: asset.shares.toString(),
-              protocolShares: asset.protocolShares.toString(),
-              cap: asset.cap.toString(),
-              bits: asset.tradable.bits.toNumber(),
-              balance,
-            }
-          })
-
-          const prevData: TOmnipoolAssetsData =
-            queryClient.getQueryData(WS_QUERY_KEYS.omnipoolAssets) ?? []
-
-          if (!arraysEqual(prevData, data)) {
-            queryClient.setQueryData(WS_QUERY_KEYS.omnipoolAssets, data)
-          }
-        },
-      )
-    }
-
-    loadAssets()
-
-    return () => {
-      if (unsubAssets) {
-        unsubAssets()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryClient, isLoaded])
 }
 
 export const useOmnipoolFee = () => {
