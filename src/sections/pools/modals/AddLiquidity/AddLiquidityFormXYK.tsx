@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -168,6 +168,15 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
     )
   }
 
+  const onInvalidSubmit = (errors: FieldErrors<FormValues>) => {
+    if (
+      !isJoinFarms &&
+      (errors.shares as { farm?: { message: string } }).farm
+    ) {
+      onSubmit()
+    }
+  }
+
   const handleChange = useCallback(
     (value: string, name: "assetA" | "assetB") => {
       const assetDecimals = assetValues[name].meta.decimals
@@ -245,7 +254,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
       autoComplete="off"
       sx={{
         flex: "column",
