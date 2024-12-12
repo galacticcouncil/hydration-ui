@@ -28,9 +28,9 @@ type Props = {
   className?: string
 }
 
-const ReferralsConnectWrapper = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnectWrapper"))
-    .ReferralsConnectWrapper,
+const ReferralsConnect = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnect"))
+    .ReferralsConnect,
 }))
 
 const Transactions = lazy(async () => ({
@@ -121,7 +121,7 @@ export const Page = ({ className }: Props) => {
       <Suspense>
         <Web3Connect />
         <Transactions />
-        <ReferralsConnectWrapper />
+        <ReferralsConnect />
         <QuerySubscriptions />
       </Suspense>
     </>

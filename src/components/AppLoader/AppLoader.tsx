@@ -1,12 +1,19 @@
-import HydraLogoFull from "assets/icons/HydraLogoFull.svg?react"
-import { Spinner } from "components/Spinner/Spinner"
-import { SContainer } from "./AppLoader.styled"
+import { useEffect } from "react"
 
+/**
+ * Used as fallback in Suspense.
+ *
+ * Removes initial static loader in index.html.
+ */
 export const AppLoader = () => {
-  return (
-    <SContainer>
-      <HydraLogoFull />
-      <Spinner size={64} />
-    </SContainer>
-  )
+  useEffect(() => {
+    return () => {
+      const loader = window.document.querySelector(".loader-container")
+      if (loader) {
+        loader.remove()
+      }
+    }
+  }, [])
+
+  return null
 }
