@@ -37,3 +37,26 @@ export const SSwitchContainer = styled.div`
     margin: 0 -24px;
   }
 `
+
+export const SSWitchContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`
+
+export const SAutoModeActiveContainer = styled.div`
+  border-radius: 8px;
+  background: rgba(${theme.rgbColors.primaryA06}, 0.06);
+  position: relative;
+
+  pointer-events: none;
+
+  & > button {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    box-shadow: none;
+    height: 100%;
+  }
+`
