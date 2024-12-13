@@ -151,7 +151,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 3.1,
+      version: 3.2,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
