@@ -114,15 +114,18 @@ export const AddLiquidityForm = ({
         },
         onClose,
         onBack: () => {},
-        toast: createToastMessages("liquidity.add.modal.toast", {
-          t,
-          tOptions: {
-            value: values.amount,
-            symbol: assetMeta?.symbol,
-            where: "Omnipool",
+        toast: createToastMessages(
+          `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
+          {
+            t,
+            tOptions: {
+              value: values.amount,
+              symbol: assetMeta?.symbol,
+              where: "Omnipool",
+            },
+            components: ["span", "span.highlight"],
           },
-          components: ["span", "span.highlight"],
-        }),
+        ),
         onError: onClose,
       },
     )

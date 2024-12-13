@@ -90,7 +90,11 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
       ? []
       : [
           {
-            label: t("liquidity.stablepool.transfer.move"),
+            label: t(
+              isJoinFarms
+                ? "liquidity.stablepool.transfer.moveAndJoinFarms"
+                : "liquidity.stablepool.transfer.move",
+            ),
             loadingLabel: t("liquidity.stablepool.transfer.adding"),
           },
         ]),
@@ -141,7 +145,11 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 shares,
               )
             : api.tx.omnipool.addLiquidity(pool.id, shares),
-          title: t("liquidity.stablepool.transfer.move"),
+          title: t(
+            isJoinFarms
+              ? "liquidity.stablepool.transfer.moveAndJoinFarms"
+              : "liquidity.stablepool.transfer.move",
+          ),
         },
         {
           onSuccess: () => {
@@ -152,14 +160,17 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
           },
           onError: () => onClose(),
           onClose,
-          toast: createToastMessages("liquidity.add.modal.toast", {
-            t,
-            tOptions: {
-              value: scaleHuman(shares, meta.decimals),
-              symbol: meta.symbol,
-              where: "Omnipool",
+          toast: createToastMessages(
+            `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
+            {
+              t,
+              tOptions: {
+                value: scaleHuman(shares, meta.decimals),
+                symbol: meta.symbol,
+                where: "Omnipool",
+              },
             },
-          }),
+          ),
         },
       )
     } else {
