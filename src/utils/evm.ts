@@ -48,13 +48,13 @@ export class H160 {
     this.address = safeConvertAddressH160(address) ?? ""
   }
 
-  toAccount = () => {
+  toAccount = (useUnifiedFormat = true) => {
     const addressBytes = Buffer.from(this.address.slice(2), "hex")
     return encodeAddress(
       new Uint8Array(
         Buffer.concat([H160.prefixBytes, addressBytes, Buffer.alloc(8)]),
       ),
-      HYDRA_ADDRESS_PREFIX,
+      useUnifiedFormat ? 0 : HYDRA_ADDRESS_PREFIX,
     )
   }
 

@@ -347,4 +347,9 @@ export const QUERY_KEYS = {
 
 export const WS_QUERY_KEYS = {
   omnipoolAssets: ["omnipoolAssets_"],
+  xcmBalance: (address: string, chain: string) => [
+    "xcmBalance_",
+    address,
+    chain,
+  ],
 }

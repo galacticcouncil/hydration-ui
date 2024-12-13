@@ -39,7 +39,14 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
       <MultipleAssetLogo size={30} iconId={asset?.iconId} />
 
       {isAssetFound && (
-        <div sx={{ flex: "column", justify: "space-between", minWidth: 0 }}>
+        <div
+          sx={{
+            flex: "column",
+            justify: "space-between",
+            minWidth: 0,
+            width: "100%",
+          }}
+        >
           <Text fw={700} font="GeistMedium" lh={16} color="white">
             {symbol}
           </Text>
@@ -65,7 +72,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
         </Text>
       )}
 
-      {isSelectable && <Icon icon={<ChevronDown />} />}
+      {isSelectable && <Icon sx={{ ml: "auto" }} icon={<ChevronDown />} />}
     </SSelectAssetButton>
   )
 }

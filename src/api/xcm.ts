@@ -5,17 +5,18 @@ import {
   validations,
   HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { AssetAmount, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
 import { external } from "@galacticcouncil/apps"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { createToastMessages } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
+import { WS_QUERY_KEYS } from "utils/queryKeys"
 
 type TransferProps = {
   asset: string
@@ -59,6 +60,27 @@ export const useCrossChainWallet = () => {
   }, [poolService])
 }
 
+export const useCrossChainTransfer = (
+  wallet: Wallet,
+  transfer: TransferProps,
+) => {
+  return useQuery(
+    ["asdasd", transfer],
+    async () => {
+      return wallet.transfer(
+        transfer.asset,
+        transfer.srcAddr,
+        transfer.srcChain,
+        transfer.dstAddr,
+        transfer.dstChain,
+      )
+    },
+    {
+      enabled: !!wallet && !!transfer.asset,
+    },
+  )
+}
+
 export const useCrossChainTransaction = ({
   steps,
 }: {
@@ -81,6 +103,8 @@ export const useCrossChainTransaction = ({
 
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(srcChain.ws)
+
+      console.log(values)
 
       const xTransfer = await values.wallet.transfer(
         values.asset,
@@ -131,4 +155,56 @@ export const useCrossChainTransaction = ({
       )
     },
   )
+}
+
+export const useCrossChainBalance = (address: string, chain: string) => {
+  const { data, isLoading } = useQuery<AssetAmount[]>(
+    WS_QUERY_KEYS.xcmBalance(address, chain),
+    {
+      enabled: false,
+      staleTime: Infinity,
+    },
+  )
+
+  return {
+    data,
+    isLoading,
+  }
+}
+
+export const useCrossChainBalanceSubscription = (
+  address: string,
+  chain: string,
+  onSuccess?: (balances: AssetAmount[]) => void,
+) => {
+  const wallet = useCrossChainWallet()
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    let subscription:
+      | Awaited<ReturnType<typeof wallet.subscribeBalance>>
+      | undefined
+
+    async function subscribeBalance() {
+      if (!address) return
+      if (!chain) return
+      subscription = await wallet.subscribeBalance(
+        address,
+        chain,
+        (balances) => {
+          onSuccess?.(balances)
+          queryClient.setQueryData(
+            WS_QUERY_KEYS.xcmBalance(address, chain),
+            balances,
+          )
+        },
+      )
+    }
+
+    subscribeBalance()
+
+    return () => {
+      subscription?.unsubscribe()
+    }
+  }, [address, chain, onSuccess, queryClient, wallet])
 }

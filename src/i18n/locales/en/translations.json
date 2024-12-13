@@ -662,6 +662,9 @@
   "xcm.transfer.toast.onSuccess": "Sent <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0> from <0>{{srcChain}}</0> to <0>{{dstChain}}</0>.",
   "xcm.transfer.reviewTransaction.modal.title": "Cross-chain transfer",
   "xcm.transfer.reviewTransaction.modal.description": "Transfer {{ amount, bignumber(type: 'token') }} {{symbol}} from {{ srcChain }} to {{ dstChain }}",
+  "xcm.transfer.destAddress": "Destination address",
+  "xcm.transfer.error.maxTransferable": "The maximum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
+  "xcm.transfer.error.minTransferable": "The minimum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
   "pools.lrnaPosition.tooltip": "Sum of underlying asset and H2O:",
   "farms.positions.header.title": "Farming positions",
   "farms.positions.joinedFarms.button.label": "Farm Details",
@@ -1198,8 +1201,6 @@
   "memepad.form.spinner.meme.8": "In the lab, brewing up the next meme sensation.",
   "memepad.form.spinner.meme.9": "Almost there… just need to avoid a rug pull.",
   "memepad.form.spinner.meme.10": "Engineering a memecoin that won't get REKT",
-  "memepad.form.error.maxTransferable": "The maximum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
-  "memepad.form.error.minTransferable": "The minimum transferable amount is {{ value, bignumber(type: 'token') }} {{ symbol }}.",
   "memepad.form.error.balance": "You'll need to have at least {{ value, bignumber(type: 'token') }} {{ symbol }} on Asset Hub to cover creation and transaction fees.",
   "memepad.form.error.maxNameLength": "The maximum allowed length of the asset name is {{ count }} characters.",
   "memepad.form.error.maxSymbolLength": "The maximum allowed length of the symbol is {{ count }} characters.",
@@ -1243,6 +1244,18 @@
   "unifiedAddresses.modal.description1": "With the Polkadot ecosystem introducing a new address format and chain prefixes, Hydration is leading the way in implementing this change.",
   "unifiedAddresses.modal.description2": "You’ll now encounter the updated format when performing transfers and other actions involving addresses.<br /><br />While other DEXs and CEXs are still in the process of adopting this update, the old address format will remain available for copying.",
   "unifiedAddresses.modal.cta1": "Love it",
-  "unifiedAddresses.modal.cta2": "Close but also love it"
-  
+  "unifiedAddresses.modal.cta2": "Close but also love it",
+  "deposit.guide.title": "How to bridge assets into Hydration from a CEX?",
+  "deposit.guide.step1.title": "Login to your CEX account",
+  "deposit.guide.step1.description": "Log in and check that you’ve got the asset you want to send.",
+  "deposit.guide.step2.title": "Select 'Withdraw'",
+  "deposit.guide.step2.description": "Hit the 'Withdraw' button next to the asset you want to transfer.",
+  "deposit.guide.step3.title": "Chose Polkadot network",
+  "deposit.guide.step3.description": "Pick Polkadot from the list of tokens.",
+  "deposit.guide.step4.title": "Paste your wallet address",
+  "deposit.guide.step4.description": "Make sure you are pasting the same wallet as copied below",
+  "deposit.guide.step5.title": "Enter the amount",
+  "deposit.guide.step5.description": "Just enter how much cryptocurrency you want to send. Keep in mind there’s usually a minimum amount and a fee for withdrawing."
+
+
 }
