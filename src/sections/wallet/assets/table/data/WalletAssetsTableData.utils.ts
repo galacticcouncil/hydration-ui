@@ -312,16 +312,16 @@ export const useUnlockTokens = ({
   return useMutation(async () => {
     const txs = ids.map((id) => api.tx.democracy.removeVote(id))
 
-    if (!txs.length) return null
+    if (!account?.address) return null
 
     return await createTransaction(
       {
-        tx: api.tx.utility.batchAll([
-          ...txs,
-          ...(account?.address
-            ? [api.tx.democracy.unlock(account.address)]
-            : []),
-        ]),
+        tx: txs.length
+          ? api.tx.utility.batchAll([
+              ...txs,
+              api.tx.democracy.unlock(account.address),
+            ])
+          : api.tx.democracy.unlock(account.address),
       },
       {
         toast,

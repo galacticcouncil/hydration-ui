@@ -283,6 +283,12 @@ const NativeLocks = ({
     toast,
   })
 
+  const isUnlockDisabled = !unlocable.ids.length && unlocable.value.isZero()
+  const title =
+    !unlocable.ids.length && unlocable.value.gt(0)
+      ? t("wallet.assets.table.details.unlock")
+      : t("wallet.assets.table.details.clear")
+
   return (
     <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
       <div
@@ -401,13 +407,13 @@ const NativeLocks = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            !unlocable.ids.length ||
+            isUnlockDisabled ||
             unlock.isLoading
           }
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >
-          {t("wallet.assets.table.details.btn")}
+          {title}
         </Button>
       </div>
 
