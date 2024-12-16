@@ -15,7 +15,7 @@ import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useAccountBalances } from "api/accountBalances"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useVolume } from "api/volume"
+import { useOmnipoolVolumes, useVolume } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts } from "api/xyk"
 import { useShareOfPools } from "api/pools"
@@ -81,9 +81,11 @@ export const usePools = () => {
     stableCoinId ? [...assetsId, stableCoinId] : assetsId,
   )
 
-  const volumes = useVolume("all")
   const fees = useFee("all")
   const tvls = useTVL("all")
+
+  const { data: volumes_, isLoading: isVolumeLoading } =
+    useOmnipoolVolumes(assetsId)
 
   const isInitialLoading =
     spotPrices.isInitialLoading || omnipoolAssets.isLoading
@@ -110,9 +112,17 @@ export const usePools = () => {
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
-      const volume = volumes.data?.find(
-        (volume) => volume?.asset_id?.toString() === asset.id,
-      )?.volume_usd
+      const volumeRaw = volumes_?.find(
+        (volume) => volume.assetId === asset.id,
+      )?.assetVolume
+
+      const volume =
+        volumeRaw && spotPrice
+          ? BN(volumeRaw)
+              .shiftedBy(-meta.decimals)
+              .multipliedBy(spotPrice)
+              .toString()
+          : undefined
 
       const isFeeLoading = fees?.isLoading || isAllFarmsLoading
 
@@ -147,12 +157,8 @@ export const usePools = () => {
         spotPrice: spotPrice?.isNaN() ? undefined : spotPrice?.toFixed(6),
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
-        volume: volume
-          ? BN(volume)
-              .multipliedBy(apiSpotPrice ?? 1)
-              .toFixed(3)
-          : undefined,
-        isVolumeLoading: volumes?.isLoading,
+        volume,
+        isVolumeLoading: isVolumeLoading,
         farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
         allFarms: farms.filter((farm) =>
           farm.isActive ? BN(farm.apr).gt(0) : true,
@@ -182,8 +188,6 @@ export const usePools = () => {
     omnipoolAssets.data,
     spotPrices.data,
     tvls.data,
-    volumes.data,
-    volumes?.isLoading,
     native.id,
     fees.data,
     fees?.isLoading,
@@ -194,6 +198,8 @@ export const usePools = () => {
     isAllFarmsLoading,
     stoppedFarmsBanner,
     setWarnings,
+    volumes_,
+    isVolumeLoading,
   ])
 
   return { data, isLoading: isInitialLoading }

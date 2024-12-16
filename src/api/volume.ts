@@ -325,3 +325,64 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
     },
   )
 }
+
+const omnipoolAddress =
+  "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
+
+export const useOmnipoolVolumes = (ids: string[]) => {
+  const { data: bestNumber } = useBestNumber()
+
+  return useQuery(
+    QUERY_KEYS.omnipoolSquidVolumes(ids),
+    bestNumber
+      ? async () => {
+          const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
+
+          const startBlockNumber =
+            bestNumber.parachainBlockNumber.toNumber() - VOLUME_BLOCK_COUNT
+
+          const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
+            omnipoolAssetHistoricalVolumesByPeriod: {
+              nodes: {
+                assetId: number
+                assetVolume: string
+              }[]
+            }
+          }>(
+            squidUrl,
+            gql`
+              query OmnipoolVolume(
+                $omnipoolAssetIds: [String!]!
+                $startBlockNumber: Int!
+              ) {
+                omnipoolAssetHistoricalVolumesByPeriod(
+                  filter: {
+                    omnipoolAssetIds: $omnipoolAssetIds
+                    startBlockNumber: $startBlockNumber
+                  }
+                ) {
+                  nodes {
+                    assetId
+                    assetVolume
+                  }
+                }
+              }
+            `,
+            { omnipoolAssetIds: omnipoolIds, startBlockNumber },
+          )
+
+          const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
+
+          return nodes.map((node) => ({
+            assetId: node.assetId.toString(),
+            assetVolume: node.assetVolume.toString(),
+          }))
+        }
+      : undefinedNoop,
+    {
+      enabled: !!bestNumber && !!ids.length,
+      staleTime: millisecondsInHour,
+      //refetchInterval: millisecondsInMinute,
+    },
+  )
+}
