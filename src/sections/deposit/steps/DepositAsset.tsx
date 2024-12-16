@@ -19,6 +19,7 @@ import {
 } from "sections/deposit/DepositPage.utils"
 import { SAccountBox } from "sections/deposit/steps/DepositAsset.styled"
 import { AssetConfig } from "sections/deposit/types"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
@@ -102,6 +103,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
         css={{ pointerEvents: "none" }}
       />
       <CexDepositGuide />
+      {!account && <Web3ConnectModalButton />}
       {account && (
         <SAccountBox>
           <ButtonTransparent
