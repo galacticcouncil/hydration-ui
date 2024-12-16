@@ -25,5 +25,12 @@ export const DepositCexSelect: React.FC<DepositCexSelectProps> = ({
     }))
   }, [onAssetSelect, setCexId])
 
-  return <VerticalTabs title="Exchange:" value={cexId} items={items} />
+  return (
+    <VerticalTabs
+      sx={{ px: 12, pb: 12 }}
+      title="Exchange:"
+      value={cexId}
+      items={items}
+    />
+  )
 }

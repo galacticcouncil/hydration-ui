@@ -17,9 +17,13 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
 import { FormValues, undefinedNoop } from "utils/helpers"
 
-export type DepositTransferProps = {}
+export type DepositTransferProps = {
+  onTransferSuccess: () => void
+}
 
-export const DepositTransfer: React.FC<DepositTransferProps> = () => {
+export const DepositTransfer: React.FC<DepositTransferProps> = ({
+  onTransferSuccess,
+}) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { asset } = useDeposit()
@@ -58,7 +62,9 @@ export const DepositTransfer: React.FC<DepositTransferProps> = () => {
     }
   }, [xTransfer])
 
-  const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction()
+  const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction({
+    onSuccess: onTransferSuccess,
+  })
 
   const zodSchema = useZodSchema({
     min: transferData.min,

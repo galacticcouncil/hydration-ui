@@ -2,13 +2,19 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
-  --modal-content-padding: 12px;
-  --modal-header-padding-y: 12px;
-  --modal-header-padding-x: 12px;
+  --modal-content-padding: 20px;
+  --modal-header-padding-y: 20px;
+  --modal-header-padding-x: 20px;
   --modal-header-btn-size: 34px;
   --modal-header-height: calc(
     var(--modal-header-btn-size) + var(--modal-header-padding-y) * 1.5
   );
+
+  &[data-page="0"] {
+    --modal-content-padding: 30px;
+    --modal-header-padding-y: 0px;
+    --modal-header-padding-x: 0px;
+  }
 
   position: relative;
 

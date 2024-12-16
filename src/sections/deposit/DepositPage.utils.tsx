@@ -12,7 +12,7 @@ import {
 } from "sections/deposit/types"
 
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { EvmParachain, ParachainAssetData } from "@galacticcouncil/xcm-core"
 
 const hydration = chainsMap.get("hydration") as EvmParachain
 
@@ -92,6 +92,8 @@ export const CEX_DEPOSIT_CONFIG = [
   },
 ]
 
+const DEFAULT_CEX_ID = CEX_DEPOSIT_CONFIG[0].id
+
 type DepositStore = {
   asset: AssetConfig | null
   cexId: string
@@ -99,15 +101,18 @@ type DepositStore = {
   setAsset: (asset: AssetConfig) => void
   setCexId: (cexId: string) => void
   setDepositMethod: (depositMethod: DepositMethod) => void
+  reset: () => void
 }
 
 export const useDepositStore = create<DepositStore>((set) => ({
-  asset: CEX_DEPOSIT_CONFIG[0].assets[0],
-  cexId: CEX_DEPOSIT_CONFIG[0].id,
+  asset: null,
+  cexId: DEFAULT_CEX_ID,
   depositMethod: null,
   setAsset: (asset) => set(() => ({ asset })),
   setCexId: (cexId) => set(() => ({ cexId })),
   setDepositMethod: (depositMethod) => set(() => ({ depositMethod })),
+  reset: () =>
+    set(() => ({ asset: null, cexId: DEFAULT_CEX_ID, depositMethod: null })),
 }))
 
 export const useDeposit = () => {
@@ -124,20 +129,46 @@ export const useDeposit = () => {
     pagination.paginateTo(DepositScreen.DepositMethod)
   }
 
-  const paginateToTransfer = () => {
+  const setTransfer = () => {
     pagination.paginateTo(DepositScreen.Transfer)
   }
 
-  const finalizeDeposit = () => {
-    // empty for now
+  const reset = () => {
+    state.reset()
+    pagination.paginateTo(DepositScreen.Select)
   }
 
   return {
     ...state,
     ...pagination,
+    reset,
     setAsset,
     setDepositMethod,
-    finalizeDeposit,
-    paginateToTransfer,
+    setTransfer,
+  }
+}
+
+export const createCexWithdrawalUrl = (
+  cexId: string,
+  assetData: ParachainAssetData,
+) => {
+  const symbol = assetData.asset.originSymbol.toUpperCase()
+  switch (cexId) {
+    case "kraken":
+      const network = symbol === "DOT" ? "Polkadot" : "Hydration"
+      const method = symbol === "DOT" ? "Polkadot" : "HydraDX Network"
+      return encodeURI(
+        `https://www.kraken.com/c/funding/withdraw?asset=${symbol}&network=${network}&method=${method}`,
+      )
+    case "binance":
+      return encodeURI(
+        `https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto/${symbol}`,
+      )
+    case "kucoin":
+      return encodeURI(`https://www.kucoin.com/assets/withdraw/${symbol}`)
+    case "coinbase":
+      return `https://www.coinbase.com`
+    default:
+      return ""
   }
 }

@@ -5,6 +5,7 @@ import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
+import { Spinner } from "components/Spinner/Spinner"
 import { Text } from "components/Typography/Text/Text"
 import { useCopy } from "hooks/useCopy"
 import { useShallow } from "hooks/useShallow"
@@ -13,12 +14,14 @@ import { useCustomCompareEffect } from "react-use"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
   CEX_DEPOSIT_CONFIG,
+  createCexWithdrawalUrl,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
 import { SAccountBox } from "sections/deposit/steps/DepositAsset.styled"
 import { AssetConfig } from "sections/deposit/types"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { theme } from "theme"
 import { undefinedNoop } from "utils/helpers"
 import { pick } from "utils/rx"
 
@@ -55,7 +58,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   function copyAndSnapshot() {
     if (!balances) return
+    if (!asset) return
     copy(address)
+    window.open(createCexWithdrawalUrl(cexId, asset.data), "_blank")
     balanceSnapshot.current = assetBalance
   }
 
@@ -76,9 +81,6 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
-      <button onClick={asset ? () => onDepositSuccess(asset) : undefined}>
-        skip
-      </button>
       <AssetSelect
         value="0"
         id={asset?.assetId ?? ""}
@@ -122,13 +124,25 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             {account.address}
           </Text>
           <Button
-            disabled={copied}
             size="micro"
             variant="primary"
             onClick={copyAndSnapshot}
+            css={
+              copied
+                ? {
+                    background: `rgba(${theme.rgbColors.pink700}, 0.5)`,
+                    pointerEvents: "none",
+                  }
+                : undefined
+            }
           >
-            <Icon size={14} icon={<CopyIcon />} />
-            {copied ? "Awaiting" : "Copy Address"}
+            {copied ? (
+              <Spinner size={14} />
+            ) : (
+              <Icon size={14} icon={<CopyIcon />} />
+            )}
+
+            {copied ? "Awaiting deposit" : "Copy Address"}
           </Button>
         </SAccountBox>
       )}

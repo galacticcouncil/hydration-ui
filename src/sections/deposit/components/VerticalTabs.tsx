@@ -14,17 +14,19 @@ type VerticalTabsProps = {
   defaultItemId?: string
   title?: string
   items: TabItemProps[]
+  className?: string
 }
 
 export const VerticalTabs: React.FC<VerticalTabsProps> = ({
   items,
   title,
   value,
+  className,
 }) => {
   const content = items.find(({ id }) => id === value)?.content
 
   return (
-    <SContainer>
+    <SContainer className={className}>
       <div>
         {title && (
           <Text

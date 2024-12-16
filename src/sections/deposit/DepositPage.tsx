@@ -14,13 +14,14 @@ export const DepositPage = () => {
   const { account } = useAccount()
   const {
     asset,
-    setDepositMethod,
-    setAsset,
-    depositMethod,
-    paginateToTransfer,
-    page,
-    direction,
     back,
+    direction,
+    page,
+    depositMethod,
+    reset,
+    setAsset,
+    setDepositMethod,
+    setTransfer,
   } = useDeposit()
 
   const address = account?.address ?? ""
@@ -30,7 +31,7 @@ export const DepositPage = () => {
   useCrossChainBalanceSubscription(address, srcChain)
 
   return (
-    <SContainer>
+    <SContainer data-page={page}>
       <DialogRoot open modal={false}>
         <ModalContents
           onBack={back}
@@ -43,6 +44,7 @@ export const DepositPage = () => {
             {
               title: "Exchange and asset to deposit",
               headerVariant: "GeistMono",
+              noPadding: true,
               content:
                 depositMethod === DepositMethod.DepositCex ? (
                   <DepositCexSelect onAssetSelect={setAsset} />
@@ -53,14 +55,14 @@ export const DepositPage = () => {
               content: (
                 <DepositAsset
                   onAsssetSelect={back}
-                  onDepositSuccess={paginateToTransfer}
+                  onDepositSuccess={setTransfer}
                 />
               ),
             },
             {
               title: "Deposit to Hydration",
               content: isMultiStepTransfer ? (
-                <DepositTransfer />
+                <DepositTransfer onTransferSuccess={reset} />
               ) : (
                 <>finished</>
               ),
