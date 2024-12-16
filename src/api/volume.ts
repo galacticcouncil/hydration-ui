@@ -11,6 +11,7 @@ import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useBestNumber } from "./chain"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type TradeType = {
   name:
@@ -330,57 +331,57 @@ const omnipoolAddress =
   "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
 
 export const useOmnipoolVolumes = (ids: string[]) => {
-  const { data: bestNumber } = useBestNumber()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.omnipoolSquidVolumes(ids),
-    bestNumber
-      ? async () => {
-          const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
 
-          const startBlockNumber =
-            bestNumber.parachainBlockNumber.toNumber() - VOLUME_BLOCK_COUNT
+    async () => {
+      const blockNumber = (await api.derive.chain.bestNumber()).toNumber()
+      const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
 
-          const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
-            omnipoolAssetHistoricalVolumesByPeriod: {
-              nodes: {
-                assetId: number
-                assetVolume: string
-              }[]
-            }
-          }>(
-            squidUrl,
-            gql`
-              query OmnipoolVolume(
-                $omnipoolAssetIds: [String!]!
-                $startBlockNumber: Int!
-              ) {
-                omnipoolAssetHistoricalVolumesByPeriod(
-                  filter: {
-                    omnipoolAssetIds: $omnipoolAssetIds
-                    startBlockNumber: $startBlockNumber
-                  }
-                ) {
-                  nodes {
-                    assetId
-                    assetVolume
-                  }
-                }
-              }
-            `,
-            { omnipoolAssetIds: omnipoolIds, startBlockNumber },
-          )
+      const startBlockNumber = blockNumber - VOLUME_BLOCK_COUNT
 
-          const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
-
-          return nodes.map((node) => ({
-            assetId: node.assetId.toString(),
-            assetVolume: node.assetVolume.toString(),
-          }))
+      const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
+        omnipoolAssetHistoricalVolumesByPeriod: {
+          nodes: {
+            assetId: number
+            assetVolume: string
+          }[]
         }
-      : undefinedNoop,
+      }>(
+        squidUrl,
+        gql`
+          query OmnipoolVolume(
+            $omnipoolAssetIds: [String!]!
+            $startBlockNumber: Int!
+          ) {
+            omnipoolAssetHistoricalVolumesByPeriod(
+              filter: {
+                omnipoolAssetIds: $omnipoolAssetIds
+                startBlockNumber: $startBlockNumber
+              }
+            ) {
+              nodes {
+                assetId
+                assetVolume
+              }
+            }
+          }
+        `,
+        { omnipoolAssetIds: omnipoolIds, startBlockNumber },
+      )
+
+      const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
+
+      return nodes.map((node) => ({
+        assetId: node.assetId.toString(),
+        assetVolume: node.assetVolume.toString(),
+      }))
+    },
+
     {
-      enabled: !!bestNumber && !!ids.length,
+      enabled: isLoaded && !!ids.length,
       staleTime: millisecondsInHour,
       //refetchInterval: millisecondsInMinute,
     },
