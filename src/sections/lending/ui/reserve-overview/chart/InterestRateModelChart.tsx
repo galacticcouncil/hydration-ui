@@ -156,6 +156,8 @@ export const InterestRateModelChart = ({
               <ReferenceLineLabel
                 {...props}
                 value={optimalValue}
+                xOffset={optimalValue > 50 ? 85 : -3}
+                yOffset={5}
                 title="Optimal"
                 color={theme.colors[tickField.lineColor ?? "brightBlue300"]}
               />
@@ -166,13 +168,13 @@ export const InterestRateModelChart = ({
             stroke={theme.colors[tickField.lineColor ?? "brightBlue300"]}
             strokeDasharray="4 2"
             shapeRendering="crispEdges"
-            height={80}
             label={(props) => (
               <ReferenceLineLabel
                 {...props}
                 value={currentValue}
+                xOffset={currentValue > 50 ? 85 : -3}
+                yOffset={25}
                 title="Current"
-                offset={-10}
                 color={theme.colors[tickField.lineColor ?? "brightBlue300"]}
               />
             )}
@@ -186,18 +188,21 @@ export const InterestRateModelChart = ({
 const ReferenceLineLabel = (props: {
   value: number
   title: string
-  offset?: number
+  yOffset?: number
+  xOffset?: number
   color: string
   viewBox: {
     x: number
     y: number
   }
 }) => {
+  const yOffset = props.yOffset ?? 0
+  const xOffset = props.xOffset ?? 0
   return (
     <foreignObject
       sx={{ height: 24, width: 100 }}
-      x={props.viewBox.x + 2}
-      y={10 - (props.offset ?? 0)}
+      x={props.viewBox.x - xOffset}
+      y={yOffset}
     >
       <div>
         <Text
