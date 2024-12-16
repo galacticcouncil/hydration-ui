@@ -99,7 +99,7 @@ export const usePools = () => {
         (sp) => sp?.tokenIn === asset.id,
       )?.spotPrice
 
-      const tradability = getTradabilityFromBits(asset.bits)
+      const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
       const apiSpotPrice = spotPrices.data?.find(
         (sp) => sp?.tokenIn === stableCoinId,

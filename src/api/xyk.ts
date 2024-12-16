@@ -5,8 +5,10 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { isNotNil, undefinedNoop } from "utils/helpers"
 import { useAssetRegistry } from "state/store"
 import { useActiveRpcUrlList, useProviderData } from "./provider"
+import { PoolBase } from "@galacticcouncil/sdk"
+import { millisecondsInMinute } from "date-fns"
 
-const getXYKPools = (api: ApiPromise) => async () => {
+const getAllXYKPools = (api: ApiPromise) => async () => {
   const res = await api.query.xyk.poolAssets.entries()
 
   const data = res.map(([key, data]) => {
@@ -18,10 +20,20 @@ const getXYKPools = (api: ApiPromise) => async () => {
   return data
 }
 
-export const useGetXYKPools = () => {
-  const { api } = useRpcProvider()
+export const useAllXykPools = () => {
+  const { api, isLoaded } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.xykPools, getXYKPools(api))
+  return useQuery(QUERY_KEYS.allXykPools, getAllXYKPools(api), {
+    enabled: isLoaded,
+    staleTime: millisecondsInMinute,
+  })
+}
+
+export const useXYKPools = () => {
+  return useQuery<PoolBase[]>(QUERY_KEYS.xykPools, {
+    enabled: false,
+    staleTime: Infinity,
+  })
 }
 
 export const useShareTokens = () => {
