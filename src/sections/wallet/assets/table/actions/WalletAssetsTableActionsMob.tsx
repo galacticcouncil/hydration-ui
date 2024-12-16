@@ -107,7 +107,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("value.token", { value: row.total })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.totalDisplay} />
+                  <DisplayValue value={BN(row.totalDisplay ?? BN_NAN)} />
                 </Text>
               </div>
 
@@ -119,7 +119,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("value.token", { value: row.transferable })}
                 </Text>
                 <Text fs={12} lh={12} color="whiteish500">
-                  <DisplayValue value={row.transferableDisplay} />
+                  <DisplayValue value={BN(row.transferableDisplay ?? BN_NAN)} />
                 </Text>
               </div>
             </>
@@ -283,6 +283,12 @@ const NativeLocks = ({
     toast,
   })
 
+  const isUnlockDisabled = !unlocable.ids.length && unlocable.value.isZero()
+  const title =
+    !unlocable.ids.length && unlocable.value.gt(0)
+      ? t("wallet.assets.table.details.unlock")
+      : t("wallet.assets.table.details.clear")
+
   return (
     <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
       <div
@@ -401,13 +407,13 @@ const NativeLocks = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            !unlocable.ids.length ||
+            isUnlockDisabled ||
             unlock.isLoading
           }
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >
-          {t("wallet.assets.table.details.btn")}
+          {title}
         </Button>
       </div>
 

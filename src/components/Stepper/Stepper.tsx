@@ -72,7 +72,7 @@ export const Stepper = ({ steps, className, width }: StepperProps) => {
   const activeIndex = steps.findIndex((step) => step.state === "active")
   const activeStep = steps[activeIndex]
 
-  const width_ = width ?? steps.length * 100
+  const width_ = width ?? steps.length * 120
 
   return (
     <div sx={{ width: width_, minWidth: 300 }} className={className}>

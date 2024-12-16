@@ -15,7 +15,7 @@ import {
 import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
@@ -91,6 +91,12 @@ const NativeAssetDetails = ({
     toast,
   })
 
+  const isUnlockDisabled = !unlocable.ids.length && unlocable.value.isZero()
+  const title =
+    !unlocable.ids.length && unlocable.value.gt(0)
+      ? t("wallet.assets.table.details.unlock")
+      : t("wallet.assets.table.details.clear")
+
   return (
     <SContainer hasChain={false} isNativeAsset>
       <div>
@@ -140,7 +146,9 @@ const NativeAssetDetails = ({
           </SLocksContainer>
         ) : null}
       </div>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <div
+        sx={{ flex: "row", justify: "space-between", align: "center", gap: 4 }}
+      >
         <div>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.unlockable")}
@@ -150,14 +158,14 @@ const NativeAssetDetails = ({
             {unlocable.isLoading ? (
               <Skeleton height={14} width={30} />
             ) : (
-              t("value.token", { value: unlocable.value ?? BN_0 })
+              t("value.token", { value: unlocable.value })
             )}
           </Text>
           <Text fs={11} lh={14} fw={500} color="whiteish500">
             {unlocable.isLoading ? (
               <Skeleton height={10} width={20} />
             ) : (
-              <DisplayValue value={unlocable.displayValue ?? BN_0} />
+              <DisplayValue value={unlocable.displayValue} />
             )}
           </Text>
           {unlocable.votesUnlocked ? (
@@ -176,13 +184,13 @@ const NativeAssetDetails = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            !unlocable.ids.length ||
+            isUnlockDisabled ||
             unlock.isLoading
           }
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >
-          {t("wallet.assets.table.details.btn")}
+          {title}
         </Button>
       </div>
       <div css={{ gridColumn: "1/4", height: 1 }}>

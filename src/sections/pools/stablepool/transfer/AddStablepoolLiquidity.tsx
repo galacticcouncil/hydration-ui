@@ -20,34 +20,30 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { TFarmAprData } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
-import { Switch } from "components/Switch/Switch"
-import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 import { Separator } from "components/Separator/Separator"
 import { useAccountAssets } from "api/deposits"
+import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
+import { usePoolData } from "sections/pools/pool/Pool"
+import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: string
-  fee: BN
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
   onCancel: () => void
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
-  reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
-  farms: TFarmAprData[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
@@ -58,23 +54,25 @@ const createFormSchema = (balance: string, decimals: number) =>
   })
 
 export const AddStablepoolLiquidity = ({
-  poolId,
   asset,
   onSuccess,
   onAssetOpen,
   onSubmitted,
   onClose,
   onCancel,
-  reserves,
-  fee,
   isStablepoolOnly,
-  farms,
   isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const accountBalances = useAccountAssets()
+  const {
+    reserves,
+    stablepoolFee: fee = BN_0,
+    farms,
+    id: poolId,
+  } = usePoolData().pool as TPoolFullData
 
   const { t } = useTranslation()
 
@@ -88,7 +86,7 @@ export const AddStablepoolLiquidity = ({
     api.tx.stableswap.addLiquidity(poolId, [
       { assetId: asset.id, amount: "1" },
     ]),
-    ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, farms) : []),
+    ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, isJoinFarms, farms) : []),
   ]
 
   const estimatedFees = useEstimatedFees(estimationTxs)
@@ -257,39 +255,15 @@ export const AddStablepoolLiquidity = ({
             width: "auto",
           }}
         />
-        {farms.length > 0 && !isStablepoolOnly && (
-          <>
-            <SummaryRow
-              label={t("liquidity.add.modal.joinFarms")}
-              description={t("liquidity.add.modal.joinFarms.description")}
-              content={
-                <div sx={{ flex: "row", align: "center", gap: 8 }}>
-                  <Text fs={14} color="darkBlue200">
-                    {isJoinFarms ? t("yes") : t("no")}
-                  </Text>
-                  <Switch
-                    name="join-farms"
-                    value={isJoinFarms}
-                    onCheckedChange={setIsJoinFarms}
-                    disabled={isJoinFarmDisabled}
-                  />
-                </div>
-              }
-            />
-            {isJoinFarms && (
-              <div sx={{ flex: "column", gap: 8, mt: 8 }}>
-                {farms.map((farm) => (
-                  <FarmDetailsRow key={farm.globalFarmId} farm={farm} />
-                ))}
-              </div>
-            )}
-            {customErrors?.farm && (
-              <Alert variant="warning" sx={{ mt: 8 }}>
-                {customErrors.farm.message}
-              </Alert>
-            )}
-          </>
-        )}
+        {farms.length > 0 ? (
+          <JoinFarmsSection
+            farms={farms}
+            isJoinFarms={isJoinFarms}
+            setIsJoinFarms={setIsJoinFarms}
+            error={customErrors?.farm?.message}
+            isJoinFarmDisabled={isJoinFarmDisabled}
+          />
+        ) : null}
         <Spacer size={20} />
         <CurrencyReserves reserves={reserves} />
         <Spacer size={20} />
