@@ -1,3 +1,4 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { useCrossChainBalance } from "api/xcm"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
@@ -9,7 +10,7 @@ import { Spinner } from "components/Spinner/Spinner"
 import { Text } from "components/Typography/Text/Text"
 import { useCopy } from "hooks/useCopy"
 import { useShallow } from "hooks/useShallow"
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { useCustomCompareEffect } from "react-use"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
@@ -23,7 +24,9 @@ import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectM
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { undefinedNoop } from "utils/helpers"
+import { isEvmAccount } from "utils/evm"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { isAnyParachain, undefinedNoop } from "utils/helpers"
 import { pick } from "utils/rx"
 
 type DepositAssetProps = {
@@ -50,9 +53,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const CexIcon = activeCex?.icon
 
   const address = account?.address ?? ""
-  const srcChain = asset?.route[0] ?? ""
+  const dstChain = asset?.route[0] ?? ""
 
-  const { data: balances } = useCrossChainBalance(address, srcChain)
+  const { data: balances } = useCrossChainBalance(address, dstChain)
 
   const assetBalance =
     balances?.find((a) => a.key === asset?.data.asset.key)?.amount ?? 0n
@@ -79,6 +82,16 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       return next[0] > balanceSnapshot.current
     },
   )
+
+  const chain = chainsMap.get(dstChain)
+  const formattedAddress =
+    chain && isAnyParachain(chain)
+      ? safeConvertAddressSS58(address, chain.ss58Format, false)
+      : null
+
+  const isAccountAllowed = isEvmAccount(address)
+    ? chain?.isEvmParachain() ?? false
+    : true
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
@@ -122,12 +135,19 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
               icon={<ChevronDown sx={{ color: "basic300", ml: -6 }} />}
             />
           </ButtonTransparent>
-          <Text fs={14} color="brightBlue300">
-            {account.address}
-          </Text>
+          {isAccountAllowed ? (
+            <Text fs={14} color="brightBlue300">
+              {formattedAddress}
+            </Text>
+          ) : (
+            <Text fs={14} color="red400">
+              EVM Account not allowed for {asset?.data.asset.originSymbol}
+            </Text>
+          )}
           <Button
             size="micro"
             variant="primary"
+            disabled={!isAccountAllowed}
             onClick={copyAndSnapshot}
             css={
               copied
