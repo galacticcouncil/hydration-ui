@@ -92,27 +92,41 @@ export const CEX_DEPOSIT_CONFIG = [
   },
 ]
 
+console.log(CEX_DEPOSIT_CONFIG)
+
 const DEFAULT_CEX_ID = CEX_DEPOSIT_CONFIG[0].id
 
 type DepositStore = {
   asset: AssetConfig | null
   cexId: string
   depositMethod: DepositMethod | null
+  isLoading: boolean
+  depositedAmount: bigint
   setAsset: (asset: AssetConfig) => void
   setCexId: (cexId: string) => void
   setDepositMethod: (depositMethod: DepositMethod) => void
+  setIsLoading: (isLoading: boolean) => void
+  setDepositedAmount: (depositedAmount: bigint) => void
   reset: () => void
 }
 
-export const useDepositStore = create<DepositStore>((set) => ({
+const initialState = {
   asset: null,
   cexId: DEFAULT_CEX_ID,
   depositMethod: null,
-  setAsset: (asset) => set(() => ({ asset })),
-  setCexId: (cexId) => set(() => ({ cexId })),
-  setDepositMethod: (depositMethod) => set(() => ({ depositMethod })),
-  reset: () =>
-    set(() => ({ asset: null, cexId: DEFAULT_CEX_ID, depositMethod: null })),
+  isLoading: false,
+  depositedAmount: 0n,
+}
+
+export const useDepositStore = create<DepositStore>((set) => ({
+  ...initialState,
+  setAsset: (asset) => set({ asset }),
+  setCexId: (cexId) => set({ cexId }),
+  setDepositMethod: (depositMethod) => set({ depositMethod }),
+  setIsLoading: (isLoading) => set({ isLoading }),
+  setDepositedAmount: (depositedAmount) =>
+    set({ depositedAmount, isLoading: false }),
+  reset: () => set(initialState),
 }))
 
 export const useDeposit = () => {
@@ -133,6 +147,10 @@ export const useDeposit = () => {
     pagination.paginateTo(DepositScreen.Transfer)
   }
 
+  const setSuccess = () => {
+    pagination.paginateTo(DepositScreen.Success)
+  }
+
   const reset = () => {
     state.reset()
     pagination.paginateTo(DepositScreen.Select)
@@ -145,6 +163,7 @@ export const useDeposit = () => {
     setAsset,
     setDepositMethod,
     setTransfer,
+    setSuccess,
   }
 }
 

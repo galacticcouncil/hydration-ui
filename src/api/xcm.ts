@@ -101,8 +101,6 @@ export const useCrossChainTransaction = (options: TransactionOptions = {}) => {
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(srcChain.ws)
 
-      console.log(values)
-
       const xTransfer = await values.wallet.transfer(
         values.asset,
         values.srcAddr,

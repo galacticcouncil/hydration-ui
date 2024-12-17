@@ -10,7 +10,7 @@ import { Spinner } from "components/Spinner/Spinner"
 import { Text } from "components/Typography/Text/Text"
 import { useCopy } from "hooks/useCopy"
 import { useShallow } from "hooks/useShallow"
-import { useMemo, useRef } from "react"
+import { useRef } from "react"
 import { useCustomCompareEffect } from "react-use"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
@@ -39,9 +39,10 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   onDepositSuccess,
 }) => {
   const { account } = useAccount()
-  const { asset, cexId } = useDeposit()
+  const { isLoading, asset, cexId, setIsLoading, setDepositedAmount } =
+    useDeposit()
 
-  const { copied, copy } = useCopy()
+  const { copy } = useCopy()
 
   const balanceSnapshot = useRef<bigint | null>(null)
 
@@ -64,6 +65,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
     if (!balances) return
     if (!asset) return
     copy(address)
+    setIsLoading(true)
     window.open(createCexWithdrawalUrl(cexId, asset.data), "_blank")
     balanceSnapshot.current = assetBalance
   }
@@ -73,7 +75,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       if (!asset) return
       if (!balanceSnapshot.current) return
       if (assetBalance > balanceSnapshot.current) {
+        const depositedAmount = assetBalance - balanceSnapshot.current
         onDepositSuccess(asset)
+        setDepositedAmount(depositedAmount)
       }
     },
     [assetBalance],
@@ -107,7 +111,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           </span>
         }
         onChange={undefinedNoop}
-        onSelectAssetClick={onAsssetSelect}
+        onSelectAssetClick={isLoading ? undefined : onAsssetSelect}
         balance={null}
         balanceLabel=""
         withoutMaxValue
@@ -120,6 +124,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       {account && (
         <SAccountBox>
           <ButtonTransparent
+            disabled={isLoading}
             sx={{ flex: "row", gap: 6, align: "center" }}
             onClick={() => toggleWeb3Modal()}
           >
@@ -132,7 +137,15 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             <Text fs={14}>{account.name}</Text>
             <Icon
               size={24}
-              icon={<ChevronDown sx={{ color: "basic300", ml: -6 }} />}
+              icon={
+                <ChevronDown
+                  sx={{
+                    color: "basic300",
+                    ml: -6,
+                    opacity: isLoading ? 0.5 : 1,
+                  }}
+                />
+              }
             />
           </ButtonTransparent>
           {isAccountAllowed ? (
@@ -141,7 +154,8 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             </Text>
           ) : (
             <Text fs={14} color="red400">
-              EVM Account not allowed for {asset?.data.asset.originSymbol}
+              EVM Account not allowed for depositing{" "}
+              {asset?.data.asset.originSymbol}
             </Text>
           )}
           <Button
@@ -150,7 +164,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             disabled={!isAccountAllowed}
             onClick={copyAndSnapshot}
             css={
-              copied
+              isLoading
                 ? {
                     background: `rgba(${theme.rgbColors.pink700}, 0.5)`,
                     pointerEvents: "none",
@@ -158,13 +172,13 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
                 : undefined
             }
           >
-            {copied ? (
+            {isLoading ? (
               <Spinner size={14} />
             ) : (
               <Icon size={14} icon={<CopyIcon />} />
             )}
 
-            {copied ? "Awaiting deposit" : "Copy Address"}
+            {isLoading ? "Awaiting deposit" : "Copy Address"}
           </Button>
         </SAccountBox>
       )}

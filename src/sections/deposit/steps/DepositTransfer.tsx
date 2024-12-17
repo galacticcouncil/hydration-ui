@@ -26,7 +26,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { asset } = useDeposit()
+  const { asset, setDepositedAmount } = useDeposit()
 
   const address = account?.address ?? ""
   const srcChain = asset?.route[0] ?? ""
@@ -93,6 +93,10 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       srcChain: srcChain,
       dstChain: "hydration",
     })
+
+    setDepositedAmount(
+      BigInt(BN(values.amount).shiftedBy(transferData.decimals).toString()),
+    )
   }
 
   return (

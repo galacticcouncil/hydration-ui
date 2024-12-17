@@ -5,6 +5,7 @@ export enum DepositScreen {
   DepositMethod,
   DepositAsset,
   Transfer,
+  Success,
 }
 
 export enum DepositMethod {

@@ -10,12 +10,14 @@ type DepositMethodSelectProps = {
 }
 
 const DepositMethodButton: React.FC<{
-  onClick: () => void
+  onClick?: () => void
   title: string
   description: string
-  className?: string
-}> = ({ onClick, title, description, className }) => (
-  <SButton onClick={onClick} className={className}>
+}> = ({ onClick, title, description }) => (
+  <SButton
+    onClick={onClick}
+    css={!onClick && { pointerEvents: "none", opacity: 0.3 }}
+  >
     <div>
       <Text fs={18} font="GeistSemiBold" color="basic100" sx={{ mb: 6 }}>
         {title}
@@ -43,16 +45,12 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           description="Some short description here so all less and more experienced people would understand che choice"
         />
         <DepositMethodButton
-          onClick={() => undefined}
           title="On-chain deposit "
           description="Some short description here so all less and more experienced people would understand che choice"
-          css={{ pointerEvents: "none", opacity: 0.3 }}
         />
         <DepositMethodButton
-          onClick={() => undefined}
           title="Fund with crypto"
           description="Some short description here so all less and more experienced people would understand che choice"
-          css={{ pointerEvents: "none", opacity: 0.3 }}
         />
       </div>
     </div>

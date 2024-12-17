@@ -9,6 +9,7 @@ import { SContainer } from "./DepositPage.styled"
 import { DepositTransfer } from "sections/deposit/steps/DepositTransfer"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useCrossChainBalanceSubscription } from "api/xcm"
+import { DepositSuccess } from "sections/deposit/steps/DepositSuccess"
 
 export const DepositPage = () => {
   const { account } = useAccount()
@@ -18,10 +19,12 @@ export const DepositPage = () => {
     direction,
     page,
     depositMethod,
-    reset,
+    isLoading,
     setAsset,
     setDepositMethod,
     setTransfer,
+    setSuccess,
+    reset,
   } = useDeposit()
 
   const address = account?.address ?? ""
@@ -52,20 +55,22 @@ export const DepositPage = () => {
             },
             {
               title: "How to deposit?",
+              hideBack: isLoading,
               content: (
                 <DepositAsset
                   onAsssetSelect={back}
-                  onDepositSuccess={setTransfer}
+                  onDepositSuccess={
+                    isMultiStepTransfer ? setTransfer : setSuccess
+                  }
                 />
               ),
             },
             {
               title: "Deposit to Hydration",
-              content: isMultiStepTransfer ? (
-                <DepositTransfer onTransferSuccess={reset} />
-              ) : (
-                <>finished</>
-              ),
+              content: <DepositTransfer onTransferSuccess={setSuccess} />,
+            },
+            {
+              content: <DepositSuccess onConfirm={reset} />,
             },
           ]}
         />
