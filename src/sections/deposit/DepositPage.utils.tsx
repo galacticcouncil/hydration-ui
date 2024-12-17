@@ -92,8 +92,6 @@ export const CEX_DEPOSIT_CONFIG = [
   },
 ]
 
-console.log(CEX_DEPOSIT_CONFIG)
-
 const DEFAULT_CEX_ID = CEX_DEPOSIT_CONFIG[0].id
 
 type DepositStore = {

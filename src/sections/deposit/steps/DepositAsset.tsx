@@ -3,7 +3,7 @@ import { useCrossChainBalance } from "api/xcm"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
-import { AssetSelect } from "components/AssetSelect/AssetSelect"
+import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { Spinner } from "components/Spinner/Spinner"
@@ -18,7 +18,10 @@ import {
   createCexWithdrawalUrl,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
-import { SAccountBox } from "sections/deposit/steps/DepositAsset.styled"
+import {
+  SAccountBox,
+  SAssetSelectButtonBox,
+} from "sections/deposit/steps/DepositAsset.styled"
 import { AssetConfig } from "sections/deposit/types"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -26,7 +29,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { isEvmAccount } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
-import { isAnyParachain, undefinedNoop } from "utils/helpers"
+import { isAnyParachain } from "utils/helpers"
 import { pick } from "utils/rx"
 
 type DepositAssetProps = {
@@ -99,26 +102,23 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
-      <AssetSelect
-        value="0"
-        id={asset?.assetId ?? ""}
-        name="deposit-asset"
-        title={
-          <span sx={{ flex: "row", align: "center", gap: 4, mb: 12 }}>
-            <span>From</span>
-            <span>{CexIcon && <Icon size={14} icon={<CexIcon />} />}</span>
-            <span sx={{ color: "white" }}>{activeCex?.title}</span>
-          </span>
-        }
-        onChange={undefinedNoop}
-        onSelectAssetClick={isLoading ? undefined : onAsssetSelect}
-        balance={null}
-        balanceLabel=""
-        withoutMaxValue
-        withoutMaxBtn
-        withoutValue
-        css={{ pointerEvents: "none" }}
-      />
+      <SAssetSelectButtonBox css={isLoading && { pointerEvents: "none" }}>
+        <Text
+          sx={{ flex: "row", align: "center", gap: 4 }}
+          fs={11}
+          lh={22}
+          tTransform="uppercase"
+          color="whiteish500"
+        >
+          <span>From</span>
+          <span>{CexIcon && <Icon size={14} icon={<CexIcon />} />}</span>
+          <span sx={{ color: "white" }}>{activeCex?.title}</span>
+        </Text>
+        <AssetSelectButton
+          onClick={isLoading ? undefined : onAsssetSelect}
+          assetId={asset?.assetId ?? ""}
+        />
+      </SAssetSelectButtonBox>
       <CexDepositGuide />
       {!account && <Web3ConnectModalButton />}
       {account && (

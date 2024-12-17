@@ -30,7 +30,6 @@ type AssetSelectProps = {
   balanceLabel: string
   withoutMaxValue?: boolean
   withoutMaxBtn?: boolean
-  withoutValue?: boolean
 
   onBlur?: (v: string) => void
   onChange: (v: string) => void
@@ -148,34 +147,29 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
             <AssetSelectButton
               assetId={props.id}
               onClick={props.onSelectAssetClick}
-              sx={{
-                maxWidth: props.withoutValue ? undefined : 280,
-                mr: props.withoutValue ? 0 : undefined,
-              }}
+              sx={{ maxWidth: 280 }}
               css={{
                 pointerEvents: !props.onSelectAssetClick ? "none" : "auto",
               }}
             />
-            {!props.withoutValue && (
-              <AssetInput
-                ref={ref}
-                disabled={props.disabled}
-                value={props.value}
-                name={props.name}
-                label={t("selectAsset.input.label")}
-                onBlur={props.onBlur}
-                onChange={props.onChange}
-                displayValue={displayValue}
-                placeholder="0.00"
-                unit={isTablet && isAssetFound ? symbol : ""}
-                error={props.error}
-                css={css`
-                  & > label {
-                    padding: 0;
-                  }
-                `}
-              />
-            )}
+            <AssetInput
+              ref={ref}
+              disabled={props.disabled}
+              value={props.value}
+              name={props.name}
+              label={t("selectAsset.input.label")}
+              onBlur={props.onBlur}
+              onChange={props.onChange}
+              displayValue={displayValue}
+              placeholder="0.00"
+              unit={isTablet && isAssetFound ? symbol : ""}
+              error={props.error}
+              css={css`
+                & > label {
+                  padding: 0;
+                }
+              `}
+            />
           </div>
         </SContainer>
         {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
