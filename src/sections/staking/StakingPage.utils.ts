@@ -23,6 +23,7 @@ import { useMemo } from "react"
 import { useReferendums } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -94,11 +95,15 @@ export const useStakeData = () => {
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
-  const HDXSupply = useHDXSupplyFromSubscan()
-  const balance = useTokenBalance(native.id, account?.address)
+  const { data: hdxSupply, isLoading: isSupplyLoading } =
+    useHDXSupplyFromSubscan()
+  const accountAssets = useAccountAssets()
+
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
-  const circulatingSupply = HDXSupply.data?.available_balance
+  const circulatingSupply = hdxSupply?.available_balance
+
+  const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -109,16 +114,17 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = balance.data?.freeBalance
+  const rawAvailableBalance = BN(balance?.freeBalance ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
 
-  const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
+  const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
-  const queries = [stake, HDXSupply, balance, locks, spotPrice]
+  const queries = [stake, locks, spotPrice]
 
-  const isLoading = queries.some((query) => query.isInitialLoading)
+  const isLoading =
+    queries.some((query) => query.isInitialLoading) || isSupplyLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
@@ -212,7 +218,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
@@ -405,7 +411,7 @@ export const useClaimReward = () => {
       actionPointsWeight,
     } = stakingConsts.data
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
@@ -466,9 +472,9 @@ export const useClaimReward = () => {
         stakePosition.accumulatedSlashPoints.toString(),
       )
 
-      const extraPaylablePercentage = wasm.sigmoid(extraPoints, a, b)
+      const extraPayablePercentage = wasm.sigmoid(extraPoints, a, b)
 
-      extraPayablePercentageHuman = scaleHuman(extraPaylablePercentage, "q")
+      extraPayablePercentageHuman = scaleHuman(extraPayablePercentage, "q")
         .multipliedBy(100)
         .toString()
     }
@@ -494,7 +500,7 @@ export const useClaimReward = () => {
         BN(payablePercentageHuman).gte(chartPoints.y) &&
         (arr[i + 1] ? BN(payablePercentageHuman).lt(arr[i + 1].y) : true)
 
-      //calculate paylable percentage if vote ongoing referendas
+      // calculate payable percentage if vote ongoing referendas
       const currentSecondary = extraPayablePercentageHuman
         ? BN(extraPayablePercentageHuman).gte(chartPoints.y) &&
           (arr[i + 1] ? BN(extraPayablePercentageHuman).lt(arr[i + 1].y) : true)

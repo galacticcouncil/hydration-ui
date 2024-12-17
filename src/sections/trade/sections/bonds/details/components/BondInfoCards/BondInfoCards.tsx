@@ -74,14 +74,16 @@ export const BondInfoCards = ({
     ? getAsset(accumulatedAssetId.toString())
     : undefined
   const accumulatedAssetBalance = isPast
-    ? hisroticalBalance.data?.pools[0]?.historicalBalances[0].assetABalance
+    ? hisroticalBalance.data?.lbpPoolHistoricalData.nodes[0]?.assetABalance
     : undefined
 
   const currentAccumulatedAssetValue = removeBlock
     ? accumulatedAssetBalance
       ? BN(accumulatedAssetBalance).minus(initialAccumulatedAssetValue ?? 0)
       : undefined
-    : tokenBalance.data?.freeBalance.minus(initialAccumulatedAssetValue ?? 0)
+    : BN(tokenBalance.data?.freeBalance ?? "0").minus(
+        initialAccumulatedAssetValue ?? 0,
+      )
 
   const isDiscount = currentSpotPrice.gt(currentBondPrice)
 

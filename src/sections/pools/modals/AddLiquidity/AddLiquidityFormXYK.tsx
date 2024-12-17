@@ -1,41 +1,39 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { scale, scaleHuman } from "utils/balance"
-import { ToastMessage, useStore } from "state/store"
-import { BaseSyntheticEvent, useCallback, useMemo } from "react"
+import { useStore } from "state/store"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
 import { useTokensBalances } from "api/balances"
-import * as xyk from "@galacticcouncil/math-xyk"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  calculate_shares,
+  calculate_liquidity_in,
+} from "@galacticcouncil/math-xyk"
 import { getXYKPoolShare, useXYKZodSchema } from "./AddLiquidity.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { TOAST_MESSAGES } from "state/toasts"
+import { createToastMessages } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { Farm } from "api/farms"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
+import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
 
 type Props = {
   onClose: () => void
   pool: TXYKPool
-  onSuccess: (result: ISubmittableResult, shares: string) => void
+  onSuccess?: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
-  farms: Farm[]
-  setIsJoinFarms: (value: boolean) => void
 }
 
 type FormValues = {
@@ -49,21 +47,19 @@ type FormValues = {
 const opposite = (value: "assetA" | "assetB") =>
   value === "assetA" ? "assetB" : "assetA"
 
-export const AddLiquidityFormXYK = ({
-  pool,
-  onClose,
-  onSuccess,
-  onSubmitted,
-  farms,
-  setIsJoinFarms,
-}: Props) => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
+export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
   const { t } = useTranslation()
-  const refetch = useRefetchAccountPositions()
+  const refetchAccountAssets = useRefetchAccountAssets()
+  const { api } = useRpcProvider()
+  const { createTransaction } = useStore()
 
-  const { assets, decimals } = pool.meta
+  const {
+    meta: { assets, decimals },
+    farms = [],
+  } = pool
   const [assetA, assetB] = assets
+  const isFarms = farms.length > 0
+  const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms)
@@ -79,7 +75,7 @@ export const AddLiquidityFormXYK = ({
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const { formState } = form
+  const { formState, reset } = form
 
   const spotPrice = useSpotPrice(assetA.id, assetB.id)
   const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
@@ -111,14 +107,7 @@ export const AddLiquidityFormXYK = ({
     }
   }, [assetA, assetAReserve, assetB, assetBReserve, assetValueA, assetValueB])
 
-  const { api } = useRpcProvider()
-  const { createTransaction } = useStore()
-
-  const onSubmit = async (_: FormValues, e?: BaseSyntheticEvent) => {
-    const submitAction = (e?.nativeEvent as SubmitEvent)
-      ?.submitter as HTMLButtonElement
-    const isJoiningFarms = submitAction?.name === "joinFarms"
-
+  const onSubmit = async () => {
     const inputData = {
       assetA: {
         id: assetValues[lastUpdated].meta.id,
@@ -136,66 +125,55 @@ export const AddLiquidityFormXYK = ({
       },
     }
 
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`liquidity.add.modal.xyk.toast.${msType}`}
-          tOptions={{
-            shares: shares,
-            fixedPointScale: decimals,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
-
     return await createTransaction(
       {
-        tx: api.tx.xyk.addLiquidity(
-          inputData.assetA.id,
-          inputData.assetB.id,
-          inputData.assetA.amount.toFixed(),
-          inputData.assetB.amount.toFixed(),
-        ),
+        tx: isJoinFarms
+          ? api.tx.xykLiquidityMining.addLiquidityAndJoinFarms(
+              inputData.assetA.id,
+              inputData.assetB.id,
+              inputData.assetA.amount.toFixed(),
+              inputData.assetB.amount.toFixed(),
+              farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
+            )
+          : api.tx.xyk.addLiquidity(
+              inputData.assetA.id,
+              inputData.assetB.id,
+              inputData.assetA.amount.toFixed(),
+              inputData.assetB.amount.toFixed(),
+            ),
       },
       {
         onSuccess: (result) => {
-          refetch()
-          queryClient.refetchQueries(
-            QUERY_KEYS.tokenBalance(pool.id, account?.address),
-          )
-          onSuccess(result, scale(shares, decimals).toString())
+          refetchAccountAssets()
+          onSuccess?.(result, scale(shares, decimals).toString())
         },
         onSubmitted: () => {
-          !farms.length && !isJoiningFarms && onClose()
-          form.reset()
-          onSubmitted?.()
+          onClose()
+          reset()
         },
         onClose,
-        disableAutoClose: !!farms.length && isJoiningFarms,
         onBack: () => {},
-        toast,
+        toast: createToastMessages("liquidity.add.modal.xyk.toast", {
+          t,
+          tOptions: {
+            shares: shares,
+            fixedPointScale: decimals,
+          },
+          components: ["span", "span.highlight"],
+        }),
       },
     )
   }
 
-  const onInvalidSubmit = (
-    errors: FieldErrors<FormValues>,
-    e?: BaseSyntheticEvent,
-  ) => {
-    const submitAction = (e?.nativeEvent as SubmitEvent)
-      ?.submitter as HTMLButtonElement
-
+  const onInvalidSubmit = (errors: FieldErrors<FormValues>) => {
     if (
-      submitAction?.name === "addLiquidity" &&
+      !isJoinFarms &&
       (errors.shares as { farm?: { message: string } }).farm
     ) {
-      onSubmit({} as FormValues, e)
+      onSubmit()
     }
   }
 
@@ -209,9 +187,9 @@ export const AddLiquidityFormXYK = ({
 
       if (currReserves && nextReserves) {
         const pairTokenValue = scaleHuman(
-          xyk.calculate_liquidity_in(
-            currReserves.balance.toFixed(),
-            nextReserves.balance.toFixed(),
+          calculate_liquidity_in(
+            currReserves.balance,
+            nextReserves.balance,
             scale(value, assetDecimals).toFixed(),
           ),
           pairAssetDecimals,
@@ -227,16 +205,13 @@ export const AddLiquidityFormXYK = ({
         const { totalShare } = pool.shareTokenIssuance ?? {}
 
         if (assetAReserve && totalShare) {
-          const shares = xyk.calculate_shares(
+          const shares = calculate_shares(
             assetAReserve.balance.toString(),
             scale(form.getValues("assetA"), assetA.decimals).toFixed(),
             totalShare.toString(),
           )
 
-          const ratio = getXYKPoolShare(
-            totalShare,
-            BigNumber(shares),
-          ).toString()
+          const ratio = getXYKPoolShare(totalShare, BN(shares)).toString()
 
           form.setValue("shares", shares, { shouldValidate: true })
           form.setValue("ratio", ratio)
@@ -260,11 +235,22 @@ export const AddLiquidityFormXYK = ({
       }
     | undefined
 
-  const isAddOnlyLiquidityDisabled =
+  const isJoinFarmDisabled = !!customErrors?.farm
+
+  const isSubmitDisabled =
     !!Object.keys(formState.errors.shares ?? {}).filter((key) => key !== "farm")
       .length ||
     !!formState.errors.assetA ||
     !!formState.errors.assetB
+
+  useEffect(() => {
+    if (!isFarms) return
+    if (isJoinFarmDisabled) {
+      setIsJoinFarms(false)
+    } else {
+      setIsJoinFarms(true)
+    }
+  }, [isFarms, isJoinFarmDisabled, setIsJoinFarms])
 
   return (
     <form
@@ -289,8 +275,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetA.id}
               error={error?.message}
               disabled={!assetAReserve}
-              balance={balanceA}
-              balanceMax={balanceAMax}
+              balance={balanceA ? BN(balanceA) : undefined}
+              balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
             />
           )}
         />
@@ -313,8 +299,8 @@ export const AddLiquidityFormXYK = ({
               asset={assetB.id}
               error={error?.message}
               disabled={!assetBReserve}
-              balance={balanceB}
-              balanceMax={balanceBMax}
+              balance={balanceB ? BN(balanceB) : undefined}
+              balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
             />
           )}
         />
@@ -325,6 +311,16 @@ export const AddLiquidityFormXYK = ({
             value: pool.fee,
           })}
         />
+
+        {farms.length > 0 ? (
+          <JoinFarmsSection
+            farms={farms}
+            isJoinFarms={isJoinFarms}
+            setIsJoinFarms={setIsJoinFarms}
+            error={customErrors?.farm?.message}
+            isJoinFarmDisabled={isJoinFarmDisabled}
+          />
+        ) : null}
 
         <Spacer size={24} />
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
@@ -351,11 +347,6 @@ export const AddLiquidityFormXYK = ({
             {t("liquidity.xyk.addLiquidity.warning")}
           </Alert>
         )}
-        {customErrors?.farm && (
-          <Alert variant="warning" css={{ margin: "20px 0" }}>
-            {customErrors.farm.message}
-          </Alert>
-        )}
         <Spacer size={20} />
         <PoolAddLiquidityInformationCard />
         <Spacer size={20} />
@@ -368,36 +359,11 @@ export const AddLiquidityFormXYK = ({
           width: "auto",
         }}
       />
-      {farms.length ? (
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          <Button
-            variant="secondary"
-            name="addLiquidity"
-            onClick={() => setIsJoinFarms(false)}
-            disabled={isAddOnlyLiquidityDisabled || minAddLiquidityValidation}
-          >
-            {t("liquidity.add.modal.onlyAddLiquidity")}
-          </Button>
-          <Button
-            variant="primary"
-            name="joinFarms"
-            onClick={() => setIsJoinFarms(true)}
-            disabled={
-              !!Object.keys(formState.errors).length ||
-              minAddLiquidityValidation
-            }
-          >
-            {t("liquidity.add.modal.joinFarms")}
-          </Button>
-        </div>
-      ) : (
-        <Button
-          variant="primary"
-          disabled={!!Object.keys(formState.errors).length || !zodSchema}
-        >
-          {t("liquidity.add.modal.confirmButton")}
-        </Button>
-      )}
+      <Button variant="primary" disabled={isSubmitDisabled}>
+        {isJoinFarms
+          ? t("liquidity.add.modal.button.joinFarms")
+          : t("liquidity.add.modal.confirmButton")}
+      </Button>
     </form>
   )
 }

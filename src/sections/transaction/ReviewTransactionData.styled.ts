@@ -79,3 +79,16 @@ export const SRawData = styled.div`
     color: ${theme.colors.brightBlue300};
   }
 `
+
+export const SModeButton = styled(ButtonTransparent)<{ active?: boolean }>`
+  font-size: 12px;
+  font-family: "GeistSemiBold";
+  color: ${({ active }) =>
+    active ? theme.colors.pink400 : theme.colors.basic400};
+  text-decoration: ${({ active }) => (active ? "underline" : "none")};
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: ${theme.colors.pink100};
+  }
+`

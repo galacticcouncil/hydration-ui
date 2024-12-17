@@ -10,8 +10,8 @@ import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 
 type AssetsModalRowProps = {
   asset: TAsset
-  balance: BN
-  displaValue: BN
+  balance: string
+  displaValue: string
   onClick?: (asset: NonNullable<TAsset>) => void
   isActive?: boolean
   isSelected?: boolean
@@ -59,14 +59,14 @@ export const AssetsModalRow = ({
             </Text>
 
             <DollarAssetValue
-              value={displaValue}
+              value={BN(displaValue)}
               wrapper={(children) => (
                 <Text color="whiteish500" fs={12} lh={16}>
                   {children}
                 </Text>
               )}
             >
-              <DisplayValue value={displaValue} />
+              <DisplayValue value={BN(displaValue)} />
             </DollarAssetValue>
           </div>
         )}

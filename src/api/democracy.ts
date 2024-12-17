@@ -18,12 +18,12 @@ const REFERENDUM_DATA_URL = "https://basilisk.subsquare.io/api/gov2/referendums"
 
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   none: 0,
-  locked1x: 50400,
-  locked2x: 100800,
-  locked3x: 201600,
-  locked4x: 403200,
-  locked5x: 806400,
-  locked6x: 1612800,
+  locked1x: 43200,
+  locked2x: 86400,
+  locked3x: 172800,
+  locked4x: 345600,
+  locked5x: 691200,
+  locked6x: 1382400,
 }
 
 const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {

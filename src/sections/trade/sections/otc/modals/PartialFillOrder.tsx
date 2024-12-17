@@ -1,4 +1,3 @@
-import { useTokenBalance } from "api/balances"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
@@ -13,7 +12,6 @@ import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacit
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TokensConversion } from "sections/pools/modals/AddLiquidity/components/TokensConvertion/TokensConversion"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { usePartialFillFormSchema } from "sections/trade/sections/otc/modals/PartialFillOrder.utils"
@@ -22,6 +20,7 @@ import { Summary } from "components/Summary/Summary"
 import Skeleton from "react-loading-skeleton"
 import { useOTCfee } from "api/consts"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -41,17 +40,19 @@ export const PartialFillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
-  const assetInBalance = useTokenBalance(accepting.asset, account?.address)
+  const accountAssets = useAccountAssets()
+  const assetInBalance = accountAssets.data?.accountAssetsMap.get(
+    accepting.asset,
+  )?.balance
   const assetOutMeta = getAssetWithFallback(offering.asset)
 
   const formSchema = usePartialFillFormSchema({
     offeringAmount: offering.amount,
-    assetInBalance: assetInBalance.data?.balance ?? BN_0,
+    assetInBalance: assetInBalance?.balance ?? "0",
     assetInDecimals: assetInMeta.decimals,
   })
 
@@ -222,7 +223,6 @@ export const PartialFillOrder = ({
                 handleFreeChange()
               }}
               asset={accepting.asset}
-              balance={assetInBalance.data?.balance}
               error={error?.message}
             />
           )}

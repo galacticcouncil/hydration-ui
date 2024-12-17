@@ -1,16 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useAcountAssets } from "api/assetDetails"
-import { useTokenBalance } from "api/balances"
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { useShallow } from "hooks/useShallow"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Transaction, useSettingsStore, useStore } from "state/store"
-import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { maxBalance, required } from "utils/validators"
 import { ZodType, z } from "zod"
@@ -18,6 +14,7 @@ import { createToastMessages } from "state/toasts"
 import { ApiPromise } from "@polkadot/api"
 import { useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useAccountAssets } from "api/deposits"
 
 type XYKAsset = {
   id: string
@@ -33,9 +30,9 @@ export type CreateXYKPoolFormData = {
 }
 
 export const createXYKPoolFormSchema = (
-  balanceA: BigNumber,
+  balanceA: string,
   decimalsA: number,
-  balanceB: BigNumber,
+  balanceB: string,
   decimalsB: number,
 ): ZodType<CreateXYKPoolFormData> =>
   z.object({
@@ -70,21 +67,19 @@ export const filterIdsByExclusivity = (
 ) => ids.filter((id) => id !== exclusiveId && !map[exclusiveId]?.includes(id))
 
 export const useAllowedXYKPoolAssets = () => {
-  const { account } = useAccount()
   const { all, isExternal } = useAssets()
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
   const { isAdded } = useUserExternalTokenStore()
 
-  const accountAssets = useAcountAssets(account?.address)
+  const { data } = useAccountAssets()
 
   return useMemo(() => {
-    const accountAssetIds = accountAssets
-      .filter(({ balance }) => balance.freeBalance.gt(0))
-      .map(({ asset }) => asset.id)
-
     return [...all.values()].filter((asset) => {
       const isTradable = asset.isTradable
-      const hasBalance = accountAssetIds.includes(asset.id)
+      const hasBalance = BN(
+        data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
+      ).gt(0)
+
       const isNotTradableWithBalance = !isTradable && hasBalance
 
       const shouldBeVisible = isTradable || isNotTradableWithBalance
@@ -95,28 +90,31 @@ export const useAllowedXYKPoolAssets = () => {
 
       return shouldBeVisible
     })
-  }, [accountAssets, all, degenMode, isAdded, isExternal])
+  }, [all, degenMode, isAdded, isExternal, data?.accountAssetsMap])
 }
 
 export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
   const { isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
-  const { account } = useAccount()
-
   const assetAMeta = isLoaded ? getAssetWithFallback(assetA ?? "") : null
   const assetBMeta = isLoaded ? getAssetWithFallback(assetB ?? "") : null
 
-  const { data: balanceA } = useTokenBalance(assetA, account?.address)
-  const { data: balanceB } = useTokenBalance(assetB, account?.address)
+  const { data: accountAssets } = useAccountAssets()
+  const balanceA = assetA
+    ? accountAssets?.accountAssetsMap.get(assetA)?.balance
+    : undefined
+  const balanceB = assetB
+    ? accountAssets?.accountAssetsMap.get(assetB)?.balance
+    : undefined
 
   return useForm<CreateXYKPoolFormData>({
     mode: "onChange",
     resolver: zodResolver(
       createXYKPoolFormSchema(
-        balanceA?.balance ?? BN_0,
+        balanceA?.balance ?? "0",
         assetAMeta?.decimals ?? 0,
-        balanceB?.balance ?? BN_0,
+        balanceB?.balance ?? "0",
         assetBMeta?.decimals ?? 0,
       ),
     ),
@@ -136,9 +134,9 @@ export const createXYKpool = (
 ) => {
   return api.tx.xyk.createPool(
     assetA.id,
-    new BigNumber(assetA.amount).shiftedBy(assetA.decimals).toFixed(),
+    BN(assetA.amount).shiftedBy(assetA.decimals).toFixed(),
     assetB.id,
-    new BigNumber(assetB.amount).shiftedBy(assetB.decimals).toFixed(),
+    BN(assetB.amount).shiftedBy(assetB.decimals).toFixed(),
   )
 }
 

@@ -1,5 +1,4 @@
-import { useBestNumber } from "api/chain"
-import { Farm, useFarmApr } from "api/farms"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
@@ -7,15 +6,15 @@ import { Text } from "components/Typography/Text/Text"
 import { addSeconds } from "date-fns"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
-import { BLOCK_TIME } from "utils/constants"
 import { SContainer } from "./FarmDetailsRow.styled"
 import { Modal } from "components/Modal/Modal"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { useState } from "react"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
+import BN from "bignumber.js"
 
 type FarmDetailsRowProps = {
-  farm: Farm
+  farm: TFarmAprData
 }
 
 export const FarmDetailsRow = ({ farm }: FarmDetailsRowProps) => {
@@ -23,24 +22,16 @@ export const FarmDetailsRow = ({ farm }: FarmDetailsRowProps) => {
   const { getAssetWithFallback } = useAssets()
   const [detailOpen, setDetailOpen] = useState(false)
 
-  const asset = getAssetWithFallback(farm.globalFarm.rewardCurrency.toString())
-  const apr = useFarmApr(farm)
+  const asset = getAssetWithFallback(farm.rewardCurrency.toString())
+  const { getSecondsToLeft, getCurrentPeriod } = useFarmCurrentPeriod()
 
-  const { relaychainBlockNumber } = useBestNumber().data ?? {}
+  const secondsDurationToEnd = getSecondsToLeft(
+    farm.estimatedEndBlock,
+  )?.toNumber()
 
-  const secondsDurationToEnd = relaychainBlockNumber
-    ? apr.data?.estimatedEndBlock
-        .minus(relaychainBlockNumber.toBigNumber())
-        .times(BLOCK_TIME)
-        .toNumber()
-    : undefined
+  if (!farm.apr) return null
 
-  if (!apr.data) return null
-
-  const currentBlock = relaychainBlockNumber
-    ?.toBigNumber()
-    .dividedToIntegerBy(farm?.globalFarm.blocksPerPeriod.toNumber() ?? 1)
-
+  const currentBlock = getCurrentPeriod(farm.blocksPerPeriod)
   return (
     <>
       <SContainer onClick={() => setDetailOpen(true)}>
@@ -59,7 +50,7 @@ export const FarmDetailsRow = ({ farm }: FarmDetailsRowProps) => {
         />
         <div>
           <Text fs={12} lh={12} color="brightBlue300" font="GeistMedium">
-            {apr.data?.apr?.gt(0) && t("value.APR", { apr: apr.data.apr })}
+            {t("value.APR", { apr: BN(farm.apr) })}
           </Text>
         </div>
         <div sx={{ ml: "auto", flex: "row", align: "center" }}>

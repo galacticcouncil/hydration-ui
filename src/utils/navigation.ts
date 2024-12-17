@@ -11,6 +11,7 @@ import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
+import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -43,6 +44,8 @@ export const LINKS = {
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
+  borrow: "/borrow",
+  borrowMarkets: "/borrow/markets",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
 }
@@ -74,6 +77,18 @@ export const MENU_ITEMS = [
     mobVisible: true,
     tabVisible: true,
     mobOrder: 1,
+    asyncEnabled: false,
+  },
+  {
+    key: "borrow",
+    href: LINKS.borrow,
+    Icon: IconPercentageSquare,
+    subItems: undefined,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 4,
     asyncEnabled: false,
   },
   {
@@ -146,7 +161,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 6,
-    asyncEnabled: true,
+    asyncEnabled: false,
   },
   {
     key: "memepad",

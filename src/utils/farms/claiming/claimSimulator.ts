@@ -2,10 +2,7 @@ import { BN_0, BN_1, BN_QUINTILL } from "utils/constants"
 import BN from "bignumber.js"
 import { Option, u32 } from "@polkadot/types"
 import { AccountId32 } from "@polkadot/types/interfaces"
-import {
-  PalletLiquidityMiningLoyaltyCurve,
-  PalletLiquidityMiningYieldFarmEntry,
-} from "@polkadot/types/lookup"
+import { PalletLiquidityMiningLoyaltyCurve } from "@polkadot/types/lookup"
 
 import {
   MutableGlobalFarm,
@@ -14,6 +11,9 @@ import {
 
 import { MultiCurrencyContainer } from "utils/farms/claiming/multiCurrency"
 import * as liquidityMining from "@galacticcouncil/math-liquidity-mining"
+import { TYieldFarmEntry } from "api/deposits"
+
+const MAX_LOYALTY_FACTOR = "1000000000000000000"
 
 export class OmnipoolLiquidityMiningClaimSim {
   protected get_account: (sub: u32 | number) => AccountId32
@@ -24,7 +24,7 @@ export class OmnipoolLiquidityMiningClaimSim {
     multiCurrency: MultiCurrencyContainer,
     protected assetRegistry: Array<{
       id: string
-      existentialDeposit: BN
+      existentialDeposit: string
     }>,
   ) {
     this.get_account = addressResolver
@@ -204,7 +204,7 @@ export class OmnipoolLiquidityMiningClaimSim {
   claim_rewards(
     global_farm: MutableGlobalFarm,
     yield_farm: MutableYieldFarm,
-    farmEntry: PalletLiquidityMiningYieldFarmEntry,
+    farmEntry: TYieldFarmEntry,
     relaychainBlockNumber: BN,
     oraclePrice: BN,
   ) {
@@ -218,7 +218,7 @@ export class OmnipoolLiquidityMiningClaimSim {
     )
 
     // avoid double claiming, if possible
-    if (farmEntry.updatedAt.toBigNumber().eq(current_period)) {
+    if (BN(farmEntry.updatedAt).eq(current_period)) {
       return null
     }
 
@@ -226,11 +226,11 @@ export class OmnipoolLiquidityMiningClaimSim {
     this.sync_yield_farm(yield_farm, global_farm, current_period)
 
     let delta_stopped = yield_farm.totalStopped.minus(
-      farmEntry.stoppedAtCreation.toBigNumber(),
+      farmEntry.stoppedAtCreation,
     )
 
     let periods = yield_farm.updatedAt
-      .minus(farmEntry.enteredAt.toBigNumber())
+      .minus(farmEntry.enteredAt)
       .minus(delta_stopped)
 
     // calculate loyalty multiplier
@@ -241,11 +241,21 @@ export class OmnipoolLiquidityMiningClaimSim {
 
     const reward = new BN(
       liquidityMining.calculate_user_reward(
-        farmEntry.accumulatedRpvs.toBigNumber().toFixed(),
-        farmEntry.valuedShares.toBigNumber().toFixed(),
-        farmEntry.accumulatedClaimedRewards.toBigNumber().toFixed(),
+        farmEntry.accumulatedRpvs,
+        farmEntry.valuedShares,
+        farmEntry.accumulatedClaimedRewards,
         yield_farm.accumulatedRpvs.toFixed(),
         loyaltyMultiplier,
+      ),
+    )
+
+    const maxReward = new BN(
+      liquidityMining.calculate_user_reward(
+        farmEntry.accumulatedRpvs,
+        farmEntry.valuedShares,
+        farmEntry.accumulatedClaimedRewards,
+        yield_farm.accumulatedRpvs.toFixed(),
+        MAX_LOYALTY_FACTOR,
       ),
     )
 
@@ -253,6 +263,10 @@ export class OmnipoolLiquidityMiningClaimSim {
       yield_farm.leftToDistribute = yield_farm.leftToDistribute.minus(reward)
     }
 
-    return { value: reward, assetId: global_farm.rewardCurrency.toString() }
+    return {
+      reward,
+      maxReward,
+      assetId: global_farm.rewardCurrency.toString(),
+    }
   }
 }

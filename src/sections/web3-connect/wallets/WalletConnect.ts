@@ -31,6 +31,8 @@ const WC_PROJECT_ID =
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL as string
 
 export const POLKADOT_CAIP_ID_MAP: Record<string, PolkadotNamespaceChainId> = {
+  hydration: import.meta.env
+    .VITE_HDX_CAIP_ID as string as PolkadotNamespaceChainId,
   hydradx: import.meta.env
     .VITE_HDX_CAIP_ID as string as PolkadotNamespaceChainId,
   polkadot: "polkadot:91b171bb158e2d3848fa23a9f1c25182",

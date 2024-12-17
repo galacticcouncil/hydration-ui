@@ -10,7 +10,6 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useEffect } from "react"
 import { FundWalletButton } from "components/FundWallet/FundWalletButton"
-import { useAccountBalances } from "api/accountBalances"
 import {
   CodeFormValues,
   UserState,
@@ -24,11 +23,12 @@ import {
   useRegistrationLinkFee,
 } from "api/referrals"
 import { getChainSpecificAddress } from "utils/formatting"
-import { useTokenBalance } from "api/balances"
 import { useAccountCurrency } from "api/payments"
 import { usePaymentInfo } from "api/transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
+import BN from "bignumber.js"
 
 export const CodeForm = () => {
   const { t } = useTranslation()
@@ -56,16 +56,15 @@ export const CodeForm = () => {
     ),
   )
 
-  const linkFeeBalance = useTokenBalance(
-    registrationFee.data?.id,
-    account?.address,
-  )
+  const balances = useAccountAssets()
 
-  const balances = useAccountBalances(account?.address)
+  const linkFeeBalance = registrationFee.data?.id
+    ? balances.data?.accountAssetsMap.get(registrationFee.data.id)?.balance
+    : undefined
 
   const isLinkFeeBalance =
-    registrationFee.data && linkFeeBalance.data
-      ? linkFeeBalance.data.balance
+    registrationFee.data && linkFeeBalance
+      ? BN(linkFeeBalance.balance)
           .shiftedBy(-registrationFee.data.decimals)
           .minus(registrationFee.data.amount)
           .minus(
@@ -92,8 +91,7 @@ export const CodeForm = () => {
   }
 
   const isBalance = balances.data
-    ? balances.data.balances.length > 0 ||
-      !balances.data.native.freeBalance.isZero()
+    ? balances.data.balances?.some((balance) => BN(balance.balance).gt(0))
     : undefined
 
   const isBalanceLoading = balances.isInitialLoading

@@ -1,4 +1,4 @@
-import { useProviderRpcUrlStore } from "api/provider"
+import { useProviderPing, useProviderRpcUrlStore } from "api/provider"
 import { SCircle, SCircleThumb, SItem, SStatus } from "./ProviderItem.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
@@ -19,8 +19,9 @@ type ProviderItemProps = {
   url: string
   isActive?: boolean
   custom?: boolean
-  onClick: () => void
+  onClick?: () => void
   onRemove?: (id: string) => void
+  className?: string
 }
 
 export const ProviderItem = ({
@@ -30,6 +31,7 @@ export const ProviderItem = ({
   custom,
   onClick,
   onRemove,
+  className,
 }: ProviderItemProps) => {
   const [isEdit, setIsEdit] = useState(false)
   const store = useProviderRpcUrlStore()
@@ -47,7 +49,7 @@ export const ProviderItem = ({
     )
 
   return (
-    <SItem onClick={onClick}>
+    <SItem onClick={onClick} className={className}>
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
@@ -60,7 +62,7 @@ export const ProviderItem = ({
         </Text>
       </div>
       {isLive ? (
-        <ProviderSelectItemLive css={{ gridArea: "status" }} />
+        <ProviderSelectItemLive url={url} css={{ gridArea: "status" }} />
       ) : (
         <ProviderSelectItemExternal url={url} css={{ gridArea: "status" }} />
       )}
@@ -118,8 +120,18 @@ export const ProviderItem = ({
   )
 }
 
-const ProviderSelectItemLive = ({ className }: { className?: string }) => {
+const ProviderSelectItemLive = ({
+  className,
+  url,
+}: {
+  className?: string
+  url: string
+}) => {
   const number = useBestNumber()
+
+  const { data } = useProviderPing([url], 15000)
+
+  const time = data?.[0]?.time || Infinity
 
   return (
     <SStatus>
@@ -127,7 +139,7 @@ const ProviderSelectItemLive = ({ className }: { className?: string }) => {
         <ProviderStatus
           timestamp={number.data.timestamp}
           parachainBlockNumber={number.data?.parachainBlockNumber}
-          ping={number.data.ping}
+          ping={time < Infinity ? time : undefined}
           className={className}
           side="left"
         />
@@ -147,6 +159,7 @@ const ProviderSelectItemExternal = ({
   url: string
   className?: string
 }) => {
+  const [time, setTime] = useState(Infinity)
   const [disconnected, setDisconnected] = useState(false)
   const [bestNumberState, setBestNumberState] = useState<
     | { parachainBlockNumber: u32; timestamp: u64; ping: number | undefined }
@@ -158,6 +171,9 @@ const ProviderSelectItemExternal = ({
     let cancelInactive: () => void
 
     const provider = new WsProvider(url)
+
+    const startTime = performance.now()
+    let endTime = Infinity
 
     provider.on("error", () => {
       cancelInactive = () => provider.disconnect()
@@ -171,6 +187,9 @@ const ProviderSelectItemExternal = ({
     provider.on("connected", load)
 
     async function load() {
+      endTime = performance.now()
+      setTime(Math.round(endTime - startTime))
+
       const api = await ApiPromise.create({ provider })
 
       async function onNewBlock() {
@@ -228,7 +247,7 @@ const ProviderSelectItemExternal = ({
           parachainBlockNumber={bestNumberState.parachainBlockNumber}
           className={className}
           side="left"
-          ping={bestNumberState.ping}
+          ping={time < Infinity ? time : undefined}
         />
       ) : (
         <span className={className}>

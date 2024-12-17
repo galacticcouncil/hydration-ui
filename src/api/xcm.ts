@@ -1,15 +1,21 @@
-import { assetsMap, chainsConfigMap, chainsMap } from "@galacticcouncil/xcm-cfg"
-import { ConfigService, SubstrateApis } from "@galacticcouncil/xcm-core"
+import {
+  assetsMap,
+  chainsMap,
+  routesMap,
+  validations,
+  HydrationConfigService,
+} from "@galacticcouncil/xcm-cfg"
+import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { external } from "@galacticcouncil/apps"
-import { ASSETHUB_XCM_ASSET_SUFFIX } from "./external/assethub"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { createToastMessages } from "state/toasts"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type TransferProps = {
   asset: string
@@ -19,37 +25,39 @@ type TransferProps = {
   dstChain: string
 }
 
-export const xcmConfigService = new ConfigService({
-  assets: assetsMap,
-  chains: chainsMap,
-  chainsConfig: chainsConfigMap,
-})
-
-export const wallet = new Wallet({
-  config: xcmConfigService,
-})
-
-export const createXcmAssetKey = (id: string, symbol: string) => {
-  return `${symbol.toLowerCase()}${ASSETHUB_XCM_ASSET_SUFFIX}${id}`
+export const createXcmAssetKey = (
+  id: string,
+  symbol: string,
+  parachainId: number,
+) => {
+  return [symbol.toLowerCase(), parachainId, id].join("_")
 }
 
-export const syncAssethubXcmConfig = (asset: TRegisteredAsset) => {
-  const assetData = external.buildAssetData(asset)
-  external.buildAssethubConfig(assetData, xcmConfigService)
+export const syncAssethubXcmConfig = (
+  asset: TRegisteredAsset,
+  config: HydrationConfigService,
+) => {
+  const hubAsset = external.toHubAsset(asset)
+  const paraAsset = external.toParachainAsset(asset)
+  config.addExternalHubRoute(hubAsset, paraAsset)
 }
 
-export const useCrossChainTransfer = ({
-  asset,
-  srcAddr,
-  srcChain,
-  dstAddr,
-  dstChain,
-}: TransferProps) => {
-  return useQuery(
-    QUERY_KEYS.xcmTransfer(asset, srcAddr, srcChain, dstAddr, dstChain),
-    async () =>
-      await wallet.transfer(asset, srcAddr, srcChain, dstAddr, dstChain),
-  )
+export const useCrossChainWallet = () => {
+  const { poolService } = useRpcProvider()
+
+  return useMemo(() => {
+    const configService = new HydrationConfigService({
+      assets: assetsMap,
+      chains: chainsMap,
+      routes: routesMap,
+    })
+
+    return new Wallet({
+      configService: configService,
+      poolService: poolService,
+      transferValidations: validations,
+    })
+  }, [poolService])
 }
 
 export const useCrossChainTransaction = ({
@@ -61,7 +69,9 @@ export const useCrossChainTransaction = ({
   const { createTransaction } = useStore()
 
   return useMutation(
-    async (values: TransferProps & { amount: number | string }) => {
+    async (
+      values: TransferProps & { amount: number | string; wallet: Wallet },
+    ) => {
       const srcChain = chainsMap.get(values.srcChain)
       const dstChain = chainsMap.get(values.dstChain)
 
@@ -73,7 +83,7 @@ export const useCrossChainTransaction = ({
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(srcChain.ws)
 
-      const xTransfer = await wallet.transfer(
+      const xTransfer = await values.wallet.transfer(
         values.asset,
         values.srcAddr,
         values.srcChain,
@@ -81,7 +91,8 @@ export const useCrossChainTransaction = ({
         values.dstChain,
       )
 
-      const { balance, srcFee, dstFee, srcFeeBalance } = xTransfer
+      const { source } = xTransfer
+      const { balance, fee, feeBalance, destinationFee } = source
 
       const call = await xTransfer.buildCall(values.amount)
 
@@ -97,12 +108,12 @@ export const useCrossChainTransaction = ({
           tx: api.tx(call.data),
           xcallMeta: {
             srcChain: values.srcChain,
-            srcChainFee: srcFee.toDecimal(dstFee.decimals),
-            srcChainFeeBalance: balance.toDecimal(srcFeeBalance.decimals),
-            srcChainFeeSymbol: srcFee.originSymbol,
+            srcChainFee: fee.toDecimal(fee.decimals),
+            srcChainFeeBalance: feeBalance.toDecimal(feeBalance.decimals),
+            srcChainFeeSymbol: fee.originSymbol,
             dstChain: values.dstChain,
-            dstChainFee: dstFee.toDecimal(dstFee.decimals),
-            dstChainFeeSymbol: dstFee.originSymbol,
+            dstChainFee: destinationFee.toDecimal(destinationFee.decimals),
+            dstChainFeeSymbol: destinationFee.originSymbol,
           },
         },
         {

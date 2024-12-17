@@ -1,12 +1,11 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useTokenBalance } from "api/balances"
 import { useBestNumber } from "api/chain"
 import { useEra } from "api/era"
 import { useAccountFeePaymentAssets, useSetAsFeePayment } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
 import { useNextNonce, usePaymentInfo } from "api/transaction"
 import BigNumber from "bignumber.js"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_1 } from "utils/constants"
@@ -18,7 +17,7 @@ import {
 } from "utils/evm"
 import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import { useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
@@ -28,6 +27,7 @@ import {
   useNextEvmPermitNonce,
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
+import { useAccountAssets } from "api/deposits"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -42,7 +42,7 @@ export const useTransactionValues = ({
   }
   tx: SubmittableExtrinsic<"promise">
 }) => {
-  const { api, featureFlags } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -58,12 +58,9 @@ export const useTransactionValues = ({
 
   /* REFERRALS */
 
-  const referrer = useUserReferrer(
-    featureFlags.referrals ? account?.address : undefined,
-  )
+  const referrer = useUserReferrer(account?.address)
 
-  const isLinkedAccount =
-    featureFlags.referrals && !xcallMeta ? !!referrer.data?.length : true
+  const isLinkedAccount = !xcallMeta ? !!referrer.data?.length : true
 
   const storedReferralCodes = useReferralCodesStore()
   const storedReferralCode = account?.address
@@ -71,7 +68,6 @@ export const useTransactionValues = ({
     : undefined
 
   const boundedTx =
-    featureFlags.referrals &&
     !isLinkedAccount &&
     storedReferralCode &&
     tx.method.method !== "linkCode" &&
@@ -102,11 +98,19 @@ export const useTransactionValues = ({
     : undefined
 
   const spotPrice = useSpotPrice(native.id, accountFeePaymentId)
-  const feeAssetBalance = useTokenBalance(accountFeePaymentId, account?.address)
+  const accountAssets = useAccountAssets()
+  const feeAssetBalance = accountFeePaymentId
+    ? accountAssets.data?.accountAssetsMap.get(accountFeePaymentId)?.balance
+    : undefined
 
   const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
 
-  const shouldUsePermit = isEvm && feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
+  const srcChain = xcallMeta?.srcChain || HYDRATION_CHAIN_KEY
+
+  const shouldUsePermit =
+    isEvm &&
+    srcChain === HYDRATION_CHAIN_KEY &&
+    feePaymentMeta?.id !== NATIVE_EVM_ASSET_ID
   const { data: pendingPermit } = usePendingDispatchPermit(account?.address)
 
   const nonce = useNextNonce(account?.address)
@@ -137,12 +141,7 @@ export const useTransactionValues = ({
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
-  if (
-    !feePaymentMeta ||
-    !paymentFeeHDX ||
-    !feeAssetBalance.data ||
-    !accountFeePaymentId
-  )
+  if (!feePaymentMeta || !paymentFeeHDX || !accountFeePaymentId)
     return {
       isLoading,
       data: {
@@ -196,21 +195,23 @@ export const useTransactionValues = ({
     }
   }
 
-  let isEnoughPaymentBalance
-  if (xcallMeta && xcallMeta?.srcChain === "bifrost") {
+  let isEnoughPaymentBalance: boolean
+  if (srcChain === "bifrost") {
     // @TODO remove when fixed in xcm app
     isEnoughPaymentBalance = true
-  } else if (xcallMeta && xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY) {
+  } else if (xcallMeta && srcChain !== HYDRATION_CHAIN_KEY) {
     const feeBalanceDiff =
       parseFloat(xcallMeta.srcChainFeeBalance) -
       parseFloat(xcallMeta.srcChainFee)
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
-    isEnoughPaymentBalance = feeAssetBalance.data.balance
-      .shiftedBy(-feePaymentMeta.decimals)
-      .minus(displayFeePaymentValue ?? 0)
-      .minus(displayFeeExtra ?? 0)
-      .gt(0)
+    isEnoughPaymentBalance = feeAssetBalance?.balance
+      ? BigNumber(feeAssetBalance.balance)
+          .shiftedBy(-feePaymentMeta.decimals)
+          .minus(displayFeePaymentValue ?? 0)
+          .minus(displayFeeExtra ?? 0)
+          .gt(0)
+      : false
   }
 
   let displayEvmFeePaymentValue
@@ -248,7 +249,7 @@ export const useEditFeePaymentAsset = (
   feePaymentAssetId?: string,
 ) => {
   const { t } = useTranslation()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const feeAsPayment = useSetAsFeePayment()
 
   const {
     openModal: openEditFeePaymentAssetModal,
@@ -260,45 +261,8 @@ export const useEditFeePaymentAsset = (
     confirmRequired: true,
     defaultSelectedAsssetId: feePaymentAssetId,
     allowedAssets: acceptedFeePaymentAssets,
-    onSelect: (asset) =>
-      setFeeAsPayment(asset.id.toString(), {
-        onLoading: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onSuccess: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-        onError: (
-          <Trans
-            t={t}
-            i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-            tOptions={{
-              asset: asset.symbol,
-            }}
-          >
-            <span />
-            <span className="highlight" />
-          </Trans>
-        ),
-      }),
+    onSelect: (asset) => feeAsPayment.mutate(asset.id),
+    withExternal: true,
   })
 
   return {

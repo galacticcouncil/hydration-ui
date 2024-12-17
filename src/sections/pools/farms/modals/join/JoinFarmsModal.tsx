@@ -1,65 +1,51 @@
-import { Farm } from "api/farms"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import {
-  LoadingPage,
-  ModalContents,
-} from "components/Modal/contents/ModalContents"
+import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TJoinFarmsInput, useJoinFarms } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
-import { useBestNumber } from "api/chain"
 import { TLPData } from "utils/omnipool"
 import { JoinFarmsForm } from "./JoinFarmsForm"
-import { getStepState, Stepper } from "components/Stepper/Stepper"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 
 type JoinFarmModalProps = {
   onClose: () => void
   position?: TLPData
-  farms: Farm[]
   depositNft?: TDeposit
+  initialFarms?: TFarmAprData[]
 }
 
 export enum Page {
   JOIN_FARM,
   FARM_DETAILS,
-  WAIT,
 }
 
 export const JoinFarmModal = ({
   onClose,
   position,
-  farms,
   depositNft,
+  initialFarms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const {
-    pool: { meta, id: poolId },
+    pool: { meta, id: poolId, farms: allFarms },
   } = usePoolData()
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
-  const [currentStep, setCurrentStep] = useState(0)
+  const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
 
-  const bestNumber = useBestNumber()
+  const { getCurrentPeriod } = useFarmCurrentPeriod()
   const { page, direction, paginateTo } = useModalPagination()
 
-  const isMultipleFarms = farms.length > 1
+  const farms = initialFarms ?? allFarms
 
   const joinFarms = useJoinFarms({
     poolId,
     farms,
-    deposit: {
-      onClose,
-      disableAutoClose: isMultipleFarms,
-      onSuccess: () => setCurrentStep(1),
-      onSubmitted: () => (isMultipleFarms ? paginateTo(Page.WAIT) : null),
-      onError: onClose,
-    },
-    redeposit: {
+    options: {
       onClose,
       onError: onClose,
     },
@@ -74,45 +60,8 @@ export const JoinFarmModal = ({
     setSelectedFarm(null)
   }
 
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
-    .toBigNumber()
-    .dividedToIntegerBy(
-      selectedFarm?.globalFarm.blocksPerPeriod.toNumber() ?? 1,
-    )
-
-  const steps = [
-    {
-      id: 0,
-      label: t("farms.modal.join.first"),
-      loadingLabel: t("farms.modal.join.first.loading"),
-    },
-    ...(isMultipleFarms
-      ? [
-          {
-            id: 1,
-            label: t("farms.modal.join.rest"),
-            loadingLabel: t("farms.modal.join.rest.loading"),
-          },
-        ]
-      : []),
-  ]
-
   return (
-    <Modal
-      open
-      onClose={onClose}
-      disableCloseOutside
-      topContent={
-        isMultipleFarms ? (
-          <Stepper
-            steps={steps.map((step) => ({
-              label: step.label,
-              state: getStepState(step.id, currentStep),
-            }))}
-          />
-        ) : undefined
-      }
-    >
+    <Modal open onClose={onClose} disableCloseOutside>
       <ModalContents
         onClose={onClose}
         page={page}
@@ -158,14 +107,11 @@ export const JoinFarmModal = ({
             content: selectedFarm && (
               <FarmDetailsModal
                 farm={selectedFarm}
-                currentBlock={currentBlock?.toNumber()}
+                currentBlock={getCurrentPeriod(
+                  selectedFarm?.blocksPerPeriod.toString(),
+                )?.toNumber()}
               />
             ),
-          },
-          {
-            title: steps[currentStep].label,
-            headerVariant: "gradient",
-            content: <LoadingPage title={steps[currentStep].loadingLabel} />,
           },
         ]}
       />

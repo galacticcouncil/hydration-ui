@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -183,7 +183,7 @@ export const useFarmingPositionsData = ({
 } = {}) => {
   const { getShareTokenByAddress, getAsset } = useAssets()
   const { omnipoolDeposits = [], xykDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
   const { omnipool, xyk } = useAllFarmDeposits()
 
   const bestNumber = useBestNumber()
@@ -206,10 +206,7 @@ export const useFarmingPositionsData = ({
 
         const { symbol, decimals, name, id } = meta
         const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
-          (acc, curr) =>
-            acc.lt(curr.enteredAt.toBigNumber())
-              ? curr.enteredAt.toBigNumber()
-              : acc,
+          (acc, curr) => (acc.lt(curr.enteredAt) ? BN(curr.enteredAt) : acc),
           BN_0,
         )
 
@@ -217,10 +214,7 @@ export const useFarmingPositionsData = ({
           latestEnteredAtBlock,
           bestNumber.data.relaychainBlockNumber.toBigNumber(),
         )
-        const shares = getFloatingPointAmount(
-          deposit.data.shares.toBigNumber(),
-          decimals,
-        )
+        const shares = getFloatingPointAmount(deposit.data.shares, decimals)
 
         let position: XYKPosition | TLPData
         if (isXyk) {

@@ -197,6 +197,11 @@ export function formatBigNumber(
     return num.toFormat(0, BigNumber.ROUND_HALF_UP, fmtConfig)
   }
 
+  /* If decimal places is not set, display 2 decimals by default for percentages */
+  if (options?.type === "percentage" && !options.decimalPlaces) {
+    return num.toFormat(2, BigNumber.ROUND_HALF_UP, fmtConfig)
+  }
+
   /* Display only 2 decimals, by cutting them not rounding */
   if (options?.type !== "token") {
     return num
@@ -384,7 +389,7 @@ const SUBSCAN_PATHS = {
 export function createSubscanLink(
   path: keyof typeof SUBSCAN_PATHS,
   data: BigNumber | number | string,
-  chainKey: string = "hydradx",
+  chainKey: string = "hydration",
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -394,6 +399,11 @@ export function createSubscanLink(
     return ""
   }
 }
+
+export const wsToHttp = (url: string) =>
+  url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
+    secure ? "https://" : "http://",
+  )
 
 export const humanizeUnderscoredString = (value: string) => {
   return value.split("_").join(" ").toUpperCase()

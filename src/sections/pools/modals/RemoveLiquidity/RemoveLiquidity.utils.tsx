@@ -93,7 +93,7 @@ export const useRemoveLiquidity = (
         totalValue: position.totalValueShifted,
         removeValue: removeValue.shiftedBy(-meta.decimals),
         remainingValue: remainingValue.shiftedBy(-meta.decimals),
-        removeShares: totalShares.div(100).times(percentage),
+        removeShares: BN(totalShares).div(100).times(percentage),
       }
     }, [meta, isPositionMultiple, position, percentage])
 
@@ -154,7 +154,7 @@ export const useRemoveLiquidity = (
   const values = useMemo(() => {
     if (isPositionMultiple) {
       return position.reduce((acc, pos) => {
-        const values = calculateLiquidityValues(pos, pos.shares)
+        const values = calculateLiquidityValues(pos, BN(pos.shares))
 
         if (values) {
           return {
@@ -203,7 +203,7 @@ export const useRemoveLiquidity = (
       const txs = position.map((position) =>
         api.tx.omnipool.removeLiquidity(
           position.id,
-          position.shares.toFixed(0),
+          BN(position.shares).toFixed(0),
         ),
       )
 

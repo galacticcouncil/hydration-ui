@@ -5,6 +5,7 @@ import {
 } from "@ethersproject/providers"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
 import { Contract, Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
@@ -18,7 +19,6 @@ import {
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 type PermitMessage = {
   from: string
@@ -53,11 +53,21 @@ export class EthereumSigner {
     this.address = address
   }
 
-  getGasValues(tx: TransactionRequest) {
-    return Promise.all([
+  async getGasValues(tx: TransactionRequest) {
+    const [gas, gasPrice] = await Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
     ])
+
+    const onePrc = gasPrice.div(100)
+    const gasPricePlus = gasPrice.add(onePrc)
+
+    return {
+      gas,
+      gasPrice,
+      maxPriorityFeePerGas: gasPricePlus,
+      maxFeePerGas: gasPricePlus,
+    }
   }
 
   requestNetworkSwitch = async (chain: string) => {
@@ -72,15 +82,17 @@ export class EthereumSigner {
     }
   }
 
-  sendDispatch = async (data: string) => {
+  sendDispatch = async (data: string, chain?: string) => {
     return this.sendTransaction({
       to: DISPATCH_ADDRESS,
       data,
       from: this.address,
+      chain,
     })
   }
 
   getPermitNonce = async (): Promise<BigNumber> => {
+    await this.requestNetworkSwitch("hydration")
     const callPermit = new Contract(
       CALL_PERMIT_ADDRESS,
       CALL_PERMIT_ABI,
@@ -92,22 +104,48 @@ export class EthereumSigner {
     return BigNumber(nonce.toString())
   }
 
-  getPermit = async (data: string, nonce: BigNumber): Promise<PermitResult> => {
+  getPermit = async (
+    data: string | TransactionRequest,
+    nonce: BigNumber,
+  ): Promise<PermitResult> => {
     if (this.provider && this.address) {
-      await this.requestNetworkSwitch("hydradx")
-      const tx = {
-        from: this.address,
-        to: DISPATCH_ADDRESS,
-        data,
-      }
+      await this.requestNetworkSwitch("hydration")
+      const tx =
+        typeof data === "string"
+          ? {
+              from: this.address,
+              to: DISPATCH_ADDRESS,
+              data,
+            }
+          : {
+              from: data?.from ?? "",
+              to: data?.to ?? "",
+              data: data.data?.toString() ?? "",
+              gasLimit: data.gasLimit?.toString() ?? "0",
+            }
 
-      const [gas] = await this.getGasValues(tx)
+      if (!tx.from)
+        throw new Error("Permit transaction must have a 'from' field")
+      if (!tx.to) throw new Error("Permit transaction must have a 'to' field")
+      if (!tx.data)
+        throw new Error("Permit transaction must have a 'data' field")
+
+      let gasLimit = BigNumber(0)
+      if (tx.gasLimit) {
+        gasLimit = BigNumber(tx.gasLimit.toString())
+      } else {
+        const { gas } = await this.getGasValues(tx)
+        gasLimit = BigNumber(gas.toString())
+      }
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: gas.mul(11).div(10).toNumber(),
+          gaslimit: gasLimit
+            .multipliedBy(1.2) // add 20%
+            .decimalPlaces(0)
+            .toNumber(),
           nonce: nonce.toNumber(),
           deadline: Math.floor(Date.now() / 1000 + 3600),
         }
@@ -211,20 +249,18 @@ export class EthereumSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && chainsMap.get(chain) ? chain : "hydradx"
+    const from = chain && chainsMap.get(chain) ? chain : "hydration"
 
     await this.requestNetworkSwitch(from)
 
-    if (from === "hydradx") {
-      const [gas, gasPrice] = await this.getGasValues(tx)
-
-      const onePrc = gasPrice.div(100)
-      const gasPricePlus = gasPrice.add(onePrc)
+    if (from === "hydration") {
+      const { gas, maxFeePerGas, maxPriorityFeePerGas } =
+        await this.getGasValues(tx)
 
       return await this.signer.sendTransaction({
-        maxPriorityFeePerGas: gasPricePlus,
-        maxFeePerGas: gasPricePlus,
-        gasLimit: gas.mul(11).div(10), // add 10%
+        maxPriorityFeePerGas,
+        maxFeePerGas,
+        gasLimit: gas.mul(12).div(10), // add 20%
         ...tx,
       })
     } else {

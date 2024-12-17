@@ -1,5 +1,6 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain } from "@galacticcouncil/xcm-core"
+import { Parachain, ParachainAssetData } from "@galacticcouncil/xcm-core"
+import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
@@ -22,13 +23,10 @@ import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
-import { ParachainAssetsData } from "@galacticcouncil/xcm-core/build/types/chain/Parachain"
 import { useSpotPrice } from "api/spotPrice"
-import { wallet } from "api/xcm"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
 
-export const ASSETHUB_XCM_ASSET_SUFFIX = "_ah_"
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
 
@@ -53,12 +51,18 @@ export const ASSETHUB_ID_BLACKLIST = [
   "22222002",
   "22222003",
   "22222004",
+  "50000019",
+  "50000030",
+  "50000031",
+  "50000032",
+  "50000033",
+  "50000034",
 ]
 
 export const assethub = chainsMap.get("assethub") as Parachain
 export const assethubNativeToken = assethub.assetsData.get(
   "dot",
-) as ParachainAssetsData
+) as ParachainAssetData
 
 export const getAssetHubAssets = async (api: ApiPromise) => {
   try {
@@ -274,7 +278,7 @@ export type CreateTokenValues = {
 }
 
 type SwapNativeOptions = {
-  asset: ParachainAssetsData
+  asset: ParachainAssetData
   address: string
   nativeAmount: string
   assetAmount: string
@@ -295,15 +299,7 @@ export function assetHubSwapNativeForAssetExactOut(
         })
         .toU8a(),
       api
-        .createType("MultiLocation", {
-          parents: 0,
-          interior: {
-            x2: [
-              { palletInstance: options.asset.palletInstance },
-              { generalIndex: options.asset.id },
-            ],
-          },
-        })
+        .createType("MultiLocation", options.asset.xcmLocation as unknown)
         .toU8a(),
     ],
     options.assetAmount,
@@ -314,7 +310,7 @@ export function assetHubSwapNativeForAssetExactOut(
 }
 
 type XCMOutTransferOptions = {
-  asset: ParachainAssetsData
+  asset: ParachainAssetData
   address: string
   amount: string
   dstChain: string
@@ -322,6 +318,7 @@ type XCMOutTransferOptions = {
 
 export async function getAssetHubXcmOutTransfer(
   api: ApiPromise,
+  wallet: Wallet,
   options: XCMOutTransferOptions,
 ) {
   const xTransfer = await wallet.transfer(
@@ -375,7 +372,7 @@ export const useCreateAssetHubToken = ({
   // DOT to USDT spot price
   const { data: spotPrice } = useSpotPrice("10", "5")
 
-  return useMutation(async (values: CreateTokenValues) => {
+  return useMutation(async (values: CreateTokenValues & { wallet: Wallet }) => {
     if (!account) throw new Error("Missing account")
     if (!api) throw new Error("Asset Hub is not connected")
 
@@ -401,16 +398,20 @@ export const useCreateAssetHubToken = ({
     })
 
     // Transfer half of the USDT to Hydration
-    const usdtTransferCall = await getAssetHubXcmOutTransfer(api, {
-      asset: usdt,
-      address: account.address,
-      amount: usdtAmount.div(2).toString(),
-      dstChain: "hydradx",
-    })
+    const usdtTransferCall = await getAssetHubXcmOutTransfer(
+      api,
+      values.wallet,
+      {
+        asset: usdt,
+        address: account.address,
+        amount: usdtAmount.div(2).toString(),
+        dstChain: "hydration",
+      },
+    )
 
     // Transfer DOT from AH to Polkadot
     const dotTransferCall = values.dotAmount
-      ? await getAssetHubXcmOutTransfer(api, {
+      ? await getAssetHubXcmOutTransfer(api, values.wallet, {
           asset: assethubNativeToken,
           address: account.address,
           amount: values.dotAmount,

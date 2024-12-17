@@ -1,14 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAssetHubAssetRegistry } from "api/external/assethub"
-import { TExternal, useAssets } from "providers/assets"
+import { useAssets } from "providers/assets"
 import { useProviderRpcUrlStore } from "api/provider"
-import { getXYKVolumeAssetTotalValue, useXYKTradeVolumes } from "api/volume"
+import { useXYKSquidVolumes } from "api/volume"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
-import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { BN_0, BN_NAN } from "utils/constants"
+import {
+  useExternalTokenMeta,
+  useUserExternalTokenStore,
+} from "sections/wallet/addToken/AddToken.utils"
+
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
+import BN from "bignumber.js"
 
 const useMissingExternalAssets = (ids: string[]) => {
   const { tradable, getAsset } = useAssets()
@@ -48,35 +52,33 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const { poolService } = useRpcProvider()
   const { getAsset } = useAssets()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+  const getExternalMeta = useExternalTokenMeta()
 
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
-  const volumes = useXYKTradeVolumes(poolsAddress)
+  const { data: volumes = [], isLoading: isVolumesLoading } =
+    useXYKSquidVolumes(poolsAddress)
 
-  const values = useMemo(() => {
-    return poolsAddress.map((poolAddress) => {
-      const volume = volumes.find(
-        (volume) => volume.data?.poolAddress === poolAddress,
-      )
+  const { volumeAssets = [], allAssets = [] } = useMemo(() => {
+    if (volumes.length) {
+      const assetIds: string[] = []
+      const volumeAsseIds: string[] = []
+      volumes.forEach((volume) => {
+        volumeAsseIds.push(volume.assetId)
+        assetIds.push(volume.assetId)
+        assetIds.push(volume.assetIdB)
+      })
 
-      const sums = getXYKVolumeAssetTotalValue(volume?.data)
+      return {
+        volumeAssets: [...new Set(volumeAsseIds)],
+        allAssets: [...new Set(assetIds)],
+      }
+    }
 
-      if (!volume?.data || !sums) return undefined
+    return {}
+  }, [volumes])
 
-      return { poolAddress, assets: Object.keys(sums), sums }
-    })
-  }, [poolsAddress, volumes])
+  const missingAssets = useMissingExternalAssets(allAssets)
 
-  // Get all uniques assets in pools
-  const allAssetsInPools = [
-    ...new Set(
-      values.filter(isNotNil).reduce((acc, pool) => {
-        if (!pool) return acc
-        return [...acc, ...pool.assets]
-      }, [] as string[]),
-    ),
-  ]
-
-  const missingAssets = useMissingExternalAssets(allAssetsInPools)
   useQuery(
     ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
     async () => {
@@ -95,45 +97,36 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
     },
   )
 
-  const spotPrices = useDisplayPrices(valid ? allAssetsInPools : [])
+  const spotPrices = useDisplayPrices(valid ? volumeAssets : [])
 
-  const isLoading =
-    volumes.some((volume) => volume.isInitialLoading) ||
-    spotPrices.isInitialLoading
+  const isLoading = isVolumesLoading || spotPrices.isInitialLoading
+
   const data = useMemo(() => {
-    if (!volumes || !values || !spotPrices.data) return
+    if (
+      !!volumes.length &&
+      !!spotPrices.data?.length &&
+      spotPrices.data.every((spotPrice) => !spotPrice?.spotPrice.isNaN())
+    ) {
+      return volumes.map((value) => {
+        const assetMeta = getAsset(value.assetId)
+        const spotPrice = spotPrices.data?.find(
+          (spotPrice) => spotPrice?.tokenIn === value.assetId,
+        )?.spotPrice
 
-    const data = values
-      .map((value) => {
-        if (!value) return undefined
-        const volume = value.assets.reduce((acc, asset) => {
-          const assetMeta = getAsset(asset)
-          if (!assetMeta) return acc
-          const decimals = assetMeta.symbol
-            ? assetMeta.decimals
-            : missingAssets.find(
-                (missingAsset) =>
-                  missingAsset.id === (assetMeta as TExternal).externalId,
-              )?.decimals ?? 0
+        const decimals = assetMeta?.name
+          ? assetMeta.decimals
+          : getExternalMeta(value.assetId)?.decimals ?? 0
 
-          const sum = value.sums[assetMeta.id]
+        const volume = BN(value.volume)
+          .shiftedBy(-decimals)
+          .multipliedBy(spotPrice ?? 1)
+          .toFixed(3)
 
-          const spotPrice = spotPrices.data?.find(
-            (spotPrice) => spotPrice?.tokenIn === asset,
-          )?.spotPrice
-
-          if (!sum || !spotPrice) return BN_NAN
-          const sumScale = sum.shiftedBy(-decimals)
-
-          return acc.plus(sumScale.multipliedBy(spotPrice))
-        }, BN_0)
-
-        return { volume, poolAddress: value.poolAddress }
+        return { volume, poolAddress: value.poolId, assetMeta }
       })
-      .filter(isNotNil)
-
-    return data
-  }, [getAsset, missingAssets, spotPrices.data, values, volumes])
+    }
+    return undefined
+  }, [getAsset, getExternalMeta, spotPrices.data, volumes])
 
   return { data, isLoading }
 }

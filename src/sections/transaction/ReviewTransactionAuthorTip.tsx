@@ -11,11 +11,10 @@ import {
 } from "./ReviewTransactionAuthorTip.styled"
 import { useDebounce } from "react-use"
 import BN from "bignumber.js"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useTokenBalance } from "api/balances"
 import { useTranslation } from "react-i18next"
 import { Switch } from "components/Switch/Switch"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 type Props = {
   onChange?: (amount: BN) => void
@@ -29,15 +28,17 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   feePaymentAssetId,
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { native } = useAssets()
   const [amount, setAmount] = useState("")
   const [error, setError] = useState("")
   const [visible, setVisible] = useState(false)
   const { data: displayPrice } = useDisplayPrice(NATIVE_ASSET_ID)
+  const accountAssets = useAccountAssets()
 
   const asset = native
-  const { data: tokenBalance } = useTokenBalance(asset?.id, account?.address)
+  const tokenBalance = asset
+    ? accountAssets.data?.accountAssetsMap.get(asset.id)?.balance
+    : undefined
 
   const displayValue =
     displayPrice?.spotPrice && amount
@@ -47,7 +48,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   const isNativePaymentAssetFee = feePaymentAssetId === NATIVE_ASSET_ID
   const amountMax =
     isNativePaymentAssetFee && tokenBalance?.balance && feePaymentValue
-      ? tokenBalance.balance.minus(feePaymentValue)
+      ? BN(tokenBalance.balance).minus(feePaymentValue)
       : tokenBalance?.balance ?? BN_0
 
   useDebounce(

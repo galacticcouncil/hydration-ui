@@ -1,8 +1,7 @@
-import { useAccountBalances } from "api/accountBalances"
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BLOCK_TIME, BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
 import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -16,6 +15,9 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
+import { useAccountAssets } from "api/deposits"
+import BigNumber from "bignumber.js"
+import { scaleHuman } from "utils/balance"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -31,54 +33,59 @@ export const useAssetsData = ({
     tradable,
     stableswap,
     external,
+    erc20,
     getAsset,
     tokens,
-    native,
     getAssetWithFallback,
   } = useAssets()
   const address = givenAddress ?? account?.address
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const balances = useAccountBalances(address, true)
+  const { data: balances, isLoading: isBalancesLoading } =
+    useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
-  const nativeTokenWithBalance = balances.data?.native
+
   const tokensWithBalance = useMemo(() => {
-    if (nativeTokenWithBalance && balances.data) {
-      const filteredTokens = balances.data.balances.filter((balance) => {
-        if (balance.id === native.id) return false
+    if (balances) {
+      const filteredTokens =
+        balances.balances?.filter((balance) => {
+          const meta = getAsset(balance.assetId)
 
-        const meta = getAsset(balance.id)
+          return (
+            meta?.isToken ||
+            meta?.isStableSwap ||
+            meta?.isExternal ||
+            meta?.isErc20
+          )
+        }) ?? []
 
-        return meta?.isToken || meta?.isStableSwap || meta?.isExternal
-      })
-
-      return nativeTokenWithBalance.total.gt(0)
-        ? [...filteredTokens, nativeTokenWithBalance]
-        : filteredTokens
+      return filteredTokens
     }
 
     return []
-  }, [balances.data, getAsset, nativeTokenWithBalance, native])
+  }, [balances, getAsset])
 
   const tokensWithBalanceIds = tokensWithBalance.map(
-    (tokenWithBalance) => tokenWithBalance.id,
+    (tokenWithBalance) => tokenWithBalance.assetId,
   )
 
-  const currencyId = useAccountCurrency(address).data
-  const acceptedCurrencies = useAcceptedCurrencies(tokensWithBalanceIds)
+  const { data: currencyId } = useAccountCurrency(address)
+  const { data: acceptedCurrencies } =
+    useAcceptedCurrencies(tokensWithBalanceIds)
 
   const spotPrices = useDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
-    () => [...tokens, ...stableswap, ...external],
-    [external, stableswap, tokens],
+    () => [...tokens, ...stableswap, ...external, ...erc20],
+    [external, stableswap, tokens, erc20],
   )
 
   const data = useMemo(() => {
-    if (balances.isInitialLoading || !spotPrices.data) return []
+    if (isBalancesLoading || !spotPrices.data) return []
+
     const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const asset = getAssetWithFallback(balance.id)
+      const asset = getAssetWithFallback(balance.assetId)
       const isExternalInvalid = asset.isExternal && !asset.symbol
       const meta = isExternalInvalid
         ? getExternalMeta(asset.id) ?? asset
@@ -90,22 +97,28 @@ export const useAssetsData = ({
 
       const { decimals, id, name, symbol } = meta
       const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
-      const spotPrice =
-        spotPrices.data?.find((spotPrice) => spotPrice?.tokenIn === id)
-          ?.spotPrice ?? BN_NAN
+      const spotPrice = spotPrices.data?.find(
+        (spotPrice) => spotPrice?.tokenIn === id,
+      )?.spotPrice
 
-      const reserved = balance.reservedBalance.shiftedBy(-decimals)
-      const reservedDisplay = reserved.times(spotPrice)
+      const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
+      const reservedDisplay = spotPrice?.isFinite()
+        ? reserved.times(spotPrice).toString()
+        : undefined
 
-      const total = balance.total.shiftedBy(-decimals)
-      const totalDisplay = total.times(spotPrice)
+      const total = BigNumber(balance.total).shiftedBy(-decimals)
+      const totalDisplay = spotPrice?.isFinite()
+        ? total.times(spotPrice).toString()
+        : undefined
 
       const transferable = isExternalInvalid
         ? BN_NAN
-        : balance.balance.shiftedBy(-decimals)
-      const transferableDisplay = transferable.times(spotPrice)
+        : BigNumber(balance.balance).shiftedBy(-decimals)
+      const transferableDisplay = spotPrice?.isFinite()
+        ? transferable.times(spotPrice).toString()
+        : undefined
 
-      const isAcceptedCurrency = !!acceptedCurrencies.data?.find(
+      const isAcceptedCurrency = !!acceptedCurrencies?.find(
         (acceptedCurrencie) => acceptedCurrencie.id === id,
       )?.accepted
 
@@ -125,11 +138,11 @@ export const useAssetsData = ({
         meta,
         isPaymentFee,
         couldBeSetAsPaymentFee,
-        reserved,
+        reserved: reserved.toString(),
         reservedDisplay,
-        total,
+        total: total.toString(),
         totalDisplay,
-        transferable,
+        transferable: transferable.toString(),
         transferableDisplay,
         tradability,
         isExternalInvalid,
@@ -164,12 +177,12 @@ export const useAssetsData = ({
                 meta,
                 isPaymentFee: false,
                 couldBeSetAsPaymentFee: false,
-                reserved: BN_0,
-                reservedDisplay: BN_0,
-                total: BN_0,
-                totalDisplay: BN_0,
-                transferable: BN_0,
-                transferableDisplay: BN_0,
+                reserved: "0",
+                reservedDisplay: "0",
+                total: "0",
+                totalDisplay: "0",
+                transferable: "0",
+                transferableDisplay: "0",
                 tradability,
                 isExternalInvalid,
                 rugCheckData: undefined,
@@ -201,13 +214,13 @@ export const useAssetsData = ({
     getAssetWithFallback,
     getExternalMeta,
     tradable,
-    acceptedCurrencies.data,
+    acceptedCurrencies,
     currencyId,
-    balances.isInitialLoading,
+    isBalancesLoading,
     rugCheck.tokensMap,
   ])
 
-  return { data, isLoading: balances.isLoading || spotPrices.isInitialLoading }
+  return { data, isLoading: isBalancesLoading || spotPrices.isInitialLoading }
 }
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]
@@ -219,18 +232,19 @@ export const useLockedNativeTokens = () => {
   const locks = useTokenLocks(id)
   const spotPrice = useDisplayPrice(id)
 
-  const lockVesting =
-    locks.data
-      ?.find((lock) => lock.type === "ormlvest")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
-  const lockDemocracy =
-    locks.data
-      ?.find((lock) => lock.type === "democrac")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
-  const lockStaking =
-    locks.data
-      ?.find((lock) => lock.type === "stk_stks")
-      ?.amount.shiftedBy(-decimals) ?? BN_0
+  const lockVesting = scaleHuman(
+    locks.data?.find((lock) => lock.type === "ormlvest")?.amount ?? "0",
+    decimals,
+  )
+  const lockDemocracy = scaleHuman(
+    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? "0",
+    decimals,
+  )
+
+  const lockStaking = scaleHuman(
+    locks.data?.find((lock) => lock.type === "stk_stks")?.amount ?? "0",
+    decimals,
+  )
 
   const lockVestingDisplay = lockVesting.times(spotPrice.data?.spotPrice ?? 1)
   const lockDemocracyDisplay = lockDemocracy.times(
@@ -255,18 +269,21 @@ export const useUnlockableTokens = () => {
   const votes = useAccountVotes()
   const spotPrice = useDisplayPrice(native.id)
 
-  const lockDemocracy =
-    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? BN_0
+  const lockDemocracy = locks.data?.find(
+    (lock) => lock.type === "democrac",
+  )?.amount
 
-  const value = lockDemocracy.isZero()
+  const value = !lockDemocracy
     ? BN_0
-    : lockDemocracy
+    : BigNumber(lockDemocracy)
         .minus(votes.data?.maxLockedValue ?? 0)
         .shiftedBy(-native.decimals)
-  const date = votes.data?.maxLockedBlock.times(BLOCK_TIME)
+  const lockedSeconds = votes.data?.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
   const endDate =
     votes.data && !votes.data.maxLockedBlock.isZero()
-      ? durationInDaysAndHoursFromNow(date?.times(1000).toNumber() ?? 0)
+      ? durationInDaysAndHoursFromNow(
+          lockedSeconds?.times(1000).toNumber() ?? 0,
+        )
       : undefined
 
   return {
@@ -295,16 +312,16 @@ export const useUnlockTokens = ({
   return useMutation(async () => {
     const txs = ids.map((id) => api.tx.democracy.removeVote(id))
 
-    if (!txs.length) return null
+    if (!account?.address) return null
 
     return await createTransaction(
       {
-        tx: api.tx.utility.batchAll([
-          ...txs,
-          ...(account?.address
-            ? [api.tx.democracy.unlock(account.address)]
-            : []),
-        ]),
+        tx: txs.length
+          ? api.tx.utility.batchAll([
+              ...txs,
+              api.tx.democracy.unlock(account.address),
+            ])
+          : api.tx.democracy.unlock(account.address),
       },
       {
         toast,

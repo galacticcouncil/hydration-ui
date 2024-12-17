@@ -1,37 +1,37 @@
 import { BLOCK_TIME, BN_QUINTILL } from "utils/constants"
-import { PalletLiquidityMiningLoyaltyCurve } from "@polkadot/types/lookup"
 import BN, { BigNumber } from "bignumber.js"
 import type { worker as WorkerType } from "./LoyaltyGraph.worker"
 import Worker from "./LoyaltyGraph.worker?worker"
 import { wrap } from "comlink"
 import { useQuery } from "@tanstack/react-query"
-import { Maybe, undefinedNoop } from "utils/helpers"
+import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 
 const worker = wrap<typeof WorkerType>(new Worker())
 
 export const useLoyaltyRates = (
-  farm: Farm,
+  farm: TFarmAprData,
   apr: BigNumber | undefined,
-  loyaltyCurve: Maybe<PalletLiquidityMiningLoyaltyCurve>,
+  loyaltyCurve: { initialRewardPercentage: string; scaleCoef: string },
   periodsInFarm?: BN,
 ) => {
   return useQuery(
     QUERY_KEYS.mathLoyaltyRates(
-      farm.globalFarm.plannedYieldingPeriods,
+      farm.plannedYieldingPeriods,
       loyaltyCurve?.initialRewardPercentage,
       loyaltyCurve?.scaleCoef,
       periodsInFarm?.toString(),
     ),
     loyaltyCurve != null && apr
       ? async () => {
-          const periods = farm.globalFarm.plannedYieldingPeriods.toNumber()
-          const initialRewardPercentage = loyaltyCurve.initialRewardPercentage
-            .toBigNumber()
+          const periods = Number(farm.plannedYieldingPeriods)
+          const initialRewardPercentage = BN(
+            loyaltyCurve.initialRewardPercentage,
+          )
             .div(BN_QUINTILL)
             .toNumber()
-          const scaleCoef = loyaltyCurve.scaleCoef.toNumber()
+          const scaleCoef = Number(loyaltyCurve.scaleCoef)
 
           const axisScale = periods / 100
 

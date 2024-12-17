@@ -30,7 +30,7 @@ import { isEvmAccount } from "utils/evm"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
 import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
@@ -52,7 +52,7 @@ export const WalletAssetsTableActionsMob = ({
   const { t } = useTranslation()
   const { native } = useAssets()
   const { account } = useAccount()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const feeAsPayment = useSetAsFeePayment()
   const { featureFlags } = useRpcProvider()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
 
@@ -104,10 +104,10 @@ export const WalletAssetsTableActionsMob = ({
                   {t("wallet.assets.table.header.total")}
                 </Text>
                 <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.total })}
+                  {t("value.token", { value: row.total })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.totalDisplay} />
+                  <DisplayValue value={BN(row.totalDisplay ?? BN_NAN)} />
                 </Text>
               </div>
 
@@ -116,10 +116,10 @@ export const WalletAssetsTableActionsMob = ({
                   {t("wallet.assets.table.header.transferable")}
                 </Text>
                 <Text fs={14} lh={14} color="white">
-                  {t("value", { value: row.transferable })}
+                  {t("value.token", { value: row.transferable })}
                 </Text>
                 <Text fs={12} lh={12} color="whiteish500">
-                  <DisplayValue value={row.transferableDisplay} />
+                  <DisplayValue value={BN(row.transferableDisplay ?? BN_NAN)} />
                 </Text>
               </div>
             </>
@@ -195,7 +195,9 @@ export const WalletAssetsTableActionsMob = ({
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    disabled={account?.isExternalWalletConnected}
+                    disabled={
+                      account?.isExternalWalletConnected || row.meta.isErc20
+                    }
                   >
                     <PlusIcon />
                     {t("wallet.assets.table.actions.deposit")}
@@ -228,7 +230,7 @@ export const WalletAssetsTableActionsMob = ({
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    onClick={() => setFeeAsPayment(row.id)}
+                    onClick={() => feeAsPayment.mutate(row.id)}
                     disabled={
                       !row.couldBeSetAsPaymentFee ||
                       account?.isExternalWalletConnected
@@ -251,8 +253,8 @@ const NativeLocks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -280,6 +282,12 @@ const NativeLocks = ({
     ids: unlocable.ids,
     toast,
   })
+
+  const isUnlockDisabled = !unlocable.ids.length && unlocable.value.isZero()
+  const title =
+    !unlocable.ids.length && unlocable.value.gt(0)
+      ? t("wallet.assets.table.details.unlock")
+      : t("wallet.assets.table.details.clear")
 
   return (
     <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
@@ -399,13 +407,13 @@ const NativeLocks = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            !unlocable.ids.length ||
+            isUnlockDisabled ||
             unlock.isLoading
           }
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >
-          {t("wallet.assets.table.details.btn")}
+          {title}
         </Button>
       </div>
 
@@ -414,10 +422,10 @@ const NativeLocks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
 
@@ -458,8 +466,8 @@ const Locks = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
 }) => {
   const { t } = useTranslation()
 
@@ -470,10 +478,10 @@ const Locks = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={14} lh={14} color="white">
-          {t("value", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={12} lh={12} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
     </div>

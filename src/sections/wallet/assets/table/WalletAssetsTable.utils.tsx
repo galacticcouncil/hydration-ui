@@ -22,6 +22,7 @@ import {
   defaultPaginationState,
   useTablePagination,
 } from "components/Table/TablePagination"
+import { bnSort } from "utils/helpers"
 
 export const useAssetsTable = (
   data: AssetsTableData[],
@@ -56,9 +57,10 @@ export const useAssetsTable = (
         id: "transferable",
         header: t("wallet.assets.table.header.transferable"),
         sortingFn: (a, b) =>
-          a.original.transferableDisplay.gt(b.original.transferableDisplay)
-            ? 1
-            : -1,
+          bnSort(
+            a.original.transferableDisplay,
+            b.original.transferableDisplay,
+          ),
         cell: ({ row }) => (
           <div
             sx={{
@@ -87,7 +89,7 @@ export const useAssetsTable = (
         id: "total",
         header: t("wallet.assets.table.header.total"),
         sortingFn: (a, b) =>
-          a.original.totalDisplay.gt(b.original.totalDisplay) ? 1 : -1,
+          bnSort(a.original.totalDisplay, b.original.totalDisplay),
         cell: ({ row }) => (
           <WalletAssetsTableBalance
             balance={row.original.total}

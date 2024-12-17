@@ -10,6 +10,7 @@ import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { TUseOmnipoolAssetDetailsData } from "sections/stats/StatsPage.utils"
+import { omit } from "utils/rx"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -22,6 +23,10 @@ export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const [activeSection, setActiveSection] = useState<"overview" | "chart">(
     "overview",
+  )
+  const pieChartData = useMemo(
+    () => data.map((props) => omit(["farms"], props)),
+    [data],
   )
 
   const isLoadingVolume = !!data?.some((pool) => pool.isLoadingVolume)
@@ -83,7 +88,7 @@ export const PieWrapper = ({ data, isLoading, className }: PieWrapperProps) => {
       {activeSection === "overview" ? (
         <>
           {!isLoading ? (
-            <PieChart data={data} property="tvl" />
+            <PieChart data={pieChartData} property="tvl" />
           ) : (
             <PieSkeleton />
           )}

@@ -1,17 +1,29 @@
-import { type TradeRouter, type PoolService } from "@galacticcouncil/sdk"
+import {
+  type TradeRouter,
+  type PoolService,
+  type BalanceClient,
+} from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
-import { ReactNode, createContext, useContext, useMemo } from "react"
+import {
+  pingAllProvidersAndSort,
+  TFeatureFlags,
+  useProviderAssets,
+  useProviderData,
+  useProviderRpcUrlStore,
+} from "api/provider"
+import { ReactNode, createContext, useContext, useEffect, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
 import { AssetsProvider } from "./assets"
+import { differenceInHours } from "date-fns"
 
 type TProviderContext = {
   api: ApiPromise
   tradeRouter: TradeRouter
   poolService: PoolService
+  balanceClient: BalanceClient
   isLoaded: boolean
   featureFlags: TFeatureFlags
 }
@@ -21,21 +33,37 @@ const ProviderContext = createContext<TProviderContext>({
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
   poolService: {} as TProviderContext["poolService"],
+  balanceClient: {} as TProviderContext["balanceClient"],
 })
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
+const RPC_PING_HOUR_INTERVAL = 4
+
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry.getState()
   const isAssets = !!assets.length
-  const providerData = useProviderData()
+  const { data: providerData } = useProviderData()
   const displayAsset = useDisplayAssetStore()
   useProviderAssets()
   useShareTokens()
 
+  useEffect(() => {
+    const { rpcUrlList, updatedAt } = useProviderRpcUrlStore.getState()
+
+    const hourDiff = differenceInHours(new Date(), updatedAt)
+
+    const shouldPing =
+      hourDiff >= RPC_PING_HOUR_INTERVAL || rpcUrlList.length === 0
+
+    if (shouldPing) {
+      pingAllProvidersAndSort()
+    }
+  }, [])
+
   useWindowFocus({
     onFocus: () => {
-      const provider = providerData.data?.api
+      const provider = providerData?.api
 
       if (provider && !provider.isConnected) {
         provider.connect()
@@ -44,7 +72,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   })
 
   const value = useMemo(() => {
-    if (!!providerData.data && isAssets) {
+    if (!!providerData && isAssets) {
       const {
         isStableCoin,
         stableCoinId: chainStableCoinId,
@@ -73,10 +101,11 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return {
-        poolService: providerData.data.poolService,
-        api: providerData.data.api,
-        tradeRouter: providerData.data.tradeRouter,
-        featureFlags: providerData.data.featureFlags,
+        poolService: providerData.poolService,
+        api: providerData.api,
+        tradeRouter: providerData.tradeRouter,
+        balanceClient: providerData.balanceClient,
+        featureFlags: providerData.featureFlags,
         isLoaded: true,
       }
     }
@@ -85,14 +114,14 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       isLoaded: false,
       api: {} as TProviderContext["api"],
       tradeRouter: {} as TradeRouter,
+      balanceClient: {} as BalanceClient,
       featureFlags: {
-        referrals: true,
         dispatchPermit: true,
       } as TProviderContext["featureFlags"],
       poolService: {} as TProviderContext["poolService"],
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayAsset, isAssets, providerData.data])
+  }, [displayAsset, isAssets, providerData])
 
   return (
     <ProviderContext.Provider value={value}>

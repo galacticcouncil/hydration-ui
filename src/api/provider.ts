@@ -5,21 +5,22 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { omit, pick } from "utils/rx"
+import { pick, uniqBy } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
+  BalanceClient,
   PoolService,
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
-import { undefinedNoop } from "utils/helpers"
+import { identity, undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
-import { getPendulumAssetIdFromGeneralKey } from "utils/externalAssets"
-import { pendulum } from "./external/pendulum"
+import { getExternalId } from "utils/externalAssets"
+import { pingRpc } from "utils/rpc"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -32,16 +33,18 @@ export type ProviderProps = {
 }
 
 export type TFeatureFlags = {
-  referrals: boolean
   dispatchPermit: boolean
-}
+} & { [key: string]: boolean }
+
+export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
 
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -49,7 +52,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dwellir",
     url: "wss://hydradx-rpc.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -57,7 +61,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -65,7 +70,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dotters",
     url: "wss://hydration.dotters.network",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -73,16 +79,17 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: ["development"],
     dataEnv: "testnet",
   },
   {
-    name: "Rococo via GC",
-    url: "wss://hydradx-rococo-rpc.play.hydration.cloud",
-    indexerUrl: "https://hydradx-rococo-explorer.play.hydration.cloud/graphql",
+    name: "Paseo",
+    url: `wss://${PASEO_WS_URL}`,
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
-      "https://squid.subsquid.io/hydradx-rococo-data-squid/v/v1/graphql",
+      "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
     env: ["rococo", "development"],
     dataEnv: "testnet",
   },
@@ -96,11 +103,29 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
+export const isTestnetRpcUrl = (url: string) =>
+  PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
+
+export async function pingAllProvidersAndSort() {
+  const fastestRpc = await Promise.race(
+    PROVIDER_URLS.map(async (url) => {
+      const time = await pingRpc(url)
+      return { url, time }
+    }),
+  )
+
+  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
+  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+}
+
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    rpcUrlList: string[]
     autoMode: boolean
+    updatedAt: number
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
     getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
@@ -108,8 +133,11 @@ export const useProviderRpcUrlStore = create(
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      rpcUrlList: [],
+      updatedAt: 0,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
@@ -123,18 +151,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.1,
-      getStorage: () => ({
-        async getItem(name: string) {
-          return window.localStorage.getItem(name)
-        },
-        setItem(name, value) {
-          window.localStorage.setItem(name, value)
-        },
-        removeItem(name) {
-          window.localStorage.removeItem(name)
-        },
-      }),
+      version: 3.2,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -143,10 +160,15 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl } = useProviderRpcUrlStore(
-    useShallow((state) => pick(state, ["autoMode", "rpcUrl"])),
+  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+    useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? PROVIDER_URLS : [rpcUrl]
+  return autoMode ? rpcUrlList : [rpcUrl]
+}
+
+export const useIsTestnet = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  return isTestnetRpcUrl(rpcUrlList[0])
 }
 
 export const useProviderAssets = () => {
@@ -186,15 +208,11 @@ export const useProviderAssets = () => {
                 (tradeAsset) => tradeAsset.id === asset.id,
               )
               return {
-                ...omit(["externalId"], asset),
+                ...asset,
                 symbol: asset.symbol ?? "",
                 decimals: asset.decimals ?? 0,
                 name: asset.name ?? "",
-                externalId:
-                  asset.origin === pendulum.parachainId &&
-                  typeof asset.externalId === "object"
-                    ? getPendulumAssetIdFromGeneralKey(asset.externalId)
-                    : asset.externalId?.toString(),
+                externalId: getExternalId(asset),
                 isTradable,
               }
             }),
@@ -249,23 +267,25 @@ export const useProviderData = () => {
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
-        api.query.referrals,
+      const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
         tradeRouter.getPools(),
       ])
+
+      const balanceClient = new BalanceClient(api)
 
       return {
         api,
         tradeRouter,
         poolService,
+        balanceClient,
         featureFlags: {
-          referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
         } as TFeatureFlags,
       }
     },
     {
+      enabled: rpcUrlList.length > 0,
       refetchOnWindowFocus: false,
       retry: false,
       onSettled: (data) => {
@@ -331,4 +351,15 @@ export function getProviderInstance(api: ApiPromise) {
   // @ts-ignore
   const options = api?._options
   return options?.provider as WsProvider
+}
+
+export const useProviderPing = (urls: string[], timeoutMs?: number) => {
+  return useQuery(["providerPing", urls], async () => {
+    return Promise.all(
+      urls.map(async (url) => {
+        const time = await pingRpc(url, timeoutMs)
+        return { url, time }
+      }),
+    )
+  })
 }

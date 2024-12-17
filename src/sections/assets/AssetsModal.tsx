@@ -15,6 +15,7 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { useAssetsData } from "./AssetsModal.utils"
 import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
 import { TAsset } from "providers/assets"
+import BN from "bignumber.js"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
@@ -81,7 +82,7 @@ export const AssetsModalContent = ({
   const sortedBonds = useMemo(
     () =>
       [...bonds.allowed].sort((a, b) => {
-        return b.displayValue.minus(a.displayValue).toNumber()
+        return BN(b.displayValue).minus(a.displayValue).toNumber()
       }),
     [bonds.allowed],
   )

@@ -4,90 +4,76 @@ import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import { Maybe, undefinedNoop } from "utils/helpers"
-import { u32 } from "@polkadot/types"
+import { u32, Vec } from "@polkadot/types"
 import BigNumber from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { calculateFreeBalance } from "./balances"
+import { parseBalanceData } from "./balances"
+import { ITuple } from "@polkadot/types-codec/types"
+import { OrmlTokensAccountData } from "@polkadot/types/lookup"
 
 export const useAccountBalances = (
-  id: Maybe<AccountId32 | string>,
+  address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) => {
   const { api, isLoaded } = useRpcProvider()
   return useQuery(
     noRefresh
-      ? QUERY_KEYS.accountBalances(id)
-      : QUERY_KEYS.accountBalancesLive(id),
-    !!id ? getAccountBalances(api, id) : undefinedNoop,
-    { enabled: id != null && isLoaded },
+      ? QUERY_KEYS.accountBalances(address)
+      : QUERY_KEYS.accountBalancesLive(address),
+    !!address ? getAccountBalances(api, address) : undefinedNoop,
+    { enabled: address != null && isLoaded },
   )
 }
 
-export const useAccountsBalances = (ids: string[]) => {
+export const useAccountsBalances = (addresses: string[]) => {
   const { api } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.accountsBalances(ids), () =>
-    Promise.all(ids.map((id) => getAccountBalances(api, id)())),
+  return useQuery(
+    QUERY_KEYS.accountsBalances(addresses),
+    () =>
+      Promise.all(
+        addresses.map((address) => getAccountBalances(api, address)()),
+      ),
+    { enabled: !!addresses.length },
   )
 }
 
-export const getAccountBalances =
-  (api: ApiPromise, accountId: AccountId32 | string) => async () => {
-    const [tokens, nativeData] = await Promise.all([
-      api.query.tokens.accounts.entries(accountId),
-      api.query.system.account(accountId),
-    ])
-    const balances = tokens.map(([key, data]) => {
-      const [, id] = key.args
+export const getAccountBalanceData = async (
+  api: ApiPromise,
+  accountId: AccountId32 | string,
+) => {
+  return await api.call.currenciesApi.accounts<
+    Vec<ITuple<[u32, OrmlTokensAccountData]>>
+  >(accountId.toString())
+}
 
-      const freeBalance = new BigNumber(data.free.toHex())
-      const reservedBalance = new BigNumber(data.reserved.toHex())
-      const frozenBalance = new BigNumber(data.frozen.toHex())
-      const balance = new BigNumber(
-        calculateFreeBalance(freeBalance, frozenBalance) ?? NaN,
-      )
+export const getAccountBalances = (
+  api: ApiPromise,
+  accountId: AccountId32 | string,
+) => {
+  return async () => {
+    const tokens = await getAccountBalanceData(api, accountId.toString())
 
-      return {
-        accountId: accountId.toString(),
-        id: id.toString(),
-        balance,
-        total: freeBalance.plus(reservedBalance),
-        reservedBalance,
-        freeBalance,
-      }
+    const balances = tokens.map(([id, data]) => {
+      return parseBalanceData(data, id.toString(), accountId.toString())
     })
 
-    const freeBalance = new BigNumber(nativeData.data.free.toHex())
-
-    const frozenBalance = new BigNumber(nativeData.data.frozen.toHex())
-    const reservedBalance = new BigNumber(nativeData.data.reserved.toHex())
-
-    const balance = freeBalance.minus(frozenBalance)
-
-    const native = {
+    const native = balances.find(
+      ({ assetId }) => assetId === NATIVE_ASSET_ID,
+    ) ?? {
       accountId: accountId.toString(),
-      id: NATIVE_ASSET_ID,
-      balance,
-      total: freeBalance.plus(reservedBalance),
-      reservedBalance,
-      freeBalance,
+      assetId: NATIVE_ASSET_ID,
+      balance: new BigNumber(0),
+      total: new BigNumber(0),
+      freeBalance: new BigNumber(0),
+      reservedBalance: new BigNumber(0),
     }
 
     return { native, balances, accountId }
   }
-
-export const useAccountAssetBalances = (
-  pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
-) => {
-  const { api } = useRpcProvider()
-  return useQuery(
-    QUERY_KEYS.accountAssetBalances(pairs),
-    pairs != null ? getAccountAssetBalances(api, pairs) : undefinedNoop,
-    { enabled: pairs.length > 0 },
-  )
 }
 
-const getAccountAssetBalances =
+export const getAccountAssetBalances =
   (
     api: ApiPromise,
     pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,

@@ -1,3 +1,4 @@
+import { HydrationConfigService } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ApiPromise } from "@polkadot/api"
@@ -17,6 +18,7 @@ import { useSpotPrice } from "api/spotPrice"
 import {
   createXcmAssetKey,
   syncAssethubXcmConfig,
+  useCrossChainWallet,
   useCrossChainTransaction,
 } from "api/xcm"
 import BN from "bignumber.js"
@@ -41,7 +43,7 @@ import { useAssets } from "providers/assets"
 
 export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
-export const MEMEPAD_XCM_DST_CHAIN = "hydradx"
+export const MEMEPAD_XCM_DST_CHAIN = "hydration"
 
 export const HYDRA_DOT_ASSET_ID = "5"
 export const HYDRA_USDT_ASSET_ID = "10"
@@ -222,6 +224,7 @@ const useMemepadSteps = (step: MemepadStep) => {
 
 export const useMemepad = () => {
   const { api } = useRpcProvider()
+  const wallet = useCrossChainWallet()
   const [step, setStep] = useState(MemepadStep.CREATE_TOKEN)
   const [supplyPerc, setSupplyPerc] = useState(50)
   const dotTransferredRef = useRef(false)
@@ -284,6 +287,7 @@ export const useMemepad = () => {
       // Create token on Assethub
       if (currentStep === 0) {
         await createToken.mutateAsync({
+          wallet,
           id: token.id,
           name: token.name,
           symbol: token.symbol,
@@ -309,11 +313,6 @@ export const useMemepad = () => {
         // Sync registered token with assethub XCM config
         const { assetId } = getInternalIdFromResult(result)
         internalId = assetId?.toString() ?? ""
-        const registeredAsset = externalAssetToRegisteredAsset(
-          token,
-          internalId,
-        )
-        syncAssethubXcmConfig(registeredAsset)
 
         form.setValue("internalId", internalId)
         setNextStep()
@@ -324,6 +323,7 @@ export const useMemepad = () => {
         // Transfer DOT from AH to Hydration
         if (!dotTransferredRef.current) {
           await xTransfer.mutateAsync({
+            wallet,
             amount: BN(token.xykPoolSupply)
               .plus(DOT_HYDRATION_FEE_BUFFER)
               .toString(),
@@ -338,8 +338,17 @@ export const useMemepad = () => {
         }
 
         // Transfer created token to Hydration
-        const xcmAssetKey = createXcmAssetKey(id, values.symbol)
+        const xcmAssetKey = createXcmAssetKey(id, values.symbol, values.origin)
+        const registeredAsset = externalAssetToRegisteredAsset(
+          token,
+          internalId,
+        )
+        syncAssethubXcmConfig(
+          registeredAsset,
+          wallet.config as HydrationConfigService,
+        )
         await xTransfer.mutateAsync({
+          wallet,
           amount: BN(values.supply).minus(values.deposit).toString(),
           asset: xcmAssetKey,
           srcAddr: values?.account ?? "",
