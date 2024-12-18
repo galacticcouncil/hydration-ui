@@ -13,6 +13,8 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
     gap: 6px;
     align-items: center;
 
+    transition: ${theme.transitions.colors};
+
     padding: 4px 8px 4px 4px;
     height: 38px;
 
@@ -61,6 +63,8 @@ export const SMaxButton = styled.button(
     line-height: 140%;
     text-transform: uppercase;
     color: ${theme.text.medium};
+
+    transition: ${theme.transitions.colors};
 
     border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
     background: ${theme.buttons.secondary.low.rest};
