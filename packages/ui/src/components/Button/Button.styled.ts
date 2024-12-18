@@ -114,13 +114,13 @@ const outlineVariants = createVariants((theme) => ({
     theme.buttons.primary.high.onButton,
     theme.buttons.primary.high.rest,
     "transparent",
-    theme.buttons.primary.high.dim,
+    theme.buttons.primary.high.hover,
   ),
   secondary: outlineVariantStyles(
     theme.buttons.primary.medium.onOutline,
     theme.buttons.primary.medium.rest,
     "transparent",
-    theme.buttons.primary.medium.dim,
+    theme.buttons.primary.medium.hover,
   ),
   tertiary: outlineVariantStyles(
     theme.text.medium,
