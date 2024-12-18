@@ -10,12 +10,15 @@ import { SNavBarItemHidden } from "./MobileNavBar.styled"
 import { MobileNavBarItem } from "./MobileNavBarItem"
 import { MoreButton } from "./MoreButton"
 import { SNoFunBadge } from "components/Layout/Header/menu/HeaderMenu.styled"
+import { useState } from "react"
 
 export const MobileNavBarContent = () => {
   const { t } = useTranslation()
   const { featureFlags } = useRpcProvider()
   const search = useSearch()
   const isMediumMedia = useMedia(theme.viewport.gte.sm)
+
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null)
 
   const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
     (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
@@ -53,7 +56,18 @@ export const MobileNavBarContent = () => {
         .sort((a, b) => a.mobOrder - b.mobOrder)
         .map((item, index) => {
           if (item.subItems?.length) {
-            return <HeaderSubMenu key={index} item={item} />
+            return (
+              <HeaderSubMenu
+                isOpen={activeSubMenu === item.key}
+                onOpenChange={() =>
+                  setActiveSubMenu((prev) =>
+                    prev === item.key ? null : item.key,
+                  )
+                }
+                key={index}
+                item={item}
+              />
+            )
           }
           if (item.external) {
             return (
