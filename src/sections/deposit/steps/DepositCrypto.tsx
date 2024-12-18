@@ -11,7 +11,13 @@ export const DepositCrypto = () => {
     <SContainer>
       <SCryptoBlock href="https://banxa.com" rel="noreferrer" target="_blank">
         <div>
-          <img src={BanxaLogo} width={100} alt="Banxa" sx={{ mb: 10 }} />
+          <img
+            src={BanxaLogo}
+            width={100}
+            height={16}
+            alt="Banxa"
+            sx={{ mb: 10 }}
+          />
           <Text color="basic400">{t("deposit.crypto.banxa.description")}</Text>
         </div>
         <Text

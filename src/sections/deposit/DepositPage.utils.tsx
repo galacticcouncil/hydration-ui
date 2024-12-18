@@ -24,6 +24,7 @@ export const CEX_DEPOSIT_CONFIG = [
     assets: [
       {
         assetId: "5",
+        minDeposit: 2,
         route: ["polkadot", "hydration"],
         data: hydration.assetsData.get("dot")!,
       },
@@ -92,28 +93,29 @@ export const CEX_DEPOSIT_CONFIG = [
   },
 ]
 
+export const CEX_MIN_DEPOSIT_VALUES: Record<string, number> = {
+  "5": 2,
+}
+
 const DEFAULT_CEX_ID = CEX_DEPOSIT_CONFIG[0].id
 
 type DepositStore = {
   asset: AssetConfig | null
   cexId: string
   depositMethod: DepositMethod | null
-  isLoading: boolean
   depositedAmount: bigint
   setAsset: (asset: AssetConfig) => void
   setCexId: (cexId: string) => void
   setDepositMethod: (depositMethod: DepositMethod) => void
-  setIsLoading: (isLoading: boolean) => void
   setDepositedAmount: (depositedAmount: bigint) => void
   reset: () => void
 }
 
 const initialState = {
-  asset: null,
+  asset: CEX_DEPOSIT_CONFIG[0].assets[0],
   cexId: DEFAULT_CEX_ID,
   depositMethod: null,
-  isLoading: false,
-  depositedAmount: 0n,
+  depositedAmount: 22599486481n,
 }
 
 export const useDepositStore = create<DepositStore>((set) => ({
@@ -121,9 +123,7 @@ export const useDepositStore = create<DepositStore>((set) => ({
   setAsset: (asset) => set({ asset }),
   setCexId: (cexId) => set({ cexId }),
   setDepositMethod: (depositMethod) => set({ depositMethod }),
-  setIsLoading: (isLoading) => set({ isLoading }),
-  setDepositedAmount: (depositedAmount) =>
-    set({ depositedAmount, isLoading: false }),
+  setDepositedAmount: (depositedAmount) => set({ depositedAmount }),
   reset: () => set(initialState),
 }))
 
