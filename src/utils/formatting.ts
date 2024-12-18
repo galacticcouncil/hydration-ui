@@ -10,7 +10,7 @@ import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "./constants"
+import { BN_10, UNIFIED_ADDRESS_FORMAT_ENABLED } from "./constants"
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
@@ -253,7 +253,7 @@ export function shortenAccountAddress(address: string, length = 6) {
 export function safeConvertAddressSS58(
   address: Maybe<string>,
   ss58prefix: number,
-  useUnifiedFormat = true,
+  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
 ) {
   try {
     return encodeAddress(
@@ -267,7 +267,7 @@ export function safeConvertAddressSS58(
 
 export function getChainSpecificAddress(
   address: string,
-  useUnifiedFormat = true,
+  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
 ) {
   if (isEvmAccount(address)) {
     return H160.fromAccount(address)

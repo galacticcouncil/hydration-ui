@@ -10,6 +10,7 @@ import { DepositTransfer } from "sections/deposit/steps/DepositTransfer"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useCrossChainBalanceSubscription } from "api/xcm"
 import { DepositSuccess } from "sections/deposit/steps/DepositSuccess"
+import { DepositCrypto } from "sections/deposit/steps/DepositCrypto"
 
 export const DepositPage = () => {
   const { account } = useAccount()
@@ -45,12 +46,19 @@ export const DepositPage = () => {
               content: <DepositMethodSelect onSelect={setDepositMethod} />,
             },
             {
-              title: "Exchange and asset to deposit",
+              title:
+                depositMethod === DepositMethod.DepositCex
+                  ? "Exchange and asset to deposit"
+                  : depositMethod === DepositMethod.DepositCrypto
+                    ? "Fund with Crypto"
+                    : "",
               headerVariant: "GeistMono",
               noPadding: true,
               content:
                 depositMethod === DepositMethod.DepositCex ? (
                   <DepositCexSelect onAssetSelect={setAsset} />
+                ) : depositMethod === DepositMethod.DepositCrypto ? (
+                  <DepositCrypto />
                 ) : null,
             },
             {

@@ -8,7 +8,7 @@ import { theme as themeParams } from "theme"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_BILL } from "utils/constants"
+import { BN_BILL, UNIFIED_ADDRESS_FORMAT_ENABLED } from "utils/constants"
 import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAddress } from "utils/evm"
 import { Badge } from "components/Badge/Badge"
@@ -67,8 +67,7 @@ const CopyButton: React.FC<{
     <Wrapper className={className} onClick={copy}>
       <span>{children}</span>
       <Icon
-        sx={{ ml: [50, 100], color: "brightBlue200" }}
-        css={{ cursor: "pointer" }}
+        css={{ cursor: "pointer", "&:hover": { filter: "brightness(1.5)" } }}
         size={18}
         icon={copied ? <CheckIcon sx={{ color: "green400" }} /> : <CopyIcon />}
       />
@@ -102,6 +101,7 @@ export const Web3ConnectAccountSelect = ({
         genesisHash={genesisHash}
         provider={provider}
         size={32}
+        sx={{ flexShrink: 0 }}
       />
 
       <div sx={{ flex: "column", gap: 6 }} css={{ flex: 1 }}>
@@ -147,7 +147,7 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <div sx={{ mt: -4 }}>
-            {isEvm ? (
+            {isEvm || !UNIFIED_ADDRESS_FORMAT_ENABLED ? (
               <CopyButton
                 address={address}
                 sx={{
@@ -172,13 +172,18 @@ export const Web3ConnectAccountSelect = ({
                   side="bottom"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <CopyButton wrapper={SCopyDropdownItem} address={address}>
+                  <CopyButton
+                    wrapper={SCopyDropdownItem}
+                    address={address}
+                    sx={{ gap: [50, 100] }}
+                  >
                     New Polkadot format
                   </CopyButton>
                   {addressOldFormat && (
                     <CopyButton
                       wrapper={SCopyDropdownItem}
                       address={addressOldFormat}
+                      sx={{ gap: [50, 100] }}
                     >
                       Old format (for CEXES)
                     </CopyButton>
