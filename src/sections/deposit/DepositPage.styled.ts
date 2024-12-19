@@ -18,9 +18,13 @@ export const SDepositContent = styled.div`
 
   &[data-page="0"],
   &[data-page="4"] {
-    --modal-content-padding: 30px;
+    --modal-content-padding: 16px;
     --modal-header-padding-y: 0px;
     --modal-header-padding-x: 0px;
+  }
+
+  &[data-page="3"] {
+    --modal-header-height: 16px;
   }
 
   position: relative;
@@ -38,6 +42,15 @@ export const SDepositContent = styled.div`
   color: #fff;
 
   @media ${theme.viewport.gte.xs} {
+    &[data-page="0"],
+    &[data-page="4"] {
+      --modal-content-padding: 30px;
+    }
+
+    &[data-page="3"] {
+      --modal-header-height: 30px;
+    }
+
     width: 100%;
     max-width: 610px;
     margin: 0 auto;

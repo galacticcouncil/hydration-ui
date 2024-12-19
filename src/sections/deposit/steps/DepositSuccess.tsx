@@ -73,13 +73,15 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
           description={t("deposit.success.cta.trade.description")}
           onClick={() => navigate({ to: LINKS.trade })}
         />
+        <StepButton
+          title={t("deposit.success.cta.wallet.title")}
+          description={t("deposit.success.cta.wallet.description")}
+          onClick={() => navigate({ to: LINKS.walletAssets })}
+        />
       </div>
       <div sx={{ textAlign: "center" }}>
-        <Button
-          variant="mutedSecondary"
-          onClick={() => navigate({ to: LINKS.walletAssets })}
-        >
-          {t("deposit.success.cta.wallet.back")}
+        <Button variant="mutedSecondary" onClick={onConfirm}>
+          {t("deposit.success.cta.depositMore")}
         </Button>
       </div>
     </div>

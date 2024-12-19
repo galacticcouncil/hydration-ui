@@ -1,6 +1,6 @@
 import { BigNumber } from "bignumber.js"
 import { useTranslation } from "react-i18next"
-import { required } from "utils/validators"
+import { required, validAddress } from "utils/validators"
 import { z } from "zod"
 
 export const useZodSchema = ({
@@ -40,5 +40,6 @@ export const useZodSchema = ({
 
   return z.object({
     amount: required.pipe(maxBalance).pipe(minBalance),
+    address: validAddress,
   })
 }

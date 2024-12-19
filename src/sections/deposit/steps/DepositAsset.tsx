@@ -7,9 +7,9 @@ import { Separator } from "components/Separator/Separator"
 import { Spinner } from "components/Spinner/Spinner"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
-import { useCallback, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useCustomCompareEffect } from "react-use"
+import { useCustomCompareEffect, usePrevious } from "react-use"
 import { AccountBox } from "sections/deposit/components/AccountBox"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
@@ -46,6 +46,14 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const assetKey = asset?.data.asset.key
 
   const balanceSnapshot = useRef<bigint | null>(null)
+
+  const prevAddress = usePrevious(address)
+
+  useEffect(() => {
+    if (prevAddress && prevAddress !== address) {
+      balanceSnapshot.current = null
+    }
+  }, [address, prevAddress])
 
   const setBalanceSnapshot = useCallback(
     (balances: AssetAmount[]) => {

@@ -13,7 +13,12 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import { BN_0, BN_1, BN_10 } from "utils/constants"
+import {
+  BN_0,
+  BN_1,
+  BN_10,
+  UNIFIED_ADDRESS_FORMAT_ENABLED,
+} from "utils/constants"
 import {
   getAddressVariants,
   getChainSpecificAddress,
@@ -175,6 +180,7 @@ export function WalletTransferSectionOnchain({
 
   const dest = form.watch("dest")
   const shouldShowDisclaimer =
+    UNIFIED_ADDRESS_FORMAT_ENABLED &&
     !!dest &&
     dest.toLowerCase() ===
       getAddressVariants(dest).polkadotAddress.toLowerCase()
@@ -262,11 +268,10 @@ export function WalletTransferSectionOnchain({
             />
             <div>
               <Text fs={13} color="basic100" font="GeistSemiBold">
-                Not sending to CEX
+                {t("wallet.assets.transfer.disclaimer.cex.title")}
               </Text>
               <Text fs={13} color="basic400">
-                I confirm that the destination of this transfer is not an
-                unsupported exchange.{" "}
+                {t("wallet.assets.transfer.disclaimer.cex.description")}
               </Text>
             </div>
           </SDiclaimerContainer>

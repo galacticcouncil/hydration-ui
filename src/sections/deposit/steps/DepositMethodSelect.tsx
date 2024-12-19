@@ -15,7 +15,7 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   return (
-    <div>
+    <>
       <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
         {t("deposit")}
       </GradientText>
@@ -36,6 +36,6 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           description={t("deposit.method.crypto.description")}
         />
       </div>
-    </div>
+    </>
   )
 }

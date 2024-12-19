@@ -5,17 +5,19 @@ import {
   useCrossChainWallet,
 } from "api/xcm"
 import BN from "bignumber.js"
+import { AddressBook } from "components/AddressBook/AddressBook"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { Button } from "components/Button/Button"
-import { InputBox } from "components/Input/InputBox"
-import { useMemo } from "react"
+import { Modal } from "components/Modal/Modal"
+import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDeposit } from "sections/deposit/DepositPage.utils"
 import { useZodSchema } from "sections/deposit/steps/DepositTransfer.utills"
+import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
-import { FormValues, undefinedNoop } from "utils/helpers"
+import { FormValues } from "utils/helpers"
 
 export type DepositTransferProps = {
   onTransferSuccess: () => void
@@ -27,6 +29,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { asset, setDepositedAmount } = useDeposit()
+  const [addressBookOpen, setAddressBookOpen] = useState(false)
 
   const address = account?.address ?? ""
   const srcChain = asset?.route[0] ?? ""
@@ -77,9 +80,12 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     mode: "onChange",
     defaultValues: {
       amount: "",
+      address,
     },
     resolver: zodResolver(zodSchema),
   })
+
+  const dstAddress = form.watch("address")
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (!asset) return
@@ -89,7 +95,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       wallet,
       amount: values.amount,
       srcAddr: address,
-      dstAddr: address,
+      dstAddr: dstAddress,
       srcChain: srcChain,
       dstChain: "hydration",
     })
@@ -99,44 +105,70 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     )
   }
 
+  function toggleAddressBook() {
+    setAddressBookOpen((open) => !open)
+  }
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-      <div sx={{ flex: "column", gap: 20 }}>
-        <div sx={{ flex: "column" }}>
+    <>
+      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+        <div sx={{ flex: "column", gap: [14, 20] }}>
           <Controller
             name="amount"
             control={form.control}
             render={({ field, fieldState }) => (
-              <AssetSelect
-                name={field.name}
-                value={field.value}
-                id={asset?.assetId ?? ""}
-                error={fieldState.error?.message}
-                title={t("selectAssets.asset")}
-                onChange={field.onChange}
-                balance={transferData.balance}
-                balanceMax={
-                  !transferData.max.isNaN() ? transferData.max : undefined
-                }
-                balanceLabel={t("selectAsset.balance.label")}
-              />
+              <div sx={{ flex: "column" }}>
+                <AssetSelect
+                  name={field.name}
+                  value={field.value}
+                  id={asset?.assetId ?? ""}
+                  error={fieldState.error?.message}
+                  title={t("selectAssets.asset")}
+                  onChange={field.onChange}
+                  balance={transferData.balance}
+                  balanceMax={
+                    !transferData.max.isNaN() ? transferData.max : undefined
+                  }
+                  balanceLabel={t("selectAsset.balance.label")}
+                />
+              </div>
             )}
           />
+          <Controller
+            name="address"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <div sx={{ flex: "column", mx: [-16, 0] }}>
+                <WalletTransferAccountInput
+                  label={t("xcm.transfer.destAddress")}
+                  name={field.name}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("wallet.assets.transfer.dest.placeholder")}
+                  openAddressBook={toggleAddressBook}
+                  error={fieldState.error?.message}
+                />
+              </div>
+            )}
+          />
+          <Button isLoading={isLoading} disabled={isLoading} variant="primary">
+            {t("deposit.cex.transfer.button")}
+          </Button>
         </div>
-
-        <InputBox
-          label={t("xcm.transfer.destAddress")}
-          withLabel
-          name="dest-address"
-          value={account?.address ?? ""}
-          onChange={undefinedNoop}
-          disabled
+      </form>
+      <Modal
+        open={addressBookOpen}
+        onClose={toggleAddressBook}
+        title="asda"
+        headerVariant="GeistMono"
+      >
+        <AddressBook
+          onSelect={(address) => {
+            form.setValue("address", address)
+            setAddressBookOpen(false)
+          }}
         />
-
-        <Button isLoading={isLoading} disabled={isLoading} variant="primary">
-          {t("deposit.cex.transfer.button")}
-        </Button>
-      </div>
-    </form>
+      </Modal>
+    </>
   )
 }
