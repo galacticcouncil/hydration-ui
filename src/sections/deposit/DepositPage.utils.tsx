@@ -112,7 +112,7 @@ type DepositStore = {
 }
 
 const initialState = {
-  asset: CEX_DEPOSIT_CONFIG[0].assets[0],
+  asset: null,
   cexId: DEFAULT_CEX_ID,
   depositMethod: null,
   depositedAmount: 22599486481n,
