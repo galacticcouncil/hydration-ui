@@ -63,7 +63,7 @@ export const SSelectAssetButton = styled(Button)`
   align-items: center;
   background: transparent;
 
-  width: 100%;
+  width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
 
   text-transform: none;
 
@@ -81,7 +81,7 @@ export const SSelectAssetButton = styled(Button)`
   }
 
   & > span {
-    width: 100%;
+    width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
     min-width: 0;
   }
 `

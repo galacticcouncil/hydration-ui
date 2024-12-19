@@ -12,9 +12,15 @@ type Props = {
   onClick?: () => void
   assetId: string
   className?: string
+  fullWidth?: boolean
 }
 
-export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
+export const AssetSelectButton = ({
+  onClick,
+  assetId,
+  className,
+  fullWidth,
+}: Props) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
   const asset = getAsset(assetId)
@@ -29,6 +35,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
 
   return (
     <SSelectAssetButton
+      fullWidth={fullWidth}
       className={className}
       size="small"
       onClick={(e) => {
@@ -39,14 +46,7 @@ export const AssetSelectButton = ({ onClick, assetId, className }: Props) => {
       <MultipleAssetLogo size={30} iconId={asset?.iconId} />
 
       {isAssetFound && (
-        <div
-          sx={{
-            flex: "column",
-            justify: "space-between",
-            minWidth: 0,
-            width: "100%",
-          }}
-        >
+        <div sx={{ flex: "column", justify: "space-between", minWidth: 0 }}>
           <Text fw={700} font="GeistMedium" lh={16} color="white">
             {symbol}
           </Text>

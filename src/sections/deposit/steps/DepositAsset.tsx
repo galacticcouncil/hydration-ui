@@ -120,6 +120,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           </Trans>
         </Text>
         <AssetSelectButton
+          fullWidth
           onClick={onAsssetSelect}
           assetId={asset?.assetId ?? ""}
         />
