@@ -11,11 +11,11 @@ import {
   SToggle,
 } from "./ToastSidebarGroup.styled"
 
-type Props = { title: string; children: ReactNode }
+type Props = { title: string; children: ReactNode; open?: boolean }
 
-export const ToastSidebarGroup = ({ title, children }: Props) => {
+export const ToastSidebarGroup = ({ title, children, open = true }: Props) => {
   const { t } = useTranslation()
-  const [isOpen, toggle] = useToggle(true)
+  const [isOpen, toggle] = useToggle(open)
 
   return (
     <div>
