@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import CopyIcon from "assets/icons/CopyIcon.svg?react"
 import { AccountAvatar } from "components/AccountAvatar/AccountAvatar"
 import { Text } from "components/Typography/Text/Text"
-import { useCopyToClipboard, useMedia } from "react-use"
+import { useMedia } from "react-use"
 import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
@@ -18,10 +18,10 @@ import {
   SCopyDropdownItem,
 } from "sections/web3-connect/accounts/Web3ConnectAccountSelect.styled"
 import { ButtonTransparent } from "components/Button/Button"
-import React, { useEffect, useState } from "react"
 import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { genesisHashToChain } from "utils/helpers"
+import { useCopy } from "hooks/useCopy"
 
 type Props = {
   name: string
@@ -40,31 +40,17 @@ const CopyButton: React.FC<{
   children?: React.ReactNode
   wrapper?: React.ElementType
 }> = ({ address, children, className, wrapper }) => {
-  const [copied, setCopied] = useState(false)
-  const [, copyToClipboard] = useCopyToClipboard()
-
-  useEffect(() => {
-    if (!copied) return
-    const id = setTimeout(() => {
-      setCopied(false)
-    }, 5000)
-
-    return () => {
-      clearTimeout(id)
-      setCopied(false)
-    }
-  }, [copied])
+  const { copied, copy } = useCopy(5000)
 
   const Wrapper = wrapper || ButtonTransparent
 
-  function copy(e: React.MouseEvent) {
+  function copyHandler(e: React.MouseEvent) {
     e.stopPropagation()
-    copyToClipboard(address)
-    setCopied(true)
+    copy(address)
   }
 
   return (
-    <Wrapper className={className} onClick={copy}>
+    <Wrapper className={className} onClick={copyHandler}>
       <span>{children}</span>
       <Icon
         css={{ cursor: "pointer", "&:hover": { filter: "brightness(1.5)" } }}
