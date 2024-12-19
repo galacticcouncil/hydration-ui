@@ -27,7 +27,13 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const navigate = useNavigate()
 
   return (
-    <div sx={{ flex: ["column", "row"], gap: [10, 100], mb: [24, 40] }}>
+    <div
+      sx={{
+        flex: ["column", "column", "row"],
+        gap: [10, 24, 100],
+        mb: [24, 40],
+      }}
+    >
       <DataValueList separated sx={{ flexGrow: 1 }}>
         <DataValue
           labelColor="brightBlue300"
@@ -67,12 +73,14 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
         </DataValue>
       </DataValueList>
       {!disconnected && (
-        <div sx={{ flex: "row", gap: 12 }}>
+        <div
+          sx={{ flex: "row", align: "center", justify: "flex-end", gap: 12 }}
+        >
           <Button
             size="compact"
             variant="mutedSecondary"
             onClick={() => navigate({ to: LINKS.deposit })}
-            fullWidth
+            sx={{ width: ["100%", "auto"] }}
           >
             <Icon size={22} sx={{ ml: -4 }} icon={<DownloadIcon />} />
             {t("deposit")}
@@ -81,7 +89,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             size="compact"
             variant="mutedSecondary"
             onClick={() => setTransferModalOpen(true)}
-            fullWidth
+            sx={{ width: ["100%", "auto"] }}
           >
             <Icon
               size={22}
@@ -90,13 +98,13 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             />
             {t("transfer")}
           </Button>
+          <WalletTransferModal
+            open={transferModalOpen}
+            initialAsset={NATIVE_ASSET_ID}
+            onClose={() => setTransferModalOpen(false)}
+          />
         </div>
       )}
-      <WalletTransferModal
-        open={transferModalOpen}
-        initialAsset={NATIVE_ASSET_ID}
-        onClose={() => setTransferModalOpen(false)}
-      />
     </div>
   )
 }
