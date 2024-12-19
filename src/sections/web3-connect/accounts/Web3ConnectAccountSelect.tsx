@@ -22,6 +22,7 @@ import CheckIcon from "assets/icons/CheckIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { genesisHashToChain } from "utils/helpers"
 import { useCopy } from "hooks/useCopy"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   name: string
@@ -70,6 +71,7 @@ export const Web3ConnectAccountSelect = ({
   isActive,
   provider,
 }: Props) => {
+  const { t } = useTranslation()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
@@ -163,7 +165,7 @@ export const Web3ConnectAccountSelect = ({
                     address={address}
                     sx={{ gap: [50, 100] }}
                   >
-                    New Polkadot format
+                    {t("walletConnect.copy.format.new")}
                   </CopyButton>
                   {addressOldFormat && (
                     <CopyButton
@@ -171,7 +173,7 @@ export const Web3ConnectAccountSelect = ({
                       address={addressOldFormat}
                       sx={{ gap: [50, 100] }}
                     >
-                      Old format (for CEXES)
+                      {t("walletConnect.copy.format.old")}
                     </CopyButton>
                   )}
                 </SCopyDropdownContent>

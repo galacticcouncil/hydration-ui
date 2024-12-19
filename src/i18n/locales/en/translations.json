@@ -481,6 +481,8 @@
   "walletConnect.externalWallet.modal.input.label": "Account address",
   "walletConnect.externalWallet.modal.input.placeholder": "Paste account address here...",
   "walletConnect.wc": "Wallet Connect",
+  "walletConnect.copy.format.new":"New Polkadot format",
+  "walletConnect.copy.format.old": "Old format (for CEXES)",
   "wallet.header.all": "All",
   "wallet.header.assets": "Assets",
   "wallet.header.liquidity": "Liquidity",
