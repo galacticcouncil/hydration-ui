@@ -159,8 +159,8 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       <Modal
         open={addressBookOpen}
         onClose={toggleAddressBook}
-        title="asda"
-        headerVariant="GeistMono"
+        title={t("deposit.cex.transfer.addressbook.title")}
+        headerVariant="gradient"
       >
         <AddressBook
           onSelect={(address) => {

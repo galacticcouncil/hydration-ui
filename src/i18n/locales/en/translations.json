@@ -1273,6 +1273,7 @@
   "deposit.cex.awaiting.title": "Awaiting deposit",
   "deposit.cex.transfer.title": "Deposit to Hydration",
   "deposit.cex.transfer.button": "Confirm deposit",
+  "deposit.cex.transfer.addressbook.title": "Select destination address",
   "deposit.method.cex.title": "Deposit from Centralized Exchange",
   "deposit.method.cex.description": "Some short description here so all less and more experienced people would understand che choice",
   "deposit.method.onchain.title": "On-chain deposit",
