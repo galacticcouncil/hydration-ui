@@ -2,6 +2,7 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
+import { useTranslation } from "react-i18next"
 import {
   SAssetSelect,
   SAssetSelectItem,
@@ -17,6 +18,7 @@ export const AssetSelect: React.FC<AssetSelectProps> = ({
   assets,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const { getAsset } = useAssets()
   return (
     <SAssetSelect>
@@ -27,7 +29,7 @@ export const AssetSelect: React.FC<AssetSelectProps> = ({
         font="GeistMedium"
         tTransform="uppercase"
       >
-        Asset
+        {t("selectAssets.asset")}
       </Text>
       {assets.map((asset) => {
         const { assetId } = asset

@@ -4,7 +4,7 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { StepButton } from "sections/deposit/components/StepButton"
 import { useDeposit } from "sections/deposit/DepositPage.utils"
 import { LINKS } from "utils/navigation"
@@ -33,42 +33,44 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
           icon={<FullSuccessIcon />}
         />
         <Text fs={19} lh={24} font="GeistMono" tAlign="center" sx={{ mb: 10 }}>
-          Deposit successful!
+          {t("deposit.success.title")}
         </Text>
         {assetDetails && (
           <Text fs={16} lh={22} color="basic400" tAlign="center">
-            Congtrats, you’ve succesfully deposit your{" "}
-            <Text as="span">
-              {t("value.tokenWithSymbol", {
+            <Trans
+              t={t}
+              i18nKey="deposit.success.description"
+              values={{
                 value: depositedAmount.toString(),
                 symbol: assetDetails.symbol,
                 fixedPointScale: assetDetails.decimals,
-              })}
-            </Text>{" "}
-            to Hydration. Wondering what you can do now?
+              }}
+            >
+              <span sx={{ color: "white" }} />
+            </Trans>
           </Text>
         )}
       </div>
 
       <div sx={{ flex: "column", gap: 20 }}>
         <StepButton
-          title="Stake HDX"
-          description="Stake Your HDX and get up to XX % APR"
+          title={t("deposit.success.cta.staking.title")}
+          description={t("deposit.success.cta.staking.description")}
           onClick={() => navigate({ to: LINKS.staking })}
         />
         <StepButton
-          title="Supply & borow"
-          description="Supply your asset as collateral, earn APR and borrow against it"
+          title={t("deposit.success.cta.borrow.title")}
+          description={t("deposit.success.cta.borrow.description")}
           onClick={() => navigate({ to: LINKS.borrow })}
         />
         <StepButton
-          title="Liquidity mining"
-          description="Provide liquidity and get up to XX % APR"
+          title={t("deposit.success.cta.liquidity.title")}
+          description={t("deposit.success.cta.liquidity.description")}
           onClick={() => navigate({ to: LINKS.liquidity })}
         />
         <StepButton
-          title="Trade, DCA & have fun"
-          description="DCA on Hydration to buy other assets"
+          title={t("deposit.success.cta.trade.title")}
+          description={t("deposit.success.cta.trade.description")}
           onClick={() => navigate({ to: LINKS.trade })}
         />
       </div>
@@ -77,7 +79,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
           variant="mutedSecondary"
           onClick={() => navigate({ to: LINKS.walletAssets })}
         >
-          Go back to wallet
+          {t("deposit.success.cta.wallet.back")}
         </Button>
       </div>
     </div>

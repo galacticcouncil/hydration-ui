@@ -16,7 +16,7 @@ import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { createToastMessages } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
-import { WS_QUERY_KEYS } from "utils/queryKeys"
+import { QUERY_KEYS, WS_QUERY_KEYS } from "utils/queryKeys"
 
 type TransferProps = {
   asset: string
@@ -65,16 +65,17 @@ export const useCrossChainTransfer = (
   wallet: Wallet,
   transfer: TransferProps,
 ) => {
+  const args = [
+    transfer.asset,
+    transfer.srcAddr,
+    transfer.srcChain,
+    transfer.dstAddr,
+    transfer.dstChain,
+  ] as const
   return useQuery(
-    ["asdasd", transfer],
+    QUERY_KEYS.xcmTransfer(...args),
     async () => {
-      return wallet.transfer(
-        transfer.asset,
-        transfer.srcAddr,
-        transfer.srcChain,
-        transfer.dstAddr,
-        transfer.dstChain,
-      )
+      return wallet.transfer(...args)
     },
     {
       enabled: !!wallet && !!transfer.asset,

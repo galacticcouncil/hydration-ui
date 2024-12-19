@@ -8,6 +8,7 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useCopy } from "hooks/useCopy"
 import { useShallow } from "hooks/useShallow"
+import { useTranslation } from "react-i18next"
 import {
   createCexWithdrawalUrl,
   useDeposit,
@@ -35,6 +36,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
   ss58Format,
   error,
 }) => {
+  const { t } = useTranslation()
   const { account } = useAccount()
   const { asset, cexId } = useDeposit()
 
@@ -52,7 +54,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           onClick={() => toggleWeb3Modal()}
         >
           <Text fs={11} color="whiteish500" tTransform="uppercase">
-            Deposit to
+            {t("deposit.cex.account.depositTo")}
           </Text>
           <AccountAvatar
             address={displayAddress || address}
@@ -95,7 +97,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
               copied ? <CheckIcon sx={{ color: "green400" }} /> : <CopyIcon />
             }
           />
-          Copy Address
+          {t("copyAddress")}
         </Button>
         <Button
           size="micro"
@@ -107,7 +109,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           }
         >
           <Icon size={10} sx={{ ml: -2 }} icon={<LinkIcon />} />
-          Open {cexId}
+          {t("open")} {cexId}
         </Button>
       </div>
     </SAccountBox>

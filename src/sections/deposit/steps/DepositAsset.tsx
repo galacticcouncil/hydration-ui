@@ -8,7 +8,7 @@ import { Spinner } from "components/Spinner/Spinner"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useCallback, useRef } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useCustomCompareEffect } from "react-use"
 import { AccountBox } from "sections/deposit/components/AccountBox"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
@@ -102,9 +102,14 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           tTransform="uppercase"
           color="whiteish500"
         >
-          <span>From</span>
-          <span>{CexIcon && <Icon size={14} icon={<CexIcon />} />}</span>
-          <span sx={{ color: "white" }}>{activeCex?.title}</span>
+          <Trans
+            t={t}
+            i18nKey="deposit.cex.asset.select.label"
+            values={{ name: activeCex?.title }}
+          >
+            {CexIcon && <Icon size={14} icon={<CexIcon />} />}
+            <span sx={{ color: "white" }} />
+          </Trans>
         </Text>
         <AssetSelectButton
           onClick={onAsssetSelect}
@@ -127,17 +132,18 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             ss58Format={chain && isAnyParachain(chain) ? chain.ss58Format : 0}
             error={
               !isAccountAllowed
-                ? `EVM Account not allowed for depositing ${asset?.data.asset.originSymbol}`
+                ? t("deposit.cex.account.evmError", {
+                    symbol: asset?.data.asset.originSymbol,
+                  })
                 : undefined
             }
           />
-
-          {minDeposit > 0 && asset && (
+          {isAccountAllowed && asset && minDeposit > 0 && (
             <div
               sx={{ flex: "row", align: "center", justify: "space-between" }}
             >
               <Text fs={12} color="basic400">
-                Minimal deposit amount:
+                {t("deposit.cex.amount.min.title")}:
               </Text>
               <Text fs={12} color="brightBlue300">
                 {t("value.tokenWithSymbol", {
@@ -147,12 +153,16 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
               </Text>
             </div>
           )}
-          <div sx={{ flex: "row", align: "center", justify: "center", gap: 6 }}>
-            <Spinner size={14} />
-            <Text fs={12} lh={12} font="GeistSemiBold" tTransform="uppercase">
-              Awaiting Deposit
-            </Text>
-          </div>
+          {isAccountAllowed && (
+            <div
+              sx={{ flex: "row", align: "center", justify: "center", gap: 6 }}
+            >
+              <Spinner size={14} />
+              <Text fs={12} lh={12} font="GeistSemiBold" tTransform="uppercase">
+                {t("deposit.cex.awaiting.title")}
+              </Text>
+            </div>
+          )}
         </>
       )}
     </div>

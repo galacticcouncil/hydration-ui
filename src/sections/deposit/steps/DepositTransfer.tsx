@@ -134,7 +134,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
         />
 
         <Button isLoading={isLoading} disabled={isLoading} variant="primary">
-          Confirm deposit
+          {t("deposit.cex.transfer.button")}
         </Button>
       </div>
     </form>

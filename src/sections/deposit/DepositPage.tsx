@@ -10,8 +10,10 @@ import { DepositSuccess } from "sections/deposit/steps/DepositSuccess"
 import { DepositTransfer } from "sections/deposit/steps/DepositTransfer"
 import { DepositMethod, DepositScreen } from "sections/deposit/types"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
+import { useTranslation } from "react-i18next"
 
 export const DepositPage = () => {
+  const { t } = useTranslation()
   const {
     asset,
     back,
@@ -44,12 +46,12 @@ export const DepositPage = () => {
                 content: <DepositMethodSelect onSelect={setDepositMethod} />,
               },
               {
-                title:
-                  depositMethod === DepositMethod.DepositCex
-                    ? "Exchange and asset to deposit"
-                    : depositMethod === DepositMethod.DepositCrypto
-                      ? "Fund with Crypto"
-                      : "",
+                title: (depositMethod === DepositMethod.DepositCex
+                  ? t("deposit.cex.select.title")
+                  : depositMethod === DepositMethod.DepositCrypto
+                    ? t("deposit.crypto.fund.title")
+                    : ""
+                ).toUpperCase(),
                 headerVariant: "GeistMono",
                 noPadding: true,
                 content:
@@ -60,7 +62,7 @@ export const DepositPage = () => {
                   ) : null,
               },
               {
-                title: "How to deposit?",
+                title: t("deposit.cex.asset.title"),
                 content: (
                   <DepositAsset
                     onAsssetSelect={back}
@@ -71,7 +73,7 @@ export const DepositPage = () => {
                 ),
               },
               {
-                title: "Deposit to Hydration",
+                title: t("deposit.cex.transfer.title"),
                 hideBack: true,
                 content: <DepositTransfer onTransferSuccess={setSuccess} />,
               },
@@ -85,8 +87,7 @@ export const DepositPage = () => {
       </SDepositContent>
       {showCexDepositAlert && (
         <Alert variant="info" sx={{ mt: 10 }}>
-          Please don’t close this tab while proceeding with your deposit, it
-          might cause unexpected errors. Only click shiny buttons.
+          {t("deposit.cex.asset.alert")}
         </Alert>
       )}
     </SContainer>
