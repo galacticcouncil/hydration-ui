@@ -82,7 +82,7 @@ export const Unstake = ({
     )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
     refetchAccountAssets()
 
     if (!transaction.isError) {
