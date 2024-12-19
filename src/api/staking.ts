@@ -51,16 +51,18 @@ export const useHDXSupplyFromSubscan = () => {
     async () => {
       const res = await getHDXSupplyFromSubscan()()
 
-      const HDXData = res.data.detail["BSX"]
-
-      return HDXData
+      const data = res.data.detail["HDX"]
+      return {
+        totalIssuance: data.total_issuance,
+        circulatingSupply: data.available_balance,
+      }
     },
     { retry: 0 },
   )
 }
 
 const getHDXSupplyFromSubscan = () => async () => {
-  const res = await fetch("https://basilisk.api.subscan.io/api/scan/token")
+  const res = await fetch("https://hydration.api.subscan.io/api/scan/token")
 
   const data: Promise<ISubscanData> = res.json()
 

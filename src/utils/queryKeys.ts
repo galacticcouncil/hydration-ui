@@ -221,8 +221,8 @@ export const QUERY_KEYS = {
     accountAddress,
     type,
   ],
-  openGovReferendas: ["openGovReferendas"],
-  referendaTracks: ["referendaTracks"],
+  openGovReferendas: (url: string) => ["openGovReferendas", url],
+  referendaTracks: (url: string) => ["referendaTracks", url],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",

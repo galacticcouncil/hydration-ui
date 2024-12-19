@@ -12,7 +12,7 @@ export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
   const openGovQuery = useOpenGovReferendas()
   const tracks = useReferendaTracks()
-  const HDXSupply = useHDXSupplyFromSubscan()
+  const { data: hdxSupply } = useHDXSupplyFromSubscan()
 
   return (
     <ToastSidebarGroup
@@ -32,7 +32,7 @@ export const ToastSidebarReferendums = () => {
                   id={referendum.id}
                   referenda={referendum.referendum}
                   track={track}
-                  totalIssuance={HDXSupply.data?.total_issuance}
+                  totalIssuance={hdxSupply?.totalIssuance}
                 />
               )
             })

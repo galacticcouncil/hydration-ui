@@ -101,7 +101,7 @@ export const useStakeData = () => {
 
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
-  const circulatingSupply = hdxSupply?.available_balance
+  const circulatingSupply = hdxSupply?.circulatingSupply
 
   const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(

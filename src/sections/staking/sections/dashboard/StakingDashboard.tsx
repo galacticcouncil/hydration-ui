@@ -3,11 +3,12 @@ import { AvailableRewards } from "./components/AvailableRewards/AvailableRewards
 import { StakingInputSection } from "./components/StakingInputSection/StakingInputSection"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Stats } from "./components/Stats/Stats"
-import { OpenGovReferendas, Referenda } from "./components/Referenda/Referendas"
+import { OpenGovReferendas } from "./components/Referenda/Referendas"
 import { useStakeData } from "sections/staking/StakingPage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { ReferendaSkeleton } from "components/ReferendumCard/ReferendaSkeleton"
 
 export const StakingDashboard = () => {
   const { isLoaded } = useRpcProvider()
@@ -24,7 +25,7 @@ export const StakingSkeleton = () => {
     <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
       <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
         <Stats loading />
-        {!isDesktop && <Referenda loading />}
+        {!isDesktop && <ReferendaSkeleton />}
       </div>
 
       <div
@@ -32,7 +33,7 @@ export const StakingSkeleton = () => {
         css={{ flex: 2 }}
       >
         <StakingInputSection loading />
-        {isDesktop && <Referenda loading />}
+        {isDesktop && <ReferendaSkeleton />}
       </div>
     </div>
   )

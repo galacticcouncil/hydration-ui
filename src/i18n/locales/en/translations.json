@@ -775,7 +775,7 @@
   "stats.overview.chart.tvl.label.time": "{{ date, HH:mm}}",
   "stats.overview.chart.switcher.tvl": "tvl",
   "stats.overview.chart.switcher.volume": "volume",
-  "stats.overview.referenda.title": "Referenda",
+  "stats.overview.referenda.title": "Ongoing referenda",
   "stats.overview.referenda.desc": "Participate in governance to speed up the rate at which you can claim rewards.",
   "stats.overview.referenda.emptyState": "Currently there are no ongoing referenda to vote in.",
   "stats.overview.table.assets.header.title": "Omnipool assets",

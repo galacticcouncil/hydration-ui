@@ -1,5 +1,4 @@
 import { TReferenda, useReferendumInfo } from "api/democracy"
-//import Calendar from "assets/icons/Calendar.svg?react"
 import VoteIcon from "assets/icons/StakingVote.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Spacer } from "components/Spacer/Spacer"
@@ -41,11 +40,11 @@ export const OpenGovReferenda = ({
   const { native } = useAssets()
   const { t } = useTranslation()
 
-  const subscanInfo = useReferendumInfo(id)
+  const { data: subscanInfo, isLoading } = useReferendumInfo(id)
 
   const minApprovalThreshold = useMinApprovalThreshold(track, referenda)
   const { threshold, maxSupportBarValue, barPercentage, markPercentage } =
-    useSupportThreshold(track, referenda, "39232343436849789168172" ?? "0")
+    useSupportThreshold(track, referenda, totalIssuance ?? "0")
   const votes = useReferendaVotes(referenda)
 
   const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
@@ -66,11 +65,11 @@ export const OpenGovReferenda = ({
       <Separator css={{ background: "#372244" }} sx={{ my: 16 }} />
 
       <div sx={{ px: 16 }}>
-        {subscanInfo.isLoading ? (
+        {isLoading ? (
           <Skeleton height={23} width="100%" />
         ) : (
           <Text fs={18} css={{ color: "#DFB1F3" }} fw={500}>
-            {subscanInfo.data?.title ?? "N/a"}
+            {subscanInfo?.title ?? "N/a"}
           </Text>
         )}
 
@@ -208,20 +207,12 @@ export const OpenGovReferenda = ({
       <Separator css={{ background: "#372244" }} sx={{ my: 16 }} />
 
       <div sx={{ flex: "row", gap: 48, justify: "space-between", px: 16 }}>
-        {/* <div sx={{ flex: "column", gap: 6 }} css={{ flex: 1 }}>
-          <Text fs={11} css={{ color: "#DFB1F3" }}>
-            🔥. + 25% reduce reward time
-          </Text>
-
-          <Separator css={{ background: "#372244" }} />
-          <div sx={{ flex: "row", align: "center", gap: 8 }}>
-            <Icon icon={<Calendar />} css={{ color: "#DFB1F3" }} />
-            <Text fs={13} css={{ color: "#DFB1F3" }}>
-              1 day 24hours left
-            </Text>
-          </div>
-        </div> */}
-        <SVoteButton disabled>
+        <SVoteButton
+          disabled={isLoading}
+          target="_blank"
+          href={`https://hydartion.subsquare.io/referenda/${id}`}
+          rel="noreferrer"
+        >
           <Icon icon={<VoteIcon />} />
           {t("referenda.btn.vote")}
         </SVoteButton>

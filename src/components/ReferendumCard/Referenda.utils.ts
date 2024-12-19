@@ -23,8 +23,6 @@ export const useMinApprovalThreshold = (
   const { data: blockNumbers } = useBestNumber()
   const blockNumber = blockNumbers?.parachainBlockNumber
     .toBigNumber()
-    // basilisk block number calculated from hydra nice rpc
-    .plus(859253)
     .toString()
 
   return useMemo(() => {
@@ -78,8 +76,6 @@ export const useSupportThreshold = (
   const { data: blockNumbers } = useBestNumber()
   const blockNumber = blockNumbers?.parachainBlockNumber
     .toBigNumber()
-    // basilisk block number calculated from hydra nice rpc
-    .plus(859253)
     .toString()
 
   const support = useMemo(

@@ -98,7 +98,7 @@ export const Stake = ({
     }
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
     refetchAccountAssets()
   }
 

@@ -12,9 +12,9 @@ import {
 import BN, { BigNumber } from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { humanizeUnderscoredString } from "utils/formatting"
-import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { useActiveRpcUrlList } from "./provider"
 
-const REFERENDUM_DATA_URL = "https://basilisk.subsquare.io/api/gov2/referendums" //import.meta.env.VITE_REFERENDUM_DATA_URL as string
+const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   none: 0,
@@ -72,17 +72,19 @@ export const useReferendumInfo = (referendumIndex: string) => {
 }
 
 export const useOpenGovReferendas = () => {
+  const rpcUrlList = useActiveRpcUrlList()
   const { api, isLoaded } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.openGovReferendas, getOpenGovRegerendas(api), {
-    enabled: isLoaded,
-  })
+  return useQuery(
+    QUERY_KEYS.openGovReferendas(rpcUrlList.join(".")),
+    getOpenGovRegerendas(api),
+    {
+      enabled: isLoaded,
+    },
+  )
 }
 
 const getOpenGovRegerendas = (api: ApiPromise) => async () => {
-  const apiPool = SubstrateApis.getInstance()
-  const api = await apiPool.api("wss://basilisk-rpc.dwellir.com")
-
   const newReferendumsRaw =
     await api.query.referenda.referendumInfoFor.entries()
 
@@ -266,13 +268,12 @@ export const getAccountUnlockedVotes =
   }
 
 export const useReferendaTracks = () => {
+  const rpcUrlList = useActiveRpcUrlList()
   const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
-    QUERY_KEYS.referendaTracks,
+    QUERY_KEYS.referendaTracks(rpcUrlList.join(".")),
     async () => {
-      const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api("wss://basilisk-rpc.dwellir.com")
       const tracks = await api.consts.referenda.tracks
 
       const data: Map<string, TReferenda> = new Map(
