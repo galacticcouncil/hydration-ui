@@ -83,7 +83,6 @@ export const AssetInput = ({
         </Flex>
       </Flex>
       <Flex direction="column">
-        {" "}
         <Flex align="center" justify="space-between">
           <AssetButton
             symbol={symbol}
