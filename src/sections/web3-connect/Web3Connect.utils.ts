@@ -545,7 +545,9 @@ function mapWalletAccount({
   const chainInfo = genesisHashToChain(genesisHash)
 
   return {
-    address: isEvm ? new H160(address).toAccount() : address,
+    address: isEvm
+      ? new H160(address).toAccount()
+      : safeConvertAddressSS58(address, chainInfo.prefix) || address,
     displayAddress: isEvm
       ? address
       : safeConvertAddressSS58(address, chainInfo.prefix) || address,

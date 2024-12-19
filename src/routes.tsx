@@ -133,6 +133,10 @@ const LendingReserveOverviewPage = lazy(async () => ({
     .LendingReserveOverviewPage,
 }))
 
+const DepositPage = lazy(async () => ({
+  default: (await import("sections/deposit/DepositPage")).DepositPage,
+}))
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -451,6 +455,14 @@ export const routes: Route[] = [
         ],
       },
     ],
+  },
+  {
+    path: LINKS.deposit,
+    element: (
+      <Suspense>
+        <DepositPage />
+      </Suspense>
+    ),
   },
   {
     path: "*",
