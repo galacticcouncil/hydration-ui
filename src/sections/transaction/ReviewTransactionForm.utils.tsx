@@ -42,7 +42,7 @@ export const useTransactionValues = ({
   }
   tx: SubmittableExtrinsic<"promise">
 }) => {
-  const { api, featureFlags } = useRpcProvider()
+  const { api } = useRpcProvider()
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -58,12 +58,9 @@ export const useTransactionValues = ({
 
   /* REFERRALS */
 
-  const referrer = useUserReferrer(
-    featureFlags.referrals ? account?.address : undefined,
-  )
+  const referrer = useUserReferrer(account?.address)
 
-  const isLinkedAccount =
-    featureFlags.referrals && !xcallMeta ? !!referrer.data?.length : true
+  const isLinkedAccount = !xcallMeta ? !!referrer.data?.length : true
 
   const storedReferralCodes = useReferralCodesStore()
   const storedReferralCode = account?.address
@@ -71,7 +68,6 @@ export const useTransactionValues = ({
     : undefined
 
   const boundedTx =
-    featureFlags.referrals &&
     !isLinkedAccount &&
     storedReferralCode &&
     tx.method.method !== "linkCode" &&

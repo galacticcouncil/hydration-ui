@@ -204,6 +204,7 @@ const getFarmsData =
           yieldFarm,
         },
         price.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
+        isXyk,
         balance.freeBalance,
       )
 
@@ -415,6 +416,7 @@ function getFarmApr(
     yieldFarm: PalletLiquidityMiningYieldFarmData
   },
   priceAdjustment: BigNumber,
+  isXyk: boolean,
   potBalance?: string,
 ) {
   const { globalFarm, yieldFarm } = farm
@@ -497,7 +499,7 @@ function getFarmApr(
   const isDistributed = distributedRewards.div(potMaxRewards).gte(0.999)
 
   // multiply by 100 since APR should be a percentage
-  apr = isDistributed ? BN_0 : apr.times(100)
+  apr = isDistributed ? BN_0 : apr.div(isXyk ? 2 : 1).times(100)
 
   const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
 

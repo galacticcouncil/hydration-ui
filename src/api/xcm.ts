@@ -37,8 +37,9 @@ export const syncAssethubXcmConfig = (
   asset: TRegisteredAsset,
   config: HydrationConfigService,
 ) => {
-  const assetData = external.buildAssetData(asset)
-  config.addExternalHubRoute(assetData)
+  const hubAsset = external.toHubAsset(asset)
+  const paraAsset = external.toParachainAsset(asset)
+  config.addExternalHubRoute(hubAsset, paraAsset)
 }
 
 export const useCrossChainWallet = () => {

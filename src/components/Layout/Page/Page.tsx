@@ -28,9 +28,9 @@ type Props = {
   className?: string
 }
 
-const ReferralsConnectWrapper = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnectWrapper"))
-    .ReferralsConnectWrapper,
+const ReferralsConnect = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnect"))
+    .ReferralsConnect,
 }))
 
 const Transactions = lazy(async () => ({
@@ -103,7 +103,6 @@ export const Page = ({ className }: Props) => {
   const matchRoute = useMatchRoute()
   const ref = useControlScroll()
   const subHeaderComponent = useSubheaderComponent()
-
   const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (
@@ -122,7 +121,7 @@ export const Page = ({ className }: Props) => {
       <Suspense>
         <Web3Connect />
         <Transactions />
-        <ReferralsConnectWrapper />
+        <ReferralsConnect />
         <QuerySubscriptions />
       </Suspense>
     </>
