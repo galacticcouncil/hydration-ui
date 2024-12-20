@@ -112,7 +112,7 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
 const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   const [position, votesRes] = await Promise.all([
     api.query.staking.positions(id),
-    api.query.staking.positionVotes(id),
+    api.query.staking.votes(id),
   ])
   const positionData = position.unwrap()
 
@@ -336,7 +336,7 @@ const getStakingPositionBalances =
     }
   }
 
-export const useProcessedVotesIds = () => {
+export const useVotesRewardedIds = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
@@ -345,7 +345,7 @@ export const useProcessedVotesIds = () => {
       return []
     }
 
-    const processedVotesRes = await api.query.staking.processedVotes.entries(
+    const processedVotesRes = await api.query.staking.votesRewarded.entries(
       account.address,
     )
 
@@ -363,7 +363,7 @@ export const usePositionVotesIds = () => {
   const { api } = useRpcProvider()
 
   return useMutation(async (positionId: number) => {
-    const positionVotesRes = await api.query.staking.positionVotes(positionId)
+    const positionVotesRes = await api.query.staking.votes(positionId)
     const positionVotesIds = positionVotesRes.votes.map(([position]) =>
       position.toString(),
     )
