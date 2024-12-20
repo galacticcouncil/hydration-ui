@@ -1,7 +1,6 @@
 import { ChevronDown } from "lucide-react"
 
 import { AssetLogo, Flex, Icon, Skeleton, Text } from "@/components"
-import { useThemeUI } from "@/theme/provider"
 import { getToken } from "@/utils"
 
 import {
@@ -37,8 +36,6 @@ export const AssetInput = ({
   loading,
   onAsssetBtnClick,
 }: AssetInputProps) => {
-  const { theme } = useThemeUI()
-
   const onMaxButtonClick = () => {
     if (maxBalance) onChange(maxBalance)
   }
@@ -49,7 +46,7 @@ export const AssetInput = ({
         {label && (
           <Text
             color={getToken("text.medium")}
-            fs={theme.paragraphSize.p5}
+            fs="p5"
             fw={500}
             sx={{ width: "fit-content", lineHeight: "120%" }}
           >
@@ -60,7 +57,7 @@ export const AssetInput = ({
           <Text
             as="div"
             color={getToken("text.low")}
-            fs={theme.paragraphSize.p5}
+            fs="p5"
             fw={500}
             sx={{ width: "fit-content", lineHeight: "120%" }}
           >
@@ -151,8 +148,6 @@ const AssetButton = ({
   error: boolean
   onAsssetBtnClick: () => void
 }) => {
-  const { theme } = useThemeUI()
-
   if (loading)
     return (
       <Flex direction="column" height={38} gap={2} justify="center">
@@ -173,11 +168,7 @@ const AssetButton = ({
           src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
         />
         <Flex align="center" gap={4}>
-          <Text
-            color={getToken("text.high")}
-            fw={600}
-            fs={theme.paragraphSize.p3}
-          >
+          <Text color={getToken("text.high")} fw={600} fs="p3">
             {symbol}
           </Text>
           <Icon
@@ -191,7 +182,7 @@ const AssetButton = ({
 
   return (
     <SAssetButtonEmpty variant="secondary" onClick={onAsssetBtnClick}>
-      <Text fw={600} fs={theme.paragraphSize.p3}>
+      <Text fw={600} fs="p3">
         Select asset
       </Text>
       <Icon size={20} component={ChevronDown} />

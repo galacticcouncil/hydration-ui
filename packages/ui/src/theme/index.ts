@@ -33,6 +33,18 @@ const base = makeTheme({
     xxl: 32,
     full: 9999,
   },
+  typography: {
+    text: {
+      size: {
+        p1: { fontSize: lightJSON.paragraphSize.p1 },
+        p2: { fontSize: lightJSON.paragraphSize.p2 },
+        p3: { fontSize: lightJSON.paragraphSize.p3 },
+        p4: { fontSize: lightJSON.paragraphSize.p4 },
+        p5: { fontSize: lightJSON.paragraphSize.p5 },
+        p6: { fontSize: lightJSON.paragraphSize.p6 },
+      },
+    },
+  },
 })
 
 const light = {
