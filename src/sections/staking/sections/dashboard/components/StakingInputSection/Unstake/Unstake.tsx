@@ -14,7 +14,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { usePositionVotesIds, useProcessedVotesIds } from "api/staking"
+import { usePositionVotesIds, useVotesRewardedIds } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 
@@ -41,8 +41,8 @@ export const Unstake = ({
     },
   })
 
-  const processedVotes = useProcessedVotesIds()
-  const positionVotes = usePositionVotesIds()
+  const votesRewarded = useVotesRewardedIds()
+  const votes = usePositionVotesIds()
 
   const onSubmit = async () => {
     if (!positionId) return null
@@ -64,8 +64,8 @@ export const Unstake = ({
       return memo
     }, {} as ToastMessage)
 
-    const pendingVoteIds = await positionVotes.mutateAsync(positionId)
-    const processedVoteIds = await processedVotes.mutateAsync()
+    const pendingVoteIds = await votes.mutateAsync(positionId)
+    const processedVoteIds = await votesRewarded.mutateAsync()
 
     const voteIds = [...pendingVoteIds, ...processedVoteIds]
 
