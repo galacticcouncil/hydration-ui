@@ -14,7 +14,7 @@ import {
   DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
-  SOLANA_PROVIDFERS,
+  SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
@@ -73,7 +73,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
           provider.type,
         )
 
-        const isSolanaProvider = SOLANA_PROVIDFERS.includes(provider.type)
+        const isSolanaProvider = SOLANA_PROVIDERS.includes(provider.type)
 
         const byMode =
           isDefaultMode ||

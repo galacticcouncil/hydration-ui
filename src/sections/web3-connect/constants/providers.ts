@@ -55,7 +55,7 @@ export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Talisman,
 ]
 
-export const SOLANA_PROVIDFERS: WalletProviderType[] = [
+export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
 ]

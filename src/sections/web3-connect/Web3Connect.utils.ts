@@ -49,7 +49,7 @@ import {
 } from "sections/web3-connect/types"
 import {
   EVM_PROVIDERS,
-  SOLANA_PROVIDFERS,
+  SOLANA_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
@@ -546,7 +546,7 @@ function mapWalletAccount({
   const isEvm = isEvmAddress(address)
   const isSolana =
     wallet &&
-    SOLANA_PROVIDFERS.includes(wallet.extensionName as WalletProviderType)
+    SOLANA_PROVIDERS.includes(wallet.extensionName as WalletProviderType)
 
   const chainInfo = genesisHashToChain(genesisHash)
 

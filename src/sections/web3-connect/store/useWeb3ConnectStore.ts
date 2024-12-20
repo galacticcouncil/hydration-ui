@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware"
 import { omit } from "utils/rx"
 import {
   EVM_PROVIDERS,
-  SOLANA_PROVIDFERS,
+  SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
@@ -34,7 +34,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
   [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
-  [WalletMode.Solana]: SOLANA_PROVIDFERS,
+  [WalletMode.Solana]: SOLANA_PROVIDERS,
 }
 
 export type Account = {
