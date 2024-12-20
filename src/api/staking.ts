@@ -122,6 +122,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     id: BN
     amount: BN
     conviction: string
+    //@ts-ignore
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
     const prevAcc = await acc
     const id = key.toBigNumber()
@@ -364,6 +365,7 @@ export const usePositionVotesIds = () => {
 
   return useMutation(async (positionId: number) => {
     const positionVotesRes = await api.query.staking.votes(positionId)
+    //@ts-ignore
     const positionVotesIds = positionVotesRes.votes.map(([position]) =>
       position.toString(),
     )
