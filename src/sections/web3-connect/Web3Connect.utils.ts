@@ -49,6 +49,7 @@ import {
 } from "sections/web3-connect/types"
 import {
   EVM_PROVIDERS,
+  SOLANA_PROVIDFERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
@@ -60,6 +61,8 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmChain } from "@galacticcouncil/xcm-core"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { create } from "zustand"
+import { safeConvertSolanaAddressToSS58 } from "utils/solana"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -541,14 +544,22 @@ function mapWalletAccount({
   genesisHash,
 }: WalletAccount) {
   const isEvm = isEvmAddress(address)
+  const isSolana =
+    wallet &&
+    SOLANA_PROVIDFERS.includes(wallet.extensionName as WalletProviderType)
 
   const chainInfo = genesisHashToChain(genesisHash)
 
   return {
-    address: isEvm ? new H160(address).toAccount() : address,
-    displayAddress: isEvm
-      ? address
-      : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+    address: isEvm
+      ? new H160(address).toAccount()
+      : isSolana
+        ? safeConvertSolanaAddressToSS58(address, HYDRADX_SS58_PREFIX)
+        : address,
+    displayAddress:
+      isEvm || isSolana
+        ? address
+        : safeConvertAddressSS58(address, chainInfo.prefix) || address,
     genesisHash,
     name: name ?? "",
     provider: normalizeProviderType(wallet!),
@@ -570,6 +581,11 @@ export function getWalletModeIcon(mode: WalletMode) {
     }
     if (mode === WalletMode.Substrate) {
       return MetadataStore.getInstance().asset("polkadot", "0", "0")
+    }
+
+    if (mode === WalletMode.Solana) {
+      // @TODO: update with our own icon
+      return "https://assets.coingecko.com/coins/images/4128/standard/solana.png?1718769756"
     }
 
     return ""

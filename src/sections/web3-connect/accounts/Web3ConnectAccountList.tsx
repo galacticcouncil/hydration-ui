@@ -6,6 +6,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
+  PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -29,7 +30,6 @@ import { Alert } from "components/Alert/Alert"
 import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
-import { isEvmAccount } from "utils/evm"
 import BigNumber from "bignumber.js"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
@@ -107,12 +107,13 @@ export const Web3ConnectAccountList: FC<{
       : accounts
 
     let filtered = searched
-    if (filter === WalletMode.EVM) {
-      filtered = searched.filter(({ address }) => isEvmAccount(address))
-    }
 
-    if (filter === WalletMode.Substrate) {
-      filtered = searched.filter(({ address }) => !isEvmAccount(address))
+    const filteredProviders = PROVIDERS_BY_WALLET_MODE[filter]
+
+    if (filteredProviders.length > 0) {
+      filtered = searched.filter(({ provider }) =>
+        filteredProviders.includes(provider),
+      )
     }
 
     return filtered.sort((a, b) => {

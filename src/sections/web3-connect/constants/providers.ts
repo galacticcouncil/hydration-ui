@@ -9,6 +9,7 @@ export enum WalletProviderType {
   TrustWallet = "trustwallet",
   BraveWallet = "bravewallet",
   Phantom = "phantom",
+  Solflare = "solflare",
   Enkrypt = "enkrypt",
   MantaWallet = "manta-wallet-js",
   FearlessWallet = "fearless-wallet",
@@ -33,7 +34,6 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.SubwalletEvm,
   //WalletProviderType.TrustWallet,
   WalletProviderType.BraveWallet,
-  WalletProviderType.Phantom,
   WalletProviderType.WalletConnectEvm,
 ]
 
@@ -53,6 +53,11 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
 export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.SubwalletJS,
   WalletProviderType.Talisman,
+]
+
+export const SOLANA_PROVIDFERS: WalletProviderType[] = [
+  WalletProviderType.Phantom,
+  WalletProviderType.Solflare,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

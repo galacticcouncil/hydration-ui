@@ -446,6 +446,7 @@
   "walletConnect.provider.disconnect": "Disconnect",
   "walletConnect.provider.connectAll": "Connect all",
   "walletConnect.provider.mode.substrate": "Polkadot",
+  "walletConnect.provider.mode.solana": "Solana",
   "walletConnect.provider.mode.evm": "EVM",
   "walletConnect.provider.mode.all": "All",
   "walletConnect.provider.section.installed": "Installed & recently used",
