@@ -9,8 +9,8 @@ import { PROVIDERS, useActiveProvider } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
-import { useBestNumber } from "./chain"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type TradeType = {
   name:
@@ -263,63 +263,68 @@ const squidUrl =
 const VOLUME_BLOCK_COUNT = 7200 //24 hours
 
 export const useXYKSquidVolumes = (addresses: string[]) => {
-  const { data: bestNumber } = useBestNumber()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
-    bestNumber
-      ? async () => {
-          const hexAddresses = addresses.map((address) =>
-            u8aToHex(decodeAddress(address)),
-          )
-          const startBlockNumber =
-            bestNumber.parachainBlockNumber.toNumber() - VOLUME_BLOCK_COUNT
 
-          const { xykPoolHistoricalVolumesByPeriod } = await request<{
-            xykPoolHistoricalVolumesByPeriod: {
-              nodes: {
-                poolId: string
-                assetAId: number
-                assetAVolume: string
-                assetBId: number
-                assetBVolume: string
-              }[]
-            }
-          }>(
-            squidUrl,
-            gql`
-              query XykVolume($poolIds: [String!]!, $startBlockNumber: Int!) {
-                xykPoolHistoricalVolumesByPeriod(
-                  filter: {
-                    poolIds: $poolIds
-                    startBlockNumber: $startBlockNumber
-                  }
-                ) {
-                  nodes {
-                    poolId
-                    assetAId
-                    assetAVolume
-                    assetBId
-                    assetBVolume
-                  }
-                }
-              }
-            `,
-            { poolIds: hexAddresses, startBlockNumber },
-          )
+    async () => {
+      const hexAddresses = addresses.map((address) =>
+        u8aToHex(decodeAddress(address)),
+      )
 
-          const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
+      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
 
-          return nodes.map((node) => ({
-            poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
-            assetId: node.assetAId.toString(),
-            assetIdB: node.assetBId.toString(),
-            volume: node.assetAVolume,
-          }))
+      const { xykPoolHistoricalVolumesByPeriod } = await request<{
+        xykPoolHistoricalVolumesByPeriod: {
+          nodes: {
+            poolId: string
+            assetAId: number
+            assetAVolume: string
+            assetBId: number
+            assetBVolume: string
+          }[]
         }
-      : undefinedNoop,
+      }>(
+        squidUrl,
+        gql`
+          query XykVolume(
+            $poolIds: [String!]!
+            $startBlockNumber: Int!
+            $endBlockNumber: Int!
+          ) {
+            xykPoolHistoricalVolumesByPeriod(
+              filter: {
+                poolIds: $poolIds
+                startBlockNumber: $startBlockNumber
+                endBlockNumber: $endBlockNumber
+              }
+            ) {
+              nodes {
+                poolId
+                assetAId
+                assetAVolume
+                assetBId
+                assetBVolume
+              }
+            }
+          }
+        `,
+        { poolIds: hexAddresses, startBlockNumber, endBlockNumber },
+      )
+
+      const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+
+      return nodes.map((node) => ({
+        poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
+        assetId: node.assetAId.toString(),
+        assetIdB: node.assetBId.toString(),
+        volume: node.assetAVolume,
+      }))
+    },
     {
-      enabled: !!bestNumber && !!addresses.length,
+      enabled: isLoaded && !!addresses.length,
       staleTime: millisecondsInHour,
       refetchInterval: millisecondsInMinute,
     },
