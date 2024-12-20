@@ -17,19 +17,19 @@ export const Navigation = () => {
       <SubNavigationTabLink
         to={LINKS.walletAssets}
         icon={<AssetsIcon width={15} height={15} />}
-        label={t("wallet.header.yourAssets")}
+        label={t("header.wallet.yourAssets.title")}
       />
       {isDevelopment && (
         <SubNavigationTabLink
           to={LINKS.walletTransactions}
           icon={<TransferIcon width={18} height={18} />}
-          label={t("wallet.header.transactions")}
+          label={t("header.wallet.transactions.title")}
         />
       )}
       <SubNavigationTabLink
         to={LINKS.walletVesting}
         icon={<PositionsIcon width={18} height={18} />}
-        label={t("wallet.header.vesting")}
+        label={t("header.wallet.vesting.title")}
       />
     </SubNavigation>
   )

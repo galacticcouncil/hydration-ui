@@ -14,12 +14,12 @@ export const Navigation = () => {
       <SubNavigationTabLink
         to={ROUTES.dashboard}
         icon={<UserIcon width={14} height={14} />}
-        label={t("lending.navigation.dashboard")}
+        label={t("header.borrow.dashboard.title")}
       />
       <SubNavigationTabLink
         to={ROUTES.markets}
         icon={<AssetsIcon width={15} height={15} />}
-        label={t("lending.navigation.markets")}
+        label={t("header.borrow.markets.title")}
       />
     </SubNavigation>
   )

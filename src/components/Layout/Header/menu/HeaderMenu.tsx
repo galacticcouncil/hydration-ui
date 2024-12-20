@@ -22,13 +22,26 @@ export const HeaderMenu = () => {
   const { items, hiddenItems, moreButtonKey, observe } =
     useVisibleHeaderMenuItems()
 
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null)
+
   return (
     <Root delayDuration={0} open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
       <div sx={{ flex: "row" }}>
         <SList ref={observe}>
           {items.map((item, i) => {
             if (item.subItems?.length) {
-              return <HeaderSubMenu key={i} item={item} />
+              return (
+                <HeaderSubMenu
+                  key={i}
+                  item={item}
+                  isOpen={activeSubMenu === item.key}
+                  onOpenChange={() =>
+                    setActiveSubMenu((prev) =>
+                      prev === item.key ? null : item.key,
+                    )
+                  }
+                />
+              )
             }
 
             if (item.external) {

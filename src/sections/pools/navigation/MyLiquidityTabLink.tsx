@@ -22,7 +22,7 @@ export const MyLiquidity = () => {
         icon={
           <UserIcon style={{ width: 14, height: 14, alignSelf: "center" }} />
         }
-        label={t("liquidity.navigation.myLiquidity")}
+        label={t("header.liquidity.myLiquidity.title")}
       />
       <SSeparator
         orientation="vertical"

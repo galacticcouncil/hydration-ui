@@ -17,10 +17,10 @@ const MyLiquidityTabLink = lazy(async () => ({
 }))
 
 const routeMap = new Map([
-  [LINKS.allPools, t("liquidity.navigation.allPools")],
-  [LINKS.myLiquidity, t("liquidity.navigation.myLiquidity")],
-  [LINKS.omnipool, t("liquidity.navigation.omnipoolAndStablepool")],
-  [LINKS.isolated, t("liquidity.navigation.isolated")],
+  [LINKS.allPools, t("header.liquidity.allPools.title")],
+  [LINKS.myLiquidity, t("header.liquidity.myLiquidity.title")],
+  [LINKS.omnipool, t("header.liquidity.omnipoolAndStablepool.title")],
+  [LINKS.isolated, t("header.liquidity.isolated.title")],
 ])
 
 export const Navigation = () => {
@@ -33,17 +33,17 @@ export const Navigation = () => {
       </Suspense>
       <SubNavigationTabLink
         to={LINKS.allPools}
-        label={t("liquidity.navigation.allPools")}
+        label={t("header.liquidity.allPools.title")}
         icon={<AllPools width={16} height={16} />}
       />
       <SubNavigationTabLink
         to={LINKS.omnipool}
-        label={t("liquidity.navigation.omnipoolAndStablepool")}
+        label={t("header.liquidity.omnipoolAndStablepool.title")}
         icon={<OmniStablepools width={18} height={18} />}
       />
       <SubNavigationTabLink
         to={LINKS.isolated}
-        label={t("liquidity.navigation.isolated")}
+        label={t("header.liquidity.isolated.title")}
         icon={<IsolatedPools width={15} height={15} />}
       />
     </SubNavigation>
