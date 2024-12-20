@@ -19,7 +19,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useProcessedVotesIds } from "api/staking"
+import { useVotesRewardedIds } from "api/staking"
 import { BN_0 } from "utils/constants"
 import { Graph } from "components/Graph/Graph"
 import { XAxis, YAxis } from "recharts"
@@ -37,7 +37,7 @@ export const AvailableRewards = () => {
   const spotPrice = useDisplayPrice(native.id)
   const refetch = useRefetchAccountAssets()
 
-  const processedVotes = useProcessedVotesIds()
+  const votesRewarded = useVotesRewardedIds()
 
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
@@ -62,7 +62,7 @@ export const AvailableRewards = () => {
       return memo
     }, {} as ToastMessage)
 
-    const processedVoteIds = await processedVotes.mutateAsync()
+    const processedVoteIds = await votesRewarded.mutateAsync()
 
     await createTransaction(
       {
