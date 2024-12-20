@@ -138,7 +138,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           />
           <AccountBox
             {...account}
-            ss58Format={chain && isAnyParachain(chain) ? chain.ss58Format : 0}
+            ss58Format={getAddressPrefix(dstChain)}
             error={
               !isAccountAllowed
                 ? t("deposit.cex.account.evmError", {
@@ -176,4 +176,13 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       )}
     </div>
   )
+}
+
+function getAddressPrefix(chainKey: string) {
+  const chain = chainsMap.get(chainKey)
+  if (chain && isAnyParachain(chain)) {
+    return chain.key === "assethub" ? 0 : chain.ss58Format
+  }
+
+  return 0
 }

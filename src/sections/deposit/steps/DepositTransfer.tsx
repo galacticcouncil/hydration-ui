@@ -17,6 +17,7 @@ import { useZodSchema } from "sections/deposit/steps/DepositTransfer.utills"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
+import { H160, isEvmAddress } from "utils/evm"
 import { FormValues } from "utils/helpers"
 
 export type DepositTransferProps = {
@@ -91,11 +92,13 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     if (!asset) return
 
     await sendTx({
-      asset: asset.data.asset.key,
       wallet,
+      asset: asset.data.asset.key,
       amount: values.amount,
-      srcAddr: address,
-      dstAddr: dstAddress,
+      srcAddr: isEvmAddress(address) ? new H160(address).toAccount() : address,
+      dstAddr: isEvmAddress(dstAddress)
+        ? new H160(dstAddress).toAccount()
+        : dstAddress,
       srcChain: srcChain,
       dstChain: "hydration",
     })
