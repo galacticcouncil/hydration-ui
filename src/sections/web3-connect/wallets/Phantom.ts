@@ -1,21 +1,22 @@
-import { isPhantom } from "utils/metamask"
-import { MetaMask } from "./MetaMask"
+import PhantomLogo from "assets/icons/PhantomLogo.svg"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import { isPhantom } from "utils/solana"
+import { Solflare } from "./Solflare"
 
-export class Phantom extends MetaMask {
+export class Phantom extends Solflare {
   extensionName = WalletProviderType.Phantom
   title = "Phantom"
-  installUrl = ""
+  installUrl = "https://phantom.com/download"
   logo = {
-    src: "",
-    alt: "Subwallet Logo",
+    src: PhantomLogo,
+    alt: "Phantom Logo",
   }
 
   get installed() {
-    return isPhantom(window?.phantom?.ethereum)
+    return isPhantom(window?.phantom?.solana)
   }
 
   get rawExtension() {
-    return window?.phantom?.ethereum
+    return window?.phantom?.solana
   }
 }
