@@ -50,7 +50,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Dwellir",
-    url: "wss://hydradx-rpc.dwellir.com",
+    url: "wss://hydration-rpc.n.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
