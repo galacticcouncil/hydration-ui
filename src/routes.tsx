@@ -4,6 +4,7 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { DepositPageSkeleton } from "sections/deposit/DepositPageSkeleton"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
 import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
 import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
@@ -131,6 +132,10 @@ const LendingMarketsPage = lazy(async () => ({
 const LendingReserveOverviewPage = lazy(async () => ({
   default: (await import("sections/lending/LendingReserveOverviewPage"))
     .LendingReserveOverviewPage,
+}))
+
+const DepositPage = lazy(async () => ({
+  default: (await import("sections/deposit/DepositPage")).DepositPage,
 }))
 
 export const routes: Route[] = [
@@ -451,6 +456,14 @@ export const routes: Route[] = [
         ],
       },
     ],
+  },
+  {
+    path: LINKS.deposit,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <DepositPage />
+      </Suspense>
+    ),
   },
   {
     path: "*",

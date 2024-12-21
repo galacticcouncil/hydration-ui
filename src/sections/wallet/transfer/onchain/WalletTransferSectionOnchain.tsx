@@ -13,8 +13,14 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
+  BN_0,
+  BN_1,
+  BN_10,
+  UNIFIED_ADDRESS_FORMAT_ENABLED,
+} from "utils/constants"
+import {
+  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
@@ -23,6 +29,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import {
   CloseIcon,
   PasteAddressIcon,
+  SDiclaimerContainer,
 } from "./WalletTransferSectionOnchain.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
@@ -33,6 +40,8 @@ import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { createToastMessages } from "state/toasts"
+import { Switch } from "components/Switch/Switch"
+import { useState } from "react"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -56,6 +65,8 @@ export function WalletTransferSectionOnchain({
   const { createTransaction } = useStore()
   const accountAssets = useAccountAssets()
   const refetchAccountAssets = useRefetchAccountAssets()
+
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
@@ -167,6 +178,15 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
+  const dest = form.watch("dest")
+  const shouldShowDisclaimer =
+    UNIFIED_ADDRESS_FORMAT_ENABLED &&
+    !!dest &&
+    dest.toLowerCase() ===
+      getAddressVariants(dest).polkadotAddress.toLowerCase()
+
+  const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
+
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
@@ -215,7 +235,6 @@ export function WalletTransferSectionOnchain({
             )
           }}
         />
-
         <Controller
           name="amount"
           control={form.control}
@@ -240,6 +259,23 @@ export function WalletTransferSectionOnchain({
             />
           )}
         />
+        {shouldShowDisclaimer && (
+          <SDiclaimerContainer>
+            <Switch
+              name="disclaimer-accepted"
+              value={disclaimerAccepted}
+              onCheckedChange={setDisclaimerAccepted}
+            />
+            <div>
+              <Text fs={13} color="basic100" font="GeistSemiBold">
+                {t("wallet.assets.transfer.disclaimer.cex.title")}
+              </Text>
+              <Text fs={13} color="basic400">
+                {t("wallet.assets.transfer.disclaimer.cex.description")}
+              </Text>
+            </div>
+          </SDiclaimerContainer>
+        )}
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}
           content={
@@ -283,12 +319,10 @@ export function WalletTransferSectionOnchain({
           <Button onClick={onClose}>
             {t("wallet.assets.transfer.cancel")}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!form.formState.isDirty}
-          >
-            {t("wallet.assets.transfer.submit")}
+          <Button type="submit" variant="primary" disabled={submitDisabled}>
+            {submitDisabled
+              ? t("wallet.assets.transfer.submit.disabled")
+              : t("wallet.assets.transfer.submit")}
           </Button>
         </div>
       </div>
