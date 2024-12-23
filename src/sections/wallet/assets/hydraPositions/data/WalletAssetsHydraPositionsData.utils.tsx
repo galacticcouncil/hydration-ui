@@ -8,7 +8,7 @@ import { useAccountAssets } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
 import BigNumber from "bignumber.js"
-import { useXYKPools } from "api/xyk"
+import { useXYKSDKPools } from "api/xyk"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -66,7 +66,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
 
   const shareTokensId = accountShareTokens.map((pool) => pool.asset.id)
 
-  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKPools()
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKSDKPools()
   const { data: totalIssuances, isLoading: isIssuancesLoading } =
     useTotalIssuances()
   const spotPrices = useDisplayShareTokenPrice(shareTokensId)

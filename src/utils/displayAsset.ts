@@ -10,7 +10,7 @@ import { QUERY_KEYS } from "./queryKeys"
 import { isNotNil } from "./helpers"
 import { TShareToken, useAssets } from "providers/assets"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useXYKPools } from "api/xyk"
+import { useXYKSDKPools } from "api/xyk"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -61,7 +61,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
   const { getShareTokens, getAssetWithFallback } = useAssets()
   const pools = getShareTokens(ids) as TShareToken[]
 
-  const { data: xykPools = [], isLoading: isPoolsLoading } = useXYKPools()
+  const { data: xykPools = [], isLoading: isPoolsLoading } = useXYKSDKPools()
   const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
 
   const shareTokensTvl = useMemo(() => {
