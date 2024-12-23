@@ -260,12 +260,11 @@ export const useProviderData = () => {
         PoolType.XYK,
         PoolType.LBP,
       ]
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
-
-      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,

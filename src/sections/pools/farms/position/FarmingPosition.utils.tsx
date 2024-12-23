@@ -7,7 +7,7 @@ import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import { scaleHuman } from "utils/balance"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useXYKPools } from "api/xyk"
+import { useXYKSDKPools } from "api/xyk"
 
 type TokenAmount = {
   id: string
@@ -89,7 +89,7 @@ export const useAllXYKDeposits = (address?: string) => {
 
   const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
-  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKPools()
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKSDKPools()
 
   const isLoading =
     isXykPoolsLoading ||

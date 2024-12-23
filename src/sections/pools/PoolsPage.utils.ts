@@ -325,7 +325,7 @@ export const useXYKPools = () => {
         const tvlDisplay =
           shareTokenIssuance?.totalShare
             ?.shiftedBy(-shareToken.decimals)
-            ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? 1) ?? BN_0
+            ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
 
         const volume = volumes?.find(
           (volume) => volume.poolAddress === poolAddress,
@@ -371,6 +371,9 @@ export const useXYKPools = () => {
       .sort((a, b) => {
         if (a.isInvalid) return 1
         if (b.isInvalid) return -1
+
+        if (a.tvlDisplay.isNaN()) return 1
+        if (b.tvlDisplay.isNaN()) return -1
 
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
