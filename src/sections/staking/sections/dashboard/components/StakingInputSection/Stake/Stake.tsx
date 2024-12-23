@@ -16,7 +16,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { useProcessedVotesIds } from "api/staking"
+import { useVotesRewardedIds } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 
@@ -41,7 +41,7 @@ export const Stake = ({
 
   const form = useForm<{ amount: string }>()
 
-  const processedVotes = useProcessedVotesIds()
+  const votesRewarded = useVotesRewardedIds()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
@@ -69,7 +69,7 @@ export const Stake = ({
     }, {} as ToastMessage)
 
     if (isStakePosition) {
-      const processedVoteIds = await processedVotes.mutateAsync()
+      const processedVoteIds = await votesRewarded.mutateAsync()
 
       transaction = await createTransaction(
         {
@@ -98,7 +98,7 @@ export const Stake = ({
     }
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
     refetchAccountAssets()
   }
 
