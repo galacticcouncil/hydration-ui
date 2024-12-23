@@ -330,3 +330,66 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
     },
   )
 }
+
+const omnipoolAddress =
+  "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
+
+export const useOmnipoolVolumes = (ids: string[]) => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.omnipoolSquidVolumes(ids),
+
+    async () => {
+      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
+      const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
+
+      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
+
+      const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
+        omnipoolAssetHistoricalVolumesByPeriod: {
+          nodes: {
+            assetId: number
+            assetVolume: string
+          }[]
+        }
+      }>(
+        squidUrl,
+        gql`
+          query OmnipoolVolume(
+            $omnipoolAssetIds: [String!]!
+            $startBlockNumber: Int!
+            $endBlockNumber: Int!
+          ) {
+            omnipoolAssetHistoricalVolumesByPeriod(
+              filter: {
+                omnipoolAssetIds: $omnipoolAssetIds
+                startBlockNumber: $startBlockNumber
+                endBlockNumber: $endBlockNumber
+              }
+            ) {
+              nodes {
+                assetId
+                assetVolume
+              }
+            }
+          }
+        `,
+        { omnipoolAssetIds: omnipoolIds, startBlockNumber, endBlockNumber },
+      )
+
+      const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
+
+      return nodes.map((node) => ({
+        assetId: node.assetId.toString(),
+        assetVolume: node.assetVolume.toString(),
+      }))
+    },
+
+    {
+      enabled: isLoaded && !!ids.length,
+      staleTime: millisecondsInHour,
+      //refetchInterval: millisecondsInMinute,
+    },
+  )
+}
