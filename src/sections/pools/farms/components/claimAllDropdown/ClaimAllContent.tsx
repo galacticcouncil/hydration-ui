@@ -36,7 +36,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
         )
       : []
 
-    const { claimableTotal, claimableAssetValues, diffRewards } =
+    const { claimableTotal, claimableAssetValues } =
       useSummarizeClaimableValues(claimableValues)
 
     const claimableAssets = Object.keys(claimableAssetValues ?? {}).map(
@@ -101,22 +101,9 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
               </div>
             ))}
 
-            <Text fs={14} sx={{ mt: 6 }}>
+            <Text fs={14} sx={{ mt: 6, mb: 24 }}>
               <Trans t={t} i18nKey="farms.claimCard.claim.usd">
                 <DisplayValue value={BigNumber(claimableTotal)} />
-              </Trans>
-            </Text>
-
-            <Text
-              fs={14}
-              sx={{ py: 8, mt: 8, mb: 10 }}
-              fw={300}
-              css={{
-                borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
-              }}
-            >
-              <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
-                <DisplayValue value={BigNumber(diffRewards)} />
               </Trans>
             </Text>
 

@@ -42,8 +42,9 @@ export const ClaimRewardsCard = (props: {
       )
     : poolClaimableValues
 
-  const { claimableTotal, diffRewards, claimableAssetValues } =
-    useSummarizeClaimableValues(claimableDepositValues ?? [])
+  const { claimableTotal, claimableAssetValues } = useSummarizeClaimableValues(
+    claimableDepositValues ?? [],
+  )
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
@@ -143,19 +144,6 @@ export const ClaimRewardsCard = (props: {
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.usd">
               <DisplayValue value={BN(claimableTotal)} />
-            </Trans>
-          </Text>
-
-          <Text
-            fs={14}
-            sx={{ py: 8, mt: 8, mb: 10 }}
-            fw={300}
-            css={{
-              borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
-            }}
-          >
-            <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
-              <DisplayValue value={BN(diffRewards)} />
             </Trans>
           </Text>
         </div>
