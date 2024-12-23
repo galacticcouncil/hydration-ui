@@ -6,11 +6,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { useEnteredDate } from "utils/block"
 import { BN_0 } from "utils/constants"
 import { JoinedFarmsDetails } from "sections/pools/farms/modals/joinedFarmDetails/JoinedFarmsDetails"
-import {
-  SSeparator,
-  SSkeletonContainer,
-  SValueContainer,
-} from "./FarmingPosition.styled"
+import { SSeparator, SValueContainer } from "./FarmingPosition.styled"
 import {
   isXYKDeposit,
   TDepositData,
@@ -27,24 +23,14 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import {
-  TFarmAprData,
-  useAccountClaimableFarmValues,
-  useSummarizeClaimableValues,
-} from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
 import BigNumber from "bignumber.js"
-import { useAssets } from "providers/assets"
-import { LinearProgress } from "components/Progress"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { Separator } from "components/Separator/Separator"
+
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
-import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
-import Skeleton from "react-loading-skeleton"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -129,63 +115,6 @@ export const FarmingPosition = ({
   availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { range } = useClaimingRange()
-  const { isShareToken, getAssetWithFallback } = useAssets()
-  const {
-    pool: { meta },
-  } = usePoolData()
-  const { data: claimableValues } = useAccountClaimableFarmValues()
-
-  const poolClaimableValues =
-    claimableValues
-      ?.get(isShareToken(meta) ? meta.poolAddress : meta.id)
-      ?.filter((farm) => farm.depositId === depositData.depositId) ?? []
-
-  const { total, maxTotal, claimableAssetValues, isLoading } =
-    useSummarizeClaimableValues(poolClaimableValues)
-
-  const isClaimable = poolClaimableValues.length
-    ? poolClaimableValues.some((value) => value.isClaimable)
-    : undefined
-
-  const color =
-    isClaimable === undefined
-      ? "basic500"
-      : isClaimable
-        ? "green600"
-        : "warning300"
-
-  const claimableAssets = Object.keys(claimableAssetValues ?? {}).map((key) => {
-    const asset = getAssetWithFallback(key)
-    return {
-      value: claimableAssetValues[key],
-      symbol: asset.symbol,
-      id: asset.id,
-    }
-  })
-
-  const totalRewardsValue = claimableAssets.length
-    ? claimableAssets
-        .map((claimableAsset) =>
-          t("value.tokenWithSymbol", {
-            value: claimableAsset.value.rewards,
-            symbol: claimableAsset.symbol,
-          }),
-        )
-        .join(" + ")
-    : "0"
-
-  const maxTotalRewardsValue = claimableAssets.length
-    ? claimableAssets
-        .map((claimableAsset) =>
-          t("value.tokenWithSymbol", {
-            value: BigNumber(claimableAsset.value.maxRewards),
-            symbol: claimableAsset.symbol,
-          }),
-        )
-        .join(" + ")
-    : "0"
 
   // use latest entry date
   const enteredDate = useEnteredDate(
@@ -217,53 +146,9 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <div sx={{ flex: "column", gap: 8 }}>
-        <Text fs={14} color="basic500">
-          {t("farms.positions.claimableRewards")}
-        </Text>
-        <div sx={{ flex: ["column", "row"], gap: 8 }}>
-          {poolClaimableValues.map((poolClaimableValue, index) => {
-            const percentage = BigNumber(
-              poolClaimableValue.loyaltyFactor,
-            ).times(100)
+      <JoinedFarms depositNft={depositNft} />
 
-            return (
-              <div
-                key={`${poolClaimableValue.yieldFarmId}_${index}`}
-                sx={{ flex: "row", gap: 8, align: "center", flexGrow: 1 }}
-              >
-                <Icon
-                  size={20}
-                  icon={<AssetLogo id={poolClaimableValue.rewardCurrency} />}
-                />
-                <LinearProgress
-                  size="small"
-                  color="brightBlue300"
-                  withoutLabel
-                  percent={percentage.toNumber()}
-                  css={{ flexGrow: 1, width: "100%" }}
-                />
-                <Text fs={11} color="darkBlue200">
-                  {t("value.percentage", { value: percentage })}
-                </Text>
-                {index < claimableAssets.length - 1 && (
-                  <Separator
-                    orientation="vertical"
-                    sx={{
-                      display: ["none", "inherit"],
-                      height: "100%",
-                      color: "white",
-                    }}
-                    opacity={0.6}
-                  />
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <SSeparator sx={{ mx: "auto", display: ["none", "inherit"] }} />
+      <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
       <div
         sx={{
@@ -272,14 +157,12 @@ export const FarmingPosition = ({
           py: 10,
         }}
       >
-        <SValueContainer>
-          <Text color="basic500" fs={14} lh={16}>
-            {t("farms.positions.labels.apr")}
-          </Text>
-          <JoinedFarms depositNft={depositNft} />
-        </SValueContainer>
+        {isXYKDeposit(depositData) ? (
+          <XYKFields depositData={depositData} />
+        ) : (
+          <OmnipoolFields depositData={depositData} />
+        )}
         <SSeparator />
-
         <SValueContainer>
           <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.enterDate")}
@@ -290,120 +173,6 @@ export const FarmingPosition = ({
             })}
           </Text>
         </SValueContainer>
-        <SSeparator />
-        <SValueContainer>
-          <Text color="basic500" fs={14} lh={16}>
-            {t("farms.positions.labels.totalRewards")}
-          </Text>
-
-          {isLoading ? (
-            <SSkeletonContainer>
-              <Skeleton width={100} height={14} css={{ height: 14 }} />
-              <Skeleton width={40} height={10} />
-            </SSkeletonContainer>
-          ) : (
-            <div sx={{ flex: "column", align: "flex-end" }}>
-              {isDesktop && <Text fs={14}>{maxTotalRewardsValue}</Text>}
-              <div sx={{ flex: "row", gap: 4 }}>
-                <DollarAssetValue
-                  value={BigNumber(maxTotal)}
-                  wrapper={(children) => (
-                    <Text
-                      fs={[14, 11]}
-                      lh={[14, 12]}
-                      color={["basic100", "whiteish500"]}
-                    >
-                      {children}
-                    </Text>
-                  )}
-                >
-                  <DisplayValue value={BigNumber(maxTotal)} />
-                </DollarAssetValue>
-                {!isDesktop && <InfoTooltip text={maxTotalRewardsValue} />}
-              </div>
-            </div>
-          )}
-        </SValueContainer>
-        <SSeparator />
-
-        <SValueContainer>
-          <Text color={color} fs={14} lh={16}>
-            {isClaimable || isClaimable === undefined
-              ? t("farms.positions.labels.claimableRewards")
-              : t("farms.positions.labels.NonClaimableRewards")}
-          </Text>
-
-          {isLoading ? (
-            <SSkeletonContainer>
-              <Skeleton width={100} height={14} css={{ height: 14 }} />
-              <Skeleton width={40} height={10} />
-            </SSkeletonContainer>
-          ) : (
-            <div sx={{ flex: "row", gap: 4 }}>
-              {!!isClaimable && (
-                <Icon size={12} icon={<SuccessIcon />} sx={{ mt: 2 }} />
-              )}
-              <div sx={{ flex: "column", align: "flex-end" }}>
-                {isDesktop && (
-                  <Text
-                    fs={14}
-                    color={isClaimable === undefined ? "white" : color}
-                  >
-                    {totalRewardsValue}
-                  </Text>
-                )}
-                <div sx={{ flex: "row", gap: 4 }}>
-                  <DollarAssetValue
-                    value={BigNumber(total)}
-                    wrapper={(children) => (
-                      <Text
-                        fs={[14, 11]}
-                        lh={[14, 12]}
-                        color={[color, "whiteish500"]}
-                      >
-                        {children}
-                      </Text>
-                    )}
-                  >
-                    <DisplayValue value={BigNumber(total)} />
-                  </DollarAssetValue>
-                  {!isDesktop && (
-                    <InfoTooltip
-                      text={
-                        <div>
-                          <Text fs={12} lh={16}>
-                            {t(
-                              "farms.positions.labels.claimableRewards.tooltip",
-                              {
-                                value: BigNumber(range).times(100).toString(),
-                              },
-                            )}
-                          </Text>
-                          <Text fs={12} lh={16}>
-                            {totalRewardsValue}
-                          </Text>
-                        </div>
-                      }
-                    />
-                  )}
-                </div>
-              </div>
-              {isDesktop && (
-                <InfoTooltip
-                  text={t("farms.positions.labels.claimableRewards.tooltip", {
-                    value: BigNumber(range).times(100).toString(),
-                  })}
-                />
-              )}
-            </div>
-          )}
-        </SValueContainer>
-        <SSeparator />
-        {isXYKDeposit(depositData) ? (
-          <XYKFields depositData={depositData} />
-        ) : (
-          <OmnipoolFields depositData={depositData} />
-        )}
       </div>
 
       {availableYieldFarms.length ? (

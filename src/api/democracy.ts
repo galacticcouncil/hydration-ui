@@ -4,9 +4,15 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { undefinedNoop } from "utils/helpers"
-import { PalletDemocracyVoteAccountVote } from "@polkadot/types/lookup"
-import BN from "bignumber.js"
+import {
+  PalletDemocracyVoteAccountVote,
+  PalletReferendaReferendumStatus,
+  PalletReferendaCurve,
+} from "@polkadot/types/lookup"
+import BN, { BigNumber } from "bignumber.js"
 import { BN_0 } from "utils/constants"
+import { humanizeUnderscoredString } from "utils/formatting"
+import { useActiveRpcUrlList } from "./provider"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
@@ -63,6 +69,38 @@ export const useReferendumInfo = (referendumIndex: string) => {
     QUERY_KEYS.referendumInfo(referendumIndex),
     getReferendumInfo(referendumIndex),
   )
+}
+
+export const useOpenGovReferendas = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.openGovReferendas(rpcUrlList.join(".")),
+    getOpenGovRegerendas(api),
+    {
+      enabled: isLoaded,
+    },
+  )
+}
+
+const getOpenGovRegerendas = (api: ApiPromise) => async () => {
+  const newReferendumsRaw =
+    await api.query.referenda.referendumInfoFor.entries()
+
+  // get only ongoing referenas so far
+  return newReferendumsRaw.reduce<
+    Array<{ id: string; referendum: PalletReferendaReferendumStatus }>
+  >((acc, [key, dataRaw]) => {
+    const id = key.args[0].toString()
+    const data = dataRaw.unwrap()
+
+    if (!data.isNone && data.isOngoing) {
+      acc.push({ id, referendum: data.asOngoing })
+    }
+
+    return acc
+  }, [])
 }
 
 export const getReferendums =
@@ -228,3 +266,51 @@ export const getAccountUnlockedVotes =
 
     return unlockedVotes
   }
+
+export const useReferendaTracks = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.referendaTracks(rpcUrlList.join(".")),
+    async () => {
+      const tracks = await api.consts.referenda.tracks
+
+      const data: Map<string, TReferenda> = new Map(
+        tracks.map(([key, dataRaw]) => [
+          key.toString(),
+          {
+            name: dataRaw.name.toString(),
+            nameHuman: humanizeUnderscoredString(dataRaw.name.toString()),
+            maxDeciding: dataRaw.maxDeciding.toBigNumber(),
+            decisionDeposit: dataRaw.decisionDeposit.toBigNumber(),
+            preparePeriod: dataRaw.preparePeriod.toBigNumber(),
+            decisionPeriod: dataRaw.decisionPeriod.toBigNumber(),
+            confirmPeriod: dataRaw.confirmPeriod.toBigNumber(),
+            minEnactmentPeriod: dataRaw.minEnactmentPeriod.toBigNumber(),
+            minApproval: dataRaw.minApproval,
+            minSupport: dataRaw.minSupport,
+          },
+        ]),
+      )
+
+      return data
+    },
+    {
+      enabled: isLoaded,
+    },
+  )
+}
+
+export type TReferenda = {
+  name: string
+  nameHuman: string
+  maxDeciding: BigNumber
+  decisionDeposit: BigNumber
+  preparePeriod: BigNumber
+  decisionPeriod: BigNumber
+  confirmPeriod: BigNumber
+  minEnactmentPeriod: BigNumber
+  minApproval: PalletReferendaCurve
+  minSupport: PalletReferendaCurve
+}
