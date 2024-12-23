@@ -25,6 +25,7 @@ import {
   useSupportThreshold,
 } from "./Referenda.utils"
 import Skeleton from "react-loading-skeleton"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 export const OpenGovReferenda = ({
   id,
@@ -168,17 +169,24 @@ export const OpenGovReferenda = ({
 
         <Spacer size={16} />
         <div sx={{ flex: "column", gap: 8 }}>
-          <SProgressBarContainer>
-            <div css={{ position: "relative" }}>
-              <LinearProgress
-                size="small"
-                withoutLabel
-                percent={barPercentage}
-                colorCustom="#B3D7FA"
-              />
-              <SThresholdLine percentage={markPercentage.toString()} />
-            </div>
-          </SProgressBarContainer>
+          <InfoTooltip
+            text={t("referenda.support", {
+              value: t("value.percentage", { value: barPercentage }),
+            })}
+            align="center"
+          >
+            <SProgressBarContainer>
+              <div css={{ position: "relative" }}>
+                <LinearProgress
+                  size="small"
+                  withoutLabel
+                  percent={barPercentage}
+                  colorCustom="#B3D7FA"
+                />
+                <SThresholdLine percentage={markPercentage.toString()} />
+              </div>
+            </SProgressBarContainer>
+          </InfoTooltip>
           <div sx={{ flex: "row", justify: "space-between" }}>
             <div sx={{ flex: "row", gap: 2 }}>
               <Text fs={11} css={{ color: "#DFB1F3" }}>

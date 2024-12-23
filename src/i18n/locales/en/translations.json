@@ -1244,6 +1244,7 @@
   "claimingRange.modal.description1": "After joining a farm, a portion of the accumulated rewards is locked. These rewards unlock over time as you remain in the farm and follow loyalty factor curve",
   "claimingRange.modal.description2": "Claiming forfeits the locked part of the rewards. Use this setting to tweak your preference over claiming faster or losing less rewards (default). This allows you to compound your rewards with ease.",
   "referenda.ongoing": "Ongoing Referenda",
+  "referenda.support": "Support: {{value}}",
   "referenda.empty.title": "No Referenda",
   "referenda.empty.desc.first": "Nothing here.",
   "referenda.empty.desc.second": " Currently there are no ongoing referenda to vote in.",
