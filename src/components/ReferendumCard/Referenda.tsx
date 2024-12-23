@@ -218,7 +218,7 @@ export const OpenGovReferenda = ({
         <SVoteButton
           disabled={isLoading}
           target="_blank"
-          href={`https://hydartion.subsquare.io/referenda/${id}`}
+          href={`https://hydration.subsquare.io/referenda/${id}`}
           rel="noreferrer"
         >
           <Icon icon={<VoteIcon />} />
