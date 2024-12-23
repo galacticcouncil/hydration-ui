@@ -7,10 +7,10 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
-import { useAccountsBalances } from "api/accountBalances"
 import { isNotNil } from "./helpers"
 import { TShareToken, useAssets } from "providers/assets"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useXYKPools } from "api/xyk"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -59,58 +59,52 @@ export const useDisplayPrice = (id: string | u32 | undefined) => {
 //TODO: mb create a hook for a single share token
 export const useDisplayShareTokenPrice = (ids: string[]) => {
   const { getShareTokens, getAssetWithFallback } = useAssets()
-
   const pools = getShareTokens(ids) as TShareToken[]
-  const poolsAddress = pools.map((pool) => pool?.poolAddress) ?? []
 
-  const poolBalances = useAccountsBalances(poolsAddress)
-  const issuances = useTotalIssuances()
+  const { data: xykPools = [], isLoading: isPoolsLoading } = useXYKPools()
+  const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
 
   const shareTokensTvl = useMemo(() => {
-    return !pools
-      ? []
-      : pools
-          .map((shareToken) => {
-            const { poolAddress } = shareToken ?? {}
+    return pools
+      .map((shareToken) => {
+        const { poolAddress } = shareToken ?? {}
 
-            if (!poolAddress) return undefined
+        if (!poolAddress) return undefined
 
-            const poolBalance = poolBalances.data?.find(
-              (poolBalance) => poolBalance.accountId === poolAddress,
-            )
+        const pool = xykPools.find((pool) => poolAddress === pool.address)
 
-            const assetA = poolBalance?.balances.find((balance) =>
-              shareToken.assets.some((asset) => asset.id === balance.assetId),
-            )
+        if (!pool) return undefined
 
-            if (!assetA) return undefined
+        const { tokens } = pool
+        const [assetA] = tokens
 
-            const assetABalance = BigNumber(assetA.freeBalance).shiftedBy(
-              -getAssetWithFallback(assetA.assetId).decimals,
-            )
+        if (!assetA) return undefined
+        const { balance, decimals, id } = assetA
 
-            const tvl = assetABalance.multipliedBy(2)
+        const assetABalance = BigNumber(balance).shiftedBy(-decimals)
 
-            return {
-              spotPriceId: assetA.assetId,
-              tvl,
-              shareTokenId: shareToken.id,
-            }
-          })
-          .filter(isNotNil)
-  }, [pools, poolBalances.data, getAssetWithFallback])
+        const tvl = assetABalance.multipliedBy(2)
 
-  const spotPrices = useDisplayPrices(
-    shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
-  )
+        return {
+          spotPriceId: id,
+          tvl,
+          shareTokenId: shareToken.id,
+        }
+      })
+      .filter(isNotNil)
+  }, [pools, xykPools])
 
-  const queries = [issuances, poolBalances, spotPrices]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const { data: spotPrices, isInitialLoading: isSpotPriceLoading } =
+    useDisplayPrices(
+      shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
+    )
+
+  const isLoading = isIssuanceLoading || isPoolsLoading || isSpotPriceLoading
 
   const data = useMemo(() => {
     return shareTokensTvl
       .map((shareTokenTvl) => {
-        const spotPrice = spotPrices.data?.find(
+        const spotPrice = spotPrices?.find(
           (spotPrice) => spotPrice?.tokenIn === shareTokenTvl.spotPriceId,
         )
 
@@ -118,7 +112,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
           spotPrice?.spotPrice ?? 1,
         )
 
-        const totalIssuance = issuances.data?.get(shareTokenTvl.shareTokenId)
+        const totalIssuance = issuances?.get(shareTokenTvl.shareTokenId)
 
         const shareTokenMeta = getAssetWithFallback(shareTokenTvl.shareTokenId)
 
@@ -135,7 +129,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
         }
       })
       .filter(isNotNil)
-  }, [getAssetWithFallback, issuances.data, shareTokensTvl, spotPrices.data])
+  }, [getAssetWithFallback, issuances, shareTokensTvl, spotPrices])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
