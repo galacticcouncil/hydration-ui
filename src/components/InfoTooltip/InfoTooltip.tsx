@@ -9,6 +9,7 @@ type InfoTooltipProps = {
   children?: ReactNode
   type?: "default" | "black"
   side?: Tooltip.TooltipContentProps["side"]
+  align?: Tooltip.TooltipContentProps["align"]
   asChild?: boolean
   preventDefault?: boolean
 }
@@ -18,6 +19,7 @@ export function InfoTooltip({
   children,
   type = "default",
   side = "bottom",
+  align = "start",
   asChild = false,
   preventDefault,
 }: InfoTooltipProps) {
@@ -49,7 +51,7 @@ export function InfoTooltip({
         <SContent
           type={type}
           side={side}
-          align="start"
+          align={align}
           sideOffset={3}
           alignOffset={-10}
           collisionPadding={12}

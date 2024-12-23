@@ -19,7 +19,6 @@ import {
   useSummarizeClaimableValues,
 } from "api/farms"
 import BN from "bignumber.js"
-import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 export const ClaimRewardsCard = (props: {
   depositNft?: TDeposit
@@ -89,7 +88,7 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const { claim, isLoading, confirmClaimModal } = useClaimFarmMutation(
+  const { claim, isLoading } = useClaimFarmMutation(
     claimableDepositValues,
     toast,
     props.onTxClose,
@@ -173,10 +172,8 @@ export const ClaimRewardsCard = (props: {
           >
             {t("farms.claimCard.button.label")}
           </Button>
-          <ClaimingRangeButton />
         </div>
       </div>
-      {confirmClaimModal}
     </Card>
   )
 }
