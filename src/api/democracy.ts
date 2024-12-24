@@ -64,6 +64,30 @@ export const useReferendums = (type?: "ongoing" | "finished") => {
   )
 }
 
+export const useDeprecatedReferendumInfo = (referendumIndex: string) => {
+  return useQuery(
+    QUERY_KEYS.deprecatedReferendumInfo(referendumIndex),
+    async () => {
+      const res = await fetch(
+        `https://hydration.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
+      )
+      if (!res.ok) return null
+
+      const json: Referendum = await res.json()
+
+      if (
+        json === null ||
+        json.referendumIndex === null ||
+        json.motionIndex === null ||
+        json.title === null
+      )
+        return null
+
+      return json
+    },
+  )
+}
+
 export const useReferendumInfo = (referendumIndex: string) => {
   return useQuery(
     QUERY_KEYS.referendumInfo(referendumIndex),
