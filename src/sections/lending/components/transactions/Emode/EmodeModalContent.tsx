@@ -51,7 +51,7 @@ function getInitialEmode(
 ) {
   const eModesNumber = Object.keys(eModes).length
   if (mode === EmodeModalType.ENABLE) {
-    if (eModesNumber > 2) return undefined
+    if (eModesNumber > 3) return undefined
     return eModes[1]
   }
   if (mode === EmodeModalType.SWITCH) {
