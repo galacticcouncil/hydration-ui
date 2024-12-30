@@ -33,6 +33,7 @@ import { Switch } from "components/Switch/Switch"
 export enum ErrorType {
   EMODE_DISABLED_LIQUIDATION,
   CLOSE_POSITIONS_BEFORE_SWITCHING,
+  CLOSE_POSITIONS_BEFORE_DISABLING,
 }
 
 export enum EmodeModalType {
@@ -117,7 +118,11 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         userReserve.reserve.eModeCategoryId !== selectedEmode?.id,
     )
     if (hasIncompatiblePositions) {
-      blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING
+      if (disableMode) {
+        blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING
+      } else {
+        blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING
+      }
     }
   }
   // render error messages
@@ -131,6 +136,20 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 To enable E-mode for the{" "}
                 {selectedEmode && getEmodeMessage(selectedEmode.label)}{" "}
                 category, all borrow positions outside of this category must be
+                closed.
+              </span>
+            </Text>
+          </Alert>
+        )
+      case ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING:
+        return (
+          <Alert variant="info" sx={{ mt: 12, align: "center" }}>
+            <Text>
+              <span>
+                To disable E-mode for the{" "}
+                {selectedEmode &&
+                  getEmodeMessage(eModes[user.userEmodeCategoryId].label)}{" "}
+                category, all borrow positions within this category must be
                 closed.
               </span>
             </Text>
@@ -325,7 +344,8 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           )}
         </TxModalDetails>
       )}
-      {blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING && (
+      {(blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING ||
+        blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING) && (
         <Blocked />
       )}
       {txError && <GasEstimationError txError={txError} sx={{ mt: 12 }} />}

@@ -6,9 +6,11 @@ import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getEmodeMessage } from "./EmodeNaming"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const EmodeButton = () => {
   const { openEmode } = useModalContext()
+  const { account } = useAccount()
   const { user, eModes } = useAppDataContext()
 
   const isEModeDisabled = user.userEmodeCategoryId === 0
@@ -28,6 +30,7 @@ export const EmodeButton = () => {
       </Text>
       <Button
         size="micro"
+        disabled={!account || account.isExternalWalletConnected}
         onClick={() =>
           openEmode(
             isEModeDisabled ? EmodeModalType.ENABLE : EmodeModalType.SWITCH,
