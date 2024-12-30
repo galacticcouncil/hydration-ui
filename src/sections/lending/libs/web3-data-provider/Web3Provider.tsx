@@ -75,6 +75,8 @@ const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
       return "swapBorrowRateMode"
     case ProtocolAction.setUsageAsCollateral:
       return "setUserUseReserveAsCollateral"
+    case ProtocolAction.setEModeUsage:
+      return "setUserEMode"
     default:
       return action
   }

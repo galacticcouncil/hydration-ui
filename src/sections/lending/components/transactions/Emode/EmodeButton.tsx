@@ -1,0 +1,44 @@
+import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { EmodeModalType } from "./EmodeModalContent"
+import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
+import { Icon } from "components/Icon/Icon"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getEmodeMessage } from "./EmodeNaming"
+
+export const EmodeButton = () => {
+  const { openEmode } = useModalContext()
+  const { user, eModes } = useAppDataContext()
+
+  const isEModeDisabled = user.userEmodeCategoryId === 0
+
+  // const disableEModeSwitch =
+  //   user.isInEmode &&
+  //   reserves.filter(
+  //     (reserve) =>
+  //       reserve.eModeCategoryId === user.userEmodeCategoryId &&
+  //       reserve.borrowingEnabled,
+  //   ).length < 2
+
+  return (
+    <div sx={{ flex: "row", align: "center", gap: 8 }}>
+      <Text fs={12} lh={12} color="basic300">
+        E-Mode
+      </Text>
+      <Button
+        size="micro"
+        onClick={() =>
+          openEmode(
+            isEModeDisabled ? EmodeModalType.ENABLE : EmodeModalType.SWITCH,
+          )
+        }
+      >
+        {isEModeDisabled
+          ? "Disabled"
+          : getEmodeMessage(eModes[user.userEmodeCategoryId].label)}
+        <Icon icon={<SettingsIcon />} size={12} />
+      </Button>
+    </div>
+  )
+}
