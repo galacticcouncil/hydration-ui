@@ -23,10 +23,11 @@ export const WarningMessage = (props: {
   const matchRoute = useMatchRoute()
 
   const warnings = useWarningsStore()
+  const visiblityLinks = warnings.warnings[props.type].visibility
 
-  const isWithinVisibility = warnings.warnings[props.type].visibility.some(
-    (item) => matchRoute({ to: LINKS[item] }),
-  )
+  const isWithinVisibility = visiblityLinks.length
+    ? visiblityLinks.some((item) => matchRoute({ to: LINKS[item] }))
+    : true
 
   if (!isWithinVisibility) return null
 
