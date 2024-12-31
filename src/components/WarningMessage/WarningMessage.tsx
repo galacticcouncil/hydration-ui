@@ -56,7 +56,6 @@ export const WarningMessage = (props: {
       <SWarningMessageContainer
         onClick={() => props.modalContent && setOpen(true)}
       >
-        <SSecondaryItem />
         <SWarningMessageContent>
           <svg
             width="18"
@@ -64,7 +63,7 @@ export const WarningMessage = (props: {
             viewBox="0 0 18 15"
             fill="none"
             xmlns="http://www.w3.org/2000.svg?react"
-            css={{ flexShrink: 0 }}
+            css={{ flexShrink: 0, marginTop: 4 }}
           >
             <path
               fillRule="evenodd"

@@ -1,4 +1,5 @@
 import { ExternalLink } from "components/Link/ExternalLink"
+import { Text } from "components/Typography/Text/Text"
 import { WarningMessage } from "components/WarningMessage/WarningMessage"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -30,8 +31,11 @@ export const HeaderBanners = () => {
         <WarningMessage
           text={
             <div>
-              <span>{t("warningMessage.wbtcCollateral.title")}</span>{" "}
+              <Text fs={[12, 14]} as="span">
+                {t("warningMessage.wbtcCollateral.title")}
+              </Text>{" "}
               <ExternalLink
+                sx={{ fontSize: [12, 14] }}
                 href="https://hydration.subsquare.io/referenda/1"
                 target="blank"
               >
