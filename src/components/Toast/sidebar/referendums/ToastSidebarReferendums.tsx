@@ -19,10 +19,7 @@ export const ToastSidebarReferendums = () => {
   const referendum = referendums.find((referendum) => referendum.id === "203")
 
   return (
-    <ToastSidebarGroup
-      title={t("toast.sidebar.referendums.title")}
-      open={false}
-    >
+    <ToastSidebarGroup title={t("toast.sidebar.referendums.title")} open={true}>
       <div sx={{ flex: "column", gap: 8 }}>
         {openGovQuery.data?.length && tracks.data
           ? openGovQuery.data.map((referendum) => {
