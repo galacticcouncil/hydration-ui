@@ -31,7 +31,7 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { TransactionOptions, useStore } from "state/store"
+import { ToastMessage, TransactionOptions, useStore } from "state/store"
 import { isEvmWalletExtension } from "utils/evm"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { createToastMessages } from "state/toasts"
@@ -59,6 +59,7 @@ export type Web3Data = {
   sendTx: (
     txData: PopulatedTransaction,
     action?: ProtocolAction,
+    toasts?: ToastMessage,
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   signTxData: (unsignedData: string) => Promise<SignatureLike>
@@ -191,10 +192,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const [loading, setLoading] = useState(false)
   const [readOnlyMode] = useState(false)
   const [switchNetworkError, setSwitchNetworkError] = useState<Error>()
-  const [setAccount] = useRootStore((store) => [
-    store.setAccount,
-    store.currentChainId,
-  ])
+  const [setAccount] = useRootStore((store) => [store.setAccount])
   const setAccountLoading = useRootStore((store) => store.setAccountLoading)
   const setWalletType = useRootStore((store) => store.setWalletType)
 
@@ -206,16 +204,24 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   }, [deactivate, setWalletType])
 
   const sendTx = useCallback(
-    async (txData: PopulatedTransaction, action?: ProtocolAction) => {
+    async (
+      txData: PopulatedTransaction,
+      action?: ProtocolAction,
+      toasts?: ToastMessage,
+    ) => {
       const { abi, toastProps } = getTransactionMeta(action, txData, poolData)
 
-      const txOptions: TransactionOptions = {
-        toast: toastProps
+      const toast = toasts
+        ? toasts
+        : toastProps
           ? createToastMessages(toastProps.key, {
               t,
               ...toastProps,
             })
-          : undefined,
+          : undefined
+
+      const txOptions: TransactionOptions = {
+        toast,
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
           refetchPoolData?.()
