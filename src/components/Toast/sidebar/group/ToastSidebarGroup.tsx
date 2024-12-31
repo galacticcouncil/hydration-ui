@@ -23,7 +23,7 @@ export const ToastSidebarGroup = ({ title, children, open = true }: Props) => {
         <SHeader>{title}</SHeader>
         <SHide>
           <Text color="darkBlue300" fs={12} fw={500}>
-            {t("hide")}
+            {isOpen ? t("hide") : t("show")}
           </Text>
           <ChevronDown />
         </SHide>
