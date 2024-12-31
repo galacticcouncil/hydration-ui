@@ -886,6 +886,8 @@
   "addressbook.remove.submit": "Yes, remove",
   "warningMessage.hdxLiquidity.title": "Your HDX LP position is not yielding rewards - to earn rewards on HDX you can use staking",
   "warningMessage.btcFarms.title": "Farms for 2-Pool (iBTC, WBTC) were stopped and no longer generating new rewards",
+  "warningMessage.wbtcCollateral.title": "Referendum #1 proposes a 10% reduction in the Liquidation Threshold (LT) and Loan-to-Value (LTV) ratio for WBTC. As a result, users who use WBTC as collateral are advised to enhance the health of their positions by a minimum of 0.1 before the enactment of the proposal.",
+  "warningMessage.wbtcCollateral.link": "Learn more",
   "bond": "Bond",
   "bonds": "Bonds",
   "bonds.maturity": "Maturity",
