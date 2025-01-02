@@ -44,8 +44,13 @@ export const OpenGovReferenda = ({
   const { data: subscanInfo, isLoading } = useReferendumInfo(id)
 
   const minApprovalThreshold = useMinApprovalThreshold(track, referenda)
-  const { threshold, maxSupportBarValue, barPercentage, markPercentage } =
-    useSupportThreshold(track, referenda, totalIssuance ?? "0")
+  const {
+    threshold,
+    maxSupportBarValue,
+    barPercentage,
+    markPercentage,
+    support,
+  } = useSupportThreshold(track, referenda, totalIssuance ?? "0")
   const votes = useReferendaVotes(referenda)
 
   const isNoVotes = votes.percAyes.eq(0) && votes.percNays.eq(0)
@@ -171,7 +176,7 @@ export const OpenGovReferenda = ({
         <div sx={{ flex: "column", gap: 8 }}>
           <InfoTooltip
             text={t("referenda.support", {
-              value: t("value.percentage", { value: barPercentage }),
+              value: getPerbillPercentage(support),
             })}
             align="center"
           >
