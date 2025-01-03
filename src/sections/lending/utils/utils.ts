@@ -139,4 +139,8 @@ export const getLtvColor = (
   return ltvColor
 }
 
-export const wssToHttps = (url: string) => url.replace("wss://", "https://")
+export const wssToHttps = (url: string) => {
+  if (url.includes("ws://")) return url.replace("ws://", "http://")
+
+  return url.replace("wss://", "https://")
+}
