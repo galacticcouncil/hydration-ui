@@ -5,6 +5,10 @@ import { useRootStore } from "sections/lending/store/root"
 
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import { getEmodeMessage } from "./EmodeNaming"
+import { useTranslation } from "react-i18next"
+import { createToastMessages } from "state/toasts"
+import { useMemo } from "react"
+import { getAction } from "./emode.utils"
 
 export type EmodeActionsProps = {
   isWrongNetwork: boolean
@@ -22,6 +26,7 @@ export const EmodeActions = ({
   eModes,
 }: EmodeActionsProps) => {
   const setUserEMode = useRootStore((state) => state.setUserEMode)
+  const { t } = useTranslation()
 
   const { action, loadingTxns, mainTxState, requiresApproval } =
     useTransactionHandler({
@@ -38,30 +43,55 @@ export const EmodeActions = ({
       },
     })
 
+  const getActionData = useMemo(
+    () => getAction(selectedEmode, activeEmode),
+    [selectedEmode, activeEmode],
+  )
+
   return (
     <TxActionsWrapper
       requiresApproval={requiresApproval}
       blocked={blocked}
       mainTxState={mainTxState}
       preparingTransactions={loadingTxns}
-      handleAction={action}
-      actionText={
-        activeEmode === 0 ? (
-          <span>Enable E-Mode</span>
-        ) : selectedEmode !== 0 ? (
-          <span>Switch E-Mode</span>
-        ) : (
-          <span>Disable E-Mode</span>
+      handleAction={async () => {
+        const name = getActionData({
+          enable: eModes[selectedEmode].label,
+          disable: eModes[activeEmode].label,
+          switch: eModes[selectedEmode].label,
+        })
+
+        const key = getActionData({
+          enable: "lending.emode.enable.toast",
+          disable: "lending.emode.disable.toast",
+          switch: "lending.emode.switch.toast",
+        })
+
+        await action(
+          createToastMessages(key, {
+            t,
+            tOptions: { name },
+            components: ["span.highlight"],
+          }),
         )
+      }}
+      actionText={
+        <span>
+          {getActionData({
+            enable: "Enable E-Mode",
+            disable: "Disable E-Mode",
+            switch: "Switch E-Mode",
+          })}
+        </span>
       }
       actionInProgressText={
-        activeEmode === 0 ? (
-          <span>Enabling E-Mode</span>
-        ) : selectedEmode !== 0 ? (
-          <span>Switching E-Mode</span>
-        ) : (
-          <span>Disabling E-Mode</span>
-        )
+        <span>
+          {getActionData({
+            enable: "Enabling E-Mode",
+            disable: "Disabling E-Mode",
+            switch: "Switching E-Mode",
+          })}
+        </span>
       }
       isWrongNetwork={isWrongNetwork}
     />

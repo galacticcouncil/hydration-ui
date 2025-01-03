@@ -15,7 +15,6 @@ import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfi
 
 import ArrowRightIcon from "assets/icons/ArrowRightIcon.svg?react"
 import { Alert } from "components/Alert"
-import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { TxErrorView } from "sections/lending/components/transactions/FlowCommons/Error"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
@@ -28,16 +27,19 @@ import { ChangeNetworkWarning } from "sections/lending/components/transactions/W
 import { EmodeActions } from "./EmodeActions"
 import { getEmodeMessage } from "./EmodeNaming"
 import { EmodeSelect } from "./EmodeSelect"
+import { ChainId } from "sections/lending/ui-config/networksConfig"
+import { Switch } from "components/Switch/Switch"
 
 export enum ErrorType {
   EMODE_DISABLED_LIQUIDATION,
   CLOSE_POSITIONS_BEFORE_SWITCHING,
+  CLOSE_POSITIONS_BEFORE_DISABLING,
 }
 
 export enum EmodeModalType {
   ENABLE = "Enable",
   DISABLE = "Disable",
-  SWITCH = "Switch",
+  SWITCH = "Manage",
 }
 
 export interface EmodeModalContentProps {
@@ -51,7 +53,7 @@ function getInitialEmode(
 ) {
   const eModesNumber = Object.keys(eModes).length
   if (mode === EmodeModalType.ENABLE) {
-    if (eModesNumber > 2) return undefined
+    if (eModesNumber > 3) return undefined
     return eModes[1]
   }
   if (mode === EmodeModalType.SWITCH) {
@@ -71,7 +73,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     marketReferencePriceInUsd,
     userReserves,
   } = useAppDataContext()
-  const { currentChainId } = useProtocolDataContext()
+  const { currentChainId: chainId } = useProtocolDataContext()
   const { chainId: connectedChainId, readOnlyModeAddress } = useWeb3Context()
   const currentTimestamp = useCurrentTimestamp(1)
   const { mainTxState: emodeTxState, txError } = useModalContext()
@@ -79,6 +81,12 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   const [selectedEmode, setSelectedEmode] = useState<EmodeCategory | undefined>(
     getInitialEmode(mode, eModes, user.userEmodeCategoryId),
   )
+
+  const [disableMode, setDisableMode] = useState(false)
+
+  const currentChainId =
+    chainId === ChainId.hydration_testnet ? ChainId.hydration : chainId
+
   const networkConfig = getNetworkConfig(currentChainId)
 
   // calcs
@@ -110,7 +118,11 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         userReserve.reserve.eModeCategoryId !== selectedEmode?.id,
     )
     if (hasIncompatiblePositions) {
-      blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING
+      if (disableMode) {
+        blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING
+      } else {
+        blockingError = ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING
+      }
     }
   }
   // render error messages
@@ -124,6 +136,20 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 To enable E-mode for the{" "}
                 {selectedEmode && getEmodeMessage(selectedEmode.label)}{" "}
                 category, all borrow positions outside of this category must be
+                closed.
+              </span>
+            </Text>
+          </Alert>
+        )
+      case ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING:
+        return (
+          <Alert variant="info" sx={{ mt: 12, align: "center" }}>
+            <Text>
+              <span>
+                To disable E-mode for the{" "}
+                {selectedEmode &&
+                  getEmodeMessage(eModes[user.userEmodeCategoryId].label)}{" "}
+                category, all borrow positions within this category must be
                 closed.
               </span>
             </Text>
@@ -178,131 +204,151 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   if (emodeTxState.success) return <TxSuccessView action={<span>Emode</span>} />
   return (
     <>
-      <TxModalDetails>
-        {!showModal && (
-          <Row captionColor="basic400" caption={<span>E-Mode category</span>}>
-            <div sx={{ flex: "row", justify: "right", align: "center" }}>
-              <div sx={{ align: "center" }} css={{ display: "inline-flex" }}>
-                {user.userEmodeCategoryId !== 0 ? (
+      {user.userEmodeCategoryId !== 0 ? (
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            gap: 4,
+            align: "center",
+            py: 16,
+          }}
+        >
+          <Text>Disable E-Mode</Text>
+          <Switch
+            value={disableMode}
+            onCheckedChange={setDisableMode}
+            name="Disable e-mode"
+            size="small"
+          />
+        </div>
+      ) : null}
+      {!disableMode && (
+        <TxModalDetails>
+          {!showModal && (
+            <Row captionColor="basic400" caption={<span>E-Mode category</span>}>
+              <div sx={{ flex: "row", justify: "right", align: "center" }}>
+                <div sx={{ align: "center" }} css={{ display: "inline-flex" }}>
+                  {user.userEmodeCategoryId !== 0 ? (
+                    <>
+                      <span>
+                        {getEmodeMessage(
+                          eModes[user.userEmodeCategoryId].label,
+                        )}
+                      </span>
+                    </>
+                  ) : (
+                    <span>None</span>
+                  )}
+                </div>
+                {selectedEmode && (
                   <>
-                    <span>
-                      {getEmodeMessage(eModes[user.userEmodeCategoryId].label)}
-                    </span>
+                    <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
+                    <div
+                      css={{ display: "inline-flex" }}
+                      sx={{ align: "center" }}
+                    >
+                      {selectedEmode.id !== 0 ? (
+                        <>
+                          <span>
+                            {getEmodeMessage(eModes[selectedEmode.id].label)}
+                          </span>
+                        </>
+                      ) : (
+                        <span>None</span>
+                      )}
+                    </div>
                   </>
-                ) : (
-                  <span>None</span>
                 )}
               </div>
+            </Row>
+          )}
+
+          {showModal && (
+            <EmodeSelect
+              emodeCategories={eModes}
+              selectedEmode={selectedEmode?.id}
+              setSelectedEmode={setSelectedEmode}
+              userEmode={user.userEmodeCategoryId}
+            />
+          )}
+
+          <Row captionColor="basic400" caption={<span>Available assets</span>}>
+            <div sx={{ flex: "row", justify: "right", align: "center" }}>
+              {eModes[user.userEmodeCategoryId] && (
+                <div sx={{ flex: "row", align: "center", textAlign: "end" }}>
+                  {user.userEmodeCategoryId !== 0 ? (
+                    <span>
+                      {eModes[user.userEmodeCategoryId].assets.join(", ")}
+                    </span>
+                  ) : (
+                    <span>All Assets</span>
+                  )}
+                </div>
+              )}
               {selectedEmode && (
                 <>
                   <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                   <div
-                    css={{ display: "inline-flex" }}
-                    sx={{ align: "center" }}
+                    sx={{ flex: "row", align: "center", justify: "flex-end" }}
                   >
-                    {selectedEmode.id !== 0 ? (
-                      <>
-                        <span>
-                          {getEmodeMessage(eModes[selectedEmode.id].label)}
-                        </span>
-                      </>
+                    {selectedEmode?.id !== 0 ? (
+                      <Text sx={{ textAlign: "end" }}>
+                        {selectedEmode.assets.join(", ")}
+                      </Text>
                     ) : (
-                      <span>None</span>
+                      <Text>
+                        <span>All Assets</span>
+                      </Text>
                     )}
                   </div>
                 </>
               )}
             </div>
           </Row>
-        )}
+          <DetailsHFLine
+            visibleHfChange={!!selectedEmode}
+            healthFactor={user.healthFactor}
+            futureHealthFactor={newSummary.healthFactor}
+          />
 
-        <Row captionColor="basic400" caption={<span>Available assets</span>}>
-          <div sx={{ flex: "row", justify: "right", align: "center" }}>
-            {eModes[user.userEmodeCategoryId] && (
-              <div sx={{ flex: "row", align: "center", textAlign: "end" }}>
-                {user.userEmodeCategoryId !== 0 ? (
-                  <span>
-                    {eModes[user.userEmodeCategoryId].assets.join(", ")}
-                  </span>
-                ) : (
-                  <span>All Assets</span>
-                )}
-              </div>
-            )}
-            {selectedEmode && (
-              <>
-                <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
+          {showMaxLTVRow && (
+            <Row
+              caption={<span>Maximum loan to value</span>}
+              captionColor="basic400"
+              sx={{ mb: 12 }}
+            >
+              <div sx={{ textAlign: "right" }}>
                 <div sx={{ flex: "row", align: "center", justify: "flex-end" }}>
-                  {selectedEmode?.id !== 0 ? (
-                    <Text sx={{ textAlign: "end" }}>
-                      {selectedEmode.assets.join(", ")}
-                    </Text>
-                  ) : (
-                    <Text>
-                      <span>All Assets</span>
-                    </Text>
+                  <FormattedNumber
+                    value={user.currentLoanToValue}
+                    visibleDecimals={2}
+                    compact
+                    percent
+                  />
+
+                  {selectedEmode !== undefined && (
+                    <>
+                      <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
+                      <FormattedNumber
+                        value={newSummary.currentLoanToValue}
+                        visibleDecimals={2}
+                        compact
+                        percent
+                      />
+                    </>
                   )}
                 </div>
-              </>
-            )}
-          </div>
-        </Row>
-        <DetailsHFLine
-          visibleHfChange={!!selectedEmode}
-          healthFactor={user.healthFactor}
-          futureHealthFactor={newSummary.healthFactor}
-        />
-
-        {showMaxLTVRow && (
-          <Row
-            caption={<span>Maximum loan to value</span>}
-            captionColor="basic400"
-            sx={{ mb: 12 }}
-          >
-            <div sx={{ textAlign: "right" }}>
-              <div sx={{ flex: "row", align: "center", justify: "flex-end" }}>
-                <FormattedNumber
-                  value={user.currentLoanToValue}
-                  visibleDecimals={2}
-                  compact
-                  percent
-                />
-
-                {selectedEmode !== undefined && (
-                  <>
-                    <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
-                    <FormattedNumber
-                      value={newSummary.currentLoanToValue}
-                      visibleDecimals={2}
-                      compact
-                      percent
-                    />
-                  </>
-                )}
               </div>
-            </div>
-          </Row>
-        )}
-      </TxModalDetails>
-
-      {showModal && (
-        <>
-          <Separator color="darkBlue401" sx={{ my: 6 }} />
-          <EmodeSelect
-            emodeCategories={eModes}
-            selectedEmode={selectedEmode?.id}
-            setSelectedEmode={setSelectedEmode}
-            userEmode={user.userEmodeCategoryId}
-          />
-        </>
+            </Row>
+          )}
+        </TxModalDetails>
       )}
-
-      {blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING && (
+      {(blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING ||
+        blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING) && (
         <Blocked />
       )}
-
       {txError && <GasEstimationError txError={txError} sx={{ mt: 12 }} />}
-
       {isWrongNetwork && !readOnlyModeAddress && (
         <ChangeNetworkWarning
           sx={{ mt: 12 }}
@@ -310,7 +356,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           chainId={currentChainId}
         />
       )}
-
       {user.userEmodeCategoryId === 0 && (
         <Alert variant="warning" sx={{ mt: 12 }}>
           <Text>
@@ -319,7 +364,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           </Text>
         </Alert>
       )}
-
       {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
       {showLiquidationRiskAlert && (
         <Alert variant="error" sx={{ mt: 24, align: "center" }}>
@@ -334,11 +378,10 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           </Text>
         </Alert>
       )}
-
       <EmodeActions
         isWrongNetwork={isWrongNetwork}
         blocked={blockingError !== undefined || !selectedEmode}
-        selectedEmode={selectedEmode?.id || 0}
+        selectedEmode={disableMode ? 0 : selectedEmode?.id || 0}
         activeEmode={user.userEmodeCategoryId}
         eModes={eModes}
       />
