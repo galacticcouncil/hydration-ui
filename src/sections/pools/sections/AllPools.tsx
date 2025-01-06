@@ -17,6 +17,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import BigNumber from "bignumber.js"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -111,7 +112,11 @@ const AllPoolsData = () => {
             acc.tvl = acc.tvl.plus(
               !xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0,
             )
-            acc.volume = acc.volume.plus(xykPool.volume ?? 0)
+            acc.volume = acc.volume.plus(
+              xykPool.volume && !BigNumber(xykPool.volume).isNaN()
+                ? xykPool.volume
+                : 0,
+            )
           }
 
           return acc

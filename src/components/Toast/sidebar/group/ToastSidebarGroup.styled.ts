@@ -28,7 +28,7 @@ export const SToggle = styled(ButtonTransparent)<{ isOpen: boolean }>`
   background-color: rgba(${theme.rgbColors.primaryA06}, 0.06);
 
   svg {
-    rotate: ${({ isOpen }) => (isOpen ? "0deg" : "180deg")};
+    rotate: ${({ isOpen }) => (!isOpen ? "0deg" : "180deg")};
     transition: all 0.15s ease-in-out;
   }
 `

@@ -1,7 +1,6 @@
 import { useMemo } from "react"
 import { arraySearch } from "utils/helpers"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
-import { useAccountsBalances } from "api/accountBalances"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
 import { useAssets } from "providers/assets"
@@ -9,6 +8,7 @@ import { useAccountAssets } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
 import BigNumber from "bignumber.js"
+import { useXYKSDKPools } from "api/xyk"
 
 export const useOmnipoolPositionsData = ({
   search,
@@ -44,7 +44,7 @@ export const useOmnipoolPositionsData = ({
 }
 
 export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
-  const { native, isShareToken } = useAssets()
+  const { isShareToken } = useAssets()
   const { account } = useAccount()
   const { data: accountAssets } = useAccountAssets(account?.address)
 
@@ -65,41 +65,29 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
   }, [accountAssets, isShareToken])
 
   const shareTokensId = accountShareTokens.map((pool) => pool.asset.id)
-  const shareTokensAddresses = accountShareTokens.map(
-    (pool) => pool.asset.poolAddress,
-  )
 
-  const totalIssuances = useTotalIssuances()
-  const poolBalances = useAccountsBalances(shareTokensAddresses)
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKSDKPools()
+  const { data: totalIssuances, isLoading: isIssuancesLoading } =
+    useTotalIssuances()
   const spotPrices = useDisplayShareTokenPrice(shareTokensId)
 
   const isLoading =
-    totalIssuances.isInitialLoading ||
-    poolBalances.isInitialLoading ||
-    spotPrices.isInitialLoading
+    isIssuancesLoading || isXykPoolsLoading || spotPrices.isInitialLoading
 
   const data = useMemo(() => {
-    if (
-      !accountShareTokens.length ||
-      !totalIssuances.data ||
-      !poolBalances.data
-    )
-      return []
+    if (!accountShareTokens.length || !totalIssuances || !xykPools) return []
 
     const rows = accountShareTokens.map((myPool) => {
-      const totalIssuance = totalIssuances.data.get(myPool.asset.id)
+      const totalIssuance = totalIssuances.get(myPool.asset.id)
 
-      const poolBalance = poolBalances.data?.find(
-        (poolBalance) =>
-          poolBalance.accountId.toString() === myPool.asset.poolAddress,
-      )
+      const poolTokens = xykPools.find(
+        (xykPool) => xykPool.address === myPool.asset.poolAddress,
+      )?.tokens
+
       const balances = myPool.asset.assets.map((asset) => {
-        const balance =
-          asset.id === native.id
-            ? poolBalance?.native.freeBalance
-            : poolBalance?.balances.find(
-                (balance) => balance.assetId === asset.id,
-              )?.freeBalance
+        const balance = poolTokens?.find(
+          (token) => token.id === asset.id,
+        )?.balance
 
         const myShare = BigNumber(myPool.balance.total).div(totalIssuance ?? 1)
 
@@ -135,14 +123,7 @@ export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
     })
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [
-    accountShareTokens,
-    native.id,
-    poolBalances.data,
-    search,
-    spotPrices.data,
-    totalIssuances,
-  ])
+  }, [accountShareTokens, search, spotPrices.data, totalIssuances, xykPools])
 
   return { data, isLoading }
 }

@@ -28,7 +28,7 @@ export const SWarningMessageContainer = styled.div<{
   cursor: pointer;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 8px;
 
@@ -41,7 +41,7 @@ export const SWarningMessageContent = styled.div`
   flex-direction: row;
 
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 `
 

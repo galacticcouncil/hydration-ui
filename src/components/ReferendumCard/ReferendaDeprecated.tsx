@@ -1,4 +1,5 @@
 import { PalletDemocracyReferendumInfo } from "@polkadot/types/lookup"
+import { useDeprecatedReferendumInfo } from "api/democracy"
 import IconArrow from "assets/icons/IconArrow.svg?react"
 import GovernanceIcon from "assets/icons/GovernanceIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
@@ -8,28 +9,26 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
-import { ReferendumCardProgress } from "./ReferendumCardProgress"
 import { Icon } from "components/Icon/Icon"
+import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
+import { ReferendumCardProgress } from "./ReferendumCardProgress"
+import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
+
+const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
 type Props = {
   id: string
   referendum: PalletDemocracyReferendumInfo
   type: "toast" | "staking"
-  rpc: string
   voted: boolean
 }
 
-export const ReferendumCardRococo = ({
-  id,
-  referendum,
-  type,
-  rpc,
-  voted,
-}: Props) => {
+export const ReferendaDeprecated = ({ id, referendum, type, voted }: Props) => {
   const { t } = useTranslation()
 
+  const info = useDeprecatedReferendumInfo(id)
   const bestNumber = useBestNumber()
 
   const votes = useMemo(() => {
@@ -56,24 +55,25 @@ export const ReferendumCardRococo = ({
     return { ayes, nays, percAyes, percNays }
   }, [referendum])
 
-  const diff = referendum.asOngoing.end
-    .toBigNumber()
+  const diff = BN(info?.data?.onchainData.meta.end ?? 0)
     .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
     .times(PARACHAIN_BLOCK_TIME)
     .toNumber()
   const endDate = customFormatDuration({ end: diff * 1000 })
 
-  return (
+  return info.isLoading || !info.data ? (
+    <ReferendumCardSkeleton type={type} />
+  ) : (
     <SContainer
       type={type}
-      href={`https://polkadot.js.org/apps/?rpc=wss%3A%2F%2F${rpc}#/democracy`}
+      href={`${REFERENDUM_LINK}/${info.data.referendumIndex}`}
       target="_blank"
       rel="noreferrer"
     >
       <SHeader>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           <Text color="brightBlue200" fs={14} fw={500}>
-            #{id.toString()}
+            #{info.data.referendumIndex}
           </Text>
           <Text color="brightBlue200" fs={12} fw={500}>
             {"//"}
@@ -103,9 +103,8 @@ export const ReferendumCardRococo = ({
 
       <Separator color="primaryA15Blue" opacity={0.35} sx={{ my: 16 }} />
 
-      <Text color="basic100" fw={500}>
-        For Rococo testnet, please participate in referenda through polkadot.js
-        apps, please click on this tile
+      <Text color="white" fw={500}>
+        {info.data.title}
       </Text>
 
       <Spacer size={20} />
