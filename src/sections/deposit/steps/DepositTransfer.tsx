@@ -29,7 +29,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { asset, setDepositedAmount } = useDeposit()
+  const { asset, depositedAmount, setDepositedAmount } = useDeposit()
   const [addressBookOpen, setAddressBookOpen] = useState(false)
 
   const address = account?.address ?? ""
@@ -37,13 +37,29 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
   const wallet = useCrossChainWallet()
 
-  const { data: xTransfer } = useCrossChainTransfer(wallet, {
-    asset: asset?.data.asset.key ?? "",
-    srcAddr: address,
-    dstAddr: address,
-    srcChain: srcChain,
-    dstChain: "hydration",
-  })
+  const { data: xTransfer } = useCrossChainTransfer(
+    wallet,
+    {
+      asset: asset?.data.asset.key ?? "",
+      srcAddr: address,
+      dstAddr: address,
+      srcChain: srcChain,
+      dstChain: "hydration",
+    },
+    {
+      onSuccess: ({ source }) => {
+        if (depositedAmount && !form.getValues("amount")) {
+          const amount = BN.min(
+            depositedAmount.toString(),
+            source.max.amount.toString(),
+          )
+
+          const shiftedAmount = amount.shiftedBy(-source.balance.decimals)
+          form.setValue("amount", shiftedAmount.toString())
+        }
+      },
+    },
+  )
 
   const transferData = useMemo(() => {
     if (!xTransfer)
@@ -103,9 +119,11 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       dstChain: "hydration",
     })
 
-    setDepositedAmount(
-      BigInt(BN(values.amount).shiftedBy(transferData.decimals).toString()),
-    )
+    const depositedAmount = BN(values.amount)
+      .shiftedBy(transferData.decimals)
+      .toString()
+
+    setDepositedAmount(BigInt(depositedAmount))
   }
 
   function toggleAddressBook() {

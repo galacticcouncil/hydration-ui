@@ -6,8 +6,13 @@ import {
   HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount, SubstrateApis } from "@galacticcouncil/xcm-core"
-import { Wallet } from "@galacticcouncil/xcm-sdk"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Wallet, XTransfer } from "@galacticcouncil/xcm-sdk"
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query"
 import { TransactionOptions, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
 import { external } from "@galacticcouncil/apps"
@@ -64,6 +69,10 @@ export const useCrossChainWallet = () => {
 export const useCrossChainTransfer = (
   wallet: Wallet,
   transfer: TransferProps,
+  /* options: {
+    onSuccess?: (result: XTransfer) => void
+  } = {}, */
+  options: UseQueryOptions<XTransfer> = {},
 ) => {
   const args = [
     transfer.asset,
@@ -72,13 +81,14 @@ export const useCrossChainTransfer = (
     transfer.dstAddr,
     transfer.dstChain,
   ] as const
-  return useQuery(
+  return useQuery<XTransfer>(
     QUERY_KEYS.xcmTransfer(...args),
     async () => {
       return wallet.transfer(...args)
     },
     {
       enabled: !!wallet && !!transfer.asset,
+      ...options,
     },
   )
 }
