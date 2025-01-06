@@ -215,11 +215,6 @@ export const QUERY_KEYS = {
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
-  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
-    "referendums",
-    accountAddress,
-    type,
-  ],
   openGovReferendas: (url: string) => ["openGovReferendas", url],
   referendaTracks: (url: string) => ["referendaTracks", url],
   referendumVotes: (accountAddress?: string) => [
@@ -228,7 +223,6 @@ export const QUERY_KEYS = {
     accountAddress,
   ],
   referendumInfo: (id: string) => [id, "referendumInfo"],
-  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   stats: (
     type: ChartType,
     timeframe?: StatsTimeframe,

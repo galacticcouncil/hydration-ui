@@ -19,7 +19,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useVotesRewardedIds } from "api/staking"
+import { useProcessedVotesIds } from "api/staking"
 import { BN_0 } from "utils/constants"
 import { Graph } from "components/Graph/Graph"
 import { XAxis, YAxis } from "recharts"
@@ -37,7 +37,7 @@ export const AvailableRewards = () => {
   const spotPrice = useDisplayPrice(native.id)
   const refetch = useRefetchAccountAssets()
 
-  const votesRewarded = useVotesRewardedIds()
+  const processedVotes = useProcessedVotesIds()
 
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
@@ -62,16 +62,24 @@ export const AvailableRewards = () => {
       return memo
     }, {} as ToastMessage)
 
-    const processedVoteIds = await votesRewarded.mutateAsync()
+    const processedVoteIds = await processedVotes.mutateAsync()
 
     await createTransaction(
       {
-        tx: processedVoteIds.length
-          ? api.tx.utility.batchAll([
-              ...processedVoteIds.map((id) => api.tx.democracy.removeVote(id)),
-              api.tx.staking.claim(reward.data?.positionId!),
-            ])
-          : api.tx.staking.claim(reward.data?.positionId!),
+        tx:
+          processedVoteIds &&
+          (processedVoteIds.newProcessedVotesIds.length ||
+            processedVoteIds?.oldProcessedVotesIds.length)
+            ? api.tx.utility.batchAll([
+                ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+                  api.tx.democracy.removeVote(id),
+                ),
+                ...processedVoteIds.newProcessedVotesIds.map((id) =>
+                  api.tx.convictionVoting.removeVote(null, id),
+                ),
+                api.tx.staking.claim(reward.data?.positionId!),
+              ])
+            : api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )
