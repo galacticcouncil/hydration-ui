@@ -16,7 +16,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { useVotesRewardedIds } from "api/staking"
+import { useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 
@@ -41,7 +41,7 @@ export const Stake = ({
 
   const form = useForm<{ amount: string }>()
 
-  const votesRewarded = useVotesRewardedIds()
+  const processedVotes = useProcessedVotesIds()
 
   const onSubmit = async (values: FormValues<typeof form>) => {
     const amount = getFixedPointAmount(values.amount, 12).toString()
@@ -69,18 +69,24 @@ export const Stake = ({
     }, {} as ToastMessage)
 
     if (isStakePosition) {
-      const processedVoteIds = await votesRewarded.mutateAsync()
+      const processedVoteIds = await processedVotes.mutateAsync()
 
       transaction = await createTransaction(
         {
-          tx: processedVoteIds.length
-            ? api.tx.utility.batchAll([
-                ...processedVoteIds.map((id) =>
-                  api.tx.democracy.removeVote(id),
-                ),
-                api.tx.staking.increaseStake(positionId, amount),
-              ])
-            : api.tx.staking.increaseStake(positionId, amount),
+          tx:
+            processedVoteIds &&
+            (processedVoteIds.newProcessedVotesIds.length ||
+              processedVoteIds?.oldProcessedVotesIds.length)
+              ? api.tx.utility.batchAll([
+                  ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+                    api.tx.democracy.removeVote(id),
+                  ),
+                  ...processedVoteIds.newProcessedVotesIds.map((id) =>
+                    api.tx.convictionVoting.removeVote(null, id),
+                  ),
+                  api.tx.staking.increaseStake(positionId, amount),
+                ])
+              : api.tx.staking.increaseStake(positionId, amount),
         },
         { toast },
       )

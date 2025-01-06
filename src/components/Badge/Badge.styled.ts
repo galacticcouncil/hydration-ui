@@ -17,6 +17,10 @@ export const variantStyles = {
     color: ${theme.colors.warning300};
     background-color: rgba(${theme.rgbColors.warning300}, 0.35);
   `,
+  purple: css`
+    color: rgba(3, 8, 22, 1);
+    background-color: rgba(223, 177, 243, 1);
+  `,
 }
 
 export const sizeStyles = {

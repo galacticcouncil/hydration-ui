@@ -20,7 +20,7 @@ import {
   PARACHAIN_BLOCK_TIME,
 } from "utils/constants"
 import { useMemo } from "react"
-import { useReferendums } from "api/democracy"
+import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
@@ -376,7 +376,7 @@ export const useClaimReward = () => {
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
-  const { data: referendums } = useReferendums("ongoing")
+  const { data: openGovReferendas } = useOpenGovReferendas()
 
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
@@ -456,10 +456,10 @@ export const useClaimReward = () => {
     )
 
     let extraPayablePercentageHuman: string | undefined
-    if (referendums?.length) {
+    if (openGovReferendas?.length) {
       const voteActionPoints = getVoteActionPoints(
         stakePosition.stake,
-        referendums.length,
+        openGovReferendas.length,
       )
 
       const extraPoints = wasm.calculate_points(
@@ -536,7 +536,13 @@ export const useClaimReward = () => {
         .div(totalRewards)
         .multipliedBy(100),
     }
-  }, [bestNumber.data, potBalance.data, stake, stakingConsts, referendums])
+  }, [
+    bestNumber.data,
+    potBalance.data,
+    stake,
+    stakingConsts,
+    openGovReferendas,
+  ])
 
   return { data, isLoading }
 }
