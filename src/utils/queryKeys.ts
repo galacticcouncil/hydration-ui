@@ -217,6 +217,10 @@ export const QUERY_KEYS = {
   polStats: ["polStats"],
   openGovReferendas: (url: string) => ["openGovReferendas", url],
   referendaTracks: (url: string) => ["referendaTracks", url],
+  accountOpenGovVotes: (accountAddress?: string) => [
+    "accountOpenGovVotes",
+    accountAddress,
+  ],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",

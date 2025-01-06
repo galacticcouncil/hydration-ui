@@ -1,5 +1,6 @@
 import {
   TReferenda,
+  useAccountOpenGovVotes,
   useOpenGovReferendas,
   useReferendaTracks,
 } from "api/democracy"
@@ -19,7 +20,10 @@ const defaultFilter = { key: "all", label: "ALL" }
 
 export const OpenGovReferendas = () => {
   const { t } = useTranslation()
-  const openGovQuery = useOpenGovReferendas()
+  const { data: accountVotes = [], isLoading: isLoadingAccountVotes } =
+    useAccountOpenGovVotes()
+  const { data: referendas, isLoading: isLoadingReferendas } =
+    useOpenGovReferendas()
   const tracks = useReferendaTracks()
   const { data: hdxSupply, isLoading: isSupplyLoading } =
     useHDXSupplyFromSubscan()
@@ -40,19 +44,22 @@ export const OpenGovReferendas = () => {
   )
 
   const filtredReferenda = useMemo(() => {
-    if (openGovQuery.data?.length && trackItems) {
+    if (referendas?.length && trackItems) {
       if (filter !== defaultFilter.key) {
-        return openGovQuery.data.filter(
+        return referendas.filter(
           (referenda) => referenda.referendum.track.toString() === filter,
         )
       } else {
-        return openGovQuery.data
+        return referendas
       }
     }
-  }, [openGovQuery.data, trackItems, filter])
+  }, [referendas, trackItems, filter])
 
   const isLoading =
-    openGovQuery.isLoading || isSupplyLoading || tracks.isLoading
+    isLoadingReferendas ||
+    isSupplyLoading ||
+    tracks.isLoading ||
+    isLoadingAccountVotes
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
@@ -93,6 +100,7 @@ export const OpenGovReferendas = () => {
                   referenda={referendum.referendum}
                   track={track}
                   totalIssuance={hdxSupply?.totalIssuance}
+                  voted={accountVotes.some((vote) => vote.id === referendum.id)}
                 />
               )
             })
