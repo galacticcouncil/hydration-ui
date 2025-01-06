@@ -276,39 +276,54 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
   }
 }
 
-export const useVotesRewardedIds = () => {
+export const useProcessedVotesIds = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
 
   return useMutation(async () => {
     if (!account) {
-      return []
+      return undefined
     }
 
-    const processedVotesRes = await api.query.staking.votesRewarded.entries(
+    const newProcessedVotes = await api.query.staking.votesRewarded.entries(
       account.address,
     )
 
-    const ids = processedVotesRes.map(([processedVote]) => {
+    const oldProcessedVotes = await api.query.staking.processedVotes.entries(
+      account.address,
+    )
+
+    const newProcessedVotesIds = newProcessedVotes.map(([processedVote]) => {
       const [, id] = processedVote.toHuman() as string[]
 
       return id
     })
 
-    return ids
+    const oldProcessedVotesIds = oldProcessedVotes.map(([processedVote]) => {
+      const [, id] = processedVote.toHuman() as string[]
+
+      return id
+    })
+
+    return { newProcessedVotesIds, oldProcessedVotesIds }
   })
 }
 
-export const usePositionVotesIds = () => {
+export const usePendingVotesIds = () => {
   const { api } = useRpcProvider()
 
   return useMutation(async (positionId: number) => {
-    const positionVotesRes = await api.query.staking.votes(positionId)
+    const newPendingVotes = await api.query.staking.votes(positionId)
+    const oldPendingVotes = await api.query.staking.positionVotes(positionId)
     //@ts-ignore
-    const positionVotesIds = positionVotesRes.votes.map(([position]) =>
+    const newPendingVotesIds: string[] = newPendingVotes.votes.map(
+      ([position]: [string]) => position.toString(),
+    )
+
+    const oldPendingVotesIds = oldPendingVotes.votes.map(([position]) =>
       position.toString(),
     )
 
-    return positionVotesIds
+    return { newPendingVotesIds, oldPendingVotesIds }
   })
 }
