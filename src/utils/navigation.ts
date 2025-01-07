@@ -175,7 +175,7 @@ export const MENU_ITEMS = [
         key: "wallet.vesting",
         href: LINKS.walletVesting,
         Icon: PositionsIcon,
-        enabled: true,
+        enabled: false,
       },
     ],
   },

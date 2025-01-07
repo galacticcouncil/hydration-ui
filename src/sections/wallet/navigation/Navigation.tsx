@@ -1,3 +1,4 @@
+import { useVestingTotalVestedAmount } from "api/vesting"
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
@@ -12,6 +13,18 @@ const isDevelopment = import.meta.env.VITE_ENV === "development"
 
 export const Navigation = () => {
   const { t } = useTranslation()
+  const { data: totalVestedAmount } = useVestingTotalVestedAmount()
+
+  const visibilityMap = {
+    [LINKS.walletAssets]: true,
+    [LINKS.walletTransactions]: isDevelopment,
+    [LINKS.walletVesting]: !!totalVestedAmount?.gt(0),
+  }
+
+  if (Object.values(visibilityMap).filter(Boolean).length <= 1) {
+    return null
+  }
+
   return (
     <SubNavigation>
       <SubNavigationTabLink
@@ -19,18 +32,20 @@ export const Navigation = () => {
         icon={<AssetsIcon width={15} height={15} />}
         label={t("header.wallet.yourAssets.title")}
       />
-      {isDevelopment && (
+      {visibilityMap[LINKS.walletTransactions] && (
         <SubNavigationTabLink
           to={LINKS.walletTransactions}
           icon={<TransferIcon width={18} height={18} />}
           label={t("header.wallet.transactions.title")}
         />
       )}
-      <SubNavigationTabLink
-        to={LINKS.walletVesting}
-        icon={<PositionsIcon width={18} height={18} />}
-        label={t("header.wallet.vesting.title")}
-      />
+      {visibilityMap[LINKS.walletVesting] && (
+        <SubNavigationTabLink
+          to={LINKS.walletVesting}
+          icon={<PositionsIcon width={18} height={18} />}
+          label={t("header.wallet.vesting.title")}
+        />
+      )}
     </SubNavigation>
   )
 }

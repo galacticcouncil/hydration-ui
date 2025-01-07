@@ -22,6 +22,7 @@ import {
 } from "./HeaderMenu.styled"
 import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBarItem"
 import { useAccountAssets } from "api/deposits"
+import { useVestingTotalVestedAmount } from "api/vesting"
 
 type HeaderSubMenuProps = {
   isOpen: boolean
@@ -45,6 +46,8 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
 
   const isPoolBalances = !!balances.data?.isAnyPoolPositions
 
+  const { data: totalVestedAmount } = useVestingTotalVestedAmount()
+
   const { href, key, subItems } = item
   const isActive = subItems.some(({ href }) => match({ to: href }))
 
@@ -54,9 +57,15 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
         return isPoolBalances
       }
 
+      if (subItem.key === "wallet.vesting") {
+        return !!totalVestedAmount?.gt(0)
+      }
+
       return subItem.enabled
     })
-  }, [isPoolBalances, subItems])
+  }, [isPoolBalances, subItems, totalVestedAmount])
+
+  const shouldRenderDropdown = filteredItems.length > 1
 
   return (
     <Root delayDuration={0} open={isOpen} onOpenChange={onOpenChange}>
@@ -83,20 +92,22 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
         {isTablet ? (
           <SItem isActive={isActive}>
             {t(`header.${key}`)}
-            <IconChevron />
+            {shouldRenderDropdown && <IconChevron />}
           </SItem>
         ) : (
           <MobileNavBarItem item={item} isActive={isOpen || isActive} />
         )}
       </Trigger>
-      <HeaderSubMenuContents
-        items={filteredItems.map((subItem) => ({
-          ...subItem,
-          title: t(`header.${subItem.key}.title`),
-          subtitle: t(`header.${subItem.key}.subtitle`),
-        }))}
-        onItemClick={onOpenChange}
-      />
+      {shouldRenderDropdown && (
+        <HeaderSubMenuContents
+          items={filteredItems.map((subItem) => ({
+            ...subItem,
+            title: t(`header.${subItem.key}.title`),
+            subtitle: t(`header.${subItem.key}.subtitle`),
+          }))}
+          onItemClick={onOpenChange}
+        />
+      )}
     </Root>
   )
 }
