@@ -50,6 +50,7 @@ export const QUERY_KEYS = {
   ],
   pools: [QUERY_KEY_PREFIX, "pools"],
   omnipoolTokens: ["omnipoolTokens"],
+  stablePools: ["stablePools"],
   hubToken: ["hubToken"],
   poolShareToken: (poolId: AccountId32 | string) => [
     QUERY_KEY_PREFIX,
