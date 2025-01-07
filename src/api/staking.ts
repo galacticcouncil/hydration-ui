@@ -2,11 +2,16 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { getReferendumInfoOf, useAccountOpenGovVotes } from "./democracy"
+import {
+  getReferendumInfoOf,
+  TAccountVote,
+  useAccountOpenGovVotes,
+} from "./democracy"
 import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { undefinedNoop } from "utils/helpers"
 
 interface ISubscanData {
   code: number
@@ -276,6 +281,20 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
   }
 }
 
+export const useProcessedVotesIdsQuery = () => {
+  const { account } = useAccount()
+  const { api, isLoaded } = useRpcProvider()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
+
+  return useQuery(
+    QUERY_KEYS.processedVotes(),
+    account?.address
+      ? async () => await getVoteIds(api, account.address, accountVotes)
+      : undefinedNoop,
+    { enabled: !!account && isLoaded },
+  )
+}
+
 export const useProcessedVotesIds = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
@@ -286,31 +305,35 @@ export const useProcessedVotesIds = () => {
       return undefined
     }
 
-    const newProcessedVotes = await api.query.staking.votesRewarded.entries(
-      account.address,
-    )
-
-    const oldProcessedVotes = await api.query.staking.processedVotes.entries(
-      account.address,
-    )
-
-    const newProcessedVotesIds = newProcessedVotes.map(([processedVote]) => {
-      const [, id] = processedVote.toHuman() as string[]
-      const accoutVote = accountVotes.find(
-        (accountVote) => accountVote.id === id,
-      )
-
-      return { id, classId: accoutVote?.classId }
-    })
-
-    const oldProcessedVotesIds = oldProcessedVotes.map(([processedVote]) => {
-      const [, id] = processedVote.toHuman() as string[]
-
-      return id
-    })
-
-    return { newProcessedVotesIds, oldProcessedVotesIds }
+    return await getVoteIds(api, account.address, accountVotes)
   })
+}
+
+const getVoteIds = async (
+  api: ApiPromise,
+  address: string,
+  accountVotes: TAccountVote[],
+) => {
+  const newProcessedVotes =
+    await api.query.staking.votesRewarded.entries(address)
+
+  const oldProcessedVotes =
+    await api.query.staking.processedVotes.entries(address)
+
+  const newProcessedVotesIds = newProcessedVotes.map(([processedVote]) => {
+    const [, id] = processedVote.toHuman() as string[]
+    const accoutVote = accountVotes.find((accountVote) => accountVote.id === id)
+
+    return { id, classId: accoutVote?.classId }
+  })
+
+  const oldProcessedVotesIds = oldProcessedVotes.map(([processedVote]) => {
+    const [, id] = processedVote.toHuman() as string[]
+
+    return id
+  })
+
+  return { newProcessedVotesIds, oldProcessedVotesIds }
 }
 
 export const usePendingVotesIds = () => {
