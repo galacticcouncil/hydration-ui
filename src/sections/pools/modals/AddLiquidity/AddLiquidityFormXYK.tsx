@@ -16,7 +16,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { TokensConversion } from "./components/TokensConvertion/TokensConversion"
-import { useTokensBalances } from "api/balances"
 import {
   calculate_shares,
   calculate_liquidity_in,
@@ -28,6 +27,7 @@ import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useRefetchAccountAssets } from "api/deposits"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
+import { useXYKSDKPools } from "api/xyk"
 
 type Props = {
   onClose: () => void
@@ -78,11 +78,10 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
   const { formState, reset } = form
 
   const spotPrice = useSpotPrice(assetA.id, assetB.id)
-  const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
-    [assetA.id, assetB.id],
-    pool.poolAddress,
-    true,
-  )
+  const { data: xykPools } = useXYKSDKPools()
+  const [assetAReserve, assetBReserve] =
+    xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
+    []
 
   const lastUpdated = form.watch("lastUpdated")
   const [assetValueA, assetValueB, shares, ratio] = form.watch([
