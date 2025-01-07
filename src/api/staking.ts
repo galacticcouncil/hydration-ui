@@ -2,7 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { getReferendumInfoOf } from "./democracy"
+import { getReferendumInfoOf, useAccountOpenGovVotes } from "./democracy"
 import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -279,9 +279,10 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
 export const useProcessedVotesIds = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
+  const { data: accountVotes = [], isSuccess } = useAccountOpenGovVotes()
 
   return useMutation(async () => {
-    if (!account) {
+    if (!account || !isSuccess) {
       return undefined
     }
 
@@ -295,8 +296,11 @@ export const useProcessedVotesIds = () => {
 
     const newProcessedVotesIds = newProcessedVotes.map(([processedVote]) => {
       const [, id] = processedVote.toHuman() as string[]
+      const accoutVote = accountVotes.find(
+        (accountVote) => accountVote.id === id,
+      )
 
-      return id
+      return { id, classId: accoutVote?.classId }
     })
 
     const oldProcessedVotesIds = oldProcessedVotes.map(([processedVote]) => {
@@ -311,14 +315,22 @@ export const useProcessedVotesIds = () => {
 
 export const usePendingVotesIds = () => {
   const { api } = useRpcProvider()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
 
   return useMutation(async (positionId: number) => {
     const newPendingVotes = await api.query.staking.votes(positionId)
     const oldPendingVotes = await api.query.staking.positionVotes(positionId)
-    //@ts-ignore
-    const newPendingVotesIds: string[] = newPendingVotes.votes.map(
-      ([position]: [string]) => position.toString(),
-    )
+
+    const newPendingVotesIds: { classId: string | undefined; id: string }[] =
+      //@ts-ignore
+      newPendingVotes.votes.map(([position]: [u32]) => {
+        const id = position.toString()
+        const accoutVote = accountVotes.find(
+          (accountVote) => accountVote.id === id,
+        )
+
+        return { id, classId: accoutVote?.classId }
+      })
 
     const oldPendingVotesIds = oldPendingVotes.votes.map(([position]) =>
       position.toString(),

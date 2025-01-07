@@ -74,8 +74,12 @@ export const AvailableRewards = () => {
                 ...processedVoteIds.oldProcessedVotesIds.map((id) =>
                   api.tx.democracy.removeVote(id),
                 ),
-                ...processedVoteIds.newProcessedVotesIds.map((id) =>
-                  api.tx.convictionVoting.removeVote(null, id),
+                ...processedVoteIds.newProcessedVotesIds.map(
+                  ({ classId, id }) =>
+                    api.tx.convictionVoting.removeVote(
+                      classId ? classId : null,
+                      id,
+                    ),
                 ),
                 api.tx.staking.claim(reward.data?.positionId!),
               ])
