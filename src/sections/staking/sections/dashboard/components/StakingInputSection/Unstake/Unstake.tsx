@@ -83,8 +83,11 @@ export const Unstake = ({
           oldVotes.length || newVotes.length
             ? api.tx.utility.batchAll([
                 ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
-                ...newVotes.map((id) =>
-                  api.tx.convictionVoting.removeVote(null, id),
+                ...newVotes.map(({ classId, id }) =>
+                  api.tx.convictionVoting.removeVote(
+                    classId ? classId : null,
+                    id,
+                  ),
                 ),
                 api.tx.staking.unstake(positionId),
               ])
