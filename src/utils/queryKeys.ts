@@ -325,3 +325,12 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+  xcmBalance: (address: string, chain: string) => [
+    "xcmBalance_",
+    address,
+    chain,
+  ],
+}
