@@ -29,7 +29,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import {
   CloseIcon,
   PasteAddressIcon,
-  SDiclaimerContainer,
 } from "./WalletTransferSectionOnchain.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
@@ -260,21 +259,23 @@ export function WalletTransferSectionOnchain({
           )}
         />
         {shouldShowDisclaimer && (
-          <SDiclaimerContainer>
-            <Switch
-              name="disclaimer-accepted"
-              value={disclaimerAccepted}
-              onCheckedChange={setDisclaimerAccepted}
-            />
-            <div>
-              <Text fs={13} color="basic100" font="GeistSemiBold">
-                {t("wallet.assets.transfer.disclaimer.cex.title")}
-              </Text>
-              <Text fs={13} color="basic400">
-                {t("wallet.assets.transfer.disclaimer.cex.description")}
-              </Text>
-            </div>
-          </SDiclaimerContainer>
+          <Alert variant="info" hideIcon>
+            <label sx={{ flex: "row", gap: 12, align: "start" }}>
+              <Switch
+                name="disclaimer-accepted"
+                value={disclaimerAccepted}
+                onCheckedChange={setDisclaimerAccepted}
+              />
+              <div>
+                <Text fs={13} color="basic100" font="GeistSemiBold">
+                  {t("wallet.assets.transfer.disclaimer.cex.title")}
+                </Text>
+                <Text fs={13} color="basic400">
+                  {t("wallet.assets.transfer.disclaimer.cex.description")}
+                </Text>
+              </div>
+            </label>
+          </Alert>
         )}
         <SummaryRow
           label={t("wallet.assets.transfer.transaction_cost")}

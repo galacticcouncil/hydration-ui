@@ -12,6 +12,8 @@ export enum DepositMethod {
   DepositCex,
   DepositOnchain,
   DepositCrypto,
+  WithdrawCex,
+  WithdrawCrypto,
 }
 
 export type AssetConfig = {

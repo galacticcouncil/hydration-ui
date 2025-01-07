@@ -12,8 +12,10 @@ import { Modal } from "components/Modal/Modal"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { useDeposit } from "sections/deposit/DepositPage.utils"
-import { useZodSchema } from "sections/deposit/steps/DepositTransfer.utills"
+import {
+  useDeposit,
+  useTransferSchema,
+} from "sections/deposit/DepositPage.utils"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
@@ -86,7 +88,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     onSuccess: onTransferSuccess,
   })
 
-  const zodSchema = useZodSchema({
+  const zodSchema = useTransferSchema({
     min: transferData.min,
     max: transferData.max,
     symbol: transferData.symbol,
@@ -102,8 +104,6 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     resolver: zodResolver(zodSchema),
   })
 
-  const dstAddress = form.watch("address")
-
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (!asset) return
 
@@ -112,9 +112,9 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       asset: asset.data.asset.key,
       amount: values.amount,
       srcAddr: isEvmAddress(address) ? new H160(address).toAccount() : address,
-      dstAddr: isEvmAddress(dstAddress)
-        ? new H160(dstAddress).toAccount()
-        : dstAddress,
+      dstAddr: isEvmAddress(values.address)
+        ? new H160(values.address).toAccount()
+        : values.address,
       srcChain: srcChain,
       dstChain: "hydration",
     })

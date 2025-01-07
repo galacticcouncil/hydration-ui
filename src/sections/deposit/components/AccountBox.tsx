@@ -13,7 +13,7 @@ import {
   createCexWithdrawalUrl,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
-import { SAccountBox } from "sections/deposit/steps/DepositAsset.styled"
+import { SAccountBox } from "sections/deposit/steps/deposit/DepositAsset.styled"
 import {
   Account,
   useWeb3ConnectStore,

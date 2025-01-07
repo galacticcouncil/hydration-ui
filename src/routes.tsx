@@ -138,6 +138,10 @@ const DepositPage = lazy(async () => ({
   default: (await import("sections/deposit/DepositPage")).DepositPage,
 }))
 
+const WithdrawPage = lazy(async () => ({
+  default: (await import("sections/deposit/WithdrawPage")).WithdrawPage,
+}))
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -462,6 +466,14 @@ export const routes: Route[] = [
     element: (
       <Suspense fallback={<DepositPageSkeleton />}>
         <DepositPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.withdraw,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <WithdrawPage />
       </Suspense>
     ),
   },

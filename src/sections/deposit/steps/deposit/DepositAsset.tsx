@@ -13,11 +13,11 @@ import { useCustomCompareEffect, usePrevious } from "react-use"
 import { AccountBox } from "sections/deposit/components/AccountBox"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
-  CEX_DEPOSIT_CONFIG,
+  CEX_CONFIG,
   CEX_MIN_DEPOSIT_VALUES,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
-import { SAssetSelectButtonBox } from "sections/deposit/steps/DepositAsset.styled"
+import { SAssetSelectButtonBox } from "sections/deposit/steps/deposit/DepositAsset.styled"
 import { AssetConfig } from "sections/deposit/types"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -38,7 +38,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const { getAsset } = useAssets()
   const { asset, cexId, setDepositedAmount } = useDeposit()
 
-  const activeCex = CEX_DEPOSIT_CONFIG.find((cex) => cex.id === cexId)
+  const activeCex = CEX_CONFIG.find((cex) => cex.id === cexId)
   const CexIcon = activeCex?.icon
 
   const address = account?.address ?? ""

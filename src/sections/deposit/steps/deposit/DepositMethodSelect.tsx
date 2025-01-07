@@ -16,9 +16,11 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
   const navigate = useNavigate()
   return (
     <>
-      <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
-        {t("deposit")}
-      </GradientText>
+      <div>
+        <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
+          {t("deposit")}
+        </GradientText>
+      </div>
       <div sx={{ flex: "column", gap: 20 }}>
         <StepButton
           onClick={() => onSelect(DepositMethod.DepositCex)}
