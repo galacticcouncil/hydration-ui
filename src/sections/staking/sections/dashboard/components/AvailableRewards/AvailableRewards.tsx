@@ -66,12 +66,24 @@ export const AvailableRewards = () => {
 
     await createTransaction(
       {
-        tx: processedVoteIds.length
-          ? api.tx.utility.batchAll([
-              ...processedVoteIds.map((id) => api.tx.democracy.removeVote(id)),
-              api.tx.staking.claim(reward.data?.positionId!),
-            ])
-          : api.tx.staking.claim(reward.data?.positionId!),
+        tx:
+          processedVoteIds &&
+          (processedVoteIds.newProcessedVotesIds.length ||
+            processedVoteIds?.oldProcessedVotesIds.length)
+            ? api.tx.utility.batchAll([
+                ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+                  api.tx.democracy.removeVote(id),
+                ),
+                ...processedVoteIds.newProcessedVotesIds.map(
+                  ({ classId, id }) =>
+                    api.tx.convictionVoting.removeVote(
+                      classId ? classId : null,
+                      id,
+                    ),
+                ),
+                api.tx.staking.claim(reward.data?.positionId!),
+              ])
+            : api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )

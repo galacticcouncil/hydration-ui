@@ -73,14 +73,24 @@ export const Stake = ({
 
       transaction = await createTransaction(
         {
-          tx: processedVoteIds.length
-            ? api.tx.utility.batchAll([
-                ...processedVoteIds.map((id) =>
-                  api.tx.democracy.removeVote(id),
-                ),
-                api.tx.staking.increaseStake(positionId, amount),
-              ])
-            : api.tx.staking.increaseStake(positionId, amount),
+          tx:
+            processedVoteIds &&
+            (processedVoteIds.newProcessedVotesIds.length ||
+              processedVoteIds?.oldProcessedVotesIds.length)
+              ? api.tx.utility.batchAll([
+                  ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+                    api.tx.democracy.removeVote(id),
+                  ),
+                  ...processedVoteIds.newProcessedVotesIds.map(
+                    ({ classId, id }) =>
+                      api.tx.convictionVoting.removeVote(
+                        classId ? classId : null,
+                        id,
+                      ),
+                  ),
+                  api.tx.staking.increaseStake(positionId, amount),
+                ])
+              : api.tx.staking.increaseStake(positionId, amount),
         },
         { toast },
       )
@@ -98,7 +108,7 @@ export const Stake = ({
     }
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
+    await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
     refetchAccountAssets()
   }
 
