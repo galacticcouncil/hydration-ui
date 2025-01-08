@@ -1,8 +1,8 @@
 import {
   TReferenda,
+  useAccountOpenGovVotes,
   useOpenGovReferendas,
   useReferendaTracks,
-  useReferendums,
 } from "api/democracy"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -15,18 +15,18 @@ import { useMemo, useState } from "react"
 import { OpenGovReferenda } from "components/ReferendumCard/Referenda"
 import { NoReferenda } from "components/ReferendumCard/NoReferenda"
 import { ReferendaSkeleton } from "components/ReferendumCard/ReferendaSkeleton"
-import { ReferendaDeprecated } from "components/ReferendumCard/ReferendaDeprecated"
 
 const defaultFilter = { key: "all", label: "ALL" }
 
 export const OpenGovReferendas = () => {
   const { t } = useTranslation()
-  const openGovQuery = useOpenGovReferendas()
+  const { data: accountVotes = [], isLoading: isLoadingAccountVotes } =
+    useAccountOpenGovVotes()
+  const { data: referendas, isLoading: isLoadingReferendas } =
+    useOpenGovReferendas()
   const tracks = useReferendaTracks()
   const { data: hdxSupply, isLoading: isSupplyLoading } =
     useHDXSupplyFromSubscan()
-  const { data: referendums = [] } = useReferendums("ongoing")
-  const referendum = referendums.find((referendum) => referendum.id === "203")
   const [filter, setFilter] = useState(defaultFilter.key)
 
   const trackItems = useMemo(
@@ -44,19 +44,22 @@ export const OpenGovReferendas = () => {
   )
 
   const filtredReferenda = useMemo(() => {
-    if (openGovQuery.data?.length && trackItems) {
+    if (referendas?.length && trackItems) {
       if (filter !== defaultFilter.key) {
-        return openGovQuery.data.filter(
+        return referendas.filter(
           (referenda) => referenda.referendum.track.toString() === filter,
         )
       } else {
-        return openGovQuery.data
+        return referendas
       }
     }
-  }, [openGovQuery.data, trackItems, filter])
+  }, [referendas, trackItems, filter])
 
   const isLoading =
-    openGovQuery.isLoading || isSupplyLoading || tracks.isLoading
+    isLoadingReferendas ||
+    isSupplyLoading ||
+    tracks.isLoading ||
+    isLoadingAccountVotes
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
@@ -97,19 +100,12 @@ export const OpenGovReferendas = () => {
                   referenda={referendum.referendum}
                   track={track}
                   totalIssuance={hdxSupply?.totalIssuance}
+                  voted={accountVotes.some((vote) => vote.id === referendum.id)}
                 />
               )
             })
           ) : (
             <NoReferenda />
-          )}
-          {referendum && (
-            <ReferendaDeprecated
-              id="203"
-              referendum={referendum.referendum}
-              type="staking"
-              voted={false}
-            />
           )}
         </div>
       )}

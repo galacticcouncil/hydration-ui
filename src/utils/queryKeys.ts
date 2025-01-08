@@ -23,8 +23,6 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  miningPosition: (id: string) => ["miningPosition", id],
-  miningPositionXYK: (id: string) => ["miningPositionXYK", id],
   accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -50,12 +48,8 @@ export const QUERY_KEYS = {
   ],
   pools: [QUERY_KEY_PREFIX, "pools"],
   omnipoolTokens: ["omnipoolTokens"],
+  stablePools: ["stablePools"],
   hubToken: ["hubToken"],
-  poolShareToken: (poolId: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolShareToken",
-    poolId.toString(),
-  ],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
@@ -73,25 +67,12 @@ export const QUERY_KEYS = {
     "xykDeposits",
     ids.join("."),
   ],
-  poolDeposits: (poolId: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "deposits",
-    poolId?.toString(),
-  ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
-  omnipoolFarms: [QUERY_KEY_PREFIX, "omnipoolFarms"],
-  stoppedOmnipoolFarms: (address?: string) => [
-    QUERY_KEY_PREFIX,
-    "stoppedOmnipoolFarms",
-    address,
-  ],
+  omnipoolFarms: ["omnipoolFarms"],
+  stoppedOmnipoolFarms: (address?: string) => ["stoppedOmnipoolFarms", address],
   xykActiveFarms: ["xykActiveFarms"],
-  xykFarms: [QUERY_KEY_PREFIX, "xykFarms"],
-  stoppedXykFarms: (address?: string) => [
-    QUERY_KEY_PREFIX,
-    "stoppedXykFarms",
-    address,
-  ],
+  xykFarms: ["xykFarms"],
+  stoppedXykFarms: (address?: string) => ["stoppedXykFarms", address],
   totalIssuances: ["totalIssuances"],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -215,20 +196,18 @@ export const QUERY_KEYS = {
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
-  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
-    "referendums",
-    accountAddress,
-    type,
-  ],
   openGovReferendas: (url: string) => ["openGovReferendas", url],
   referendaTracks: (url: string) => ["referendaTracks", url],
+  accountOpenGovVotes: (accountAddress?: string) => [
+    "accountOpenGovVotes",
+    accountAddress,
+  ],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
     accountAddress,
   ],
   referendumInfo: (id: string) => [id, "referendumInfo"],
-  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   stats: (
     type: ChartType,
     timeframe?: StatsTimeframe,
