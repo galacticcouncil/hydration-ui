@@ -329,4 +329,5 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  bifrostVDotApy: ["bifrostVDotApy"],
 } as const

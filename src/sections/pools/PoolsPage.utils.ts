@@ -26,7 +26,6 @@ import { TAsset, TShareToken, useAssets } from "providers/assets"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
-import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -62,11 +61,6 @@ export const usePools = () => {
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const accountAssets = useAccountAssets()
-
-  const {
-    warnings: { btcFarms: stoppedFarmsBanner },
-    setWarnings,
-  } = useWarningsStore()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
@@ -140,11 +134,6 @@ export const usePools = () => {
       const filteredMiningPositions = accountAsset?.omnipoolDeposits ?? []
       const isPositions = !!accountAsset?.isPoolPositions
 
-      const isStoppedFarms = farms.some((farm) => !farm.isActive)
-      if (isStoppedFarms && stoppedFarmsBanner.visible === undefined) {
-        setWarnings("btcFarms", true)
-      }
-
       return {
         id: asset.id,
         name: meta.name,
@@ -194,8 +183,6 @@ export const usePools = () => {
     getAssetWithFallback,
     allFarms,
     isAllFarmsLoading,
-    stoppedFarmsBanner,
-    setWarnings,
     volumes,
     isVolumeLoading,
   ])

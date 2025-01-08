@@ -9,6 +9,7 @@ const SYMBOL_TO_ASSET_ID_MAP_TESTNET: Record<string, string> = {
   usdc: "21",
   weth: "20",
   wbtc: "3",
+  vdot: "15",
 }
 
 const SYMBOL_TO_ASSET_ID_MAP_MAINNET: Record<string, string> = {
@@ -17,6 +18,7 @@ const SYMBOL_TO_ASSET_ID_MAP_MAINNET: Record<string, string> = {
   usdc: "22",
   weth: "20",
   wbtc: "19",
+  vdot: "15",
 }
 
 const SYMBOL_TO_ASSET_ID_MAP =
