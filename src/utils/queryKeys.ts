@@ -231,6 +231,7 @@ export const QUERY_KEYS = {
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
+  processedVotes: (address?: string) => ["processedVotes", address],
   stableswapPools: ["stableswapPools"],
   stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
