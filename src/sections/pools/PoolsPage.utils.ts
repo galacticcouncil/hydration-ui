@@ -13,7 +13,7 @@ import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useOmnipoolVolumes, useVolume } from "api/volume"
+import { useOmnipoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useShareOfPools } from "api/pools"
@@ -82,7 +82,7 @@ export const usePools = () => {
   const fees = useFee("all")
   const tvls = useTVL("all")
 
-  const { data: volumes_, isLoading: isVolumeLoading } =
+  const { data: volumes, isLoading: isVolumeLoading } =
     useOmnipoolVolumes(assetsId)
 
   const isInitialLoading =
@@ -110,7 +110,7 @@ export const usePools = () => {
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
-      const volumeRaw = volumes_?.find(
+      const volumeRaw = volumes?.find(
         (volume) => volume.assetId === asset.id,
       )?.assetVolume
 
@@ -196,7 +196,7 @@ export const usePools = () => {
     isAllFarmsLoading,
     stoppedFarmsBanner,
     setWarnings,
-    volumes_,
+    volumes,
     isVolumeLoading,
   ])
 
