@@ -42,13 +42,12 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
 
   const match = useMatchRoute()
 
-  const balances = useAccountAssets()
-
-  const isPoolBalances = !!balances.data?.isAnyPoolPositions
-
+  const { data: balances } = useAccountAssets()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
 
   const { href, key, subItems } = item
+
+  const isPoolBalances = !!balances?.isAnyPoolPositions
   const isActive = subItems.some(({ href }) => match({ to: href }))
 
   const filteredItems = useMemo(() => {
