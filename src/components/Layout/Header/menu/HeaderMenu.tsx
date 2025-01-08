@@ -6,7 +6,7 @@ import {
   SNoFunBadge,
 } from "components/Layout/Header/menu/HeaderMenu.styled"
 import { Trans, useTranslation } from "react-i18next"
-import { LINKS, MENU_ITEMS, resetSearchParams } from "utils/navigation"
+import { LINKS, MENU_ITEMS, resetSearchParams, TabItem } from "utils/navigation"
 import { HeaderSubMenu, HeaderSubMenuContents } from "./HeaderSubMenu"
 import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -16,64 +16,31 @@ import { useAccountAssets } from "api/deposits"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
-  const search = useSearch()
-  const { isLoaded } = useRpcProvider()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const { items, hiddenItems, moreButtonKey, observe } =
     useVisibleHeaderMenuItems()
+
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null)
 
   return (
     <Root delayDuration={0} open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
       <div sx={{ flex: "row" }}>
         <SList ref={observe}>
-          {items.map((item, i) => {
-            if (item.subItems?.length) {
-              return <HeaderSubMenu key={i} item={item} />
-            }
-
-            if (item.external) {
-              return (
-                <a href={item.href} key={i} data-intersect={item.key}>
-                  <SItem>{t(`header.${item.key}`)}</SItem>
-                </a>
-              )
-            }
-
-            const isLiquidityLink =
-              LINKS.allPools === item.href || LINKS.myLiquidity === item.href
-
-            if (isLoaded && isLiquidityLink) {
-              return <LiquidityMenuItem key={i} item={item} search={search} />
-            }
-
-            return (
-              <MenuItem
-                key={i}
+          {items.map((item) => (
+            <div key={item.key} data-intersect={item.key}>
+              <HeaderMenuItem
                 item={item}
-                search={search}
-                moreButton={
-                  moreButtonKey === item.key ? (
-                    <Trigger
-                      asChild
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setMoreMenuOpen((prev) => !prev)
-                      }}
-                      onPointerDown={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                      }}
-                    >
-                      <SItem>
-                        {t("header.more")} <IconChevron />
-                      </SItem>
-                    </Trigger>
-                  ) : undefined
+                moreButtonKey={moreButtonKey}
+                onMoreButtonClick={() => setMoreMenuOpen((prev) => !prev)}
+                isSubmenuOpen={activeSubMenu === item.key}
+                onSubmenuOpenChange={() =>
+                  setActiveSubMenu((prev) =>
+                    prev === item.key ? null : item.key,
+                  )
                 }
               />
-            )
-          })}
+            </div>
+          ))}
         </SList>
       </div>
       {hiddenItems.length > 0 && (
@@ -102,6 +69,79 @@ export const HeaderMenu = () => {
   )
 }
 
+const HeaderMenuItem: React.FC<{
+  item: TabItem
+  isSubmenuOpen: boolean
+  moreButtonKey?: string
+  onMoreButtonClick: () => void
+  onSubmenuOpenChange: () => void
+}> = ({
+  item,
+  isSubmenuOpen,
+  moreButtonKey,
+  onSubmenuOpenChange,
+  onMoreButtonClick,
+}) => {
+  const { t } = useTranslation()
+  const search = useSearch()
+  const { isLoaded } = useRpcProvider()
+
+  const isMoreButton = moreButtonKey === item.key
+
+  if (item.subItems?.length && !isMoreButton) {
+    return (
+      <HeaderSubMenu
+        item={item}
+        isOpen={isSubmenuOpen}
+        onOpenChange={onSubmenuOpenChange}
+      />
+    )
+  }
+
+  if (item.external && !isMoreButton) {
+    return (
+      <a href={item.href}>
+        <SItem>{t(`header.${item.key}`)}</SItem>
+      </a>
+    )
+  }
+
+  const isLiquidityLink =
+    (LINKS.allPools === item.href || LINKS.myLiquidity === item.href) &&
+    !isMoreButton
+
+  if (isLoaded && isLiquidityLink) {
+    return <LiquidityMenuItem item={item} search={search} />
+  }
+
+  return (
+    <MenuItem
+      item={item}
+      search={search}
+      moreButton={
+        moreButtonKey === item.key ? (
+          <Trigger
+            asChild
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onMoreButtonClick()
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+          >
+            <SItem>
+              {t("header.more")} <IconChevron />
+            </SItem>
+          </Trigger>
+        ) : undefined
+      }
+    />
+  )
+}
+
 const LiquidityMenuItem = ({
   item,
   search,
@@ -117,7 +157,6 @@ const LiquidityMenuItem = ({
       to={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
       key={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
-      data-intersect={item.key}
     >
       {({ isActive }) => (
         <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>
@@ -147,7 +186,6 @@ const MenuItem = ({
         }
       }}
       search={resetSearchParams(search)}
-      data-intersect={item.key}
     >
       {({ isActive }) => {
         return (

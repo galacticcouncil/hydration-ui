@@ -1,41 +1,35 @@
-import { useAccountsBalances } from "api/accountBalances"
 import BN from "bignumber.js"
-import { derivePoolAccount } from "sections/pools/PoolsPage.utils"
 import { BN_0, BN_1 } from "utils/constants"
 import { useDisplayPrices } from "utils/displayAsset"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { useAssets } from "providers/assets"
+import { useStableSDKPools } from "api/stableswap"
 
 export const StablePoolsTotal = () => {
-  const { getAssetWithFallback, stableswap } = useAssets()
+  const { getAssetWithFallback } = useAssets()
 
-  const stablepoolIds =
-    stableswap.map((stablepool) => derivePoolAccount(stablepool.id)) ?? []
-
-  const stablePoolBalances = useAccountsBalances(stablepoolIds)
+  const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
 
   const totalBalances =
-    stablePoolBalances.data?.reduce<Record<string, BN>>(
-      (memo, stablePoolBalance) => {
-        stablePoolBalance.balances.forEach((balance) => {
-          const id = balance.assetId.toString()
-          const free = balance.freeBalance
+    stablePools?.reduce<Record<string, BN>>((memo, stablePool) => {
+      stablePool.tokens.forEach((token) => {
+        const id = token.id
+        const free = token.balance
 
+        if (token.type === "Token") {
           if (memo[id]) {
             memo[id] = BN(memo[id]).plus(free)
           } else {
             memo[id] = BN(free)
           }
-        })
+        }
+      })
 
-        return memo
-      },
-      {},
-    ) ?? {}
+      return memo
+    }, {}) ?? {}
 
   const spotPrices = useDisplayPrices(Object.keys(totalBalances))
-  const isLoading =
-    stablePoolBalances.isInitialLoading || spotPrices.isInitialLoading
+  const isLoading = isPoolLoading || spotPrices.isInitialLoading
   const total = !spotPrices.isInitialLoading
     ? Object.entries(totalBalances).reduce((memo, totalBalance) => {
         const [assetId, balance] = totalBalance
