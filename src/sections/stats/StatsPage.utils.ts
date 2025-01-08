@@ -108,7 +108,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       const volume =
         volumeRaw && spotPrice
           ? BN(volumeRaw).shiftedBy(-meta.decimals).multipliedBy(spotPrice)
-          : undefined
+          : BN_NAN
       const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
 
       const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
