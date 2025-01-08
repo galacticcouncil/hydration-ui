@@ -51,24 +51,25 @@ export const Stake = ({
 
       const isStakePosition = positionId != null
 
-      return isStakePosition
-        ? votes &&
-          (votes.newProcessedVotesIds.length ||
-            votes?.oldProcessedVotesIds.length)
-          ? api.tx.utility.batchAll([
-              ...votes.oldProcessedVotesIds.map((id) =>
-                api.tx.democracy.removeVote(id),
-              ),
-              ...votes.newProcessedVotesIds.map(({ classId, id }) =>
-                api.tx.convictionVoting.removeVote(
-                  classId ? classId : null,
-                  id,
-                ),
-              ),
-              api.tx.staking.increaseStake(positionId, amount),
-            ])
-          : api.tx.staking.increaseStake(positionId, amount)
-        : api.tx.staking.stake(amount)
+      if (!isStakePosition) {
+        return api.tx.staking.stake(amount)
+      }
+
+      if (
+        votes &&
+        (votes.newProcessedVotesIds.length || votes.oldProcessedVotesIds.length)
+      ) {
+        return api.tx.utility.batchAll([
+          ...votes.oldProcessedVotesIds.map((id) =>
+            api.tx.democracy.removeVote(id),
+          ),
+          ...votes.newProcessedVotesIds.map(({ classId, id }) =>
+            api.tx.convictionVoting.removeVote(classId || null, id),
+          ),
+          api.tx.staking.increaseStake(positionId, amount),
+        ])
+      }
+      return api.tx.staking.increaseStake(positionId, amount)
     },
     [api.tx, positionId, votes],
   )
