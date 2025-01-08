@@ -11,9 +11,7 @@ import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
 import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
-import { useXYKTotalLiquidity } from "api/xyk"
-import { useAccountBalances } from "api/accountBalances"
-import { useAssets } from "providers/assets"
+import { useXYKSDKPools, useXYKTotalLiquidity } from "api/xyk"
 import { useAccountAssets } from "api/deposits"
 import BN from "bignumber.js"
 
@@ -33,9 +31,13 @@ export const RemoveXYKLiquidityForm = ({
 
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const { native } = useAssets()
   const { assets, decimals } = pool.meta
   const [assetAMeta, assetBMeta] = assets
+
+  const { data: xykPools } = useXYKSDKPools()
+  const xykPoolTokens =
+    xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
+    []
 
   const totalLiquidity = useXYKTotalLiquidity(pool.poolAddress)
 
@@ -44,22 +46,14 @@ export const RemoveXYKLiquidityForm = ({
     pool.id,
   )?.balance
 
-  const poolBalance = useAccountBalances(pool.poolAddress)
-
   const value = form.watch("value")
 
   const removeShareToken = shareTokenBalance?.balance
     ? BN(shareTokenBalance.balance).multipliedBy(value).dividedToIntegerBy(100)
     : BN_0
 
-  const removeAmount = assets.map((asset) => {
-    const isNative = asset.id === native.id
-
-    const balance = isNative
-      ? poolBalance.data?.native.freeBalance
-      : poolBalance.data?.balances.find(
-          (balance) => balance.assetId === asset.id,
-        )?.freeBalance
+  const removeAmount = xykPoolTokens.map((asset) => {
+    const balance = asset.balance
 
     return removeShareToken &&
       totalLiquidity.data &&

@@ -8,7 +8,6 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
 import { useMemo, useState } from "react"
-import { useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
 import { useMedia } from "react-use"
@@ -18,12 +17,17 @@ import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.s
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
 import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
+import { useXYKSDKPools } from "api/xyk"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const refetchAccountAssets = useRefetchAccountAssets()
   const [openRemove, setOpenRemove] = useState(false)
+  const { data: xykPools } = useXYKSDKPools()
+  const [assetAReserve, assetBReserve] =
+    xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
+    []
 
   const { data: accountAssets } = useAccountAssets()
   const shareTokensBalance = accountAssets?.accountAssetsMap.get(
@@ -34,11 +38,6 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
-  const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
-    [assetMetaA.id, assetMetaB.id],
-    pool.poolAddress,
-    true,
-  )
   const spotPrices = useDisplayPrices(assetsMeta.map((asset) => asset.id))
 
   const myBalance = useMemo(() => {
@@ -50,12 +49,12 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
       spotPrices.data
     ) {
       const myBalanceA = pool.shareTokenIssuance.myPoolShare
-        .times(assetAReserve.freeBalance)
+        .times(assetAReserve.balance)
         .div(100)
         .shiftedBy(-assetMetaA.decimals)
 
       const myBalanceB = pool.shareTokenIssuance.myPoolShare
-        .times(assetBReserve.freeBalance)
+        .times(assetBReserve.balance)
         .div(100)
         .shiftedBy(-assetMetaB.decimals)
 

@@ -57,6 +57,8 @@ export const useSDKPools = () => {
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
 
+      const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
+
       const omnipoolTokens = (
         pools.find((pool) => pool.type === PoolType.Omni)
           ?.tokens as OmniPoolToken[]
@@ -107,6 +109,7 @@ export const useSDKPools = () => {
       const xykPools = pools.filter((pool) => pool.type === PoolType.XYK)
 
       queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, tokens)
+      queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
 

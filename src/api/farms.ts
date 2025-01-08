@@ -274,7 +274,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
     getActiveFarms(api, ids),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
   )
 
   const stoppedFarms = useMemo(
@@ -291,7 +291,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -302,7 +302,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -320,7 +320,7 @@ export const useXYKFarms = (ids: string[]) => {
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.xykActiveFarms,
     getActiveFarms(api, ids, true),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
   )
 
   const stoppedFarms = useMemo(
@@ -337,7 +337,7 @@ export const useXYKFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -354,7 +354,7 @@ export const useXYKFarms = (ids: string[]) => {
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 

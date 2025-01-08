@@ -5,7 +5,6 @@ import { persist } from "zustand/middleware"
 type TWarningStore = {
   warnings: {
     hdxLiquidity: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
-    btcFarms: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
     wbtcCollateral: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
   }
   setWarnings: (key: TWarningsType, isOpen: boolean) => void
@@ -28,10 +27,6 @@ export const useWarningsStore = create(
             "walletVesting",
           ],
         },
-        btcFarms: {
-          visible: undefined,
-          visibility: ["allPools", "omnipool", "myLiquidity", "isolated"],
-        },
         wbtcCollateral: {
           visible: true,
           visibility: [],
@@ -47,7 +42,7 @@ export const useWarningsStore = create(
     }),
     {
       name: "warnings",
-      version: 0.3,
+      version: 0.4,
       getStorage: () => window.sessionStorage,
     },
   ),
