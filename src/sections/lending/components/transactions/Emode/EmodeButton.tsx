@@ -15,14 +15,6 @@ export const EmodeButton = () => {
 
   const isEModeDisabled = user.userEmodeCategoryId === 0
 
-  // const disableEModeSwitch =
-  //   user.isInEmode &&
-  //   reserves.filter(
-  //     (reserve) =>
-  //       reserve.eModeCategoryId === user.userEmodeCategoryId &&
-  //       reserve.borrowingEnabled,
-  //   ).length < 2
-
   return (
     <div sx={{ flex: "row", align: "center", gap: 8 }}>
       <Text fs={12} lh={12} color="basic300">
@@ -39,7 +31,7 @@ export const EmodeButton = () => {
       >
         {isEModeDisabled
           ? "Disabled"
-          : getEmodeMessage(eModes[user.userEmodeCategoryId].label)}
+          : getEmodeMessage(eModes[user.userEmodeCategoryId]?.label)}
         <Icon icon={<SettingsIcon />} size={12} />
       </Button>
     </div>
