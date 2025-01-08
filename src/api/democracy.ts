@@ -171,6 +171,13 @@ export type Referendum = {
   }
 }
 
+export type TAccountVote = {
+  balance: string
+  conviction: string
+  id: string
+  classId: string
+}
+
 export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>
   await api.query.democracy.referendumInfoOf(id)
 
@@ -186,30 +193,26 @@ export const useAccountOpenGovVotes = () => {
             account.address,
           )
 
-          const filteredVotes = votes.reduce<
-            Array<{
-              balance: string
-              conviction: string
-              id: string
-              classId: string
-            }>
-          >((acc, voteClass) => {
-            if (voteClass[1].isCasting) {
-              const votes = voteClass[1].asCasting.votes
-              const classId = voteClass[0].args[1].toString()
+          const filteredVotes = votes.reduce<Array<TAccountVote>>(
+            (acc, voteClass) => {
+              if (voteClass[1].isCasting) {
+                const votes = voteClass[1].asCasting.votes
+                const classId = voteClass[0].args[1].toString()
 
-              votes.forEach(([id, data]) => {
-                acc.push({
-                  id: id.toString(),
-                  balance: getVoteAmount(data),
-                  conviction: getVoteConviction(data),
-                  classId,
+                votes.forEach(([id, data]) => {
+                  acc.push({
+                    id: id.toString(),
+                    balance: getVoteAmount(data),
+                    conviction: getVoteConviction(data),
+                    classId,
+                  })
                 })
-              })
-            }
+              }
 
-            return acc
-          }, [])
+              return acc
+            },
+            [],
+          )
 
           return filteredVotes
         }
