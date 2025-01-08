@@ -216,7 +216,7 @@ export const useFarmingPositionsData = ({
         )
         const shares = getFloatingPointAmount(deposit.data.shares, decimals)
 
-        let position: XYKPosition | TLPData
+        let position: TXYKPosition | TLPData
         if (isXyk) {
           const values = xyk[meta.id]?.find(
             (value) => value.depositId === deposit.id,
@@ -288,10 +288,10 @@ export const useFarmingPositionsData = ({
 }
 
 export const isXYKPosition = (
-  position: XYKPosition | TLPData,
-): position is XYKPosition => !!(position as XYKPosition).balances
+  position: TXYKPosition | TLPData,
+): position is TXYKPosition => !!(position as TXYKPosition).balances
 
-export type XYKPosition = {
+export type TXYKPosition = {
   valueDisplay: BN
   balances: { amount: BN; symbol: string; id: string }[]
   id: string
@@ -305,5 +305,5 @@ export type FarmingTablePosition = {
   name: string
   date: Date
   shares: BN
-  position: XYKPosition | TLPData
+  position: TXYKPosition | TLPData
 }

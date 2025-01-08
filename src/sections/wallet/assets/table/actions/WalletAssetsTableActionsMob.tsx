@@ -107,7 +107,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("value.token", { value: row.total })}
                 </Text>
                 <Text fs={12} lh={17} color="whiteish500">
-                  <DisplayValue value={row.totalDisplay} />
+                  <DisplayValue value={BN(row.totalDisplay ?? BN_NAN)} />
                 </Text>
               </div>
 
@@ -119,7 +119,7 @@ export const WalletAssetsTableActionsMob = ({
                   {t("value.token", { value: row.transferable })}
                 </Text>
                 <Text fs={12} lh={12} color="whiteish500">
-                  <DisplayValue value={row.transferableDisplay} />
+                  <DisplayValue value={BN(row.transferableDisplay ?? BN_NAN)} />
                 </Text>
               </div>
             </>

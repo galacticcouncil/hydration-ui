@@ -50,7 +50,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Dwellir",
-    url: "wss://hydradx-rpc.dwellir.com",
+    url: "wss://hydration-rpc.n.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
@@ -260,12 +260,11 @@ export const useProviderData = () => {
         PoolType.XYK,
         PoolType.LBP,
       ]
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
-
-      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
