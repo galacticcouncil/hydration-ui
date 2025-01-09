@@ -1,5 +1,6 @@
 import { InjectedWindowProvider } from "@polkadot/extension-inject/types"
 import { MetaMaskLikeProvider } from "utils/metamask"
+import { SolanaWalletProvider } from "utils/solana"
 
 import BigNumber from "bignumber.js"
 
@@ -20,7 +21,9 @@ declare global {
     SubWallet?: MetaMaskLikeProvider
     phantom?: {
       ethereum: MetaMaskLikeProvider
+      solana: SolanaWalletProvider
     }
+    solflare?: SolanaWalletProvider
     injectedWeb3?: Record<string, InjectedWindowProvider>
     walletExtension?: { isNovaWallet?: boolean }
   }
