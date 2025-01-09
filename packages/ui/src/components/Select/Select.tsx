@@ -1,6 +1,6 @@
 import { ItemText, Root, SelectProps, Value } from "@radix-ui/react-select"
 
-import { ChevronDown } from "@/assets/icons"
+import { CaretDown } from "@/assets/icons"
 import { getToken } from "@/utils"
 
 import { Icon } from "../Icon"
@@ -29,8 +29,8 @@ export const Select = ({
         )}
         <Value placeholder={placeholder} />
         <Icon
-          size={18}
-          component={ChevronDown}
+          size={8}
+          component={CaretDown}
           color={getToken("colors.greys.400")}
         />
       </SelectTrigger>
