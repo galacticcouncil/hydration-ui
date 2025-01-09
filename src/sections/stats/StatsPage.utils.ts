@@ -8,7 +8,7 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useFee, useTVL } from "api/stats"
-import { useOmnipoolVolumes } from "api/volume"
+import { useVolume } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
@@ -28,9 +28,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(omnipoolAssetsIds)
 
-  const { data: volumes = [], isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(omnipoolAssetsIds)
-
+  const { data: volumes, isLoading: isVolumeLoading } = useVolume("all")
   const tvls = useTVL("all")
   const fees = useFee("all")
 
@@ -101,14 +99,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
           ?.tvl_usd ?? BN_NAN,
       )
 
-      const volumeRaw = volumes?.find(
-        (volume) => volume.assetId === meta.id,
-      )?.assetVolume
-
-      const volume =
-        volumeRaw && spotPrice
-          ? BN(volumeRaw).shiftedBy(-meta.decimals).multipliedBy(spotPrice)
-          : BN_NAN
+      const volume = BN(
+        volumes?.find((volume) => volume?.asset_id === Number(omnipoolAssetId))
+          ?.volume_usd ?? BN_NAN,
+      )
       const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
 
       const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
