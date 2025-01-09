@@ -24,7 +24,7 @@ export const SuppliedAssetsStats = () => {
         font="Geist"
         labelColor="basic400"
         label={t("lending.apy")}
-        tooltip={t("lending.tooltip.apy")}
+        tooltip={t("lending.tooltip.supplyApy")}
         isLoading={loading}
       >
         <PercentageValue value={(user?.earnedAPY || 0) * 100} />
