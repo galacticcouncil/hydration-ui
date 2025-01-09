@@ -65,7 +65,7 @@ export const useRefetchAccountAssets = () => {
   const { account } = useAccount()
 
   return () => {
-    queryClient.resetQueries(QUERY_KEYS.accountAssets(account?.address))
+    queryClient.refetchQueries(QUERY_KEYS.accountAssets(account?.address))
   }
 }
 
