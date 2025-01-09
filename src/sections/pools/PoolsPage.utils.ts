@@ -13,7 +13,7 @@ import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useOmnipoolVolumes } from "api/volume"
+import { useVolume } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useShareOfPools } from "api/pools"
@@ -73,11 +73,9 @@ export const usePools = () => {
     stableCoinId ? [...assetsId, stableCoinId] : assetsId,
   )
 
+  const { data: volumes, isLoading: isVolumeLoading } = useVolume("all")
   const fees = useFee("all")
   const tvls = useTVL("all")
-
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(assetsId)
 
   const isInitialLoading =
     spotPrices.isInitialLoading || omnipoolAssets.isLoading
@@ -104,17 +102,9 @@ export const usePools = () => {
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
-      const volumeRaw = volumes?.find(
-        (volume) => volume.assetId === asset.id,
-      )?.assetVolume
-
-      const volume =
-        volumeRaw && spotPrice
-          ? BN(volumeRaw)
-              .shiftedBy(-meta.decimals)
-              .multipliedBy(spotPrice)
-              .toString()
-          : undefined
+      const volume = volumes?.find(
+        (volume) => volume?.asset_id?.toString() === asset.id,
+      )?.volume_usd
 
       const isFeeLoading = fees?.isLoading || isAllFarmsLoading
 
@@ -144,7 +134,11 @@ export const usePools = () => {
         spotPrice: spotPrice?.isNaN() ? undefined : spotPrice?.toFixed(6),
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
-        volume,
+        volume: volume
+          ? BN(volume)
+              .multipliedBy(apiSpotPrice ?? 1)
+              .toFixed(3)
+          : undefined,
         isVolumeLoading: isVolumeLoading,
         farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
         allFarms: farms.filter((farm) =>
