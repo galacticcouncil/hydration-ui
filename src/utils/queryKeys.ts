@@ -207,6 +207,11 @@ export const QUERY_KEYS = {
     "accountOpenGovVotes",
     accountAddress,
   ],
+  accountOpenGovUnlockedTokens: (ids: string[], address?: string) => [
+    "accountOpenGovUnlockedTokens",
+    address,
+    ids.join(","),
+  ],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",

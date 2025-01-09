@@ -578,6 +578,7 @@
   "wallet.assets.table.details.locked": "Locked",
   "wallet.assets.table.details.lockedVesting": "Locked in Vesting",
   "wallet.assets.table.details.lockedDemocracy": "Locked in Democracy",
+  "wallet.assets.table.details.lockedReferenda": "Locked in Referenda",
   "wallet.assets.table.details.unlockable": "Unlockable",
   "wallet.assets.table.details.clear": "Clear locks",
   "wallet.assets.table.details.unlock": "Unlock tokens",
