@@ -26,6 +26,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.4",
+    "@tanstack/react-table": "^8.20.6",
     "@theme-ui/core": "^0.17.1",
     "@theme-ui/css": "^0.17.1",
     "lucide-react": "^0.459.0",
