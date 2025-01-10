@@ -1,8 +1,6 @@
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { ChartsWrapper } from "./components/ChartsWrapper/ChartsWrapper"
-// TODO: Not ready. Requested in #861n9ffe4
-// import { StatsTiles } from "sections/stats/components/StatsTiles/StatsTiles"
 import { PieWrapper } from "./components/PieWrapper/PieWrapper"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
@@ -82,8 +80,6 @@ export const StatsPOL = () => {
             </SContainerVertical>
           )}
         </div>
-        {/*TODO: Not ready. Requested in #861n9ffe4*/}
-        {/*<StatsTiles />*/}
         <OmnipoolAssetsTableWrapperData
           data={polAssetsDetails}
           isLoading={assetDetails.isLoading}
