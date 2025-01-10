@@ -5,6 +5,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
 import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import BigNumber from "bignumber.js"
+import { millisecondsInMinute } from "date-fns"
+import { BN_0 } from "utils/constants"
 
 export type StatsData = {
   timestamp: string
@@ -158,4 +163,38 @@ const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
     address,
     identity: res.isSome ? res.unwrap()[0].info.display.asRaw.toUtf8() : null,
   }
+}
+
+export const useTreasuryBalances = () => {
+  const polkadot = chainsMap.get("polkadot")
+
+  return useQuery(
+    QUERY_KEYS.treasuryBalances,
+    async () => {
+      const apiPool = SubstrateApis.getInstance()
+      const api = await apiPool.api((polkadot as Parachain).ws)
+
+      const balances = await Promise.all([
+        api.query.system.account(
+          "13RSNAx31mcP5H5KYf12cP5YChq6JeD8Hi64twhhxKtHqBkg",
+        ),
+        api.query.system.account(
+          "14kovW62mmGZBRvbNT1w5J7m9SQskd5JTRTLKZLpkpjmZBJ8",
+        ),
+      ])
+
+      const totalBalances = balances.reduce((acc, balance) => {
+        const { free, reserved } = balance.data
+
+        const total = BigNumber(free.toString())
+          .plus(reserved.toString())
+          .toString()
+
+        return acc.plus(total)
+      }, BN_0)
+
+      return { balance: totalBalances.toString(), id: "5" }
+    },
+    { staleTime: millisecondsInMinute },
+  )
 }
