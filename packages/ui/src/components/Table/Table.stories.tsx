@@ -21,48 +21,73 @@ export default {
   component: Table,
 } satisfies Meta<typeof Table>
 
-const TABLE_DATA = [
+type TTableData = {
+  id: string
+  symbol: string
+  price: number
+  marketCap: number
+  changeIn24h: number
+}
+
+export const PriceFormatter = new Intl.NumberFormat("en", {
+  style: "currency",
+  currency: "USD",
+})
+
+export const MCapFormatter = new Intl.NumberFormat("en", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+})
+
+export const PercFormatter = new Intl.NumberFormat("en", {
+  style: "percent",
+  minimumFractionDigits: 2,
+  signDisplay: "exceptZero",
+})
+
+export const TABLE_DATA: TTableData[] = [
   {
     id: "1",
     symbol: "BTC",
-    price: "$43 122.45",
-    marketCap: "$818.2B",
-    changeIn24h: "-2.34%",
+    price: 102381.92,
+    marketCap: 1_836_894_875_779,
+    changeIn24h: -0.0234,
   },
   {
     id: "1027",
     symbol: "ETH",
-    price: "$3 012.77",
-    marketCap: "$361.9B",
-    changeIn24h: "3.21%",
+    price: 3012.77,
+    marketCap: 392_141_215_229,
+    changeIn24h: 0.0321,
   },
   {
     id: "1839",
     symbol: "BNB",
-    price: "$412.30",
-    marketCap: "$64.5B",
-    changeIn24h: "1.12%",
+    price: 687.27,
+    marketCap: 100_330_387_639,
+    changeIn24h: 0.0112,
   },
   {
     id: "52",
     symbol: "XRP",
-    price: "$0.75",
-    marketCap: "$35.2B",
-    changeIn24h: "-0.56%",
+    price: 2.3,
+    marketCap: 132_226_504_847,
+    changeIn24h: -0.0056,
   },
   {
     id: "5426",
     symbol: "SOL",
-    price: "$102.56",
-    marketCap: "$34.1B",
-    changeIn24h: "5.01%",
+    price: 188.27,
+    marketCap: 90_964_630_797,
+    changeIn24h: 0.0501,
   },
   {
     id: "6753",
     symbol: "HDX",
-    price: "$0.0259",
-    marketCap: "$118.58M",
-    changeIn24h: "13.41%",
+    price: 0.01005,
+    marketCap: 37_540_643,
+    changeIn24h: 0.0134,
   },
 ]
 
@@ -87,17 +112,13 @@ const Template = (args: Story["args"]) => (
                 <Text fw={600}>{symbol}</Text>
               </Flex>
             </TableCell>
-            <TableCell>{price}</TableCell>
-            <TableCell>{marketCap}</TableCell>
+            <TableCell>{PriceFormatter.format(price)}</TableCell>
+            <TableCell>{MCapFormatter.format(marketCap)}</TableCell>
             <TableCell>
               <Text
-                color={
-                  parseFloat(changeIn24h) > 0
-                    ? "successGreen.500"
-                    : "utility.red.500"
-                }
+                color={changeIn24h > 0 ? "successGreen.500" : "utility.red.500"}
               >
-                {changeIn24h}
+                {PercFormatter.format(changeIn24h)}
               </Text>
             </TableCell>
           </TableRow>

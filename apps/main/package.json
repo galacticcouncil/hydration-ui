@@ -25,9 +25,7 @@
     "i18next": "^23.16.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-i18next": "^15.1.0",
-    "react-use": "^17.5.1",
-    "remeda": "^2.16.0"
+    "react-i18next": "^15.1.0"
   },
   "devDependencies": {
     "@galacticcouncil/eslint-config": "*",

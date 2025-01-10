@@ -39,8 +39,8 @@ export const TableHead: React.FC<TableHeadProps> = ({
       {children}
       {canSort && (
         <TableHeadSortIndicator>
-          <CaretDown css={{ opacity: asc }} />
           <CaretDown css={{ opacity: desc }} />
+          <CaretDown css={{ opacity: asc }} />
         </TableHeadSortIndicator>
       )}
     </TableHeadPrimitive>

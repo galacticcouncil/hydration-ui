@@ -36,6 +36,7 @@ const normalize = css`
   select {
     all: unset;
     font: inherit;
+    box-sizing: border-box;
   }
 
   p,
