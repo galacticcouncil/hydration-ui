@@ -76,6 +76,16 @@ export const useExternalApi = (chainKey: string) => {
   )
 }
 
+export const useExternalStore = () => {
+  return useQuery(
+    QUERY_KEYS.externalStore,
+    async () => MetadataStore.getInstance().externalWhitelist(),
+    {
+      enabled: false,
+    },
+  )
+}
+
 /**
  * Used for fetching tokens from supported parachains
  */
@@ -296,11 +306,9 @@ export const useExternalAssetsWhiteList = () => {
   const { isExternal, getAsset } = useAssets()
   const { isLoaded } = useRpcProvider()
   const assetRegistry = useExternalAssetRegistry()
+  const extWhitelist = useExternalStore()
 
-  const whitelist = useMemo(
-    () => MetadataStore.getInstance().externalWhitelist(),
-    [],
-  )
+  const whitelist = extWhitelist.data || []
 
   const getIsWhiteListed = useCallback(
     (assetId: string) => {

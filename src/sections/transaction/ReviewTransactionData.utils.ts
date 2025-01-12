@@ -39,7 +39,7 @@ export function hexDataSlice(data: string, start: number, end?: number) {
 /**
  *  Returns the hex data of a call.
  */
-export function getCallDataHex(call: `0x${string}` | TransactionRequest) {
+export function getCallDataHex(call: string | TransactionRequest) {
   return typeof call === "string" ? call : call.data?.toString() || ""
 }
 
@@ -48,7 +48,7 @@ export function getCallDataHex(call: `0x${string}` | TransactionRequest) {
  */
 export function decodeEvmCall(call: {
   abi?: string
-  data: `0x${string}` | TransactionRequest
+  data: string | TransactionRequest
 }) {
   if (!call?.abi) return
   try {

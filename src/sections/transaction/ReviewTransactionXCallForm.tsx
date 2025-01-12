@@ -8,7 +8,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import { ReviewTransactionXCallSummary } from "sections/transaction/ReviewTransactionSummary"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import {
   useEvmAccount,
   useWallet,
@@ -43,7 +43,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
       if (!account?.address) throw new Error("Missing active account")
       if (!wallet) throw new Error("Missing wallet")
       if (!wallet.signer) throw new Error("Missing signer")
-      if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
+      if (!isEvmCall(xcall)) throw new Error("Missing xcall")
 
       if (wallet?.signer instanceof EthereumSigner) {
         const { srcChain } = xcallMeta

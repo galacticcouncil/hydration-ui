@@ -36,7 +36,7 @@ type Props = {
   tx?: SubmittableExtrinsic
   evmTx?: {
     abi?: string
-    data: `0x${string}` | TransactionRequest
+    data: string | TransactionRequest
   }
   xcallMeta?: Record<string, string>
 }
