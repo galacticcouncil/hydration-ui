@@ -18,7 +18,7 @@ import {
   getDesiredWalletMode,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
-  getXCall,
+  getCall,
 } from "sections/xcm/XcmPage.utils"
 import { genesisHashToChain } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
@@ -78,7 +78,7 @@ export function XcmPage() {
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
-        ...getXCall(e.detail),
+        ...getCall(e.detail),
       },
       {
         onSuccess: () => {},

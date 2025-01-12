@@ -1,5 +1,5 @@
-import { XCall } from "@galacticcouncil/xcm-sdk"
+import { Call } from "@galacticcouncil/xcm-sdk"
 
-export function isEvmXCall(x: XCall | undefined): x is XCall {
+export function isEvmCall(x: Call | undefined): x is Call {
   return typeof x === "object" && "abi" in x && "data" in x
 }

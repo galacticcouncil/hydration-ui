@@ -12,7 +12,7 @@ import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
@@ -168,7 +168,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
           />
-        ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
+        ) : isEvmCall(props.xcall) && props.xcallMeta ? (
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
