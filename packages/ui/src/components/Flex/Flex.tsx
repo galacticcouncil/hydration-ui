@@ -38,6 +38,7 @@ export type FlexOwnProps = {
   direction?: FlexSystemProps["flexDirection"]
   align?: FlexSystemProps["alignItems"]
   justify?: FlexSystemProps["justifyContent"]
+  inline?: boolean
 }
 
 export type FlexProps = FlexOwnProps & FlexSystemProps & BoxProps
@@ -72,7 +73,7 @@ export const Flex = forwardRef<HTMLElement, FlexProps>(
         {...rest}
         css={[cssProp, systemStyles]}
         sx={{
-          display: "flex",
+          display: props.inline ? "inline-flex" : "flex",
           ...sx,
         }}
       />
