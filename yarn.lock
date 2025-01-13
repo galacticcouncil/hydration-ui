@@ -2301,10 +2301,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-6.0.0.tgz#098f379d2638c24ba21243a54c8e650617b27915"
-  integrity sha512-Y+wk1LohE0OJIfqzObtKNLacgTiO5cW0xqRKZEN6uBK3W67fsnms6vBeYdnQXebZn8jLKNxN8bNE6vg/2OoSXA==
+"@galacticcouncil/xcm-cfg@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-6.0.1.tgz#04c6b3618d335a031eb312feb1b10af1d68992db"
+  integrity sha512-GV5LWbUvlOv+5kYjIsyEeEGtrE4aaDMV8N6sKfZCOK7RGZ0fBqsi6DSeRKot//ybvXL4Zy+hXGVM6UnuvGKYRg==
   dependencies:
     "@galacticcouncil/xcm-core" "^5.5.0"
 
@@ -13698,10 +13698,10 @@ typescript@^4.4.3, typescript@^4.7.4:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
   integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
-typescript@~5.1.6:
-  version "5.1.6"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
-  integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==
+typescript@~5.3.3:
+  version "5.3.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.3.tgz#b3ce6ba258e72e6305ba66f5c9b452aaee3ffe37"
+  integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
 
 ua-parser-js@^1.0.35:
   version "1.0.38"

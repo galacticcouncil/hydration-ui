@@ -4,9 +4,17 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { undefinedNoop } from "utils/helpers"
-import { PalletDemocracyVoteAccountVote } from "@polkadot/types/lookup"
-import BN from "bignumber.js"
+import {
+  PalletDemocracyVoteAccountVote,
+  PalletReferendaReferendumStatus,
+  PalletReferendaCurve,
+  PalletConvictionVotingVoteAccountVote,
+} from "@polkadot/types/lookup"
+import BN, { BigNumber } from "bignumber.js"
 import { BN_0 } from "utils/constants"
+import { humanizeUnderscoredString } from "utils/formatting"
+import { useActiveRpcUrlList } from "./provider"
+import { millisecondsInMinute } from "date-fns"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
 
@@ -18,6 +26,33 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   locked4x: 345600,
   locked5x: 691200,
   locked6x: 1382400,
+}
+
+const getVoteAmount = (vote: PalletConvictionVotingVoteAccountVote) => {
+  if (vote.isSplit) {
+    return vote.asSplit.aye
+      .toBigNumber()
+      .plus(vote.asSplit.nay.toString())
+      .toString()
+  } else if (vote.isStandard) {
+    return vote.asStandard.balance.toString()
+  } else if (vote.asSplitAbstain) {
+    return vote.asSplit.aye
+      .toBigNumber()
+      .plus(vote.asSplit.nay.toString())
+      .plus(vote.asSplitAbstain.abstain.toString())
+      .toString()
+  } else {
+    return "0"
+  }
+}
+
+const getVoteConviction = (vote: PalletConvictionVotingVoteAccountVote) => {
+  if (vote.isStandard) {
+    return vote.asStandard?.vote.conviction.toString()
+  } else {
+    return "None"
+  }
 }
 
 const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
@@ -38,31 +73,43 @@ const voteAmount = (vote?: PalletDemocracyVoteAccountVote) => {
   }
 }
 
-export const useReferendums = (type?: "ongoing" | "finished") => {
-  const { api, isLoaded } = useRpcProvider()
-  const { account } = useAccount()
-
-  return useQuery(
-    QUERY_KEYS.referendums(account?.address, type),
-    getReferendums(api, account?.address),
-    {
-      enabled: isLoaded,
-      select: (data) =>
-        type
-          ? data.filter(
-              (r) =>
-                r.referendum[type === "ongoing" ? "isOngoing" : "isFinished"],
-            )
-          : data,
-    },
-  )
-}
-
 export const useReferendumInfo = (referendumIndex: string) => {
   return useQuery(
     QUERY_KEYS.referendumInfo(referendumIndex),
     getReferendumInfo(referendumIndex),
   )
+}
+
+export const useOpenGovReferendas = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.openGovReferendas(rpcUrlList.join(".")),
+    getOpenGovRegerendas(api),
+    {
+      enabled: isLoaded,
+    },
+  )
+}
+
+const getOpenGovRegerendas = (api: ApiPromise) => async () => {
+  const newReferendumsRaw =
+    await api.query.referenda.referendumInfoFor.entries()
+
+  // get only ongoing referenas so far
+  return newReferendumsRaw.reduce<
+    Array<{ id: string; referendum: PalletReferendaReferendumStatus }>
+  >((acc, [key, dataRaw]) => {
+    const id = key.args[0].toString()
+    const data = dataRaw.unwrap()
+
+    if (!data.isNone && data.isOngoing) {
+      acc.push({ id, referendum: data.asOngoing })
+    }
+
+    return acc
+  }, [])
 }
 
 export const getReferendums =
@@ -124,8 +171,58 @@ export type Referendum = {
   }
 }
 
+export type TAccountVote = {
+  balance: string
+  conviction: string
+  id: string
+  classId: string
+}
+
 export const getReferendumInfoOf = async (api: ApiPromise, id: string) =>
   await api.query.democracy.referendumInfoOf(id)
+
+export const useAccountOpenGovVotes = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  return useQuery(
+    QUERY_KEYS.accountOpenGovVotes(account?.address),
+    account
+      ? async () => {
+          const votes = await api.query.convictionVoting.votingFor.entries(
+            account.address,
+          )
+
+          const filteredVotes = votes.reduce<Array<TAccountVote>>(
+            (acc, voteClass) => {
+              if (voteClass[1].isCasting) {
+                const votes = voteClass[1].asCasting.votes
+                const classId = voteClass[0].args[1].toString()
+
+                votes.forEach(([id, data]) => {
+                  acc.push({
+                    id: id.toString(),
+                    balance: getVoteAmount(data),
+                    conviction: getVoteConviction(data),
+                    classId,
+                  })
+                })
+              }
+
+              return acc
+            },
+            [],
+          )
+
+          return filteredVotes
+        }
+      : undefinedNoop,
+    {
+      enabled: isLoaded && !!account,
+      refetchInterval: millisecondsInMinute,
+    },
+  )
+}
 
 export const useAccountVotes = () => {
   const { api, isLoaded } = useRpcProvider()
@@ -228,3 +325,51 @@ export const getAccountUnlockedVotes =
 
     return unlockedVotes
   }
+
+export const useReferendaTracks = () => {
+  const rpcUrlList = useActiveRpcUrlList()
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.referendaTracks(rpcUrlList.join(".")),
+    async () => {
+      const tracks = await api.consts.referenda.tracks
+
+      const data: Map<string, TReferenda> = new Map(
+        tracks.map(([key, dataRaw]) => [
+          key.toString(),
+          {
+            name: dataRaw.name.toString(),
+            nameHuman: humanizeUnderscoredString(dataRaw.name.toString()),
+            maxDeciding: dataRaw.maxDeciding.toBigNumber(),
+            decisionDeposit: dataRaw.decisionDeposit.toBigNumber(),
+            preparePeriod: dataRaw.preparePeriod.toBigNumber(),
+            decisionPeriod: dataRaw.decisionPeriod.toBigNumber(),
+            confirmPeriod: dataRaw.confirmPeriod.toBigNumber(),
+            minEnactmentPeriod: dataRaw.minEnactmentPeriod.toBigNumber(),
+            minApproval: dataRaw.minApproval,
+            minSupport: dataRaw.minSupport,
+          },
+        ]),
+      )
+
+      return data
+    },
+    {
+      enabled: isLoaded,
+    },
+  )
+}
+
+export type TReferenda = {
+  name: string
+  nameHuman: string
+  maxDeciding: BigNumber
+  decisionDeposit: BigNumber
+  preparePeriod: BigNumber
+  decisionPeriod: BigNumber
+  confirmPeriod: BigNumber
+  minEnactmentPeriod: BigNumber
+  minApproval: PalletReferendaCurve
+  minSupport: PalletReferendaCurve
+}

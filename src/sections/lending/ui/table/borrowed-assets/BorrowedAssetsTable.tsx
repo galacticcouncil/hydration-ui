@@ -13,6 +13,7 @@ import {
   useBorrowedAssetsTableData,
 } from "sections/lending/ui/table/borrowed-assets/BorrowedAssetsTable.utils"
 import { theme } from "theme"
+import { EmodeButton } from "sections/lending/components/transactions/Emode/EmodeButton"
 
 export const BorrowedAssetsTable = () => {
   const { t } = useTranslation()
@@ -52,6 +53,7 @@ export const BorrowedAssetsTable = () => {
           {t("lending.borrowed.table.empty")}
         </Text>
       }
+      action={<EmodeButton />}
     />
   )
 }

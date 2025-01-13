@@ -8,11 +8,11 @@ import {
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import React, { useState } from "react"
+import React, { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { TabItemWithSubItems, resetSearchParams } from "utils/navigation"
+import { LINKS, TabItemWithSubItems, resetSearchParams } from "utils/navigation"
 import {
   SArrow,
   SItem,
@@ -21,33 +21,67 @@ import {
   SSubMenuItem,
 } from "./HeaderMenu.styled"
 import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBarItem"
+import { useAccountAssets } from "api/deposits"
+import { useVestingTotalVestedAmount } from "api/vesting"
 
-type Props = { item: TabItemWithSubItems }
+type HeaderSubMenuProps = {
+  isOpen: boolean
+  onOpenChange: () => void
+  item: TabItemWithSubItems
+}
 
-export const HeaderSubMenu = ({ item }: Props) => {
+export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
+  item,
+  isOpen,
+  onOpenChange,
+}) => {
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
   const isTablet = useMedia(theme.viewport.gte.sm)
 
   const match = useMatchRoute()
 
-  const { key, subItems } = item
+  const { data: balances } = useAccountAssets()
+  const { data: totalVestedAmount } = useVestingTotalVestedAmount()
+
+  const { href, key, subItems } = item
+
+  const isPoolBalances = !!balances?.isAnyPoolPositions
   const isActive = subItems.some(({ href }) => match({ to: href }))
-  const filteredItems = subItems.filter((subItem) => subItem.enabled)
+
+  const filteredItems = useMemo(() => {
+    return subItems.filter((subItem) => {
+      if (subItem.key === "liquidity.myLiquidity") {
+        return isPoolBalances
+      }
+
+      if (subItem.key === "wallet.vesting") {
+        return !!totalVestedAmount?.gt(0)
+      }
+
+      return subItem.enabled
+    })
+  }, [isPoolBalances, subItems, totalVestedAmount])
+
+  const shouldRenderDropdown = filteredItems.length > 1
 
   return (
-    <Root delayDuration={0} open={open} onOpenChange={setOpen}>
+    <Root delayDuration={0} open={isOpen} onOpenChange={onOpenChange}>
       <Trigger
         css={{ all: "unset", height: "100%", cursor: "pointer" }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          setOpen((prev) => !prev)
+          onOpenChange()
 
           const firstLink = filteredItems?.[0]
-          isTablet && firstLink && navigate({ to: firstLink.href })
+
+          if (href === LINKS.borrow) {
+            navigate({ to: href })
+          } else {
+            navigate({ to: firstLink?.href ?? href })
+          }
         }}
         onPointerDown={(e) => {
           e.preventDefault()
@@ -57,20 +91,22 @@ export const HeaderSubMenu = ({ item }: Props) => {
         {isTablet ? (
           <SItem isActive={isActive}>
             {t(`header.${key}`)}
-            <IconChevron />
+            {shouldRenderDropdown && <IconChevron />}
           </SItem>
         ) : (
-          <MobileNavBarItem item={item} isActive={open || isActive} />
+          <MobileNavBarItem item={item} isActive={isOpen || isActive} />
         )}
       </Trigger>
-      <HeaderSubMenuContents
-        items={filteredItems.map((subItem) => ({
-          ...subItem,
-          title: t(`header.${key}.${subItem.key}.title`),
-          subtitle: t(`header.${key}.${subItem.key}.subtitle`),
-        }))}
-        onItemClick={() => setOpen(false)}
-      />
+      {shouldRenderDropdown && (
+        <HeaderSubMenuContents
+          items={filteredItems.map((subItem) => ({
+            ...subItem,
+            title: t(`header.${subItem.key}.title`),
+            subtitle: t(`header.${subItem.key}.subtitle`),
+          }))}
+          onItemClick={onOpenChange}
+        />
+      )}
     </Root>
   )
 }
@@ -110,7 +146,14 @@ export const HeaderSubMenuContents: React.FC<HeaderSubMenuContentsProps> = ({
               onClick={onItemClick}
             >
               <SSubMenuItem>
-                <Icon sx={{ color: "brightBlue300", width: 24, height: 24 }} />
+                <Icon
+                  sx={{
+                    flexShrink: 0,
+                    color: "brightBlue300",
+                    width: 24,
+                    height: 24,
+                  }}
+                />
                 <div>
                   <Text fs={15} lh={15}>
                     {title}

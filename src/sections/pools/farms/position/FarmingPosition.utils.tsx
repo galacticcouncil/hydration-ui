@@ -7,7 +7,7 @@ import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import { scaleHuman } from "utils/balance"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useXYKPools } from "api/xyk"
+import { useXYKSDKPools } from "api/xyk"
 
 type TokenAmount = {
   id: string
@@ -89,7 +89,7 @@ export const useAllXYKDeposits = (address?: string) => {
 
   const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
-  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKPools()
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKSDKPools()
 
   const isLoading =
     isXykPoolsLoading ||
@@ -192,27 +192,4 @@ export const useFarmDepositsTotal = (address?: string) => {
   }, [omnipool, xyk])
 
   return { isLoading: isLoading, value: total }
-}
-
-export const getFarmingPositionCardHeight = (
-  isAvailableFarms: boolean,
-  isXyk: boolean,
-  isDesktop: boolean,
-  joinedFarmsCount: number,
-) => {
-  let height = isDesktop ? 380 : 350
-
-  if (!isXyk) {
-    height += 60
-  }
-
-  if (isAvailableFarms) {
-    height += 76
-  }
-
-  if (!isDesktop) {
-    height += (joinedFarmsCount - 1) * 30
-  }
-
-  return height
 }

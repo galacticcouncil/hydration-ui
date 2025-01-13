@@ -2,7 +2,11 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { getReferendumInfoOf } from "./democracy"
+import {
+  getReferendumInfoOf,
+  TAccountVote,
+  useAccountOpenGovVotes,
+} from "./democracy"
 import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -46,19 +50,23 @@ export type TStakingPosition = Awaited<
   ReturnType<ReturnType<typeof getStakingPosition>>
 >
 
-export const useCirculatingSupply = () => {
+export const useHDXSupplyFromSubscan = () => {
   return useQuery(
-    QUERY_KEYS.circulatingSupply,
+    QUERY_KEYS.hdxSupply,
     async () => {
-      const res = await getCirculatingSupply()()
+      const res = await getHDXSupplyFromSubscan()()
 
-      return res.data.detail["HDX"].available_balance
+      const data = res.data.detail["HDX"]
+      return {
+        totalIssuance: data.total_issuance,
+        circulatingSupply: data.available_balance,
+      }
     },
     { retry: 0 },
   )
 }
 
-const getCirculatingSupply = () => async () => {
+const getHDXSupplyFromSubscan = () => async () => {
   const res = await fetch("https://hydration.api.subscan.io/api/scan/token")
 
   const data: Promise<ISubscanData> = res.json()
@@ -112,7 +120,7 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
 const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   const [position, votesRes] = await Promise.all([
     api.query.staking.positions(id),
-    api.query.staking.positionVotes(id),
+    api.query.staking.votes(id),
   ])
   const positionData = position.unwrap()
 
@@ -122,6 +130,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     id: BN
     amount: BN
     conviction: string
+    //@ts-ignore
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
     const prevAcc = await acc
     const id = key.toBigNumber()
@@ -202,29 +211,6 @@ type TStakingInitialized = StakeEventBase & {
   name: "Staking.StakingInitialized"
 }
 
-type TPositionBalance = StakeEventBase &
-  (
-    | {
-        name: "Staking.PositionCreated"
-        args: {
-          positionId: string
-          stake: string
-          who: string
-        }
-      }
-    | {
-        name: "Staking.StakeAdded"
-        args: {
-          lockedRewards: string
-          positionId: string
-          slashedPoints: string
-          stake: string
-          totalStake: string
-          who: string
-        }
-      }
-  )
-
 export type TAccumulatedRpsUpdated = StakeEventBase & {
   name: "Staking.AccumulatedRpsUpdated"
   args: {
@@ -249,18 +235,6 @@ export const useStakingEvents = () => {
         : undefined,
     }
   })
-}
-
-export const useStakingPositionBalances = (positionId?: string) => {
-  const { indexerUrl } = useActiveProvider()
-
-  return useQuery(
-    QUERY_KEYS.stakingPositionBalances(positionId),
-    positionId
-      ? getStakingPositionBalances(indexerUrl, positionId)
-      : undefinedNoop,
-    { enabled: !!positionId },
-  )
 }
 
 const getAccumulatedRpsUpdatedEvents = (indexerUrl: string) => async () => {
@@ -307,67 +281,84 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
   }
 }
 
-const getStakingPositionBalances =
-  (indexerUrl: string, positionId: string) => async () => {
-    return {
-      ...(await request<{
-        events: Array<TPositionBalance>
-      }>(
-        indexerUrl,
-        gql`
-          query StakingPositionBalances($positionId: String!) {
-            events(
-              where: {
-                name_contains: "Staking"
-                args_jsonContains: { positionId: $positionId }
-              }
-              orderBy: [block_height_ASC]
-            ) {
-              name
-              block {
-                height
-              }
-              args
-            }
-          }
-        `,
-        { positionId },
-      )),
-    }
-  }
+export const useProcessedVotesIdsQuery = () => {
+  const { account } = useAccount()
+  const { api, isLoaded } = useRpcProvider()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
+
+  return useQuery(
+    QUERY_KEYS.processedVotes(),
+    account?.address
+      ? async () => await getVoteIds(api, account.address, accountVotes)
+      : undefinedNoop,
+    { enabled: !!account && isLoaded },
+  )
+}
 
 export const useProcessedVotesIds = () => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
+  const { data: accountVotes = [], isSuccess } = useAccountOpenGovVotes()
 
   return useMutation(async () => {
-    if (!account) {
-      return []
+    if (!account || !isSuccess) {
+      return undefined
     }
 
-    const processedVotesRes = await api.query.staking.processedVotes.entries(
-      account.address,
-    )
-
-    const ids = processedVotesRes.map(([processedVote]) => {
-      const [, id] = processedVote.toHuman() as string[]
-
-      return id
-    })
-
-    return ids
+    return await getVoteIds(api, account.address, accountVotes)
   })
 }
 
-export const usePositionVotesIds = () => {
+const getVoteIds = async (
+  api: ApiPromise,
+  address: string,
+  accountVotes: TAccountVote[],
+) => {
+  const newProcessedVotes =
+    await api.query.staking.votesRewarded.entries(address)
+
+  const oldProcessedVotes =
+    await api.query.staking.processedVotes.entries(address)
+
+  const newProcessedVotesIds = newProcessedVotes.map(([processedVote]) => {
+    const [, id] = processedVote.toHuman() as string[]
+    const accoutVote = accountVotes.find((accountVote) => accountVote.id === id)
+
+    return { id, classId: accoutVote?.classId }
+  })
+
+  const oldProcessedVotesIds = oldProcessedVotes.map(([processedVote]) => {
+    const [, id] = processedVote.toHuman() as string[]
+
+    return id
+  })
+
+  return { newProcessedVotesIds, oldProcessedVotesIds }
+}
+
+export const usePendingVotesIds = () => {
   const { api } = useRpcProvider()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
 
   return useMutation(async (positionId: number) => {
-    const positionVotesRes = await api.query.staking.positionVotes(positionId)
-    const positionVotesIds = positionVotesRes.votes.map(([position]) =>
+    const newPendingVotes = await api.query.staking.votes(positionId)
+    const oldPendingVotes = await api.query.staking.positionVotes(positionId)
+
+    const newPendingVotesIds: { classId: string | undefined; id: string }[] =
+      //@ts-ignore
+      newPendingVotes.votes.map(([position]: [u32]) => {
+        const id = position.toString()
+        const accoutVote = accountVotes.find(
+          (accountVote) => accountVote.id === id,
+        )
+
+        return { id, classId: accoutVote?.classId }
+      })
+
+    const oldPendingVotesIds = oldPendingVotes.votes.map(([position]) =>
       position.toString(),
     )
 
-    return positionVotesIds
+    return { newPendingVotesIds, oldPendingVotesIds }
   })
 }

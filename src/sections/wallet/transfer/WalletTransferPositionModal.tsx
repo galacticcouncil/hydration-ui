@@ -37,7 +37,7 @@ import {
 } from "utils/formatting"
 import {
   isXYKPosition,
-  XYKPosition,
+  TXYKPosition,
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 import { ReactElement } from "react"
 import { useAssets } from "providers/assets"
@@ -56,7 +56,7 @@ export const WalletTransferPositionModal = ({
   onClose,
   isFarmingPosition,
 }: {
-  position: TLPData | XYKPosition
+  position: TLPData | TXYKPosition
   onClose: () => void
   isFarmingPosition?: boolean
 }) => {

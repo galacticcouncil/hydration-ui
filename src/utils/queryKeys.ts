@@ -23,8 +23,6 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  miningPosition: (id: string) => ["miningPosition", id],
-  miningPositionXYK: (id: string) => ["miningPositionXYK", id],
   accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -39,10 +37,9 @@ export const QUERY_KEYS = {
     "accountAssets",
     address,
   ],
-  accountClaimableFarmValues: (address: string | undefined, range: string) => [
+  accountClaimableFarmValues: (address: string | undefined) => [
     "accountClaimableFarmValues",
     address,
-    range,
   ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
@@ -51,12 +48,8 @@ export const QUERY_KEYS = {
   ],
   pools: [QUERY_KEY_PREFIX, "pools"],
   omnipoolTokens: ["omnipoolTokens"],
+  stablePools: ["stablePools"],
   hubToken: ["hubToken"],
-  poolShareToken: (poolId: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolShareToken",
-    poolId.toString(),
-  ],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
@@ -74,25 +67,12 @@ export const QUERY_KEYS = {
     "xykDeposits",
     ids.join("."),
   ],
-  poolDeposits: (poolId: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "deposits",
-    poolId?.toString(),
-  ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
-  omnipoolFarms: [QUERY_KEY_PREFIX, "omnipoolFarms"],
-  stoppedOmnipoolFarms: (address?: string) => [
-    QUERY_KEY_PREFIX,
-    "stoppedOmnipoolFarms",
-    address,
-  ],
+  omnipoolFarms: ["omnipoolFarms"],
+  stoppedOmnipoolFarms: (address?: string) => ["stoppedOmnipoolFarms", address],
   xykActiveFarms: ["xykActiveFarms"],
-  xykFarms: [QUERY_KEY_PREFIX, "xykFarms"],
-  stoppedXykFarms: (address?: string) => [
-    QUERY_KEY_PREFIX,
-    "stoppedXykFarms",
-    address,
-  ],
+  xykFarms: ["xykFarms"],
+  stoppedXykFarms: (address?: string) => ["stoppedXykFarms", address],
   totalIssuances: ["totalIssuances"],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -166,6 +146,11 @@ export const QUERY_KEYS = {
     "xykSquidVolumes",
     addresses.join(","),
   ],
+  omnipoolSquidVolumes: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "omnipoolSquidVolumes",
+    ids.join(","),
+  ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
       ? ["timestamp", bestNumber]
@@ -216,17 +201,18 @@ export const QUERY_KEYS = {
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
-  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
-    "referendums",
+  openGovReferendas: (url: string) => ["openGovReferendas", url],
+  referendaTracks: (url: string) => ["referendaTracks", url],
+  accountOpenGovVotes: (accountAddress?: string) => [
+    "accountOpenGovVotes",
     accountAddress,
-    type,
   ],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
     accountAddress,
   ],
-  referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
+  referendumInfo: (id: string) => [id, "referendumInfo"],
   stats: (
     type: ChartType,
     timeframe?: StatsTimeframe,
@@ -239,16 +225,14 @@ export const QUERY_KEYS = {
 
     return key
   },
-  circulatingSupply: ["circulatingSupply"],
+  hdxSupply: ["hdxSupply"],
   stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
-  stakingPositionBalances: (positionId: Maybe<string>) => [
-    "positionBalances",
-    positionId,
-  ],
+  processedVotes: (address?: string) => ["processedVotes", address],
+  stableswapPools: ["stableswapPools"],
   stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
   bondEvents: (id?: Maybe<string>, myEvents?: boolean) => [
@@ -346,4 +330,5 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  bifrostVDotApy: ["bifrostVDotApy"],
 } as const
