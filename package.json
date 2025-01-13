@@ -21,6 +21,8 @@
   },
   "packageManager": "yarn@1.22.22",
   "dependencies": {
+    "react-use": "^17.6.0",
+    "remeda": "^2.19.0",
     "zustand": "^5.0.1"
   }
 }
