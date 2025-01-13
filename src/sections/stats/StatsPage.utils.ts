@@ -68,7 +68,7 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       (acc, position) => {
         const data = getData(position)
 
-        const assetId = position.assetId.toString()
+        const assetId = position.assetId
 
         return {
           ...acc,
@@ -91,12 +91,28 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
 
       const omnipoolAssetCap = scaleHuman(omnipoolAsset.cap, "q")
 
-      const free = scaleHuman(omnipoolAsset.balance, meta.decimals)
+      const free = omnipoolAsset.balance
 
       const valueOfShares = protocolShares
         .div(shares)
         .multipliedBy(free)
+        .shiftedBy(-meta.decimals)
         .times(spotPrice)
+
+      console.log({
+        id: meta.id,
+        symbol: meta.symbol,
+        amount: protocolShares
+          .div(shares)
+          .multipliedBy(omnipoolAsset.balance)
+          .toString(),
+        amountHuman: protocolShares
+          .div(shares)
+          .multipliedBy(omnipoolAsset.balance)
+          .shiftedBy(-meta.decimals)
+          .toString(),
+        dollar: valueOfShares.toString(),
+      })
 
       const valueOfLiquidityPositions =
         treasurePositionsValue[omnipoolAssetId] ?? BN_0
