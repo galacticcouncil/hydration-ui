@@ -4,7 +4,11 @@ import { useTranslation } from "react-i18next"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { getWalletModeIcon } from "sections/web3-connect/Web3Connect.utils"
 
-const WALLET_MODES = [WalletMode.Substrate, WalletMode.EVM] as const
+const WALLET_MODES = [
+  WalletMode.Substrate,
+  WalletMode.EVM,
+  WalletMode.Solana,
+] as const
 
 export type Web3ConnectModeFilterProps = {
   active: WalletMode

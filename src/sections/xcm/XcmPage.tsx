@@ -106,6 +106,8 @@ export function XcmPage() {
 
     const walletMode = getDesiredWalletMode(srcChain)
 
+    console.log({ walletMode, srcChain })
+
     setIncomingSrcChain(srcChain)
 
     toggleWeb3Modal(walletMode, {

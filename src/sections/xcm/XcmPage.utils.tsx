@@ -77,6 +77,9 @@ export function getDesiredWalletMode(chainKey: string) {
 
   if (!chain) return WalletMode.Default
 
+  const isSolana = chain?.key === "solana"
+  if (isSolana) return WalletMode.Solana
+
   const isEvmAndSubstrate = chain?.key === "hydration"
   if (isEvmAndSubstrate) return WalletMode.SubstrateEVM
 
