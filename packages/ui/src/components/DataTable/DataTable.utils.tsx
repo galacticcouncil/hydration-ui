@@ -2,6 +2,7 @@ import {
   AccessorKeyColumnDef,
   ColumnDef,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -16,6 +17,7 @@ import { useBreakpoints } from "@/theme"
 
 export type UseDataTableOwnOptions = {
   paginated?: boolean
+  expandable?: boolean
   isLoading?: boolean
   skeletonRowCount?: number
 }
@@ -37,6 +39,7 @@ function isAccessorColumn<TData>(
 export const useDataTable = <TData extends RowData>({
   isLoading = false,
   paginated = false,
+  expandable = false,
   skeletonRowCount = 10,
   ...options
 }: UseDataTableOptions<TData>) => {
@@ -90,6 +93,8 @@ export const useDataTable = <TData extends RowData>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: paginated ? getPaginationRowModel() : undefined,
+    getExpandedRowModel: expandable ? getExpandedRowModel() : undefined,
+    getRowCanExpand: () => expandable,
     getFilteredRowModel:
       typeof options.state?.globalFilter === "string"
         ? getFilteredRowModel()

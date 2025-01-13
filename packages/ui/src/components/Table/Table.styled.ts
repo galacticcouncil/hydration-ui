@@ -112,7 +112,14 @@ export const Table = styled.table<TableProps>(
 
 export const TableHeader = styled.thead()
 export const TableBody = styled.tbody()
-export const TableRow = styled.tr()
+export const TableRow = styled.tr(
+  ({ theme }) => css`
+    &[data-expanded="true"],
+    &[data-expanded="true"] + tr {
+      background: ${theme.surfaces.containers.dim.dimOnBg};
+    }
+  `,
+)
 export const TableCell = styled.td()
 
 export const TableHead = styled.th<{ canSort?: boolean }>`

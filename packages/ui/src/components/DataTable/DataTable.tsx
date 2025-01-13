@@ -1,10 +1,11 @@
 import {
   ColumnDef,
   flexRender,
+  Row,
   RowData,
   Table as TableDef,
 } from "@tanstack/react-table"
-import { useCallback, useMemo } from "react"
+import { Fragment, useCallback, useMemo } from "react"
 
 import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"
@@ -35,21 +36,26 @@ export type DataTableProps<TData extends RowData> = TableProps &
       [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
     }[keyof TData][]
     className?: string
+    renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement
+    onRowClick?: (props: { row: Row<TData> }) => void
   }
 
 export function DataTable<TData>({
   data,
   columns,
   className,
-  fixedLayout = false,
   size = "medium",
+  fixedLayout = false,
   paginated = false,
+  expandable = false,
   pageSize = 20,
   borderless,
   hoverable,
   isLoading,
   skeletonRowCount,
   globalFilter,
+  renderSubComponent,
+  onRowClick,
 }: DataTableProps<TData>) {
   const tableProps = {
     fixedLayout,
@@ -63,6 +69,7 @@ export function DataTable<TData>({
     columns,
     isLoading,
     paginated,
+    expandable,
     skeletonRowCount,
     initialState: {
       pagination: {
@@ -107,26 +114,37 @@ export function DataTable<TData>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => {
-                  const { meta } = cell.getContext().cell.column.columnDef
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      className={meta?.className}
-                      sx={meta?.sx}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+              <Fragment key={row.id}>
+                <TableRow
+                  data-expanded={expandable ? row.getIsExpanded() : undefined}
+                  data-selected={row.getIsSelected()}
+                  onClick={onRowClick ? () => onRowClick({ row }) : undefined}
+                  sx={onRowClick && { cursor: "pointer" }}
+                >
+                  {row.getVisibleCells().map((cell) => {
+                    const { meta } = cell.getContext().cell.column.columnDef
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={meta?.className}
+                        sx={meta?.sx}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+                {expandable && renderSubComponent && row.getIsExpanded() && (
+                  <TableRow>
+                    <TableCell colSpan={table.getVisibleLeafColumns().length}>
+                      {renderSubComponent({ row })}
                     </TableCell>
-                  )
-                })}
-              </TableRow>
+                  </TableRow>
+                )}
+              </Fragment>
             ))
           ) : (
             <TableRow>
@@ -135,7 +153,7 @@ export function DataTable<TData>({
           )}
         </TableBody>
       </Table>
-      {paginated && table.getPageCount() > 1 && (
+      {!isLoading && paginated && table.getPageCount() > 1 && (
         <DataTablePagination table={table} />
       )}
     </>
@@ -161,7 +179,7 @@ export const DataTablePagination = <T,>({
   const onPageIndexClick = useCallback((i: number) => table.setPageIndex(i), [])
 
   return (
-    <Flex gap={2} p={10} justify="center">
+    <Flex gap={6} p={10} justify="center">
       <Button
         size="small"
         variant="tertiary"
@@ -174,19 +192,21 @@ export const DataTablePagination = <T,>({
         typeof pageNumber === "string" ? (
           <Text
             key={`${index}-dots`}
+            width={32}
             fs={16}
             color={getToken("text.low")}
-            sx={{ textAlign: "center", minWidth: 30 }}
+            sx={{ textAlign: "center" }}
           >
             &#8230;
           </Text>
         ) : (
           <Button
             key={`${index}-page`}
+            width={32}
             size="small"
             variant={pageNumber === currentPage ? "primary" : "tertiary"}
             onClick={() => onPageIndexClick(pageNumber - 1)}
-            sx={{ textAlign: "center", minWidth: 30 }}
+            sx={{ textAlign: "center" }}
           >
             {pageNumber}
           </Button>
