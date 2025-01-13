@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query"
+import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import {
   createRootRouteWithContext,
@@ -6,7 +6,17 @@ import {
 } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/router-devtools"
 
+import { assetsQuery } from "@/api/assets"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+const Subscriptions = () => {
+  const rpcProvider = useRpcProvider()
+
+  useQuery(assetsQuery(rpcProvider))
+
+  return null
+}
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -15,12 +25,15 @@ export const Route = createRootRouteWithContext<{
 })
 
 function RootComponent() {
+  const { isApiLoaded } = useRpcProvider()
+
   return (
     <>
       <MainLayout />
       <ScrollRestoration />
       <ReactQueryDevtools buttonPosition="bottom-left" />
       <TanStackRouterDevtools position="bottom-right" />
+      {isApiLoaded && <Subscriptions />}
     </>
   )
 }

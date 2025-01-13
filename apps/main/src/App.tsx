@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 
 import { Page404 } from "@/components/Page404"
+import { RpcProvider } from "@/providers/rpcProvider"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -33,9 +34,11 @@ export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider delayDuration={0}>
-          <RouterProvider router={router} />
-        </TooltipProvider>
+        <RpcProvider>
+          <TooltipProvider delayDuration={0}>
+            <RouterProvider router={router} />
+          </TooltipProvider>
+        </RpcProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )
