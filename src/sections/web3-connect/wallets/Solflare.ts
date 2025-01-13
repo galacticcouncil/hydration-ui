@@ -1,6 +1,7 @@
 import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
 import SolflareLogo from "assets/icons/SolflareLogo.svg"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import { SolanaSigner } from "sections/web3-connect/signer/SolanaSigner"
 import { shortenAccountAddress } from "utils/formatting"
 import { isSolflare, SolanaWalletProvider } from "utils/solana"
 
@@ -14,8 +15,7 @@ export class Solflare implements Wallet {
   }
 
   _extension: SolanaWalletProvider | undefined
-  // @TODO: implement signer and update to proper type
-  _signer: any
+  _signer: SolanaSigner | undefined
 
   _accounts: WalletAccount[] = []
 
@@ -66,6 +66,7 @@ export class Solflare implements Wallet {
       ])
 
       this._extension = wallet
+      this._signer = address ? new SolanaSigner(address, wallet) : undefined
     } catch (err: any) {
       throw this.transformError(err as Error)
     }

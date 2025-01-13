@@ -76,12 +76,13 @@ export const useExternalApi = (chainKey: string) => {
   )
 }
 
-export const useExternalStore = () => {
+export const useExternalWhitelist = () => {
   return useQuery(
     QUERY_KEYS.externalStore,
     async () => MetadataStore.getInstance().externalWhitelist(),
     {
-      enabled: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
     },
   )
 }
@@ -306,9 +307,7 @@ export const useExternalAssetsWhiteList = () => {
   const { isExternal, getAsset } = useAssets()
   const { isLoaded } = useRpcProvider()
   const assetRegistry = useExternalAssetRegistry()
-  const extWhitelist = useExternalStore()
-
-  const whitelist = extWhitelist.data || []
+  const { data: whitelist } = useExternalWhitelist()
 
   const getIsWhiteListed = useCallback(
     (assetId: string) => {
@@ -319,7 +318,7 @@ export const useExternalAssetsWhiteList = () => {
           ? assetRegistry[+asset.parachainId]?.data?.get(asset.externalId ?? "")
           : null
 
-        const isManuallyWhiteListed = whitelist.includes(asset.id)
+        const isManuallyWhiteListed = !!whitelist?.includes(asset.id)
         const isWhiteListed =
           isManuallyWhiteListed ||
           asset?.isWhiteListed ||

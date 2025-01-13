@@ -12,7 +12,10 @@ import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
-import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import {
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
@@ -25,6 +28,7 @@ export const ReviewTransaction = (props: Transaction) => {
     sendTx,
     sendEvmTx,
     sendPermitTx,
+    sendSolanaTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -168,7 +172,8 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
           />
-        ) : isEvmCall(props.xcall) && props.xcallMeta ? (
+        ) : (isEvmCall(props.xcall) || isSolanaCall(props.xcall)) &&
+          props.xcallMeta ? (
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
@@ -176,6 +181,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onEvmSigned={(data) => {
               props.onSubmitted?.()
               sendEvmTx(data)
+            }}
+            onSolanaSigned={(data) => {
+              props.onSubmitted?.()
+              sendSolanaTx(data)
             }}
             onSignError={setSignError}
           />

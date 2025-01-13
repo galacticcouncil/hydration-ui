@@ -75,6 +75,7 @@ export function XcmPage() {
   const rpcUrlList = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+    console.log(e.detail)
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),

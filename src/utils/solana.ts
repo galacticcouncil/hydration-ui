@@ -1,5 +1,9 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { encodeAddress } from "@polkadot/util-crypto"
-import { PublicKey } from "@solana/web3.js"
+import { PublicKey, VersionedTransaction } from "@solana/web3.js"
+
+export type SolanaSignature = { signature: string }
 
 export interface SolanaWalletProvider {
   isPhantom?: boolean
@@ -10,8 +14,18 @@ export interface SolanaWalletProvider {
   disconnect: () => Promise<void>
   on: (event: "connect" | "disconnect", handler: (args?: any) => void) => void
   off: (event: "connect" | "disconnect", handler: (args?: any) => void) => void
-  signTransaction?: (transaction: any) => Promise<any>
-  signAllTransactions?: (transactions: any[]) => Promise<any[]>
+  signTransaction: (
+    transaction: VersionedTransaction,
+  ) => Promise<SolanaSignature>
+  signAllTransactions: (
+    transactions: VersionedTransaction[],
+  ) => Promise<SolanaSignature[]>
+  signAndSendTransaction: (
+    transaction: VersionedTransaction,
+  ) => Promise<SolanaSignature>
+  signAndSendAllTransactions: (
+    transactions: VersionedTransaction[],
+  ) => Promise<SolanaSignature[]>
 }
 
 export const isPhantom = (provider?: SolanaWalletProvider) => {
@@ -28,4 +42,9 @@ export const safeConvertSolanaAddressToSS58 = (address: string, prefix = 0) => {
   } catch {
     return ""
   }
+}
+
+export function getSolanaTxLink(hash: string) {
+  const chain = chainsMap.get("solana") as SolanaChain
+  return `${chain.explorer}/tx/${hash}`
 }

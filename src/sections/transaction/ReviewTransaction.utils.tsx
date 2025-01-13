@@ -45,6 +45,9 @@ import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
 import { tags } from "@galacticcouncil/xcm-cfg"
+import { SolanaChain } from "@galacticcouncil/xcm-core"
+import { SignatureStatus } from "@solana/web3.js"
+import { getSolanaTxLink } from "utils/solana"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -143,6 +146,32 @@ function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
     isWarning: false,
     txHash: txReceipt.transactionHash as unknown as Hash,
     txIndex: txReceipt.transactionIndex,
+    filterRecords: () => [],
+    findRecord: () => undefined,
+    toHuman: () => ({}),
+  }
+
+  return submittableResult
+}
+
+function solanaStatusToSubmittableResult({
+  status,
+  hash,
+}: {
+  status: SignatureStatus
+  hash: string
+}) {
+  const isSuccess = status.confirmationStatus === "confirmed"
+  const submittableResult: ISubmittableResult = {
+    status: {} as ExtrinsicStatus,
+    events: [],
+    isCompleted: isSuccess,
+    isError: !isSuccess,
+    isFinalized: isSuccess,
+    isInBlock: isSuccess,
+    isWarning: false,
+    txHash: hash as unknown as Hash,
+    txIndex: 0,
     filterRecords: () => [],
     findRecord: () => undefined,
     toHuman: () => ({}),
@@ -251,6 +280,49 @@ export const useSendEvmTransactionMutation = (
     txLink,
     txHash,
     bridge: isApproveTx || isSnowBridge ? undefined : bridge,
+    reset: () => {
+      setTxState(null)
+      setTxHash("")
+      sendTx.reset()
+    },
+  }
+}
+
+export const useSendSolanaTransactionMutation = (
+  options: MutationObserverOptions<ISubmittableResult, unknown, string> = {},
+  xcallMeta?: Record<string, string>,
+) => {
+  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [txHash, setTxHash] = useState<string>("")
+
+  const chain = xcallMeta
+    ? (chainsMap.get(xcallMeta.srcChain) as SolanaChain)
+    : null
+
+  const sendTx = useMutation(async (hash) => {
+    if (!chain) throw new Error("Invalid chain")
+
+    return await new Promise(async (resolve, reject) => {
+      try {
+        setTxState("Broadcast")
+        setTxHash(hash)
+        const status = await waitForSolanaTx(chain.connection, hash)
+        setTxState("InBlock")
+        return resolve(solanaStatusToSubmittableResult({ status, hash }))
+      } catch (err) {
+        reject(new TransactionError(err?.toString() ?? "Unknown error", {}))
+      }
+    })
+  }, options)
+
+  const txLink = getSolanaTxLink(txHash)
+
+  return {
+    ...sendTx,
+    txState,
+    txLink,
+    txHash,
+    bridge: undefined,
     reset: () => {
       setTxState(null)
       setTxHash("")
@@ -652,10 +724,10 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
+type TxType = "default" | "evm" | "permit" | "solana"
+
 export const useSendTx = (xcallMeta?: Record<string, string>) => {
-  const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
-    null,
-  )
+  const [txType, setTxType] = useState<TxType | null>(null)
 
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
@@ -695,15 +767,59 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
     xcallMeta,
   )
 
+  const sendSolanaTx = useSendSolanaTransactionMutation(
+    {
+      onMutate: () => {
+        setTxType("solana")
+      },
+    },
+    xcallMeta,
+  )
+
   const activeMutation =
-    txType === "default" ? sendTx : txType === "evm" ? sendEvmTx : sendPermitTx
+    txType === "default"
+      ? sendTx
+      : txType === "evm"
+        ? sendEvmTx
+        : txType === "solana"
+          ? sendSolanaTx
+          : sendPermitTx
 
   return {
     sendTx: sendTx.mutateAsync,
     sendEvmTx: sendEvmTx.mutateAsync,
     sendPermitTx: sendPermitTx.mutateAsync,
+    sendSolanaTx: sendSolanaTx.mutateAsync,
     ...activeMutation,
   }
+}
+
+async function waitForSolanaTx(
+  connection: SolanaChain["connection"],
+  hash: string,
+): Promise<SignatureStatus> {
+  return new Promise((resolve, reject) => {
+    const checkStatus = async () => {
+      let timeout
+      try {
+        const result = await connection.getSignatureStatus(hash, {
+          searchTransactionHistory: true,
+        })
+        const status = result.value
+        if (status?.confirmationStatus === "confirmed") {
+          clearTimeout(timeout)
+          resolve(status)
+        } else {
+          timeout = setTimeout(checkStatus, 5000)
+        }
+      } catch (error) {
+        clearTimeout(timeout)
+        reject(error)
+      }
+    }
+
+    checkStatus()
+  })
 }
 
 async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
