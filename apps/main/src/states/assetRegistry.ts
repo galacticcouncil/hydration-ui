@@ -1,8 +1,7 @@
 import { Asset } from "@galacticcouncil/sdk"
+import { isDeepEqual } from "remeda"
 import { create } from "zustand"
 import { createJSONStorage, persist, StateStorage } from "zustand/middleware"
-
-import { arraysEqual } from "@/utils/helpers"
 
 export type TAssetStored = Omit<Asset, "externalId"> & {
   isTradable: boolean
@@ -88,8 +87,8 @@ const storage: StateStorage = {
     if (storage) {
       const { tokens, shareTokens } = await getItems(storage)
 
-      const areTokensEqual = arraysEqual(parsedState.state.assets, tokens)
-      const areShareTokensEqual = arraysEqual(
+      const areTokensEqual = isDeepEqual(parsedState.state.assets, tokens)
+      const areShareTokensEqual = isDeepEqual(
         parsedState.state.shareTokens,
         shareTokens,
       )
