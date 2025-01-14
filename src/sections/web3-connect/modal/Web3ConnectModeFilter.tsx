@@ -13,11 +13,13 @@ const WALLET_MODES = [
 export type Web3ConnectModeFilterProps = {
   active: WalletMode
   onSetActive: (mode: WalletMode) => void
+  blacklist?: WalletMode[]
 }
 
 export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
   active,
   onSetActive,
+  blacklist,
 }) => {
   const { t } = useTranslation()
 
@@ -29,7 +31,7 @@ export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
       >
         {t(`walletConnect.provider.mode.all`)}
       </Chip>
-      {WALLET_MODES.map((mode) => (
+      {WALLET_MODES.filter((mode) => !blacklist?.includes(mode)).map((mode) => (
         <Chip
           key={mode}
           active={active === mode}

@@ -27,7 +27,10 @@ import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
-import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import {
+  EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import BigNumber from "bignumber.js"
@@ -133,6 +136,10 @@ export const Web3ConnectAccountList: FC<{
 
   const noResults = accountList.length === 0
 
+  const hasSolanaAccounts = accounts.some(({ provider }) =>
+    SOLANA_PROVIDERS.includes(provider),
+  )
+
   return (
     <SAccountsContainer>
       {accounts.length > 1 && (
@@ -146,6 +153,7 @@ export const Web3ConnectAccountList: FC<{
             <Web3ConnectModeFilter
               active={filter}
               onSetActive={(mode) => setFilter(mode)}
+              blacklist={!hasSolanaAccounts ? [WalletMode.Solana] : []}
             />
           )}
         </div>

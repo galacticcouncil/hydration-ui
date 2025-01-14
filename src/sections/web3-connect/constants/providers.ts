@@ -28,6 +28,11 @@ export const DESKTOP_ONLY_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.PolkadotJS,
 ]
 
+export const HIDDEN_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Phantom,
+  WalletProviderType.Solflare,
+]
+
 export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
   WalletProviderType.TalismanEvm,

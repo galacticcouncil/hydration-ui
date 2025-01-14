@@ -13,6 +13,7 @@ import {
   ALTERNATIVE_PROVIDERS,
   DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
+  HIDDEN_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
@@ -44,8 +45,12 @@ import ChevronRight from "assets/icons/ChevronRight.svg?react"
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const connectedProviders = useConnectedProviders()
+
   return useMemo(() => {
     const wallets = getSupportedWallets()
+
+    const connectedProviderTypes = connectedProviders.map(({ type }) => type)
 
     const isDefaultMode = mode === WalletMode.Default
     const isEvmMode = mode === WalletMode.EVM
@@ -75,6 +80,12 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
 
         const isSolanaProvider = SOLANA_PROVIDERS.includes(provider.type)
 
+        // hide specific providers that are not connected
+        const byDefaultModeVisibility =
+          isDefaultMode && HIDDEN_PROVIDERS.includes(provider.type)
+            ? connectedProviderTypes.includes(provider.type)
+            : true
+
         const byMode =
           isDefaultMode ||
           isSubstrateEvmMode ||
@@ -88,7 +99,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
             ? !!POLKADOT_CAIP_ID_MAP[chain]
             : true
 
-        return byScreen && byMode && byWalletConnect
+        return byScreen && byMode && byWalletConnect && byDefaultModeVisibility
       })
       .sort((a, b) => {
         const order = Object.values(WalletProviderType)
@@ -112,7 +123,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
         otherProviders: [],
       },
     )
-  }, [isDesktop, mode, chain])
+  }, [mode, isDesktop, connectedProviders, chain])
 }
 
 type Web3ConnectProvidersProps = {
@@ -154,6 +165,10 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
 
   const [expanded, setExpanded] = useState(installedExtensions.length === 0)
 
+  const isSolanaConnected = providers.some(({ type }) =>
+    SOLANA_PROVIDERS.includes(type),
+  )
+
   return (
     <>
       {isDefaultMode && (
@@ -162,6 +177,7 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
             <Web3ConnectModeFilter
               active={modeFilter}
               onSetActive={(mode) => setModeFilter(mode)}
+              blacklist={!isSolanaConnected ? [WalletMode.Solana] : []}
             />
           </div>
           <Separator
