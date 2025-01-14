@@ -52,7 +52,7 @@ type TransactionMode = "auto" | "evm" | "solana" | "substrate"
 const TransactionData: FC<{ data: string }> = ({ data }) => {
   return (
     <SRawData>
-      <span>0x</span>
+      {data.startsWith("0x") && <span>0x</span>}
       {splitHexByZeroes(data).map((str, index) => (
         <Fragment key={index}>
           {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}

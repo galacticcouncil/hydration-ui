@@ -1,19 +1,27 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { isEvmAccount } from "utils/evm"
 import { EvmCall } from "@galacticcouncil/xcm-sdk"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
 import { isAnyParachain } from "utils/helpers"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
+import {
+  EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 
 export const HYDRATION_CHAIN_KEY = "hydration"
 export const DEFAULT_NATIVE_CHAIN = "assethub"
 export const DEFAULT_EVM_CHAIN = "ethereum"
+export const DEFAULT_SOL_CHAIN = "solana"
 export const DEFAULT_DEST_CHAIN = HYDRATION_CHAIN_KEY
 
-export function getDefaultSrcChain(address?: string) {
-  return isEvmAccount(address) ? DEFAULT_EVM_CHAIN : DEFAULT_NATIVE_CHAIN
+export function getDefaultSrcChain(provider?: WalletProviderType) {
+  if (!provider) return DEFAULT_NATIVE_CHAIN
+  if (EVM_PROVIDERS.includes(provider)) return DEFAULT_EVM_CHAIN
+  if (SOLANA_PROVIDERS.includes(provider)) return DEFAULT_SOL_CHAIN
+  return DEFAULT_NATIVE_CHAIN
 }
 
 export async function getSubmittableExtrinsic(txInfo: TxInfo) {

@@ -64,7 +64,7 @@ export function XcmPage() {
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
-    getDefaultSrcChain(account?.address),
+    getDefaultSrcChain(account?.provider),
   )
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -96,7 +96,7 @@ export function XcmPage() {
 
       if (hasAccountChanged) {
         setSrcChain(
-          incomingSrcChain || getDefaultSrcChain(state.account?.address),
+          incomingSrcChain || getDefaultSrcChain(state.account?.provider),
         )
       }
     })
@@ -106,8 +106,6 @@ export function XcmPage() {
     const { srcChain } = e.detail
 
     const walletMode = getDesiredWalletMode(srcChain)
-
-    console.log({ walletMode, srcChain })
 
     setIncomingSrcChain(srcChain)
 
