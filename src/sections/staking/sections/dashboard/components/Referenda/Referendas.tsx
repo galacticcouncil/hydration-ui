@@ -20,7 +20,7 @@ const defaultFilter = { key: "all", label: "ALL" }
 
 export const OpenGovReferendas = () => {
   const { t } = useTranslation()
-  const { data: accountVotes = [], isLoading: isLoadingAccountVotes } =
+  const { data: accountVotes = [], isInitialLoading: isLoadingAccountVotes } =
     useAccountOpenGovVotes()
   const { data: referendas, isLoading: isLoadingReferendas } =
     useOpenGovReferendas()
