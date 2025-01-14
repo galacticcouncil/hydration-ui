@@ -13,7 +13,7 @@ import {
   ALTERNATIVE_PROVIDERS,
   DESKTOP_ONLY_PROVIDERS,
   EVM_PROVIDERS,
-  HIDDEN_PROVIDERS,
+  DEFAULT_HIDDEN_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
@@ -82,7 +82,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
 
         // hide specific providers that are not connected
         const byDefaultModeVisibility =
-          isDefaultMode && HIDDEN_PROVIDERS.includes(provider.type)
+          isDefaultMode && DEFAULT_HIDDEN_PROVIDERS.includes(provider.type)
             ? connectedProviderTypes.includes(provider.type)
             : true
 

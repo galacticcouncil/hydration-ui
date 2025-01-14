@@ -1,4 +1,4 @@
-import { SubscriptionFn, Wallet, WalletAccount } from "@talismn/connect-wallets"
+import { Wallet, WalletAccount } from "@talismn/connect-wallets"
 import SolflareLogo from "assets/icons/SolflareLogo.svg"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { SolanaSigner } from "sections/web3-connect/signer/SolanaSigner"
@@ -55,6 +55,9 @@ export class Solflare implements Wallet {
 
       const address = publicKey.toBase58()
 
+      this._extension = wallet
+      this._signer = address ? new SolanaSigner(address, wallet) : undefined
+
       this.setAccounts([
         {
           address,
@@ -65,8 +68,7 @@ export class Solflare implements Wallet {
         },
       ])
 
-      this._extension = wallet
-      this._signer = address ? new SolanaSigner(address, wallet) : undefined
+      this.subscribeAccounts()
     } catch (err: any) {
       throw this.transformError(err as Error)
     }
@@ -80,12 +82,30 @@ export class Solflare implements Wallet {
     return this._accounts
   }
 
-  subscribeAccounts = async (callback?: SubscriptionFn) => {
+  subscribeAccounts = async () => {
     if (!this._extension) {
       throw new Error(
         `The 'Wallet.enable(dappname)' function should be called first.`,
       )
     }
+
+    this._extension.on("accountChanged", (publicKey) => {
+      const address = publicKey.toBase58()
+
+      this._signer = address
+        ? new SolanaSigner(address, this._extension!)
+        : undefined
+
+      this.setAccounts([
+        {
+          address,
+          source: this.extensionName,
+          name: shortenAccountAddress(address),
+          wallet: this,
+          signer: this.signer,
+        },
+      ])
+    })
 
     // @TODO: implement account change if possible
   }

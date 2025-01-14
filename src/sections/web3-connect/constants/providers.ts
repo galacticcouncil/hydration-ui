@@ -28,7 +28,7 @@ export const DESKTOP_ONLY_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.PolkadotJS,
 ]
 
-export const HIDDEN_PROVIDERS: WalletProviderType[] = [
+export const DEFAULT_HIDDEN_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
 ]

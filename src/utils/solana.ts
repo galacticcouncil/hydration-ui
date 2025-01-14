@@ -5,6 +5,8 @@ import { PublicKey, VersionedTransaction } from "@solana/web3.js"
 
 export type SolanaSignature = { signature: string }
 
+type SolanaProviderEventType = "connect" | "disconnect" | "accountChanged"
+
 export interface SolanaWalletProvider {
   isPhantom?: boolean
   isSolflare?: boolean
@@ -12,8 +14,8 @@ export interface SolanaWalletProvider {
   publicKey: PublicKey
   connect: () => Promise<{ publicKey: PublicKey }>
   disconnect: () => Promise<void>
-  on: (event: "connect" | "disconnect", handler: (args?: any) => void) => void
-  off: (event: "connect" | "disconnect", handler: (args?: any) => void) => void
+  on: (event: SolanaProviderEventType, handler: (args?: any) => void) => void
+  off: (event: SolanaProviderEventType, handler: (args?: any) => void) => void
   signTransaction: (
     transaction: VersionedTransaction,
   ) => Promise<SolanaSignature>
