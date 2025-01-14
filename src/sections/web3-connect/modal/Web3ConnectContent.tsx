@@ -103,14 +103,18 @@ export const Web3ConnectContent: React.FC<Props> = ({
               ? t(`walletConnect.provider.description.evmChain`, {
                   chain: chain.name,
                 })
-              : chain &&
-                  [WalletMode.Substrate, WalletMode.SubstrateH160].includes(
-                    mode,
-                  )
-                ? t(`walletConnect.provider.description.substrateChain`, {
+              : chain && mode === WalletMode.Solana
+                ? t(`walletConnect.provider.description.solanaChain`, {
                     chain: chain.name,
                   })
-                : "",
+                : chain &&
+                    [WalletMode.Substrate, WalletMode.SubstrateH160].includes(
+                      mode,
+                    )
+                  ? t(`walletConnect.provider.description.substrateChain`, {
+                      chain: chain.name,
+                    })
+                  : "",
         },
         {
           title: t("walletConnect.externalWallet.modal.title").toUpperCase(),
