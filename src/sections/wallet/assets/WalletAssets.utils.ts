@@ -8,6 +8,7 @@ import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
+import { useUserBorrowSummary } from "api/borrow"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -46,6 +47,7 @@ export const useWalletAssetsTotals = ({
 }: {
   address?: string
 } = {}) => {
+  const borrows = useUserBorrowSummary()
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
@@ -103,17 +105,21 @@ export const useWalletAssetsTotals = ({
     }, "0")
   }, [shareTokenBalances, spotPrices.data])
 
+  const borrowsTotal = borrows.data?.totalBorrowsUSD ?? "0"
+
   const balanceTotal = useMemo(
     () =>
       BigNumber(assetsTotal)
         .plus(farmsTotal.value)
         .plus(lpTotal)
         .plus(xykTotal)
+        .plus(borrowsTotal)
         .toString(),
-    [assetsTotal, farmsTotal.value, lpTotal, xykTotal],
+    [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
   )
 
   const isLoading =
+    borrows.isLoading ||
     assets.isLoading ||
     lpPositions.isLoading ||
     farmsTotal.isLoading ||
@@ -125,6 +131,7 @@ export const useWalletAssetsTotals = ({
     farmsTotal: farmsTotal.value,
     lpTotal: BigNumber(lpTotal).plus(xykTotal).toString(),
     balanceTotal,
+    borrowsTotal: borrows.data?.totalBorrowsUSD ?? "0",
     isLoading,
   }
 }
