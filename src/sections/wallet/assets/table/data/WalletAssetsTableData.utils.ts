@@ -272,8 +272,9 @@ export const useUnlockableTokens = () => {
   const votes = useAccountVotes()
   const spotPrice = useDisplayPrice(native.id)
 
-  const lockDemocracy = locks.data?.find((lock) => lock.type === "democrac")
-    ?.amount
+  const lockDemocracy = locks.data?.find(
+    (lock) => lock.type === "democrac",
+  )?.amount
 
   const value = !lockDemocracy
     ? BN_0

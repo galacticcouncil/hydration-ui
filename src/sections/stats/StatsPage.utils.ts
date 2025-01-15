@@ -339,8 +339,9 @@ export const useOmnipoolAssetDetails = () => {
           ?.tvl_usd ?? BN_NAN,
       )
 
-      const volumeRaw = volumes?.find((volume) => volume.assetId === meta.id)
-        ?.assetVolume
+      const volumeRaw = volumes?.find(
+        (volume) => volume.assetId === meta.id,
+      )?.assetVolume
 
       const volume =
         volumeRaw && spotPrice
