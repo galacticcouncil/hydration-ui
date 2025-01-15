@@ -47,7 +47,7 @@ export const useWalletAssetsTotals = ({
 }: {
   address?: string
 } = {}) => {
-  const borrows = useUserBorrowSummary()
+  const borrows = useUserBorrowSummary(address)
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
@@ -62,6 +62,8 @@ export const useWalletAssetsTotals = ({
   const spotPrices = useDisplayShareTokenPrice(
     shareTokenBalances.map((token) => token.asset.id),
   )
+
+  console.log(borrows.error)
 
   const assetsTotal = useMemo(
     () =>
