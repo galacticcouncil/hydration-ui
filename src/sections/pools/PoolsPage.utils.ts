@@ -190,10 +190,9 @@ export const usePools = () => {
         (sp) => sp?.tokenIn === stableCoinId,
       )?.spotPrice
 
-      const tvlDisplay = BN(
-        tvls.data?.find((tvl) => tvl.asset_id === Number(asset.id))?.tvl_usd ??
-          BN_NAN,
-      ).multipliedBy(apiSpotPrice ?? 1)
+      const tvlDisplay = BN(asset.balance)
+        .shiftedBy(-asset.meta.decimals)
+        .times(spotPrice ?? 1)
 
       const volume = BN(
         volumes.data?.find((volume) => volume.asset_id.toString() === asset.id)
@@ -256,7 +255,6 @@ export const usePools = () => {
     omnipoolPositions.data,
     spotPrices.data,
     stableCoinId,
-    tvls.data,
     volumes.data,
     volumes.isLoading,
   ])
