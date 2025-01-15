@@ -164,7 +164,7 @@ export const ReviewTransactionData: FC<Props> = ({
   const evmTxData = evmCall ? getCallDataHex(evmCall.data) : ""
 
   const isSubstrateTx = !!tx && !!txJson
-  const isEvmTx = isEvmCall(xcall) && !!evmTxJson
+  const isEvmTx = !!evmTx || (isEvmCall(xcall) && !!evmTxJson)
   const isSolanaTx = isSolanaCall(xcall)
   const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
 
