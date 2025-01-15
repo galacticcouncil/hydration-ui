@@ -21,6 +21,7 @@ import { identity, undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
+import { PolkadotEvmRpcProvider } from "utils/provider"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -273,8 +274,11 @@ export const useProviderData = () => {
 
       const balanceClient = new BalanceClient(api)
 
+      const evm = new PolkadotEvmRpcProvider(api)
+
       return {
         api,
+        evm,
         tradeRouter,
         poolService,
         balanceClient,

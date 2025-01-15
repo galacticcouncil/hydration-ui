@@ -8,11 +8,18 @@ type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
-  const { isLoading, balanceTotal, assetsTotal, farmsTotal, lpTotal } =
-    useWalletAssetsTotals()
+  const {
+    isLoading,
+    balanceTotal,
+    assetsTotal,
+    farmsTotal,
+    borrowsTotal,
+    lpTotal,
+  } = useWalletAssetsTotals()
+
   return (
     <HeaderValues
-      skeletonHeight={[19, 38]}
+      skeletonHeight={[19, 28]}
       sx={{ align: ["normal", "end"] }}
       values={[
         {
@@ -21,7 +28,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           content: (
             <WalletAssetsHeaderDisplay
               isLoading={isLoading}
-              fontSize={[19, 30]}
+              fontSize={[19, 24]}
               value={balanceTotal}
             />
           ),
@@ -32,7 +39,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           content: (
             <WalletAssetsHeaderDisplay
               isLoading={isLoading}
-              fontSize={[19, 30]}
+              fontSize={[19, 24]}
               value={assetsTotal}
             />
           ),
@@ -43,7 +50,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           content: (
             <WalletAssetsHeaderDisplay
               isLoading={isLoading}
-              fontSize={[19, 30]}
+              fontSize={[19, 24]}
               value={lpTotal}
             />
           ),
@@ -54,8 +61,19 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           content: (
             <WalletAssetsHeaderDisplay
               isLoading={isLoading}
-              fontSize={[19, 30]}
+              fontSize={[19, 24]}
               value={farmsTotal}
+            />
+          ),
+        },
+        {
+          label: "Borrows",
+          disconnected: disconnected,
+          content: (
+            <WalletAssetsHeaderDisplay
+              isLoading={isLoading}
+              fontSize={[19, 24]}
+              value={borrowsTotal}
             />
           ),
         },

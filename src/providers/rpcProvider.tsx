@@ -18,9 +18,11 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
 import { AssetsProvider } from "./assets"
 import { differenceInHours } from "date-fns"
+import { PolkadotEvmRpcProvider } from "utils/provider"
 
 type TProviderContext = {
   api: ApiPromise
+  evm: PolkadotEvmRpcProvider
   tradeRouter: TradeRouter
   poolService: PoolService
   balanceClient: BalanceClient
@@ -30,6 +32,7 @@ type TProviderContext = {
 const ProviderContext = createContext<TProviderContext>({
   isLoaded: false,
   api: {} as TProviderContext["api"],
+  evm: {} as TProviderContext["evm"],
   tradeRouter: {} as TradeRouter,
   featureFlags: {} as TProviderContext["featureFlags"],
   poolService: {} as TProviderContext["poolService"],
@@ -103,6 +106,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       return {
         poolService: providerData.poolService,
         api: providerData.api,
+        evm: providerData.evm,
         tradeRouter: providerData.tradeRouter,
         balanceClient: providerData.balanceClient,
         featureFlags: providerData.featureFlags,
@@ -113,6 +117,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
     return {
       isLoaded: false,
       api: {} as TProviderContext["api"],
+      evm: {} as TProviderContext["evm"],
       tradeRouter: {} as TradeRouter,
       balanceClient: {} as BalanceClient,
       featureFlags: {
