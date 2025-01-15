@@ -95,14 +95,18 @@ export const usePools = () => {
 
       const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
-      const apiSpotPrice = spotPrices.data?.find(
-        (sp) => sp?.tokenIn === stableCoinId,
-      )?.spotPrice
+      // const apiSpotPrice = spotPrices.data?.find(
+      //   (sp) => sp?.tokenIn === stableCoinId,
+      // )?.spotPrice
 
-      const tvlDisplay = BN(
-        tvls.data?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
-          BN_NAN,
-      ).multipliedBy(apiSpotPrice ?? 1)
+      const tvlDisplay = BN(asset.balance)
+        .shiftedBy(-meta.decimals)
+        .times(spotPrice ?? 1)
+
+      // const tvlDisplay = BN(
+      //   tvls.data?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
+      //     BN_NAN,
+      // ).multipliedBy(apiSpotPrice ?? 1)
 
       const volumeRaw = volumes?.find(
         (volume) => volume.assetId === asset.id,
