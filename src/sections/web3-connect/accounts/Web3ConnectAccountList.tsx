@@ -111,7 +111,8 @@ export const Web3ConnectAccountList: FC<{
 
     let filtered = searched
 
-    const filteredProviders = PROVIDERS_BY_WALLET_MODE[filter]
+    const filteredProviders =
+      PROVIDERS_BY_WALLET_MODE[filter !== WalletMode.Default ? filter : mode]
 
     if (filteredProviders.length > 0) {
       filtered = searched.filter(({ provider }) =>
@@ -132,11 +133,20 @@ export const Web3ConnectAccountList: FC<{
       if (!aBalance || !bBalance) return 0
       return BigNumber(bBalance).comparedTo(aBalance)
     })
-  }, [account, accounts, balanceMap, isReady, filter, search])
+  }, [
+    isReady,
+    accounts,
+    search,
+    mode,
+    filter,
+    account?.address,
+    account?.provider,
+    balanceMap,
+  ])
 
   const noResults = accountList.length === 0
 
-  const hasSolanaAccounts = accounts.some(({ provider }) =>
+  const hasSolanaAccounts = accountList.some(({ provider }) =>
     SOLANA_PROVIDERS.includes(provider),
   )
 
