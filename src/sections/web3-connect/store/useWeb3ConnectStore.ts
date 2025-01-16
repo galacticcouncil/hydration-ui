@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware"
 import { omit } from "utils/rx"
 import {
   EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
@@ -21,6 +22,24 @@ export enum WalletMode {
   Substrate = "substrate",
   SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
+  Solana = "solana",
+}
+
+export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
+  ...SUBSTRATE_PROVIDERS,
+  ...EVM_PROVIDERS,
+]
+
+export const PROVIDERS_BY_WALLET_MODE: Record<
+  WalletMode,
+  WalletProviderType[]
+> = {
+  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
+  [WalletMode.EVM]: EVM_PROVIDERS,
+  [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
+  [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
+  [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
+  [WalletMode.Solana]: SOLANA_PROVIDERS,
 }
 
 export type Account = {
@@ -114,20 +133,10 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
         }
 
         return providers.filter(({ type }) => {
-          if (mode === WalletMode.EVM) {
-            return EVM_PROVIDERS.includes(type)
-          }
+          const providers = PROVIDERS_BY_WALLET_MODE[mode]
 
-          if (mode === WalletMode.Substrate) {
-            return SUBSTRATE_PROVIDERS.includes(type)
-          }
-
-          if (mode === WalletMode.SubstrateH160) {
-            return SUBSTRATE_H160_PROVIDERS.includes(type)
-          }
-
-          if (mode === WalletMode.SubstrateEVM) {
-            return [...EVM_PROVIDERS, ...SUBSTRATE_PROVIDERS].includes(type)
+          if (providers.length > 0) {
+            return providers.includes(type)
           }
 
           return true

@@ -6,6 +6,12 @@ import { useTranslation } from "react-i18next"
 import { SContainer, SSwitchButton } from "./Web3ConnectFooter.styled"
 import { Web3ConnectProviderIcons } from "sections/web3-connect/providers/Web3ConnectProviderIcons"
 import { useConnectedProviders } from "sections/web3-connect/Web3Connect.utils"
+import {
+  PROVIDERS_BY_WALLET_MODE,
+  useWeb3ConnectStore,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { pick } from "utils/rx"
+import { useShallow } from "hooks/useShallow"
 
 type Props = {
   onSwitch: () => void
@@ -15,16 +21,26 @@ type Props = {
 export const Web3ConnectFooter: FC<Props> = ({ onSwitch, onLogout }) => {
   const { t } = useTranslation()
 
+  const { mode } = useWeb3ConnectStore(
+    useShallow((state) => pick(state, ["mode"])),
+  )
+
   const providers = useConnectedProviders()
+  const providersByMode = PROVIDERS_BY_WALLET_MODE[mode]
+  const connectedProviders = providers.filter(({ type }) => {
+    return providersByMode.includes(type)
+  })
 
   return (
     <SContainer>
-      {providers.length > 0 && (
+      {connectedProviders.length > 0 && (
         <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Web3ConnectProviderIcons providers={providers.map((p) => p.type)} />
+          <Web3ConnectProviderIcons
+            providers={connectedProviders.map((p) => p.type)}
+          />
           <Text fs={12} color="basic400">
             {t("walletConnect.connectedCount", {
-              count: providers.length,
+              count: connectedProviders.length,
             })}
           </Text>
         </div>

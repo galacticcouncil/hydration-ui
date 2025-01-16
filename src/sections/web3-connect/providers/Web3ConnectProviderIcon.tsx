@@ -1,5 +1,8 @@
 import { Icon } from "components/Icon/Icon"
-import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import {
+  EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   getWalletModeIcon,
@@ -31,6 +34,20 @@ export const Web3ConnectProviderIcon: React.FC<
               css={{ position: "absolute", bottom: -3, right: -3 }}
               size={16}
               icon={<img src={getWalletModeIcon(WalletMode.EVM)} alt="" />}
+            />
+          )}
+          {SOLANA_PROVIDERS.includes(type) && (
+            <Icon
+              css={{ position: "absolute", bottom: -3, right: -3 }}
+              size={16}
+              icon={
+                <img
+                  css={{ borderRadius: 9999 }}
+                  sx={{ bg: "basic900", p: 1 }}
+                  src={getWalletModeIcon(WalletMode.Solana)}
+                  alt=""
+                />
+              }
             />
           )}
         </>

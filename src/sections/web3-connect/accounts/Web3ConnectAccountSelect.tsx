@@ -7,7 +7,10 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMedia } from "react-use"
 import { shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
-import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import {
+  SOLANA_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_BILL } from "utils/constants"
@@ -40,6 +43,7 @@ export const Web3ConnectAccountSelect = ({
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
+  const isSol = !!provider && SOLANA_PROVIDERS.includes(provider)
 
   return (
     <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
@@ -68,6 +72,11 @@ export const Web3ConnectAccountSelect = ({
             {isEvm && (
               <Badge size="small" variant="orange" rounded={false}>
                 EVM
+              </Badge>
+            )}
+            {isSol && (
+              <Badge size="small" variant="secondary" rounded={false}>
+                Solana
               </Badge>
             )}
           </div>

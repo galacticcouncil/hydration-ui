@@ -3,12 +3,15 @@ import { SContainer } from "./XcmPage.styled"
 import type { TxInfo } from "@galacticcouncil/apps"
 
 import { z } from "zod"
-import { MakeGenerics, useSearch } from "@tanstack/react-location"
+import { MakeGenerics, useLocation, useSearch } from "@tanstack/react-location"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  isHydrationIncompatibleAccount,
+  useAccount,
+} from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -18,7 +21,7 @@ import {
   getDesiredWalletMode,
   getNotificationToastTemplates,
   getSubmittableExtrinsic,
-  getXCall,
+  getCall,
 } from "sections/xcm/XcmPage.utils"
 import { genesisHashToChain } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
@@ -60,11 +63,13 @@ export function XcmPage() {
   const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
+  const location = useLocation()
+  const { disconnect } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
-    getDefaultSrcChain(account?.address),
+    getDefaultSrcChain(account?.provider),
   )
 
   const rawSearch = useSearch<SearchGenerics>()
@@ -75,10 +80,11 @@ export function XcmPage() {
   const rpcUrlList = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+    console.log(e.detail)
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
-        ...getXCall(e.detail),
+        ...getCall(e.detail),
       },
       {
         onSuccess: () => {},
@@ -95,7 +101,7 @@ export function XcmPage() {
 
       if (hasAccountChanged) {
         setSrcChain(
-          incomingSrcChain || getDefaultSrcChain(state.account?.address),
+          incomingSrcChain || getDefaultSrcChain(state.account?.provider),
         )
       }
     })
@@ -130,6 +136,21 @@ export function XcmPage() {
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+
+  React.useEffect(() => {
+    if (isHydrationIncompatibleAccount(account)) {
+      const prevPath = location.current.pathname
+      const unsubscribe = location.history.listen(({ location }) => {
+        if (prevPath !== location.pathname) {
+          disconnect(account.provider)
+        }
+      })
+
+      return () => {
+        unsubscribe()
+      }
+    }
+  }, [account, disconnect, location])
 
   return (
     <SContainer>
