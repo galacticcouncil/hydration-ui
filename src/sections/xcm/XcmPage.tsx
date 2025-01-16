@@ -3,7 +3,7 @@ import { SContainer } from "./XcmPage.styled"
 import type { TxInfo } from "@galacticcouncil/apps"
 
 import { z } from "zod"
-import { MakeGenerics, useSearch } from "@tanstack/react-location"
+import { MakeGenerics, useLocation, useSearch } from "@tanstack/react-location"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
@@ -11,7 +11,10 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  COMPATIBLE_WALLET_PROVIDERS,
+  useWeb3ConnectStore,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   DEFAULT_DEST_CHAIN,
   getDefaultSrcChain,
@@ -24,6 +27,8 @@ import { genesisHashToChain } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
+import { isEvmAccount } from "utils/evm"
+import { SUBSTRATE_H160_PROVIDERS } from "sections/web3-connect/constants/providers"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -60,6 +65,8 @@ export function XcmPage() {
   const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
+  const location = useLocation()
+  const { disconnect } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
@@ -131,6 +138,31 @@ export function XcmPage() {
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+
+  React.useEffect(() => {
+    if (!account) return
+
+    const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
+      account.provider,
+    )
+
+    const isSubstrateH160Provider =
+      SUBSTRATE_H160_PROVIDERS.includes(account?.provider) &&
+      isEvmAccount(account?.address)
+
+    if (isIncompatibleProvider || isSubstrateH160Provider) {
+      const prevPath = location.current.pathname
+      const unsubscribe = location.history.listen(({ location }) => {
+        if (prevPath !== location.pathname) {
+          disconnect(account.provider)
+        }
+      })
+
+      return () => {
+        unsubscribe()
+      }
+    }
+  }, [account, disconnect, location])
 
   return (
     <SContainer>

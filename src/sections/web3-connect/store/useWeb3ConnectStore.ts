@@ -25,11 +25,16 @@ export enum WalletMode {
   Solana = "solana",
 }
 
+export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
+  ...SUBSTRATE_PROVIDERS,
+  ...EVM_PROVIDERS,
+]
+
 export const PROVIDERS_BY_WALLET_MODE: Record<
   WalletMode,
   WalletProviderType[]
 > = {
-  [WalletMode.Default]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
+  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
   [WalletMode.EVM]: EVM_PROVIDERS,
   [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
   [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
