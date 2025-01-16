@@ -7,6 +7,7 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import {
+  isHydrationIncompatibleAccount,
   useAccount,
   useEvmWalletReadiness,
   useWallet,
@@ -31,10 +32,6 @@ import {
 } from "sections/web3-connect/signer/EthereumSigner"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
-import {
-  EVM_PROVIDERS,
-  WalletProviderType,
-} from "sections/web3-connect/constants/providers"
 import {
   useWeb3ConnectStore,
   WalletMode,
@@ -97,12 +94,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isPermitTxPending = !!pendingPermit
 
-  const isIncompatibleWalletProvider =
-    !props.xcallMeta &&
-    account &&
-    isEvmAccount(account.address) &&
-    !EVM_PROVIDERS.includes(account.provider) &&
-    account.provider !== WalletProviderType.WalletConnect
+  const isIncompatibleWalletProvider = props.xcallMeta
+    ? false // allow all providers for xcm
+    : isHydrationIncompatibleAccount(account)
 
   const isLinking = !isLinkedAccount && storedReferralCode
 

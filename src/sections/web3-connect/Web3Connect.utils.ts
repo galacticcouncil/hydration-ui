@@ -24,6 +24,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
   Account,
+  COMPATIBLE_WALLET_PROVIDERS,
   WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
@@ -50,6 +51,7 @@ import {
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
@@ -592,3 +594,19 @@ export const useAccountBalanceMap = create<{
     }))
   },
 }))
+
+export const isHydrationIncompatibleAccount = (
+  account: Account | null,
+): account is Account => {
+  if (!account) return false
+
+  const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
+
+  const isIncompatibleH160Account =
+    SUBSTRATE_H160_PROVIDERS.includes(account.provider) &&
+    isEvmAccount(account.address)
+
+  return isIncompatibleProvider || isIncompatibleH160Account
+}
