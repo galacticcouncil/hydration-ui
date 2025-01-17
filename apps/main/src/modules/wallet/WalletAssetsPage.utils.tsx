@@ -12,25 +12,22 @@ export const useWalletAssetsColumns = () => {
     return [
       columnHelper.display({
         header: "Asset",
-        cell: ({ row }) => {
-          console.log({ row })
-          return (
-            <Flex align="center" gap={8}>
-              {row.original.type !== "StableSwap" && (
-                <AssetLogo
-                  assetId={row.original.id}
-                  src={`https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/${row.original.id}/icon.svg`}
-                />
-              )}
-              <Box>
-                <Text fw={600}>{row.original.symbol}</Text>
-                <Text fs={12} color={getToken("text.low")}>
-                  {row.original.name}
-                </Text>
-              </Box>
-            </Flex>
-          )
-        },
+        cell: ({ row }) => (
+          <Flex align="center" gap={8}>
+            {row.original.type !== "StableSwap" && (
+              <AssetLogo
+                assetId={row.original.id}
+                src={`https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/${row.original.id}/icon.svg`}
+              />
+            )}
+            <Box>
+              <Text fw={600}>{row.original.symbol}</Text>
+              <Text fs={12} color={getToken("text.low")}>
+                {row.original.name}
+              </Text>
+            </Box>
+          </Flex>
+        ),
       }),
       columnHelper.accessor("name", {
         header: "Name",

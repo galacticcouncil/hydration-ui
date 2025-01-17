@@ -22,7 +22,7 @@ const DefaultTemplate = (args: Story["args"]) => {
       <Button onClick={() => setOpen(true)}>Open Sheet</Button>
       <Sheet title="Notifications" {...args} open={open} onOpenChange={setOpen}>
         <Flex direction="column" gap={10}>
-          {Array.from({ length: 2 }).map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => (
             <Fragment key={i}>
               <Notification
                 sx={{
