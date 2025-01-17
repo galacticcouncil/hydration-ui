@@ -16,7 +16,7 @@ export type CustomToastProps = {
   variant: ToastVariant
   content: string
   className?: string
-  onClose: () => void
+  onClose?: () => void
   autoClose?: boolean
   autoCloseTimeSC?: number
 }

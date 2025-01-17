@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router"
 
-import { WalletPage } from "@/modules/wallet/WalletPage"
+import { WalletAssetsPage } from "@/modules/wallet/WalletAssetsPage"
 
 export const Route = createLazyFileRoute("/_wallet/wallet/assets")({
-  component: WalletPage,
+  component: WalletAssetsPage,
 })

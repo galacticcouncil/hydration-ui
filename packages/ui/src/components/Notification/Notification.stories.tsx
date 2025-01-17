@@ -10,7 +10,13 @@ export default {
 
 const Template = (
   args: React.ComponentPropsWithoutRef<typeof Notification>,
-) => <Notification {...args} content="Transaction has been submitted" />
+) => (
+  <Notification
+    {...args}
+    onClose={() => {}}
+    content="Transaction has been submitted"
+  />
+)
 
 export const Success: Story = {
   render: Template,

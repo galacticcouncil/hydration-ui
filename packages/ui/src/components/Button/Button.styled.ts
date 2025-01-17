@@ -162,7 +162,7 @@ const sizes = createVariants((theme) => ({
   large: css`
     line-height: 1;
     font-size: ${theme.paragraphSize.p2};
-    padding: ${theme.buttons.paddings.primary}px ${theme.scales.paddings.xl}px;
+    padding: ${theme.buttons.paddings.primary}px 30px;
   `,
 }))
 
