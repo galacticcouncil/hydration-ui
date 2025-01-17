@@ -61,13 +61,15 @@ export const Notification = ({
         </SProgressContainer>
       )}
       {/*Add hover effects for button, missing in design */}
-      <ButtonTransparent
-        onClick={onClose}
-        role="button"
-        aria-label="Close Notification"
-      >
-        <SCloseIcon component={CircleClose} size={18} />
-      </ButtonTransparent>
+      {onClose && (
+        <ButtonTransparent
+          onClick={onClose}
+          role="button"
+          aria-label="Close Notification"
+        >
+          <SCloseIcon component={CircleClose} size={18} />
+        </ButtonTransparent>
+      )}
     </SNotification>
   )
 }
