@@ -1,23 +1,25 @@
-import { Asset } from "@galacticcouncil/sdk"
 import { isDeepEqual } from "remeda"
 import { create } from "zustand"
 import { createJSONStorage, persist, StateStorage } from "zustand/middleware"
 
-export type TAssetStored = Omit<Asset, "externalId"> & {
-  isTradable: boolean
-  externalId: string | undefined
-}
+import { TAssetData, TAssetResouce } from "@/api/assets"
+
+export type TAssetStored = TAssetData
 export type TShareTokenStored = {
   poolAddress: string
   assets: string[]
   shareTokenId: string
 }
 
+type TAssetsMetadata = { url?: string; chainsMetadata?: TAssetResouce }
+
 type AssetRegistryStore = {
   assets: Array<TAssetStored>
   shareTokens: Array<TShareTokenStored>
+  metadata: TAssetsMetadata
   sync: (assets: TAssetStored[]) => void
   syncShareTokens: (shareTokens: TShareTokenStored[]) => void
+  syncMetadata: (metadata: TAssetsMetadata) => void
 }
 
 export enum IndexedDBStores {
@@ -40,11 +42,11 @@ const db: IDBDatabase | null = await new Promise((resolve) => {
   request.onerror = () => resolve(null)
 })
 
-type StoreKey = "tokens" | "shareTokens"
+type StoreKey = "tokens" | "shareTokens" | "metadata"
 
 const getItems = async (
   db: IDBDatabase,
-): Promise<{ tokens: object[]; shareTokens: object[] }> =>
+): Promise<{ tokens: object[]; shareTokens: object[]; metadata: object }> =>
   await new Promise((resolve) => {
     const tx = db.transaction(IndexedDBStores.Assets, "readonly")
     const store = tx.objectStore(IndexedDBStores.Assets)
@@ -54,8 +56,9 @@ const getItems = async (
       const data = res.result
       const tokens = data.find((e) => e.key === "tokens")?.data ?? []
       const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
+      const metadata = data.find((e) => e.key === "metadata")?.data ?? []
 
-      resolve({ tokens, shareTokens })
+      resolve({ tokens, shareTokens, metadata })
     }
   })
 
@@ -73,11 +76,11 @@ const storage: StateStorage = {
     const storage = await db
     if (!storage) return null
 
-    const { tokens, shareTokens } = await getItems(storage)
+    const { tokens, shareTokens, metadata } = await getItems(storage)
 
     return JSON.stringify({
       version: 0,
-      state: { assets: tokens, shareTokens },
+      state: { assets: tokens, shareTokens, metadata },
     })
   },
   setItem: async (_, value) => {
@@ -85,21 +88,11 @@ const storage: StateStorage = {
     const storage = await db
 
     if (storage) {
-      const { tokens, shareTokens } = await getItems(storage)
+      setItems(storage, parsedState.state.assets, "tokens")
 
-      const areTokensEqual = isDeepEqual(parsedState.state.assets, tokens)
-      const areShareTokensEqual = isDeepEqual(
-        parsedState.state.shareTokens,
-        shareTokens,
-      )
+      setItems(storage, parsedState.state.shareTokens, "shareTokens")
 
-      if (!areTokensEqual) {
-        setItems(storage, parsedState.state.assets, "tokens")
-      }
-
-      if (!areShareTokensEqual) {
-        setItems(storage, parsedState.state.shareTokens, "shareTokens")
-      }
+      setItems(storage, parsedState.state.metadata, "metadata")
     }
   },
   removeItem: () => {},
@@ -107,18 +100,37 @@ const storage: StateStorage = {
 
 export const useAssetRegistry = create<AssetRegistryStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       assets: [],
       shareTokens: [],
+      metadata: {},
       sync(assets) {
-        set({
-          assets,
-        })
+        const storedAssets = get().assets
+        const areDataEqual = isDeepEqual(storedAssets, assets)
+
+        if (!areDataEqual) {
+          set({
+            assets,
+          })
+        }
       },
       syncShareTokens(shareTokens) {
-        set({
-          shareTokens,
-        })
+        const storedShareTokens = get().shareTokens
+        const areDataEqual = isDeepEqual(storedShareTokens, shareTokens)
+
+        if (!areDataEqual) {
+          set({
+            shareTokens,
+          })
+        }
+      },
+      syncMetadata(metadata) {
+        const storedMetadata = get().metadata
+        const areDataEqual = isDeepEqual(storedMetadata, metadata)
+
+        if (!areDataEqual) {
+          set({ metadata })
+        }
       },
     }),
     {

@@ -4,17 +4,14 @@ import styled from "@emotion/styled"
 import { createVariants } from "@/utils"
 
 import { Icon } from "../Icon"
+import { AssetLogoSize } from "./AssetLogo"
 
-type AssetLogoSize = "large" | "medium" | "small"
-export type TBadge = "red" | "yellow"
+const getSizeValue = (size: AssetLogoSize) => {
+  if (size === "small") return 18
 
-export type AssetLogoProps = {
-  src?: string
-  chainSrc?: string
-  assetId?: string
-  size?: AssetLogoSize
-  badge?: TBadge
-  badgeTooltip?: string
+  if (size === "large") return 34
+
+  return 24
 }
 
 const sizes = createVariants(() => ({
@@ -82,3 +79,58 @@ export const SBadgeSlot = styled.div`
   right: -10%;
   bottom: -10%;
 `
+
+export const IconsWrapper = styled.div<{
+  size: AssetLogoSize
+}>(({ size }) => {
+  const value = getSizeValue(size)
+
+  return css`
+    --logo-size: ${value}px;
+    --logo-overlap: ${value * 0.3}px;
+    --chain-size: ${value / 2}px;
+    --chain-offset: ${value * 0.1}px;
+    position: relative;
+
+    display: flex;
+
+    & > span {
+      width: var(--logo-size);
+      height: var(--logo-size);
+      > svg {
+        width: var(--logo-size);
+        height: var(--logo-size);
+      }
+    }
+
+    > :not(:first-of-type) {
+      margin-left: calc(var(--logo-overlap) * -1);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      pointer-events: none;
+
+      padding: var(--chain-offset) var(--chain-offset) 0 0;
+      margin-top: calc(var(--chain-offset) * -1);
+      margin-right: calc(var(--chain-offset) * -1);
+
+      --mask-space: 1px;
+      --mask-gradient: calc(var(--chain-size) / 2),
+        black calc(var(--chain-size) / 2 - 1px),
+        transparent calc(var(--chain-size) / 2 - 1px),
+        transparent calc(var(--chain-size) / 2 + var(--mask-space)),
+        black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);
+
+      --mask-offset: calc(
+        var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
+      );
+
+      -webkit-mask-composite: destination-in;
+      mask-composite: exclude;
+    }
+  `
+})
