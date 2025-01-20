@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-location"
+import { useLocation, useNavigate } from "@tanstack/react-location"
 import { ComponentPropsWithoutRef, FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useConnectedProvider } from "sections/web3-connect/Web3Connect.utils"
@@ -17,6 +17,7 @@ export const Web3ConnectEvmAccount: FC<
   const { t } = useTranslation()
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
   const { wallet } = useConnectedProvider(account.provider)
+  const { parseSearch } = useLocation()
   const navigate = useNavigate()
 
   const isActive =
@@ -38,7 +39,9 @@ export const Web3ConnectEvmAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
-          navigate({ search: { account: undefined } })
+          if (parseSearch(window.location.search)?.account) {
+            navigate({ search: { account: undefined } })
+          }
         }}
       >
         <Web3ConnectAccountSelect
