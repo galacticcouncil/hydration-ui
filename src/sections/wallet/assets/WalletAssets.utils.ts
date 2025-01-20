@@ -63,8 +63,6 @@ export const useWalletAssetsTotals = ({
     shareTokenBalances.map((token) => token.asset.id),
   )
 
-  console.log(borrows.error)
-
   const assetsTotal = useMemo(
     () =>
       assets.data.reduce((acc, cur) => {
@@ -115,7 +113,7 @@ export const useWalletAssetsTotals = ({
         .plus(farmsTotal.value)
         .plus(lpTotal)
         .plus(xykTotal)
-        .plus(borrowsTotal)
+        .minus(borrowsTotal)
         .toString(),
     [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
   )
@@ -131,9 +129,12 @@ export const useWalletAssetsTotals = ({
   return {
     assetsTotal,
     farmsTotal: farmsTotal.value,
-    lpTotal: BigNumber(lpTotal).plus(xykTotal).toString(),
+    lpTotal: BigNumber(lpTotal)
+      .plus(xykTotal)
+      .plus(farmsTotal.value)
+      .toString(),
     balanceTotal,
-    borrowsTotal: borrows.data?.totalBorrowsUSD ?? "0",
+    borrowsTotal,
     isLoading,
   }
 }
