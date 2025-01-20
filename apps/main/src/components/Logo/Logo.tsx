@@ -11,7 +11,7 @@ import { useAssetRegistry } from "@/states/assetRegistry"
 type LogoMetadata = {
   assetSrc: string | undefined
   chainSrc: string | undefined
-  assetId: string
+  alt: string
 }
 
 const getSrcLink = (url: string, iconSrc?: string) => {
@@ -46,7 +46,7 @@ export const Logo = ({
         metadata = {
           assetSrc: asset.iconSrc,
           chainSrc: asset.srcChain,
-          assetId: id,
+          alt: asset.symbol,
         }
       } else if (isErc20(asset) || isBond(asset)) {
         const { underlyingAssetId } = asset
@@ -58,7 +58,7 @@ export const Logo = ({
             metadata = {
               assetSrc: underlyingAssetMeta.iconSrc,
               chainSrc: underlyingAssetMeta.srcChain,
-              assetId: underlyingAssetId,
+              alt: underlyingAssetMeta.symbol,
             }
           }
         }
@@ -70,7 +70,7 @@ export const Logo = ({
             const data = {
               assetSrc: underlyingAssetMeta.iconSrc,
               chainSrc: underlyingAssetMeta.srcChain,
-              assetId: id,
+              alt: underlyingAssetMeta.symbol,
             }
 
             metadata = Array.isArray(metadata) ? [...metadata, data] : [data]
@@ -82,12 +82,12 @@ export const Logo = ({
         ? metadata.map((data) => ({
             assetSrc: getSrcLink(url, data.assetSrc),
             chainSrc: getSrcLink(chainUrl, data.chainSrc),
-            assetId: data.assetId,
+            alt: data.alt,
           }))
         : {
             assetSrc: getSrcLink(url, metadata?.assetSrc),
             chainSrc: getSrcLink(chainUrl, metadata?.chainSrc),
-            assetId: metadata?.assetId,
+            alt: metadata?.alt,
           }
     }
 
@@ -108,8 +108,8 @@ export const Logo = ({
       <MultipleAssetLogoWrapper size={size}>
         {logoMetadata.map((data) => (
           <AssetLogo
-            key={data.assetId}
-            assetId={data.assetId}
+            key={data.alt}
+            alt={data.alt}
             src={data.assetSrc}
             chainSrc={data.chainSrc}
             size={size}
@@ -121,7 +121,7 @@ export const Logo = ({
 
   return (
     <AssetLogo
-      assetId={logoMetadata.assetId}
+      alt={logoMetadata.alt}
       src={logoMetadata.assetSrc}
       chainSrc={logoMetadata.chainSrc}
       size={size}

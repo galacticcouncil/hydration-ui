@@ -16,7 +16,7 @@ export type TBadge = "red" | "yellow"
 export type AssetLogoProps = {
   src?: string
   chainSrc?: string
-  assetId?: string
+  alt?: string
   size?: AssetLogoSize
   badge?: TBadge
   badgeTooltip?: string
@@ -25,24 +25,23 @@ export type AssetLogoProps = {
 export const AssetLogo = ({
   src,
   size = "medium",
-  assetId,
+  alt,
   chainSrc,
   badge,
   badgeTooltip,
 }: AssetLogoProps) => {
-  if (!src || !assetId)
-    return <SPlaceholder component={PlaceholderAssetLogo} size={size} />
+  if (!src) return <SPlaceholder component={PlaceholderAssetLogo} size={size} />
 
   return (
     <Box sx={{ position: "relative", width: "fit-content" }}>
       <SAssetLogo
         loading="lazy"
         src={src}
-        alt={assetId}
+        alt={alt}
         withChainLogo={!!chainSrc}
         size={size}
       />
-      {chainSrc && <SChainLogo loading="lazy" src={chainSrc} alt={assetId} />}
+      {chainSrc && <SChainLogo loading="lazy" src={chainSrc} />}
 
       {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
     </Box>

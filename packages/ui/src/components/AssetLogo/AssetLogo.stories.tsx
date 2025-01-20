@@ -12,7 +12,7 @@ export default {
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof AssetLogo>) => (
   <TooltipProvider>
-    <AssetLogo {...args} assetId="0" />
+    <AssetLogo {...args} alt="HDX" />
   </TooltipProvider>
 )
 
