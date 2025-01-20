@@ -55,7 +55,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
         disableSkeletonAnimation={disconnected}
       >
         <WalletAssetsHeaderDisplay value={lpTotal} />
-        {BN(borrowsTotal).gt(0) && (
+        {BN(farmsTotal).gt(0) && (
           <Text fs={12} color="alpha0">
             {t("wallet.assets.header.farmsBalance", {
               value: farmsTotal,
