@@ -16,9 +16,9 @@ import {
 } from "sections/web3-connect/constants/providers"
 import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3ConnectProviderButton"
 import {
-  PROVIDERS_BY_WALLET_MODE,
   WalletMode,
   WalletProviderStatus,
+  PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnect"

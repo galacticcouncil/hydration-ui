@@ -52,13 +52,15 @@ export type Account = {
   delegate?: string
 }
 type WalletProviderMeta = {
-  chain: string
+  chain?: string
+  title?: string
+  description?: string
 }
 type WalletProviderEntry = {
   type: WalletProviderType
   status: WalletProviderStatus
 }
-type WalletProviderState = {
+export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
@@ -100,7 +102,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           const isValidMode = mode && Object.values(WalletMode).includes(mode)
           return {
             ...state,
-            mode: isValidMode ? mode : WalletMode.Default,
+            mode: isValidMode ? mode : getDefaultWalletMode(),
             open: !state.open,
             meta: meta ?? null,
           }
@@ -167,3 +169,20 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
     },
   ),
 )
+
+const getDefaultWalletMode = () => {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get("srcChain") === "solana") {
+    return WalletMode.Solana
+  }
+
+  if (params.get("srcChain") === "mythos") {
+    return WalletMode.SubstrateH160
+  }
+
+  if (params.get("srcChain") === "ethereum") {
+    return WalletMode.EVM
+  }
+
+  return WalletMode.Default
+}

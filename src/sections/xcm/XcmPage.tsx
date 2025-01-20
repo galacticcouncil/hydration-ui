@@ -14,7 +14,10 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
-import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  useWeb3ConnectStore,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   DEFAULT_DEST_CHAIN,
   getDefaultSrcChain,
@@ -27,6 +30,7 @@ import { genesisHashToChain } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
+import { useTranslation } from "react-i18next"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -60,6 +64,7 @@ type SearchGenerics = MakeGenerics<{
 }>
 
 export function XcmPage() {
+  const { t } = useTranslation()
   const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
@@ -143,6 +148,9 @@ export function XcmPage() {
       const unsubscribe = location.history.listen(({ location }) => {
         if (prevPath !== location.pathname) {
           disconnect(account.provider)
+          toggleWeb3Modal(WalletMode.Default, {
+            description: t("walletConnect.provider.description.invalidWallet"),
+          })
         }
       })
 
@@ -150,7 +158,7 @@ export function XcmPage() {
         unsubscribe()
       }
     }
-  }, [account, disconnect, location])
+  }, [account, disconnect, location, t, toggleWeb3Modal])
 
   return (
     <SContainer>
