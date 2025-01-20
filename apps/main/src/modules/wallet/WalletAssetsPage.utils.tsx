@@ -1,8 +1,9 @@
-import { AssetLogo, Box, Flex, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 
+import { Logo } from "@/components/Logo/Logo"
 import { TAssetStored } from "@/states/assetRegistry"
 
 const columnHelper = createColumnHelper<TAssetStored>()
@@ -14,12 +15,7 @@ export const useWalletAssetsColumns = () => {
         header: "Asset",
         cell: ({ row }) => (
           <Flex align="center" gap={8}>
-            {row.original.type !== "StableSwap" && (
-              <AssetLogo
-                assetId={row.original.id}
-                src={`https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/${row.original.id}/icon.svg`}
-              />
-            )}
+            <Logo id={row.original.id} />
             <Box>
               <Text fw={600}>{row.original.symbol}</Text>
               <Text fs={12} color={getToken("text.low")}>

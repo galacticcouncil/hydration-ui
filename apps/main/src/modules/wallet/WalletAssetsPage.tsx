@@ -9,12 +9,14 @@ import {
 import { useState } from "react"
 
 import { useWalletAssetsColumns } from "@/modules/wallet/WalletAssetsPage.utils"
-import { useAssetRegistry } from "@/states/assetRegistry"
+import { useAssets } from "@/providers/assetsProvider"
 
 export const WalletAssetsPage = () => {
-  const { assets } = useAssetRegistry()
   const columns = useWalletAssetsColumns()
   const [search, setSearch] = useState("")
+  const { tokens, stableswap, bonds, erc20, isExternal } = useAssets()
+
+  const allTokens = [...tokens, ...stableswap, ...bonds, ...erc20]
 
   return (
     <Flex direction="column" gap={20}>
@@ -29,7 +31,9 @@ export const WalletAssetsPage = () => {
           paginated
           pageSize={10}
           globalFilter={search}
-          data={assets.filter(({ isTradable }) => isTradable)}
+          data={allTokens.filter(
+            (asset) => asset.isTradable && !isExternal(asset),
+          )}
           columns={columns}
         />
       </TableContainer>

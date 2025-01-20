@@ -2,14 +2,25 @@ import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
 import { Box, Tooltip } from "@/components"
 
 import {
-  AssetLogoProps,
+  IconsWrapper,
   SAssetBadge,
   SAssetLogo,
   SBadgeSlot,
   SChainLogo,
   SPlaceholder,
-  TBadge,
 } from "./AssetLogo.styled"
+
+export type AssetLogoSize = "large" | "medium" | "small"
+export type TBadge = "red" | "yellow"
+
+export type AssetLogoProps = {
+  src?: string
+  chainSrc?: string
+  assetId?: string
+  size?: AssetLogoSize
+  badge?: TBadge
+  badgeTooltip?: string
+}
 
 export const AssetLogo = ({
   src,
@@ -36,6 +47,16 @@ export const AssetLogo = ({
       {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
     </Box>
   )
+}
+
+export const MultipleAssetLogoWrapper = ({
+  size,
+  children,
+}: {
+  size: AssetLogoSize
+  children: React.ReactNode
+}) => {
+  return <IconsWrapper size={size}>{children}</IconsWrapper>
 }
 
 const Badge = ({ badge, tooltip }: { badge: TBadge; tooltip?: string }) => {
