@@ -1,5 +1,4 @@
-import { Theme } from "@emotion/react"
-import { css, Global, useTheme } from "@emotion/react"
+import { css, Global, Theme, useTheme } from "@emotion/react"
 
 const normalize = css`
   *,
@@ -76,8 +75,35 @@ const normalize = css`
   }
 `
 
+const scrollbar = (theme: Theme) => css`
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar:horizontal {
+    width: 0px;
+    height: 0px;
+  }
+
+  &::-webkit-scrollbar-thumb:vertical {
+    background: ${theme.details.borders};
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: ${theme.surfaces.containers.high};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+`
+
 const globalStyles = (theme: Theme) => css`
   ${normalize}
+  ${scrollbar(theme)}
 
   body {
     font-family: ${theme.fontFamilies1.secondary};

@@ -96,6 +96,7 @@ export const AssetInput = ({
             <SAssetInput
               isError={!!error}
               placeholder="0"
+              variant="embedded"
               disabled={disabled || loading}
               value={formatAssetValue(value)}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
