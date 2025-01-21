@@ -207,6 +207,12 @@ export const QUERY_KEYS = {
     "accountOpenGovVotes",
     accountAddress,
   ],
+  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
+    "referendums",
+    accountAddress,
+    type,
+  ],
+  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
