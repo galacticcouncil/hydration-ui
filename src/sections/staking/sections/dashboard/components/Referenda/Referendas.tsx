@@ -29,7 +29,8 @@ export const OpenGovReferendas = () => {
   const tracks = useReferendaTracks()
   const { data: hdxSupply, isLoading: isSupplyLoading } =
     useHDXSupplyFromSubscan()
-  const { data: referendums = [] } = useReferendums("ongoing")
+  const { data: referendums = [], isLoading: IsReferendumsLoading } =
+    useReferendums("ongoing")
   const [filter, setFilter] = useState(defaultFilter.key)
 
   const trackItems = useMemo(
@@ -62,7 +63,8 @@ export const OpenGovReferendas = () => {
     isLoadingReferendas ||
     isSupplyLoading ||
     tracks.isLoading ||
-    isLoadingAccountVotes
+    isLoadingAccountVotes ||
+    IsReferendumsLoading
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
@@ -107,19 +109,18 @@ export const OpenGovReferendas = () => {
                 />
               )
             })
-          ) : (
+          ) : referendums.length ? null : (
             <NoReferenda />
           )}
-          {referendums &&
-            referendums.map((referendum) => (
-              <ReferendaDeprecated
-                key={referendum.id}
-                id={referendum.id}
-                referendum={referendum.referendum}
-                type="staking"
-                voted={false}
-              />
-            ))}
+          {referendums.map((referendum) => (
+            <ReferendaDeprecated
+              key={referendum.id}
+              id={referendum.id}
+              referendum={referendum.referendum}
+              type="staking"
+              voted={false}
+            />
+          ))}
         </div>
       )}
       <Text
