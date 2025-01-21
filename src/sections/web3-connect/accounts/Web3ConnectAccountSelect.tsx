@@ -23,6 +23,8 @@ type Props = {
   genesisHash?: `0x${string}`
   address: string
   balance?: string
+  balanceSymbol?: string
+  balanceDecimals?: number
   onClick?: () => void
   provider?: WalletProviderType | null
   isProxy?: boolean
@@ -34,6 +36,8 @@ export const Web3ConnectAccountSelect = ({
   genesisHash,
   address,
   balance,
+  balanceSymbol,
+  balanceDecimals,
   onClick,
   isActive,
   provider,
@@ -81,12 +85,20 @@ export const Web3ConnectAccountSelect = ({
             )}
           </div>
           <Text fs={14} color="graySoft">
-            {balance && (
+            {balance && !balanceSymbol && (
               <DisplayValue
                 value={BigNumber(balance)}
                 compact={BigNumber(balance).gt(BN_BILL)}
               />
             )}
+            {balance &&
+              balanceSymbol &&
+              balanceDecimals &&
+              t("value.tokenWithSymbol", {
+                value: balance,
+                symbol: balanceSymbol,
+                fixedPointScale: balanceDecimals,
+              })}
           </Text>
         </div>
         <div sx={{ flex: "row", justify: "space-between" }}>

@@ -15,6 +15,7 @@ import {
   SAccountsScrollableContainer,
 } from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
+import { Web3ConnectSolanaAccount } from "./Web3ConnectSolanaAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
 import { useDebounce, useShallowCompareEffect } from "react-use"
@@ -42,6 +43,7 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
     return Web3ConnectExternalAccount
 
   if (EVM_PROVIDERS.includes(type)) return Web3ConnectEvmAccount
+  if (SOLANA_PROVIDERS.includes(type)) return Web3ConnectSolanaAccount
 
   return Web3ConnectSubstrateAccount
 }

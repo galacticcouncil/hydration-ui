@@ -332,4 +332,9 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  ethereumAccountBalance: (address: string) => [
+    "ethereumAccountBalance",
+    address,
+  ],
 } as const
