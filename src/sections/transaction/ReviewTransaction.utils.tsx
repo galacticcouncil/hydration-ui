@@ -792,7 +792,16 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
   }
 }
 
-function getActiveMutation(txType: TxType, mutations: Record<TxType, object>) {
+type TTxMutation =
+  | ReturnType<typeof useSendTransactionMutation>
+  | ReturnType<typeof useSendEvmTransactionMutation>
+  | ReturnType<typeof useSendSolanaTransactionMutation>
+  | ReturnType<typeof useSendDispatchPermit>
+
+function getActiveMutation(
+  txType: TxType,
+  mutations: Record<TxType, TTxMutation>,
+) {
   return mutations[txType]
 }
 
