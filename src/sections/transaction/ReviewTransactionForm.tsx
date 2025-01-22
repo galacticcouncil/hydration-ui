@@ -127,7 +127,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const txData = tx.method.toHex()
 
           if (shouldUsePermit) {
-            const nonce = customNonce ? BN(customNonce) : permitNonce ?? BN_0
+            const nonce = customNonce
+              ? parseFloat(customNonce)
+              : permitNonce ?? 0
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,
