@@ -39,7 +39,6 @@ import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { BN_0 } from "utils/constants"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
