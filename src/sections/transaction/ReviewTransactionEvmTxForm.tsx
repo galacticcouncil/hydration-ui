@@ -13,6 +13,7 @@ import { useAssets } from "providers/assets"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
+import { useNextEvmPermitNonce } from "sections/transaction/ReviewTransaction.utils"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import { useEvmTxFee } from "sections/transaction/ReviewTransactionEvmTxForm.utils"
 import {
@@ -57,6 +58,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 
   const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
 
+  const { data: nonce } = useNextEvmPermitNonce(account?.address)
   const { data: feeWETH, isLoading: isFeeLoading } = useEvmTxFee(tx.data)
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
@@ -66,7 +68,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 
     if (wallet?.signer instanceof EthereumSigner) {
       if (shouldUsePermit) {
-        const nonce = await wallet.signer.getPermitNonce()
+        if (!nonce) throw new Error("Missing nonce")
         const permit = await wallet.signer.getPermit(tx.data, nonce)
         return onPermitDispatched({ permit })
       }
