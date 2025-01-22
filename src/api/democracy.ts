@@ -373,3 +373,47 @@ export type TReferenda = {
   minApproval: PalletReferendaCurve
   minSupport: PalletReferendaCurve
 }
+
+export const useReferendums = (type?: "ongoing" | "finished") => {
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  return useQuery(
+    QUERY_KEYS.referendums(account?.address, type),
+    getReferendums(api, account?.address),
+    {
+      enabled: isLoaded,
+      select: (data) =>
+        type
+          ? data.filter(
+              (r) =>
+                r.referendum[type === "ongoing" ? "isOngoing" : "isFinished"],
+            )
+          : data,
+    },
+  )
+}
+
+export const useDeprecatedReferendumInfo = (referendumIndex: string) => {
+  return useQuery(
+    QUERY_KEYS.deprecatedReferendumInfo(referendumIndex),
+    async () => {
+      const res = await fetch(
+        `https://hydration.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
+      )
+      if (!res.ok) return null
+
+      const json: Referendum = await res.json()
+
+      if (
+        json === null ||
+        json.referendumIndex === null ||
+        json.motionIndex === null ||
+        json.title === null
+      )
+        return null
+
+      return json
+    },
+  )
+}
