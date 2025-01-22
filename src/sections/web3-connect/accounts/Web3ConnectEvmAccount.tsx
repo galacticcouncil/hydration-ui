@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "@tanstack/react-location"
+import { useNavigate, useSearch } from "@tanstack/react-location"
 import { useEthereumAccountBalance } from "api/external/ethereum"
 import { useShallow } from "hooks/useShallow"
 import { ComponentPropsWithoutRef, FC } from "react"
@@ -35,8 +35,8 @@ export const Web3ConnectEvmAccount: FC<
   )
 
   const { wallet } = useConnectedProvider(account.provider)
-  const { parseSearch } = useLocation()
   const navigate = useNavigate()
+  const search = useSearch<{ Search: { account?: string } }>()
 
   const isEthereum = mode === WalletMode.EVM && meta?.chain === "ethereum"
 
@@ -66,7 +66,7 @@ export const Web3ConnectEvmAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
-          if (parseSearch(window.location.search)?.account) {
+          if (search.account) {
             navigate({ search: { account: undefined } })
           }
         }}

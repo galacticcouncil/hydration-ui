@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "@tanstack/react-location"
+import { useNavigate, useSearch } from "@tanstack/react-location"
 import { useSolanaAccountBalance } from "api/external/solana"
 import { ComponentPropsWithoutRef, FC } from "react"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
@@ -18,8 +18,8 @@ export const Web3ConnectSolanaAccount: FC<
   } = useWeb3ConnectStore(
     useShallow((state) => pick(state, ["account", "setAccount", "toggle"])),
   )
-  const { parseSearch } = useLocation()
   const navigate = useNavigate()
+  const search = useSearch<{ Search: { account?: string } }>()
 
   const isActive =
     currentAccount?.address === account.address &&
@@ -36,7 +36,7 @@ export const Web3ConnectSolanaAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
-          if (parseSearch(window.location.search)?.account) {
+          if (search.account) {
             navigate({ search: { account: undefined } })
           }
         }}

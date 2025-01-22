@@ -15,6 +15,7 @@ import {
 import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
 import {
+  PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -31,6 +32,7 @@ import { Asset } from "@galacticcouncil/sdk"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 import { useTranslation } from "react-i18next"
+import { useMount } from "react-use"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -85,7 +87,6 @@ export function XcmPage() {
   const rpcUrlList = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    console.log(e.detail)
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
@@ -141,6 +142,22 @@ export function XcmPage() {
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+
+  useMount(() => {
+    const srcChain = search?.data?.srcChain
+    const walletMode = srcChain ? getDesiredWalletMode(srcChain) : null
+
+    if (
+      account &&
+      walletMode &&
+      !PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+    ) {
+      // Prompt user to switch wallet if the chain in query param is incompatible with the current wallet
+      toggleWeb3Modal(walletMode, {
+        chain: srcChain,
+      })
+    }
+  })
 
   React.useEffect(() => {
     if (isHydrationIncompatibleAccount(account)) {

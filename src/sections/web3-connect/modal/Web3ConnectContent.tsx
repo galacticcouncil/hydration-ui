@@ -177,14 +177,19 @@ const getModalDescription = (
 
   if (!chain) return ""
 
-  const descriptionKey =
-    mode === WalletMode.EVM
-      ? "evmChain"
-      : mode === WalletMode.Solana
-        ? "solanaChain"
-        : "substrateChain"
+  if (mode === WalletMode.EVM) {
+    return t("walletConnect.provider.description.evmChain", {
+      chain: chain.name,
+    })
+  }
 
-  return t(`walletConnect.provider.description.${descriptionKey}`, {
+  if (mode === WalletMode.Solana) {
+    return t("walletConnect.provider.description.solanaChain", {
+      chain: chain.name,
+    })
+  }
+
+  return t("walletConnect.provider.description.substrateChain", {
     chain: chain.name,
   })
 }

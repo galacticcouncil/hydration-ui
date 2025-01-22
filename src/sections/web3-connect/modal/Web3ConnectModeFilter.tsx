@@ -37,7 +37,15 @@ export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
           active={active === mode}
           onClick={() => onSetActive(mode)}
         >
-          <Icon size={20} icon={<img src={getWalletModeIcon(mode)} alt="" />} />
+          <Icon
+            size={20}
+            icon={
+              <img
+                src={getWalletModeIcon(mode)}
+                alt={t(`walletConnect.provider.mode.${mode}`)}
+              />
+            }
+          />
           {t(`walletConnect.provider.mode.${mode}`)}
         </Chip>
       ))}

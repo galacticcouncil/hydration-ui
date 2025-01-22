@@ -1,4 +1,5 @@
 import { Icon } from "components/Icon/Icon"
+import { useTranslation } from "react-i18next"
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
@@ -17,6 +18,7 @@ export type Web3ConnectProviderIconProps = {
 export const Web3ConnectProviderIcon: React.FC<
   Web3ConnectProviderIconProps
 > = ({ type }) => {
+  const { t } = useTranslation()
   const { wallet } = getWalletProviderByType(type)
   return (
     <div css={{ position: "relative" }}>
@@ -33,7 +35,12 @@ export const Web3ConnectProviderIcon: React.FC<
             <Icon
               css={{ position: "absolute", bottom: -3, right: -3 }}
               size={16}
-              icon={<img src={getWalletModeIcon(WalletMode.EVM)} alt="" />}
+              icon={
+                <img
+                  src={getWalletModeIcon(WalletMode.EVM)}
+                  alt={t("walletConnect.provider.mode.evm")}
+                />
+              }
             />
           )}
           {SOLANA_PROVIDERS.includes(type) && (
@@ -45,7 +52,7 @@ export const Web3ConnectProviderIcon: React.FC<
                   css={{ borderRadius: 9999 }}
                   sx={{ bg: "basic900", p: 1 }}
                   src={getWalletModeIcon(WalletMode.Solana)}
-                  alt=""
+                  alt={t("walletConnect.provider.mode.solana")}
                 />
               }
             />

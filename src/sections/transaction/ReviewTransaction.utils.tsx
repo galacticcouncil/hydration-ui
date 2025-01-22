@@ -727,7 +727,7 @@ const useStoreExternalAssetsOnSign = () => {
 type TxType = "default" | "evm" | "permit" | "solana"
 
 export const useSendTx = (xcallMeta?: Record<string, string>) => {
-  const [txType, setTxType] = useState<TxType | null>(null)
+  const [txType, setTxType] = useState<TxType>("default")
 
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
@@ -776,14 +776,12 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
     xcallMeta,
   )
 
-  const activeMutation =
-    txType === "default"
-      ? sendTx
-      : txType === "evm"
-        ? sendEvmTx
-        : txType === "solana"
-          ? sendSolanaTx
-          : sendPermitTx
+  const activeMutation = getActiveMutation(txType, {
+    default: sendTx,
+    evm: sendEvmTx,
+    permit: sendPermitTx,
+    solana: sendSolanaTx,
+  })
 
   return {
     sendTx: sendTx.mutateAsync,
@@ -794,23 +792,28 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
   }
 }
 
+function getActiveMutation(txType: TxType, mutations: Record<TxType, object>) {
+  return mutations[txType]
+}
+
 async function waitForSolanaTx(
   connection: SolanaChain["connection"],
   hash: string,
 ): Promise<SignatureStatus> {
   return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout
+
     const checkStatus = async () => {
-      let timeout
       try {
         const result = await connection.getSignatureStatus(hash, {
           searchTransactionHistory: true,
         })
         const status = result.value
-        if (status?.confirmationStatus === "confirmed") {
+        if (status?.confirmationStatus !== "confirmed") {
+          timeout = setTimeout(checkStatus, 5000)
+        } else {
           clearTimeout(timeout)
           resolve(status)
-        } else {
-          timeout = setTimeout(checkStatus, 5000)
         }
       } catch (error) {
         clearTimeout(timeout)
@@ -825,15 +828,16 @@ async function waitForSolanaTx(
 async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
   const currentBlock = await provider.getBlockNumber()
   return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout
+
     const checkBlock = async () => {
-      let timeout
       try {
         const newBlock = await provider.getBlockNumber()
-        if (newBlock > currentBlock) {
+        if (newBlock <= currentBlock) {
+          timeout = setTimeout(checkBlock, 5000)
+        } else {
           clearTimeout(timeout)
           resolve()
-        } else {
-          timeout = setTimeout(checkBlock, 5000)
         }
       } catch (error) {
         clearTimeout(timeout)

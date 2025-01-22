@@ -75,12 +75,12 @@ export const Web3ConnectAccountSelect = ({
             </Text>
             {isEvm && (
               <Badge size="small" variant="orange" rounded={false}>
-                EVM
+                {t("walletConnect.provider.mode.evm")}
               </Badge>
             )}
             {isSol && (
               <Badge size="small" variant="secondary" rounded={false}>
-                Solana
+                {t("walletConnect.provider.mode.solana")}
               </Badge>
             )}
           </div>
