@@ -810,7 +810,14 @@ async function waitForSolanaTx(
   hash: string,
 ): Promise<SignatureStatus> {
   return new Promise((resolve, reject) => {
-    let timeout: NodeJS.Timeout
+    let timeout: NodeJS.Timeout | null = null
+
+    const cleanup = () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
 
     const checkStatus = async () => {
       try {
@@ -818,14 +825,15 @@ async function waitForSolanaTx(
           searchTransactionHistory: true,
         })
         const status = result.value
-        if (status?.confirmationStatus !== "confirmed") {
+        if (!status || status?.confirmationStatus !== "confirmed") {
+          cleanup()
           timeout = setTimeout(checkStatus, 5000)
         } else {
-          clearTimeout(timeout)
+          cleanup()
           resolve(status)
         }
       } catch (error) {
-        clearTimeout(timeout)
+        cleanup()
         reject(error)
       }
     }
@@ -837,19 +845,27 @@ async function waitForSolanaTx(
 async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
   const currentBlock = await provider.getBlockNumber()
   return new Promise((resolve, reject) => {
-    let timeout: NodeJS.Timeout
+    let timeout: NodeJS.Timeout | null = null
+
+    const cleanup = () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
 
     const checkBlock = async () => {
       try {
         const newBlock = await provider.getBlockNumber()
-        if (newBlock <= currentBlock) {
+        if (!newBlock || newBlock <= currentBlock) {
+          cleanup()
           timeout = setTimeout(checkBlock, 5000)
         } else {
-          clearTimeout(timeout)
+          cleanup()
           resolve()
         }
       } catch (error) {
-        clearTimeout(timeout)
+        cleanup()
         reject(error)
       }
     }
