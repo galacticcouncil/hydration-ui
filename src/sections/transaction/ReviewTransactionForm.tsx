@@ -36,7 +36,6 @@ import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { BN_0 } from "utils/constants"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -121,7 +120,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const txData = tx.method.toHex()
 
           if (shouldUsePermit) {
-            const nonce = customNonce ? BN(customNonce) : permitNonce ?? BN_0
+            const nonce = customNonce
+              ? parseFloat(customNonce)
+              : permitNonce ?? 0
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,

@@ -27,17 +27,17 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import {
-  EthereumSigner,
-  PermitResult,
-} from "sections/web3-connect/signer/EthereumSigner"
+import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { useSettingsStore } from "state/store"
 import { useToast } from "state/toasts"
 import {
+  CALL_PERMIT_ABI,
+  CALL_PERMIT_ADDRESS,
   H160,
   getEvmChainById,
   getEvmTxLink,
   isEvmAccount,
+  isEvmAddress,
   isEvmWalletExtension,
 } from "utils/evm"
 import { isAnyParachain, Maybe } from "utils/helpers"
@@ -45,6 +45,8 @@ import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useIsTestnet } from "api/provider"
 import { tags } from "@galacticcouncil/xcm-cfg"
+import { Contract } from "ethers"
+import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
@@ -332,17 +334,22 @@ export const useSendSolanaTransactionMutation = (
 }
 
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
-  const { wallet } = useWallet()
+  const { evm } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
       if (!account) throw new Error("Missing address")
-      if (!wallet?.signer) throw new Error("Missing wallet signer")
-      if (!(wallet?.signer instanceof EthereumSigner))
-        throw new Error("Invalid signer")
 
-      return wallet.signer.getPermitNonce()
+      const callPermit = new Contract(CALL_PERMIT_ADDRESS, CALL_PERMIT_ABI, evm)
+
+      const nonce: BN = await callPermit.nonces(
+        isEvmAddress(account.toString())
+          ? account
+          : H160.fromAccount(account.toString()),
+      )
+
+      return nonce.toNumber()
     },
     {
       refetchInterval: EVM_PERMIT_BLOCKTIME,
