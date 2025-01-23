@@ -15,6 +15,7 @@ import { Transaction } from "state/store"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
+import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -193,7 +194,7 @@ export const ReviewTransactionXCallSummary: FC<
   return (
     <Summary
       rows={[
-        ...(xcall?.value
+        ...(isEvmCall(xcall) && xcall?.value
           ? [
               {
                 label: t("liquidity.reviewTransaction.modal.detail.amount"),
