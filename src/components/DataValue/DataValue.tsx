@@ -54,6 +54,7 @@ export type DataValueProps = {
   font?: TextProps["font"]
   labelColor?: TextProps["color"]
   isLoading?: boolean
+  disableSkeletonAnimation?: boolean
 }
 
 export const DataValue: React.FC<DataValueProps> = ({
@@ -65,6 +66,7 @@ export const DataValue: React.FC<DataValueProps> = ({
   font = "GeistMedium",
   labelColor = "white",
   isLoading = false,
+  disableSkeletonAnimation = false,
 }) => {
   return (
     <div className={className}>
@@ -84,7 +86,15 @@ export const DataValue: React.FC<DataValueProps> = ({
           )}
         </SText>
         <SText as="div" font={font} {...VALUE_SIZES[size]}>
-          {isLoading ? <Skeleton width={80} height="1em" /> : children}
+          {isLoading ? (
+            <Skeleton
+              width={80}
+              height="1em"
+              enableAnimation={!disableSkeletonAnimation}
+            />
+          ) : (
+            children
+          )}
         </SText>
       </div>
     </div>
