@@ -23,9 +23,9 @@ import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
 import { useAccountAssets } from "api/deposits"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
-import { MetadataStore } from "@galacticcouncil/ui"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
+import { useExternalWhitelist } from "api/external"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -248,11 +248,7 @@ export const useXYKPools = () => {
   const { data: xykConsts } = useXYKConsts()
   const { shareTokens } = useAssets()
   const { data: accountAssets } = useAccountAssets()
-
-  const whitelist = useMemo(
-    () => MetadataStore.getInstance().externalWhitelist(),
-    [],
-  )
+  const { data: whitelist } = useExternalWhitelist()
 
   const { validShareTokens, allShareTokens } = useMemo(() => {
     return shareTokens.reduce<{
@@ -261,7 +257,7 @@ export const useXYKPools = () => {
     }>(
       (acc, shareToken) => {
         const isInvalid = !shareToken.assets.some(
-          (asset) => asset.isSufficient || whitelist.includes(asset.id),
+          (asset) => asset.isSufficient || whitelist?.includes(asset.id),
         )
 
         if (!isInvalid) acc.validShareTokens.push(shareToken)

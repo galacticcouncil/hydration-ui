@@ -68,7 +68,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 
     if (wallet?.signer instanceof EthereumSigner) {
       if (shouldUsePermit) {
-        if (!nonce) throw new Error("Missing nonce")
+        if (typeof nonce === "undefined") throw new Error("Missing nonce")
         const permit = await wallet.signer.getPermit(tx.data, nonce)
         return onPermitDispatched({ permit })
       }
