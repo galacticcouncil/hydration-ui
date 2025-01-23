@@ -73,15 +73,13 @@ const WalletAssetsHeaderDisplay = ({ value }: { value: string }) => {
     <Text tAlign={["right", "left"]} sx={{ fontSize: "inherit" }}>
       <DisplayValue
         value={
-          <>
-            <Trans
-              t={t}
-              i18nKey="wallet.assets.header.value"
-              tOptions={{ ...separateBalance(BN(value), { type: "dollar" }) }}
-            >
-              <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
-            </Trans>
-          </>
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{ ...separateBalance(BN(value), { type: "dollar" }) }}
+          >
+            <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
+          </Trans>
         }
       />
     </Text>
