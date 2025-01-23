@@ -336,5 +336,12 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  ethereumAccountBalance: (address: string) => [
+    "ethereumAccountBalance",
+    address,
+  ],
 } as const

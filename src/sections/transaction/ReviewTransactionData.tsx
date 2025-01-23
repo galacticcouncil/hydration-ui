@@ -29,22 +29,30 @@ import {
   SScrollableContent,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
+import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import {
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
   tx?: SubmittableExtrinsic
   evmTx?: {
+    data: TransactionRequest
     abi?: string
-    data: `0x${string}` | TransactionRequest
   }
+  xcall?: EvmCall | SolanaCall
   xcallMeta?: Record<string, string>
 }
+
+type TransactionMode = "auto" | "evm" | "solana" | "substrate"
 
 const TransactionData: FC<{ data: string }> = ({ data }) => {
   return (
     <SRawData>
-      <span>0x</span>
+      {data.startsWith("0x") && <span>0x</span>}
       {splitHexByZeroes(data).map((str, index) => (
         <Fragment key={index}>
           {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
@@ -138,25 +146,35 @@ const TransactionExpander: FC<{
   )
 }
 
-export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
+export const ReviewTransactionData: FC<Props> = ({
+  tx,
+  evmTx,
+  xcall,
+  xcallMeta,
+}) => {
   const { t } = useTranslation()
   const [, copyToClipboard] = useCopyToClipboard()
   const [copied, setCopied] = useState(false)
 
   const txJson = tx ? getTransactionJSON(tx) : null
 
-  const evmTxJson = evmTx ? decodeEvmCall(evmTx) : null
-  const evmTxData = evmTx ? getCallDataHex(evmTx.data) : ""
+  const evmCall = evmTx || (isEvmCall(xcall) && xcall)
+
+  const evmTxJson = evmCall ? decodeEvmCall(evmCall) : null
+  const evmTxData = evmCall ? getCallDataHex(evmCall.data) : ""
 
   const isSubstrateTx = !!tx && !!txJson
-  const isEvmTx = !!evmTx && !!evmTxJson
+  const isEvmTx = (!!evmTx || isEvmCall(xcall)) && !!evmTxJson
+  const isSolanaTx = isSolanaCall(xcall)
   const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
 
-  const [mode, setMode] = useState<"auto" | "evm" | "substrate">(
+  const [mode, setMode] = useState<TransactionMode>(
     isWrappedEvmTx ? "evm" : "auto",
   )
 
   const shouldRenderEvm = isEvmTx && (mode === "evm" || mode === "auto")
+  const shouldRenderSolana =
+    isSolanaTx && (mode === "solana" || mode === "auto")
   const shouldRenderSubstrate =
     isSubstrateTx && (mode === "substrate" || mode === "auto")
 
@@ -271,12 +289,19 @@ export const ReviewTransactionData: FC<Props> = ({ tx, evmTx, xcallMeta }) => {
             </SModeButton>
           </div>
         )}
+
         {shouldRenderEvm && (
           <TransactionExpander
             decodedCall={
               <TransactionCode name={evmTxJson.method} src={evmTxJson.data} />
             }
             encodedCall={<TransactionData data={evmTxData} />}
+          />
+        )}
+        {shouldRenderSolana && (
+          <TransactionExpander
+            decodedCall={<TransactionCode name="" src={xcall.ix} />}
+            encodedCall={<TransactionData data={xcall.data} />}
           />
         )}
         {shouldRenderSubstrate && (

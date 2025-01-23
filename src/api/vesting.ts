@@ -14,11 +14,11 @@ import { compareAsc } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const useVestingSchedules = (address: Maybe<AccountId32 | string>) => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.vestingSchedules(address),
     address != null ? getVestingSchedules(api, address) : undefinedNoop,
-    { enabled: !!address },
+    { enabled: !!address && isLoaded },
   )
 }
 

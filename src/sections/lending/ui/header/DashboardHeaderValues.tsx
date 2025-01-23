@@ -82,7 +82,9 @@ export const DashboardHeaderValues: FC<{
       (BN(underlyingBalance).gt(0) || BN(totalBorrows).gt(0)),
   )
 
-  const { data: vDotApy, isLoading: isVDotApyLoading } = useBifrostVDotApy()
+  const { data: vDotApy, isLoading: isVDotApyLoading } = useBifrostVDotApy({
+    enabled: vDotSuppliedOrBorrowed,
+  })
 
   return (
     <>
