@@ -143,6 +143,8 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 ]),
                 pool.id,
                 shares,
+                //@ts-ignore
+                undefined,
               )
             : api.tx.omnipool.addLiquidity(pool.id, shares),
           title: t(
