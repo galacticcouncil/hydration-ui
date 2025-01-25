@@ -100,6 +100,8 @@ export const AddLiquidityForm = ({
               ]),
               assetId,
               amount,
+              //@ts-ignore
+              undefined,
             )
           : api.tx.omnipool.addLiquidity(assetId, amount),
       },

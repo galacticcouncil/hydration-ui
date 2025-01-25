@@ -41,6 +41,8 @@ export const getAddToOmnipoolFee = (
         ]),
         "0",
         "1",
+        //@ts-ignore
+        undefined,
       )
     : api.tx.omnipool.addLiquidity("0", "1")
 
