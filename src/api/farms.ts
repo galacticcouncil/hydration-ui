@@ -753,6 +753,8 @@ export const useAccountClaimableFarmValues = () => {
           if (reward) {
             const meta = getAssetWithFallback(reward.assetId)
 
+            if (reward.reward.lte(meta.existentialDeposit)) return undefined
+
             const liquidityPositionId = isXyk
               ? undefined
               : depositLiquidityPositions.find(
