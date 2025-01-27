@@ -18,12 +18,12 @@ import { useClickAway, useMount } from "react-use"
 
 import { bestNumberQuery } from "@/api/chain"
 import { rpcInfoQuery } from "@/api/rpc"
+import { RpcInfoResult } from "@/api/rpc"
 import { RpcRemoveModal } from "@/components/ProviderRpcSelect/components/RpcRemoveModal"
 import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRpcListStore } from "@/states/provider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
-import { RpcInfoResult } from "@/utils/rpc"
 
 import { SRpcListItem, SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
 

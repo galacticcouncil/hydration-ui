@@ -1,69 +1,32 @@
-import { keyframes } from "@emotion/react"
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { ThemeColor } from "@galacticcouncil/ui/theme"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
+import { RpcInfoResult } from "@/api/rpc"
+import {
+  SStatusOffline,
+  SStatusSuccess,
+} from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
 import { useElapsedTimeStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
-import { RpcInfoResult } from "@/utils/rpc"
 
 export type RpcStatusProps = Partial<RpcInfoResult> & { ping?: number }
 
-const CIRC = Math.ceil(2 * Math.PI * 5)
-const animateCircle = keyframes`
-  0% {
-    opacity: 1;
-    stroke-dashoffset: ${CIRC};
-  }
-
-  60% {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
-  
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 0;
-  }
-`
-
 export const RpcStatusSuccess = () => {
   return (
-    <span sx={{ position: "relative", size: 7 }}>
-      <span
-        sx={{
-          position: "absolute",
-          size: 7,
-          display: "block",
-          background: "currentColor",
-          borderRadius: "9999px",
-        }}
-      />
+    <SStatusSuccess>
+      <span />
       <svg
         width="7"
         height="7"
         viewBox="0 0 11 11"
         fill="none"
         xmlns="http://www.w3.org/2000.svg?react"
-        sx={{
-          top: 0,
-          scale: 1.6,
-          left: 0,
-          transform: "rotate(-90deg)",
-        }}
       >
-        <circle
-          cx="5.5"
-          cy="5.5"
-          r="5"
-          stroke="currentColor"
-          strokeDasharray={CIRC}
-          strokeDashoffset={CIRC}
-          sx={{ animation: `${animateCircle} 1s linear forwards` }}
-        />
+        <circle cx="5.5" cy="5.5" r="5" stroke="currentColor" />
       </svg>
-    </span>
+    </SStatusSuccess>
   )
 }
 
@@ -71,12 +34,7 @@ export const RpcStatusSlow = () => (
   <CaretDown sx={{ size: 7, transform: "rotate(180deg)", scale: 1.3 }} />
 )
 
-export const RpcStatusOffline = () => (
-  <span
-    sx={{ size: 7, display: "block" }}
-    css={{ background: `currentColor` }}
-  />
-)
+export const RpcStatusOffline = () => <SStatusOffline />
 
 const rpcStatusTextMap = {
   // t("rpc.status.online")
@@ -121,6 +79,8 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 }
 
 const RpcPingAverage: React.FC<{ ping: number }> = ({ ping }) => {
+  const { t } = useTranslation()
+
   const avgPingArrRef = useRef<number[]>([])
 
   useEffect(() => {
@@ -144,7 +104,7 @@ const RpcPingAverage: React.FC<{ ping: number }> = ({ ping }) => {
 
   return (
     <Text fs={10} mt={2} color={pingColor}>
-      {Math.round(avgPing)} ms
+      {t("rpc.status.ping", { value: Math.round(avgPing) })}
     </Text>
   )
 }

@@ -167,17 +167,6 @@ const groupSizes = createVariants(() => ({
   `,
 }))
 
-/* & > [data-slot="icon"] {
-  height: 20px;
-  margin-top: -10px;
-  &:first-of-type {
-    left: 16px;
-  }
-  &:last-of-type {
-    right: 16px;
-  }
-} */
-
 export const SInputGroup = styled.div<
   Pick<CustomInputProps, "customSize" | "disabled">
 >(({ theme, disabled = false, customSize = "medium" }) => [

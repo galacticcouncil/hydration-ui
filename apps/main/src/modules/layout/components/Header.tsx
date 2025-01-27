@@ -1,30 +1,16 @@
 import { HydrationLogoFull } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Separator, Toggle } from "@galacticcouncil/ui/components"
+import { Button, Flex, Toggle } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderMenu } from "@/modules/layout/components/HeaderMenu"
 
 export const Header = () => {
   const { t } = useTranslation(["common"])
   const { theme, setTheme } = useTheme()
   return (
-    <Flex
-      py={10}
-      px={[20, null, 30]}
-      gap={[20, null, 40]}
-      direction={["column", null, "row"]}
-      bg={getToken("surfaces.themeBasePalette.background")}
-      sx={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        borderBottom: "1px solid",
-        borderColor: getToken("details.separators"),
-      }}
-      align="center"
-    >
+    <SHeader>
       <HydrationLogoFull />
       <HeaderMenu display={["none", null, "flex"]} />
       <Flex ml="auto" align="center" gap={12}>
@@ -37,7 +23,6 @@ export const Header = () => {
         </Flex>
         <Button variant="secondary">{t("common:connectWallet")}</Button>
       </Flex>
-      <Separator />
-    </Flex>
+    </SHeader>
   )
 }

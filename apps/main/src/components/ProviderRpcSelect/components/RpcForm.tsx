@@ -10,9 +10,9 @@ import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { pingRpc } from "@/api/rpc"
 import { useRpcFormSchema } from "@/components/ProviderRpcSelect/components/RpcForm.utils"
 import { useRpcListStore } from "@/states/provider"
-import { pingRpc } from "@/utils/rpc"
 
 type FormValues = {
   address: string

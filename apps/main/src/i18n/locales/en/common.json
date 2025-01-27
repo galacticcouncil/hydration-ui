@@ -56,6 +56,7 @@
   "rpc.change.modal.title": "Change RPC",
   "rpc.status.offline": "This RPC seems to be down. Please select another RPC.",
   "rpc.status.online": "The most recent block on this network. Prices update on every block.",
+  "rpc.status.ping": "{{ value }} ms",
   "rpc.status.slow": "This RPC is having a hard time. Please select another RPC.",
   "save": "Save"
 }
