@@ -336,6 +336,12 @@ export const useSendSolanaTransactionMutation = (
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
   const { evm } = useRpcProvider()
 
+  const address = account?.toString() ?? ""
+
+  const addressH160 = isEvmAddress(address)
+    ? address
+    : H160.fromAccount(address)
+
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
@@ -343,11 +349,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
 
       const callPermit = new Contract(CALL_PERMIT_ADDRESS, CALL_PERMIT_ABI, evm)
 
-      const nonce: BN = await callPermit.nonces(
-        isEvmAddress(account.toString())
-          ? account
-          : H160.fromAccount(account.toString()),
-      )
+      const nonce: BN = await callPermit.nonces(addressH160)
 
       return nonce.toNumber()
     },
@@ -356,7 +358,7 @@ export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
       refetchOnWindowFocus: false,
       cacheTime: 0,
       staleTime: 0,
-      enabled: isEvmAccount(account?.toString()),
+      enabled: !!addressH160,
     },
   )
 }

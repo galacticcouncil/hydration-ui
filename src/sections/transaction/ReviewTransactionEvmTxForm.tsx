@@ -20,7 +20,10 @@ import {
   EthereumSigner,
   PermitResult,
 } from "sections/web3-connect/signer/EthereumSigner"
-import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useEvmAccount,
+  useWallet,
+} from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { NATIVE_EVM_ASSET_ID } from "utils/evm"
 
@@ -43,7 +46,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
   onCancel,
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
+  const { account } = useEvmAccount()
   const { wallet } = useWallet()
   const { getAsset } = useAssets()
   const { feePaymentAssetId } = useAccountFeePaymentAssets()
