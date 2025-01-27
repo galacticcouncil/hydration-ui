@@ -284,14 +284,14 @@ const getStakingInitializedEvents = (indexerUrl: string) => async () => {
 export const useProcessedVotesIdsQuery = () => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
-  const { data: accountVotes = [] } = useAccountOpenGovVotes()
+  const { data: accountVotes = [], isSuccess } = useAccountOpenGovVotes()
 
   return useQuery(
     QUERY_KEYS.processedVotes(),
     account?.address
       ? async () => await getVoteIds(api, account.address, accountVotes)
       : undefinedNoop,
-    { enabled: !!account && isLoaded },
+    { enabled: !!account && isLoaded && isSuccess },
   )
 }
 
