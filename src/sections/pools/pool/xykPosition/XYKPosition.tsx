@@ -8,39 +8,36 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
 import { useMemo, useState } from "react"
-import { useTokenBalance, useTokensBalances } from "api/balances"
 import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
+import { useXYKSDKPools } from "api/xyk"
 
 export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const queryClient = useQueryClient()
-  const refetchPositions = useRefetchAccountPositions()
+  const refetchAccountAssets = useRefetchAccountAssets()
   const [openRemove, setOpenRemove] = useState(false)
+  const { data: xykPools } = useXYKSDKPools()
+  const [assetAReserve, assetBReserve] =
+    xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
+    []
 
-  const shareTokensBalance = useTokenBalance(pool.id, account?.address)
+  const { data: accountAssets } = useAccountAssets()
+  const shareTokensBalance = accountAssets?.accountAssetsMap.get(
+    pool.id,
+  )?.balance
 
   const assetsMeta = pool.meta.assets
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
-  const [{ data: assetAReserve }, { data: assetBReserve }] = useTokensBalances(
-    [assetMetaA.id, assetMetaB.id],
-    pool.poolAddress,
-    true,
-  )
   const spotPrices = useDisplayPrices(assetsMeta.map((asset) => asset.id))
 
   const myBalance = useMemo(() => {
@@ -52,12 +49,12 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
       spotPrices.data
     ) {
       const myBalanceA = pool.shareTokenIssuance.myPoolShare
-        .times(assetAReserve.freeBalance)
+        .times(assetAReserve.balance)
         .div(100)
         .shiftedBy(-assetMetaA.decimals)
 
       const myBalanceB = pool.shareTokenIssuance.myPoolShare
-        .times(assetBReserve.freeBalance)
+        .times(assetBReserve.balance)
         .div(100)
         .shiftedBy(-assetMetaB.decimals)
 
@@ -78,14 +75,11 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     spotPrices.data,
   ])
 
-  if (!pool.shareTokenIssuance || pool.shareTokenIssuance.myPoolShare?.isZero())
+  if (!pool.shareTokenIssuance || !pool.shareTokenIssuance.myPoolShare)
     return null
 
   const onSuccess = () => {
-    queryClient.refetchQueries(
-      QUERY_KEYS.tokenBalance(pool.id, account?.address),
-    )
-    refetchPositions()
+    refetchAccountAssets()
   }
 
   return (
@@ -147,7 +141,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 <div>
                   <Text fs={[13, 16]}>
                     {t("value.token", {
-                      value: shareTokensBalance.data?.balance,
+                      value: shareTokensBalance?.balance,
                       fixedPointScale: pool.meta.decimals,
                     })}
                   </Text>

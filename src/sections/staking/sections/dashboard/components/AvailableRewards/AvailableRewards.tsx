@@ -26,6 +26,7 @@ import { XAxis, YAxis } from "recharts"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
+import { useRefetchAccountAssets } from "api/deposits"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()
@@ -34,6 +35,7 @@ export const AvailableRewards = () => {
   const reward = useClaimReward()
   const { native } = useAssets()
   const spotPrice = useDisplayPrice(native.id)
+  const refetch = useRefetchAccountAssets()
 
   const processedVotes = useProcessedVotesIds()
 
@@ -64,20 +66,30 @@ export const AvailableRewards = () => {
 
     await createTransaction(
       {
-        tx: processedVoteIds.length
-          ? api.tx.utility.batchAll([
-              ...processedVoteIds.map((id) => api.tx.democracy.removeVote(id)),
-              api.tx.staking.claim(reward.data?.positionId!),
-            ])
-          : api.tx.staking.claim(reward.data?.positionId!),
+        tx:
+          processedVoteIds &&
+          (processedVoteIds.newProcessedVotesIds.length ||
+            processedVoteIds?.oldProcessedVotesIds.length)
+            ? api.tx.utility.batchAll([
+                ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+                  api.tx.democracy.removeVote(id),
+                ),
+                ...processedVoteIds.newProcessedVotesIds.map(
+                  ({ classId, id }) =>
+                    api.tx.convictionVoting.removeVote(
+                      classId ? classId : null,
+                      id,
+                    ),
+                ),
+                api.tx.staking.claim(reward.data?.positionId!),
+              ])
+            : api.tx.staking.claim(reward.data?.positionId!),
       },
       { toast },
     )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(native.id, account?.address),
-    )
+    refetch()
   }
 
   const isGraphSecondaryPoint = reward.data?.chartValues?.some(

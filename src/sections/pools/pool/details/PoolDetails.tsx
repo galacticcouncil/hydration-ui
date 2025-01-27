@@ -2,10 +2,7 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
-import {
-  TXYKPoolFullData,
-  useXYKSpotPrice,
-} from "sections/pools/PoolsPage.utils"
+import { TXYKPool, useXYKSpotPrice } from "sections/pools/PoolsPage.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -35,7 +32,6 @@ import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { useFarms } from "api/farms"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -49,18 +45,17 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const farms = useFarms([pool.id])
-  const isFarms = farms.data.length
+  const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
         defaultPage={Page.OPTIONS}
         onClose={() => setOpen(false)}
-        farms={farms.data}
+        farms={pool.farms ?? []}
       />
     ) : (
-      <AddLiquidity isOpen onClose={() => setOpen(false)} farms={farms.data} />
+      <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
 
@@ -95,7 +90,7 @@ export const PoolDetails = () => {
             }}
           >
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              <MultipleAssetLogo iconId={meta.iconId} size={26} />
+              <MultipleAssetLogo iconId={meta?.iconId} size={26} />
               <div sx={{ flex: "column", gap: 0, width: "max-content" }}>
                 <Text fs={16} lh={16} color="white" font="GeistMedium">
                   {meta.symbol}
@@ -176,7 +171,7 @@ export const PoolDetails = () => {
                   {t("24Volume")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
-                  <DisplayValue value={pool.volume} type="token" />
+                  <DisplayValue value={BN(pool.volume ?? NaN)} type="token" />
                 </Text>
               </SValue>
 
@@ -318,7 +313,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
   )
 }
 
-export const XYKRateWrapper = ({ pool }: { pool: TXYKPoolFullData }) => {
+export const XYKRateWrapper = ({ pool }: { pool: TXYKPool }) => {
   const prices = useXYKSpotPrice(pool.id)
 
   if (!prices) return null

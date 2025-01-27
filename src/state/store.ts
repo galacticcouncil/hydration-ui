@@ -6,7 +6,8 @@ import { v4 as uuid } from "uuid"
 import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
-import { XCallEvm } from "@galacticcouncil/xcm-sdk"
+import { TransactionRequest } from "@ethersproject/providers"
+import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 
@@ -28,7 +29,11 @@ export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic
-  xcall?: XCallEvm
+  evmTx?: {
+    data: TransactionRequest
+    abi?: string
+  }
+  xcall?: EvmCall | SolanaCall
   xcallMeta?: Record<string, string>
   overrides?: {
     fee: BigNumber
@@ -151,10 +156,11 @@ export const useRpcStore = create<RpcStore>()(
   ),
 )
 
-export type TAssetStored = Omit<Asset, "externalId"> & {
+export type TAssetStored = Asset & {
   isTradable: boolean
   externalId: string | undefined
 }
+
 export type TShareTokenStored = {
   poolAddress: string
   assets: string[]

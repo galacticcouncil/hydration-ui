@@ -10,8 +10,12 @@ import { ReviewTransactionPending } from "./ReviewTransactionPending"
 import { ReviewTransactionSuccess } from "./ReviewTransactionSuccess"
 import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
+import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import {
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
@@ -24,6 +28,7 @@ export const ReviewTransaction = (props: Transaction) => {
     sendTx,
     sendEvmTx,
     sendPermitTx,
+    sendSolanaTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -34,7 +39,7 @@ export const ReviewTransaction = (props: Transaction) => {
     txLink,
     txHash,
     bridge,
-  } = useSendTx()
+  } = useSendTx(props.xcallMeta)
 
   if (!isLoaded) return null
 
@@ -136,6 +141,7 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionForm
             tx={props.tx}
             xcallMeta={props.xcallMeta}
+            evmTx={props.evmTx}
             isProxy={props.isProxy}
             overrides={props.overrides}
             onCancel={onClose}
@@ -143,9 +149,9 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendEvmTx(data)
             }}
-            onSigned={(tx, xcallMeta) => {
+            onSigned={(tx) => {
               props.onSubmitted?.()
-              sendTx({ tx, xcallMeta })
+              sendTx({ tx })
             }}
             onPermitDispatched={(permit) => {
               props.onSubmitted?.()
@@ -153,7 +159,21 @@ export const ReviewTransaction = (props: Transaction) => {
             }}
             onSignError={setSignError}
           />
-        ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
+        ) : props.evmTx ? (
+          <ReviewTransactionEvmTxForm
+            tx={props.evmTx}
+            onCancel={onClose}
+            onEvmSigned={(data) => {
+              props.onSubmitted?.()
+              sendEvmTx(data)
+            }}
+            onPermitDispatched={(permit) => {
+              props.onSubmitted?.()
+              sendPermitTx(permit)
+            }}
+          />
+        ) : (isEvmCall(props.xcall) || isSolanaCall(props.xcall)) &&
+          props.xcallMeta ? (
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
@@ -161,6 +181,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onEvmSigned={(data) => {
               props.onSubmitted?.()
               sendEvmTx(data)
+            }}
+            onSolanaSigned={(data) => {
+              props.onSubmitted?.()
+              sendSolanaTx(data)
             }}
             onSignError={setSignError}
           />

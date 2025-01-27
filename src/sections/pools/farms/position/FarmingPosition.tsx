@@ -23,9 +23,14 @@ import { ToastMessage } from "state/store"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { Farm } from "api/farms"
+import { TFarmAprData } from "api/farms"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
+import BigNumber from "bignumber.js"
+
+import { useMedia } from "react-use"
+import { theme } from "theme"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 function FarmingPositionDetailsButton(props: {
   depositNft: TDeposit
@@ -70,7 +75,7 @@ const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
         t={t}
         i18nKey={`farms.modal.exit.toast.${msType}`}
         tOptions={{
-          amount: props.depositNft.data.shares.toBigNumber(),
+          amount: BigNumber(props.depositNft.data.shares),
           fixedPointScale: meta.decimals,
         }}
       >
@@ -107,17 +112,14 @@ export const FarmingPosition = ({
   index: number
   depositNft: TDeposit
   depositData: TDepositData
-  availableYieldFarms: Farm[]
+  availableYieldFarms: TFarmAprData[]
 }) => {
   const { t } = useTranslation()
 
   // use latest entry date
   const enteredDate = useEnteredDate(
     depositNft.data.yieldFarmEntries.reduce(
-      (acc, curr) =>
-        acc.lt(curr.enteredAt.toBigNumber())
-          ? curr.enteredAt.toBigNumber()
-          : acc,
+      (acc, curr) => (acc.lt(curr.enteredAt) ? BigNumber(curr.enteredAt) : acc),
       BN_0,
     ),
   )
@@ -125,7 +127,12 @@ export const FarmingPosition = ({
   return (
     <>
       <div
-        sx={{ flex: ["column", "row"], gap: [6, 0], justify: "space-between" }}
+        sx={{
+          flex: ["column", "row"],
+          gap: [6, 0],
+          justify: "space-between",
+          align: ["stretch", "center"],
+        }}
       >
         <Text fw={[500, 400]}>
           {t("farms.positions.position.title", { index })}
@@ -139,16 +146,8 @@ export const FarmingPosition = ({
         </div>
       </div>
 
-      <div
-        sx={{
-          flex: "row",
-          justify: "space-between",
-          align: "center",
-          py: [0, 10],
-        }}
-      >
-        <JoinedFarms depositNft={depositNft} />
-      </div>
+      <JoinedFarms depositNft={depositNft} />
+
       <SSeparator sx={{ width: "70%", mx: "auto" }} />
 
       <div
@@ -158,6 +157,12 @@ export const FarmingPosition = ({
           py: 10,
         }}
       >
+        {isXYKDeposit(depositData) ? (
+          <XYKFields depositData={depositData} />
+        ) : (
+          <OmnipoolFields depositData={depositData} />
+        )}
+        <SSeparator />
         <SValueContainer>
           <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.enterDate")}
@@ -168,12 +173,6 @@ export const FarmingPosition = ({
             })}
           </Text>
         </SValueContainer>
-        <SSeparator />
-        {isXYKDeposit(depositData) ? (
-          <XYKFields depositData={depositData} />
-        ) : (
-          <OmnipoolFields depositData={depositData} />
-        )}
       </div>
 
       {availableYieldFarms.length ? (
@@ -213,7 +212,7 @@ const OmnipoolFields = ({ depositData }: { depositData: TOmniDepositData }) => {
       </SValueContainer>
       <SSeparator />
       <SValueContainer>
-        <div sx={{ flex: "row" }}>
+        <div sx={{ flex: "row", gap: 4 }}>
           <Text color="basic500" fs={14} lh={16}>
             {t("farms.positions.labels.currentValue")}
           </Text>
@@ -249,7 +248,19 @@ const OmnipoolFields = ({ depositData }: { depositData: TOmniDepositData }) => {
 
 const XYKFields = ({ depositData }: { depositData: TXYKDepositData }) => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   const { amountUSD, assetA, assetB } = depositData
+
+  const value =
+    t("value.tokenWithSymbol", {
+      value: assetA.amount,
+      symbol: assetA.symbol,
+    }) +
+    " | " +
+    t("value.tokenWithSymbol", {
+      value: assetB.amount,
+      symbol: assetB.symbol,
+    })
 
   return (
     <SValueContainer>
@@ -257,20 +268,24 @@ const XYKFields = ({ depositData }: { depositData: TXYKDepositData }) => {
         {t("farms.positions.labels.currentValue")}
       </Text>
       <div sx={{ flex: "column", align: "flex-end" }}>
-        <Text fs={14}>
-          {t("value.tokenWithSymbol", {
-            value: assetA.amount,
-            symbol: assetA.symbol,
-          })}{" "}
-          |{" "}
-          {t("value.tokenWithSymbol", {
-            value: assetB.amount,
-            symbol: assetB.symbol,
-          })}
-        </Text>
-        <Text fs={11} css={{ color: "rgba(221, 229, 255, 0.61)" }}>
-          <DisplayValue value={amountUSD} />
-        </Text>
+        {isDesktop && <Text fs={14}>{value}</Text>}
+        <div sx={{ flex: "row", gap: 4 }}>
+          <DollarAssetValue
+            value={amountUSD}
+            wrapper={(children) => (
+              <Text
+                fs={[14, 11]}
+                lh={[14, 12]}
+                color={["basic100", "whiteish500"]}
+              >
+                {children}
+              </Text>
+            )}
+          >
+            <DisplayValue value={amountUSD} />
+          </DollarAssetValue>
+          {!isDesktop && <InfoTooltip text={value} />}
+        </div>
       </div>
     </SValueContainer>
   )

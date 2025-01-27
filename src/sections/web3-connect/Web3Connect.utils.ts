@@ -13,11 +13,18 @@ import {
   WalletConnect,
 } from "sections/web3-connect/wallets/WalletConnect"
 import { POLKADOT_APP_NAME } from "utils/api"
-import { H160, getEvmAddress, isEvmAddress } from "utils/evm"
+import {
+  H160,
+  getEvmAddress,
+  isEvmAccount,
+  isEvmAddress,
+  isEvmWalletExtension,
+} from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
   Account,
+  COMPATIBLE_WALLET_PROVIDERS,
   WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
@@ -36,12 +43,15 @@ import {
   requestNetworkSwitch,
 } from "utils/metamask"
 import { genesisHashToChain, isNotNil } from "utils/helpers"
+import { useIsEvmAccountBound } from "api/evm"
 import {
   EIP6963AnnounceProviderEvent,
   WalletAccount,
 } from "sections/web3-connect/types"
 import {
   EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
@@ -49,11 +59,9 @@ import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { Talisman } from "sections/web3-connect/wallets/Talisman"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmChain } from "@galacticcouncil/xcm-core"
-import { MetadataStore } from "@galacticcouncil/ui"
 import { create } from "zustand"
-import BN from "bignumber.js"
+import { safeConvertSolanaAddressToSS58 } from "utils/solana"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -61,7 +69,7 @@ export const useWallet = () => {
   const providerType = useWeb3ConnectStore(
     useShallow((state) => state.account?.provider),
   )
-  return useMemo(() => getWalletProviderByType(providerType), [providerType])
+  return getWalletProviderByType(providerType)
 }
 
 export const useAccount = () => {
@@ -73,36 +81,54 @@ export const useEvmAccount = () => {
   const { account } = useAccount()
   const { wallet } = useWallet()
 
-  const address = account?.displayAddress ?? ""
+  const address = account?.address ?? ""
+
+  const isEvm = isEvmAccount(address)
+
+  const evmAddress = useMemo(() => {
+    if (!address) return ""
+    if (isEvm) return H160.fromAccount(address)
+    return H160.fromSS58(address)
+  }, [isEvm, address])
+
+  const accountBinding = useIsEvmAccountBound(evmAddress)
+  const isBound = isEvm ? true : !!accountBinding.data
 
   const evm = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
-      const chainId =
-        isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
-          ? await wallet?.extension?.request({ method: "eth_chainId" })
-          : null
+      const chainId = isEvmWalletExtension(wallet?.extension)
+        ? await wallet?.extension?.request({ method: "eth_chainId" })
+        : null
 
       return {
         chainId: Number(chainId),
       }
     },
     {
-      enabled: !!address,
+      enabled: !!address && !!wallet?.extension,
     },
   )
 
   if (!address) {
     return {
+      isBound: false,
+      isLoading: false,
       account: null,
     }
   }
 
   return {
+    isBound,
+    isLoading: isEvm
+      ? evm.isLoading
+      : accountBinding.isLoading || evm.isLoading,
     account: {
-      ...evm.data,
+      chainId: isEvm
+        ? evm.data?.chainId ?? null
+        : parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
       name: account?.name ?? "",
-      address: account?.displayAddress,
+      address: isBound ? evmAddress : "",
     },
   }
 }
@@ -311,6 +337,10 @@ export const useEnableWallet = (
   >,
 ) => {
   const { wallet } = getWalletProviderByType(provider)
+  const disconnect = useWeb3ConnectStore(
+    useShallow((state) => state.disconnect),
+  )
+
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
   const { mutate: enable, ...mutation } = useMutation<
@@ -362,6 +392,7 @@ export const useEnableWallet = (
 
   return {
     enable,
+    disconnect,
     ...mutation,
   }
 }
@@ -512,14 +543,22 @@ function mapWalletAccount({
   genesisHash,
 }: WalletAccount) {
   const isEvm = isEvmAddress(address)
+  const isSolana =
+    wallet &&
+    SOLANA_PROVIDERS.includes(wallet.extensionName as WalletProviderType)
 
   const chainInfo = genesisHashToChain(genesisHash)
 
   return {
-    address: isEvm ? new H160(address).toAccount() : address,
-    displayAddress: isEvm
-      ? address
-      : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+    address: isEvm
+      ? new H160(address).toAccount()
+      : isSolana
+        ? safeConvertSolanaAddressToSS58(address, HYDRADX_SS58_PREFIX)
+        : address,
+    displayAddress:
+      isEvm || isSolana
+        ? address
+        : safeConvertAddressSS58(address, chainInfo.prefix) || address,
     genesisHash,
     name: name ?? "",
     provider: normalizeProviderType(wallet!),
@@ -530,17 +569,14 @@ function mapWalletAccount({
 export function getWalletModeIcon(mode: WalletMode) {
   try {
     if (mode === WalletMode.EVM) {
-      const chain = chainsMap.get("ethereum") as EvmChain
-      const asset = chain.getAsset("weth")!
-      const address = chain.getAssetId(asset)
-      return MetadataStore.getInstance().asset(
-        "ethereum",
-        chain.defEvm.id.toString(),
-        address.toString(),
-      )
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
     }
     if (mode === WalletMode.Substrate) {
-      return MetadataStore.getInstance().asset("polkadot", "0", "0")
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
+    }
+
+    if (mode === WalletMode.Solana) {
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
     }
 
     return ""
@@ -548,8 +584,8 @@ export function getWalletModeIcon(mode: WalletMode) {
 }
 
 export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, BN>
-  setBalanceMap: (address: string, balance: BN) => void
+  balanceMap: Map<string, string>
+  setBalanceMap: (address: string, balance: string) => void
 }>((set) => ({
   balanceMap: new Map(),
   setBalanceMap: (address, balance) => {
@@ -558,3 +594,19 @@ export const useAccountBalanceMap = create<{
     }))
   },
 }))
+
+export const isHydrationIncompatibleAccount = (
+  account: Account | null,
+): account is Account => {
+  if (!account) return false
+
+  const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
+
+  const isIncompatibleH160Account =
+    SUBSTRATE_H160_PROVIDERS.includes(account.provider) &&
+    isEvmAccount(account.address)
+
+  return isIncompatibleProvider || isIncompatibleH160Account
+}

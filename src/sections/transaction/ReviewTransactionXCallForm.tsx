@@ -8,14 +8,16 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ReviewTransactionData } from "sections/transaction/ReviewTransactionData"
 import { ReviewTransactionXCallSummary } from "sections/transaction/ReviewTransactionSummary"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import {
-  useEvmAccount,
-  useWallet,
-} from "sections/web3-connect/Web3Connect.utils"
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { SolanaSigner } from "sections/web3-connect/signer/SolanaSigner"
 import { Transaction } from "state/store"
 import { theme } from "theme"
+import { H160 } from "utils/evm"
 
 type TxProps = Required<Pick<Transaction, "xcallMeta" | "xcall">>
 
@@ -23,6 +25,7 @@ type Props = TxProps & {
   title?: string
   onCancel: () => void
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
+  onSolanaSigned: (signature: string) => void
   onSignError?: (error: unknown) => void
 }
 
@@ -30,11 +33,12 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   xcall,
   xcallMeta,
   onEvmSigned,
+  onSolanaSigned,
   onCancel,
   onSignError,
 }) => {
   const { t } = useTranslation()
-  const { account } = useEvmAccount()
+  const { account } = useAccount()
 
   const { wallet } = useWallet()
 
@@ -43,14 +47,14 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
       if (!account?.address) throw new Error("Missing active account")
       if (!wallet) throw new Error("Missing wallet")
       if (!wallet.signer) throw new Error("Missing signer")
-      if (!isEvmXCall(xcall)) throw new Error("Missing xcall")
+      if (!xcall) throw new Error("Missing xcall")
 
-      if (wallet?.signer instanceof EthereumSigner) {
+      if (isEvmCall(xcall) && wallet?.signer instanceof EthereumSigner) {
         const { srcChain } = xcallMeta
 
         const evmTx = await wallet.signer.sendTransaction({
           chain: srcChain,
-          from: account.address,
+          from: H160.fromAccount(account.address),
           to: xcall.to,
           data: xcall.data,
           value: xcall.value,
@@ -68,6 +72,14 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
 
         onEvmSigned({ evmTx })
       }
+
+      if (isSolanaCall(xcall) && wallet?.signer instanceof SolanaSigner) {
+        const { signature } = await wallet.signer.signAndSend(
+          xcall.data,
+          xcall.signers,
+        )
+        onSolanaSigned(signature)
+      }
     } catch (error) {
       onSignError?.(error)
     }
@@ -82,13 +94,7 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
           maxHeight: 280,
         }}
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
-        content={
-          <ReviewTransactionData
-            address={account?.address}
-            xcallEvm={xcall}
-            xcallMeta={xcallMeta}
-          />
-        }
+        content={<ReviewTransactionData xcall={xcall} xcallMeta={xcallMeta} />}
         footer={
           <>
             <div sx={{ mt: 15 }}>

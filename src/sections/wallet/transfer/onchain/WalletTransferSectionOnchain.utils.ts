@@ -1,4 +1,3 @@
-import { useTokenBalance } from "api/balances"
 import { useAssets } from "providers/assets"
 import { usePaymentInfo } from "api/transaction"
 import BN from "bignumber.js"
@@ -10,6 +9,7 @@ import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { maxBalance, required } from "utils/validators"
 import { z } from "zod"
+import { useAccountAssets } from "api/deposits"
 
 export function usePaymentFees({
   asset,
@@ -87,10 +87,12 @@ export const getDestZodSchema = (currentAddress?: string) =>
 export const useTransferZodSchema = (assetId: string) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
+  const accountAssets = useAccountAssets()
 
   const { decimals } = getAssetWithFallback(assetId)
 
-  const { data: assetBalance } = useTokenBalance(assetId, account?.address)
+  const assetBalance =
+    accountAssets.data?.accountAssetsMap.get(assetId)?.balance
 
   if (assetBalance === undefined) return undefined
 

@@ -2,14 +2,13 @@ import { useTranslation } from "react-i18next"
 import { Graph } from "components/Graph/Graph"
 import { Spinner } from "components/Spinner/Spinner"
 import { useLoyaltyRates } from "./LoyaltyGraph.utils"
-import { PalletLiquidityMiningLoyaltyCurve } from "@polkadot/types/lookup"
 import BigNumber from "bignumber.js"
-import { Farm, useFarmApr } from "api/farms"
+import { TFarmAprData } from "api/farms"
 
 type LoyaltyGraphProps = {
-  farm: Farm
-  loyaltyCurve: PalletLiquidityMiningLoyaltyCurve
-  enteredAt?: BigNumber
+  farm: TFarmAprData
+  loyaltyCurve: { initialRewardPercentage: string; scaleCoef: string }
+  enteredAt?: string
   currentBlock: number
 }
 
@@ -20,11 +19,10 @@ export const LoyaltyGraph = ({
   currentBlock,
 }: LoyaltyGraphProps) => {
   const { t } = useTranslation()
-  const apr = useFarmApr(farm)
 
   const rates = useLoyaltyRates(
     farm,
-    apr.data?.apr,
+    BigNumber(farm.apr),
     loyaltyCurve,
     enteredAt ? BigNumber(currentBlock).minus(enteredAt) : undefined,
   )

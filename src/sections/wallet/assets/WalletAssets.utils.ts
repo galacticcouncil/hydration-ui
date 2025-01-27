@@ -3,12 +3,12 @@ import BN from "bignumber.js"
 import { useMemo } from "react"
 import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
-import { useAccountBalances } from "api/accountBalances"
-import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
+import BigNumber from "bignumber.js"
+import { useUserBorrowSummary } from "api/borrow"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -47,81 +47,94 @@ export const useWalletAssetsTotals = ({
 }: {
   address?: string
 } = {}) => {
-  const { account } = useAccount()
-  const { shareTokens } = useAssets()
+  const borrows = useUserBorrowSummary(address)
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
-  const balances = useAccountBalances(address ?? account?.address, true)
+  const { data: balances, isLoading: isAccountAssetsLoading } =
+    useAccountAssets(address)
 
-  const shareTokenIds = shareTokens.map((shareToken) => shareToken.id) ?? []
-
-  const shareTokenBalances = balances.data?.balances.filter((token) =>
-    shareTokenIds.find((shareTokenId) => shareTokenId === token.id),
+  const shareTokenBalances = useMemo(
+    () => [...(balances?.accountShareTokensMap.values() ?? [])],
+    [balances?.accountShareTokensMap],
   )
 
   const spotPrices = useDisplayShareTokenPrice(
-    shareTokenBalances?.map((token) => token.id) ?? [],
+    shareTokenBalances.map((token) => token.asset.id),
   )
 
-  const assetsTotal = useMemo(() => {
-    if (!assets.data) return BN_0
+  const assetsTotal = useMemo(
+    () =>
+      assets.data.reduce((acc, cur) => {
+        if (cur.totalDisplay) {
+          return BigNumber(acc).plus(cur.totalDisplay).toString()
+        }
+        return acc
+      }, "0"),
+    [assets.data],
+  )
 
-    return assets.data.reduce((acc, cur) => {
-      if (!cur.totalDisplay.isNaN()) {
-        return acc.plus(cur.totalDisplay)
-      }
-      return acc
-    }, BN_0)
-  }, [assets])
-
-  const lpTotal = useMemo(() => {
-    if (!lpPositions.data) return BN_0
-
-    return lpPositions.data.reduce(
-      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
-      BN_0,
-    )
-  }, [lpPositions.data])
+  const lpTotal = useMemo(
+    () =>
+      lpPositions.data.reduce(
+        (acc, { valueDisplay }) => BigNumber(acc).plus(valueDisplay).toString(),
+        "0",
+      ),
+    [lpPositions.data],
+  )
 
   const xykTotal = useMemo(() => {
-    if (!shareTokenBalances || !spotPrices.data) return BN_0
-    return shareTokenBalances.reduce<BN>((acc, shareTokenBalance) => {
-      const shareToken = shareTokens.find(
-        (shareToken) => shareToken.id === shareTokenBalance.id,
-      )
-      if (
-        shareTokenBalance &&
-        shareToken &&
-        shareTokenBalance.freeBalance.gt(0)
-      ) {
-        const meta = shareToken
+    if (!shareTokenBalances || !spotPrices.data) return BN_NAN
+    return shareTokenBalances.reduce<string>((acc, { asset, balance }) => {
+      if (BN(balance.freeBalance).gt(0)) {
+        const meta = asset
         const spotPrice = spotPrices.data.find(
           (spotPrice) => spotPrice.tokenIn === meta.id,
         )
 
-        const value = shareTokenBalance.freeBalance
+        const value = BN(balance.freeBalance)
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? BN_NAN)
 
-        return acc.plus(!value.isNaN() ? value : BN_0)
+        return BN(acc)
+          .plus(!value.isNaN() ? value : BN_0)
+          .toString()
       }
-      return acc
-    }, BN_0)
-  }, [shareTokenBalances, shareTokens, spotPrices.data])
 
-  const balanceTotal = assetsTotal
-    .plus(farmsTotal.value)
-    .plus(lpTotal)
-    .plus(xykTotal)
+      return acc
+    }, "0")
+  }, [shareTokenBalances, spotPrices.data])
+
+  const borrowsTotal = borrows.data?.totalBorrowsUSD ?? "0"
+
+  const balanceTotal = useMemo(
+    () =>
+      BigNumber(assetsTotal)
+        .plus(farmsTotal.value)
+        .plus(lpTotal)
+        .plus(xykTotal)
+        .minus(borrowsTotal)
+        .toString(),
+    [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
+  )
+
   const isLoading =
-    assets.isLoading || lpPositions.isLoading || farmsTotal.isLoading
+    borrows.isLoading ||
+    assets.isLoading ||
+    lpPositions.isLoading ||
+    farmsTotal.isLoading ||
+    isAccountAssetsLoading ||
+    spotPrices.isInitialLoading
 
   return {
     assetsTotal,
     farmsTotal: farmsTotal.value,
-    lpTotal: lpTotal.plus(xykTotal),
+    lpTotal: BigNumber(lpTotal)
+      .plus(xykTotal)
+      .plus(farmsTotal.value)
+      .toString(),
     balanceTotal,
+    borrowsTotal,
     isLoading,
   }
 }

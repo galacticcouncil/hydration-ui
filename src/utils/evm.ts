@@ -1,4 +1,5 @@
 import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
+import { u8aToHex } from "@polkadot/util"
 import { Buffer } from "buffer"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
@@ -10,8 +11,9 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
+import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 
-const nativeEvmChain = chainsMap.get("hydradx") as EvmParachain
+const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
 export const NATIVE_EVM_ASSET_DECIMALS = nativeEvmChain.client.chainDecimals
@@ -32,6 +34,10 @@ export function isEvmAccount(address?: string) {
   } catch {
     return false
   }
+}
+
+export function isEvmWalletExtension(provider: any) {
+  return isMetaMask(provider) || isMetaMaskLike(provider)
 }
 
 export class H160 {
@@ -59,12 +65,20 @@ export class H160 {
       safeConvertAddressH160(Buffer.from(addressBytes).toString("hex")) ?? ""
     )
   }
+
+  static fromSS58 = (address: string) => {
+    const decodedBytes = decodeAddress(address)
+    const slicedBytes = decodedBytes.slice(0, 20)
+    return u8aToHex(slicedBytes)
+  }
 }
 
 export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
-  chainKey = "hydradx",
+  chainKey = "hydration",
+  isTestnet = false,
+  isSnowbridge: boolean,
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -73,14 +87,20 @@ export function getEvmTxLink(
   if (chain.isEvmChain()) {
     const isApproveTx = txData?.startsWith("0x095ea7b3")
 
-    return isApproveTx
+    return isApproveTx || isSnowbridge
       ? `https://etherscan.io/tx/${txHash}`
       : `https://wormholescan.io/#/tx/${txHash}`
   }
 
   if (chain.isEvmParachain()) {
-    const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
-    return blockExplorers ? `${blockExplorers.default.url}/tx/${txHash}` : ""
+    let explorerUrl = ""
+    if (isTestnet && chainKey === "hydration") {
+      explorerUrl = "https://explorer.nice.hydration.cloud"
+    } else {
+      const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
+      explorerUrl = blockExplorers?.default.url ?? ""
+    }
+    return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ""
   } else {
     return createSubscanLink("extrinsic", txHash, chainKey)
   }

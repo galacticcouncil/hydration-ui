@@ -1,13 +1,13 @@
 import BN from "bignumber.js"
-import { TDeposit, useAccountPositions } from "api/deposits"
+import { TDeposit, useAccountAssets } from "api/deposits"
 import { useMemo } from "react"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { BN_0 } from "utils/constants"
-import { useSDKPools } from "api/pools"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import { scaleHuman } from "utils/balance"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useXYKSDKPools } from "api/xyk"
 
 type TokenAmount = {
   id: string
@@ -34,7 +34,7 @@ export const isXYKDeposit = (
 
 export const useAllOmnipoolDeposits = (address?: string) => {
   const { depositLiquidityPositions = [] } =
-    useAccountPositions(address).data ?? {}
+    useAccountAssets(address).data ?? {}
   const { getData } = useLiquidityPositionData()
 
   const data = useMemo(
@@ -67,7 +67,7 @@ export const useAllOmnipoolDeposits = (address?: string) => {
 }
 
 export const useAllXYKDeposits = (address?: string) => {
-  const { xykDeposits = [] } = useAccountPositions(address).data ?? {}
+  const { xykDeposits = [] } = useAccountAssets(address).data ?? {}
   const { getShareTokenByAddress } = useAssets()
 
   const depositNftsData = xykDeposits.reduce<
@@ -86,12 +86,13 @@ export const useAllXYKDeposits = (address?: string) => {
   const uniqAssetIds = [
     ...new Set(depositNftsData.map((deposit) => deposit.asset.id)),
   ]
+
   const issuances = useTotalIssuances()
   const shareTokeSpotPrices = useDisplayShareTokenPrice(uniqAssetIds)
-  const pools = useSDKPools()
+  const { data: xykPools, isLoading: isXykPoolsLoading } = useXYKSDKPools()
 
   const isLoading =
-    pools.isInitialLoading ||
+    isXykPoolsLoading ||
     issuances.isInitialLoading ||
     shareTokeSpotPrices.isInitialLoading
 
@@ -102,14 +103,14 @@ export const useAllXYKDeposits = (address?: string) => {
           const { asset, depositNft } = deposit
           const shareTokenIssuance = issuances.data?.get(asset.id)
 
-          const pool = pools.data?.find(
+          const pool = xykPools?.find(
             (pool) => pool.address === asset.poolAddress,
           )
 
           if (shareTokenIssuance && pool) {
             const index = asset.id
-            const shares = depositNft.data.shares.toBigNumber()
-            const ratio = shares.div(shareTokenIssuance)
+            const shares = depositNft.data.shares
+            const ratio = BN(shares).div(shareTokenIssuance)
             const amountUSD = scaleHuman(shareTokenIssuance, asset.decimals)
               .multipliedBy(shareTokeSpotPrices.data?.[0]?.spotPrice ?? 1)
               .times(ratio)
@@ -144,7 +145,7 @@ export const useAllXYKDeposits = (address?: string) => {
         },
         {},
       ),
-    [depositNftsData, issuances.data, pools.data, shareTokeSpotPrices.data],
+    [depositNftsData, issuances.data, xykPools, shareTokeSpotPrices.data],
   )
 
   return { data, isLoading }
@@ -178,13 +179,16 @@ export const useFarmDepositsTotal = (address?: string) => {
 
     for (const id in xyk) {
       const xykTotal = xyk[id].reduce((memo, deposit) => {
-        if (deposit.amountUSD) return memo.plus(deposit.amountUSD)
+        if (deposit.amountUSD) {
+          memo = memo.plus(deposit.amountUSD)
+        }
         return memo
       }, BN_0)
-      poolsTotal.plus(xykTotal)
+
+      poolsTotal = poolsTotal.plus(xykTotal)
     }
 
-    return poolsTotal
+    return poolsTotal.toString()
   }, [omnipool, xyk])
 
   return { isLoading: isLoading, value: total }

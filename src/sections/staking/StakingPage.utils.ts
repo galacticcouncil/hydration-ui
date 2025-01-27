@@ -5,26 +5,25 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
   TStakingPosition,
-  useCirculatingSupply,
+  useHDXSupplyFromSubscan,
   useStake,
   useStakingConsts,
   useStakingEvents,
-  useStakingPositionBalances,
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import {
   BN_0,
-  BN_100,
   BN_BILL,
   BN_QUINTILL,
   PARACHAIN_BLOCK_TIME,
 } from "utils/constants"
 import { useMemo } from "react"
-import { useReferendums } from "api/democracy"
+import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
+import { useAccountAssets } from "api/deposits"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -96,15 +95,15 @@ export const useStakeData = () => {
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
-  const circulatingSupply = useCirculatingSupply()
-  const balance = useTokenBalance(native.id, account?.address)
+  const { data: hdxSupply, isLoading: isSupplyLoading } =
+    useHDXSupplyFromSubscan()
+  const accountAssets = useAccountAssets()
+
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
-  const positionBalances = useStakingPositionBalances(
-    stake.data?.positionId?.toString(),
-  )
-  const referendas = useReferendums("finished")
+  const circulatingSupply = hdxSupply?.circulatingSupply
 
+  const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(
     (acc, lock) => (lock.type === "ormlvest" ? acc.plus(lock.amount) : acc),
     BN_0,
@@ -115,24 +114,17 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = balance.data?.freeBalance
+  const rawAvailableBalance = BN(balance?.freeBalance ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
 
-  const availableBalance = BigNumber.max(0, rawAvailableBalance ?? BN_0)
+  const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
-  const queries = [
-    stake,
-    circulatingSupply,
-    balance,
-    locks,
-    spotPrice,
-    positionBalances,
-    referendas,
-  ]
+  const queries = [stake, locks, spotPrice]
 
-  const isLoading = queries.some((query) => query.isInitialLoading)
+  const isLoading =
+    queries.some((query) => query.isInitialLoading) || isSupplyLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
@@ -144,7 +136,7 @@ export const useStakeData = () => {
     const totalStake = stake.data?.totalStake ?? 0
 
     const supplyStaked = BN(totalStake)
-      .div(Number(circulatingSupply.data ?? 1))
+      .div(Number(circulatingSupply ?? 1))
       .decimalPlaces(4)
       .multipliedBy(100)
 
@@ -152,68 +144,11 @@ export const useStakeData = () => {
       .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       .shiftedBy(-native.decimals)
 
-    const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
+    const circulatingSupplyData = BN(circulatingSupply ?? 0).shiftedBy(
       -native.decimals,
     )
 
     const stakePosition = stake.data?.stakePosition
-    let averagePercentage = BN_0
-    let amountOfReferends = 0
-
-    if (stakePosition) {
-      const initialPositionBalance = BN(
-        positionBalances.data?.events.find(
-          (event) => event.name === "Staking.PositionCreated",
-        )?.args.stake ?? 0,
-      )
-
-      const allReferendaPercentages =
-        referendas.data?.reduce((acc, referenda) => {
-          const endReferendaBlockNumber =
-            referenda.referendum.asFinished.end.toBigNumber()
-
-          if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            amountOfReferends++
-
-            if (referenda.amount && referenda.conviction) {
-              /* staked position value when a referenda is over */
-              let positionBalance = initialPositionBalance
-
-              positionBalances.data?.events.forEach((event) => {
-                if (event.name === "Staking.StakeAdded") {
-                  const eventOccurBlockNumber = BN(event.block.height)
-
-                  if (
-                    endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                    positionBalance.lt(event.args.totalStake)
-                  ) {
-                    positionBalance = BN(event.args.totalStake)
-                  }
-                }
-              })
-
-              const percentageOfVotedReferenda = referenda.amount
-                .div(positionBalance)
-                .multipliedBy(CONVICTIONS[referenda.conviction.toLowerCase()])
-                .div(CONVICTIONS["locked6x"])
-                .multipliedBy(100)
-
-              return acc.plus(percentageOfVotedReferenda)
-            }
-          }
-
-          return acc
-        }, BN_0) ?? BN(0)
-
-      averagePercentage =
-        allReferendaPercentages.isZero() && !amountOfReferends
-          ? BN_100
-          : allReferendaPercentages.div(amountOfReferends)
-    }
-
-    const rewardBoostPersentage = referendas.data?.length
-      ? averagePercentage
-      : BN_100
 
     return {
       supplyStaked,
@@ -226,16 +161,13 @@ export const useStakeData = () => {
       stakePosition: stakePosition
         ? {
             ...stake.data?.stakePosition,
-            rewardBoostPersentage,
           }
         : undefined,
     }
   }, [
     availableBalance,
-    circulatingSupply.data,
+    circulatingSupply,
     isLoading,
-    positionBalances.data?.events,
-    referendas.data,
     spotPrice.data?.spotPrice,
     stake.data?.minStake,
     stake.data?.positionId,
@@ -286,7 +218,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
@@ -444,7 +376,7 @@ export const useClaimReward = () => {
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
-  const { data: referendums } = useReferendums("ongoing")
+  const { data: openGovReferendas } = useOpenGovReferendas()
 
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
@@ -479,7 +411,7 @@ export const useClaimReward = () => {
       actionPointsWeight,
     } = stakingConsts.data
 
-    const pendingRewards = potBalance.data.balance.minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
@@ -524,10 +456,10 @@ export const useClaimReward = () => {
     )
 
     let extraPayablePercentageHuman: string | undefined
-    if (referendums?.length) {
+    if (openGovReferendas?.length) {
       const voteActionPoints = getVoteActionPoints(
         stakePosition.stake,
-        referendums.length,
+        openGovReferendas.length,
       )
 
       const extraPoints = wasm.calculate_points(
@@ -540,9 +472,9 @@ export const useClaimReward = () => {
         stakePosition.accumulatedSlashPoints.toString(),
       )
 
-      const extraPaylablePercentage = wasm.sigmoid(extraPoints, a, b)
+      const extraPayablePercentage = wasm.sigmoid(extraPoints, a, b)
 
-      extraPayablePercentageHuman = scaleHuman(extraPaylablePercentage, "q")
+      extraPayablePercentageHuman = scaleHuman(extraPayablePercentage, "q")
         .multipliedBy(100)
         .toString()
     }
@@ -568,7 +500,7 @@ export const useClaimReward = () => {
         BN(payablePercentageHuman).gte(chartPoints.y) &&
         (arr[i + 1] ? BN(payablePercentageHuman).lt(arr[i + 1].y) : true)
 
-      //calculate paylable percentage if vote ongoing referendas
+      // calculate payable percentage if vote ongoing referendas
       const currentSecondary = extraPayablePercentageHuman
         ? BN(extraPayablePercentageHuman).gte(chartPoints.y) &&
           (arr[i + 1] ? BN(extraPayablePercentageHuman).lt(arr[i + 1].y) : true)
@@ -604,7 +536,13 @@ export const useClaimReward = () => {
         .div(totalRewards)
         .multipliedBy(100),
     }
-  }, [bestNumber.data, potBalance.data, stake, stakingConsts, referendums])
+  }, [
+    bestNumber.data,
+    potBalance.data,
+    stake,
+    stakingConsts,
+    openGovReferendas,
+  ])
 
   return { data, isLoading }
 }

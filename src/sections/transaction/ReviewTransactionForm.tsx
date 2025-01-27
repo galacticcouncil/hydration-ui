@@ -7,6 +7,7 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import {
+  isHydrationIncompatibleAccount,
   useAccount,
   useEvmWalletReadiness,
   useWallet,
@@ -20,7 +21,7 @@ import {
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
 import { ReviewTransactionSummary } from "sections/transaction/ReviewTransactionSummary"
-import { HYDRADX_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
+import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
 import { H160, isEvmAccount } from "utils/evm"
@@ -32,14 +33,9 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
 import {
-  EVM_PROVIDERS,
-  WalletProviderType,
-} from "sections/web3-connect/constants/providers"
-import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { BN_0 } from "utils/constants"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -47,22 +43,12 @@ type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
 
 type Props = TxProps & {
   onCancel: () => void
-  onPermitDispatched: ({
-    permit,
-    xcallMeta,
-  }: {
-    permit: PermitResult
-    xcallMeta?: Record<string, string>
-  }) => void
+  onPermitDispatched: ({ permit }: { permit: PermitResult }) => void
   onEvmSigned: (data: {
     evmTx: TransactionResponse
     tx: SubmittableExtrinsic<"promise">
-    xcallMeta?: Record<string, string>
   }) => void
-  onSigned: (
-    signed: SubmittableExtrinsic<"promise">,
-    xcallMeta?: Record<string, string>,
-  ) => void
+  onSigned: (signed: SubmittableExtrinsic<"promise">) => void
   onSignError?: (error: unknown) => void
 }
 
@@ -107,12 +93,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isPermitTxPending = !!pendingPermit
 
-  const isIncompatibleWalletProvider =
-    !props.xcallMeta &&
-    account &&
-    isEvmAccount(account.address) &&
-    !EVM_PROVIDERS.includes(account.provider) &&
-    account.provider !== WalletProviderType.WalletConnect
+  const isIncompatibleWalletProvider = props.xcallMeta
+    ? false // allow all providers for xcm
+    : isHydrationIncompatibleAccount(account)
 
   const isLinking = !isLinkedAccount && storedReferralCode
 
@@ -137,16 +120,20 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const txData = tx.method.toHex()
 
           if (shouldUsePermit) {
-            const nonce = customNonce ? BN(customNonce) : permitNonce ?? BN_0
+            const nonce = customNonce
+              ? parseFloat(customNonce)
+              : permitNonce ?? 0
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,
-              xcallMeta: props.xcallMeta,
             })
           }
 
-          const evmTx = await wallet.signer.sendDispatch(txData)
-          return props.onEvmSigned({ evmTx, tx, xcallMeta: props.xcallMeta })
+          const evmTx = await wallet.signer.sendDispatch(
+            txData,
+            props.xcallMeta?.srcChain,
+          )
+          return props.onEvmSigned({ evmTx, tx })
         }
 
         const srcChain = props?.xcallMeta?.srcChain
@@ -154,7 +141,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           : null
 
         const isH160SrcChain =
-          !!srcChain && isAnyParachain(srcChain) && srcChain.h160AccOnly
+          !!srcChain && isAnyParachain(srcChain) && srcChain.usesH160Acc
 
         const formattedAddress = isH160SrcChain
           ? H160.fromAccount(address)
@@ -164,12 +151,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           era: era?.period?.toNumber(),
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
-          // defer to polkadot/api to handle nonce w/ regard to mempool
           nonce: customNonce ? parseInt(customNonce) : -1,
           withSignedTransaction: true,
         })
 
-        return props.onSigned(signature, props.xcallMeta)
+        return props.onSigned(signature)
       } catch (error) {
         props.onSignError?.(error)
       }
@@ -187,7 +173,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isLoading =
     transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
   const hasMultipleFeeAssets =
-    props.xcallMeta && props.xcallMeta?.srcChain !== HYDRADX_CHAIN_KEY
+    props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false
       : acceptedFeePaymentAssets.length > 1
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
@@ -220,7 +206,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const isEvm = isEvmAccount(account?.address)
 
   const isTippingEnabled = props.xcallMeta
-    ? props.xcallMeta?.srcChain === "hydradx" && !isEvm
+    ? props.xcallMeta?.srcChain === "hydration" && !isEvm
     : !isEvm
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
@@ -236,8 +222,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
         css={{ backgroundColor: `rgba(${theme.rgbColors.alpha0}, .06)` }}
         content={
           <ReviewTransactionData
-            address={account?.address}
             tx={tx}
+            evmTx={props.evmTx}
             xcallMeta={props.xcallMeta}
           />
         }

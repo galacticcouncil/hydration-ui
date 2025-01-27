@@ -77,6 +77,8 @@ export const SContent = styled(motion.div)`
 
   box-shadow: 0px 50px 44px rgba(0, 0, 0, 0.54);
 
+  max-width: auto;
+
   background: linear-gradient(
       359.21deg,
       #111320 -1.12%,
@@ -88,6 +90,7 @@ export const SContent = styled(motion.div)`
   z-index: ${theme.zIndices.header};
 
   @media ${theme.viewport.gte.sm} {
+    max-width: 275px;
     border-radius: 4px 0px 4px 4px;
   }
 `

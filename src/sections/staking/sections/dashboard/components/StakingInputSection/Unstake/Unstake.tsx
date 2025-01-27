@@ -14,8 +14,9 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { usePositionVotesIds, useProcessedVotesIds } from "api/staking"
+import { usePendingVotesIds, useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
+import { useRefetchAccountAssets } from "api/deposits"
 
 export const Unstake = ({
   loading,
@@ -31,6 +32,7 @@ export const Unstake = ({
   const queryClient = useQueryClient()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const refetchAccountAssets = useRefetchAccountAssets()
 
   const { account } = useAccount()
   const form = useForm<{ amount: string }>({
@@ -40,7 +42,7 @@ export const Unstake = ({
   })
 
   const processedVotes = useProcessedVotesIds()
-  const positionVotes = usePositionVotesIds()
+  const pendingVotes = usePendingVotesIds()
 
   const onSubmit = async () => {
     if (!positionId) return null
@@ -62,28 +64,41 @@ export const Unstake = ({
       return memo
     }, {} as ToastMessage)
 
-    const pendingVoteIds = await positionVotes.mutateAsync(positionId)
+    const { oldPendingVotesIds, newPendingVotesIds } =
+      await pendingVotes.mutateAsync(positionId)
     const processedVoteIds = await processedVotes.mutateAsync()
 
-    const voteIds = [...pendingVoteIds, ...processedVoteIds]
+    const oldVotes = [
+      ...oldPendingVotesIds,
+      ...(processedVoteIds ? processedVoteIds.oldProcessedVotesIds : []),
+    ]
+    const newVotes = [
+      ...newPendingVotesIds,
+      ...(processedVoteIds ? processedVoteIds.newProcessedVotesIds : []),
+    ]
 
     const transaction = await createTransaction(
       {
-        tx: voteIds.length
-          ? api.tx.utility.batchAll([
-              ...voteIds.map((id) => api.tx.democracy.removeVote(id)),
-              api.tx.staking.unstake(positionId),
-            ])
-          : api.tx.staking.unstake(positionId),
+        tx:
+          oldVotes.length || newVotes.length
+            ? api.tx.utility.batchAll([
+                ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
+                ...newVotes.map(({ classId, id }) =>
+                  api.tx.convictionVoting.removeVote(
+                    classId ? classId : null,
+                    id,
+                  ),
+                ),
+                api.tx.staking.unstake(positionId),
+              ])
+            : api.tx.staking.unstake(positionId),
       },
       { toast },
     )
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
-    await queryClient.invalidateQueries(QUERY_KEYS.circulatingSupply)
-    await queryClient.invalidateQueries(
-      QUERY_KEYS.tokenBalance(native.id, account?.address),
-    )
+    await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
+    refetchAccountAssets()
 
     if (!transaction.isError) {
       form.reset({ amount: "0" })

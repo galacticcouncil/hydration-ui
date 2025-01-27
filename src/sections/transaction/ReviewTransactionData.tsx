@@ -1,47 +1,58 @@
-import { XCallEvm } from "@galacticcouncil/xcm-sdk"
+import { TransactionRequest } from "@ethersproject/providers"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import ChevronDownSmallIcon from "assets/icons/ChevronDownSmall.svg?react"
+import CopyIcon from "assets/icons/CopyIcon.svg?react"
+import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
+import { Button } from "components/Button/Button"
+import { Dropdown } from "components/Dropdown/Dropdown"
 import { Separator } from "components/Separator/Separator"
 import { TransactionCode } from "components/TransactionCode/TransactionCode"
 import React, { FC, Fragment, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMeasure } from "react-use"
 import {
+  decodeEvmCall,
+  getCallDataHex,
   splitHexByZeroes,
-  decodeXCallEvm,
 } from "sections/transaction/ReviewTransactionData.utils"
-import { isEvmAccount, isEvmAddress } from "utils/evm"
+import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
+import { isAnyParachain } from "utils/helpers"
 import { getTransactionJSON } from "./ReviewTransaction.utils"
 import {
   SContainer,
   SExpandableContainer,
   SExpandButton,
+  SModeButton,
   SRawData,
   SScrollableContent,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
-import { Button } from "components/Button/Button"
-import CopyIcon from "assets/icons/CopyIcon.svg?react"
-import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
-import { Dropdown } from "components/Dropdown/Dropdown"
-import { createPolkadotJSTxUrl } from "sections/transaction/ReviewTransactionForm.utils"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { isAnyParachain } from "utils/helpers"
+import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import {
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
 
 const MAX_DECODED_HEIGHT = 130
 
 type Props = {
-  address?: string
   tx?: SubmittableExtrinsic
-  xcallEvm?: XCallEvm
+  evmTx?: {
+    data: TransactionRequest
+    abi?: string
+  }
+  xcall?: EvmCall | SolanaCall
   xcallMeta?: Record<string, string>
 }
+
+type TransactionMode = "auto" | "evm" | "solana" | "substrate"
 
 const TransactionData: FC<{ data: string }> = ({ data }) => {
   return (
     <SRawData>
-      <span>0x</span>
+      {data.startsWith("0x") && <span>0x</span>}
       {splitHexByZeroes(data).map((str, index) => (
         <Fragment key={index}>
           {str.startsWith("00") ? <>{str}</> : <span>{str}</span>}
@@ -137,17 +148,35 @@ const TransactionExpander: FC<{
 
 export const ReviewTransactionData: FC<Props> = ({
   tx,
-  xcallEvm,
+  evmTx,
+  xcall,
   xcallMeta,
-  address = "",
 }) => {
   const { t } = useTranslation()
   const [, copyToClipboard] = useCopyToClipboard()
   const [copied, setCopied] = useState(false)
 
-  const isEVM = isEvmAccount(address) || isEvmAddress(address)
-  const json = tx ? getTransactionJSON(tx) : null
-  const decodedEvmData = isEVM && xcallEvm ? decodeXCallEvm(xcallEvm) : null
+  const txJson = tx ? getTransactionJSON(tx) : null
+
+  const evmCall = evmTx || (isEvmCall(xcall) && xcall)
+
+  const evmTxJson = evmCall ? decodeEvmCall(evmCall) : null
+  const evmTxData = evmCall ? getCallDataHex(evmCall.data) : ""
+
+  const isSubstrateTx = !!tx && !!txJson
+  const isEvmTx = (!!evmTx || isEvmCall(xcall)) && !!evmTxJson
+  const isSolanaTx = isSolanaCall(xcall)
+  const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
+
+  const [mode, setMode] = useState<TransactionMode>(
+    isWrappedEvmTx ? "evm" : "auto",
+  )
+
+  const shouldRenderEvm = isEvmTx && (mode === "evm" || mode === "auto")
+  const shouldRenderSolana =
+    isSolanaTx && (mode === "solana" || mode === "auto")
+  const shouldRenderSubstrate =
+    isSubstrateTx && (mode === "substrate" || mode === "auto")
 
   useEffect(() => {
     if (!copied) return
@@ -168,24 +197,24 @@ export const ReviewTransactionData: FC<Props> = ({
       setCopied(true)
     }
 
-    if (xcallEvm && decodedEvmData) {
+    if (shouldRenderEvm) {
       items.push({
         key: "json-evm",
         label: t("liquidity.reviewTransaction.dropdown.json"),
         onSelect: () => {
-          copy(JSON.stringify(decodedEvmData.data, null, 2))
+          copy(JSON.stringify(evmTxJson.data, null, 2))
         },
       })
       items.push({
         key: "calldata-evm",
         label: t("liquidity.reviewTransaction.dropdown.calldata"),
         onSelect: () => {
-          copy(xcallEvm.data)
+          copy(evmTxData)
         },
       })
     }
 
-    if (tx) {
+    if (shouldRenderSubstrate) {
       items.push({
         key: "json",
         label: t("liquidity.reviewTransaction.dropdown.json"),
@@ -210,7 +239,7 @@ export const ReviewTransactionData: FC<Props> = ({
         },
       })
 
-      const chain = chainsMap.get(xcallMeta?.srcChain ?? "hydradx")
+      const chain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
       const url =
         chain && isAnyParachain(chain) && chain?.ws
           ? createPolkadotJSTxUrl(
@@ -233,28 +262,57 @@ export const ReviewTransactionData: FC<Props> = ({
     }
 
     return items
-  }, [copyToClipboard, decodedEvmData, t, tx, xcallEvm, xcallMeta?.srcChain])
+  }, [
+    copyToClipboard,
+    evmTxJson?.data,
+    evmTxData,
+    shouldRenderEvm,
+    shouldRenderSubstrate,
+    t,
+    tx,
+    xcallMeta?.srcChain,
+  ])
 
   return (
     <SContainer>
       <SScrollableContent>
-        {isEVM && xcallEvm && decodedEvmData ? (
+        {mode !== "auto" && (
+          <div sx={{ flex: "row", gap: 12, mb: 12, mt: -8 }}>
+            <SModeButton active={mode === "evm"} onClick={() => setMode("evm")}>
+              EVM
+            </SModeButton>
+            <SModeButton
+              active={mode === "substrate"}
+              onClick={() => setMode("substrate")}
+            >
+              SUBSTRATE
+            </SModeButton>
+          </div>
+        )}
+
+        {shouldRenderEvm && (
           <TransactionExpander
             decodedCall={
-              <TransactionCode
-                name={decodedEvmData.method}
-                src={decodedEvmData.data}
-              />
+              <TransactionCode name={evmTxJson.method} src={evmTxJson.data} />
             }
-            encodedCall={<TransactionData data={xcallEvm.data} />}
+            encodedCall={<TransactionData data={evmTxData} />}
           />
-        ) : json && tx ? (
+        )}
+        {shouldRenderSolana && (
           <TransactionExpander
-            decodedCall={<TransactionCode name={json.method} src={json.args} />}
+            decodedCall={<TransactionCode name="" src={xcall.ix} />}
+            encodedCall={<TransactionData data={xcall.data} />}
+          />
+        )}
+        {shouldRenderSubstrate && (
+          <TransactionExpander
+            decodedCall={
+              <TransactionCode name={txJson.method} src={txJson.args} />
+            }
             encodedCall={<TransactionData data={tx.method.toHex()} />}
             encodedCallHash={<TransactionData data={tx.method.hash.toHex()} />}
           />
-        ) : null}
+        )}
       </SScrollableContent>
       <Dropdown
         asChild

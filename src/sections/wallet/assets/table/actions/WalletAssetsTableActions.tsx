@@ -10,7 +10,7 @@ import InfoIcon from "assets/icons/InfoIcon.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
 import { Dropdown, TDropdownItem } from "components/Dropdown/Dropdown"
 import { TableAction } from "components/Table/Table"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
@@ -26,6 +26,7 @@ import { ExternalAssetImportModal } from "sections/trade/modal/ExternalAssetImpo
 import { useState } from "react"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
+import { Spinner } from "components/Spinner/Spinner"
 
 type Props = {
   toggleExpanded: () => void
@@ -36,7 +37,7 @@ type Props = {
 
 export const WalletAssetsTableActions = (props: Props) => {
   const { t } = useTranslation()
-  const setFeeAsPayment = useSetAsFeePayment()
+  const feePayment = useSetAsFeePayment()
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
@@ -62,45 +63,7 @@ export const WalletAssetsTableActions = (props: Props) => {
     isEvmAccount(account?.address) &&
     symbol !== NATIVE_EVM_ASSET_SYMBOL
 
-  const onFeePaymentSelect = () =>
-    setFeeAsPayment(id, {
-      onLoading: (
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-          tOptions={{
-            asset: symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-      onSuccess: (
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.table.actions.payment.toast.onSuccess"
-          tOptions={{
-            asset: symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-      onError: (
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.table.actions.payment.toast.onLoading"
-          tOptions={{
-            asset: symbol,
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      ),
-    })
+  const onFeePaymentSelect = () => feePayment.mutate(id)
 
   const buttons: TDropdownItem[] = [
     {
@@ -128,7 +91,7 @@ export const WalletAssetsTableActions = (props: Props) => {
       icon: <PlusIcon />,
       label: t("wallet.assets.table.actions.deposit"),
       onSelect: () => navigate({ to: LINKS.cross_chain }),
-      disabled: account?.isExternalWalletConnected,
+      disabled: account?.isExternalWalletConnected || props.asset.meta.isErc20,
     },
   ]
 
@@ -207,19 +170,23 @@ export const WalletAssetsTableActions = (props: Props) => {
         )}
 
         <Dropdown
+          align="end"
+          disabled={feePayment.isLoading}
           items={
             account?.isExternalWalletConnected
               ? []
               : [
-                  ...buttons.filter((button) =>
-                    hiddenElementsKeys.includes(button.key),
+                  ...buttons.filter(
+                    (button) =>
+                      hiddenElementsKeys.includes(button.key) &&
+                      !button.disabled,
                   ),
                   ...actionItems,
                 ]
           }
           onSelect={(item) => item.onSelect?.()}
         >
-          <MoreIcon />
+          {!feePayment.isLoading ? <MoreIcon /> : <Spinner size={15} />}
         </Dropdown>
       </>
 

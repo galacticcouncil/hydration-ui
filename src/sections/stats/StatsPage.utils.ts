@@ -8,24 +8,29 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import { useFee, useTVL } from "api/stats"
-import { useVolume } from "api/volume"
+import { useOmnipoolVolumes } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
+import { useOmnipoolFarms } from "api/farms"
 
 const withoutRefresh = true
 
 export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
   const { native, getAssetWithFallback } = useAssets()
-  const accountPositions = useAccountPositions(HYDRA_TREASURE_ACCOUNT)
+  const accountAssets = useAccountAssets(HYDRA_TREASURE_ACCOUNT)
   const omnipoolAssets = useOmnipoolDataObserver()
   const { getData } = useLiquidityPositionData()
   const displayAsset = useDisplayAssetStore()
 
   const omnipoolAssetsIds =
     omnipoolAssets.data?.map((a) => a.id.toString()) ?? []
+  const { data: allFarms, isLoading: isAllFarmsLoading } =
+    useOmnipoolFarms(omnipoolAssetsIds)
 
-  const volumes = useVolume("all")
+  const { data: volumes = [], isLoading: isVolumeLoading } =
+    useOmnipoolVolumes(omnipoolAssetsIds)
+
   const tvls = useTVL("all")
   const fees = useFee("all")
 
@@ -35,10 +40,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     withoutRefresh,
   )
 
-  const queries = [omnipoolAssets, accountPositions, tvls, ...spotPrices]
+  const queries = [omnipoolAssets, accountAssets, tvls, ...spotPrices]
   const isLoading = queries.some((q) => q.isLoading)
 
-  const positions = accountPositions.data?.liquidityPositions
+  const positions = accountAssets.data?.liquidityPositions
 
   const data = useMemo(() => {
     if (
@@ -92,24 +97,32 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
       const pol = valueOfLiquidityPositions.plus(valueOfShares)
 
       const tvl = BN(
-        tvls?.data?.find((tvl) => tvl.asset_id === Number(omnipoolAssetId))
+        tvls?.data?.find((tvl) => tvl?.asset_id === Number(omnipoolAssetId))
           ?.tvl_usd ?? BN_NAN,
       )
 
-      const volume = BN(
-        volumes?.data?.find(
-          (volume) => volume.asset_id === Number(omnipoolAssetId),
-        )?.volume_usd ?? BN_NAN,
-      )
+      const volumeRaw = volumes?.find(
+        (volume) => volume.assetId === meta.id,
+      )?.assetVolume
+
+      const volume =
+        volumeRaw && spotPrice
+          ? BN(volumeRaw).shiftedBy(-meta.decimals).multipliedBy(spotPrice)
+          : BN_NAN
+      const isLoadingFee = fees?.isInitialLoading || isAllFarmsLoading
+
+      const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
 
       const fee =
         native.id === omnipoolAssetId
           ? BN_0
           : BN(
               fees?.data?.find(
-                (fee) => fee.asset_id === Number(omnipoolAssetId),
+                (fee) => fee?.asset_id === Number(omnipoolAssetId),
               )?.projected_apr_perc ?? BN_NAN,
             )
+
+      const totalFee = !isLoadingFee ? fee.plus(totalApr ?? 0) : BN_NAN
 
       return {
         id: omnipoolAssetId,
@@ -123,8 +136,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
         volumePol: BN(0),
         price: spotPrice,
         fee,
-        isLoadingFee: fees?.isInitialLoading,
-        isLoadingVolume: volumes.isInitialLoading,
+        totalFee,
+        farms,
+        isLoadingFee,
+        isLoadingVolume: isVolumeLoading,
       }
     })
     return rows
@@ -138,8 +153,10 @@ export const useOmnipoolAssetDetails = (sortBy: "tvl" | "pol") => {
     positions,
     spotPrices,
     tvls.data,
-    volumes?.data,
-    volumes.isInitialLoading,
+    volumes,
+    isVolumeLoading,
+    allFarms,
+    isAllFarmsLoading,
   ])
     .filter(isNotNil)
     .sort((assetA, assetB) => {

@@ -8,7 +8,11 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import { PROVIDERS, useActiveProvider, useActiveRpcUrlList } from "api/provider"
+import {
+  useActiveProvider,
+  useActiveRpcUrlList,
+  useIsTestnet,
+} from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -20,8 +24,6 @@ import { AddTokenModal } from "sections/wallet/addToken/modal/AddTokenModal"
 import { useState } from "react"
 import { Asset } from "@galacticcouncil/sdk"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
-
-const defaultEvmTokenId: string = import.meta.env.VITE_EVM_NATIVE_ASSET_ID
 
 const SwapApp = createComponent({
   tagName: "gc-trade",
@@ -67,9 +69,7 @@ export function SwapPage() {
 
   const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
-  const isTestnet =
-    PROVIDERS.find((provider) => provider.url === rpcUrlList[0])?.dataEnv ===
-    "testnet"
+  const isTestnet = useIsTestnet()
 
   const isEvm = isEvmAccount(account?.address)
   const version = useRemount([isEvm])
@@ -116,9 +116,7 @@ export function SwapPage() {
   const assetIn =
     search.success && search.data.assetIn
       ? search.data.assetIn
-      : isEvm
-        ? defaultEvmTokenId
-        : stableCoinId ?? stableCoinAssetId
+      : stableCoinId ?? stableCoinAssetId
 
   const assetOut =
     search.success && search.data.assetOut

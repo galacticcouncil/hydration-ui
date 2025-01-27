@@ -1,10 +1,10 @@
 import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { ToastMessage, useStore } from "state/store"
+import { useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -12,7 +12,9 @@ import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAcountAssets } from "./assetDetails"
+import { useAccountAssets } from "./deposits"
+import { createToastMessages } from "state/toasts"
+import { useTranslation } from "react-i18next"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -30,54 +32,95 @@ export const getAcceptedCurrency = (api: ApiPromise) => async () => {
 }
 
 export const useAcceptedCurrencies = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
+  const { api, isLoaded, tradeRouter } = useRpcProvider()
   const { native } = useAssets()
 
-  return useQuery(QUERY_KEYS.acceptedCurrencies, getAcceptedCurrency(api), {
-    enabled: isLoaded && ids.length > 0,
-    select: (assets) => {
-      return ids.map((id) => {
-        const response = assets.find((asset) => asset.id === id)
+  return useQuery(
+    QUERY_KEYS.acceptedCurrencies(ids),
+    async () => {
+      const [pools, acceptedCurrency] = await Promise.all([
+        tradeRouter.getPools(),
+        getAcceptedCurrency(api)(),
+      ])
 
-        return response
-          ? response
-          : id === native.id
-            ? { id, accepted: true, data: undefined }
-            : { id, accepted: false, data: undefined }
+      return ids.map((id) => {
+        const currency = acceptedCurrency.find((currency) => currency.id === id)
+
+        if (currency) {
+          return currency
+        }
+
+        if (id === native.id) {
+          return { id, accepted: true, data: undefined }
+        }
+
+        const hasPoolWithDOT = !!pools.find((pool) => {
+          return (
+            pool.tokens.find((token) => token.id === id) &&
+            pool.tokens.find((token) => token.id === "5")
+          )
+        })
+
+        if (hasPoolWithDOT) {
+          return { id, accepted: true, data: undefined }
+        }
+
+        return { id, accepted: false, data: undefined }
       })
     },
-  })
+    {
+      enabled: isLoaded && ids.length > 0,
+    },
+  )
 }
 
 export const useSetAsFeePayment = () => {
+  const { t } = useTranslation()
   const { api } = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
-  return async (tokenId?: string, toast?: ToastMessage) => {
-    if (!tokenId) return
+  return useMutation(
+    async (tokenId?: string) => {
+      if (!tokenId) return
 
-    const paymentInfoData = await api.tx.currencies
-      .transfer("", native.id, "0")
-      .paymentInfo(account?.address ?? "")
+      const meta = getAsset(tokenId)
 
-    const transaction = await createTransaction(
-      {
-        tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
-        overrides: {
-          fee: new BigNumber(paymentInfoData.partialFee.toHex()),
-          currencyId: tokenId,
+      const toast = createToastMessages(
+        "wallet.assets.table.actions.payment.toast",
+        {
+          t,
+          tOptions: {
+            asset: meta?.symbol,
+          },
+          components: ["span", "span.highlight"],
         },
-      },
-      { toast },
-    )
-    if (transaction.isError) return
-    await queryClient.refetchQueries({
-      queryKey: QUERY_KEYS.accountCurrency(account?.address),
-    })
-  }
+      )
+
+      const paymentInfoData = await api.tx.currencies
+        .transfer("", native.id, "0")
+        .paymentInfo(account?.address ?? "")
+
+      return await createTransaction(
+        {
+          tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
+          overrides: {
+            fee: new BigNumber(paymentInfoData.partialFee.toHex()),
+            currencyId: tokenId,
+          },
+        },
+        { toast },
+      )
+    },
+    {
+      onSuccess: () =>
+        queryClient.refetchQueries({
+          queryKey: QUERY_KEYS.accountCurrency(account?.address),
+        }),
+    },
+  )
 }
 
 export const getAccountCurrency =
@@ -107,7 +150,7 @@ export const useAccountFeePaymentAssets = () => {
   const { featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const accountAssets = useAcountAssets(account?.address)
+  const accountAssets = useAccountAssets()
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
@@ -120,7 +163,8 @@ export const useAccountFeePaymentAssets = () => {
       )
     }
 
-    const assetIds = accountAssets.map((accountAsset) => accountAsset.asset.id)
+    const assetIds =
+      accountAssets.data?.balances?.map((balance) => balance.assetId) ?? []
     return uniqBy(identity, [...assetIds, feePaymentAssetId].filter(isNotNil))
   }, [
     account?.address,
@@ -141,12 +185,17 @@ export const useAccountFeePaymentAssets = () => {
     .map((acceptedFeeAsset) => acceptedFeeAsset?.id)
 
   const isLoading =
-    accountFeePaymentAsset.isLoading || acceptedFeePaymentAssets.isLoading
+    accountFeePaymentAsset.isLoading ||
+    acceptedFeePaymentAssets.isLoading ||
+    accountAssets.isLoading
   const isInitialLoading =
     accountFeePaymentAsset.isInitialLoading ||
-    acceptedFeePaymentAssets.isInitialLoading
+    acceptedFeePaymentAssets.isInitialLoading ||
+    accountAssets.isInitialLoading
   const isSuccess =
-    accountFeePaymentAsset.isSuccess && acceptedFeePaymentAssets.isSuccess
+    accountFeePaymentAsset.isSuccess &&
+    acceptedFeePaymentAssets.isSuccess &&
+    accountAssets.isSuccess
 
   return {
     acceptedFeePaymentAssetsIds,

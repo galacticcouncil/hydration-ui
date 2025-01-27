@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
@@ -13,13 +13,11 @@ import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquid
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useDisplayPrice } from "utils/displayAsset"
-import { useTokenBalance } from "api/balances"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
@@ -29,57 +27,58 @@ import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { Farm } from "api/farms"
 import { scale } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
-import { Switch } from "components/Switch/Switch"
-import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 import { Separator } from "components/Separator/Separator"
+import { useAccountAssets } from "api/deposits"
+import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
+import { usePoolData } from "sections/pools/pool/Pool"
+import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 
 type Props = {
-  poolId: string
-  fee: BigNumber
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
   onCancel: () => void
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
-  reserves: { asset_id: number; amount: string }[]
   isStablepoolOnly: boolean
-  farms: Farm[]
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
 }
 
-const createFormSchema = (balance: BigNumber, decimals: number) =>
+const createFormSchema = (balance: string, decimals: number) =>
   z.object({
     value: required.pipe(maxBalance(balance, decimals)),
   })
 
 export const AddStablepoolLiquidity = ({
-  poolId,
   asset,
   onSuccess,
   onAssetOpen,
   onSubmitted,
   onClose,
   onCancel,
-  reserves,
-  fee,
   isStablepoolOnly,
-  farms,
   isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const accountBalances = useAccountAssets()
+  const {
+    reserves,
+    stablepoolFee: fee = BN_0,
+    farms,
+    id: poolId,
+  } = usePoolData().pool as TPoolFullData
 
   const { t } = useTranslation()
 
-  const { account } = useAccount()
-  const walletBalance = useTokenBalance(asset.id, account?.address)
+  const walletBalance = accountBalances.data?.accountAssetsMap.get(
+    asset.id,
+  )?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -87,17 +86,18 @@ export const AddStablepoolLiquidity = ({
     api.tx.stableswap.addLiquidity(poolId, [
       { assetId: asset.id, amount: "1" },
     ]),
-    ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, farms) : []),
+    ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, isJoinFarms, farms) : []),
   ]
 
   const estimatedFees = useEstimatedFees(estimationTxs)
 
-  const balance = walletBalance.data?.balance ?? BN_0
+  const balance = walletBalance?.balance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === asset.id
-      ? balance
+      ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(asset.existentialDeposit)
+          .toString()
       : balance
 
   const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
@@ -234,8 +234,8 @@ export const AddStablepoolLiquidity = ({
                 onChange(v)
                 handleShares(v)
               }}
-              balance={balance}
-              balanceMax={balanceMax}
+              balance={BN(balance)}
+              balanceMax={BN(balanceMax)}
               asset={asset.id}
               error={error?.message}
               onAssetOpen={onAssetOpen}
@@ -255,44 +255,15 @@ export const AddStablepoolLiquidity = ({
             width: "auto",
           }}
         />
-        {farms.length > 0 && !isStablepoolOnly && (
-          <>
-            <SummaryRow
-              label={t("liquidity.add.modal.joinFarms")}
-              description={t("liquidity.add.modal.joinFarms.description")}
-              content={
-                <div sx={{ flex: "row", align: "center", gap: 8 }}>
-                  <Text fs={14} color="darkBlue200">
-                    {isJoinFarms ? t("yes") : t("no")}
-                  </Text>
-                  <Switch
-                    name="join-farms"
-                    value={isJoinFarms}
-                    onCheckedChange={setIsJoinFarms}
-                    disabled={isJoinFarmDisabled}
-                  />
-                </div>
-              }
-            />
-            {isJoinFarms && (
-              <div sx={{ flex: "column", gap: 8, mt: 8 }}>
-                {farms.map((farm) => {
-                  return (
-                    <FarmDetailsRow
-                      key={farm.globalFarm.id.toString()}
-                      farm={farm}
-                    />
-                  )
-                })}
-              </div>
-            )}
-            {customErrors?.farm && (
-              <Alert variant="warning" sx={{ mt: 8 }}>
-                {customErrors.farm.message}
-              </Alert>
-            )}
-          </>
-        )}
+        {farms.length > 0 ? (
+          <JoinFarmsSection
+            farms={farms}
+            isJoinFarms={isJoinFarms}
+            setIsJoinFarms={setIsJoinFarms}
+            error={customErrors?.farm?.message}
+            isJoinFarmDisabled={isJoinFarmDisabled}
+          />
+        ) : null}
         <Spacer size={20} />
         <CurrencyReserves reserves={reserves} />
         <Spacer size={20} />

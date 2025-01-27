@@ -1,11 +1,11 @@
-import { useOmnipoolAssetsSubsciption } from "./omnipool"
+import { useSDKPools } from "./pools"
 
 export const QuerySubscriptions = () => {
   return <OmnipoolAssetsSubscription />
 }
 
 const OmnipoolAssetsSubscription = () => {
-  useOmnipoolAssetsSubsciption()
+  useSDKPools()
 
   return null
 }

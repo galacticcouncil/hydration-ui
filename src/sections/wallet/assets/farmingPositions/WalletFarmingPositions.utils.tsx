@@ -7,7 +7,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { useBestNumber } from "api/chain"
-import { useAccountPositions } from "api/deposits"
+import { useAccountAssets } from "api/deposits"
 import BN from "bignumber.js"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Text } from "components/Typography/Text/Text"
@@ -183,7 +183,7 @@ export const useFarmingPositionsData = ({
 } = {}) => {
   const { getShareTokenByAddress, getAsset } = useAssets()
   const { omnipoolDeposits = [], xykDeposits = [] } =
-    useAccountPositions().data ?? {}
+    useAccountAssets().data ?? {}
   const { omnipool, xyk } = useAllFarmDeposits()
 
   const bestNumber = useBestNumber()
@@ -206,10 +206,7 @@ export const useFarmingPositionsData = ({
 
         const { symbol, decimals, name, id } = meta
         const latestEnteredAtBlock = deposit.data.yieldFarmEntries.reduce(
-          (acc, curr) =>
-            acc.lt(curr.enteredAt.toBigNumber())
-              ? curr.enteredAt.toBigNumber()
-              : acc,
+          (acc, curr) => (acc.lt(curr.enteredAt) ? BN(curr.enteredAt) : acc),
           BN_0,
         )
 
@@ -217,12 +214,9 @@ export const useFarmingPositionsData = ({
           latestEnteredAtBlock,
           bestNumber.data.relaychainBlockNumber.toBigNumber(),
         )
-        const shares = getFloatingPointAmount(
-          deposit.data.shares.toBigNumber(),
-          decimals,
-        )
+        const shares = getFloatingPointAmount(deposit.data.shares, decimals)
 
-        let position: XYKPosition | TLPData
+        let position: TXYKPosition | TLPData
         if (isXyk) {
           const values = xyk[meta.id]?.find(
             (value) => value.depositId === deposit.id,
@@ -294,10 +288,10 @@ export const useFarmingPositionsData = ({
 }
 
 export const isXYKPosition = (
-  position: XYKPosition | TLPData,
-): position is XYKPosition => !!(position as XYKPosition).balances
+  position: TXYKPosition | TLPData,
+): position is TXYKPosition => !!(position as TXYKPosition).balances
 
-export type XYKPosition = {
+export type TXYKPosition = {
   valueDisplay: BN
   balances: { amount: BN; symbol: string; id: string }[]
   id: string
@@ -311,5 +305,5 @@ export type FarmingTablePosition = {
   name: string
   date: Date
   shares: BN
-  position: XYKPosition | TLPData
+  position: TXYKPosition | TLPData
 }

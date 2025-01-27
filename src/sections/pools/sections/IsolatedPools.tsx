@@ -9,7 +9,6 @@ import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
-import { XYKVolumeTotal } from "sections/pools/header/VolumeTotal"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { useSearch } from "@tanstack/react-location"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
@@ -59,25 +58,33 @@ export const IsolatedPools = () => {
 const IsolatedPoolsData = () => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
-  const { id } = useSearch<{
+  const searchQuery = useSearch<{
     Search: {
       id?: number
     }
   }>()
+  const { id } = searchQuery
 
   const xykPools = useXYKPools()
 
-  const totalLocked = useMemo(() => {
+  const totals = useMemo(() => {
     if (xykPools.data) {
-      return xykPools.data.reduce((acc, xykPool) => {
-        return acc.plus(
-          !xykPool.tvlDisplay.isNaN() && !xykPool.isInvalid
-            ? xykPool.tvlDisplay
-            : BN_0,
-        )
-      }, BN_0)
+      return xykPools.data.reduce(
+        (acc, xykPool) => {
+          if (!xykPool.isInvalid) {
+            acc.tvl = acc.tvl.plus(
+              !xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0,
+            )
+            acc.volume = acc.volume.plus(xykPool.volume ?? 0)
+          }
+
+          return acc
+        },
+        { tvl: BN_0, volume: BN_0 },
+      )
     }
-    return BN_0
+
+    return { tvl: BN_0, volume: BN_0 }
   }, [xykPools.data])
 
   const filteredPools = useMemo(
@@ -109,7 +116,7 @@ const IsolatedPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={xykPools.isInitialLoading}
-                value={totalLocked}
+                value={totals.tvl}
                 fontSize={[19, 24]}
               />
             ),
@@ -117,7 +124,13 @@ const IsolatedPoolsData = () => {
           {
             withoutSeparator: true,
             label: t("liquidity.header.24hours"),
-            content: <XYKVolumeTotal />,
+            content: (
+              <HeaderTotalData
+                isLoading={xykPools.isInitialLoading}
+                value={totals.volume}
+                fontSize={[19, 24]}
+              />
+            ),
           },
         ]}
       />

@@ -4,6 +4,9 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
+import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
+import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
@@ -102,6 +105,7 @@ const StakingPage = lazy(async () => ({
 const ReferralsWrapper = lazy(async () => ({
   default: (await import("sections/referrals/ReferralsPage")).ReferralsWrapper,
 }))
+
 const SubmitTransaction = lazy(async () => ({
   default: (await import("sections/submit-transaction/SubmitTransaction"))
     .SubmitTransaction,
@@ -109,6 +113,28 @@ const SubmitTransaction = lazy(async () => ({
 
 const MemepadPage = lazy(async () => ({
   default: (await import("sections/memepad/MemepadPage")).MemepadPage,
+}))
+const LendingPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingPage")).LendingPage,
+}))
+
+const LendingPageIndex = lazy(async () => ({
+  default: (await import("sections/lending/LendingPage")).LendingPageIndex,
+}))
+
+const LendingDashboardPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingDashboardPage"))
+    .LendingDashboardPage,
+}))
+
+const LendingMarketsPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingMarketsPage"))
+    .LendingMarketsPage,
+}))
+
+const LendingReserveOverviewPage = lazy(async () => ({
+  default: (await import("sections/lending/LendingReserveOverviewPage"))
+    .LendingReserveOverviewPage,
 }))
 
 export const routes: Route[] = [
@@ -390,6 +416,53 @@ export const routes: Route[] = [
         <MemepadPage />
       </Suspense>
     ),
+  },
+  {
+    path: LINKS.borrow,
+    element: (
+      <Suspense fallback={<LendingDashboardSkeleton />}>
+        <LendingPage />
+      </Suspense>
+    ),
+    children: [
+      {
+        path: "/",
+        element: (
+          <Suspense fallback={<LendingDashboardSkeleton />}>
+            <LendingPageIndex />
+          </Suspense>
+        ),
+      },
+      {
+        path: LINKS.borrowDashboard.split("/").pop(),
+        element: (
+          <Suspense fallback={<LendingDashboardSkeleton />}>
+            <LendingDashboardPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: LINKS.borrowMarkets.split("/").pop(),
+        children: [
+          {
+            path: "/",
+            element: (
+              <Suspense fallback={<LendingMarketsSkeleton />}>
+                <LendingMarketsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ":underlyingAsset",
+            element: async ({ params: { underlyingAsset } }) => (
+              <Suspense fallback={<LendingReserveOverviewSkeleton />}>
+                <LendingReserveOverviewPage underlyingAsset={underlyingAsset} />
+              </Suspense>
+            ),
+          },
+        ],
+      },
+    ],
   },
   {
     path: "*",

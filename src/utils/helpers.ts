@@ -9,7 +9,7 @@ import { KeyOfType } from "utils/types"
 import { knownGenesis } from "@polkadot/networks/defaults/genesis"
 import { availableNetworks } from "@polkadot/networks"
 import type { Network } from "@polkadot/networks/types"
-import BN, { BigNumber } from "bignumber.js"
+import BN from "bignumber.js"
 import { AnyChain, AnyEvmChain, AnyParachain } from "@galacticcouncil/xcm-core"
 import { TAsset } from "providers/assets"
 
@@ -342,7 +342,7 @@ export const isJson = (item: string) => {
 
 export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
   assets: Array<T>,
-  balanceKey: Extract<KeyOfType<T, BigNumber>, string>,
+  balanceKey: Extract<KeyOfType<T, string | undefined>, string>,
   firstAssetId?: string,
 ) => {
   const tickerOrder = [
@@ -365,8 +365,8 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
       if (a.meta.id === firstAssetId) return -1
       if (b.meta.id === firstAssetId) return 1
     }
-    const balanceA = a[balanceKey] as BN
-    const balanceB = b[balanceKey] as BN
+    const balanceA = BN(a[balanceKey])
+    const balanceB = BN(b[balanceKey])
 
     if (balanceA.isNaN() || balanceB.isNaN()) {
       if (balanceA.isNaN() && !balanceB.isNaN()) return 1
@@ -393,7 +393,7 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
       }
     }
 
-    return b[balanceKey].minus(a[balanceKey]).toNumber()
+    return balanceB.minus(balanceA).toNumber()
   })
 }
 
@@ -431,3 +431,9 @@ export const arraysEqual = <T>(arr1: T[], arr2: T[]): boolean => {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms))
+
+export const bnSort = (valueA?: string, valueB?: string) => {
+  if (valueA === undefined || valueB === undefined) return -1
+
+  return BN(valueA).gt(valueB) ? 1 : -1
+}

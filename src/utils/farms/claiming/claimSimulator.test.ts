@@ -24,7 +24,6 @@ import {
   PalletLiquidityMiningFarmState,
   PalletLiquidityMiningGlobalFarmData,
   PalletLiquidityMiningYieldFarmData,
-  PalletLiquidityMiningYieldFarmEntry,
 } from "@polkadot/types/lookup"
 import { decodeAddress } from "@polkadot/util-crypto"
 import BigNumber from "bignumber.js"
@@ -128,7 +127,7 @@ test("create mock type registry", () => {
     [
       {
         id: "0",
-        existentialDeposit: new BigNumber("1000000000000"),
+        existentialDeposit: "1000000000000",
       },
     ],
   )
@@ -136,20 +135,20 @@ test("create mock type registry", () => {
   const result = simulator.claim_rewards(
     entries.globalFarms["1"],
     entries.yieldFarms["4"],
-    createStruct<PalletLiquidityMiningYieldFarmEntry>(registry, {
-      globalFarmId: [U32, new U32(registry, "1")],
-      yieldFarmId: [U32, new U32(registry, "4")],
-      valuedShares: [U128, new U128(registry, "3078002878")],
-      stoppedAtCreation: [U32, new U32(registry, "0")],
-      accumulatedRpvs: [U128, new U128(registry, "386871776323198")],
-      accumulatedClaimedRewards: [U128, new U128(registry, "2753688")],
-      enteredAt: [U32, new U32(registry, "85871")],
-      updatedAt: [U32, new U32(registry, "101545")],
-    }),
+    {
+      globalFarmId: "1",
+      yieldFarmId: "4",
+      valuedShares: "3078002878",
+      stoppedAtCreation: "0",
+      accumulatedRpvs: "386871776323198",
+      accumulatedClaimedRewards: "2753688",
+      enteredAt: "85871",
+      updatedAt: "101545",
+    },
     new BigNumber("117955"),
     new BigNumber("3897022160208644"),
   )
 
-  expect(result?.value.toString()).toEqual("222,635".replaceAll(",", ""))
+  expect(result?.reward.toString()).toEqual("222,635".replaceAll(",", ""))
   expect(result?.assetId.toString()).toEqual("0")
 })

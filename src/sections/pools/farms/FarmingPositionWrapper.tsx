@@ -15,7 +15,6 @@ import { ReactElement, useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { useAllFarmDeposits } from "./position/FarmingPosition.utils"
 import { Separator } from "components/Separator/Separator"
-import { useFarms } from "api/farms"
 import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
@@ -26,7 +25,7 @@ export const FarmingPositionWrapper = () => {
   const { account } = useAccount()
   const { pool, isXYK } = usePoolData()
 
-  const farms = useFarms([pool.id])
+  const farms = pool.farms
 
   const { omnipool, xyk } = useAllFarmDeposits()
 
@@ -104,12 +103,12 @@ export const FarmingPositionWrapper = () => {
     (acc, position, i, array) => {
       const isLastElement = array.length === i + 1
       const availableYieldFarms =
-        farms.data?.filter(
-          (i) =>
+        farms?.filter(
+          (farm) =>
             !position.data.yieldFarmEntries.some(
               (entry) =>
-                entry.globalFarmId.eq(i.globalFarm.id) &&
-                entry.yieldFarmId.eq(i.yieldFarm.id),
+                BN(entry.globalFarmId).eq(farm.globalFarmId) &&
+                BN(entry.yieldFarmId).eq(farm.yieldFarmId),
             ),
         ) ?? []
 

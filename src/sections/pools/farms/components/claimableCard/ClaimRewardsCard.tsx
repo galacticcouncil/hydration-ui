@@ -1,4 +1,3 @@
-import { css } from "@emotion/react"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
@@ -9,33 +8,55 @@ import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
-import { useClaimFarmMutation, useClaimableAmount } from "utils/farms/claiming"
+import { useClaimFarmMutation } from "utils/farms/claiming"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
 import { TDeposit } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import {
+  useAccountClaimableFarmValues,
+  useSummarizeClaimableValues,
+} from "api/farms"
+import BN from "bignumber.js"
 
 export const ClaimRewardsCard = (props: {
   depositNft?: TDeposit
   onTxClose?: () => void
 }) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
-  const { getAssetWithFallback } = useAssets()
+  const {
+    pool: { id, meta },
+  } = usePoolData()
+  const { getAssetWithFallback, isShareToken } = useAssets()
   const { account } = useAccount()
 
-  const claimable = useClaimableAmount(pool.id, props.depositNft)
+  const { data: claimableValues } = useAccountClaimableFarmValues()
+  const poolClaimableValues = claimableValues?.get(
+    isShareToken(meta) ? meta.poolAddress : id,
+  )
+
+  const claimableDepositValues = props.depositNft
+    ? poolClaimableValues?.filter(
+        (farm) => farm.depositId === props.depositNft?.id,
+      )
+    : poolClaimableValues
+
+  const { claimableTotal, claimableAssetValues } = useSummarizeClaimableValues(
+    claimableDepositValues ?? [],
+  )
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
 
-    for (let key in claimable.data?.assets) {
+    for (let key in claimableAssetValues) {
       const asset = getAssetWithFallback(key)
-      const balance = separateBalance(claimable.data?.assets[key], {
-        fixedPointScale: asset.decimals,
-        type: "token",
-      })
+      const balance = separateBalance(
+        BN(claimableAssetValues[key].claimableRewards),
+        {
+          type: "token",
+        },
+      )
 
       claimableAssets.push({ ...balance, symbol: asset?.symbol })
     }
@@ -53,7 +74,7 @@ export const ClaimRewardsCard = (props: {
     })
 
     return { claimableAssets, toastValue }
-  }, [getAssetWithFallback, claimable.data?.assets, t])
+  }, [getAssetWithFallback, claimableAssetValues, t])
 
   const toast = TOAST_MESSAGES.reduce((memo, type) => {
     const msType = type === "onError" ? "onLoading" : type
@@ -68,15 +89,14 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const claimAll = useClaimFarmMutation(
-    pool.id,
-    props.depositNft,
+  const { claim, isLoading } = useClaimFarmMutation(
+    claimableDepositValues,
     toast,
     props.onTxClose,
     () => {},
   )
 
-  if (!claimable.data?.displayValue) return null
+  if (!claimableAssets.length) return null
 
   return (
     <Card variant="primary">
@@ -85,61 +105,62 @@ export const ClaimRewardsCard = (props: {
           flex: ["column", "row"],
           justify: "space-between",
           align: "center",
+          gap: 8,
           width: "100%",
           mt: 12,
         }}
       >
         <div
-          sx={{ flex: "column", gap: 3, mb: [16, 0] }}
+          sx={{
+            flex: "column",
+            gap: 3,
+            mb: [16, 0],
+            maxWidth: ["auto", 300],
+            width: ["100%", "auto"],
+          }}
           css={{ alignSelf: "start" }}
         >
           <Text color="white" sx={{ mb: 7 }}>
             {t("farms.claimCard.title")}
           </Text>
-          {claimableAssets.map((claimableAsset) => (
+          {claimableAssets.map((claimableAsset, index) => (
             <Fragment key={claimableAsset.symbol}>
               <Text
-                sx={{ mb: 4, fontSize: [26, 19] }}
+                sx={{ mb: 4, fontSize: [26, 22] }}
                 css={{ wordBreak: "break-all" }}
+                font="GeistMedium"
               >
-                <Trans
-                  t={t}
-                  i18nKey={"farms.claimCard.claim.asset"}
-                  tOptions={claimableAsset ?? {}}
-                >
-                  <span
-                    css={css`
-                      color: rgba(${theme.rgbColors.white}, 0.4);
-                      font-size: 18px;
-                    `}
-                  />
-                </Trans>
+                {t("farms.claimCard.claim.asset", claimableAsset)}
               </Text>
-              <Separator color="white" opacity={0.06} />
+              {index < claimableAssets.length - 1 && (
+                <Separator color="white" opacity={0.06} />
+              )}
             </Fragment>
           ))}
           <Text
+            fs={14}
             sx={{ mt: 6 }}
-            css={{ color: `rgba(${theme.rgbColors.white}, 0.4)` }}
+            css={{ color: `rgba(${theme.rgbColors.white}, 0.6)` }}
           >
             <Trans t={t} i18nKey="farms.claimCard.claim.usd">
-              <DisplayValue value={claimable.data?.displayValue} />
+              <DisplayValue value={BN(claimableTotal)} />
             </Trans>
           </Text>
         </div>
-        <Button
-          variant="primary"
-          size="small"
-          sx={{ height: "fit-content", width: ["100%", 275] }}
-          disabled={
-            account?.isExternalWalletConnected ||
-            (claimable.data && claimable.data.displayValue.isZero())
-          }
-          onClick={() => claimAll.mutate()}
-          isLoading={claimAll.isLoading}
-        >
-          {t("farms.claimCard.button.label")}
-        </Button>
+        <div sx={{ flex: "column", gap: 12, width: ["100%", 275] }}>
+          <Button
+            variant="primary"
+            size="small"
+            sx={{ height: "fit-content" }}
+            disabled={
+              account?.isExternalWalletConnected || BN(claimableTotal).isZero()
+            }
+            onClick={claim}
+            isLoading={isLoading}
+          >
+            {t("farms.claimCard.button.label")}
+          </Button>
+        </div>
       </div>
     </Card>
   )

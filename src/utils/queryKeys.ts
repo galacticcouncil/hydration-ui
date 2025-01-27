@@ -23,8 +23,6 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  miningPosition: (id: string) => ["miningPosition", id],
-  miningPositionXYK: (id: string) => ["miningPositionXYK", id],
   accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "accountBalances",
@@ -34,21 +32,24 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountPositions: (id: string | undefined) => ["accountPositions", id],
+  accountAssets: (address: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "accountAssets",
+    address,
+  ],
+  accountClaimableFarmValues: (address: string | undefined) => [
+    "accountClaimableFarmValues",
+    address,
+  ],
   accountsBalances: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "accountsBalances",
     ids.join("."),
   ],
-  accountAssetBalances: (
-    pairs: Array<[address: AccountId32 | string, assetId: u32 | string]>,
-  ) => [QUERY_KEY_PREFIX, "accountAssetBalances", pairs],
   pools: [QUERY_KEY_PREFIX, "pools"],
-  poolShareToken: (poolId: AccountId32 | string) => [
-    QUERY_KEY_PREFIX,
-    "poolShareToken",
-    poolId.toString(),
-  ],
+  omnipoolTokens: ["omnipoolTokens"],
+  stablePools: ["stablePools"],
+  hubToken: ["hubToken"],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
@@ -66,34 +67,12 @@ export const QUERY_KEYS = {
     "xykDeposits",
     ids.join("."),
   ],
-  poolDeposits: (poolId: Maybe<u32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "deposits",
-    poolId?.toString(),
-  ],
-  activeYieldFarms: (poolId: Maybe<u32 | string>) => [
-    "activeYieldFarms",
-    poolId?.toString(),
-  ],
-  activeYieldFarmsXYK: (poolId: Maybe<u32 | string>) => [
-    "activeYieldFarmsXYK",
-    poolId?.toString(),
-  ],
-  globalFarm: (id: string, poolId: string) => [
-    QUERY_KEY_PREFIX,
-    "globalFarm",
-    id,
-    poolId,
-  ],
-  globalFarmXYK: (id: string, poolId: string) => [
-    QUERY_KEY_PREFIX,
-    "globalFarmXYK",
-    id,
-    poolId,
-  ],
-  yieldFarm: (id: string) => [QUERY_KEY_PREFIX, "yieldFarm", id],
-  yieldFarmXYK: (id: string) => [QUERY_KEY_PREFIX, "yieldFarmXYK", id],
-  activeYieldFarm: (id: string) => [QUERY_KEY_PREFIX, "activeYieldFarm", id],
+  omnipoolActiveFarms: ["omnipoolActiveFarms"],
+  omnipoolFarms: ["omnipoolFarms"],
+  stoppedOmnipoolFarms: (address?: string) => ["stoppedOmnipoolFarms", address],
+  xykActiveFarms: ["xykActiveFarms"],
+  xykFarms: ["xykFarms"],
+  stoppedXykFarms: (address?: string) => ["stoppedXykFarms", address],
   totalIssuances: ["totalIssuances"],
   reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
@@ -148,9 +127,9 @@ export const QUERY_KEYS = {
     account?.toString(),
   ],
   mathLoyaltyRates: (
-    plannedYieldingPeriods: u32,
-    initialRewardPercentage: Maybe<u128>,
-    scaleCoef: Maybe<u32>,
+    plannedYieldingPeriods: string,
+    initialRewardPercentage: Maybe<string>,
+    scaleCoef: Maybe<string>,
     periodsInFarm: Maybe<string>,
   ) => [
     "mathLoyaltyRates",
@@ -163,18 +142,14 @@ export const QUERY_KEYS = {
   allTrades: (assetId?: number) => ["allTrades", assetId],
   allOmnipoolTrades: ["allOmnipoolTrades"],
   allStableswapTrades: ["allStableswapTrades"],
-  tradeVolume: (poolId: Maybe<string | u32>) => [
-    "tradeVolume",
-    poolId?.toString(),
+  xykSquidVolumes: (addresses: string[]) => [
+    "xykSquidVolumes",
+    addresses.join(","),
   ],
-  xykTradeVolume: (poolId: Maybe<string | u32>) => [
-    "xykTradeVolume",
-    poolId?.toString(),
-  ],
-  tradeVolumeLive: (poolId: Maybe<string | u32>) => [
+  omnipoolSquidVolumes: (ids: string[]) => [
     QUERY_KEY_PREFIX,
-    "tradeVolume",
-    poolId?.toString(),
+    "omnipoolSquidVolumes",
+    ids.join(","),
   ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
@@ -191,6 +166,7 @@ export const QUERY_KEYS = {
     address,
   ],
   lock: (address: Maybe<AccountId32 | string>, asset: Maybe<u32 | string>) => [
+    QUERY_KEY_PREFIX,
     "lock",
     address,
     asset,
@@ -210,7 +186,7 @@ export const QUERY_KEYS = {
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
-  acceptedCurrencies: ["acceptedCurrencies"],
+  acceptedCurrencies: (ids: string[]) => ["acceptedCurrencies", ids.join(",")],
   accountCurrency: (address: Maybe<AccountId32 | string>) => [
     "accountCurrency",
     address,
@@ -225,17 +201,24 @@ export const QUERY_KEYS = {
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
+  openGovReferendas: (url: string) => ["openGovReferendas", url],
+  referendaTracks: (url: string) => ["referendaTracks", url],
+  accountOpenGovVotes: (accountAddress?: string) => [
+    "accountOpenGovVotes",
+    accountAddress,
+  ],
   referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
     "referendums",
     accountAddress,
     type,
   ],
+  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
     accountAddress,
   ],
-  referendumInfo: (id: string) => [QUERY_KEY_PREFIX, id, "referendumInfo"],
+  referendumInfo: (id: string) => [id, "referendumInfo"],
   stats: (
     type: ChartType,
     timeframe?: StatsTimeframe,
@@ -248,16 +231,13 @@ export const QUERY_KEYS = {
 
     return key
   },
-  circulatingSupply: ["circulatingSupply"],
+  hdxSupply: ["hdxSupply"],
   stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
   stakingEvents: ["stakingEvents"],
-  stakingPositionBalances: (positionId: Maybe<string>) => [
-    "positionBalances",
-    positionId,
-  ],
+  processedVotes: (address?: string) => ["processedVotes", address],
   stableswapPools: ["stableswapPools"],
   stableswapPool: (id?: string) => ["stableswapPool", id],
   lbpPool: ["lbpPool"],
@@ -278,7 +258,8 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  xykPools: ["xykPools"], //TODO: refresh each block??
+  xykPools: ["xykPools"],
+  allXykPools: ["allXykPools"],
   xykConsts: ["xykConsts"],
   shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
@@ -292,6 +273,7 @@ export const QUERY_KEYS = {
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
   evmChainInfo: (address: string) => ["evmChainInfo", address],
+  evmAccountBinding: (address: string) => [address, "evmAccountBinding"],
   evmWalletReadiness: (address: string) => ["evmWalletReadiness", address],
   evmPaymentFee: (txHex: string, address?: string) => [
     "evmPaymentFee",
@@ -325,10 +307,6 @@ export const QUERY_KEYS = {
     address?.toString(),
   ],
   yieldFarmCreated: ["yieldFarmCreated"],
-  inactiveYieldFarms: (poolId: AccountId32 | string) => [
-    "inactiveYieldFarms",
-    poolId.toString(),
-  ],
   externalAssetRegistry: ["externalAssetRegistry"],
   assetHubAssetRegistry: ["assetHubAssetRegistry"],
   pendulumAssetRegistry: ["pendulumAssetRegistry"],
@@ -358,8 +336,12 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  externalStore: ["externalStore"],
+  bifrostVDotApy: ["bifrostVDotApy"],
+  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  ethereumAccountBalance: (address: string) => [
+    "ethereumAccountBalance",
+    address,
+  ],
 } as const
-
-export const WS_QUERY_KEYS = {
-  omnipoolAssets: ["omnipoolAssets_"],
-}

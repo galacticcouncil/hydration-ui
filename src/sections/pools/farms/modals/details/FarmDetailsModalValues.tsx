@@ -1,7 +1,6 @@
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { useEnteredDate } from "utils/block"
-import { useClaimableAmount } from "utils/farms/claiming"
 import {
   isXYKDeposit,
   TDepositData,
@@ -9,32 +8,32 @@ import {
 import { Summary } from "components/Summary/Summary"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { TDeposit } from "api/deposits"
+import { useAccountClaimableFarmValues } from "api/farms"
 
 type FarmDetailsModalValuesProps = {
-  depositNft: TDeposit
   depositData: TDepositData
   enteredBlock: BigNumber
   yieldFarmId: string
 }
 
 export const FarmDetailsModalValues = ({
-  depositNft,
   depositData,
   enteredBlock,
   yieldFarmId,
 }: FarmDetailsModalValuesProps) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
-  const { getAssetWithFallback } = useAssets()
-  const claimable = useClaimableAmount(pool.id, depositNft)
+  const {
+    pool: { meta, id },
+  } = usePoolData()
+  const { getAssetWithFallback, isShareToken } = useAssets()
+  const { data: claimableValues } = useAccountClaimableFarmValues()
 
-  const depositReward = claimable.data?.depositRewards.find(
-    (reward) => reward.yieldFarmId === yieldFarmId,
-  )
+  const poolClaimableValues = claimableValues
+    ?.get(isShareToken(meta) ? meta.poolAddress : id)
+    ?.find((farm) => farm.yieldFarmId === yieldFarmId)
 
-  const meta = depositReward?.assetId
-    ? getAssetWithFallback(depositReward.assetId)
+  const rewardCurrencyMeta = poolClaimableValues?.rewardCurrency
+    ? getAssetWithFallback(poolClaimableValues.rewardCurrency)
     : undefined
   const entered = useEnteredDate(enteredBlock)
 
@@ -69,9 +68,8 @@ export const FarmDetailsModalValues = ({
           {
             label: t("farms.modal.details.mined.label"),
             content: t("farms.modal.details.mined.value", {
-              value: depositReward?.value,
-              symbol: meta?.symbol,
-              fixedPointScale: meta?.decimals,
+              value: poolClaimableValues?.value,
+              symbol: rewardCurrencyMeta?.symbol,
             }),
           },
         ]}

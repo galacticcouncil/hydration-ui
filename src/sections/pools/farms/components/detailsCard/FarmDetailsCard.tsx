@@ -2,17 +2,16 @@ import { Tag } from "components/Tag/Tag"
 import { Text } from "components/Typography/Text/Text"
 import { Trans, useTranslation } from "react-i18next"
 import { SIcon, SRow, SContainer } from "./FarmDetailsCard.styled"
-import { scaleHuman } from "utils/balance"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { addSeconds } from "date-fns"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import Distribution from "assets/icons/Distribution.svg?react"
 import CalendarIcon from "assets/icons/CalendarIcon.svg?react"
+import WarningIcon from "assets/icons/WarningIconRed.svg?react"
 import Hydrated from "assets/icons/Hydrated.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { Farm, useFarmApr } from "api/farms"
-import { useBestNumber } from "api/chain"
-import { BLOCK_TIME, BN_0 } from "utils/constants"
+import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
+import { BN_0 } from "utils/constants"
 import { useMemo } from "react"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
@@ -26,11 +25,13 @@ import { useAssets } from "providers/assets"
 import { TDeposit } from "api/deposits"
 import { LinearProgress } from "components/Progress"
 import { theme } from "theme"
+import BN from "bignumber.js"
+import { Badge } from "components/Badge/Badge"
 
 type FarmDetailsCardProps = {
   depositNft?: TDeposit
   depositData?: TDepositData
-  farm: Farm
+  farm: TFarmAprData
   onSelect?: () => void
   compact?: boolean
 }
@@ -45,45 +46,36 @@ export const FarmDetailsCard = ({
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
-  const asset = getAssetWithFallback(farm.globalFarm.rewardCurrency.toString())
-  const apr = useFarmApr(farm)
+  const asset = getAssetWithFallback(farm.rewardCurrency)
 
-  const { relaychainBlockNumber } = useBestNumber().data ?? {}
-
+  const { getSecondsToLeft, getCurrentPeriod } = useFarmCurrentPeriod()
+  const secondsToLeft = getSecondsToLeft(farm.estimatedEndBlock)
   const isClickable = !!onSelect
 
-  const secondsDurationToEnd =
-    relaychainBlockNumber != null
-      ? apr.data?.estimatedEndBlock
-          .minus(relaychainBlockNumber.toBigNumber())
-          .times(BLOCK_TIME)
-          .toNumber()
-      : undefined
-
   const currentApr = useMemo(() => {
-    if (depositNft && apr.data != null) {
+    if (depositNft) {
       const depositYield = depositNft.data.yieldFarmEntries.find(
         (entry) =>
-          entry.yieldFarmId.eq(farm.yieldFarm.id) &&
-          entry.globalFarmId.eq(farm.globalFarm.id),
+          BN(entry.yieldFarmId).eq(farm.yieldFarmId) &&
+          BN(entry.globalFarmId).eq(farm.globalFarmId),
       )
+
+      const currentPeriod = getCurrentPeriod(farm.blocksPerPeriod)
 
       if (!depositYield) return BN_0
-      if (!apr.data.loyaltyCurve) return apr.data.apr
+      if (!farm.loyaltyCurve || !currentPeriod) return farm.apr
 
       const currentLoyaltyFactor = getCurrentLoyaltyFactor(
-        apr.data.loyaltyCurve,
-        apr.data.currentPeriod.minus(depositYield?.enteredAt.toBigNumber()),
+        farm.loyaltyCurve,
+        BN(currentPeriod).minus(depositYield?.enteredAt),
       )
 
-      return apr.data.apr.times(currentLoyaltyFactor)
+      return BN(farm.apr).times(currentLoyaltyFactor)
     }
     return BN_0
-  }, [depositNft, farm.globalFarm.id, farm.yieldFarm.id, apr.data])
+  }, [depositNft, farm, getCurrentPeriod])
 
-  if (apr.data == null) return null
-
-  const fullness = apr.data.fullness
+  const fullness = BN(farm.fullness)
   const isFull = fullness.gte(100)
 
   return (
@@ -125,11 +117,11 @@ export const FarmDetailsCard = ({
             font="GeistMedium"
             css={{ whiteSpace: "nowrap" }}
           >
-            {apr.data.minApr && apr.data?.apr.gt(0)
+            {BN(farm.apr).gt(0)
               ? t("value.upToAPR", {
-                  maxApr: apr.data?.apr,
+                  maxApr: farm.apr,
                 })
-              : t("value.APR", { apr: apr.data?.apr })}
+              : t("value.APR", { apr: farm.apr })}
           </Text>
         </div>
       </div>
@@ -142,11 +134,8 @@ export const FarmDetailsCard = ({
               t={t}
               i18nKey="farms.details.card.distribution"
               tOptions={{
-                distributed: scaleHuman(
-                  apr.data.distributedRewards,
-                  asset.decimals,
-                ),
-                max: scaleHuman(apr.data.potMaxRewards, asset.decimals),
+                distributed: farm.distributedRewards,
+                max: farm.maxRewards,
               }}
             >
               <Text as="span" fs={14} color="basic100" />
@@ -158,10 +147,7 @@ export const FarmDetailsCard = ({
               size="small"
               color="brightBlue500"
               withoutLabel
-              percent={apr.data.distributedRewards
-                .div(apr.data.potMaxRewards)
-                .times(100)
-                .toNumber()}
+              percent={Number(farm.diffRewards)}
             />
           )}
         </SRow>
@@ -221,12 +207,32 @@ export const FarmDetailsCard = ({
         <SRow compact={compact} sx={{ pb: 0 }}>
           <Icon sx={{ color: "brightBlue300" }} icon={<CalendarIcon />} />
           <Text fs={14} lh={18}>
-            {secondsDurationToEnd &&
+            {secondsToLeft &&
               t("farms.details.card.end.value", {
-                end: addSeconds(new Date(), secondsDurationToEnd),
+                end: addSeconds(new Date(), secondsToLeft.toNumber()),
               })}
           </Text>
         </SRow>
+        {!farm.isActive && (
+          <Badge
+            size="medium"
+            variant="orange"
+            css={{
+              marginTop: 12,
+              width: "fit-content",
+              fontFamily: "GeistSemiBold",
+            }}
+          >
+            <div sx={{ flex: "row", gap: 4 }}>
+              <Icon
+                size={12}
+                css={{ color: `rgba(247, 191, 6, 1)` }}
+                icon={<WarningIcon />}
+              />
+              {t("farms.details.card.end.badge")}
+            </div>
+          </Badge>
+        )}
       </div>
       {onSelect && (
         <SIcon

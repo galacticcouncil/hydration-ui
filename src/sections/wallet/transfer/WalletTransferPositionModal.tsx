@@ -30,14 +30,14 @@ import { Button } from "components/Button/Button"
 import { useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { createToastMessages } from "state/toasts"
-import { useRefetchAccountPositions } from "api/deposits"
+import { useRefetchAccountAssets } from "api/deposits"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
 import {
   isXYKPosition,
-  XYKPosition,
+  TXYKPosition,
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 import { ReactElement } from "react"
 import { useAssets } from "providers/assets"
@@ -56,14 +56,14 @@ export const WalletTransferPositionModal = ({
   onClose,
   isFarmingPosition,
 }: {
-  position: TLPData | XYKPosition
+  position: TLPData | TXYKPosition
   onClose: () => void
   isFarmingPosition?: boolean
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { api } = useRpcProvider()
-  const refetch = useRefetchAccountPositions()
+  const refetch = useRefetchAccountAssets()
   const { getAsset } = useAssets()
 
   const isXyk = isXYKPosition(position)
