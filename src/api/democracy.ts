@@ -36,10 +36,10 @@ const getVoteAmount = (vote: PalletConvictionVotingVoteAccountVote) => {
       .toString()
   } else if (vote.isStandard) {
     return vote.asStandard.balance.toString()
-  } else if (vote.asSplitAbstain) {
-    return vote.asSplit.aye
+  } else if (vote.isSplitAbstain) {
+    return vote.asSplitAbstain.aye
       .toBigNumber()
-      .plus(vote.asSplit.nay.toString())
+      .plus(vote.asSplitAbstain.nay.toString())
       .plus(vote.asSplitAbstain.abstain.toString())
       .toString()
   } else {
