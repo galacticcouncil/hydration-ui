@@ -72,7 +72,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     }
 
     if (isOpenableInMobileApp && wallet?.appLink) {
-      return openUrl(wallet.appLink)
+      return openUrl(wallet.appLink, "_self")
     }
 
     if (type === WalletProviderType.WalletConnect) {
@@ -98,44 +98,42 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   }
 
   return (
-    <>
-      <SProviderButton onClick={onClick}>
-        <Web3ConnectProviderIcon type={type} />
-        <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
-          {title}
-        </Text>
-        <Text
-          color={isConnected ? "basic500" : "brightBlue300"}
-          fs={[12, 13]}
-          sx={{ flex: "row", align: "center" }}
-        >
-          {isConnected ? (
-            <>
-              {t("walletConnect.provider.disconnect")}
-              <LogoutIcon width={18} height={18} />
-            </>
-          ) : installed ? (
-            <>
-              {t("walletConnect.provider.continue")}
-              <ChevronRight width={18} height={18} />
-            </>
-          ) : isOpenableInMobileApp ? (
-            <>
-              {t("walletConnect.provider.open")}
-              <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
-            </>
-          ) : (
-            <>
-              {t("walletConnect.provider.download")}
-              <DownloadIcon width={18} height={18} />
-            </>
-          )}
-        </Text>
-        {isConnected && <SConnectionIndicator />}
-        {isConnected && accountsCount > 0 && (
-          <SAccountIndicator>+{accountsCount}</SAccountIndicator>
+    <SProviderButton onClick={onClick}>
+      <Web3ConnectProviderIcon type={type} />
+      <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
+        {title}
+      </Text>
+      <Text
+        color={isConnected ? "basic500" : "brightBlue300"}
+        fs={[12, 13]}
+        sx={{ flex: "row", align: "center" }}
+      >
+        {isConnected ? (
+          <>
+            {t("walletConnect.provider.disconnect")}
+            <LogoutIcon width={18} height={18} />
+          </>
+        ) : installed ? (
+          <>
+            {t("walletConnect.provider.continue")}
+            <ChevronRight width={18} height={18} />
+          </>
+        ) : isOpenableInMobileApp ? (
+          <>
+            {t("walletConnect.provider.open")}
+            <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
+          </>
+        ) : (
+          <>
+            {t("walletConnect.provider.download")}
+            <DownloadIcon width={18} height={18} />
+          </>
         )}
-      </SProviderButton>
-    </>
+      </Text>
+      {isConnected && <SConnectionIndicator />}
+      {isConnected && accountsCount > 0 && (
+        <SAccountIndicator>+{accountsCount}</SAccountIndicator>
+      )}
+    </SProviderButton>
   )
 }
