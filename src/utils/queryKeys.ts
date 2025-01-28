@@ -218,6 +218,12 @@ export const QUERY_KEYS = {
     "accountOpenGovVotes",
     accountAddress,
   ],
+  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
+    "referendums",
+    accountAddress,
+    type,
+  ],
+  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
@@ -342,5 +348,12 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  ethereumAccountBalance: (address: string) => [
+    "ethereumAccountBalance",
+    address,
+  ],
 } as const

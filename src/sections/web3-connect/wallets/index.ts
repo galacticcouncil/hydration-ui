@@ -9,6 +9,8 @@ import { WalletConnect } from "./WalletConnect"
 import { H160, isEvmAddress } from "utils/evm"
 import { SubWalletEvm } from "./SubWalletEvm"
 import { SubWallet } from "./SubWallet"
+import { Phantom } from "./Phantom"
+import { Solflare } from "./Solflare"
 // import { TrustWallet } from "./TrustWallet"
 import { BraveWallet } from "./BraveWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
@@ -96,6 +98,9 @@ const walletConnectEvm: Wallet = new WalletConnectEvm()
 
 const externalWallet: Wallet = new ExternalWallet()
 
+const phantomWallet: Wallet = new Phantom()
+const solflareWallet: Wallet = new Solflare()
+
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
   metaMask,
@@ -105,6 +110,8 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   subwallet,
   //trustWallet,
   novaWallet,
+  phantomWallet,
+  solflareWallet,
   walletConnect,
   walletConnectEvm,
   externalWallet,
