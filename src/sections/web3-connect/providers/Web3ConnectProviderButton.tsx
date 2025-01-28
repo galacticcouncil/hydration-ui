@@ -1,6 +1,7 @@
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import LogoutIcon from "assets/icons/LogoutIcon.svg?react"
+import LinkIcon from "assets/icons/LinkIcon.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,6 +21,7 @@ import {
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
+import { isMobileDevice } from "utils/helpers"
 
 type Props = WalletProvider & {
   children?: (props: {
@@ -61,18 +63,35 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   const isConnected = getStatus(type) === WalletProviderStatus.Connected
 
+  const isOpenableInMobileApp =
+    !wallet.installed && !!wallet?.appLink && isMobileDevice()
+
   const onClick = useCallback(() => {
     if (isConnected) {
       return disconnect(type)
     }
+
+    if (isOpenableInMobileApp && wallet?.appLink) {
+      return openUrl(wallet.appLink)
+    }
+
     if (type === WalletProviderType.WalletConnect) {
       enable("polkadot")
     } else if (type === WalletProviderType.WalletConnectEvm) {
       enable("eip155")
     } else {
-      installed ? enable() : openInstallUrl(installUrl)
+      installed ? enable() : openUrl(installUrl)
     }
-  }, [disconnect, enable, installUrl, installed, isConnected, type])
+  }, [
+    disconnect,
+    enable,
+    installUrl,
+    installed,
+    isConnected,
+    isOpenableInMobileApp,
+    type,
+    wallet.appLink,
+  ])
 
   if (typeof children === "function") {
     return children({ onClick, isConnected })
@@ -99,6 +118,11 @@ export const Web3ConnectProviderButton: FC<Props> = ({
             {t("walletConnect.provider.continue")}
             <ChevronRight width={18} height={18} />
           </>
+        ) : isOpenableInMobileApp ? (
+          <>
+            {t("walletConnect.provider.open")}
+            <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
+          </>
         ) : (
           <>
             {t("walletConnect.provider.download")}
@@ -114,6 +138,6 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   )
 }
 
-function openInstallUrl(installUrl: string) {
-  window.open(installUrl, "_blank")
+function openUrl(url: string) {
+  window.open(url, "_blank")
 }

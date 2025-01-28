@@ -7,6 +7,8 @@ export class Phantom extends Solflare {
   extensionName = WalletProviderType.Phantom
   title = "Phantom"
   installUrl = "https://phantom.com/download"
+  appLink =
+    "https://phantom.app/ul/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
   logo = {
     src: PhantomLogo,
     alt: "Phantom Logo",
