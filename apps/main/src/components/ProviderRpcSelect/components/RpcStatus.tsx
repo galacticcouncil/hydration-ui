@@ -67,7 +67,11 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
     <Box>
       <Tooltip text={statusText} side="left" asChild>
         <Flex align="center" gap={4} color={statusColor}>
-          <Text fs={12}>{blockNumber}</Text>
+          <Text fs={12}>
+            {t("number", {
+              value: blockNumber,
+            })}
+          </Text>
           {status === "online" && <RpcStatusSuccess key={timestamp} />}
           {status === "slow" && <RpcStatusSlow />}
           {status === "offline" && <RpcStatusOffline />}
