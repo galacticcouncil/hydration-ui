@@ -36,7 +36,6 @@ import {
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import BigNumber from "bignumber.js"
-import { BN_0 } from "utils/constants"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
