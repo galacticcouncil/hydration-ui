@@ -7,7 +7,10 @@ import { JdenticonAvatar } from "./JdenticonAvatar"
 import { PolkadotAvatar } from "./PolkadotAvatar"
 import { MetaMaskAvatar } from "./MetaMaskAvatar"
 import { isEvmAccount, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
-import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import {
+  SOLANA_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import { genesisHashToChain } from "utils/helpers"
 import type { Icon } from "@polkadot/networks/types"
 
@@ -24,12 +27,26 @@ export const AccountAvatar: FC<Props> = (props) => {
   const chainIcon: Icon =
     props.genesisHash && chain?.icon ? chain.icon : "polkadot"
 
+  const isSolana = !!props.provider && SOLANA_PROVIDERS.includes(props.provider)
   const isEvm = isEvmAccount(props.address) || isEvmAddress(props.address)
+
   const theme = props.provider?.startsWith("talisman")
     ? "talisman"
     : isEvm
       ? "evm"
-      : chainIcon
+      : isSolana
+        ? "jdenticon"
+        : chainIcon
+
+  if (theme === "jdenticon") {
+    return (
+      <JdenticonAvatar
+        publicKey={props.address}
+        size={props.size}
+        className={props.className}
+      />
+    )
+  }
 
   if (theme === "evm") {
     return (

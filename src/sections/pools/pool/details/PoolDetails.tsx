@@ -45,7 +45,7 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const isFarms = pool.farms.length > 0
+  const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (

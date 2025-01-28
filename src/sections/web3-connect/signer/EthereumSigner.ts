@@ -7,13 +7,9 @@ import UniversalProvider from "@walletconnect/universal-provider/dist/types/Univ
 
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
-import { Contract, Signature } from "ethers"
+import { Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
-import {
-  CALL_PERMIT_ABI,
-  CALL_PERMIT_ADDRESS,
-  DISPATCH_ADDRESS,
-} from "utils/evm"
+import { CALL_PERMIT_ADDRESS, DISPATCH_ADDRESS } from "utils/evm"
 import {
   MetaMaskLikeProvider,
   isEthereumProvider,
@@ -91,22 +87,9 @@ export class EthereumSigner {
     })
   }
 
-  getPermitNonce = async (): Promise<BigNumber> => {
-    await this.requestNetworkSwitch("hydration")
-    const callPermit = new Contract(
-      CALL_PERMIT_ADDRESS,
-      CALL_PERMIT_ABI,
-      this.signer.provider,
-    )
-
-    const nonce = await callPermit.nonces(this.address)
-
-    return BigNumber(nonce.toString())
-  }
-
   getPermit = async (
     data: string | TransactionRequest,
-    nonce: BigNumber,
+    nonce: number,
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
       await this.requestNetworkSwitch("hydration")
@@ -148,7 +131,7 @@ export class EthereumSigner {
             .multipliedBy(1.2) // add 20%
             .decimalPlaces(0)
             .toNumber(),
-          nonce: nonce.toNumber(),
+          nonce,
           deadline: latestBlock.timestamp + 3600, // 1 hour deadline,
         }
 

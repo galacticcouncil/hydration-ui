@@ -16,13 +16,6 @@ const MyLiquidityTabLink = lazy(async () => ({
   default: (await import("./MyLiquidityTabLink")).MyLiquidityTabLink,
 }))
 
-const routeMap = new Map([
-  [LINKS.allPools, t("header.liquidity.allPools.title")],
-  [LINKS.myLiquidity, t("header.liquidity.myLiquidity.title")],
-  [LINKS.omnipool, t("header.liquidity.omnipoolAndStablepool.title")],
-  [LINKS.isolated, t("header.liquidity.isolated.title")],
-])
-
 export const Navigation = () => {
   const { t } = useTranslation()
 
@@ -53,6 +46,13 @@ export const Navigation = () => {
 export const PoolNavigation = () => {
   const location = useLocation()
   const { pathname } = location.history.location
+
+  const routeMap = new Map([
+    [LINKS.allPools, t("header.liquidity.allPools.title")],
+    [LINKS.myLiquidity, t("header.liquidity.myLiquidity.title")],
+    [LINKS.omnipool, t("header.liquidity.omnipoolAndStablepool.title")],
+    [LINKS.isolated, t("header.liquidity.isolated.title")],
+  ])
 
   return <BackSubHeader label={`Back to ${routeMap.get(pathname)}`} />
 }
