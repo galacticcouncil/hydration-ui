@@ -218,6 +218,11 @@ export const QUERY_KEYS = {
     "accountOpenGovVotes",
     accountAddress,
   ],
+  accountOpenGovUnlockedTokens: (ids: string[], address?: string) => [
+    "accountOpenGovUnlockedTokens",
+    address,
+    ids.join(","),
+  ],
   referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
     "referendums",
     accountAddress,
