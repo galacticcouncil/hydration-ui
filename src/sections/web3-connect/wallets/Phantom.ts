@@ -8,7 +8,7 @@ export class Phantom extends Solflare {
   title = "Phantom"
   installUrl = "https://phantom.com/download"
   appLink =
-    "phantom://browse/https%3A%2F%2Fapp.hydration.net?ref=https%3A%2F%2Fapp.hydration.net"
+    "phantom://browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
   /* appLink =
     "https://phantom.app/ul/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net" */
   logo = {
