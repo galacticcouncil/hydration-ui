@@ -63,10 +63,10 @@ const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
   }
 }
 
-const voteAmount = (vote: PalletDemocracyVoteAccountVote) => {
-  if (vote.isSplit) {
-    return vote.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
-  } else if (vote.isStandard) {
+const voteAmount = (vote?: PalletDemocracyVoteAccountVote) => {
+  if (vote?.isSplit) {
+    return vote?.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
+  } else if (vote?.isStandard) {
     return vote.asStandard.balance.toBigNumber()
   } else {
     return BN_0
@@ -479,6 +479,35 @@ export const useReferendums = (type?: "ongoing" | "finished") => {
     },
   )
 }
+
+export const getReferendums =
+  (api: ApiPromise, accountId?: string) => async () => {
+    const [referendumRaw, votesRaw] = await Promise.all([
+      api.query.democracy.referendumInfoOf.entries(),
+      accountId ? api.query.democracy.votingOf(accountId) : undefined,
+    ])
+
+    const isDelegating = votesRaw?.isDelegating
+
+    const referendums = referendumRaw.map(([key, codec]) => {
+      const id = key.args[0].toString()
+
+      const vote = !isDelegating
+        ? votesRaw?.asDirect.votes.find((vote) => vote[0].toString() === id)
+        : undefined
+
+      return {
+        id: key.args[0].toString(),
+        referendum: codec.unwrap(),
+        voted: !!vote,
+        amount: voteAmount(vote?.[1]),
+        conviction: voteConviction(vote?.[1]),
+        isDelegating,
+      }
+    })
+
+    return referendums
+  }
 
 export const useDeprecatedReferendumInfo = (referendumIndex: string) => {
   return useQuery(
