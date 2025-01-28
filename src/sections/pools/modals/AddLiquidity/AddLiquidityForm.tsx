@@ -104,24 +104,18 @@ export const AddLiquidityForm = ({
       .times(BN_100.minus(addLiquidityLimit).div(BN_100))
       .toFixed(0)
 
-    const tx = BN(addLiquidityLimit).gt(0)
-      ? api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
-      : api.tx.omnipool.addLiquidity(assetId, amount)
-
-    // {
-    //   tx: isJoinFarms
-    //     ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
-    //         farms.map<[string, string]>((farm) => [
-    //           farm.globalFarmId,
-    //           farm.yieldFarmId,
-    //         ]),
-    //         assetId,
-    //         amount,
-    //         //@ts-ignore
-    //         undefined,
-    //       )
-    //     : api.tx.omnipool.addLiquidity(assetId, amount),
-    // },
+    const tx = isJoinFarms
+      ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+          farms.map<[string, string]>((farm) => [
+            farm.globalFarmId,
+            farm.yieldFarmId,
+          ]),
+          assetId,
+          amount,
+          //@ts-ignore
+          shares,
+        )
+      : api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
 
     return await createTransaction(
       { tx },
@@ -220,12 +214,16 @@ export const AddLiquidityForm = ({
         />
         <Spacer size={20} />
         <SummaryRow
-          label="Trade Limit"
+          label={t("liquidity.add.modal.tradeLimit")}
           content={
             <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
-              <Text>{t("value.percentage", { value: addLiquidityLimit })}</Text>
+              <Text fs={14} color="white" tAlign="right">
+                {t("value.percentage", { value: addLiquidityLimit })}
+              </Text>
               <ButtonTransparent onClick={() => setLiquidityLimit()}>
-                <Text color="brightBlue200">{t("edit")}</Text>
+                <Text color="brightBlue200" fs={14}>
+                  {t("edit")}
+                </Text>
               </ButtonTransparent>
             </div>
           }

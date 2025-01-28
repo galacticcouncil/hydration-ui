@@ -305,6 +305,7 @@
   "liquidity.add.modal.joinFarms": "Join available farms",
   "liquidity.add.modal.joinFarms.description": "Disable this option if you don't want to enter the farms.",
   "liquidity.add.modal.poolTradeFee": "Pool trade fee:",
+  "liquidity.add.modal.tradeLimit": "Trade limit:",
   "liquidity.add.modal.tradeFee": "Rewards from fees:",
   "liquidity.add.modal.tradeFee.description": "These rewards will be distributed between all liquidity providers.",
   "liquidity.add.modal.shareTokens": "Received amount of share tokens",
