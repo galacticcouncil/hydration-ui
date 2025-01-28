@@ -5,7 +5,7 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useActiveProvider } from "./provider"
+import { PROVIDERS, useActiveProvider, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -258,12 +258,11 @@ const getVolumeDaily = async (assetId?: string) => {
   return data
 }
 
-const squidUrl =
-  "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
 const VOLUME_BLOCK_COUNT = 7200 //24 hours
 
 export const useXYKSquidVolumes = (addresses: string[]) => {
   const { api, isLoaded } = useRpcProvider()
+  const url = useSquidUrl()
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
@@ -287,7 +286,7 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
           }[]
         }
       }>(
-        squidUrl,
+        url,
         gql`
           query XykVolume(
             $poolIds: [String!]!
@@ -327,6 +326,69 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       enabled: isLoaded && !!addresses.length,
       staleTime: millisecondsInHour,
       refetchInterval: millisecondsInMinute,
+    },
+  )
+}
+
+const omnipoolAddress =
+  "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
+
+export const useOmnipoolVolumes = (ids: string[]) => {
+  const { api, isLoaded } = useRpcProvider()
+  const url = useSquidUrl()
+
+  return useQuery(
+    QUERY_KEYS.omnipoolSquidVolumes(ids),
+
+    async () => {
+      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
+      const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
+
+      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
+
+      const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
+        omnipoolAssetHistoricalVolumesByPeriod: {
+          nodes: {
+            assetId: number
+            assetVolume: string
+          }[]
+        }
+      }>(
+        url,
+        gql`
+          query OmnipoolVolume(
+            $omnipoolAssetIds: [String!]!
+            $startBlockNumber: Int!
+            $endBlockNumber: Int!
+          ) {
+            omnipoolAssetHistoricalVolumesByPeriod(
+              filter: {
+                omnipoolAssetIds: $omnipoolAssetIds
+                startBlockNumber: $startBlockNumber
+                endBlockNumber: $endBlockNumber
+              }
+            ) {
+              nodes {
+                assetId
+                assetVolume
+              }
+            }
+          }
+        `,
+        { omnipoolAssetIds: omnipoolIds, startBlockNumber, endBlockNumber },
+      )
+
+      const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
+
+      return nodes.map((node) => ({
+        assetId: node.assetId.toString(),
+        assetVolume: node.assetVolume.toString(),
+      }))
+    },
+
+    {
+      enabled: isLoaded && !!ids.length,
+      staleTime: millisecondsInHour,
     },
   )
 }

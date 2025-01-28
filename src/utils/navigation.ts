@@ -12,6 +12,12 @@ import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
+import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
+import UserIcon from "assets/icons/UserIcon.svg?react"
+import AllPools from "assets/icons/AllPools.svg?react"
+import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
+import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
+import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -45,6 +51,7 @@ export const LINKS = {
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
   borrow: "/borrow",
+  borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
@@ -58,17 +65,17 @@ export const MENU_ITEMS = [
     href: LINKS.swap,
     Icon: TradeIcon,
     subItems: [
-      { key: "swap", href: LINKS.swap, Icon: IconSwap, enabled: true },
-      { key: "dca", href: LINKS.dca, Icon: IconDCA, enabled: true },
+      { key: "trade.swap", href: LINKS.swap, Icon: IconSwap, enabled: true },
+      { key: "trade.dca", href: LINKS.dca, Icon: IconDCA, enabled: true },
       {
-        key: "yieldDca",
+        key: "trade.yieldDca",
         href: LINKS.yieldDca,
         Icon: IconYieldDCA,
         enabled: true,
       },
-      { key: "otc", href: LINKS.otc, Icon: IconOTC, enabled: true },
+      { key: "trade.otc", href: LINKS.otc, Icon: IconOTC, enabled: true },
       {
-        key: "bonds",
+        key: "trade.bonds",
         href: LINKS.bonds,
         Icon: IconBonds,
         enabled: true,
@@ -85,37 +92,94 @@ export const MENU_ITEMS = [
     key: "borrow",
     href: LINKS.borrow,
     Icon: IconPercentageSquare,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: true,
     mobOrder: 4,
     asyncEnabled: false,
+    subItems: [
+      {
+        key: "borrow.dashboard",
+        href: LINKS.borrowDashboard,
+        Icon: UserIcon,
+        enabled: true,
+      },
+      {
+        key: "borrow.markets",
+        href: LINKS.borrowMarkets,
+        Icon: AssetsIcon,
+        enabled: true,
+      },
+    ],
   },
   {
     key: "liquidity",
     href: LINKS.allPools,
     Icon: PoolsAndFarmsIcon,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: true,
     tabVisible: true,
     mobOrder: 2,
     asyncEnabled: false,
+    subItems: [
+      {
+        key: "liquidity.myLiquidity",
+        href: LINKS.myLiquidity,
+        Icon: UserIcon,
+        enabled: false,
+      },
+      {
+        key: "liquidity.allPools",
+        href: LINKS.allPools,
+        Icon: AllPools,
+        enabled: true,
+      },
+      {
+        key: "liquidity.omnipoolAndStablepool",
+        href: LINKS.omnipool,
+        Icon: OmniStablepools,
+        enabled: true,
+      },
+      {
+        key: "liquidity.isolated",
+        href: LINKS.isolated,
+        Icon: IsolatedPools,
+        enabled: true,
+      },
+    ],
   },
   {
     key: "wallet",
     href: LINKS.walletAssets,
     Icon: WalletIcon,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: true,
     tabVisible: true,
     mobOrder: 0,
     asyncEnabled: false,
+    subItems: [
+      {
+        key: "wallet.yourAssets",
+        href: LINKS.walletAssets,
+        Icon: AssetsIcon,
+        enabled: true,
+      },
+      {
+        key: "wallet.transactions",
+        href: LINKS.walletTransactions,
+        Icon: TransferIcon,
+        enabled: import.meta.env.VITE_ENV === "development",
+      },
+      {
+        key: "wallet.vesting",
+        href: LINKS.walletVesting,
+        Icon: PositionsIcon,
+        enabled: false,
+      },
+    ],
   },
   {
     key: "xcm",

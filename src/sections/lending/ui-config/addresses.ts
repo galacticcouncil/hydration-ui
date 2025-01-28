@@ -8,6 +8,7 @@ export const AaveV3HydrationTestnet = {
   UI_INCENTIVE_DATA_PROVIDER: "0xc7A1dB5Aa56a5F07E758D8d8804B17B4cA7c889B",
   GHO_TOKEN_ADDRESS: "",
   GHO_UI_DATA_PROVIDER: "",
+  COLLECTOR: "",
 }
 
 export const AaveV3HydrationMainnet = {
@@ -20,4 +21,5 @@ export const AaveV3HydrationMainnet = {
   UI_INCENTIVE_DATA_PROVIDER: "0x23711ED88aFd7C9930a7337e5AacA3DAcC780FEc",
   GHO_TOKEN_ADDRESS: "",
   GHO_UI_DATA_PROVIDER: "",
+  COLLECTOR: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
 }

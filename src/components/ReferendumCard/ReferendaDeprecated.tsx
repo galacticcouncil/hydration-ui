@@ -13,8 +13,8 @@ import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
 import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
-import { ReferendumCardProgress } from "./ReferendumCardProgress"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
+import { ReferendumCardProgress } from "./ReferendumCardProgress"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 

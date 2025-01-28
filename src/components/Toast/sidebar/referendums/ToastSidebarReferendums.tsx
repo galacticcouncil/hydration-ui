@@ -16,7 +16,6 @@ export const ToastSidebarReferendums = () => {
   const tracks = useReferendaTracks()
   const { data: hdxSupply } = useHDXSupplyFromSubscan()
   const { data: referendums = [] } = useReferendums("ongoing")
-  const referendum = referendums.find((referendum) => referendum.id === "203")
 
   return (
     <ToastSidebarGroup title={t("toast.sidebar.referendums.title")} open={true}>
@@ -38,15 +37,16 @@ export const ToastSidebarReferendums = () => {
               )
             })
           : null}
-
-        {referendum && (
-          <ReferendaDeprecated
-            id="203"
-            referendum={referendum.referendum}
-            type="toast"
-            voted={false}
-          />
-        )}
+        {referendums &&
+          referendums.map((referendum) => (
+            <ReferendaDeprecated
+              key={referendum.id}
+              id={referendum.id}
+              referendum={referendum.referendum}
+              type="staking"
+              voted={false}
+            />
+          ))}
       </div>
     </ToastSidebarGroup>
   )

@@ -26,17 +26,20 @@ import {
 } from "./Referenda.utils"
 import Skeleton from "react-loading-skeleton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { Badge } from "components/Badge/Badge"
 
 export const OpenGovReferenda = ({
   id,
   referenda,
   track,
   totalIssuance,
+  voted,
 }: {
   id: string
   referenda: PalletReferendaReferendumStatus
   track: TReferenda
   totalIssuance?: string
+  voted?: boolean
 }) => {
   const { native } = useAssets()
   const { t } = useTranslation()
@@ -66,6 +69,32 @@ export const OpenGovReferenda = ({
             #{id}
           </Text>
         </div>
+        {!!voted && (
+          <Badge variant="purple">
+            <div sx={{ flex: "row", gap: 4, align: "center" }}>
+              <Icon
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="8"
+                    viewBox="0 0 10 8"
+                    fill="none"
+                  >
+                    <path
+                      d="M9 1L3.5 6.5L1 4"
+                      stroke="#030816"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+              />
+              {t("toast.sidebar.referendums.voted")}
+            </div>
+          </Badge>
+        )}
       </SHeader>
 
       <Separator css={{ background: "#372244" }} sx={{ my: 16 }} />

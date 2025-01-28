@@ -119,6 +119,10 @@ const LendingPage = lazy(async () => ({
   default: (await import("sections/lending/LendingPage")).LendingPage,
 }))
 
+const LendingPageIndex = lazy(async () => ({
+  default: (await import("sections/lending/LendingPage")).LendingPageIndex,
+}))
+
 const LendingDashboardPage = lazy(async () => ({
   default: (await import("sections/lending/LendingDashboardPage"))
     .LendingDashboardPage,
@@ -432,6 +436,14 @@ export const routes: Route[] = [
     children: [
       {
         path: "/",
+        element: (
+          <Suspense fallback={<LendingDashboardSkeleton />}>
+            <LendingPageIndex />
+          </Suspense>
+        ),
+      },
+      {
+        path: LINKS.borrowDashboard.split("/").pop(),
         element: (
           <Suspense fallback={<LendingDashboardSkeleton />}>
             <LendingDashboardPage />

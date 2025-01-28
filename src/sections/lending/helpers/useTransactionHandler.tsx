@@ -19,6 +19,7 @@ import {
 } from "sections/lending/ui-config/errorMapping"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
+import { ToastMessage } from "state/store"
 
 export const MOCK_SIGNED_HASH = "Signed correctly"
 
@@ -305,7 +306,7 @@ export const useTransactionHandler = ({
     }
   }
 
-  const action = async () => {
+  const action = async (toasts?: ToastMessage) => {
     if (usePermit && handleGetPermitTxns) {
       if (!signatures.length || !signatureDeadline)
         throw new Error("signature needed")
@@ -364,7 +365,8 @@ export const useTransactionHandler = ({
           maxPriorityFeePerGas: gasPricePlus,
         })
         return processTx({
-          tx: () => sendTx(params as PopulatedTransaction, protocolAction),
+          tx: () =>
+            sendTx(params as PopulatedTransaction, protocolAction, toasts),
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,

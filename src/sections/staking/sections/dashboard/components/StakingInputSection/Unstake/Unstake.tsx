@@ -14,7 +14,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { usePositionVotesIds, useVotesRewardedIds } from "api/staking"
+import { usePendingVotesIds, useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 
@@ -41,8 +41,8 @@ export const Unstake = ({
     },
   })
 
-  const votesRewarded = useVotesRewardedIds()
-  const votes = usePositionVotesIds()
+  const processedVotes = useProcessedVotesIds()
+  const pendingVotes = usePendingVotesIds()
 
   const onSubmit = async () => {
     if (!positionId) return null
@@ -64,19 +64,34 @@ export const Unstake = ({
       return memo
     }, {} as ToastMessage)
 
-    const pendingVoteIds = await votes.mutateAsync(positionId)
-    const processedVoteIds = await votesRewarded.mutateAsync()
+    const { oldPendingVotesIds, newPendingVotesIds } =
+      await pendingVotes.mutateAsync(positionId)
+    const processedVoteIds = await processedVotes.mutateAsync()
 
-    const voteIds = [...pendingVoteIds, ...processedVoteIds]
+    const oldVotes = [
+      ...oldPendingVotesIds,
+      ...(processedVoteIds ? processedVoteIds.oldProcessedVotesIds : []),
+    ]
+    const newVotes = [
+      ...newPendingVotesIds,
+      ...(processedVoteIds ? processedVoteIds.newProcessedVotesIds : []),
+    ]
 
     const transaction = await createTransaction(
       {
-        tx: voteIds.length
-          ? api.tx.utility.batchAll([
-              ...voteIds.map((id) => api.tx.democracy.removeVote(id)),
-              api.tx.staking.unstake(positionId),
-            ])
-          : api.tx.staking.unstake(positionId),
+        tx:
+          oldVotes.length || newVotes.length
+            ? api.tx.utility.batchAll([
+                ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
+                ...newVotes.map(({ classId, id }) =>
+                  api.tx.convictionVoting.removeVote(
+                    classId ? classId : null,
+                    id,
+                  ),
+                ),
+                api.tx.staking.unstake(positionId),
+              ])
+            : api.tx.staking.unstake(positionId),
       },
       { toast },
     )

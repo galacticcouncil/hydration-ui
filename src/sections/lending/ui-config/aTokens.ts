@@ -12,6 +12,8 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   "1000040": "3",
   // aWETH
   "1000041": "20",
+  //avDOT
+  "1005": "15",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
@@ -23,6 +25,8 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
   "1003": "22",
   // aWBTC
   "1004": "19",
+  //avDOT
+  "1005": "15",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =

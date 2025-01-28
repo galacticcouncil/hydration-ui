@@ -14,13 +14,20 @@ import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { useState } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { Text } from "components/Typography/Text/Text"
 
 type Props = { disconnected?: boolean }
 
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
-  const { isLoading, balanceTotal, assetsTotal, farmsTotal, lpTotal } =
-    useWalletAssetsTotals()
+  const {
+    isLoading,
+    balanceTotal,
+    assetsTotal,
+    farmsTotal,
+    lpTotal,
+    borrowsTotal,
+  } = useWalletAssetsTotals()
 
   const [transferModalOpen, setTransferModalOpen] = useState(false)
 
@@ -30,6 +37,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
     <div
       sx={{
         flex: ["column", "column", "row"],
+        align: "start",
         gap: [10, 24, 100],
         mb: [24, 40],
       }}
@@ -37,7 +45,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
       <DataValueList separated sx={{ flexGrow: 1 }}>
         <DataValue
           labelColor="brightBlue300"
-          label={t("wallet.assets.header.balance")}
+          label={t("wallet.assets.header.networth")}
           size="large"
           isLoading={isLoading}
           disableSkeletonAnimation={disconnected}
@@ -52,6 +60,13 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           disableSkeletonAnimation={disconnected}
         >
           <WalletAssetsHeaderDisplay value={assetsTotal} />
+          {BN(borrowsTotal).gt(0) && (
+            <Text fs={12} color="alpha0">
+              {t("wallet.assets.header.assetsBorrowed", {
+                value: borrowsTotal,
+              })}
+            </Text>
+          )}
         </DataValue>
         <DataValue
           labelColor="brightBlue300"
@@ -61,15 +76,13 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           disableSkeletonAnimation={disconnected}
         >
           <WalletAssetsHeaderDisplay value={lpTotal} />
-        </DataValue>
-        <DataValue
-          labelColor="brightBlue300"
-          label={t("wallet.assets.header.farmsBalance")}
-          size="large"
-          isLoading={isLoading}
-          disableSkeletonAnimation={disconnected}
-        >
-          <WalletAssetsHeaderDisplay value={farmsTotal} />
+          {BN(farmsTotal).gt(0) && (
+            <Text fs={12} color="alpha0">
+              {t("wallet.assets.header.farmsBalance", {
+                value: farmsTotal,
+              })}
+            </Text>
+          )}
         </DataValue>
       </DataValueList>
       {!disconnected && (

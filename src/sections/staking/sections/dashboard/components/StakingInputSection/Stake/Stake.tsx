@@ -1,24 +1,26 @@
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
-import { ToastMessage, useStore } from "state/store"
+import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
 import { BN_10 } from "utils/constants"
 import { Button } from "components/Button/Button"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import { getFixedPointAmount } from "utils/balance"
+import { scale } from "utils/balance"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Spacer } from "components/Spacer/Spacer"
-import { TOAST_MESSAGES } from "state/toasts"
+import { createToastMessages } from "state/toasts"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { useVotesRewardedIds } from "api/staking"
+import { useProcessedVotesIdsQuery } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
+import { useEstimatedFees } from "api/transaction"
+import { useCallback } from "react"
 
 export const Stake = ({
   loading,
@@ -41,57 +43,64 @@ export const Stake = ({
 
   const form = useForm<{ amount: string }>()
 
-  const votesRewarded = useVotesRewardedIds()
+  const { data: votes } = useProcessedVotesIdsQuery()
+
+  const getExtrinsic = useCallback(
+    (amountHuman: string) => {
+      const amount = scale(amountHuman, 12).toString()
+
+      const isStakePosition = positionId != null
+
+      if (!isStakePosition) {
+        return api.tx.staking.stake(amount)
+      }
+
+      if (
+        votes &&
+        (votes.newProcessedVotesIds.length || votes.oldProcessedVotesIds.length)
+      ) {
+        return api.tx.utility.batchAll([
+          ...votes.oldProcessedVotesIds.map((id) =>
+            api.tx.democracy.removeVote(id),
+          ),
+          ...votes.newProcessedVotesIds.map(({ classId, id }) =>
+            api.tx.convictionVoting.removeVote(classId || null, id),
+          ),
+          api.tx.staking.increaseStake(positionId, amount),
+        ])
+      }
+      return api.tx.staking.increaseStake(positionId, amount)
+    },
+    [api.tx, positionId, votes],
+  )
+
+  const estimatedFees = useEstimatedFees(!loading ? [getExtrinsic("1")] : [])
+
+  const balanceMax =
+    estimatedFees.accountCurrencyId === native.id
+      ? balance
+          .minus(estimatedFees.accountCurrencyFee)
+          .minus(native.existentialDeposit)
+      : balance
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    const amount = getFixedPointAmount(values.amount, 12).toString()
-
     const isStakePosition = positionId != null
-    let transaction
 
-    const toast = TOAST_MESSAGES.reduce((memo, type) => {
-      const msType = type === "onError" ? "onLoading" : type
-      memo[type] = (
-        <Trans
-          t={t}
-          i18nKey={`staking.toasts.${
-            isStakePosition ? "increaseStake" : "stake"
-          }.${msType}`}
-          tOptions={{
-            value: BigNumber(values.amount),
-          }}
-        >
-          <span />
-          <span className="highlight" />
-        </Trans>
-      )
-      return memo
-    }, {} as ToastMessage)
+    const toast = createToastMessages(
+      `staking.toasts.${isStakePosition ? "increaseStake" : "stake"}`,
+      {
+        t,
+        tOptions: { value: BigNumber(values.amount) },
+        components: ["span", "span.highlight"],
+      },
+    )
 
-    if (isStakePosition) {
-      const processedVoteIds = await votesRewarded.mutateAsync()
-
-      transaction = await createTransaction(
-        {
-          tx: processedVoteIds.length
-            ? api.tx.utility.batchAll([
-                ...processedVoteIds.map((id) =>
-                  api.tx.democracy.removeVote(id),
-                ),
-                api.tx.staking.increaseStake(positionId, amount),
-              ])
-            : api.tx.staking.increaseStake(positionId, amount),
-        },
-        { toast },
-      )
-    } else {
-      transaction = await createTransaction(
-        {
-          tx: api.tx.staking.stake(amount),
-        },
-        { toast },
-      )
-    }
+    const transaction = await createTransaction(
+      {
+        tx: getExtrinsic(values.amount),
+      },
+      { toast },
+    )
 
     if (!transaction.isError) {
       form.reset()
@@ -173,7 +182,7 @@ export const Stake = ({
                 onChange={onChange}
                 asset={native.id}
                 error={error?.message}
-                withoutMaxBtn
+                balanceMax={balanceMax}
               />
             )
           }
