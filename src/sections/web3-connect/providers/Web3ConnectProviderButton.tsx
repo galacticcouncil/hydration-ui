@@ -139,5 +139,5 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 }
 
 function openUrl(url: string) {
-  window.open(url, "_blank")
+  window.location.href = url
 }
