@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "yarn theme && tsc --build && storybook dev --no-open -p 6006",
-    "build": "tsc --build && storybook build",
+    "build": "yarn theme && tsc --build && storybook build",
     "preview": "http-server ./storybook-static -p 6007 -s",
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
