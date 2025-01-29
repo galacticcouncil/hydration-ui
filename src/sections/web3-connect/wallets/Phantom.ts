@@ -4,15 +4,16 @@ import { isPhantom } from "utils/solana"
 import { Solflare } from "./Solflare"
 import { isAndroidDevice } from "utils/helpers"
 
-const APP_LINK_TARGET = `${window.location.origin}/cross-chain?srcChain=solana?ref=${window.location.origin}`
+const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL
+const APP_LINK_TARGET = `${encodeURIComponent(DOMAIN_URL)}/cross-chain?srcChain=solana?ref=${encodeURIComponent(DOMAIN_URL)}`
 
 export class Phantom extends Solflare {
   extensionName = WalletProviderType.Phantom
   title = "Phantom"
   installUrl = "https://phantom.com/download"
   appLink = isAndroidDevice()
-    ? `phantom://v1/browse/${encodeURIComponent(APP_LINK_TARGET)}`
-    : `https://phantom.app/ul/v1/browse/${encodeURIComponent(APP_LINK_TARGET)}`
+    ? `phantom://v1/browse/${APP_LINK_TARGET}`
+    : `https://phantom.app/ul/v1/browse/${APP_LINK_TARGET}`
   logo = {
     src: PhantomLogo,
     alt: "Phantom Logo",

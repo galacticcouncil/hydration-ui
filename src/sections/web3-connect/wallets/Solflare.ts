@@ -4,17 +4,19 @@ import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { SolanaSigner } from "sections/web3-connect/signer/SolanaSigner"
 import { shortenAccountAddress } from "utils/formatting"
 import { isAndroidDevice } from "utils/helpers"
+import { LINKS } from "utils/navigation"
 import { isSolflare, SolanaWalletProvider } from "utils/solana"
 
-const APP_LINK_TARGET = `${window.location.origin}/cross-chain?srcChain=solana?ref=${window.location.origin}`
+const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL
+const APP_LINK_TARGET = `${encodeURIComponent(DOMAIN_URL)}/${LINKS.cross_chain}?srcChain=solana?ref=${encodeURIComponent(DOMAIN_URL)}`
 
 export class Solflare implements Wallet {
   extensionName = WalletProviderType.Solflare
   title = "Solflare"
   installUrl = "https://solflare.com"
   appLink = isAndroidDevice()
-    ? `solflare://v1/browse/${encodeURIComponent(APP_LINK_TARGET)}`
-    : `https://solflare.com/ul/v1/browse/${encodeURIComponent(APP_LINK_TARGET)}`
+    ? `solflare://v1/browse/${APP_LINK_TARGET}`
+    : `https://solflare.com/ul/v1/browse/${APP_LINK_TARGET}`
   logo = {
     src: SolflareLogo,
     alt: "Solflare Logo",
