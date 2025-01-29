@@ -21,6 +21,12 @@ import {
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
 
+declare module "@talismn/connect-wallets" {
+  interface Wallet {
+    appLink?: string
+  }
+}
+
 export type WalletProvider = {
   type: WalletProviderType
   wallet: Wallet

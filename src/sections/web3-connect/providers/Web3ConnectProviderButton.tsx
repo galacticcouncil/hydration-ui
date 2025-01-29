@@ -15,6 +15,7 @@ import {
   SAccountIndicator,
   SConnectionIndicator,
   SProviderButton,
+  SProviderButtonLink,
 } from "./Web3ConnectProviders.styled"
 import {
   WalletProviderStatus,
@@ -22,7 +23,6 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
 import { isMobileDevice, openUrl } from "utils/helpers"
-import { Button } from "@galacticcouncil/ui"
 
 type Props = WalletProvider & {
   children?: (props: {
@@ -65,15 +65,11 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   const isConnected = getStatus(type) === WalletProviderStatus.Connected
 
   const isOpenableInMobileApp =
-    !wallet.installed && !!wallet?.appLink && isMobileDevice()
+    isMobileDevice() && !wallet.installed && !!wallet?.appLink
 
   const onClick = useCallback(() => {
     if (isConnected) {
       return disconnect(type)
-    }
-
-    if (isOpenableInMobileApp && wallet?.appLink) {
-      return openUrl(wallet.appLink, "_self")
     }
 
     if (type === WalletProviderType.WalletConnect) {
@@ -83,51 +79,28 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     } else {
       installed ? enable() : openUrl(installUrl)
     }
-  }, [
-    disconnect,
-    enable,
-    installUrl,
-    installed,
-    isConnected,
-    isOpenableInMobileApp,
-    type,
-    wallet.appLink,
-  ])
+  }, [disconnect, enable, installUrl, installed, isConnected, type])
 
   if (typeof children === "function") {
     return children({ onClick, isConnected })
   }
 
-  if (isOpenableInMobileApp && type === WalletProviderType.Phantom) {
+  if (isOpenableInMobileApp) {
     return (
-      <SProviderButton as="div">
+      <SProviderButtonLink href={wallet.appLink}>
         <Web3ConnectProviderIcon type={type} />
-        <Text fs={[12, 13]} sx={{ mt: 8, mb: 10 }} tAlign="center">
+        <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
           {title}
         </Text>
-        {wallet.deepLink && (
-          <a
-            sx={{
-              p: 10,
-              bg: "basic400",
-              mb: 20,
-              width: "100%",
-              textAlign: "center",
-            }}
-            href={wallet.deepLink}
-          >
-            Deeplink
-          </a>
-        )}
-        {wallet.appLink && (
-          <a
-            sx={{ p: 10, bg: "basic400", width: "100%", textAlign: "center" }}
-            href={wallet.appLink}
-          >
-            Universal link
-          </a>
-        )}
-      </SProviderButton>
+        <Text
+          color="brightBlue300"
+          fs={[12, 13]}
+          sx={{ flex: "row", align: "center" }}
+        >
+          {t("walletConnect.provider.open")}
+          <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
+        </Text>
+      </SProviderButtonLink>
     )
   }
 
@@ -151,11 +124,6 @@ export const Web3ConnectProviderButton: FC<Props> = ({
           <>
             {t("walletConnect.provider.continue")}
             <ChevronRight width={18} height={18} />
-          </>
-        ) : isOpenableInMobileApp ? (
-          <>
-            {t("walletConnect.provider.open")}
-            <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
           </>
         ) : (
           <>

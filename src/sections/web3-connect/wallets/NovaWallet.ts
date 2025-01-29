@@ -3,13 +3,6 @@ import { WalletProviderType } from "sections/web3-connect/constants/providers"
 
 import NovaWalletLogo from "assets/icons/NovaWallet.svg"
 
-declare module "@talismn/connect-wallets" {
-  interface Wallet {
-    appLink?: string
-    deepLink?: string
-  }
-}
-
 export class NovaWallet extends BaseDotsamaWallet {
   extensionName = WalletProviderType.PolkadotJS // Nova Wallet acts as polkadot-js wallet
   title = "Nova Wallet"
