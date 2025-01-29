@@ -454,9 +454,10 @@ export const isMobileDevice = () => {
   })
 }
 
-export const isAndroidDevice = () => navigator.userAgent.match(/Android/i)
+export const isAndroidDevice = () => !!navigator.userAgent.match(/Android/i)
 
-export const isIOSDevice = () => navigator.userAgent.match(/iPhone|iPad|iPod/i)
+export const isIOSDevice = () =>
+  !!navigator.userAgent.match(/iPhone|iPad|iPod/i)
 
 export const openUrl = (url: string, target = "_blank") => {
   window.open(url, target)

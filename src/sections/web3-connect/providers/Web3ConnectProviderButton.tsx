@@ -22,7 +22,12 @@ import {
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
-import { isMobileDevice, openUrl } from "utils/helpers"
+import {
+  isAndroidDevice,
+  isIOSDevice,
+  isMobileDevice,
+  openUrl,
+} from "utils/helpers"
 
 type Props = WalletProvider & {
   children?: (props: {
@@ -88,6 +93,12 @@ export const Web3ConnectProviderButton: FC<Props> = ({
   if (isOpenableInMobileApp) {
     return (
       <SProviderButtonLink href={wallet.appLink}>
+        <p sx={{ color: "white" }}>
+          <span>{wallet.appLink}</span>
+          <br />
+          <pre>android: {String(isAndroidDevice())}</pre>
+          <pre>iOS: {String(isIOSDevice())}</pre>
+        </p>
         <Web3ConnectProviderIcon type={type} />
         <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
           {title}
