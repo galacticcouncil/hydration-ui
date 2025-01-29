@@ -22,6 +22,7 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { Web3ConnectProviderIcon } from "sections/web3-connect/providers/Web3ConnectProviderIcon"
 import { isMobileDevice, openUrl } from "utils/helpers"
+import { Button } from "@galacticcouncil/ui"
 
 type Props = WalletProvider & {
   children?: (props: {
@@ -95,6 +96,39 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   if (typeof children === "function") {
     return children({ onClick, isConnected })
+  }
+
+  if (isOpenableInMobileApp && type === WalletProviderType.Phantom) {
+    return (
+      <SProviderButton as="div">
+        <Web3ConnectProviderIcon type={type} />
+        <Text fs={[12, 13]} sx={{ mt: 8, mb: 10 }} tAlign="center">
+          {title}
+        </Text>
+        {wallet.deepLink && (
+          <a
+            sx={{
+              p: 10,
+              bg: "basic400",
+              mb: 20,
+              width: "100%",
+              textAlign: "center",
+            }}
+            href={wallet.deepLink}
+          >
+            Deeplink
+          </a>
+        )}
+        {wallet.appLink && (
+          <a
+            sx={{ p: 10, bg: "basic400", width: "100%", textAlign: "center" }}
+            href={wallet.appLink}
+          >
+            Universal link
+          </a>
+        )}
+      </SProviderButton>
+    )
   }
 
   return (

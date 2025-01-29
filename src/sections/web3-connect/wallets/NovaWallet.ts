@@ -6,6 +6,7 @@ import NovaWalletLogo from "assets/icons/NovaWallet.svg"
 declare module "@talismn/connect-wallets" {
   interface Wallet {
     appLink?: string
+    deepLink?: string
   }
 }
 
