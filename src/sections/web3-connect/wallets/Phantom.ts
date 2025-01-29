@@ -4,16 +4,16 @@ import { isPhantom } from "utils/solana"
 import { Solflare } from "./Solflare"
 import { isAndroidDevice } from "utils/helpers"
 
-const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL
-const APP_LINK_TARGET = `${DOMAIN_URL}/cross-chain?srcChain=solana?ref=${DOMAIN_URL}`
+const DEEP_LINK =
+  "phantom://browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
+const UNIVERSAL_LINK =
+  "https://phantom.app/ul/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
 
 export class Phantom extends Solflare {
   extensionName = WalletProviderType.Phantom
   title = "Phantom"
   installUrl = "https://phantom.com/download"
-  appLink = isAndroidDevice()
-    ? `phantom://browse/${encodeURIComponent(APP_LINK_TARGET)}`
-    : `https://phantom.app/ul/browse/${encodeURIComponent(APP_LINK_TARGET)}`
+  appLink = isAndroidDevice() ? DEEP_LINK : UNIVERSAL_LINK
   logo = {
     src: PhantomLogo,
     alt: "Phantom Logo",
