@@ -8,15 +8,15 @@ import { LINKS } from "utils/navigation"
 import { isSolflare, SolanaWalletProvider } from "utils/solana"
 
 const DOMAIN_URL = import.meta.env.VITE_DOMAIN_URL
-const APP_LINK_TARGET = `${encodeURIComponent(DOMAIN_URL)}/${LINKS.cross_chain}?srcChain=solana?ref=${encodeURIComponent(DOMAIN_URL)}`
+const APP_LINK_TARGET = `${DOMAIN_URL}/${LINKS.cross_chain}?srcChain=solana?ref=${DOMAIN_URL}`
 
 export class Solflare implements Wallet {
   extensionName = WalletProviderType.Solflare
   title = "Solflare"
   installUrl = "https://solflare.com"
   appLink = isAndroidDevice()
-    ? `solflare://v1/browse/${APP_LINK_TARGET}`
-    : `https://solflare.com/ul/v1/browse/${APP_LINK_TARGET}`
+    ? `solflare://browse/${encodeURIComponent(APP_LINK_TARGET)}`
+    : `https://solflare.com/ul/browse/${encodeURIComponent(APP_LINK_TARGET)}`
   logo = {
     src: SolflareLogo,
     alt: "Solflare Logo",
