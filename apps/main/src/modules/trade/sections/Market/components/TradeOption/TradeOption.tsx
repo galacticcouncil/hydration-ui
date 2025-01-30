@@ -62,8 +62,9 @@ export const TradeOption = ({
               }
             >
               {t("currency", {
-                prefix: isNegative(diff) ? "(-" : "(+",
+                prefix: "(",
                 value: diff,
+                signDisplay: "always",
                 suffix: ")",
               })}
             </Text>
