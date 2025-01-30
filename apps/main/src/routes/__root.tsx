@@ -1,3 +1,4 @@
+import { Web3ConnectModal } from "@galacticcouncil/web3-connect"
 import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import {
@@ -36,6 +37,7 @@ function RootComponent() {
       <TanStackRouterDevtools position="bottom-left" />
       {isApiLoaded && <Subscriptions />}
       <ProviderRpcSelect />
+      <Web3ConnectModal />
     </>
   )
 }

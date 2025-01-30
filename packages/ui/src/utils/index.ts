@@ -25,3 +25,5 @@ export function createVariants<T extends Record<string, SerializedStyles>>(
     ({ theme }: { theme: EmotionTheme }) =>
       callback(theme)[key]
 }
+
+export { default as styled } from "@emotion/styled"

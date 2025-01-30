@@ -1,0 +1,12 @@
+{
+  "name": "@galacticcouncil/web3-connect",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@galacticcouncil/ui": "*",
+    "@polkadot/api": "^15.5.1",
+    "@polkadot/extension-inject": "^0.58.2",
+    "@solana/web3.js": "^1.98.0"
+  }
+}
