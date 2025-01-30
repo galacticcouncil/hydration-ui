@@ -22,6 +22,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
+import { Switch } from "components/Switch/Switch"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -35,6 +36,8 @@ type RemoveLiquidityProps = {
   onSuccess: () => void
   onAssetOpen: () => void
   defaultValue?: number
+  splitRemove: boolean
+  setSplitRemove: (enabled: boolean) => void
 }
 
 export const RemoveStablepoolLiquidityForm = ({
@@ -44,6 +47,8 @@ export const RemoveStablepoolLiquidityForm = ({
   position,
   onAssetOpen,
   defaultValue,
+  splitRemove,
+  setSplitRemove,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({
@@ -75,7 +80,7 @@ export const RemoveStablepoolLiquidityForm = ({
   const minAssetsOut = useMemo(() => {
     const reservesAmount = position.reserves.length
 
-    if (assetId === position.poolId) {
+    if (splitRemove) {
       return position.reserves.map((reserve) => {
         const meta = getAssetWithFallback(reserve.asset_id.toString())
         const assetOutValue = getAssetOutValue(
@@ -111,27 +116,27 @@ export const RemoveStablepoolLiquidityForm = ({
     position,
     removeSharesValue,
     feeDisplay,
+    splitRemove,
   ])
-  console.log(minAssetsOut)
+
   const handleSubmit = async () => {
     await createTransaction(
       {
-        tx:
-          assetId === position.poolId
-            ? api.tx.stableswap.removeLiquidity(
-                position.poolId,
-                removeSharesValue,
-                minAssetsOut.map((minAssetOut) => ({
-                  assetId: minAssetOut.meta.id,
-                  amount: minAssetOut.minValue,
-                })),
-              )
-            : api.tx.stableswap.removeLiquidityOneAsset(
-                position.poolId,
-                assetId,
-                removeSharesValue,
-                minAssetsOut[0].minValue,
-              ),
+        tx: splitRemove
+          ? api.tx.stableswap.removeLiquidity(
+              position.poolId,
+              removeSharesValue,
+              minAssetsOut.map((minAssetOut) => ({
+                assetId: minAssetOut.meta.id,
+                amount: minAssetOut.minValue,
+              })),
+            )
+          : api.tx.stableswap.removeLiquidityOneAsset(
+              position.poolId,
+              assetId,
+              removeSharesValue,
+              minAssetsOut[0].minValue,
+            ),
       },
       {
         onSuccess,
@@ -166,6 +171,32 @@ export const RemoveStablepoolLiquidityForm = ({
       }}
     >
       <div>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+            mx: -24,
+            mb: 16,
+            px: 24,
+            py: 8,
+          }}
+          css={{
+            borderTop: "1px solid #1C2038",
+            borderBottom: "1px solid #1C2038",
+          }}
+        >
+          <Text fs={14} color="brightBlue300">
+            {t("liquidity.remove.modal.split")}
+          </Text>
+          <Switch
+            value={splitRemove}
+            onCheckedChange={setSplitRemove}
+            label={t("yes")}
+            name={t("liquidity.remove.modal.split")}
+          />
+        </div>
+
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div>
             <Text
@@ -180,7 +211,11 @@ export const RemoveStablepoolLiquidityForm = ({
             >
               {t("selectAsset.title")}
             </Text>
-            <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
+            <AssetSelectButton
+              assetId={assetId}
+              onClick={onAssetOpen}
+              disabled={splitRemove}
+            />
           </div>
           <div>
             <Text fs={32} sx={{ mt: 24 }}>
