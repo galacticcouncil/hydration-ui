@@ -10,7 +10,7 @@ import { Input } from "@/components/Input"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
-import { Modal, ModalBody, ModalClose, ModalFooter, ModalHeader } from "./Modal"
+import { Modal, ModalBody, ModalClose, ModalFooter } from "./Modal"
 
 type Story = StoryObj<typeof Modal>
 
@@ -23,7 +23,7 @@ const DefaultTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal {...args} open={open} onOpenChange={setOpen}>
+      <Modal {...args} title="Lorem ipsum" open={open} onOpenChange={setOpen}>
         <ModalBody>
           Lorem ipsum, dolor sit amet consectetur adipisicing elit. Assumenda
           eaque iure nostrum numquam illum aperiam quasi possimus explicabo
@@ -40,11 +40,13 @@ const WithHeaderAndFooterTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal {...args} open={open} onOpenChange={setOpen}>
-        <ModalHeader
-          title="Review Transaction"
-          description="Transfer 100 DOT from Hydration to Polkadot"
-        />
+      <Modal
+        {...args}
+        open={open}
+        onOpenChange={setOpen}
+        title="Review Transaction"
+        description="Transfer 100 DOT from Hydration to Polkadot"
+      >
         <ModalBody>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit ipsum
           tenetur modi consequatur qui, soluta ratione eveniet cumque aperiam
@@ -71,13 +73,20 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal {...args} open={open} onOpenChange={setOpen}>
-        <Input
-          placeholder="Search tokens..."
-          variant="embedded"
-          customSize="large"
-          iconStart={Search}
-        />
+      <Modal
+        {...args}
+        open={open}
+        title="Lorem ipsum"
+        onOpenChange={setOpen}
+        customHeader={
+          <Input
+            placeholder="Search tokens..."
+            variant="embedded"
+            customSize="large"
+            iconStart={Search}
+          />
+        }
+      >
         <ModalBody p={0}>
           <Box
             mx="calc(-1 * var(--modal-content-padding))"
@@ -92,7 +101,10 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
                 align="center"
               >
                 <Flex align="center" gap={8}>
-                  <AssetLogo src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg" />
+                  <AssetLogo
+                    alt="0"
+                    src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
+                  />
                   <Text fw={600}>HDX</Text>
                 </Flex>
                 <Text fs="p6" color={getToken("text.medium")}>

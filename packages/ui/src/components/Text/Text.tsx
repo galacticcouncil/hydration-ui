@@ -9,6 +9,7 @@ type TextSize = keyof ThemeProps["typography"]["text"]["size"]
 
 export type TextProps = BoxProps & {
   fw?: ResponsiveStyleValue<400 | 500 | 600>
+  lh?: ResponsiveStyleValue<number>
   fs?: TextSize | ResponsiveStyleValue<number>
   font?: ThemeFont
   align?: ThemeUICSSProperties["textAlign"]
@@ -28,6 +29,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
     {
       as = "p",
       fs,
+      lh,
       fw,
       align,
       transform,
@@ -47,6 +49,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
           textAlign: align,
           textTransform: transform,
           textDecoration: decoration,
+          lineHeight: lh,
           ...getFontSizeProps(fs),
         }}
         {...props}

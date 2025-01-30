@@ -25,33 +25,39 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
   const { t } = useTranslation()
   const { autoMode, setAutoMode } = useProviderRpcUrlStore()
   return (
-    <Modal disableInteractOutside {...props}>
-      <ModalHeader title={t("rpc.change.modal.title")}>
-        <Separator my={10} mx="calc(-1 * var(--modal-content-padding))" />
-        <Flex align="center" justify="space-between">
-          <Box>
-            <Text>{t("rpc.change.modal.autoMode.title")}</Text>
-            <Text
-              fs={12}
-              color={getToken("text.medium")}
-              maxWidth={["100%", "75%"]}
-            >
-              {t("rpc.change.modal.autoMode.desc")}
-            </Text>
-          </Box>
-          <Toggle
-            size="large"
-            checked={autoMode}
-            onCheckedChange={setAutoMode}
-          />
+    <Modal
+      disableInteractOutside
+      {...props}
+      title={t("rpc.change.modal.title")}
+      customHeader={
+        <Flex direction="column">
+          <Separator my={10} mx="calc(-1 * var(--modal-content-padding))" />
+          <Flex align="center" justify="space-between">
+            <Box>
+              <Text>{t("rpc.change.modal.autoMode.title")}</Text>
+              <Text
+                fs={12}
+                color={getToken("text.medium")}
+                maxWidth={["100%", "75%"]}
+              >
+                {t("rpc.change.modal.autoMode.desc")}
+              </Text>
+            </Box>
+            <Toggle
+              size="large"
+              checked={autoMode}
+              onCheckedChange={setAutoMode}
+            />
+          </Flex>
+          {!autoMode && (
+            <>
+              <Separator my={16} mx="calc(-1 * var(--modal-content-padding))" />
+              <RpcForm />
+            </>
+          )}
         </Flex>
-        {!autoMode && (
-          <>
-            <Separator my={16} mx="calc(-1 * var(--modal-content-padding))" />
-            <RpcForm />
-          </>
-        )}
-      </ModalHeader>
+      }
+    >
       {!autoMode && (
         <ModalBody sx={{ p: 0 }}>
           <RpcList />

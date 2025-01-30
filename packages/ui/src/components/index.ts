@@ -1,4 +1,5 @@
 export * from "./AssetInput"
+export * from "./AssetLabel"
 export * from "./AssetLogo"
 export * from "./Box"
 export * from "./Button"

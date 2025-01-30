@@ -1,8 +1,9 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
-import { forwardRef } from "react"
+import { forwardRef, ReactNode } from "react"
 
-import { FlexProps } from "@/components/Flex"
+import { Flex, FlexProps } from "@/components/Flex"
 
 import {
   SModalBody,
@@ -40,9 +41,6 @@ const ModalContent = forwardRef<
     <SModalWrapper>
       <SModalContent ref={ref} {...props}>
         <SModalPaper>{children}</SModalPaper>
-        <SModalClose>
-          <X sx={{ width: 20, height: 20 }} />
-        </SModalClose>
       </SModalContent>
     </SModalWrapper>
   </ModalPortal>
@@ -72,18 +70,42 @@ ModalDescription.displayName = DialogPrimitive.Description.displayName
 const ModalHeader = ({
   title,
   description,
-  children,
+  customHeader,
+  customTitle,
   ...props
-}: FlexProps & { title?: string; description?: string }) => (
+}: FlexProps & {
+  title: string
+  description?: string
+  customHeader?: ReactNode
+  customTitle?: ReactNode
+}) => (
   <SModalHeader {...props}>
-    {title && <ModalTitle>{title}</ModalTitle>}
+    <Flex>
+      {customTitle ? (
+        <>
+          <VisuallyHidden.Root>
+            <ModalTitle>{title}</ModalTitle>
+          </VisuallyHidden.Root>
+          {customTitle}
+        </>
+      ) : (
+        <ModalTitle>{title}</ModalTitle>
+      )}
+
+      <SModalClose className="close">
+        <X sx={{ width: 20, height: 20 }} />
+      </SModalClose>
+    </Flex>
+
     {description && <ModalDescription>{description}</ModalDescription>}
-    {children}
+    {customHeader}
   </SModalHeader>
 )
 ModalHeader.displayName = "ModalHeader"
 
-const ModalBody = (props: FlexProps) => <SModalBody {...props} />
+const ModalBody = (props: FlexProps) => (
+  <SModalBody {...props}>{props.children}</SModalBody>
+)
 ModalBody.displayName = "ModalBody"
 
 const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
@@ -91,11 +113,19 @@ ModalFooter.displayName = "ModalFooter"
 
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableInteractOutside?: boolean
+  title: string
+  description?: string
+  customHeader?: ReactNode
+  customTitle?: ReactNode
 }
 
 const Modal = ({
   children,
   disableInteractOutside = false,
+  title,
+  description,
+  customHeader,
+  customTitle,
   ...props
 }: ModalProps) => {
   return (
@@ -105,6 +135,12 @@ const Modal = ({
           disableInteractOutside ? (e) => e.preventDefault() : undefined
         }
       >
+        <ModalHeader
+          title={title}
+          description={description}
+          customHeader={customHeader}
+          customTitle={customTitle}
+        />
         {children}
       </ModalContent>
     </ModalRoot>

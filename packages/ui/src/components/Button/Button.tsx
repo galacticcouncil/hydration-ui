@@ -36,7 +36,7 @@ Button.displayName = "Button"
 
 export const ButtonTransparent = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {
-    return <SButtonTransparent ref={ref} type="button" {...props} />
+    return <SButtonTransparent type="button" ref={ref} {...props} />
   },
 )
 

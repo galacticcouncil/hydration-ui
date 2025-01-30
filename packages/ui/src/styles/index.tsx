@@ -103,8 +103,6 @@ const scrollbar = (theme: Theme) => css`
 
 const globalStyles = (theme: Theme) => css`
   ${normalize}
-  ${scrollbar(theme)}
-
 
   body {
     font-family: ${theme.fontFamilies1.secondary};

@@ -14,12 +14,12 @@ const getRootSize = (size: ToggleSize) => {
   switch (size) {
     case "medium":
       return css`
-        width: 36px;
+        width: 34px;
         height: 18px;
       `
     case "large":
       return css`
-        width: 52px;
+        width: 48px;
         height: 24px;
       `
   }
@@ -51,6 +51,8 @@ export const SToggle = styled(Switch, {
 
     position: relative;
     display: block;
+
+    flex-shrink: 0;
 
     border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
     border: 1px solid ${theme.colors.darkBlue.alpha[100]};
@@ -91,8 +93,8 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
   ({ theme, checked = false, disabled }) => [
     css`
       position: absolute;
-      top: 3px;
-      left: 3px;
+      top: 2px;
+      left: 2px;
 
       border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
       border: 1px solid transparent;
@@ -106,7 +108,7 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
 
       ${checked &&
       css`
-        transform: translateX(calc(var(--switch-thumb-size) * ${1.5}));
+        transform: translateX(calc(var(--switch-thumb-size) * ${1.3}));
         background: ${theme.controls.solid.active};
       `};
     `,
