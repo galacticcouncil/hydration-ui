@@ -88,7 +88,7 @@ export const Market = () => {
               <TradeOption
                 id="swap"
                 value="12345.222"
-                dollarValue="999"
+                displayValue="999"
                 active={"swap" === value}
                 onClick={onChange}
                 label={t("wallet:market.form.type.single")}
@@ -97,7 +97,7 @@ export const Market = () => {
               <TradeOption
                 id="twap"
                 value="6789110"
-                dollarValue="1000"
+                displayValue="1000"
                 diff="1233"
                 active={"twap" === value}
                 onClick={onChange}

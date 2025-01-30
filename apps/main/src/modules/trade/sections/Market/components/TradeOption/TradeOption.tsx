@@ -13,7 +13,7 @@ export const TradeOption = ({
   time,
   active,
   value,
-  dollarValue,
+  displayValue,
   diff,
   onClick,
 }: {
@@ -22,14 +22,18 @@ export const TradeOption = ({
   time: string
   active: boolean
   value: string
-  dollarValue: string
+  displayValue: string
   diff?: string
   onClick: (id: string) => void
 }) => {
   const { t } = useTranslation()
 
   return (
-    <STradeOptionContainer onClick={() => onClick(id)} active={active}>
+    <STradeOptionContainer
+      type="button"
+      onClick={() => onClick(id)}
+      active={active}
+    >
       <Flex direction="column">
         <Text fs={14} lh={1} color={getToken("text.high")}>
           {label}
@@ -48,7 +52,7 @@ export const TradeOption = ({
         <Flex gap={4} align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>
             {t("currency", {
-              value: dollarValue,
+              value: displayValue,
             })}
           </Text>
           {!isNullish(diff) && (
