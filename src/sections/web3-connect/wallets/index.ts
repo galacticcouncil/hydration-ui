@@ -24,6 +24,8 @@ import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm
 declare module "@talismn/connect-wallets" {
   interface Wallet {
     appLink?: string
+    deepLink?: string
+    universalLink?: string
   }
 }
 

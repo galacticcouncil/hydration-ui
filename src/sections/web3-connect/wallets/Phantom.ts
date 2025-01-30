@@ -14,6 +14,8 @@ export class Phantom extends Solflare {
   title = "Phantom"
   installUrl = "https://phantom.com/download"
   appLink = isAndroidDevice() ? DEEP_LINK : UNIVERSAL_LINK
+  deepLink = DEEP_LINK
+  universalLink = UNIVERSAL_LINK
   logo = {
     src: PhantomLogo,
     alt: "Phantom Logo",

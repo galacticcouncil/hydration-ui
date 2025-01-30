@@ -87,7 +87,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   if (isOpenableInMobileApp) {
     return (
-      <SProviderButtonLink href={wallet.appLink}>
+      <SProviderButton as="div">
         <Web3ConnectProviderIcon type={type} />
         <Text fs={[12, 13]} sx={{ mt: 8 }} tAlign="center">
           {title}
@@ -100,7 +100,23 @@ export const Web3ConnectProviderButton: FC<Props> = ({
           {t("walletConnect.provider.open")}
           <LinkIcon sx={{ ml: 4 }} width={10} height={10} />
         </Text>
-      </SProviderButtonLink>
+        {wallet.deepLink && (
+          <a
+            sx={{ p: 10, bg: "basic700", color: "white", mt: 10 }}
+            href={wallet.deepLink}
+          >
+            DEEPLINK
+          </a>
+        )}
+        {wallet.universalLink && (
+          <a
+            sx={{ p: 10, bg: "basic700", color: "white", mt: 10 }}
+            href={wallet.universalLink}
+          >
+            UNIVERSAL
+          </a>
+        )}
+      </SProviderButton>
     )
   }
 

@@ -7,15 +7,17 @@ import { isAndroidDevice } from "utils/helpers"
 import { isSolflare, SolanaWalletProvider } from "utils/solana"
 
 const DEEP_LINK =
-  "solflare://browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
+  "solflare://v1/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
 const UNIVERSAL_LINK =
-  "https://solflare.com/ul/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
+  "https://solflare.com/ul/v1/browse/https%3A%2F%2Fapp.hydration.net%2Fcross-chain%3FsrcChain%3Dsolana?ref=https%3A%2F%2Fapp.hydration.net"
 
 export class Solflare implements Wallet {
   extensionName = WalletProviderType.Solflare
   title = "Solflare"
   installUrl = "https://solflare.com"
   appLink = isAndroidDevice() ? DEEP_LINK : UNIVERSAL_LINK
+  deepLink = DEEP_LINK
+  universalLink = UNIVERSAL_LINK
   logo = {
     src: SolflareLogo,
     alt: "Solflare Logo",
