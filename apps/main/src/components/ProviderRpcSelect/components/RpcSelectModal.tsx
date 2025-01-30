@@ -6,7 +6,6 @@ import {
   ModalBody,
   ModalClose,
   ModalFooter,
-  ModalHeader,
   ModalProps,
   Separator,
   Text,
