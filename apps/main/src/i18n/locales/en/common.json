@@ -4,6 +4,8 @@
   "close": "Close",
   "connectWallet": "Connect Wallet",
   "edit": "Edit",
+  "sell": "Sell",
+  "buy": "Buy",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.required": "This field is required.",
   "navigation.allPools.title": "All Pools",
@@ -62,7 +64,10 @@
   "date": "{{ value, date }}",
   "date.relative": "{{ value, relative }}",
   "number": "{{ value, number }}",
-  "currency": "{{ value, currency }}",
+  "currency": "{{prefix, default('')}}{{ value, currency }}{{suffix, default('')}}",
   "number.compact": "{{ value, number(notation: 'compact') }}",
-  "currency.compact": "{{ value, currency(notation: 'compact') }}"
+  "currency.compact": "{{ value, currency(notation: 'compact') }}",
+  "assetSelector.empty.mainText": "No assets found",
+  "assetSelector.empty.secondaryText": "The asset your are looking for is missing, feel free to add customasset.",
+  "assetSelector.empty.btn.addAsset": "Add custom asset"
 }

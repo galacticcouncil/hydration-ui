@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react"
+import { ReactNode } from "react"
 
-import { AssetLogo, Flex, Icon, Skeleton, Text } from "@/components"
+import { Flex, Icon, Skeleton, Text } from "@/components"
 import { getToken } from "@/utils"
 
 import {
@@ -11,21 +12,23 @@ import {
 } from "./AssetInput.styled"
 import { formatAssetValue } from "./AssetInput.utils"
 
-type AssetInputProps = {
+export type AssetInputProps = {
   label?: string
   symbol?: string
   value?: string
   dollarValue?: string
-  maxBalance: string
+  maxBalance?: string
   onChange: (value: string) => void
-  onAsssetBtnClick: () => void
+  onAsssetBtnClick?: () => void
   error?: string
   disabled?: boolean
   loading?: boolean
+  selectedAssetIcon?: ReactNode
 }
 
 export const AssetInput = ({
   symbol,
+  selectedAssetIcon,
   value,
   dollarValue,
   label,
@@ -83,6 +86,7 @@ export const AssetInput = ({
         <Flex align="center" justify="space-between">
           <AssetButton
             symbol={symbol}
+            icon={selectedAssetIcon}
             loading={loading}
             error={!!error}
             onAsssetBtnClick={onAsssetBtnClick}
@@ -142,12 +146,14 @@ const AssetButton = ({
   loading,
   symbol,
   error,
+  icon,
   onAsssetBtnClick,
 }: {
   loading?: boolean
   symbol?: string
+  icon?: ReactNode
   error: boolean
-  onAsssetBtnClick: () => void
+  onAsssetBtnClick?: () => void
 }) => {
   if (loading)
     return (
@@ -161,13 +167,10 @@ const AssetButton = ({
       </Flex>
     )
 
-  if (symbol)
+  if (symbol && icon)
     return (
       <SAssetButton isError={!!error} onClick={onAsssetBtnClick}>
-        <AssetLogo
-          alt="HDX"
-          src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
-        />
+        {icon}
         <Flex align="center" gap={4}>
           <Text color={getToken("text.high")} fw={600} fs="p3">
             {symbol}

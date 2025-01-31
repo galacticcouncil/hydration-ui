@@ -16,7 +16,7 @@ export const SModalOverlay = styled(Overlay)`
 
   z-index: 10;
 
-  backdrop-filter: blur(16px);
+  background: ${({ theme }) => theme.details.overlays};
 
   &[data-state="open"] {
     animation: ${({ theme }) => theme.animations.fadeIn} 0.2s;
@@ -28,16 +28,8 @@ export const SModalOverlay = styled(Overlay)`
 `
 
 export const SModalClose = styled(Close)`
-  position: absolute;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding: 16px;
-
-  right: 0;
-  top: 0;
+  padding: 4px;
+  height: min-content;
 
   cursor: pointer;
 `
@@ -110,22 +102,29 @@ export const SModalPaper = styled(Paper)`
 
 export const SModalHeader = styled(Flex)`
   flex-direction: column;
-  gap: 4px;
 
   padding: var(--modal-content-padding);
 
-  & > input {
-    width: auto;
-    height: 100%;
-    margin-left: calc(-1 * var(--modal-content-padding));
-    margin: calc(-1 * var(--modal-content-padding));
+  & > div:first-of-type {
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+
+    & > :not(.close) {
+      flex-grow: 1;
+    }
   }
 `
 
 export const SModalBody = styled(Box)`
   padding: var(--modal-content-padding);
+  padding-bottom: 0px;
+
+  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 16px;
 
   overflow: overlay;
+  -webkit-overflow-scrolling: touch;
   flex: 1;
 `
 

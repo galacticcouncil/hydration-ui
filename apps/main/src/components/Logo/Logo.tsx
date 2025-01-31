@@ -106,9 +106,9 @@ export const Logo = ({
   if (Array.isArray(logoMetadata)) {
     return (
       <MultipleAssetLogoWrapper size={size}>
-        {logoMetadata.map((data) => (
+        {logoMetadata.map((data, i) => (
           <AssetLogo
-            key={data.alt}
+            key={`${data.alt}_${i}`}
             alt={data.alt}
             src={data.assetSrc}
             chainSrc={data.chainSrc}
