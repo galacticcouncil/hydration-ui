@@ -7,6 +7,7 @@ export class NovaWallet extends BaseDotsamaWallet {
   title = "Nova Wallet"
   installUrl = "https://novawallet.io"
   appLink = `https://app.novawallet.io/open/dapp?url=https%3A%2F%2Fapp.hydration.net`
+  universalLink = `https://app.novawallet.io/open/dapp?url=https%3A%2F%2Fapp.hydration.net`
   logo = {
     src: NovaWalletLogo,
     alt: "Nova Wallet Logo",
