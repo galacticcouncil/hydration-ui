@@ -30,6 +30,7 @@ import { useEffect, useState } from "react"
 import { useAssets } from "providers/assets"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useRefetchAccountAssets } from "api/deposits"
+import { BN_100 } from "utils/constants"
 
 type Props = {
   assetId: string
@@ -69,8 +70,14 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const { poolShare, spotPrice, omnipoolFee, assetMeta, assetBalance } =
-    useAddLiquidity(assetId, debouncedAmount)
+  const {
+    poolShare,
+    spotPrice,
+    omnipoolFee,
+    assetMeta,
+    assetBalance,
+    sharesToGet,
+  } = useAddLiquidity(assetId, debouncedAmount)
 
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
@@ -90,6 +97,8 @@ export const AddLiquidityForm = ({
 
     const amount = scale(values.amount, assetMeta.decimals).toString()
 
+    const shares = sharesToGet.times(BN_100.minus(2).div(BN_100)).toFixed(0)
+
     return await createTransaction(
       {
         tx: isJoinFarms
@@ -101,7 +110,7 @@ export const AddLiquidityForm = ({
               assetId,
               amount,
               //@ts-ignore
-              undefined,
+              shares,
             )
           : api.tx.omnipool.addLiquidity(assetId, amount),
       },

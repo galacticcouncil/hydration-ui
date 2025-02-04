@@ -8,11 +8,14 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Modal } from "components/Modal/Modal"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { LINKS } from "utils/navigation"
-import { SActionButtonsContainer } from "./WalletAssetsTable.styled"
+import {
+  SActionButtonsContainer,
+  SGridContainer,
+} from "./WalletAssetsTable.styled"
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import {
   AssetsTableData,
@@ -26,10 +29,9 @@ import {
   UpdateTokenDataAction,
 } from "./WalletAssetsTableActions"
 import { isEvmAccount } from "utils/evm"
-import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
-import BN from "bignumber.js"
-import { BN_0, BN_NAN } from "utils/constants"
+import { createToastMessages } from "state/toasts"
+import BN, { BigNumber } from "bignumber.js"
+import { BN_NAN } from "utils/constants"
 import { SLocksContainer } from "sections/wallet/assets/table/details/WalletAssetsTableDetails.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useState } from "react"
@@ -243,43 +245,36 @@ const NativeLocks = ({
   const lockedTokens = useLockedNativeTokens()
   const unlocable = useUnlockableTokens()
 
-  const toast = TOAST_MESSAGES.reduce((memo, type) => {
-    const msType = type === "onError" ? "onLoading" : type
-    memo[type] = (
-      <Trans
-        t={t}
-        i18nKey={`wallet.assets.table.details.${unlocable.value.isZero() ? "clear" : "unlock"}.${msType}`}
-        tOptions={{
-          amount: unlocable.ids.length,
-          value: unlocable.value,
-        }}
-      >
-        <span />
-      </Trans>
-    )
-    return memo
-  }, {} as ToastMessage)
+  const unlockedIdsAmount = unlocable.ids.length + unlocable.openGovIds.length
+  const isUnlockDisabled = !unlockedIdsAmount && unlocable.unlockedValue === "0"
+
+  const toast = createToastMessages(
+    `wallet.assets.table.details.${unlocable.unlockedValue === "0" ? "clear" : "unlock"}`,
+    {
+      t,
+      tOptions: {
+        amount: unlockedIdsAmount,
+        value: BigNumber(unlocable.unlockedValue),
+      },
+    },
+  )
 
   const unlock = useUnlockTokens({
     ids: unlocable.ids,
+    openGovIds: unlocable.openGovIds,
     toast,
   })
-
-  const isUnlockDisabled = !unlocable.ids.length && unlocable.value.isZero()
-  const title =
-    !unlocable.ids.length && unlocable.value.gt(0)
-      ? t("wallet.assets.table.details.unlock")
-      : t("wallet.assets.table.details.clear")
+  const title = !unlockedIdsAmount
+    ? t("wallet.assets.table.details.unlock")
+    : t("wallet.assets.table.details.clear")
 
   return (
-    <div sx={{ flex: "row", flexWrap: "wrap", py: 20 }}>
+    <SGridContainer sx={{ pt: 20, pb: 10, gap: 8 }}>
       <div
         sx={{
           flex: "column",
           gap: 4,
           pr: 10,
-          mb: 20,
-          flexBasis: "50%",
         }}
       >
         <Text fs={14} lh={16} color="whiteish500">
@@ -303,72 +298,32 @@ const NativeLocks = ({
 
       <div
         sx={{
-          flex: "row",
-          align: "end",
-          justify: "end",
-          flexBasis: "50%",
-          mb: 20,
+          flex: "column",
+          gap: 4,
         }}
       >
-        <div
-          sx={{
-            flex: "column",
-            gap: 4,
-          }}
-        >
-          <Text fs={14} lh={16} color="whiteish500">
-            {t("wallet.assets.table.details.lockedDemocracy")}
-          </Text>
-          {lockedTokens.isLoading ? (
-            <Skeleton height={14} width={40} />
-          ) : (
-            <Text fs={14} lh={14} color="white">
-              {t("value", { value: lockedTokens.lockDemocracy })}
-            </Text>
-          )}
-          {lockedTokens.isLoading ? (
-            <Skeleton height={12} width={30} />
-          ) : (
-            <Text fs={12} lh={12} color="whiteish500">
-              <DisplayValue value={lockedTokens.lockDemocracyDisplay} />
-            </Text>
-          )}
-          {unlocable.endDate ? (
-            <SLocksContainer sx={{ width: "fit-content" }}>
-              <Text fs={11} lh={15} color="darkBlue200">
-                {t("wallet.assets.table.details.expiring", {
-                  duration: unlocable.endDate,
-                })}
-              </Text>
-            </SLocksContainer>
-          ) : null}
-        </div>
-      </div>
-
-      <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%", mb: 20 }}>
         <Text fs={14} lh={16} color="whiteish500">
-          {t("wallet.assets.table.details.unlockable")}
+          {t("wallet.assets.table.details.lockedDemocracy")}
         </Text>
-
-        <Text fs={14} lh={14} color="white">
-          {unlocable.isLoading ? (
-            <Skeleton height={14} width={30} />
-          ) : (
-            t("value.token", { value: unlocable.value ?? BN_0 })
-          )}
-        </Text>
-        <Text fs={12} lh={12} color="whiteish500">
-          {unlocable.isLoading ? (
-            <Skeleton height={10} width={20} />
-          ) : (
-            <DisplayValue value={unlocable.displayValue ?? BN_0} />
-          )}
-        </Text>
-        {unlocable.votesUnlocked ? (
-          <SLocksContainer>
+        {lockedTokens.isLoading ? (
+          <Skeleton height={14} width={40} />
+        ) : (
+          <Text fs={14} lh={14} color="white">
+            {t("value", { value: lockedTokens.lockDemocracy })}
+          </Text>
+        )}
+        {lockedTokens.isLoading ? (
+          <Skeleton height={12} width={30} />
+        ) : (
+          <Text fs={12} lh={12} color="whiteish500">
+            <DisplayValue value={lockedTokens.lockDemocracyDisplay} />
+          </Text>
+        )}
+        {unlocable.endDate ? (
+          <SLocksContainer sx={{ width: "fit-content" }}>
             <Text fs={11} lh={15} color="darkBlue200">
-              {t("wallet.assets.table.details.expired", {
-                count: unlocable.votesUnlocked,
+              {t("wallet.assets.table.details.expiring", {
+                duration: unlocable.endDate,
               })}
             </Text>
           </SLocksContainer>
@@ -377,26 +332,72 @@ const NativeLocks = ({
 
       <div
         sx={{
-          flex: "row",
-          align: "center",
-          justify: "end",
-          flexBasis: "50%",
-          mb: 20,
+          flex: "column",
+          gap: 4,
+          pr: 10,
         }}
       >
-        <Button
-          variant="primary"
-          size="compact"
-          disabled={
-            account?.isExternalWalletConnected ||
-            isUnlockDisabled ||
-            unlock.isLoading
-          }
-          onClick={() => unlock.mutate()}
-          isLoading={unlock.isLoading}
-        >
-          {title}
-        </Button>
+        <Text fs={14} lh={16} color="whiteish500">
+          {t("wallet.assets.table.details.lockedReferenda")}
+        </Text>
+        {lockedTokens.isLoading ? (
+          <Skeleton height={14} width={40} />
+        ) : (
+          <Text fs={14} lh={14} color="white">
+            {t("value.token", { value: lockedTokens.lockOpenGov })}
+          </Text>
+        )}
+        {lockedTokens.isLoading ? (
+          <Skeleton height={12} width={30} />
+        ) : (
+          <Text fs={12} lh={12} color="whiteish500">
+            <DisplayValue value={lockedTokens.lockOpenGovDisplay} />
+          </Text>
+        )}
+        {unlocable.openGovEndDate ? (
+          <SLocksContainer sx={{ width: "fit-content" }}>
+            <Text fs={11} lh={15} color="darkBlue200">
+              {t("wallet.assets.table.details.expiring", {
+                duration: unlocable.openGovEndDate,
+              })}
+            </Text>
+          </SLocksContainer>
+        ) : null}
+      </div>
+
+      <div
+        sx={{
+          flex: "column",
+          gap: 4,
+        }}
+      >
+        <Text fs={14} lh={16} color="whiteish500">
+          {t("wallet.assets.table.details.unlockable")}
+        </Text>
+
+        <Text fs={14} lh={14} color="white">
+          {unlocable.isLoading ? (
+            <Skeleton height={14} width={30} />
+          ) : (
+            t("value.token", { value: BigNumber(unlocable.unlockedValue) })
+          )}
+        </Text>
+        <Text fs={12} lh={12} color="whiteish500">
+          {unlocable.isLoading ? (
+            <Skeleton height={10} width={20} />
+          ) : (
+            <DisplayValue value={BigNumber(unlocable.unlockedDisplayValue)} />
+          )}
+        </Text>
+        {unlockedIdsAmount ? (
+          <SLocksContainer>
+            <Text fs={11} lh={15} color="darkBlue200">
+              {t("wallet.assets.table.details.expired", {
+                count: unlockedIdsAmount,
+              })}
+            </Text>
+          </SLocksContainer>
+        ) : null}
       </div>
 
       <div sx={{ flex: "column", gap: 4, pr: 10, flexBasis: "50%" }}>
@@ -411,36 +412,41 @@ const NativeLocks = ({
         </Text>
       </div>
 
-      <div
-        sx={{
-          flex: "row",
-          align: "end",
-          justify: "end",
-          flexBasis: "50%",
-          mb: 20,
-        }}
-      >
-        <div sx={{ flex: "column", gap: 4 }}>
-          <Text fs={14} lh={16} color="whiteish500">
-            {t("wallet.assets.table.details.lockedVesting")}
+      <div sx={{ flex: "column", gap: 4 }}>
+        <Text fs={14} lh={16} color="whiteish500">
+          {t("wallet.assets.table.details.lockedVesting")}
+        </Text>
+        {lockedTokens.isLoading ? (
+          <Skeleton height={14} width={40} />
+        ) : (
+          <Text fs={14} lh={14} color="white">
+            {t("value", { value: lockedTokens.lockVesting })}
           </Text>
-          {lockedTokens.isLoading ? (
-            <Skeleton height={14} width={40} />
-          ) : (
-            <Text fs={14} lh={14} color="white">
-              {t("value", { value: lockedTokens.lockVesting })}
-            </Text>
-          )}
-          {lockedTokens.isLoading ? (
-            <Skeleton height={12} width={30} />
-          ) : (
-            <Text fs={12} lh={12} color="whiteish500">
-              <DisplayValue value={lockedTokens.lockVestingDisplay} />
-            </Text>
-          )}
-        </div>
+        )}
+        {lockedTokens.isLoading ? (
+          <Skeleton height={12} width={30} />
+        ) : (
+          <Text fs={12} lh={12} color="whiteish500">
+            <DisplayValue value={lockedTokens.lockVestingDisplay} />
+          </Text>
+        )}
       </div>
-    </div>
+      <Button
+        variant="primary"
+        size="small"
+        disabled={
+          account?.isExternalWalletConnected ||
+          isUnlockDisabled ||
+          unlock.isLoading
+        }
+        onClick={() => unlock.mutate()}
+        isLoading={unlock.isLoading}
+        sx={{ mx: 8, mt: 12 }}
+        css={{ gridColumn: "span 2" }}
+      >
+        {title}
+      </Button>
+    </SGridContainer>
   )
 }
 
