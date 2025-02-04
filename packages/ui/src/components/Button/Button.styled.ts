@@ -47,8 +47,7 @@ const defaulStyles = createStyles(
 const variantStyles = (color: string, bg: string, bgHover: string) => css`
   background-color: ${bg};
   color: ${color};
-  &:not(:disabled):hover,
-  &:not(:disabled):focus {
+  &:not(:disabled):hover {
     background-color: ${bgHover};
   }
 `
