@@ -13,6 +13,5 @@ function RouteComponent() {
 
   if (pathname.includes("market")) return <Market />
 
-  console.log(pathname)
   return null
 }

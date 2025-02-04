@@ -8,7 +8,7 @@ import { SettingsModal } from "@/modules/trade/components"
 
 import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
 
-const tabs = ["market", "dca", "cross-chain"] as const
+export const swapTabs = ["market", "dca", "cross-chain"] as const
 
 export const FormHeader = () => {
   const { t } = useTranslation("wallet")
@@ -17,7 +17,7 @@ export const FormHeader = () => {
   return (
     <SFormHeader justify="space-between" align="center">
       <Flex>
-        {tabs.map((tab) => (
+        {swapTabs.map((tab) => (
           <SHeaderTab key={tab} asChild>
             <Link
               to="/trade/swap/$section"
