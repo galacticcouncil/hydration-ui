@@ -36,10 +36,10 @@ const getVoteAmount = (vote: PalletConvictionVotingVoteAccountVote) => {
       .toString()
   } else if (vote.isStandard) {
     return vote.asStandard.balance.toString()
-  } else if (vote.asSplitAbstain) {
-    return vote.asSplit.aye
+  } else if (vote.isSplitAbstain) {
+    return vote.asSplitAbstain.aye
       .toBigNumber()
-      .plus(vote.asSplit.nay.toString())
+      .plus(vote.asSplitAbstain.nay.toString())
       .plus(vote.asSplitAbstain.abstain.toString())
       .toString()
   } else {
@@ -65,7 +65,7 @@ const voteConviction = (vote?: PalletDemocracyVoteAccountVote) => {
 
 const voteAmount = (vote?: PalletDemocracyVoteAccountVote) => {
   if (vote?.isSplit) {
-    return vote.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
+    return vote?.asSplit.aye.toBigNumber().plus(vote.asSplit.nay.toBigNumber())
   } else if (vote?.isStandard) {
     return vote.asStandard.balance.toBigNumber()
   } else {
@@ -111,35 +111,6 @@ const getOpenGovRegerendas = (api: ApiPromise) => async () => {
     return acc
   }, [])
 }
-
-export const getReferendums =
-  (api: ApiPromise, accountId?: string) => async () => {
-    const [referendumRaw, votesRaw] = await Promise.all([
-      api.query.democracy.referendumInfoOf.entries(),
-      accountId ? api.query.democracy.votingOf(accountId) : undefined,
-    ])
-
-    const isDelegating = votesRaw?.isDelegating
-
-    const referendums = referendumRaw.map(([key, codec]) => {
-      const id = key.args[0].toString()
-
-      const vote = !isDelegating
-        ? votesRaw?.asDirect.votes.find((vote) => vote[0].toString() === id)
-        : undefined
-
-      return {
-        id: key.args[0].toString(),
-        referendum: codec.unwrap(),
-        voted: !!vote,
-        amount: voteAmount(vote?.[1]),
-        conviction: voteConviction(vote?.[1]),
-        isDelegating,
-      }
-    })
-
-    return referendums
-  }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {
   const res = await fetch(`${REFERENDUM_DATA_URL}/${referendumIndex}.json`)
@@ -224,6 +195,121 @@ export const useAccountOpenGovVotes = () => {
   )
 }
 
+export const useOpenGovUnlockedTokens = () => {
+  const { account } = useAccount()
+  const { api, isLoaded } = useRpcProvider()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
+
+  const ids = accountVotes.map((accountVote) => accountVote.id)
+
+  return useQuery(
+    QUERY_KEYS.accountOpenGovUnlockedTokens(ids, account?.address),
+    async () => {
+      const currentBlock = await api.derive.chain.bestNumber()
+
+      const newVotesData = await Promise.all(
+        accountVotes.map(async (vote) => {
+          const referendumRaw = await api.query.referenda.referendumInfoFor(
+            vote.id,
+          )
+
+          if (!referendumRaw.isNone) {
+            const referendum = referendumRaw.unwrap()
+
+            if (referendum.isOngoing) {
+              return {
+                isUnlocked: false,
+                amount: vote.balance,
+                id: vote.id,
+                endDiff: undefined,
+                classId: vote.classId,
+              }
+            } else {
+              const endBlock = referendum.asApproved[0].toBigNumber()
+              const convictionBlock =
+                CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
+
+              const unlockBlockNumber = endBlock.plus(convictionBlock)
+              const isUnlocked = unlockBlockNumber.lte(currentBlock.toNumber())
+
+              return {
+                isUnlocked,
+                amount: vote.balance,
+                id: vote.id,
+                classId: vote.classId,
+                endDiff: unlockBlockNumber
+                  .minus(currentBlock.toNumber())
+                  .toString(),
+              }
+            }
+          }
+
+          return {
+            isUnlocked: true,
+            amount: vote.balance,
+            id: vote.id,
+            classId: vote.classId,
+            endDiff: undefined,
+          }
+        }),
+      )
+
+      const newUnlockedVotes = newVotesData.reduce<{
+        maxUnlockedValue: string
+        maxLockedValue: string
+        maxLockedBlock: string | undefined
+        ids: { voteId: string; classId: string }[]
+      }>(
+        (acc, voteData) => {
+          if (voteData.isUnlocked) {
+            return {
+              maxUnlockedValue: BN.maximum(
+                acc.maxUnlockedValue,
+                voteData.amount,
+              ).toString(),
+              maxLockedValue: acc.maxLockedValue,
+              maxLockedBlock: voteData.endDiff
+                ? BN.maximum(
+                    voteData.endDiff,
+                    acc.maxLockedBlock ?? "0",
+                  ).toString()
+                : undefined,
+              ids: [
+                ...acc.ids,
+                { voteId: voteData.id, classId: voteData.classId },
+              ],
+            }
+          }
+
+          return {
+            maxLockedValue: BN.maximum(
+              acc.maxLockedValue,
+              voteData.amount,
+            ).toString(),
+            maxUnlockedValue: acc.maxUnlockedValue,
+            maxLockedBlock: BN.maximum(
+              voteData.endDiff ?? "0",
+              acc.maxLockedBlock ?? "0",
+            ).toString(),
+
+            ids: acc.ids,
+          }
+        },
+        {
+          maxUnlockedValue: "0",
+          maxLockedValue: "0",
+          ids: [],
+          maxLockedBlock: undefined,
+        },
+      )
+      return newUnlockedVotes
+    },
+    {
+      enabled: isLoaded && !!ids.length,
+    },
+  )
+}
+
 export const useAccountVotes = () => {
   const { api, isLoaded } = useRpcProvider()
   const { account } = useAccount()
@@ -244,15 +330,15 @@ export const getAccountUnlockedVotes =
       api.derive.chain.bestNumber(),
     ])
 
-    if (!votesRaw || votesRaw.isDelegating) return undefined
-
-    const votes = votesRaw.asDirect.votes.map(([id, dataRaw]) => {
-      return {
-        id: id.toString(),
-        balance: voteAmount(dataRaw),
-        conviction: voteConviction(dataRaw),
-      }
-    })
+    const votes = votesRaw.isDirect
+      ? votesRaw.asDirect.votes.map(([id, dataRaw]) => {
+          return {
+            id: id.toString(),
+            balance: voteAmount(dataRaw),
+            conviction: voteConviction(dataRaw),
+          }
+        })
+      : []
 
     const votedAmounts = await Promise.all(
       votes.map(async (vote) => {
@@ -372,4 +458,77 @@ export type TReferenda = {
   minEnactmentPeriod: BigNumber
   minApproval: PalletReferendaCurve
   minSupport: PalletReferendaCurve
+}
+
+export const useReferendums = (type?: "ongoing" | "finished") => {
+  const { api, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  return useQuery(
+    QUERY_KEYS.referendums(account?.address, type),
+    getReferendums(api, account?.address),
+    {
+      enabled: isLoaded,
+      select: (data) =>
+        type
+          ? data.filter(
+              (r) =>
+                r.referendum[type === "ongoing" ? "isOngoing" : "isFinished"],
+            )
+          : data,
+    },
+  )
+}
+
+export const getReferendums =
+  (api: ApiPromise, accountId?: string) => async () => {
+    const [referendumRaw, votesRaw] = await Promise.all([
+      api.query.democracy.referendumInfoOf.entries(),
+      accountId ? api.query.democracy.votingOf(accountId) : undefined,
+    ])
+
+    const isDelegating = votesRaw?.isDelegating
+
+    const referendums = referendumRaw.map(([key, codec]) => {
+      const id = key.args[0].toString()
+
+      const vote = !isDelegating
+        ? votesRaw?.asDirect.votes.find((vote) => vote[0].toString() === id)
+        : undefined
+
+      return {
+        id: key.args[0].toString(),
+        referendum: codec.unwrap(),
+        voted: !!vote,
+        amount: voteAmount(vote?.[1]),
+        conviction: voteConviction(vote?.[1]),
+        isDelegating,
+      }
+    })
+
+    return referendums
+  }
+
+export const useDeprecatedReferendumInfo = (referendumIndex: string) => {
+  return useQuery(
+    QUERY_KEYS.deprecatedReferendumInfo(referendumIndex),
+    async () => {
+      const res = await fetch(
+        `https://hydration.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
+      )
+      if (!res.ok) return null
+
+      const json: Referendum = await res.json()
+
+      if (
+        json === null ||
+        json.referendumIndex === null ||
+        json.motionIndex === null ||
+        json.title === null
+      )
+        return null
+
+      return json
+    },
+  )
 }

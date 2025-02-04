@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import React, { forwardRef, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
-import { getFloatingPointAmount } from "utils/balance"
+import { scaleHuman } from "utils/balance"
 import { useDisplayPrice, useDisplayShareTokenPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
@@ -120,7 +120,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
                       if (props.balance != null) {
                         const value = BigNumber.max(
                           BN_0,
-                          getFloatingPointAmount(
+                          scaleHuman(
                             props.balanceMax ?? props.balance,
                             decimals,
                           ),

@@ -14,7 +14,7 @@ import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidit
 import { useRpcProvider } from "providers/rpcProvider"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
-import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TFarmAprData } from "api/farms"
 import { ISubmittableResult } from "@polkadot/types/types"
@@ -25,6 +25,9 @@ import { scaleHuman } from "utils/balance"
 import { isEvmAccount } from "utils/evm"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { getSharesToGet } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
+import { useOmnipoolDataObserver } from "api/omnipool"
+import BN from "bignumber.js"
 
 export enum Page {
   OPTIONS,
@@ -46,11 +49,13 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   const { getAssetWithFallback } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
+  const omnipoolAssets = useOmnipoolDataObserver()
   const { createTransaction } = useStore()
   const isEvm = isEvmAccount(account?.address)
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
   const { id: poolId, canAddLiquidity, meta } = pool as TPoolFullData
+  const omipoolAsset = omnipoolAssets.dataMap?.get(poolId)
 
   const assets = Object.keys(pool.meta.meta ?? {})
 
@@ -104,13 +109,13 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
     result: ISubmittableResult,
     calculatedShares: string,
   ) => {
-    let shares = ""
+    let omnipoolShares = ""
 
     if (!isEvm) {
       for (const record of result.events) {
         if (api.events.tokens.Deposited.is(record.event)) {
           if (record.event.data.currencyId.toString() === pool.id) {
-            shares = record.event.data.amount.toString()
+            omnipoolShares = record.event.data.amount.toString()
           }
         }
       }
@@ -126,13 +131,18 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
 
       // go with the whole balance
       if (diff.lt(0.1)) {
-        shares = free.toString()
+        omnipoolShares = free.toString()
       } else {
-        shares = calculatedShares
+        omnipoolShares = calculatedShares
       }
     }
 
-    if (shares && assetId) {
+    if (omnipoolShares && assetId && omipoolAsset) {
+      const shares = getSharesToGet(omipoolAsset, omnipoolShares).toString()
+      const limitShares = BN(shares)
+        .times(BN_100.minus(2).div(BN_100))
+        .toFixed(0)
+
       await createTransaction(
         {
           tx: isJoinFarms
@@ -142,9 +152,11 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                   farm.yieldFarmId,
                 ]),
                 pool.id,
-                shares,
+                omnipoolShares,
+                //@ts-ignore
+                limitShares,
               )
-            : api.tx.omnipool.addLiquidity(pool.id, shares),
+            : api.tx.omnipool.addLiquidity(pool.id, omnipoolShares),
           title: t(
             isJoinFarms
               ? "liquidity.stablepool.transfer.moveAndJoinFarms"
@@ -165,7 +177,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             {
               t,
               tOptions: {
-                value: scaleHuman(shares, meta.decimals),
+                value: scaleHuman(omnipoolShares, meta.decimals),
                 symbol: meta.symbol,
                 where: "Omnipool",
               },
@@ -258,14 +270,14 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                   setSharesAmount(shares)
                   paginateTo(Page.WAIT)
                 }}
-                onSuccess={(result, shares) => {
+                onSuccess={(result, omnipoolShares) => {
                   if (isOnlyStablepool) {
                     refetch()
                     return
                   }
 
                   setCurrentStep((step) => step + 1)
-                  onAddToStablepoolSuccess(result, shares)
+                  onAddToStablepoolSuccess(result, omnipoolShares)
                   paginateTo(Page.WAIT)
                 }}
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
