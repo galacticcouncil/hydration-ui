@@ -1,7 +1,7 @@
 import { Flex, Grid, Paper, Separator } from "@galacticcouncil/ui/components"
+import { Outlet } from "@tanstack/react-router"
 
-import { Market } from "@/modules/trade/sections/Market"
-
+import { FormHeader } from "./components"
 import { SContainer } from "./SwapPage.styled"
 
 export const SwapPage = () => {
@@ -16,8 +16,9 @@ export const SwapPage = () => {
 
       <Flex direction="column" gap={20}>
         <SContainer>
-          <Separator my={20} mx={-20} />
-          <Market />
+          <FormHeader />
+          <Separator mx={-20} />
+          <Outlet />
         </SContainer>
         <Paper sx={{ height: 50 }}></Paper>
       </Flex>
