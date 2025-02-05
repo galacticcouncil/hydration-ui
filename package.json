@@ -52,7 +52,7 @@
     "@galacticcouncil/xcm-sdk": "^8.1.1",
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-api/descriptors": "link:.papi/descriptors",
     "@polkadot/api": "14.0.1",
     "@polkadot/apps-config": "^0.132.1",
     "@polkadot/extension-inject": "^0.48.2",
