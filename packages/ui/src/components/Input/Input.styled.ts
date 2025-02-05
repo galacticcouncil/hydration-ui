@@ -64,16 +64,21 @@ const variants = createVariants((theme) => ({
   `,
 }))
 
+export const SInputContainer = styled.div<
+  Pick<CustomInputProps, "customSize" | "variant">
+>(({ customSize = "medium", variant = "standalone" }) => [
+  sizes(customSize),
+  variants(variant),
+  css`
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  `,
+])
+
 export const SInput = styled.input<CustomInputProps>(
   css``,
-  ({
-    theme,
-    variant = "standalone",
-    customSize = "medium",
-    isError = false,
-  }) => [
-    sizes(customSize),
-    variants(variant),
+  ({ theme, isError = false }) => [
     css`
       width: 100%;
 
@@ -103,87 +108,3 @@ export const SInput = styled.input<CustomInputProps>(
     disabledStyles,
   ],
 )
-
-const groupSizes = createVariants(() => ({
-  small: css`
-    &:has([data-slot="icon"] + input) input {
-      padding-left: 28px;
-    }
-
-    &:has(input + [data-slot="icon"]) input {
-      padding-right: 28px;
-    }
-
-    & > [data-slot="icon"] {
-      height: 14px;
-      margin-top: -7px;
-      left: 6px;
-    }
-
-    input + [data-slot="icon"] {
-      left: auto;
-      right: 6px;
-    }
-  `,
-  medium: css`
-    &:has([data-slot="icon"] + input) input {
-      padding-left: 36px;
-    }
-
-    &:has(input + [data-slot="icon"]) input {
-      padding-right: 36px;
-    }
-
-    & > [data-slot="icon"] {
-      height: 18px;
-      margin-top: -9px;
-      left: 10px;
-    }
-
-    input + [data-slot="icon"] {
-      left: auto;
-      right: 10px;
-    }
-  `,
-  large: css`
-    &:has([data-slot="icon"] + input) input {
-      padding-left: 48px;
-    }
-
-    &:has(input + [data-slot="icon"]) input {
-      padding-right: 48px;
-    }
-
-    & > [data-slot="icon"] {
-      height: 20px;
-      margin-top: -10px;
-      left: 16px;
-    }
-
-    input + [data-slot="icon"] {
-      left: auto;
-      right: 16px;
-    }
-  `,
-}))
-
-export const SInputGroup = styled.div<
-  Pick<CustomInputProps, "customSize" | "disabled">
->(({ theme, disabled = false, customSize = "medium" }) => [
-  groupSizes(customSize),
-  css`
-    position: relative;
-
-    opacity: ${disabled ? 0.2 : 1};
-
-    & > svg {
-      pointer-events: none;
-      color: ${theme.icons.onContainer};
-    }
-
-    & > [data-slot="icon"] {
-      position: absolute;
-      top: 50%;
-    }
-  `,
-])

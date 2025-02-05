@@ -21,7 +21,7 @@ export const SubpageMenu = () => {
       {subnav.map(({ key, to, icon: IconComponent }) => (
         <Button
           key={key}
-          variant={pathname === to ? "secondary" : "tertiary"}
+          variant={pathname.startsWith(to) ? "secondary" : "tertiary"}
           asChild
         >
           <Link to={to}>

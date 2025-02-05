@@ -1,4 +1,4 @@
-import { Flex } from "@/components/Flex"
+import { Flex, FlexProps } from "@/components/Flex"
 import { Text, TextProps } from "@/components/Text"
 import { getToken } from "@/utils"
 
@@ -19,15 +19,16 @@ export type FormFieldProps = {
   label?: string
   error?: string
   children: React.ReactNode
-}
+} & FlexProps
 
 export const FormField: React.FC<FormFieldProps> = ({
   label,
   error,
   children,
+  ...props
 }) => {
   return (
-    <Flex as="label" direction="column" gap={6}>
+    <Flex as="label" direction="column" gap={6} {...props}>
       {label && <FormLabel>{label}</FormLabel>}
       {children}
       {error && <FormError>{error}</FormError>}

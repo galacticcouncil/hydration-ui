@@ -15,6 +15,8 @@ export const STradeOptionContainer = styled.button<{ active: boolean }>(
 
     cursor: pointer;
 
+    transition: ${theme.transitions.colors};
+
     &:hover {
       ${!active &&
       css`

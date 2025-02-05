@@ -1,0 +1,45 @@
+import { Flex } from "@galacticcouncil/ui/components"
+import { Link } from "@tanstack/react-router"
+import { Settings } from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { SettingsModal } from "@/modules/trade/components"
+
+import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
+
+export const swapTabs = ["market", "dca", "cross-chain"] as const
+
+export const FormHeader = () => {
+  const { t } = useTranslation("wallet")
+  const [openSettings, setOpenSettings] = useState(false)
+
+  return (
+    <SFormHeader justify="space-between" align="center">
+      <Flex>
+        {swapTabs.map((tab) => (
+          <SHeaderTab key={tab} asChild>
+            <Link
+              to="/trade/swap/$section"
+              params={{
+                section: tab,
+              }}
+            >
+              {t(`swap.header.${tab}`)}
+            </Link>
+          </SHeaderTab>
+        ))}
+      </Flex>
+
+      <SSettingsIcon
+        as="button"
+        aria-label="Settings"
+        size={20}
+        component={Settings}
+        onClick={() => setOpenSettings(true)}
+      />
+
+      {openSettings && <SettingsModal onOpenChange={setOpenSettings} />}
+    </SFormHeader>
+  )
+}

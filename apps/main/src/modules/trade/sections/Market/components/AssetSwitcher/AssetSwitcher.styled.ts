@@ -31,6 +31,9 @@ export const SPriceContainer = styled(ButtonTransparent)(({ theme }) => [
   buttonStyles,
   css`
     border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+
+    transition: ${theme.transitions.colors};
+
     padding: 2px 14px;
 
     height: 28px;
