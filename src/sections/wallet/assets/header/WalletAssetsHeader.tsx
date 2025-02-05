@@ -101,6 +101,19 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
           <Button
             size="compact"
             variant="mutedSecondary"
+            onClick={() => navigate({ to: LINKS.withdraw })}
+            sx={{ width: ["100%", "auto"] }}
+          >
+            <Icon
+              size={22}
+              sx={{ ml: -4 }}
+              icon={<DownloadIcon css={{ rotate: "180deg" }} />}
+            />
+            {t("withdraw")}
+          </Button>
+          <Button
+            size="compact"
+            variant="mutedSecondary"
             onClick={() => setTransferModalOpen(true)}
             sx={{ width: ["100%", "auto"] }}
           >

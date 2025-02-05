@@ -1,10 +1,18 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { useMutation } from "@tanstack/react-query"
-import { useExternalApi } from "api/external"
+import { useCrossChainWallet } from "api/xcm"
+import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { CEX_CONFIG } from "sections/deposit/DepositPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
-import BN from "bignumber.js"
+import { createToastMessages } from "state/toasts"
+import {
+  getChainSpecificAddress,
+  shortenAccountAddress,
+} from "utils/formatting"
 
 type WithdrawalTransferValues = {
   cexAddress: string
@@ -12,47 +20,93 @@ type WithdrawalTransferValues = {
 }
 
 export const useWithdrawalToCex = (cexId: string, assetId: string) => {
+  const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { createTransaction } = useStore()
+  const { account } = useAccount()
 
-  const { getAsset } = useAssets()
+  const wallet = useCrossChainWallet()
 
   const cex = CEX_CONFIG.find(({ id }) => id === cexId)
   const asset = cex ? cex.assets.find((a) => a.assetId === assetId) : null
-  const assetDetails = getAsset(assetId)
 
-  const chain = asset?.route[0] ?? ""
-
-  const { data: api } = useExternalApi(chain)
   return useMutation(async (values: WithdrawalTransferValues) => {
-    if (!api) throw new Error(`${chain} API is not connected`)
     if (!cex) throw new Error(`CEX ${cexId} not found`)
-    if (!assetDetails) throw new Error(`Asset ${assetId} not found`)
+    if (!asset) throw new Error(`Asset ${assetId} not found`)
+    if (!account) throw new Error("Account not found")
 
-    if (chain === "polkadot") {
-      const amount = BN(values.amount).shiftedBy(assetDetails.decimals)
+    const srcChain = chainsMap.get("hydration")
+    const dstChain = chainsMap.get(asset?.withdrawalChain ?? "")
 
-      const tx = api.tx.balances.transferKeepAlive(
-        values.cexAddress,
-        amount.toString(),
-      )
+    if (!srcChain || !dstChain) throw new Error("Chain not found")
 
-      const paymentInfo = await tx.paymentInfo(values.cexAddress)
-      const paymentFee = BN(paymentInfo.partialFee.toString())
-        .multipliedBy(0.1)
-        .decimalPlaces(0)
+    const xTransfer = await wallet.transfer(
+      asset.data.asset.key,
+      account.address,
+      srcChain,
+      values.cexAddress,
+      dstChain,
+    )
 
-      const adjustedAmmount = amount.minus(paymentFee)
+    const call = await xTransfer.buildCall(values.amount)
 
-      return createTransaction({
+    return createTransaction(
+      {
         title: t("withdraw.transfer.cex.modal.title", { cex: cex.title }),
-        tx: api.tx.balances.transferKeepAlive(
-          values.cexAddress,
-          adjustedAmmount.toString(),
-        ),
-      })
-    }
+        tx: api.tx(call.data),
+      },
+      {
+        toast: createToastMessages("xcm.transfer.toast", {
+          t,
+          tOptions: {
+            amount: values.amount,
+            symbol: asset.data.asset.originSymbol,
+            srcChain: srcChain.name,
+            dstChain: cex.title,
+          },
+        }),
+      },
+    )
+  })
+}
 
-    throw new Error(`Unsupported chain ${chain}`)
+export const useWithdrawalOnchain = (assetId: string) => {
+  const { api } = useRpcProvider()
+  const { t } = useTranslation()
+  const { createTransaction } = useStore()
+  const { account } = useAccount()
+
+  const { native, getAsset } = useAssets()
+
+  const asset = getAsset(assetId)
+
+  return useMutation(async (values: WithdrawalTransferValues) => {
+    if (!asset) throw new Error(`Asset ${assetId} not found`)
+    if (!account) throw new Error("Account not found")
+
+    const amount = new BN(values.amount).shiftedBy(asset.decimals).toString()
+
+    return await createTransaction(
+      {
+        tx:
+          asset.id === native.id || asset.isErc20
+            ? api.tx.currencies.transfer(values.cexAddress, asset.id, amount)
+            : api.tx.tokens.transfer(values.cexAddress, asset.id, amount),
+      },
+      {
+        toast: createToastMessages("wallet.assets.transfer.toast", {
+          t,
+          tOptions: {
+            value: values.amount,
+            symbol: asset.symbol,
+            address: shortenAccountAddress(
+              getChainSpecificAddress(values.cexAddress),
+              12,
+            ),
+          },
+          components: ["span", "span.highlight"],
+        }),
+      },
+    )
   })
 }

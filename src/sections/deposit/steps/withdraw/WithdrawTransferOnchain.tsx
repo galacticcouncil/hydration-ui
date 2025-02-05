@@ -1,92 +1,87 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  useCrossChainTransaction,
-  useCrossChainTransfer,
-  useCrossChainWallet,
-} from "api/xcm"
+import { useTokenBalance } from "api/balances"
+import { useEstimatedFees } from "api/transaction"
 import BN from "bignumber.js"
 import { AddressBook } from "components/AddressBook/AddressBook"
+import { Alert } from "components/Alert"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
+import { Switch } from "components/Switch/Switch"
+import { Text } from "components/Typography/Text/Text"
+import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
+  CEX_CONFIG,
   useDeposit,
   useTransferSchema,
 } from "sections/deposit/DepositPage.utils"
+import { useWithdrawalOnchain } from "sections/deposit/steps/withdraw/WithdrawTransfer.utils"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_NAN } from "utils/constants"
-import { H160, isEvmAddress } from "utils/evm"
+import { BN_0, BN_NAN } from "utils/constants"
 import { FormValues } from "utils/helpers"
 
-export type DepositTransferProps = {
+export type WithdrawTransferOnchainProps = {
   onTransferSuccess: () => void
 }
 
-export const DepositTransfer: React.FC<DepositTransferProps> = ({
-  onTransferSuccess,
-}) => {
+export const WithdrawTransferOnchain: React.FC<
+  WithdrawTransferOnchainProps
+> = ({ onTransferSuccess }) => {
+  const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { asset, depositedAmount, setDepositedAmount } = useDeposit()
+  const { asset, cexId } = useDeposit()
   const [addressBookOpen, setAddressBookOpen] = useState(false)
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
+  const activeCex = CEX_CONFIG.find((cex) => cex.id === cexId)
   const address = account?.address ?? ""
-  const srcChain = asset?.depositChain ?? ""
 
-  const wallet = useCrossChainWallet()
+  const { getAsset } = useAssets()
+  const { data: tokenBalance } = useTokenBalance(asset?.assetId, address)
+  const assetMeta = getAsset(asset?.assetId ?? "")
 
-  const { data: xTransfer } = useCrossChainTransfer(
-    wallet,
-    {
-      asset: asset?.data.asset.key ?? "",
-      srcAddr: address,
-      dstAddr: address,
-      srcChain: srcChain,
-      dstChain: "hydration",
-    },
-    {
-      onSuccess: ({ source }) => {
-        if (depositedAmount && !form.getValues("amount")) {
-          const amount = BN.min(
-            depositedAmount.toString(),
-            source.max.amount.toString(),
-          )
-
-          const shiftedAmount = amount.shiftedBy(-source.balance.decimals)
-          form.setValue("amount", shiftedAmount.toString())
-        }
-      },
-    },
-  )
+  const estimatedFees = useEstimatedFees([
+    api.tx.currencies.transfer(address, asset?.assetId ?? "0", "1"),
+  ])
 
   const transferData = useMemo(() => {
-    if (!xTransfer)
+    if (!assetMeta) {
       return {
         balance: BN_NAN,
-        min: BN_NAN,
+        min: BN_0,
         max: BN_NAN,
         symbol: "",
         decimals: 0,
       }
-
-    const { balance, min, max } = xTransfer.source
+    }
+    const balance = BN(tokenBalance?.balance ?? "0")
+    const max =
+      estimatedFees.accountCurrencyId === asset?.assetId
+        ? balance
+            .minus(estimatedFees.accountCurrencyFee)
+            .minus(assetMeta.existentialDeposit)
+        : balance
 
     return {
-      symbol: balance.symbol,
-      decimals: balance.decimals,
-      balance: BN(balance.amount.toString()),
-      min: BN(min.amount.toString()),
-      max: BN(max.amount.toString()),
+      balance,
+      min: BN_0,
+      max,
+      symbol: assetMeta?.symbol ?? "",
+      decimals: assetMeta?.decimals ?? 0,
     }
-  }, [xTransfer])
-
-  const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction({
-    onSuccess: onTransferSuccess,
-  })
+  }, [
+    asset?.assetId,
+    assetMeta,
+    estimatedFees.accountCurrencyFee,
+    estimatedFees.accountCurrencyId,
+    tokenBalance?.balance,
+  ])
 
   const zodSchema = useTransferSchema({
     min: transferData.min,
@@ -99,34 +94,28 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     mode: "onChange",
     defaultValues: {
       amount: "",
-      address,
+      address: "",
     },
     resolver: zodResolver(zodSchema),
   })
 
+  const { mutateAsync: withdraw, isLoading } = useWithdrawalOnchain(
+    asset?.assetId ?? "",
+  )
+
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (!asset) return
-
-    await sendTx({
-      wallet,
-      asset: asset.data.asset.key,
-      amount: values.amount,
-      srcAddr: isEvmAddress(address) ? new H160(address).toAccount() : address,
-      dstAddr: isEvmAddress(values.address)
-        ? new H160(values.address).toAccount()
-        : values.address,
-      srcChain: srcChain,
-      dstChain: "hydration",
-    })
-
-    const depositedAmount = BN(values.amount)
-      .shiftedBy(transferData.decimals)
-      .toString()
-
-    setDepositedAmount(BigInt(depositedAmount))
+    await withdraw(
+      {
+        cexAddress: values.address,
+        amount: values.amount,
+      },
+      {
+        onSuccess: onTransferSuccess,
+      },
+    )
   }
 
-  function toggleAddressBook() {
+  const toggleAddressBook = () => {
     setAddressBookOpen((open) => !open)
   }
 
@@ -168,12 +157,39 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
                   placeholder={t("wallet.assets.transfer.dest.placeholder")}
                   openAddressBook={toggleAddressBook}
                   error={fieldState.error?.message}
+                  hideNativeAddress
                 />
               </div>
             )}
           />
-          <Button isLoading={isLoading} disabled={isLoading} variant="primary">
-            {t("deposit.cex.transfer.button")}
+          <Alert variant="info" hideIcon>
+            <label sx={{ flex: "row", gap: 12, align: "start" }}>
+              <Switch
+                name="disclaimer-accepted"
+                value={disclaimerAccepted}
+                onCheckedChange={setDisclaimerAccepted}
+              />
+              <div>
+                <Text fs={13} color="basic100" font="GeistSemiBold">
+                  {t("withdraw.disclaimer.cex.title", {
+                    cex: activeCex?.title,
+                    symbol: asset?.data.asset.originSymbol,
+                  })}
+                </Text>
+                <Text fs={13} color="basic400">
+                  {t("withdraw.disclaimer.cex.description")}
+                </Text>
+              </div>
+            </label>
+          </Alert>
+          <Button
+            isLoading={isLoading}
+            disabled={!disclaimerAccepted}
+            variant="primary"
+          >
+            {disclaimerAccepted
+              ? t("withdraw.transfer.button")
+              : t("withdraw.disclaimer.button")}
           </Button>
         </div>
       </form>

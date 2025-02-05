@@ -27,12 +27,14 @@ export const CEX_CONFIG = [
       {
         assetId: "5",
         minDeposit: 2,
-        route: ["polkadot", "hydration"],
+        withdrawalChain: "polkadot",
+        depositChain: "polkadot",
         data: hydration.assetsData.get("dot")!,
       },
       {
         assetId: "0",
-        route: ["hydration"],
+        withdrawalChain: "hydration",
+        depositChain: "hydration",
         data: hydration.assetsData.get("hdx")!,
       },
     ],
@@ -44,17 +46,20 @@ export const CEX_CONFIG = [
     assets: [
       {
         assetId: "5",
-        route: ["polkadot", "hydration"],
+        withdrawalChain: "polkadot",
+        depositChain: "polkadot",
         data: hydration.assetsData.get("dot")!,
       },
       {
         assetId: "10",
-        route: ["assethub", "hydration"],
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
         data: hydration.assetsData.get("usdt")!,
       },
       {
         assetId: "22",
-        route: ["assethub", "hydration"],
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
         data: hydration.assetsData.get("usdc")!,
       },
     ],
@@ -66,17 +71,20 @@ export const CEX_CONFIG = [
     assets: [
       {
         assetId: "5",
-        route: ["polkadot", "hydration"],
+        withdrawalChain: "polkadot",
+        depositChain: "polkadot",
         data: hydration.assetsData.get("dot")!,
       },
       {
         assetId: "10",
-        route: ["assethub", "hydration"],
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
         data: hydration.assetsData.get("usdt")!,
       },
       {
         assetId: "22",
-        route: ["assethub", "hydration"],
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
         data: hydration.assetsData.get("usdc")!,
       },
     ],
@@ -88,7 +96,8 @@ export const CEX_CONFIG = [
     assets: [
       {
         assetId: "5",
-        route: ["polkadot", "hydration"],
+        withdrawalChain: "polkadot",
+        depositChain: "polkadot",
         data: hydration.assetsData.get("dot")!,
       },
     ],

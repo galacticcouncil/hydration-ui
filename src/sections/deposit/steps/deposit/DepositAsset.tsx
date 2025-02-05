@@ -23,6 +23,7 @@ import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectM
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
 import { isAnyParachain } from "utils/helpers"
+import { isBigInt } from "utils/types"
 
 type DepositAssetProps = {
   onAsssetSelect: () => void
@@ -42,7 +43,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const CexIcon = activeCex?.icon
 
   const address = account?.address ?? ""
-  const dstChain = asset?.route[0] ?? ""
+  const dstChain = asset?.depositChain ?? ""
   const assetKey = asset?.data.asset.key
 
   const balanceSnapshot = useRef<bigint | null>(null)
@@ -58,7 +59,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const setBalanceSnapshot = useCallback(
     (balances: AssetAmount[]) => {
       const balance = balances?.find((a) => a.key === assetKey)?.amount ?? null
-      if (!balanceSnapshot.current) {
+      if (!isBigInt(balanceSnapshot.current)) {
         balanceSnapshot.current = balance
       }
     },
@@ -73,9 +74,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   useCustomCompareEffect(
     () => {
-      if (!balance) return
       if (!asset) return
-      if (!balanceSnapshot.current) return
+      if (!isBigInt(balance)) return
+      if (!isBigInt(balanceSnapshot.current)) return
       if (balance > balanceSnapshot.current) {
         const depositedAmount = balance - balanceSnapshot.current
         onDepositSuccess(asset)
@@ -102,6 +103,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
+      <button onClick={() => onDepositSuccess(asset)}>skip</button>
       <SAssetSelectButtonBox>
         <Text
           sx={{ flex: "row", align: "center", gap: 4 }}

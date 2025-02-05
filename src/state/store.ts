@@ -7,7 +7,7 @@ import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
 import { TransactionRequest } from "@ethersproject/providers"
-import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import { EvmCall, SolanaCall, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 
@@ -29,6 +29,7 @@ export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic
+  txOptions?: SubstrateCall["txOptions"]
   evmTx?: {
     data: TransactionRequest
     abi?: string

@@ -18,6 +18,7 @@ export enum DepositMethod {
 
 export type AssetConfig = {
   assetId: string
-  route: string[]
+  withdrawalChain: string
+  depositChain: string
   data: ChainAssetData
 }

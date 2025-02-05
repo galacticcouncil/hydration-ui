@@ -7,10 +7,12 @@ import { WithdrawMethodSelect } from "sections/deposit/steps/withdraw/WithdrawMe
 import { WithdrawSuccess } from "sections/deposit/steps/withdraw/WithdrawSuccess"
 import { WithdrawTransfer } from "sections/deposit/steps/withdraw/WithdrawTransfer"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
+import { WithdrawTransferOnchain } from "sections/deposit/steps/withdraw/WithdrawTransferOnchain"
 
 export const WithdrawPage = () => {
   const { t } = useTranslation()
   const {
+    asset,
     cexId,
     back,
     direction,
@@ -22,6 +24,8 @@ export const WithdrawPage = () => {
   } = useDeposit()
 
   const activeCex = CEX_CONFIG.find(({ id }) => id === cexId)
+
+  const isOnchain = asset?.withdrawalChain === "hydration"
 
   return (
     <SContainer>
@@ -46,7 +50,11 @@ export const WithdrawPage = () => {
                   cex: activeCex?.title,
                 }).toUpperCase(),
                 headerVariant: "GeistMono",
-                content: <WithdrawTransfer onTransferSuccess={setSuccess} />,
+                content: isOnchain ? (
+                  <WithdrawTransferOnchain onTransferSuccess={setSuccess} />
+                ) : (
+                  <WithdrawTransfer onTransferSuccess={setSuccess} />
+                ),
               },
               { content: null },
               {

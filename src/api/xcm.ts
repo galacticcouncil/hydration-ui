@@ -7,7 +7,7 @@ import {
   HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount, SubstrateApis } from "@galacticcouncil/xcm-core"
-import { Wallet, XTransfer } from "@galacticcouncil/xcm-sdk"
+import { Wallet, Transfer, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import {
   useMutation,
   useQuery,
@@ -79,10 +79,7 @@ export const useCrossChainWallet = () => {
 export const useCrossChainTransfer = (
   wallet: Wallet,
   transfer: TransferProps,
-  /* options: {
-    onSuccess?: (result: XTransfer) => void
-  } = {}, */
-  options: UseQueryOptions<XTransfer> = {},
+  options: UseQueryOptions<Transfer> = {},
 ) => {
   const args = [
     transfer.asset,
@@ -91,7 +88,7 @@ export const useCrossChainTransfer = (
     transfer.dstAddr,
     transfer.dstChain,
   ] as const
-  return useQuery<XTransfer>(
+  return useQuery<Transfer>(
     QUERY_KEYS.xcmTransfer(...args),
     async () => {
       return wallet.transfer(...args)
@@ -135,6 +132,8 @@ export const useCrossChainTransaction = (options: TransactionOptions = {}) => {
 
       const call = await xTransfer.buildCall(values.amount)
 
+      const { txOptions } = call as SubstrateCall
+
       return await createTransaction(
         {
           title: t("xcm.transfer.reviewTransaction.modal.title"),
@@ -145,6 +144,7 @@ export const useCrossChainTransaction = (options: TransactionOptions = {}) => {
             dstChain: dstChain.name,
           }),
           tx: api.tx(call.data),
+          txOptions,
           xcallMeta: {
             srcChain: values.srcChain,
             srcChainFee: fee.toDecimal(fee.decimals),

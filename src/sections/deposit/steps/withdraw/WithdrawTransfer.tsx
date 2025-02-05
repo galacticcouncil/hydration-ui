@@ -1,9 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  useCrossChainTransaction,
-  useCrossChainTransfer,
-  useCrossChainWallet,
-} from "api/xcm"
+import { useCrossChainTransfer, useCrossChainWallet } from "api/xcm"
 import BN from "bignumber.js"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Alert } from "components/Alert"
@@ -41,7 +37,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
 
   const activeCex = CEX_CONFIG.find((cex) => cex.id === cexId)
   const address = account?.address ?? ""
-  const dstChain = asset?.route[0] ?? ""
+  const dstChain = asset?.withdrawalChain ?? ""
 
   const wallet = useCrossChainWallet()
 
@@ -74,10 +70,6 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     }
   }, [xTransfer])
 
-  const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction({
-    onSuccess: onTransferSuccess,
-  })
-
   const zodSchema = useTransferSchema({
     min: transferData.min,
     max: transferData.max,
@@ -94,31 +86,24 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     resolver: zodResolver(zodSchema),
   })
 
-  const { mutateAsync: withdrawToCex } = useWithdrawalToCex(
+  const { mutateAsync: withdrawToCex, isLoading } = useWithdrawalToCex(
     cexId,
     asset?.assetId ?? "",
   )
 
   const onSubmit = async (values: FormValues<typeof form>) => {
-    if (!asset) return
-
-    await sendTx({
-      wallet,
-      asset: asset.data.asset.key,
-      amount: values.amount,
-      srcAddr: address,
-      dstAddr: address,
-      srcChain: "hydration",
-      dstChain,
-    })
-
-    await withdrawToCex({
-      cexAddress: values.address,
-      amount: values.amount,
-    })
+    await withdrawToCex(
+      {
+        cexAddress: values.address,
+        amount: values.amount,
+      },
+      {
+        onSuccess: onTransferSuccess,
+      },
+    )
   }
 
-  function toggleAddressBook() {
+  const toggleAddressBook = () => {
     setAddressBookOpen((open) => !open)
   }
 
@@ -187,7 +172,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
           </Alert>
           <Button
             isLoading={isLoading}
-            disabled={isLoading || !disclaimerAccepted}
+            disabled={!disclaimerAccepted}
             variant="primary"
           >
             {disclaimerAccepted

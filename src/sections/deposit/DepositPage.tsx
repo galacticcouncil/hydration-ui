@@ -27,7 +27,7 @@ export const DepositPage = () => {
     reset,
   } = useDeposit()
 
-  const isMultiStepTransfer = asset ? asset.route.length > 1 : false
+  const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 
   const showCexDepositAlert =
     page === DepositScreen.DepositAsset &&

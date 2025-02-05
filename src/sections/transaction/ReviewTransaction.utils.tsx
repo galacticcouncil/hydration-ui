@@ -50,6 +50,7 @@ import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
+import { HexString } from "polkadot-api"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -111,6 +112,10 @@ function isTxExtrinsic(x: AnyJson): x is TxExtrinsic {
   )
 }
 
+function isHexString(value: unknown): value is HexString {
+  return typeof value === "string" && value.startsWith("0x")
+}
+
 export function isSetCurrencyExtrinsic(tx?: AnyJson) {
   return isTxExtrinsic(tx) && tx.method.method === "setCurrency"
 }
@@ -156,14 +161,8 @@ function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
   return submittableResult
 }
 
-function solanaStatusToSubmittableResult({
-  status,
-  hash,
-}: {
-  status: SignatureStatus
-  hash: string
-}) {
-  const isSuccess = status.confirmationStatus === "confirmed"
+function toSubmittableResult(hash: string) {
+  const isSuccess = true
   const submittableResult: ISubmittableResult = {
     status: {} as ExtrinsicStatus,
     events: [],
@@ -308,9 +307,9 @@ export const useSendSolanaTransactionMutation = (
       try {
         setTxState("Broadcast")
         setTxHash(hash)
-        const status = await waitForSolanaTx(chain.connection, hash)
+        await waitForSolanaTx(chain.connection, hash)
         setTxState("InBlock")
-        return resolve(solanaStatusToSubmittableResult({ status, hash }))
+        return resolve(toSubmittableResult(hash))
       } catch (err) {
         reject(new TransactionError(err?.toString() ?? "Unknown error", {}))
       }
@@ -533,7 +532,7 @@ export const useSendTransactionMutation = (
     ISubmittableResult,
     unknown,
     {
-      tx: SubmittableExtrinsic<"promise">
+      tx: SubmittableExtrinsic<"promise"> | HexString
     }
   > = {},
   xcallMeta?: Record<string, string>,
@@ -543,8 +542,24 @@ export const useSendTransactionMutation = (
   const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
   const [txHash, setTxHash] = useState<string>("")
 
+  const externalChain =
+    xcallMeta?.srcChain && xcallMeta.srcChain !== "hydration"
+      ? chainsMap.get(xcallMeta?.srcChain)
+      : null
+
+  const apiPromise =
+    externalChain && isAnyParachain(externalChain) ? externalChain.api : api
+
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
+      if (isHexString(tx)) {
+        setTxHash(tx)
+        setTxState("Broadcast")
+        await waitForSubstrateTx(await apiPromise, tx)
+        setTxState("InBlock")
+        return resolve(toSubmittableResult(tx))
+      }
+
       try {
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
@@ -554,17 +569,7 @@ export const useSendTransactionMutation = (
             setTxState(result.status.type)
           }
 
-          const externalChain =
-            xcallMeta?.srcChain && xcallMeta.srcChain !== "hydration"
-              ? chainsMap.get(xcallMeta?.srcChain)
-              : null
-
-          const apiPromise =
-            externalChain && isAnyParachain(externalChain)
-              ? await externalChain.api
-              : api
-
-          const onComplete = createResultOnCompleteHandler(apiPromise, {
+          const onComplete = createResultOnCompleteHandler(await apiPromise, {
             onError: (error) => {
               reject(error)
             },
@@ -744,8 +749,10 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
   const sendTx = useSendTransactionMutation(
     {
       onMutate: ({ tx }) => {
-        boundReferralToast.onLoading(tx)
-        storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        if (!isHexString(tx)) {
+          boundReferralToast.onLoading(tx)
+          storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        }
         setTxType("default")
       },
       onSuccess: boundReferralToast.onSuccess,
@@ -867,6 +874,49 @@ async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
       try {
         const newBlock = await provider.getBlockNumber()
         if (!newBlock || newBlock <= currentBlock) {
+          cleanup()
+          timeout = setTimeout(checkBlock, 5000)
+        } else {
+          cleanup()
+          resolve()
+        }
+      } catch (error) {
+        cleanup()
+        reject(error)
+      }
+    }
+
+    checkBlock()
+  })
+}
+
+async function waitForSubstrateTx(
+  api: ApiPromise,
+  hash: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout | null = null
+
+    const cleanup = () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
+    const checkBlock = async () => {
+      try {
+        const latestHeader = await api.rpc.chain.getHeader()
+        const blockNumber = latestHeader.number.toNumber()
+        const blockHash = await api.rpc.chain.getBlockHash(blockNumber)
+        const block = await api.rpc.chain.getBlock(blockHash)
+        const extrinsics = block.block.extrinsics
+
+        const foundExtrinsic = extrinsics
+          .toArray()
+          .find((ex) => ex.hash.toHex() === hash)
+
+        if (!foundExtrinsic) {
           cleanup()
           timeout = setTimeout(checkBlock, 5000)
         } else {
