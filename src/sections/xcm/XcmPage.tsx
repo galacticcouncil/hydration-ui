@@ -13,6 +13,7 @@ import {
   useAccount,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
+import { useCrossChainWallet } from "api/xcm"
 import { useStore } from "state/store"
 import {
   PROVIDERS_BY_WALLET_MODE,
@@ -79,6 +80,8 @@ export function XcmPage() {
     getDefaultSrcChain(account?.provider),
   )
 
+  const xWallet = useCrossChainWallet()
+
   const rawSearch = useSearch<SearchGenerics>()
   const search = XcmAppSearch.safeParse(rawSearch)
 
@@ -141,7 +144,14 @@ export function XcmPage() {
         : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist = import.meta.env.VITE_ENV === "production" ? "acala-evm" : ""
+  const testChains = Array.from(xWallet.config.chains.values())
+    .filter((c) => c.isTestChain)
+    .map((c) => c.key)
+
+  const blacklist =
+    import.meta.env.VITE_ENV === "production"
+      ? testChains.join(",").concat("")
+      : ""
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
