@@ -3,7 +3,7 @@ import {
   chainsMap,
   routesMap,
   validations,
-  dex,
+  swaps,
   HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
@@ -58,12 +58,10 @@ export const useCrossChainWallet = () => {
     // Register chain swaps
     const hydration = configService.getChain("hydration")
     const assethub = configService.getChain("assethub")
-    const assethubCex = configService.getChain("assethub_cex")
 
-    wallet.registerDex(
-      new dex.HydrationDex(hydration, poolService),
-      new dex.AssethubDex(assethub),
-      new dex.AssethubDex(assethubCex),
+    wallet.registerSwaps(
+      new swaps.HydrationSwap(hydration, poolService),
+      new swaps.AssethubSwap(assethub),
     )
 
     return wallet
