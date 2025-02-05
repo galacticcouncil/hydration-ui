@@ -95,7 +95,8 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
                         onChange(value)
                       }
                     }}
-                    sx={{ width: 65 }}
+                    sx={{ width: 30 }}
+                    unit="%"
                   />
                 </Flex>
               </Flex>
@@ -137,7 +138,8 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
                         onChange(value)
                       }
                     }}
-                    sx={{ width: 65 }}
+                    sx={{ width: 30 }}
+                    unit="%"
                   />
                 </Flex>
               </Flex>
