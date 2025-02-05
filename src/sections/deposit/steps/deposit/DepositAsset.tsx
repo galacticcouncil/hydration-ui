@@ -103,7 +103,6 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
-      <button onClick={() => onDepositSuccess(asset)}>skip</button>
       <SAssetSelectButtonBox>
         <Text
           sx={{ flex: "row", align: "center", gap: 4 }}
