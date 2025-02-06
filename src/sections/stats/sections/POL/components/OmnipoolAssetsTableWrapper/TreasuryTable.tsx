@@ -32,8 +32,12 @@ export const TreasuryTable = ({
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  if (isLoading || !data.length) {
+  if (isLoading) {
     return <OmnipoolAssetsTableSkeleton table={skeleton} />
+  }
+
+  if (!isLoading && !data.length) {
+    return null
   }
 
   return (
