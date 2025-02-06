@@ -127,7 +127,7 @@
     "dev": "vite",
     "dev:rococo": "vite -m rococo",
     "dev:production": "vite -m production",
-    "build": "papi && vite build",
+    "build": "vite build",
     "postbuild": "cp ./build/index.html ./build/404.html",
     "preview": "vite preview",
     "postinstall": "papi && patch-package",

@@ -53,6 +53,11 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },
     },
+    resolve: {
+      alias: {
+        "@polkadot-api/descriptors": "./.papi/descriptors/dist/index.mjs",
+      },
+    },
     plugins: [
       tsconfigPaths(),
       react({
