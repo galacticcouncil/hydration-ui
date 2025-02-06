@@ -184,8 +184,8 @@ export const WithdrawTransferOnchain: React.FC<
           </Alert>
           <Button
             isLoading={isLoading}
-            disabled={!disclaimerAccepted}
-            variant="primary"
+            disabled={isLoading || !disclaimerAccepted}
+            variant={isLoading ? "secondary" : "primary"}
           >
             {disclaimerAccepted
               ? t("withdraw.transfer.button")

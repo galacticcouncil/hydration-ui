@@ -15,7 +15,7 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
 }) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
-  const { asset } = useDeposit()
+  const { asset, amount } = useDeposit()
   const assetDetails = asset ? getAsset(asset.assetId) : null
 
   return (
@@ -37,7 +37,9 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
               t={t}
               i18nKey="withdraw.success.description"
               values={{
+                value: amount.toString(),
                 symbol: assetDetails.symbol,
+                fixedPointScale: assetDetails.decimals,
               }}
             >
               <span sx={{ color: "white" }} />

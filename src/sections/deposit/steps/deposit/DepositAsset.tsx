@@ -37,7 +37,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { asset, cexId, setDepositedAmount } = useDeposit()
+  const { asset, cexId, setAmount: setDepositedAmount } = useDeposit()
 
   const activeCex = CEX_CONFIG.find((cex) => cex.id === cexId)
   const CexIcon = activeCex?.icon
@@ -78,9 +78,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       if (!isBigInt(balance)) return
       if (!isBigInt(balanceSnapshot.current)) return
       if (balance > balanceSnapshot.current) {
-        const depositedAmount = balance - balanceSnapshot.current
+        const amount = balance - balanceSnapshot.current
         onDepositSuccess(asset)
-        setDepositedAmount(depositedAmount)
+        setDepositedAmount(amount)
       }
     },
     [balance],

@@ -5,11 +5,11 @@ import { StepButton } from "sections/deposit/components/StepButton"
 import { DepositMethod } from "sections/deposit/types"
 import { LINKS } from "utils/navigation"
 
-type DepositMethodSelectProps = {
+type methodSelectProps = {
   onSelect: (method: DepositMethod) => void
 }
 
-export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
+export const DepositMethodSelect: React.FC<methodSelectProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation()

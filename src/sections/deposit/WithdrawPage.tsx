@@ -19,7 +19,7 @@ export const WithdrawPage = () => {
     page,
     reset,
     setAsset,
-    setDepositMethod,
+    setMethod,
     setSuccess,
   } = useDeposit()
 
@@ -37,7 +37,7 @@ export const WithdrawPage = () => {
             direction={direction}
             contents={[
               {
-                content: <WithdrawMethodSelect onSelect={setDepositMethod} />,
+                content: <WithdrawMethodSelect onSelect={setMethod} />,
               },
               {
                 title: t("withdraw.cex.select.title").toUpperCase(),

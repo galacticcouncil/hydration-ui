@@ -13,9 +13,11 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
   CEX_CONFIG,
+  CEX_MIN_WITHDRAW_VALUES,
   useDeposit,
   useTransferSchema,
 } from "sections/deposit/DepositPage.utils"
+import { WithdrawProcessing } from "sections/deposit/steps/withdraw/WithdrawProcessing"
 import { useWithdrawalToCex } from "sections/deposit/steps/withdraw/WithdrawTransfer.utils"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -61,14 +63,18 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
 
     const { balance, min, max } = xTransfer.source
 
+    const minDeposit = BN(
+      CEX_MIN_WITHDRAW_VALUES[asset?.assetId ?? ""] ?? "0",
+    ).shiftedBy(balance.decimals)
+
     return {
       symbol: balance.symbol,
       decimals: balance.decimals,
       balance: BN(balance.amount.toString()),
-      min: BN(min.amount.toString()),
+      min: BN.max(min.amount.toString(), minDeposit),
       max: BN(max.amount.toString()),
     }
-  }, [xTransfer])
+  }, [asset?.assetId, xTransfer])
 
   const zodSchema = useTransferSchema({
     min: transferData.min,
@@ -110,7 +116,10 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
   return (
     <>
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <div sx={{ flex: "column", gap: [14, 20] }}>
+        <div
+          sx={{ flex: "column", gap: [14, 20] }}
+          css={{ position: "relative" }}
+        >
           <Controller
             name="amount"
             control={form.control}
@@ -172,15 +181,21 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
           </Alert>
           <Button
             isLoading={isLoading}
-            disabled={!disclaimerAccepted}
-            variant="primary"
+            disabled={isLoading || !disclaimerAccepted}
+            variant={isLoading ? "secondary" : "primary"}
           >
             {disclaimerAccepted
               ? t("withdraw.transfer.button")
               : t("withdraw.disclaimer.button")}
           </Button>
+          {isLoading && (
+            <WithdrawProcessing
+              css={{ position: "absolute", inset: 0, width: "100%", zIndex: 1 }}
+            />
+          )}
         </div>
       </form>
+
       <Modal
         open={addressBookOpen}
         onClose={toggleAddressBook}

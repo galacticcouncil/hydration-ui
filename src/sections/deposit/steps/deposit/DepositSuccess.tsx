@@ -19,7 +19,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { getAsset } = useAssets()
-  const { depositedAmount, asset } = useDeposit()
+  const { amount, asset } = useDeposit()
   const assetDetails = asset ? getAsset(asset.assetId) : null
 
   return (
@@ -41,7 +41,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
               t={t}
               i18nKey="deposit.success.description"
               values={{
-                value: depositedAmount.toString(),
+                value: amount.toString(),
                 symbol: assetDetails.symbol,
                 fixedPointScale: assetDetails.decimals,
               }}

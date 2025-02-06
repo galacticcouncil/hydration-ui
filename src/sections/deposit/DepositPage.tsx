@@ -19,9 +19,9 @@ export const DepositPage = () => {
     back,
     direction,
     page,
-    depositMethod,
+    method,
     setAsset,
-    setDepositMethod,
+    setMethod,
     setTransfer,
     setSuccess,
     reset,
@@ -30,8 +30,7 @@ export const DepositPage = () => {
   const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 
   const showCexDepositAlert =
-    page === DepositScreen.DepositAsset &&
-    depositMethod === DepositMethod.DepositCex
+    page === DepositScreen.DepositAsset && method === DepositMethod.DepositCex
 
   return (
     <SContainer>
@@ -43,21 +42,21 @@ export const DepositPage = () => {
             direction={direction}
             contents={[
               {
-                content: <DepositMethodSelect onSelect={setDepositMethod} />,
+                content: <DepositMethodSelect onSelect={setMethod} />,
               },
               {
-                title: (depositMethod === DepositMethod.DepositCex
+                title: (method === DepositMethod.DepositCex
                   ? t("deposit.cex.select.title")
-                  : depositMethod === DepositMethod.DepositCrypto
+                  : method === DepositMethod.DepositCrypto
                     ? t("deposit.crypto.fund.title")
                     : ""
                 ).toUpperCase(),
                 headerVariant: "GeistMono",
                 noPadding: true,
                 content:
-                  depositMethod === DepositMethod.DepositCex ? (
+                  method === DepositMethod.DepositCex ? (
                     <DepositCexSelect onAssetSelect={setAsset} />
-                  ) : depositMethod === DepositMethod.DepositCrypto ? (
+                  ) : method === DepositMethod.DepositCrypto ? (
                     <DepositCrypto />
                   ) : null,
               },

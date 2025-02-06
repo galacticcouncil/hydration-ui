@@ -108,33 +108,37 @@ export const CEX_MIN_DEPOSIT_VALUES: Record<string, number> = {
   "5": 2,
 }
 
+export const CEX_MIN_WITHDRAW_VALUES: Record<string, number> = {
+  "5": 2,
+}
+
 const DEFAULT_CEX_ID = CEX_CONFIG[0].id
 
 type DepositStore = {
   asset: AssetConfig | null
   cexId: string
-  depositMethod: DepositMethod | null
-  depositedAmount: bigint
+  method: DepositMethod | null
+  amount: bigint
   setAsset: (asset: AssetConfig) => void
   setCexId: (cexId: string) => void
-  setDepositMethod: (depositMethod: DepositMethod) => void
-  setDepositedAmount: (depositedAmount: bigint) => void
+  setMethod: (method: DepositMethod) => void
+  setAmount: (amount: bigint) => void
   reset: () => void
 }
 
 const initialState = {
   asset: null,
   cexId: DEFAULT_CEX_ID,
-  depositMethod: null,
-  depositedAmount: 22599486481n,
+  method: null,
+  amount: 0n,
 }
 
 export const useDepositStore = create<DepositStore>((set) => ({
   ...initialState,
   setAsset: (asset) => set({ asset }),
   setCexId: (cexId) => set({ cexId }),
-  setDepositMethod: (depositMethod) => set({ depositMethod }),
-  setDepositedAmount: (depositedAmount) => set({ depositedAmount }),
+  setMethod: (method) => set({ method }),
+  setAmount: (amount) => set({ amount }),
   reset: () => set(initialState),
 }))
 
@@ -147,9 +151,9 @@ export const useDeposit = () => {
     pagination.paginateTo(DepositScreen.DepositAsset)
   }
 
-  const setDepositMethod = (method: DepositMethod) => {
-    state.setDepositMethod(method)
-    pagination.paginateTo(DepositScreen.DepositMethod)
+  const setMethod = (method: DepositMethod) => {
+    state.setMethod(method)
+    pagination.paginateTo(DepositScreen.method)
   }
 
   const setTransfer = () => {
@@ -170,7 +174,7 @@ export const useDeposit = () => {
     ...pagination,
     reset,
     setAsset,
-    setDepositMethod,
+    setMethod,
     setTransfer,
     setSuccess,
   }

@@ -31,7 +31,11 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { asset, depositedAmount, setDepositedAmount } = useDeposit()
+  const {
+    asset,
+    amount: depositAmount,
+    setAmount: setDepositedAmount,
+  } = useDeposit()
   const [addressBookOpen, setAddressBookOpen] = useState(false)
 
   const address = account?.address ?? ""
@@ -50,9 +54,9 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     },
     {
       onSuccess: ({ source }) => {
-        if (depositedAmount && !form.getValues("amount")) {
+        if (depositAmount && !form.getValues("amount")) {
           const amount = BN.min(
-            depositedAmount.toString(),
+            depositAmount.toString(),
             source.max.amount.toString(),
           )
 
@@ -119,11 +123,9 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
       dstChain: "hydration",
     })
 
-    const depositedAmount = BN(values.amount)
-      .shiftedBy(transferData.decimals)
-      .toString()
+    const amount = BN(values.amount).shiftedBy(transferData.decimals).toString()
 
-    setDepositedAmount(BigInt(depositedAmount))
+    setDepositedAmount(BigInt(amount))
   }
 
   function toggleAddressBook() {
@@ -172,8 +174,14 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
               </div>
             )}
           />
-          <Button isLoading={isLoading} disabled={isLoading} variant="primary">
-            {t("deposit.cex.transfer.button")}
+          <Button
+            isLoading={isLoading}
+            disabled={isLoading}
+            variant={isLoading ? "secondary" : "primary"}
+          >
+            {isLoading
+              ? t("deposit.cex.transfer.depositing")
+              : t("deposit.cex.transfer.button")}
           </Button>
         </div>
       </form>

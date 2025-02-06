@@ -2,7 +2,7 @@ import { ChainAssetData } from "@galacticcouncil/xcm-core"
 
 export enum DepositScreen {
   Select,
-  DepositMethod,
+  method,
   DepositAsset,
   Transfer,
   Success,
