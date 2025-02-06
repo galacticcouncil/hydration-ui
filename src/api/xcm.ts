@@ -58,12 +58,12 @@ export const useCrossChainWallet = () => {
     // Register chain swaps
     const hydration = configService.getChain("hydration")
     const assethub = configService.getChain("assethub")
-    const assethubCex = configService.getChain("assethub_cex")
+    //const assethubCex = configService.getChain("assethub_cex")
 
     wallet.registerDex(
       new dex.HydrationDex(hydration, poolService),
       new dex.AssethubDex(assethub),
-      new dex.AssethubDex(assethubCex),
+      //new dex.AssethubDex(assethubCex),
     )
 
     return wallet
