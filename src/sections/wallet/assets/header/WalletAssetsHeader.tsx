@@ -42,7 +42,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
         mb: [24, 40],
       }}
     >
-      <DataValueList separated sx={{ flexGrow: 1 }}>
+      <DataValueList separated sx={{ flexGrow: 1, width: "100%" }}>
         <DataValue
           labelColor="brightBlue300"
           label={t("wallet.assets.header.networth")}
@@ -87,7 +87,13 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
       </DataValueList>
       {!disconnected && (
         <div
-          sx={{ flex: "row", align: "center", justify: "flex-end", gap: 12 }}
+          sx={{
+            width: ["100%", "100%", "auto"],
+            flex: "row",
+            align: "center",
+            justify: "flex-end",
+            gap: 12,
+          }}
         >
           <Button
             size="compact"
@@ -138,16 +144,18 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
 const WalletAssetsHeaderDisplay = ({ value }: { value: string }) => {
   const { t } = useTranslation()
   return (
-    <DisplayValue
-      value={
-        <Trans
-          t={t}
-          i18nKey="wallet.assets.header.value"
-          tOptions={{ ...separateBalance(BN(value), { type: "dollar" }) }}
-        >
-          <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
-        </Trans>
-      }
-    />
+    <Text tAlign={["right", "left"]} sx={{ fontSize: "inherit" }}>
+      <DisplayValue
+        value={
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{ ...separateBalance(BN(value), { type: "dollar" }) }}
+          >
+            <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
+          </Trans>
+        }
+      />
+    </Text>
   )
 }
