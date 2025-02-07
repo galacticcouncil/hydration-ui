@@ -1,5 +1,4 @@
 import {
-  JsonRpcProvider,
   TransactionReceipt,
   TransactionResponse,
   Web3Provider,
