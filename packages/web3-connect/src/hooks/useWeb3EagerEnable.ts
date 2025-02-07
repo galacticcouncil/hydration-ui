@@ -28,7 +28,6 @@ export const useWeb3EagerEnable = () => {
     async function eagerEnable() {
       if (hasTriedEagerEnable.current) return
       for (const { type } of providers) {
-        console.log("Eager enable", type)
         const wallet = getWallet(type)
         if (wallet?.installed && !wallet?.extension) {
           await enable(wallet.provider)

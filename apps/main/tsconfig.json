@@ -3,6 +3,7 @@
   "include": ["src"],
   "references": [
     { "path": "../../packages/ui" },
+    { "path": "../../packages/utils" },
     { "path": "../../packages/web3-connect" }
   ],
   "compilerOptions": {
