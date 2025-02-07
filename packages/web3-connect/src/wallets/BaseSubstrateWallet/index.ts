@@ -77,15 +77,16 @@ export class BaseSubstrateWallet implements Wallet {
   getAccounts = async (): Promise<WalletAccount[]> => {
     if (!this._extension) {
       throw new NotInstalledError(
-        `The 'Wallet.enable(dappname)' function should be called first.`,
+        `Refresh the browser if ${this.title} is already installed.`,
         this,
       )
     }
     const accounts = await this._extension.accounts.get()
     const accountsWithWallet = accounts.map((account) => {
       return {
-        ...account,
-        source: this._extension?.name as string,
+        address: account.address,
+        name: account.name ?? "",
+        provider: this.provider,
         wallet: this,
         signer: this._extension?.signer,
       }
@@ -97,7 +98,7 @@ export class BaseSubstrateWallet implements Wallet {
   subscribeAccounts = async (callback: SubscriptionFn) => {
     if (!this._extension) {
       throw new NotInstalledError(
-        `The 'Wallet.enable(dappname)' function should be called first.`,
+        `Refresh the browser if ${this.title} is already installed.`,
         this,
       )
     }
@@ -105,8 +106,9 @@ export class BaseSubstrateWallet implements Wallet {
       (accounts: InjectedAccount[]) => {
         const accountsWithWallet = accounts.map((account) => {
           return {
-            ...account,
-            source: this._extension?.name as string,
+            address: account.address,
+            name: account.name ?? "",
+            provider: this.provider,
             wallet: this,
             signer: this._extension?.signer,
           }
@@ -117,4 +119,6 @@ export class BaseSubstrateWallet implements Wallet {
 
     return unsubscribe
   }
+
+  disconnect = () => {}
 }

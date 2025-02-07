@@ -1,45 +1,67 @@
+import { ChevronRight, LogOut } from "@galacticcouncil/ui/assets/icons"
 import {
-  Flex,
-  Grid,
+  Button,
   Modal,
   ModalBody,
-  ModalHeader,
-  Text,
+  ModalFooter,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 
-import { Web3ConnectProviderButton } from "@/components/Web3ConnectProviderButton"
+import { Web3ConnectAccountSelect } from "@/components/Web3ConnectAccountSelect"
+import { Web3ConnectError } from "@/components/Web3ConnectError"
+import { Web3ConnectProviderSelect } from "@/components/Web3ConnectProviderSelect"
+import { Web3ConnectModalPage } from "@/config/modal"
+import { useAccount } from "@/hooks/useAccount"
+import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
-import { getWallets } from "@/wallets"
-
-const ALL_WALLETS = getWallets()
 
 export const Web3ConnectModal = () => {
+  const { page, setPage } = useWeb3ConnectInit()
+
   const { open, toggle } = useWeb3ConnectModal()
+
+  const { account, disconnect } = useAccount()
+
+  const onLogout = () => {
+    disconnect()
+    toggle()
+  }
+
   return (
-    <Modal open={open} onOpenChange={() => toggle()} disableInteractOutside>
-      <ModalHeader title="Connect wallet" />
+    <Modal
+      title="Connect wallet"
+      open={open}
+      onOpenChange={() => toggle()}
+      disableInteractOutside
+    >
       <ModalBody>
-        <Grid columns={[2, 4]} gap={10}>
-          {ALL_WALLETS.map(({ provider, title, logo, enable }) => (
-            <Web3ConnectProviderButton
-              type="button"
-              key={provider}
-              onClick={enable}
-            >
-              <img width={32} height={32} src={logo} alt={title} />
-              <Text fs={14} align="center" mt={10}>
-                {title}
-              </Text>
-            </Web3ConnectProviderButton>
-          ))}
-        </Grid>
+        {page === Web3ConnectModalPage.ProviderSelect && (
+          <Web3ConnectProviderSelect
+            onLastConnectedClick={() =>
+              setPage(Web3ConnectModalPage.AccountSelect)
+            }
+          />
+        )}
+        {page === Web3ConnectModalPage.AccountSelect && (
+          <Web3ConnectAccountSelect />
+        )}
+        {page === Web3ConnectModalPage.Error && <Web3ConnectError />}
       </ModalBody>
+      {page !== Web3ConnectModalPage.ProviderSelect && (
+        <ModalFooter justify="end">
+          {account && (
+            <Button variant="tertiary" iconEnd={LogOut} onClick={onLogout}>
+              Log out
+            </Button>
+          )}
+          <Button
+            variant="tertiary"
+            iconEnd={ChevronRight}
+            onClick={() => setPage(0)}
+          >
+            Manage wallets
+          </Button>
+        </ModalFooter>
+      )}
     </Modal>
   )
 }
-/* 
-<Box key={provider}>
-<img width={48} height={48} loading="lazy" src={logo} alt={title} />
-{title}
-</Box> */

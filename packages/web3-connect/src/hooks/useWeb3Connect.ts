@@ -47,10 +47,9 @@ export type Account = {
   name: string
   address: string
   displayAddress?: string
-  genesisHash?: `0x${string}`
   provider: WalletProviderType
-  isExternalWalletConnected?: boolean
   delegate?: string
+  isIncompatible?: boolean
 }
 
 type WalletProviderMeta = {
@@ -69,6 +68,7 @@ export type WalletProviderState = {
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
   account: Account | null
+  accounts: Account[]
   mode: WalletMode
   error?: string
   meta?: WalletProviderMeta | null
@@ -77,6 +77,7 @@ export type WalletProviderState = {
 type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
   setAccount: (account: Account | null) => void
+  setAccounts: (accounts: Account[]) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
@@ -92,6 +93,7 @@ const initialState: WalletProviderState = {
   providers: [],
   recentProvider: null,
   account: null,
+  accounts: [],
   mode: WalletMode.Default,
   error: "",
   meta: null,
@@ -111,6 +113,11 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             meta: meta ?? null,
           }
         }),
+      setAccounts: (accounts) =>
+        set((state) => ({
+          ...state,
+          accounts: [...state.accounts, ...accounts],
+        })),
       setAccount: (account) => set((state) => ({ ...state, account })),
       setStatus: (provider, status) => {
         const isError = status === WalletProviderStatus.Error
@@ -149,7 +156,11 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         })
       },
       setError: (error) => set((state) => ({ ...state, error })),
-      disconnect: (provider) => {
+      disconnect: (givenProvider) => {
+        const provider = Object.values(WalletProviderType).find(
+          (type) => type === givenProvider,
+        )
+
         set((state) => ({
           ...state,
           ...initialState,
@@ -157,6 +168,9 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             !provider || provider === state.account?.provider
               ? null
               : state.account,
+          accounts: provider
+            ? state.accounts.filter((a) => a.provider !== provider)
+            : [],
           providers: provider
             ? state.providers.filter((p) => p.type !== provider)
             : [],
@@ -168,7 +182,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
     }),
     {
       name: "web3-connect",
-      partialize: (state) => omit(state, ["open"]),
+      partialize: omit(["open", "error", "accounts"]),
       version: 6,
     },
   ),

@@ -118,14 +118,15 @@ export const SModalHeader = styled(Flex)`
 
 export const SModalBody = styled(Box)`
   padding: var(--modal-content-padding);
-  padding-bottom: 0px;
-
-  border-bottom-right-radius: 16px;
-  border-bottom-left-radius: 16px;
 
   overflow: overlay;
   -webkit-overflow-scrolling: touch;
   flex: 1;
+
+  &:last-of-type {
+    border-bottom-right-radius: ${({ theme }) => theme.radii.xl}px;
+    border-bottom-left-radius: ${({ theme }) => theme.radii.xl}px;
+  }
 `
 
 export const SModalFooter = styled(Flex)`
@@ -133,6 +134,11 @@ export const SModalFooter = styled(Flex)`
   gap: 10px;
 
   padding: 20px;
+
+  &:last-of-type {
+    border-bottom-right-radius: ${({ theme }) => theme.radii.xl}px;
+    border-bottom-left-radius: ${({ theme }) => theme.radii.xl}px;
+  }
 
   ${mq("md")} {
     flex-direction: row;

@@ -119,8 +119,7 @@ export const AssetSelectModal = ({
           tabIndex={0}
           direction="column"
           onKeyDown={handleKeyDown}
-          mx="calc(-1 * var(--modal-content-padding))"
-          mt="calc(-1 * var(--modal-content-padding))"
+          m="calc(-1 * var(--modal-content-padding))"
           sx={{ minHeight: 360, outline: "none" }}
         >
           {filteredAssets.length

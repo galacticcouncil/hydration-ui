@@ -76,33 +76,38 @@ const normalize = css`
 `
 
 const scrollbar = (theme: Theme) => css`
-  &::-webkit-scrollbar {
+  .windows ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
-  &::-webkit-scrollbar:horizontal {
+  .windows ::-webkit-scrollbar:horizontal {
     width: 0px;
     height: 0px;
   }
 
-  &::-webkit-scrollbar-thumb:vertical {
+  .windows ::-webkit-scrollbar-thumb:vertical {
     background: ${theme.details.borders};
     border-radius: 3px;
   }
 
-  ::-webkit-scrollbar-track {
+  .windows ::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 3px;
   }
 
-  &::-webkit-scrollbar-corner {
+  .windows ::-webkit-scrollbar-corner {
     background: transparent;
+  }
+
+  .firefox {
+    scrollbar-width: thin;
   }
 `
 
 const globalStyles = (theme: Theme) => css`
   ${normalize}
+  ${scrollbar(theme)}
 
   body {
     font-family: ${theme.fontFamilies1.secondary};

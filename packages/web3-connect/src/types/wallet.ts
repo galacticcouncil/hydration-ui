@@ -5,24 +5,24 @@ export type SubscriptionFn = (
   accounts: WalletAccount[] | undefined,
 ) => void | Promise<void>
 
-export interface WalletAccount {
+export type WalletAccount = {
   address: string
-  source: string
-  name?: string
-  wallet?: Wallet
+  name: string
+  provider: WalletProviderType
+  wallet: Wallet
   signer?: unknown
 }
 
-interface WalletData {
+export type WalletData = {
   provider: WalletProviderType
   accessor: string
   title: string
   installUrl: string
   logo: string
+  installed: boolean
 }
 
-interface WalletExtension {
-  installed: boolean
+type WalletExtension = {
   extension: unknown
   signer: unknown
 }
@@ -32,8 +32,9 @@ interface Signer {
 }
 
 interface Connector {
-  enable: (dappName: string) => unknown
-  getAccounts: (anyType?: boolean) => Promise<WalletAccount[]>
+  enable: () => unknown
+  disconnect: () => void
+  getAccounts: () => Promise<WalletAccount[]>
   subscribeAccounts: (callback: SubscriptionFn) => unknown
 }
 

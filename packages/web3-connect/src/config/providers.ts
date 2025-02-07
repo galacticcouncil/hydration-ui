@@ -1,23 +1,24 @@
 export enum WalletProviderType {
+  AlephZero = "aleph-zero",
+  BraveWallet = "bravewallet",
+  Enkrypt = "enkrypt",
+  ExternalWallet = "external",
+  FearlessWallet = "fearless-wallet",
+  MantaWallet = "manta-wallet-js",
   MetaMask = "metamask",
+  NovaWallet = "nova-wallet",
+  Phantom = "phantom",
+  PolkadotJS = "polkadot-js",
+  Polkagate = "polkagate",
+  RabbyWallet = "rabby-wallet",
+  Solflare = "solflare",
+  SubwalletEvm = "subwallet-evm",
+  Subwallet = "subwallet",
   Talisman = "talisman",
   TalismanEvm = "talisman-evm",
-  SubwalletJS = "subwallet-js",
-  SubwalletEvm = "subwallet-evm",
-  PolkadotJS = "polkadot-js",
-  NovaWallet = "nova-wallet",
   TrustWallet = "trustwallet",
-  BraveWallet = "bravewallet",
-  Phantom = "phantom",
-  Solflare = "solflare",
-  Enkrypt = "enkrypt",
-  MantaWallet = "manta-wallet-js",
-  FearlessWallet = "fearless-wallet",
-  Polkagate = "polkagate",
-  AlephZero = "aleph-zero",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
-  ExternalWallet = "external",
 }
 
 export const MOBILE_ONLY_PROVIDERS: WalletProviderType[] = [
@@ -34,12 +35,13 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.SubwalletEvm,
   WalletProviderType.TrustWallet,
   WalletProviderType.BraveWallet,
+  WalletProviderType.RabbyWallet,
   WalletProviderType.WalletConnectEvm,
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Talisman,
-  WalletProviderType.SubwalletJS,
+  WalletProviderType.Subwallet,
   WalletProviderType.Enkrypt,
   WalletProviderType.PolkadotJS,
   WalletProviderType.NovaWallet,
@@ -51,7 +53,7 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
 ]
 
 export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.SubwalletJS,
+  WalletProviderType.Subwallet,
   WalletProviderType.Talisman,
 ]
 
