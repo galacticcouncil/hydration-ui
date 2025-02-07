@@ -44,20 +44,6 @@ const b = "2000"
 
 export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 
-const getVoteActionPoints = (stakeAmount: BN, referendaAmount: number) => {
-  const maxVotingPower = stakeAmount.multipliedBy(CONVICTIONS["locked6x"])
-  const maxActionPointsPerRef = 100
-
-  const points = stakeAmount
-    .multipliedBy(CONVICTIONS["locked6x"])
-    .multipliedBy(maxActionPointsPerRef)
-    .div(maxVotingPower)
-    .multipliedBy(referendaAmount)
-    .toNumber()
-
-  return points
-}
-
 const getCurrentActionPoints = (
   votes: TStakingPosition["votes"],
   initialActionPoints: number,
@@ -480,8 +466,6 @@ export const useClaimReward = () => {
       openGovReferendas.map((referenda) => referenda.id),
     )
 
-    console.log(actionPoints)
-
     const points = wasm.calculate_points(
       enteredAt,
       currentPeriod,
@@ -494,14 +478,6 @@ export const useClaimReward = () => {
 
     let extraPayablePercentageHuman: string | undefined
     if (openGovReferendas.length) {
-      const voteActionPoints = getVoteActionPoints(
-        stakePosition.stake,
-        openGovReferendas.length,
-      )
-      console.log(
-        BN(actionPoints.currentActionPoints).plus(voteActionPoints).toString(),
-        actionPoints.maxActionPoints,
-      )
       const extraPoints = wasm.calculate_points(
         enteredAt,
         currentPeriod,
