@@ -10,6 +10,7 @@ import { useCopy } from "hooks/useCopy"
 import { useShallow } from "hooks/useShallow"
 import { useTranslation } from "react-i18next"
 import {
+  CEX_CONFIG,
   createCexWithdrawalUrl,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
@@ -46,6 +47,12 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
     useShallow((state) => pick(state, ["toggle"])),
   )
 
+  const formattedAddress =
+    safeConvertAddressSS58(address, ss58Format, false) ?? ""
+
+  const cex = CEX_CONFIG.find(({ id }) => id === cexId)
+  const cexUrl = asset ? createCexWithdrawalUrl(cexId, asset.data) : ""
+
   return (
     <SAccountBox>
       {account && (
@@ -80,7 +87,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           color="brightBlue300"
           css={{ wordBreak: "break-all" }}
         >
-          {safeConvertAddressSS58(address, ss58Format, false)}
+          {formattedAddress}
         </Text>
       )}
       <div sx={{ flex: "row", gap: 10 }}>
@@ -88,7 +95,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           size="micro"
           variant="primary"
           disabled={!!error || copied}
-          onClick={() => copy(address)}
+          onClick={() => copy(formattedAddress)}
         >
           <Icon
             size={14}
@@ -99,18 +106,17 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           />
           {t("copyAddress")}
         </Button>
-        <Button
-          size="micro"
-          variant="mutedSecondary"
-          disabled={!!error}
-          onClick={() =>
-            asset &&
-            window.open(createCexWithdrawalUrl(cexId, asset.data), "_blank")
-          }
-        >
-          <Icon size={10} sx={{ ml: -2 }} icon={<LinkIcon />} />
-          {t("open")} {cexId}
-        </Button>
+        {cexUrl && (
+          <Button
+            size="micro"
+            variant="mutedSecondary"
+            disabled={!!error}
+            onClick={() => window.open(cexUrl, "_blank")}
+          >
+            <Icon size={10} sx={{ ml: -2 }} icon={<LinkIcon />} />
+            {t("open")} {cex?.title}
+          </Button>
+        )}
       </div>
     </SAccountBox>
   )

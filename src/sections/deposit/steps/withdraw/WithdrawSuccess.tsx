@@ -4,7 +4,7 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { Trans, useTranslation } from "react-i18next"
-import { useDeposit } from "sections/deposit/DepositPage.utils"
+import { CEX_CONFIG, useDeposit } from "sections/deposit/DepositPage.utils"
 
 export type WithdrawSuccessProps = {
   onConfirm: () => void
@@ -15,8 +15,10 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
 }) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
-  const { asset, amount } = useDeposit()
+  const { asset, amount, cexId } = useDeposit()
   const assetDetails = asset ? getAsset(asset.assetId) : null
+
+  const cex = CEX_CONFIG.find(({ id }) => id === cexId)
 
   return (
     <div
@@ -40,6 +42,7 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
                 value: amount.toString(),
                 symbol: assetDetails.symbol,
                 fixedPointScale: assetDetails.decimals,
+                cex: cex?.title,
               }}
             >
               <span sx={{ color: "white" }} />

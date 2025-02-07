@@ -96,7 +96,7 @@ export const ReviewTransaction = (props: Transaction) => {
 
   return (
     <>
-      {minimizeModal && (
+      {(minimizeModal || isSuccess) && (
         <ReviewTransactionToast
           id={props.id}
           isLoading={isLoading}

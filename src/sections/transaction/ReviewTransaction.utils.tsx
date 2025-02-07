@@ -51,6 +51,7 @@ import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
 import { HexString } from "polkadot-api"
+import { u8aToHex } from "@polkadot/util"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -526,7 +527,6 @@ export const useSendDispatchPermit = (
     },
   }
 }
-
 export const useSendTransactionMutation = (
   options: MutationObserverOptions<
     ISubmittableResult,
@@ -553,11 +553,17 @@ export const useSendTransactionMutation = (
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       if (isHexString(tx)) {
-        setTxHash(tx)
-        setTxState("Broadcast")
-        await waitForSubstrateTx(await apiPromise, tx)
-        setTxState("InBlock")
-        return resolve(toSubmittableResult(tx))
+        try {
+          setTxHash(tx)
+          setTxState("Broadcast")
+          await waitForSubstrateTx(await apiPromise, tx)
+          setTxState("InBlock")
+          return resolve(toSubmittableResult(tx))
+        } catch (err) {
+          setTxState("Invalid")
+          reject(err)
+          return new TransactionError(err?.toString() ?? "Unknown error", {})
+        }
       }
 
       try {
@@ -890,9 +896,43 @@ async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
   })
 }
 
+type SystemEvent = {
+  phase: { applyExtrinsic: number }
+  event: {
+    index: "string"
+    data: { [key: string]: unknown; module: { index: number; error: string } }[]
+  }
+  topics: Array<any>
+}
+
+const getTxStatusFromSystemEvents = (
+  systemEvents: SystemEvent[],
+  txIdx: number,
+) => {
+  const events = systemEvents.filter((x) => {
+    return "applyExtrinsic" in x.phase && x.phase.applyExtrinsic === txIdx
+  })
+
+  const lastEvent = events[events.length - 1]
+
+  if (!lastEvent) return
+
+  const error = lastEvent.event.data.find(
+    (obj) => "module" in obj && !!obj?.module?.error,
+  )
+  if (error) {
+    return {
+      ok: false,
+      error,
+    }
+  }
+
+  return { ok: true }
+}
+
 async function waitForSubstrateTx(
   api: ApiPromise,
-  hash: string,
+  txHash: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     let timeout: NodeJS.Timeout | null = null
@@ -909,16 +949,26 @@ async function waitForSubstrateTx(
         const latestHeader = await api.rpc.chain.getHeader()
         const blockNumber = latestHeader.number.toNumber()
         const blockHash = await api.rpc.chain.getBlockHash(blockNumber)
+        const apiAt = await api.at(blockHash)
         const block = await api.rpc.chain.getBlock(blockHash)
         const extrinsics = block.block.extrinsics
 
-        const foundExtrinsic = extrinsics
-          .toArray()
-          .find((ex) => ex.hash.toHex() === hash)
+        const extrinsicIndex = extrinsics.findIndex(
+          (ex) => u8aToHex(ex.hash) === txHash,
+        )
 
-        if (!foundExtrinsic) {
+        const events = await apiAt.query.system.events()
+        const status = getTxStatusFromSystemEvents(
+          events.map((event) => event.toJSON() as SystemEvent),
+          extrinsicIndex,
+        )
+
+        if (!status || extrinsicIndex < 0) {
           cleanup()
           timeout = setTimeout(checkBlock, 5000)
+        } else if (!status.ok) {
+          cleanup()
+          reject(status.error)
         } else {
           cleanup()
           resolve()

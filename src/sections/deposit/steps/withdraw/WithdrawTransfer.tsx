@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCrossChainTransfer, useCrossChainWallet } from "api/xcm"
+import {
+  useCrossChainTransaction,
+  useCrossChainTransfer,
+  useCrossChainWallet,
+} from "api/xcm"
 import BN from "bignumber.js"
 import { AddressBook } from "components/AddressBook/AddressBook"
 import { Alert } from "components/Alert"
@@ -18,7 +22,7 @@ import {
   useTransferSchema,
 } from "sections/deposit/DepositPage.utils"
 import { WithdrawProcessing } from "sections/deposit/steps/withdraw/WithdrawProcessing"
-import { useWithdrawalToCex } from "sections/deposit/steps/withdraw/WithdrawTransfer.utils"
+import { useMultistepCexWithdraw } from "sections/deposit/steps/withdraw/WithdrawTransfer.utils"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
@@ -92,21 +96,42 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     resolver: zodResolver(zodSchema),
   })
 
-  const { mutateAsync: withdrawToCex, isLoading } = useWithdrawalToCex(
+  const { mutateAsync: withdrawCex, isLoading } = useMultistepCexWithdraw(
     cexId,
     asset?.assetId ?? "",
   )
 
+  const { mutateAsync: withdrawXcm } = useCrossChainTransaction({
+    title: t("withdraw.transfer.cex.modal.title", {
+      cex: activeCex?.title,
+    }),
+  })
+
   const onSubmit = async (values: FormValues<typeof form>) => {
-    await withdrawToCex(
-      {
-        cexAddress: values.address,
+    if (!activeCex) throw new Error("CEX not found")
+    if (!asset) throw new Error("Asset not found")
+
+    if (activeCex.isXcmCompatible) {
+      await withdrawXcm({
+        wallet,
         amount: values.amount,
-      },
-      {
-        onSuccess: onTransferSuccess,
-      },
-    )
+        asset: asset.data.asset.key,
+        srcAddr: address,
+        srcChain: "hydration",
+        dstAddr: values.address,
+        dstChain: asset.withdrawalChain,
+      })
+    } else {
+      await withdrawCex(
+        {
+          cexAddress: values.address,
+          amount: values.amount,
+        },
+        {
+          onSuccess: onTransferSuccess,
+        },
+      )
+    }
   }
 
   const toggleAddressBook = () => {

@@ -35,7 +35,7 @@ type WithdrawalTransferValues = {
   amount: string
 }
 
-export const useWithdrawalToCex = (cexId: string, assetId: string) => {
+export const useMultistepCexWithdraw = (cexId: string, assetId: string) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { createTransaction } = useStore()
@@ -129,7 +129,7 @@ export const useWithdrawalToCex = (cexId: string, assetId: string) => {
 
     if (dstChain.key === "assethub") {
       const onChainAssetId = dstChain.getAssetId(asset.data.asset).toString()
-      await waitForAssetHubBalance(externalApi, onChainAssetId, account.address)
+      await waitForAssetWithdrawal(externalApi, onChainAssetId, account.address)
 
       const tx = externalApi.tx.assets.transferKeepAlive(
         onChainAssetId,
@@ -152,7 +152,7 @@ export const useWithdrawalToCex = (cexId: string, assetId: string) => {
         dstChain,
       )
     } else if (dstChain.key === "polkadot") {
-      await waitForNativeBalance(externalApi, account.address)
+      await waitForNativeWithdrawal(externalApi, account.address)
 
       const tx = externalApi.tx.balances.transferKeepAlive(
         values.cexAddress,
@@ -229,158 +229,6 @@ export const useWithdrawalToCex = (cexId: string, assetId: string) => {
         }),
       },
     )
-
-    /* if (dstChain.key === "assethub") {
-      const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
-      const onChainAssetId = dstChain.getAssetId(asset.data.asset).toString()
-      await waitForAssetHubBalance(externalApi, onChainAssetId, account.address)
-
-      const tx = externalApi.tx.assets.transferKeepAlive(
-        onChainAssetId,
-        values.cexAddress,
-        amount.toString(),
-      )
-
-      const paymentInfo = await tx.paymentInfo(values.cexAddress)
-      const paymentFee = BN(paymentInfo.partialFee.toString())
-        .multipliedBy(0.1) // buffer
-        .decimalPlaces(0)
-
-      const balanceRes = await getAssetHubTokenBalance(
-        externalApi,
-        onChainAssetId,
-        account.address,
-      )()
-
-      const balance = balanceRes?.balance ?? BN_0
-
-      const dex = DexFactory.getInstance().get(dstChain.key)!
-      const feeQuote = await dex.getQuote(
-        asset.data.asset,
-        assethubNativeToken.asset,
-        AssetAmount.fromAsset(assethubNativeToken.asset, {
-          amount: BigInt(paymentFee.toString()),
-          decimals: assethubNativeToken.decimals!,
-        }),
-      )
-      const adjustedAmmount = amount.minus(feeQuote.amount.toString())
-
-      const formattedAmount = adjustedAmmount
-        .shiftedBy(-assetMeta.decimals)
-        .toString()
-
-      await createTransaction(
-        {
-          title: t("withdraw.transfer.cex.modal.title", { cex: cex.title }),
-          description: t("xcm.transfer.reviewTransaction.modal.description", {
-            amount: formattedAmount,
-            symbol: assetMeta.symbol,
-            srcChain: dstChain.name,
-            dstChain: cex.title,
-          }),
-          tx: externalApi.tx.assets.transferKeepAlive(
-            onChainAssetId,
-            values.cexAddress,
-            adjustedAmmount.toString(),
-          ),
-          txOptions: {
-            asset: asset.data.asset,
-          },
-          xcallMeta: {
-            srcChain: dstChain.key,
-            srcChainFeeBalance: balance
-              .shiftedBy(-assetMeta.decimals)
-              .toString(),
-            srcChainFee: BN(feeQuote.amount.toString())
-              .shiftedBy(-assetMeta.decimals)
-              .toString(),
-            srcChainFeeSymbol: assetMeta.symbol,
-          },
-        },
-        {
-          steps: getSteps(),
-          onSuccess: () => {
-            setWithdrawnAmount(BigInt(adjustedAmmount.toString()))
-          },
-          toast: createToastMessages("xcm.transfer.toast", {
-            t,
-            tOptions: {
-              amount: formattedAmount,
-              symbol: asset.data.asset.originSymbol,
-              srcChain: dstChain.name,
-              dstChain: cex.title,
-            },
-          }),
-        },
-      )
-    }
-
-    if (dstChain.key === "polkadot") {
-      await waitForNativeBalance(externalApi, account.address)
-      const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
-
-      const tx = externalApi.tx.balances.transferKeepAlive(
-        values.cexAddress,
-        amount.toString(),
-      )
-
-      const paymentInfo = await tx.paymentInfo(values.cexAddress)
-      const paymentFee = BN(paymentInfo.partialFee.toString())
-        .multipliedBy(0.1) // buffer
-        .decimalPlaces(0)
-
-      const adjustedAmmount = amount.minus(paymentFee)
-
-      const balanceRes = await externalApi.query.system.account(account.address)
-      const { balance } = parseBalanceData(
-        balanceRes.data,
-        assetId,
-        account.address,
-      )
-
-      const formattedAmount = adjustedAmmount
-        .shiftedBy(-assetMeta.decimals)
-        .toString()
-
-      await createTransaction(
-        {
-          title: t("withdraw.transfer.cex.modal.title", { cex: cex.title }),
-          description: t("xcm.transfer.reviewTransaction.modal.description", {
-            amount: formattedAmount,
-            symbol: assetMeta.symbol,
-            srcChain: dstChain.name,
-            dstChain: cex.title,
-          }),
-          tx: externalApi.tx.balances.transferKeepAlive(
-            values.cexAddress,
-            adjustedAmmount.toString(),
-          ),
-          xcallMeta: {
-            srcChain: dstChain.key,
-            srcChainFeeBalance: BN(balance)
-              .shiftedBy(-assetMeta.decimals)
-              .toString(),
-            srcChainFee: paymentFee.shiftedBy(-assetMeta.decimals).toString(),
-            srcChainFeeSymbol: assetMeta.symbol,
-          },
-        },
-        {
-          steps: getSteps(),
-          onSuccess: () => {
-            setWithdrawnAmount(BigInt(adjustedAmmount.toString()))
-          },
-          toast: createToastMessages("xcm.transfer.toast", {
-            t,
-            tOptions: {
-              amount: formattedAmount,
-              symbol: asset.data.asset.originSymbol,
-              srcChain: dstChain.name,
-              dstChain: cex.title,
-            },
-          }),
-        },
-      )
-    } */
   })
 }
 
@@ -429,24 +277,20 @@ export const useWithdrawalOnchain = (assetId: string) => {
   })
 }
 
-async function waitForAssetHubBalance(
+async function waitForAssetWithdrawal(
   api: ApiPromise,
   assetId: string,
   account: string,
 ): Promise<void> {
-  const currentBalanceRes = await api.query.assets.account(assetId, account)
-  const currentBalance = !currentBalanceRes.isNone
-    ? currentBalanceRes.unwrap().balance.toBigNumber()
-    : BN_0
   return new Promise(async (resolve) => {
     const unsub = await api.query.assets.account(
       assetId,
       account,
       async (res) => {
-        const newBalance: BN = !res.isNone
+        const balance: BN = !res.isNone
           ? res.unwrap().balance.toBigNumber()
           : BN_0
-        if (newBalance.gt(currentBalance)) {
+        if (balance.gt(0)) {
           unsub()
           resolve()
         }
@@ -455,16 +299,14 @@ async function waitForAssetHubBalance(
   })
 }
 
-async function waitForNativeBalance(
+async function waitForNativeWithdrawal(
   api: ApiPromise,
   account: string,
 ): Promise<void> {
-  const currentBalanceRes = await api.query.system.account(account)
-  const currentBalance = currentBalanceRes.data.free.toBigNumber()
   return new Promise(async (resolve) => {
     const unsub = await api.query.system.account(account, async (res) => {
-      const newBalance = res.data.free.toBigNumber()
-      if (newBalance.gt(currentBalance)) {
+      const balance = res.data.free.toBigNumber()
+      if (balance.gt(0)) {
         unsub()
         resolve()
       }

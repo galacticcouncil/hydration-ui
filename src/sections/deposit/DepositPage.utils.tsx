@@ -4,6 +4,7 @@ import BinanceLogo from "assets/icons/BinanceLogo.svg?react"
 import CoinbaseLogo from "assets/icons/CoinbaseLogo.svg?react"
 import KrakenLogo from "assets/icons/KrakenLogoSmall.svg?react"
 import KucoinLogo from "assets/icons/KucoinLogo.svg?react"
+import GateioLogo from "assets/icons/GateioLogo.svg?react"
 import { BigNumber } from "bignumber.js"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useTranslation } from "react-i18next"
@@ -23,6 +24,7 @@ export const CEX_CONFIG = [
     id: "kraken",
     title: "Kraken",
     icon: KrakenLogo,
+    isXcmCompatible: false,
     assets: [
       {
         assetId: "5",
@@ -42,6 +44,7 @@ export const CEX_CONFIG = [
   {
     id: "binance",
     title: "Binance",
+    isXcmCompatible: true,
     icon: BinanceLogo,
     assets: [
       {
@@ -68,6 +71,7 @@ export const CEX_CONFIG = [
     id: "kucoin",
     title: "KuCoin",
     icon: KucoinLogo,
+    isXcmCompatible: false,
     assets: [
       {
         assetId: "5",
@@ -93,12 +97,39 @@ export const CEX_CONFIG = [
     id: "coinbase",
     title: "Coinbase",
     icon: CoinbaseLogo,
+    isXcmCompatible: false,
     assets: [
       {
         assetId: "5",
         withdrawalChain: "polkadot",
         depositChain: "polkadot",
         data: hydration.assetsData.get("dot")!,
+      },
+    ],
+  },
+  {
+    id: "gateio",
+    title: "Gate.io",
+    icon: GateioLogo,
+    isXcmCompatible: false,
+    assets: [
+      {
+        assetId: "5",
+        withdrawalChain: "polkadot",
+        depositChain: "polkadot",
+        data: hydration.assetsData.get("dot")!,
+      },
+      {
+        assetId: "10",
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
+        data: hydration.assetsData.get("usdt")!,
+      },
+      {
+        assetId: "22",
+        withdrawalChain: "assethub",
+        depositChain: "assethub_cex",
+        data: hydration.assetsData.get("usdc")!,
       },
     ],
   },
@@ -200,6 +231,8 @@ export const createCexWithdrawalUrl = (
       return encodeURI(`https://www.kucoin.com/assets/withdraw/${symbol}`)
     case "coinbase":
       return `https://www.coinbase.com`
+    case "gateio":
+      return encodeURI(`https://www.gate.io/myaccount/withdraw/${symbol}`)
     default:
       return ""
   }

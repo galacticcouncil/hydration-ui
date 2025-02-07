@@ -1337,7 +1337,7 @@
   "withdraw.transfer.cex.to": "Transfer to {{ chain }}",
   "withdraw.cex.transfer.title": "Withdraw to {{cex}}",
   "withdraw.success.title": "Withdrawal successful!",
-  "withdraw.success.description": "Congrats, you’ve succesfully withdrawn your <0>{{ value, bignumber(type: 'token') }} {{symbol}}</0>.",
+  "withdraw.success.description": "Congrats, you’ve succesfully withdrawn your <0>{{ value, bignumber(type: 'token') }} {{symbol}}</0> to <0>{{ cex }}<0>.",
   "withdraw.success.cta.withdrawtMore": "Withdraw more funds",
   "referenda.ongoing": "Ongoing Referenda",
   "referenda.support": "Support: {{value}}",

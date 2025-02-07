@@ -100,7 +100,16 @@ export const useCrossChainTransfer = (
   )
 }
 
-export const useCrossChainTransaction = (options: TransactionOptions = {}) => {
+type CrossChainTransferOptions = TransactionOptions & {
+  title?: string
+  description?: string
+}
+
+export const useCrossChainTransaction = ({
+  title,
+  description,
+  ...options
+}: CrossChainTransferOptions = {}) => {
   const { t } = useTranslation()
   const { createTransaction } = useStore()
 
@@ -136,13 +145,15 @@ export const useCrossChainTransaction = (options: TransactionOptions = {}) => {
 
       return await createTransaction(
         {
-          title: t("xcm.transfer.reviewTransaction.modal.title"),
-          description: t("xcm.transfer.reviewTransaction.modal.description", {
-            amount: values.amount,
-            symbol: balance.symbol,
-            srcChain: srcChain.name,
-            dstChain: dstChain.name,
-          }),
+          title: title ?? t("xcm.transfer.reviewTransaction.modal.title"),
+          description:
+            description ??
+            t("xcm.transfer.reviewTransaction.modal.description", {
+              amount: values.amount,
+              symbol: balance.symbol,
+              srcChain: srcChain.name,
+              dstChain: dstChain.name,
+            }),
           tx: api.tx(call.data),
           txOptions,
           xcallMeta: {
