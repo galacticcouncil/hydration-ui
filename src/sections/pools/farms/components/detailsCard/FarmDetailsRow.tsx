@@ -50,7 +50,7 @@ export const FarmDetailsRow = ({ farm }: FarmDetailsRowProps) => {
         />
         <div>
           <Text fs={12} lh={12} color="brightBlue300" font="GeistMedium">
-            {BN(farm.apr).gt(0) && t("value.APR", { apr: BN(farm.apr) })}
+            {t("value.APR", { apr: BN(farm.apr) })}
           </Text>
         </div>
         <div sx={{ ml: "auto", flex: "row", align: "center" }}>

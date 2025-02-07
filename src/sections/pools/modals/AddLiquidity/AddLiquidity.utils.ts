@@ -3,7 +3,6 @@ import {
   calculate_shares,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
-import { useTokenBalance } from "api/balances"
 import { useMaxAddLiquidityLimit } from "api/consts"
 import {
   useOmnipoolFee,
@@ -13,7 +12,6 @@ import {
 } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
@@ -27,42 +25,31 @@ import { ApiPromise } from "@polkadot/api"
 import { useXYKConsts } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { TAsset, useAssets } from "providers/assets"
+import { TAsset } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 
-export const getAddToOmnipoolFee = (api: ApiPromise, farms: TFarmAprData[]) => {
-  const txs = [api.tx.omnipool.addLiquidity("0", "1")]
-  const [firstFarm, ...restFarm] = farms
-
-  if (firstFarm)
-    txs.push(
-      api.tx.omnipoolLiquidityMining.depositShares(
-        firstFarm.globalFarmId,
-        firstFarm.yieldFarmId,
+export const getAddToOmnipoolFee = (
+  api: ApiPromise,
+  isJoinFarms: boolean,
+  farms: TFarmAprData[],
+) => {
+  const tx = isJoinFarms
+    ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+        farms.map<[string, string]>((farm) => [
+          farm.globalFarmId,
+          farm.yieldFarmId,
+        ]),
         "0",
-      ),
-    )
+        "1",
+        //@ts-ignore
+        undefined,
+      )
+    : api.tx.omnipool.addLiquidity("0", "1")
 
-  if (restFarm.length) {
-    const restFarmTxs = restFarm.map((farm) =>
-      api.tx.omnipoolLiquidityMining.redepositShares(
-        farm.globalFarmId,
-        farm.yieldFarmId,
-        "0",
-      ),
-    )
-
-    txs.push(
-      restFarmTxs.length > 1
-        ? api.tx.utility.batch(restFarmTxs)
-        : restFarmTxs[0],
-    )
-  }
-
-  return txs
+  return [tx]
 }
 
-const getSharesToGet = (
+export const getSharesToGet = (
   omnipoolAsset: TOmnipoolAssetsData[number],
   amount: string,
 ) => {
@@ -98,7 +85,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const { data: accountAssets } = useAccountAssets()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
-  const poolShare = useMemo(() => {
+  const { poolShare, sharesToGet } = useMemo(() => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
@@ -108,12 +95,15 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
-      return poolShare
+      return { poolShare, sharesToGet }
     }
+
+    return { poolShare: BN_0, sharesToGet: BN_0 }
   }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
     poolShare,
+    sharesToGet,
     spotPrice,
     omnipoolFee,
     assetMeta: pool.meta,
@@ -128,7 +118,6 @@ export const useAddToOmnipoolZod = (
 ) => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
-  const { hub } = useAssets()
 
   const { decimals, symbol } = pool.meta
 
@@ -139,12 +128,8 @@ export const useAddToOmnipoolZod = (
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
+  const hubBalance = omnipoolAssets.hubToken?.balance
 
-  const { data: hubBalance } = useTokenBalance(hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
-  const { data: poolBalance } = useTokenBalance(
-    assetId,
-    OMNIPOOL_ACCOUNT_ADDRESS,
-  )
   const { data: maxAddLiquidityLimit } = useMaxAddLiquidityLimit()
 
   const isFarms = farms.length
@@ -174,16 +159,15 @@ export const useAddToOmnipoolZod = (
     minPoolLiquidity === undefined ||
     omnipoolAsset === undefined ||
     hubBalance === undefined ||
-    poolBalance === undefined ||
     maxAddLiquidityLimit === undefined
   )
     return undefined
 
-  const assetReserve = poolBalance.balance.toString()
+  const assetReserve = omnipoolAsset.balance
   const assetHubReserve = omnipoolAsset.hubReserve
   const assetShares = omnipoolAsset.shares
   const assetCap = omnipoolAsset.cap
-  const totalHubReserve = hubBalance.total.toString()
+  const totalHubReserve = hubBalance
 
   const circuitBreakerLimit = maxAddLiquidityLimit
     .multipliedBy(assetReserve)

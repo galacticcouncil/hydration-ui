@@ -8,6 +8,8 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { useSettingsStore } from "state/store"
 import { useAssets } from "providers/assets"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useDegenModeSubscription = () => {
   const { external, externalInvalid } = useAssets()
@@ -16,6 +18,7 @@ export const useDegenModeSubscription = () => {
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
   const { isLoaded, poolService } = useRpcProvider()
+  const queryClient = useQueryClient()
 
   const hasInitializedDegenMode = useRef(false)
 
@@ -67,8 +70,17 @@ export const useDegenModeSubscription = () => {
       poolService.syncRegistry(data)
       hasInitializedDegenMode.current = true
       refetchProvider()
+      queryClient.invalidateQueries(QUERY_KEYS.pools)
     }
-  }, [degenMode, data, getDataEnv, isSuccess, refetchProvider, poolService])
+  }, [
+    degenMode,
+    data,
+    getDataEnv,
+    isSuccess,
+    refetchProvider,
+    poolService,
+    queryClient,
+  ])
 
   // Subscribe to degenMode change to update ExternalAssetCursor
   useEffect(() => {

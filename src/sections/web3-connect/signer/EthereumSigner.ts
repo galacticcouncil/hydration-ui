@@ -92,7 +92,7 @@ export class EthereumSigner {
 
   getPermit = async (
     data: string | TransactionRequest,
-    nonce: BigNumber,
+    nonce: number,
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
       await this.requestNetworkSwitch("hydration")
@@ -124,6 +124,8 @@ export class EthereumSigner {
         gasLimit = BigNumber(gas.toString())
       }
 
+      const latestBlock = await this.signer.provider.getBlock("latest")
+
       const createPermitMessageData = () => {
         const message: PermitMessage = {
           ...tx,
@@ -132,8 +134,8 @@ export class EthereumSigner {
             .multipliedBy(1.2) // add 20%
             .decimalPlaces(0)
             .toNumber(),
-          nonce: nonce.toNumber(),
-          deadline: Math.floor(Date.now() / 1000 + 3600),
+          nonce,
+          deadline: latestBlock.timestamp + 3600, // 1 hour deadline,
         }
 
         const typedData = JSON.stringify({

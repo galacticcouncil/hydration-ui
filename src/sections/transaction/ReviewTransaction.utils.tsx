@@ -42,12 +42,15 @@ import {
   isEvmWalletExtension,
 } from "utils/evm"
 import { isAnyParachain, Maybe } from "utils/helpers"
-import { createSubscanLink, wsToHttp } from "utils/formatting"
+import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useActiveProvider, useIsTestnet } from "api/provider"
-import BigNumber from "bignumber.js"
-import { Contract } from "ethers"
+import { useIsTestnet } from "api/provider"
 import { tags } from "@galacticcouncil/xcm-cfg"
+import { Contract } from "ethers"
+import BN from "bignumber.js"
+import { SolanaChain } from "@galacticcouncil/xcm-core"
+import { SignatureStatus } from "@solana/web3.js"
+import { getSolanaTxLink } from "utils/solana"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -146,6 +149,32 @@ function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
     isWarning: false,
     txHash: txReceipt.transactionHash as unknown as Hash,
     txIndex: txReceipt.transactionIndex,
+    filterRecords: () => [],
+    findRecord: () => undefined,
+    toHuman: () => ({}),
+  }
+
+  return submittableResult
+}
+
+function solanaStatusToSubmittableResult({
+  status,
+  hash,
+}: {
+  status: SignatureStatus
+  hash: string
+}) {
+  const isSuccess = status.confirmationStatus === "confirmed"
+  const submittableResult: ISubmittableResult = {
+    status: {} as ExtrinsicStatus,
+    events: [],
+    isCompleted: isSuccess,
+    isError: !isSuccess,
+    isFinalized: isSuccess,
+    isInBlock: isSuccess,
+    isWarning: false,
+    txHash: hash as unknown as Hash,
+    txIndex: 0,
     filterRecords: () => [],
     findRecord: () => undefined,
     toHuman: () => ({}),
@@ -262,38 +291,75 @@ export const useSendEvmTransactionMutation = (
   }
 }
 
+export const useSendSolanaTransactionMutation = (
+  options: MutationObserverOptions<ISubmittableResult, unknown, string> = {},
+  xcallMeta?: Record<string, string>,
+) => {
+  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
+  const [txHash, setTxHash] = useState<string>("")
+
+  const chain = xcallMeta
+    ? (chainsMap.get(xcallMeta.srcChain) as SolanaChain)
+    : null
+
+  const sendTx = useMutation(async (hash) => {
+    if (!chain) throw new Error("Invalid chain")
+
+    return await new Promise(async (resolve, reject) => {
+      try {
+        setTxState("Broadcast")
+        setTxHash(hash)
+        const status = await waitForSolanaTx(chain.connection, hash)
+        setTxState("InBlock")
+        return resolve(solanaStatusToSubmittableResult({ status, hash }))
+      } catch (err) {
+        reject(new TransactionError(err?.toString() ?? "Unknown error", {}))
+      }
+    })
+  }, options)
+
+  const txLink = getSolanaTxLink(txHash)
+
+  return {
+    ...sendTx,
+    txState,
+    txLink,
+    txHash,
+    bridge: undefined,
+    reset: () => {
+      setTxState(null)
+      setTxHash("")
+      sendTx.reset()
+    },
+  }
+}
+
 export function useNextEvmPermitNonce(account: Maybe<AccountId32 | string>) {
-  const activeProvider = useActiveProvider()
+  const { evm } = useRpcProvider()
 
   const address = account?.toString() ?? ""
+
+  const addressH160 = isEvmAddress(address)
+    ? address
+    : H160.fromAccount(address)
 
   return useQuery(
     QUERY_KEYS.nextEvmPermitNonce(account),
     async () => {
       if (!account) throw new Error("Missing address")
 
-      const provider = new JsonRpcProvider(wsToHttp(activeProvider.url))
+      const callPermit = new Contract(CALL_PERMIT_ADDRESS, CALL_PERMIT_ABI, evm)
 
-      const callPermit = new Contract(
-        CALL_PERMIT_ADDRESS,
-        CALL_PERMIT_ABI,
-        provider,
-      )
+      const nonce: BN = await callPermit.nonces(addressH160)
 
-      const nonce = await callPermit.nonces(
-        isEvmAddress(account.toString())
-          ? account
-          : H160.fromAccount(account.toString()),
-      )
-
-      return BigNumber(nonce.toString())
+      return nonce.toNumber()
     },
     {
       refetchInterval: EVM_PERMIT_BLOCKTIME,
       refetchOnWindowFocus: false,
       cacheTime: 0,
       staleTime: 0,
-      enabled: isEvmAddress(address) || isEvmAccount(address),
+      enabled: !!addressH160,
     },
   )
 }
@@ -668,10 +734,10 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
+type TxType = "default" | "evm" | "permit" | "solana"
+
 export const useSendTx = (xcallMeta?: Record<string, string>) => {
-  const [txType, setTxType] = useState<"default" | "evm" | "permit" | null>(
-    null,
-  )
+  const [txType, setTxType] = useState<TxType>("default")
 
   const boundReferralToast = useBoundReferralToast()
   const storeExternalAssetsOnSign = useStoreExternalAssetsOnSign()
@@ -711,32 +777,105 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
     xcallMeta,
   )
 
-  const activeMutation =
-    txType === "default" ? sendTx : txType === "evm" ? sendEvmTx : sendPermitTx
+  const sendSolanaTx = useSendSolanaTransactionMutation(
+    {
+      onMutate: () => {
+        setTxType("solana")
+      },
+    },
+    xcallMeta,
+  )
+
+  const activeMutation = getActiveMutation(txType, {
+    default: sendTx,
+    evm: sendEvmTx,
+    permit: sendPermitTx,
+    solana: sendSolanaTx,
+  })
 
   return {
     sendTx: sendTx.mutateAsync,
     sendEvmTx: sendEvmTx.mutateAsync,
     sendPermitTx: sendPermitTx.mutateAsync,
+    sendSolanaTx: sendSolanaTx.mutateAsync,
     ...activeMutation,
   }
+}
+
+type TTxMutation =
+  | ReturnType<typeof useSendTransactionMutation>
+  | ReturnType<typeof useSendEvmTransactionMutation>
+  | ReturnType<typeof useSendSolanaTransactionMutation>
+  | ReturnType<typeof useSendDispatchPermit>
+
+function getActiveMutation(
+  txType: TxType,
+  mutations: Record<TxType, TTxMutation>,
+) {
+  return mutations[txType]
+}
+
+async function waitForSolanaTx(
+  connection: SolanaChain["connection"],
+  hash: string,
+): Promise<SignatureStatus> {
+  return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout | null = null
+
+    const cleanup = () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
+    const checkStatus = async () => {
+      try {
+        const result = await connection.getSignatureStatus(hash, {
+          searchTransactionHistory: true,
+        })
+        const status = result.value
+        if (!status || status?.confirmationStatus !== "confirmed") {
+          cleanup()
+          timeout = setTimeout(checkStatus, 5000)
+        } else {
+          cleanup()
+          resolve(status)
+        }
+      } catch (error) {
+        cleanup()
+        reject(error)
+      }
+    }
+
+    checkStatus()
+  })
 }
 
 async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
   const currentBlock = await provider.getBlockNumber()
   return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout | null = null
+
+    const cleanup = () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
     const checkBlock = async () => {
-      let timeout
       try {
         const newBlock = await provider.getBlockNumber()
-        if (newBlock > currentBlock) {
-          clearTimeout(timeout)
-          resolve()
-        } else {
+        if (!newBlock || newBlock <= currentBlock) {
+          cleanup()
           timeout = setTimeout(checkBlock, 5000)
+        } else {
+          cleanup()
+          resolve()
         }
       } catch (error) {
-        clearTimeout(timeout)
+        cleanup()
         reject(error)
       }
     }

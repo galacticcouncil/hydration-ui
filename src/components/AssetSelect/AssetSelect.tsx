@@ -6,8 +6,8 @@ import { Text } from "components/Typography/Text/Text"
 import React, { forwardRef, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
-import { getFloatingPointAmount } from "utils/balance"
-import { useDisplayPrice } from "utils/displayAsset"
+import { scaleHuman } from "utils/balance"
+import { useDisplayPrice, useDisplayShareTokenPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { AssetSelectButton } from "./AssetSelectButton"
@@ -49,15 +49,23 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
 
     const spotPriceId =
       isBond(asset) && !asset.isTradable ? asset.underlyingAssetId : asset.id
+    const { isShareToken } = asset
 
-    const spotPriceAsset = useDisplayPrice(spotPriceId)
+    const spotPriceAsset = useDisplayPrice(
+      isShareToken ? undefined : spotPriceId,
+    )
+    const shareTokenSpotPrice = useDisplayShareTokenPrice(
+      isShareToken ? [spotPriceId] : [],
+    )
 
-    const spotPrice = spotPriceAsset.data
+    const spotPrice = isShareToken
+      ? shareTokenSpotPrice.data?.[0].spotPrice
+      : spotPriceAsset.data?.spotPrice.toString()
 
     const displayValue = useMemo(() => {
-      if (!props.value) return 0
-      if (spotPrice?.spotPrice == null) return null
-      return spotPrice.spotPrice.times(props.value)
+      if (!props.value || !spotPrice) return undefined
+
+      return BigNumber(spotPrice).times(props.value).toString()
     }, [props.value, spotPrice])
 
     return (
@@ -112,7 +120,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
                       if (props.balance != null) {
                         const value = BigNumber.max(
                           BN_0,
-                          getFloatingPointAmount(
+                          scaleHuman(
                             props.balanceMax ?? props.balance,
                             decimals,
                           ),

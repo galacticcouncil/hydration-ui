@@ -32,7 +32,6 @@ import { TDeposit, useAccountAssets } from "./deposits"
 import { useDisplayPrices } from "utils/displayAsset"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
-import { useClaimingRange } from "sections/pools/farms/components/claimingRange/claimingRange.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BalanceClient } from "@galacticcouncil/sdk"
 
@@ -205,6 +204,7 @@ const getFarmsData =
           yieldFarm,
         },
         price.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
+        isXyk,
         balance.freeBalance,
       )
 
@@ -274,7 +274,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
     getActiveFarms(api, ids),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
   )
 
   const stoppedFarms = useMemo(
@@ -291,7 +291,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -302,7 +302,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -320,7 +320,7 @@ export const useXYKFarms = (ids: string[]) => {
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.xykActiveFarms,
     getActiveFarms(api, ids, true),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
   )
 
   const stoppedFarms = useMemo(
@@ -337,7 +337,7 @@ export const useXYKFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -354,7 +354,7 @@ export const useXYKFarms = (ids: string[]) => {
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 
@@ -416,6 +416,7 @@ function getFarmApr(
     yieldFarm: PalletLiquidityMiningYieldFarmData
   },
   priceAdjustment: BigNumber,
+  isXyk: boolean,
   potBalance?: string,
 ) {
   const { globalFarm, yieldFarm } = farm
@@ -498,7 +499,7 @@ function getFarmApr(
   const isDistributed = distributedRewards.div(potMaxRewards).gte(0.999)
 
   // multiply by 100 since APR should be a percentage
-  apr = isDistributed ? BN_0 : apr.times(100)
+  apr = isDistributed ? BN_0 : apr.div(isXyk ? 2 : 1).times(100)
 
   const minApr = loyaltyFactor ? apr.times(loyaltyFactor) : null
 
@@ -630,11 +631,10 @@ export const getYieldFarmCreated = (indexerUrl: string) => async () => {
 export const useRefetchClaimableFarmValues = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const { range } = useClaimingRange()
 
   return () => {
     queryClient.resetQueries(
-      QUERY_KEYS.accountClaimableFarmValues(account?.address, range),
+      QUERY_KEYS.accountClaimableFarmValues(account?.address),
     )
   }
 }
@@ -643,7 +643,6 @@ export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
-  const { range } = useClaimingRange()
 
   const {
     omnipoolDeposits = [],
@@ -654,7 +653,7 @@ export const useAccountClaimableFarmValues = () => {
   const allDeposits = [...omnipoolDeposits, ...xykDeposits]
 
   return useQuery(
-    QUERY_KEYS.accountClaimableFarmValues(accountAddress, range),
+    QUERY_KEYS.accountClaimableFarmValues(accountAddress),
     async () => {
       const accountResolver = getAccountResolver(api.registry)
 
@@ -754,13 +753,15 @@ export const useAccountClaimableFarmValues = () => {
           if (reward) {
             const meta = getAssetWithFallback(reward.assetId)
 
+            if (reward.reward.lte(meta.existentialDeposit)) return undefined
+
             const liquidityPositionId = isXyk
               ? undefined
               : depositLiquidityPositions.find(
                   (lp) => lp.depositId === deposit.id,
                 )
 
-            const isClaimable = BN(loyaltyFactor).gt(range)
+            const isClaimable = true
 
             const isActiveFarm = yieldFarm.state.isActive
 

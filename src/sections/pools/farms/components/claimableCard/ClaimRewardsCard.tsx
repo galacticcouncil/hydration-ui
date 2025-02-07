@@ -19,7 +19,6 @@ import {
   useSummarizeClaimableValues,
 } from "api/farms"
 import BN from "bignumber.js"
-import { ClaimingRangeButton } from "sections/pools/farms/components/claimingRange/ClaimingRangeButton"
 
 export const ClaimRewardsCard = (props: {
   depositNft?: TDeposit
@@ -43,8 +42,9 @@ export const ClaimRewardsCard = (props: {
       )
     : poolClaimableValues
 
-  const { claimableTotal, diffRewards, claimableAssetValues } =
-    useSummarizeClaimableValues(claimableDepositValues ?? [])
+  const { claimableTotal, claimableAssetValues } = useSummarizeClaimableValues(
+    claimableDepositValues ?? [],
+  )
 
   const { claimableAssets, toastValue } = useMemo(() => {
     const claimableAssets = []
@@ -89,7 +89,7 @@ export const ClaimRewardsCard = (props: {
     return memo
   }, {} as ToastMessage)
 
-  const { claim, isLoading, confirmClaimModal } = useClaimFarmMutation(
+  const { claim, isLoading } = useClaimFarmMutation(
     claimableDepositValues,
     toast,
     props.onTxClose,
@@ -146,19 +146,6 @@ export const ClaimRewardsCard = (props: {
               <DisplayValue value={BN(claimableTotal)} />
             </Trans>
           </Text>
-
-          <Text
-            fs={14}
-            sx={{ py: 8, mt: 8, mb: 10 }}
-            fw={300}
-            css={{
-              borderTop: `1px solid rgba(${theme.rgbColors.white}, 0.06)`,
-            }}
-          >
-            <Trans t={t} i18nKey="farms.claimCard.claim.diffRewards">
-              <DisplayValue value={BN(diffRewards)} />
-            </Trans>
-          </Text>
         </div>
         <div sx={{ flex: "column", gap: 12, width: ["100%", 275] }}>
           <Button
@@ -173,10 +160,8 @@ export const ClaimRewardsCard = (props: {
           >
             {t("farms.claimCard.button.label")}
           </Button>
-          <ClaimingRangeButton />
         </div>
       </div>
-      {confirmClaimModal}
     </Card>
   )
 }

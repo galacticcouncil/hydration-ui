@@ -81,6 +81,7 @@ export const marketsData: {
         AaveV3HydrationMainnet.UI_INCENTIVE_DATA_PROVIDER,
       GHO_TOKEN_ADDRESS: AaveV3HydrationMainnet.GHO_TOKEN_ADDRESS,
       GHO_UI_DATA_PROVIDER: AaveV3HydrationMainnet.GHO_UI_DATA_PROVIDER,
+      COLLECTOR: AaveV3HydrationMainnet.COLLECTOR,
     },
   },
   [CustomMarket.hydration_testnet_v3]: {
@@ -100,6 +101,7 @@ export const marketsData: {
         AaveV3HydrationTestnet.UI_INCENTIVE_DATA_PROVIDER,
       GHO_TOKEN_ADDRESS: AaveV3HydrationTestnet.GHO_TOKEN_ADDRESS,
       GHO_UI_DATA_PROVIDER: AaveV3HydrationTestnet.GHO_UI_DATA_PROVIDER,
+      COLLECTOR: AaveV3HydrationMainnet.COLLECTOR,
     },
   },
 } as const

@@ -8,10 +8,14 @@ import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-parametres/LiquidationRiskParametresModal"
+import BN from "bignumber.js"
+import { useTranslation } from "react-i18next"
+import { useBifrostVDotApy } from "api/external/bifrost"
 
 export const DashboardHeaderValues: FC<{
   className?: string
 }> = ({ className }) => {
+  const { t } = useTranslation()
   const { user, loading } = useAppDataContext()
   const { currentAccount } = useWeb3Context()
   const [open, setOpen] = useState(false)
@@ -72,13 +76,23 @@ export const DashboardHeaderValues: FC<{
           .dividedBy(user?.totalCollateralMarketReferenceCurrency || "1")
           .toFixed()
 
+  const vDotSuppliedOrBorrowed = user.userReservesData.some(
+    ({ reserve, underlyingBalance, totalBorrows }) =>
+      reserve.symbol === "vDOT" &&
+      (BN(underlyingBalance).gt(0) || BN(totalBorrows).gt(0)),
+  )
+
+  const { data: vDotApy, isLoading: isVDotApyLoading } = useBifrostVDotApy({
+    enabled: vDotSuppliedOrBorrowed,
+  })
+
   return (
     <>
       <div sx={{ maxWidth: ["100%", 1000] }} className={className}>
         <DataValueList separated>
           <DataValue
             labelColor="brightBlue300"
-            label="Net worth"
+            label={t("lending.header.networth.title")}
             isLoading={loading}
           >
             {currentAccount ? (
@@ -89,10 +103,8 @@ export const DashboardHeaderValues: FC<{
           </DataValue>
           <DataValue
             labelColor="brightBlue300"
-            label="Net Apy"
-            tooltip="Net APY is the combined effect of all supply and borrow positions on net
-            worth, including incentives. It is possible to have a negative net APY
-            if debt APY is higher than supply APY."
+            label={t("lending.header.netAPY.title")}
+            tooltip={t("lending.header.netAPY.tooltip")}
             isLoading={loading}
           >
             {currentAccount && Number(user?.netWorthUSD) > 0 ? (
@@ -101,9 +113,18 @@ export const DashboardHeaderValues: FC<{
               <NoData />
             )}
           </DataValue>
+          {vDotSuppliedOrBorrowed && vDotApy && (
+            <DataValue
+              labelColor="brightBlue300"
+              label={t("lending.header.vdotAPY.title")}
+              isLoading={loading || isVDotApyLoading}
+            >
+              <PercentageValue value={Number(vDotApy.apy)} />
+            </DataValue>
+          )}
           <DataValue
             labelColor="brightBlue300"
-            label="Health factor"
+            label={t("lending.header.healthfactor.title")}
             isLoading={loading}
           >
             {currentAccount && user?.healthFactor !== "-1" ? (
