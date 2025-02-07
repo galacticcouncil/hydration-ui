@@ -18,6 +18,7 @@ export class BaseSubstrateWallet implements Wallet {
 
   _extension: InjectedExtension | undefined
   _signer: InjectedSigner | undefined
+  _enabled: boolean = false
 
   get extension() {
     return this._extension
@@ -31,6 +32,10 @@ export class BaseSubstrateWallet implements Wallet {
     const injectedExtension = window?.injectedWeb3?.[this.accessor]
 
     return !!injectedExtension
+  }
+
+  get enabled() {
+    return this._enabled
   }
 
   get rawExtension() {
@@ -67,6 +72,7 @@ export class BaseSubstrateWallet implements Wallet {
         version: this.rawExtension.version ?? "?",
       }
 
+      this._enabled = true
       this._extension = extension
       this._signer = extension?.signer
     } catch (err) {
@@ -120,5 +126,9 @@ export class BaseSubstrateWallet implements Wallet {
     return unsubscribe
   }
 
-  disconnect = () => {}
+  disconnect = () => {
+    this._enabled = false
+    this._extension = undefined
+    this._signer = undefined
+  }
 }

@@ -1,6 +1,6 @@
 import { Box, Flex, Grid, Text } from "@galacticcouncil/ui/components"
 import { useCallback, useMemo } from "react"
-import { groupBy, prop } from "remeda"
+import { groupBy, isNot, prop } from "remeda"
 
 import { Web3ConnectProviderButton } from "@/components/Web3ConnectProviderButton"
 import { SProviderButton } from "@/components/Web3ConnectProviderButton.styled"
@@ -36,15 +36,16 @@ export const Web3ConnectProviderSelect: React.FC<
   const installed = wallets?.installed || []
   const other = wallets?.other || []
 
-  const installedCompatible = installed.filter(({ provider }) => {
-    return COMPATIBLE_WALLET_PROVIDERS.includes(provider)
-  })
+  const installedCompatible = installed.filter(({ provider }) =>
+    COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+  )
+  const disabledCompatible = installedCompatible.filter(isNot(prop("enabled")))
 
-  const connectAllCompatible = useCallback(() => {
-    installedCompatible.forEach(({ provider }) => {
+  const enableCompatible = useCallback(() => {
+    disabledCompatible.forEach(({ provider }) => {
       enable(provider)
     })
-  }, [enable, installedCompatible])
+  }, [enable, disabledCompatible])
 
   return (
     <Flex direction="column" gap={20}>
@@ -69,12 +70,14 @@ export const Web3ConnectProviderSelect: React.FC<
             />
           ))}
         </Grid>
-        <SProviderButton
-          sx={{ width: "100%", mt: 8 }}
-          onClick={connectAllCompatible}
-        >
-          Connect all
-        </SProviderButton>
+        {disabledCompatible.length > 0 && (
+          <SProviderButton
+            sx={{ width: "100%", mt: 8, py: 10 }}
+            onClick={enableCompatible}
+          >
+            Connect all
+          </SProviderButton>
+        )}
       </Box>
       <Box>
         <Text mb={4}>Other</Text>

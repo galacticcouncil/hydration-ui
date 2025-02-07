@@ -30,21 +30,23 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
       data-proxy={isProxy}
       onClick={() => onSelect?.(account)}
     >
-      <Flex align="center" gap={4}>
+      <Flex align="center" gap={12}>
         {wallet && (
           <img
             loading="lazy"
             src={wallet.logo}
             alt={wallet.title}
-            width={12}
-            height={12}
+            width={32}
+            height={32}
           />
         )}
-        <Text fs={14}>{account.name}</Text>
+        <Flex direction="column">
+          <Text fs={14}>{account.name}</Text>
+          <Text fs={13} color={getToken("text.medium")}>
+            {account.address}
+          </Text>
+        </Flex>
       </Flex>
-      <Text fs={13} color={getToken("text.medium")}>
-        {account.address}
-      </Text>
     </SAccountItem>
   )
 }

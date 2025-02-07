@@ -20,6 +20,7 @@ export type WalletData = {
   installUrl: string
   logo: string
   installed: boolean
+  enabled: boolean
 }
 
 type WalletExtension = {

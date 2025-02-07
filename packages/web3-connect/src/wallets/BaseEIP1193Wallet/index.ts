@@ -24,7 +24,8 @@ export class BaseEIP1193Wallet implements Wallet {
 
   _rawExtension: EIP1193Provider | undefined
   _extension: Required<EIP1193Provider> | undefined
-  _signer: any | undefined
+  _signer: unknown
+  _enabled: boolean = false
 
   onAccountsChanged: SubscriptionFn | undefined
   onChainChanged: ChainSubscriptionFn | undefined
@@ -52,6 +53,10 @@ export class BaseEIP1193Wallet implements Wallet {
 
   get installed() {
     return !!this._rawExtension
+  }
+
+  get enabled() {
+    return this._enabled
   }
 
   get rawExtension() {
@@ -86,6 +91,7 @@ export class BaseEIP1193Wallet implements Wallet {
       const address =
         Array.isArray(addresses) && addresses.length > 0 ? addresses[0] : ""
 
+      this._enabled = true
       this._extension = extension
       this._signer = address
         ? undefined //new EthereumSigner(address, extension)
@@ -93,7 +99,8 @@ export class BaseEIP1193Wallet implements Wallet {
 
       this.subscribeAccounts(this.onAccountsChanged)
       this.subscribeChain(this.onChainChanged)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      //@ts-expect-error unknown error type
       if (err.code === -32002) {
         throw new NotInstalledError(
           `Already processing request from ${this.title}. Check your wallet.`,
@@ -148,8 +155,8 @@ export class BaseEIP1193Wallet implements Wallet {
       const accounts = addresses.slice(0, 1).map(this.toWalletAccount)
       callback?.(accounts)
 
-      const mainAccount = accounts[0]
-      this._signer?.setAddress(mainAccount?.address)
+      //const mainAccount = accounts[0]
+      //this._signer?.setAddress(mainAccount?.address)
     })
   }
 
@@ -168,7 +175,8 @@ export class BaseEIP1193Wallet implements Wallet {
   }
 
   disconnect = () => {
-    this._extension?.removeAllListeners?.()
+    //this._extension?.removeAllListeners?.()
+    this._enabled = false
     this._extension = undefined
     this._signer = undefined
   }
