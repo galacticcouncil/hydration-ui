@@ -1,6 +1,8 @@
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS } from "@/config/navigation"
+import { LINKS, NAVIGATION } from "@/config/navigation"
+import { useVisibleElements } from "@/hooks/useVisibleElements"
 
 export const useMenuTranslations = () => {
   const { t } = useTranslation(["common"])
@@ -126,4 +128,33 @@ export const useMenuTranslations = () => {
       description: "",
     },
   } satisfies Record<keyof typeof LINKS, { title: string; description: string }>
+}
+
+export const useVisibleHeaderMenuItems = () => {
+  const { hiddenElementsKeys, observe } = useVisibleElements()
+
+  return useMemo(() => {
+    const items = NAVIGATION
+
+    const visibleItemKeys = items
+      .filter((item) => !hiddenElementsKeys.includes(item.key))
+      .map((item) => item.key)
+
+    const shouldShowMoreButton = visibleItemKeys.length < items.length
+
+    const moreButtonKey = shouldShowMoreButton
+      ? visibleItemKeys[visibleItemKeys.length - 1]
+      : undefined
+
+    const hiddenItemsKeys =
+      shouldShowMoreButton && moreButtonKey
+        ? hiddenElementsKeys.concat([moreButtonKey])
+        : []
+
+    const hiddenItems = items.filter((item) =>
+      hiddenItemsKeys.includes(item.key),
+    )
+
+    return { items, visibleItemKeys, hiddenItems, moreButtonKey, observe }
+  }, [hiddenElementsKeys, observe])
 }
