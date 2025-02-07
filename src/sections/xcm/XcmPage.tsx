@@ -141,8 +141,7 @@ export function XcmPage() {
         : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist =
-    import.meta.env.VITE_ENV === "production" ? "assethub_cex,polkadot_cex" : ""
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
