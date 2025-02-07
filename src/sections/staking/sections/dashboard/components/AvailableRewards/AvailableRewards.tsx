@@ -142,7 +142,7 @@ export const AvailableRewards = () => {
           sx={{
             flex: ["column", "row"],
             px: 25,
-            gap: [24, 40],
+            gap: [24, 30],
           }}
         >
           <div
