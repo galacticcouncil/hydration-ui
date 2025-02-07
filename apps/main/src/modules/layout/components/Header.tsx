@@ -1,10 +1,10 @@
 import { HydrationLogoFull } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Toggle } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
-import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
 
 import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderMenu } from "@/modules/layout/components/HeaderMenu"
+import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 
 export const Header = () => {
   const { theme, setTheme } = useTheme()
@@ -20,7 +20,7 @@ export const Header = () => {
             onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
           />
         </Flex>
-        <Web3ConnectButton />
+        <HeaderWeb3ConnectButton />
       </Flex>
     </SHeader>
   )

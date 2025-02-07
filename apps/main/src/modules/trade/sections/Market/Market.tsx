@@ -1,5 +1,6 @@
 import { Button, Flex, Separator, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -25,6 +26,8 @@ type FormValues = {
 export const Market = () => {
   const { t } = useTranslation(["common", "wallet"])
   const { tradable } = useAssets()
+
+  const { account } = useAccount()
 
   const form = useForm<FormValues>({
     defaultValues: { sell: "", buy: "", type: "swap" },
@@ -136,9 +139,13 @@ export const Market = () => {
             p: 20,
           }}
         >
-          <Button size="large" sx={{ width: "100%" }}>
-            Swap
-          </Button>
+          {account ? (
+            <Button size="large" width="100%">
+              Swap
+            </Button>
+          ) : (
+            <Web3ConnectButton size="large" width="100%" />
+          )}
 
           <Text fs="p5" fw={400} color={getToken("text.high")}>
             Budget & fee will be reserved for this trade.
