@@ -2,5 +2,8 @@
   "name": "@galacticcouncil/utils",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts"
+  "main": "./src/index.ts",
+  "dependencies": {
+    "buffer": "^6.0.3"
+  }
 }

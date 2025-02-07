@@ -1,5 +1,6 @@
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { Buffer } from "buffer"
 import { Address, checksumAddress, isAddress } from "viem"
 
 export const isEvmAddress = isAddress
