@@ -10,6 +10,8 @@ import { z } from "zod"
 import { required } from "utils/validators"
 import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
+import { Spacer } from "components/Spacer/Spacer"
 
 const options = [
   { label: "1%", value: 1 },
@@ -43,7 +45,7 @@ export const LimitModal = ({ onConfirm }: { onConfirm: () => void }) => {
         udpate(value)
         onConfirm()
       })}
-      sx={{ flex: "column", justify: "space-between", height: 300, p: 24 }}
+      sx={{ flex: "column", justify: "space-between", height: 320, p: 24 }}
       autoComplete="off"
     >
       <Controller
@@ -73,6 +75,15 @@ export const LimitModal = ({ onConfirm }: { onConfirm: () => void }) => {
           </SBoxContainer>
         )}
       />
+
+      <Text fs={14} fw={400}>
+        {t("liquidity.add.modal.limit.description1")}
+      </Text>
+      <Text fs={14} fw={400}>
+        {t("liquidity.add.modal.limit.description2")}
+      </Text>
+
+      <Spacer size={24} />
 
       <Button fullWidth variant="primary">
         {t("confirm")}

@@ -296,6 +296,8 @@
   "liquidity.add.modal.button.joinFarms": "Add liquidity & Join Farms",
   "liquidity.add.modal.title": "Add liquidity",
   "liquidity.add.modal.limit.title": "Add Liquidity Limit",
+  "liquidity.add.modal.limit.description1": "Here you can control the maximum allowed deviation between your desired price for adding liquidity and the actual execution price.",
+  "liquidity.add.modal.limit.description2": "Such deviation can be caused by price changes due to trading activity.",
   "liquidity.add.modal.limit.validation.max": "Max value is {{value}}",
   "liquidity.add.modal.provideLiquidity": "Provide Liquidity",
   "liquidity.add.modal.provideLiquidity.loading": "Providing liquidity",
