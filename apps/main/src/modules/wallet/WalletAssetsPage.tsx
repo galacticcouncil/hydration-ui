@@ -20,7 +20,9 @@ export const WalletAssetsPage = () => {
   const [search, setSearch] = useState("")
   const { tokens, stableswap, bonds, erc20, isExternal } = useAssets()
 
-  const allTokens = [...tokens, ...stableswap, ...bonds, ...erc20]
+  const filteredTokens = [...tokens, ...stableswap, ...bonds, ...erc20].filter(
+    (asset) => asset.isTradable && !isExternal(asset),
+  )
 
   return (
     <Flex direction="column" gap={20}>
@@ -133,9 +135,7 @@ export const WalletAssetsPage = () => {
           paginated
           pageSize={10}
           globalFilter={search}
-          data={allTokens.filter(
-            (asset) => asset.isTradable && !isExternal(asset),
-          )}
+          data={filteredTokens}
           columns={columns}
         />
       </TableContainer>
