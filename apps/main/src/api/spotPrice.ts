@@ -47,6 +47,7 @@ export const usePriceSubscriber = () => {
     },
     enabled: isApiLoaded && !isNullish(stableCoinId),
     notifyOnChangeProps: [],
+    staleTime: 10000,
   })
 }
 
