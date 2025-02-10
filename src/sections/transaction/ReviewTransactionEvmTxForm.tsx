@@ -51,6 +51,7 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
   const { getAsset } = useAssets()
   const { feePaymentAssetId } = useAccountFeePaymentAssets()
 
+  const { data: nonce } = useNextEvmPermitNonce(account?.address)
   const { data: spotPrice } = useSpotPrice(
     NATIVE_EVM_ASSET_ID,
     feePaymentAssetId,
@@ -58,7 +59,6 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
 
   const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
 
-  const { data: nonce } = useNextEvmPermitNonce(account?.address)
   const { data: feeWETH, isLoading: isFeeLoading } = useEvmTxFee(tx.data)
 
   const { mutate: signTx, isLoading } = useMutation(async () => {

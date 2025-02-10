@@ -253,9 +253,14 @@ export const useWeb3ConnectEagerEnable = () => {
 
     if (providers.length > 0) {
       providers.forEach((p) => {
+        const isCompatible = COMPATIBLE_WALLET_PROVIDERS.includes(p.type)
+
         const { wallet } = getWalletProviderByType(p.type)
-        if (wallet) {
+
+        if (wallet && isCompatible) {
           eagerEnable(wallet)
+        } else {
+          state.disconnect(p.type)
         }
       })
     } else {

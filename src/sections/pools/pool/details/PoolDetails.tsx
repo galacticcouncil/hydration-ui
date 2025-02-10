@@ -194,7 +194,10 @@ export const PoolDetails = () => {
                       fw={600}
                       font="GeistMedium"
                     >
-                      <DisplayValue value={pool.spotPrice} type="token" />
+                      <DisplayValue
+                        value={BN(pool.spotPrice ?? NaN)}
+                        type="token"
+                      />
                     </Text>
                   </SValue>
 

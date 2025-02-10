@@ -13,6 +13,7 @@ import { Chip } from "components/Chip"
 const chains = Array.from(chainsMap.values()).filter(
   (chain) =>
     isAnyParachain(chain) &&
+    !chain.isTestChain &&
     SELECTABLE_PARACHAINS_IDS.includes(chain.parachainId) &&
     chain.ecosystem === "polkadot",
 ) as AnyParachain[]
