@@ -50,8 +50,8 @@ import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
-import { HexString } from "polkadot-api"
-import { u8aToHex } from "@polkadot/util"
+import { TxEvent } from "polkadot-api"
+import { isObservable, Observable } from "rxjs"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -111,10 +111,6 @@ function isTxExtrinsic(x: AnyJson): x is TxExtrinsic {
   return (
     typeof x === "object" && x != null && "method" in x && isTxMethod(x.method)
   )
-}
-
-function isHexString(value: unknown): value is HexString {
-  return typeof value === "string" && value.startsWith("0x")
 }
 
 export function isSetCurrencyExtrinsic(tx?: AnyJson) {
@@ -532,7 +528,7 @@ export const useSendTransactionMutation = (
     ISubmittableResult,
     unknown,
     {
-      tx: SubmittableExtrinsic<"promise"> | HexString
+      tx: SubmittableExtrinsic<"promise"> | Observable<TxEvent>
     }
   > = {},
   xcallMeta?: Record<string, string>,
@@ -552,18 +548,27 @@ export const useSendTransactionMutation = (
 
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
-      if (isHexString(tx)) {
-        try {
-          setTxHash(tx)
-          setTxState("Broadcast")
-          await waitForSubstrateTx(await apiPromise, tx)
-          setTxState("InBlock")
-          return resolve(toSubmittableResult(tx))
-        } catch (err) {
-          setTxState("Invalid")
-          reject(err)
-          return new TransactionError(err?.toString() ?? "Unknown error", {})
-        }
+      if (isObservable(tx)) {
+        return tx.subscribe((event) => {
+          if (event.type === "broadcasted") {
+            setTxState("Broadcast")
+            setTxHash(event.txHash)
+          }
+
+          if (event.type === "finalized") {
+            if (!event.ok) {
+              setTxState("Invalid")
+              return reject(
+                new TransactionError(
+                  event.dispatchError.value?.toString() ?? "Unknown error",
+                  {},
+                ),
+              )
+            }
+            setTxState("InBlock")
+            return resolve(toSubmittableResult(event.txHash))
+          }
+        })
       }
 
       try {
@@ -755,7 +760,7 @@ export const useSendTx = (xcallMeta?: Record<string, string>) => {
   const sendTx = useSendTransactionMutation(
     {
       onMutate: ({ tx }) => {
-        if (!isHexString(tx)) {
+        if (!isObservable(tx)) {
           boundReferralToast.onLoading(tx)
           storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
         }
@@ -882,93 +887,6 @@ async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
         if (!newBlock || newBlock <= currentBlock) {
           cleanup()
           timeout = setTimeout(checkBlock, 5000)
-        } else {
-          cleanup()
-          resolve()
-        }
-      } catch (error) {
-        cleanup()
-        reject(error)
-      }
-    }
-
-    checkBlock()
-  })
-}
-
-type SystemEvent = {
-  phase: { applyExtrinsic: number }
-  event: {
-    index: "string"
-    data: { [key: string]: unknown; module: { index: number; error: string } }[]
-  }
-  topics: Array<any>
-}
-
-const getTxStatusFromSystemEvents = (
-  systemEvents: SystemEvent[],
-  txIdx: number,
-) => {
-  const events = systemEvents.filter((x) => {
-    return "applyExtrinsic" in x.phase && x.phase.applyExtrinsic === txIdx
-  })
-
-  const lastEvent = events[events.length - 1]
-
-  if (!lastEvent) return
-
-  const error = lastEvent.event.data.find(
-    (obj) => "module" in obj && !!obj?.module?.error,
-  )
-  if (error) {
-    return {
-      ok: false,
-      error,
-    }
-  }
-
-  return { ok: true }
-}
-
-async function waitForSubstrateTx(
-  api: ApiPromise,
-  txHash: string,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let timeout: NodeJS.Timeout | null = null
-
-    const cleanup = () => {
-      if (timeout) {
-        clearTimeout(timeout)
-        timeout = null
-      }
-    }
-
-    const checkBlock = async () => {
-      try {
-        const latestHeader = await api.rpc.chain.getHeader()
-        const blockNumber = latestHeader.number.toNumber()
-        const blockHash = await api.rpc.chain.getBlockHash(blockNumber)
-        const apiAt = await api.at(blockHash)
-        const block = await api.rpc.chain.getBlock(blockHash)
-        const extrinsics = block.block.extrinsics
-
-        const extrinsicIndex = extrinsics.findIndex(
-          (ex) => u8aToHex(ex.hash) === txHash,
-        )
-
-        const events = await apiAt.query.system.events()
-        const status = getTxStatusFromSystemEvents(
-          events.map((event) => event.toJSON() as SystemEvent),
-          extrinsicIndex,
-        )
-
-        if (!status || extrinsicIndex < 0) {
-          cleanup()
-          timeout = setTimeout(checkBlock, 5000)
-        } else if (!status.ok) {
-          cleanup()
-          reject(status.error)
         } else {
           cleanup()
           resolve()
