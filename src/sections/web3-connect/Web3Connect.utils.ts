@@ -243,10 +243,7 @@ export const useWeb3ConnectEagerEnable = () => {
     const state = useWeb3ConnectStore.getState()
     const { providers, account: currentAccount } = state
 
-    if (
-      externalAddressRef.current &&
-      externalAddressRef.current !== currentAccount?.address
-    ) {
+    if (externalAddressRef.current) {
       // override wallet from search param
       return setExternalWallet(externalAddressRef.current)
     }
@@ -488,7 +485,7 @@ export function setExternalWallet(externalAddress = "") {
           ? getEvmAddress(externalAddress)
           : externalAddress,
         provider: WalletProviderType.ExternalWallet,
-        isExternalWalletConnected: true,
+        isExternalWalletConnected: false, // temporary set to false to allow clicking transaction buttons,
         delegate: "",
       },
     })

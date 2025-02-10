@@ -113,7 +113,7 @@ export const Web3ConnectExternalForm = ({
           ? externalWallet.proxyAccountName
           : externalWallet.accountName,
       provider: WalletProviderType.ExternalWallet,
-      isExternalWalletConnected: true,
+      isExternalWalletConnected: false, // temporary set to false to allow clicking transaction buttons,
     })
     onSelect()
     navigate({
