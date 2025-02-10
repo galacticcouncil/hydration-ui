@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -12,13 +12,19 @@ const columnHelper = createColumnHelper<TAssetStored>()
 
 const AssetPrice = ({ assetId }: { assetId: string }) => {
   const { t } = useTranslation()
-  const price = useAssetsPrice([assetId])
+  const priceRaw = useAssetsPrice([assetId])
+
+  const { price, isLoading } = priceRaw[assetId]
 
   return (
     <Text>
-      {t("number", {
-        value: price[assetId].price,
-      })}
+      {isLoading ? (
+        <Skeleton />
+      ) : (
+        t("number", {
+          value: price,
+        })
+      )}
     </Text>
   )
 }
