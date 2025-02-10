@@ -9,6 +9,7 @@ import {
   PalletReferendaReferendumStatus,
   PalletReferendaCurve,
   PalletConvictionVotingVoteAccountVote,
+  PalletReferendaReferendumInfo,
 } from "@polkadot/types/lookup"
 import BN, { BigNumber } from "bignumber.js"
 import { BN_0 } from "utils/constants"
@@ -225,7 +226,19 @@ export const useOpenGovUnlockedTokens = () => {
                 classId: vote.classId,
               }
             } else {
-              const endBlock = referendum.asApproved[0].toBigNumber()
+              const referendaType = referendum.type.toString() as Exclude<
+                PalletReferendaReferendumInfo["type"],
+                "Ongoing"
+              >
+
+              let endBlock
+
+              if (referendaType === "Killed") {
+                endBlock = referendum.asKilled.toBigNumber()
+              } else {
+                endBlock = referendum[`as${referendaType}`][0].toBigNumber()
+              }
+
               const convictionBlock =
                 CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()]
 
