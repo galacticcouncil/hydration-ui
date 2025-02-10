@@ -59,14 +59,14 @@ export const Web3ConnectProviderIcons: React.FC<
         </Box>
       ))}
       {remainingCount > 0 && (
-        <div
+        <Box
           sx={{
-            bg: getToken("buttons.low.rest"),
+            bg: getToken("buttons.primary.low.rest"),
             size: getImgSize(providers.length),
           }}
         >
           +{remainingCount}
-        </div>
+        </Box>
       )}
     </SContainer>
   )

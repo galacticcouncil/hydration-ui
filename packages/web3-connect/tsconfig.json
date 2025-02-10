@@ -1,6 +1,10 @@
 {
   "extends": "@galacticcouncil/typescript-config/base.json",
   "include": ["src"],
+  "references": [
+    { "path": "../ui" },
+    { "path": "../utils" }
+  ],
   "compilerOptions": {
     "composite": true,
     "outDir": "./build",

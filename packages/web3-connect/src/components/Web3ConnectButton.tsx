@@ -11,7 +11,7 @@ import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { getWallet } from "@/wallets"
 
-export const Web3ConnectButton: React.FC<ButtonProps> = forwardRef(
+export const Web3ConnectButton = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {
     const { account } = useAccount()
     const { toggle } = useWeb3ConnectModal()
@@ -20,7 +20,7 @@ export const Web3ConnectButton: React.FC<ButtonProps> = forwardRef(
       return (
         <SConnectedButton
           ref={ref}
-          onClick={toggle}
+          onClick={() => toggle()}
           {...props}
           variant="tertiary"
           sx={{ px: 10, gap: 8 }}
@@ -42,7 +42,7 @@ export const Web3ConnectButton: React.FC<ButtonProps> = forwardRef(
     }
 
     return (
-      <Button ref={ref} onClick={toggle} {...props}>
+      <Button ref={ref} onClick={() => toggle()} {...props}>
         <Icon size={16} component={Wallet} ml={-8} mr={4} />
         <Text fs="p3">Connect Wallet</Text>
       </Button>
