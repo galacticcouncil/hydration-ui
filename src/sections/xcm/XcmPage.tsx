@@ -13,7 +13,6 @@ import {
   useAccount,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useActiveRpcUrlList } from "api/provider"
-import { useCrossChainWallet } from "api/xcm"
 import { useStore } from "state/store"
 import {
   PROVIDERS_BY_WALLET_MODE,
@@ -72,15 +71,13 @@ export function XcmPage() {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const location = useLocation()
-  const { disconnect } = useWeb3ConnectStore()
+  const { disconnectIncompatible } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
     getDefaultSrcChain(account?.provider),
   )
-
-  const xWallet = useCrossChainWallet()
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = XcmAppSearch.safeParse(rawSearch)
@@ -144,14 +141,7 @@ export function XcmPage() {
         : undefined
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const testChains = Array.from(xWallet.config.chains.values())
-    .filter((c) => c.isTestChain)
-    .map((c) => c.key)
-
-  const blacklist =
-    import.meta.env.VITE_ENV === "production"
-      ? testChains.join(",").concat("")
-      : ""
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
@@ -174,7 +164,7 @@ export function XcmPage() {
       const prevPath = location.current.pathname
       const unsubscribe = location.history.listen(({ location }) => {
         if (prevPath !== location.pathname) {
-          disconnect(account.provider)
+          disconnectIncompatible()
           toggleWeb3Modal(WalletMode.Default, {
             description: t("walletConnect.provider.description.invalidWallet"),
           })
@@ -185,7 +175,7 @@ export function XcmPage() {
         unsubscribe()
       }
     }
-  }, [account, disconnect, location, t, toggleWeb3Modal])
+  }, [account, disconnectIncompatible, location, t, toggleWeb3Modal])
 
   return (
     <SContainer>
