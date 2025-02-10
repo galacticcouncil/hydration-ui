@@ -8,6 +8,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/router-devtools"
 
 import { assetsQuery } from "@/api/assets"
+import { usePriceSubscriber } from "@/api/spotPrice"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -15,6 +16,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 const Subscriptions = () => {
   const rpcProvider = useRpcProvider()
 
+  usePriceSubscriber()
   useQuery(assetsQuery(rpcProvider))
 
   return null

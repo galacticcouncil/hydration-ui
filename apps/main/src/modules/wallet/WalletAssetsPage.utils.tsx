@@ -3,6 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 
+import { AssetPrice } from "@/components"
 import { Logo } from "@/components/Logo/Logo"
 import { TAssetStored } from "@/states/assetRegistry"
 
@@ -33,6 +34,12 @@ export const useWalletAssetsColumns = () => {
       }),
       columnHelper.accessor("decimals", {
         header: "Decimals",
+      }),
+      columnHelper.display({
+        header: "Price",
+        cell: ({ row }) => (
+          <AssetPrice assetId={row.original.id} wrapper={<Text fw={500} />} />
+        ),
       }),
     ]
   }, [])

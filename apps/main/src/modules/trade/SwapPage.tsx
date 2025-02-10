@@ -7,9 +7,8 @@ import { SContainer } from "./SwapPage.styled"
 export const SwapPage = () => {
   return (
     <Flex gap={20} sx={{ flexWrap: "wrap" }} justify="center">
-      <Paper sx={{ height: 700, minWidth: ["auto", 640] }}></Paper>
-
       <Flex direction="column" gap={20} sx={{ width: ["100%", 440] }}>
+        <Paper sx={{ height: 700, minWidth: ["auto", 640] }}></Paper>
         <SContainer>
           <FormHeader />
           <Separator mx={-20} />
