@@ -11,15 +11,19 @@ import { SubWalletEvm } from "./SubWalletEvm"
 import { SubWallet } from "./SubWallet"
 import { Phantom } from "./Phantom"
 import { Solflare } from "./Solflare"
-// import { TrustWallet } from "./TrustWallet"
 import { BraveWallet } from "./BraveWallet"
+import { WalletConnectEvm } from "./WalletConnectEvm"
+import { RabbyWallet } from "./RabbyWallet"
+import { CoinbaseWallet } from "./CoinbaseWallet"
+import { Nightly } from "./Nightly"
+import { NightlyEvm } from "./NightlyEvm"
+import { TrustWallet } from "./TrustWallet"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import {
   SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { WalletConnectEvm } from "sections/web3-connect/wallets/WalletConnectEvm"
 
 export type WalletProvider = {
   type: WalletProviderType
@@ -70,11 +74,28 @@ const metaMask: Wallet = new MetaMask({
   onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.MetaMask),
 })
 
-/* const trustWallet: Wallet = new TrustWallet({
+const trustWallet: Wallet = new TrustWallet({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.TrustWallet,
   ),
-}) */
+})
+
+const coinbaseWallet: Wallet = new CoinbaseWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.CoinbaseWallet,
+  ),
+})
+
+const nightly: Wallet = new Nightly()
+const nightlyEvm: Wallet = new NightlyEvm({
+  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.NightlyEvm),
+})
+
+const rabbyWallet: Wallet = new RabbyWallet({
+  onAccountsChanged: onMetaMaskLikeAccountChange(
+    WalletProviderType.RabbyWallet,
+  ),
+})
 
 const walletConnect: Wallet = new WalletConnect({
   onModalClose: (session) => {
@@ -108,7 +129,11 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   talismanEvm,
   subwalletEvm,
   subwallet,
-  //trustWallet,
+  coinbaseWallet,
+  nightly,
+  nightlyEvm,
+  rabbyWallet,
+  trustWallet,
   novaWallet,
   phantomWallet,
   solflareWallet,
@@ -145,10 +170,10 @@ function syncSupportedWalletProviders(wallet: Wallet) {
 
 const eip6963ProvidersByRdns = new Map([
   ["io.metamask", { Wallet: MetaMask, type: WalletProviderType.MetaMask }],
-  // [
-  //   "com.trustwallet.app",
-  //   { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
-  // ],
+  [
+    "com.trustwallet.app",
+    { Wallet: TrustWallet, type: WalletProviderType.TrustWallet },
+  ],
   [
     "xyz.talisman",
     { Wallet: TalismanEvm, type: WalletProviderType.TalismanEvm },
@@ -157,6 +182,12 @@ const eip6963ProvidersByRdns = new Map([
     "com.brave.wallet",
     { Wallet: BraveWallet, type: WalletProviderType.BraveWallet },
   ],
+  [
+    "com.coinbase.wallet",
+    { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
+  ],
+  ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }],
+  ["io.rabby", { Wallet: RabbyWallet, type: WalletProviderType.RabbyWallet }],
 ])
 
 /**
