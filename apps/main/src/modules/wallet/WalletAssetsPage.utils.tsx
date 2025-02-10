@@ -1,33 +1,13 @@
-import { Box, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
 
+import { AssetPrice } from "@/components"
 import { Logo } from "@/components/Logo/Logo"
 import { TAssetStored } from "@/states/assetRegistry"
-import { useAssetsPrice } from "@/states/displayAsset"
 
 const columnHelper = createColumnHelper<TAssetStored>()
-
-const AssetPrice = ({ assetId }: { assetId: string }) => {
-  const { t } = useTranslation()
-  const priceRaw = useAssetsPrice([assetId])
-
-  const { price, isLoading } = priceRaw[assetId]
-
-  return (
-    <Text>
-      {isLoading ? (
-        <Skeleton />
-      ) : (
-        t("number", {
-          value: price,
-        })
-      )}
-    </Text>
-  )
-}
 
 export const useWalletAssetsColumns = () => {
   return useMemo(() => {
@@ -57,7 +37,9 @@ export const useWalletAssetsColumns = () => {
       }),
       columnHelper.display({
         header: "Price",
-        cell: ({ row }) => <AssetPrice assetId={row.original.id} />,
+        cell: ({ row }) => (
+          <AssetPrice assetId={row.original.id} wrapper={<Text fw={500} />} />
+        ),
       }),
     ]
   }, [])
