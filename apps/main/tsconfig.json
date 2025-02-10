@@ -2,7 +2,9 @@
   "extends": "@galacticcouncil/typescript-config/vite.json",
   "include": ["src"],
   "references": [
-    { "path": "../../packages/ui" }
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/web3-connect" }
   ],
   "compilerOptions": {
     "baseUrl": ".",

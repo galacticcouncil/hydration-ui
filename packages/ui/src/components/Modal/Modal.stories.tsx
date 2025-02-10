@@ -78,13 +78,15 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
         open={open}
         title="Lorem ipsum"
         onOpenChange={setOpen}
-        customHeader={
-          <Input
-            placeholder="Search tokens..."
-            variant="embedded"
-            customSize="large"
-            iconStart={Search}
-          />
+        customTitle={
+          <Box m="calc(-1 * var(--modal-content-padding))">
+            <Input
+              placeholder="Search tokens..."
+              variant="embedded"
+              customSize="large"
+              iconStart={Search}
+            />
+          </Box>
         }
       >
         <ModalBody p={0}>

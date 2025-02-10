@@ -1,13 +1,12 @@
 import { HydrationLogoFull } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Toggle } from "@galacticcouncil/ui/components"
+import { Flex, Toggle } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
-import { useTranslation } from "react-i18next"
 
 import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderMenu } from "@/modules/layout/components/HeaderMenu"
+import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 
 export const Header = () => {
-  const { t } = useTranslation(["common"])
   const { theme, setTheme } = useTheme()
   return (
     <SHeader>
@@ -21,7 +20,7 @@ export const Header = () => {
             onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
           />
         </Flex>
-        <Button variant="secondary">{t("common:connectWallet")}</Button>
+        <HeaderWeb3ConnectButton />
       </Flex>
     </SHeader>
   )
