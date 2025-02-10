@@ -1,4 +1,3 @@
-//import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { EIP1193Provider } from "viem"
 
@@ -94,7 +93,7 @@ export class BaseEIP1193Wallet implements Wallet {
       this._enabled = true
       this._extension = extension
       this._signer = address
-        ? undefined //new EthereumSigner(address, extension)
+        ? undefined // @TODO - create Ethereum Signer using viem
         : undefined
 
       this.subscribeAccounts(this.onAccountsChanged)
@@ -154,9 +153,6 @@ export class BaseEIP1193Wallet implements Wallet {
 
       const accounts = addresses.slice(0, 1).map(this.toWalletAccount)
       callback?.(accounts)
-
-      //const mainAccount = accounts[0]
-      //this._signer?.setAddress(mainAccount?.address)
     })
   }
 
@@ -175,7 +171,6 @@ export class BaseEIP1193Wallet implements Wallet {
   }
 
   disconnect = () => {
-    //this._extension?.removeAllListeners?.()
     this._enabled = false
     this._extension = undefined
     this._signer = undefined

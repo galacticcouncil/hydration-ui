@@ -43,6 +43,7 @@ export function getWalletData(wallet: Wallet): WalletData {
     "title",
     "installUrl",
     "logo",
+    "enabled",
     "installed",
   ])
 }

@@ -3,7 +3,7 @@ import { useMount } from "react-use"
 
 import { Web3ConnectModalPage } from "@/config/modal"
 import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect } from "@/hooks/useWeb3Connect"
+import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
 
 export const useWeb3ConnectInit = () => {
@@ -24,10 +24,10 @@ export const useWeb3ConnectInit = () => {
 
       const status = getStatus(recentProvider)
 
-      const isConnected = status === "connected"
-      const isDisconnected = status === "disconnected"
-      const isPending = status === "pending"
-      const isError = status === "error"
+      const isConnected = status === WalletProviderStatus.Connected
+      const isDisconnected = status === WalletProviderStatus.Disconnected
+      const isPending = status === WalletProviderStatus.Pending
+      const isError = status === WalletProviderStatus.Error
 
       if (isError && error) {
         return setPage(Web3ConnectModalPage.Error)
