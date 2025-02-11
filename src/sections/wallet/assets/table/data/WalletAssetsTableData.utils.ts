@@ -277,7 +277,7 @@ export const useUnlockableTokens = () => {
   const { native } = useAssets()
   const { lockDemocracy, lockOpenGov, isLoading } = useLockedNativeTokens()
   const { data: unlockedVotes, isLoading: isLoadingVotes } = useAccountVotes()
-  const { data: openGovUnlockedVotes, isLoading: isLoadingOpenGov } =
+  const { data: openGovUnlockedVotes, isInitialLoading: isLoadingOpenGov } =
     useOpenGovUnlockedTokens()
   const { data: spotPrice, isLoading: isSpotPriceLoading } = useDisplayPrice(
     native.id,

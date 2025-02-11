@@ -44,32 +44,29 @@ const b = "2000"
 
 export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 
-const getVoteActionPoints = (stakeAmount: BN, referendaAmount: number) => {
-  const maxVotingPower = stakeAmount.multipliedBy(CONVICTIONS["locked6x"])
-  const maxActionPointsPerRef = 100
-
-  const points = stakeAmount
-    .multipliedBy(CONVICTIONS["locked6x"])
-    .multipliedBy(maxActionPointsPerRef)
-    .div(maxVotingPower)
-    .multipliedBy(referendaAmount)
-    .toNumber()
-
-  return points
-}
-
 const getCurrentActionPoints = (
   votes: TStakingPosition["votes"],
   initialActionPoints: number,
   stakePosition: BN,
+  activeReferendaIds: string[],
 ) => {
   let currentActionPoints = 0
+  let maxActionPoints = 0
 
   const maxVotingPower = stakePosition.multipliedBy(CONVICTIONS["locked6x"])
   const maxActionPointsPerRef = 100
+  const maxConviction = CONVICTIONS["locked6x"]
+
+  const votedActiveReferendaIds: string[] = []
 
   votes?.forEach((vote) => {
     const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
+
+    const isActiveReferenda = activeReferendaIds.includes(vote.id.toString())
+
+    if (isActiveReferenda) {
+      votedActiveReferendaIds.push(vote.id.toString())
+    }
 
     currentActionPoints += Math.floor(
       vote.amount
@@ -78,6 +75,26 @@ const getCurrentActionPoints = (
         .div(maxVotingPower)
         .toNumber(),
     )
+
+    maxActionPoints += Math.floor(
+      vote.amount
+        .multipliedBy(isActiveReferenda ? maxConviction : convictionIndex)
+        .multipliedBy(maxActionPointsPerRef)
+        .div(maxVotingPower)
+        .toNumber(),
+    )
+  })
+
+  activeReferendaIds.forEach((activeReferendaId) => {
+    if (!votedActiveReferendaIds.includes(activeReferendaId)) {
+      maxActionPoints += Math.floor(
+        stakePosition
+          .multipliedBy(maxConviction)
+          .multipliedBy(maxActionPointsPerRef)
+          .div(maxVotingPower)
+          .toNumber(),
+      )
+    }
   })
 
   const actionMultipliers = {
@@ -87,7 +104,10 @@ const getCurrentActionPoints = (
   currentActionPoints *= actionMultipliers.democracyVote
   currentActionPoints += initialActionPoints ?? 0
 
-  return BN(currentActionPoints)
+  maxActionPoints *= actionMultipliers.democracyVote
+  maxActionPoints += initialActionPoints ?? 0
+
+  return { currentActionPoints, maxActionPoints }
 }
 
 export const useStakeData = () => {
@@ -376,7 +396,7 @@ export const useClaimReward = () => {
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
-  const { data: openGovReferendas } = useOpenGovReferendas()
+  const { data: openGovReferendas = [] } = useOpenGovReferendas()
 
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
@@ -443,6 +463,7 @@ export const useClaimReward = () => {
       stakePosition.votes,
       stakePosition.actionPoints.toNumber(),
       stakePosition.stake,
+      openGovReferendas.map((referenda) => referenda.id),
     )
 
     const points = wasm.calculate_points(
@@ -450,24 +471,19 @@ export const useClaimReward = () => {
       currentPeriod,
       timePointsPerPeriod.toString(),
       timePointsWeight.toString(),
-      actionPoints.toString(),
+      actionPoints.currentActionPoints.toString(),
       actionPointsWeight.toString(),
       stakePosition.accumulatedSlashPoints.toString(),
     )
 
     let extraPayablePercentageHuman: string | undefined
-    if (openGovReferendas?.length) {
-      const voteActionPoints = getVoteActionPoints(
-        stakePosition.stake,
-        openGovReferendas.length,
-      )
-
+    if (openGovReferendas.length) {
       const extraPoints = wasm.calculate_points(
         enteredAt,
         currentPeriod,
         timePointsPerPeriod.toString(),
         timePointsWeight.toString(),
-        actionPoints.plus(voteActionPoints).toString(),
+        actionPoints.maxActionPoints.toString(),
         actionPointsWeight.toString(),
         stakePosition.accumulatedSlashPoints.toString(),
       )
