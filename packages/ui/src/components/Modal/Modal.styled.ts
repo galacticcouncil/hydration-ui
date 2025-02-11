@@ -23,7 +23,7 @@ export const SModalOverlay = styled(Overlay)`
   }
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.1s;
+    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
   }
 `
 
@@ -34,7 +34,7 @@ export const SModalClose = styled(Close)`
   cursor: pointer;
 `
 
-export const SModalWrapper = styled.div`
+export const SModalWrapper = styled(Overlay)`
   position: fixed;
   inset: 0;
   top: 10vh;
@@ -44,6 +44,10 @@ export const SModalWrapper = styled.div`
   justify-items: center;
 
   z-index: 10;
+
+  &[data-state="closed"] {
+    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
+  }
 `
 
 export const SModalContent = styled(Content)`
@@ -61,12 +65,12 @@ export const SModalContent = styled(Content)`
   }
 
   &[data-state="open"] {
-    animation: ${({ theme }) => theme.animations.fadeInBottom} 0.3s;
+    animation: ${({ theme }) => theme.animations.fadeInBottom} 0.2s;
     animation-timing-function: ${({ theme }) => theme.easings.outExpo};
   }
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.1s;
+    animation: ${({ theme }) => theme.animations.fadeOutBottom} 0.2s;
   }
 
   ${mq("sm")} {
@@ -78,6 +82,10 @@ export const SModalContent = styled(Content)`
 
     &[data-state="open"] {
       animation: ${({ theme }) => theme.animations.scaleInTop} 0.2s;
+    }
+
+    &[data-state="closed"] {
+      animation: ${({ theme }) => theme.animations.scaleOutTop} 0.2s;
     }
   }
 `
