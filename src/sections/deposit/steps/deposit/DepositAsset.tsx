@@ -102,7 +102,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const minDeposit = asset ? CEX_MIN_DEPOSIT_VALUES[asset.assetId] ?? 0 : 0
 
   return (
-    <div sx={{ flex: "column", gap: 20 }}>
+    <div sx={{ flex: "column", gap: 12 }}>
       <SAssetSelectButtonBox>
         <Text
           sx={{ flex: "row", align: "center", gap: 4 }}
@@ -126,17 +126,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           assetId={asset?.assetId ?? ""}
         />
       </SAssetSelectButtonBox>
-      <CexDepositGuide />
       {!account && <Web3ConnectModalButton />}
       {account && assetDetails && (
         <>
-          <Separator
-            color="darkBlue401"
-            sx={{
-              width: "auto",
-              mx: "calc(var(--modal-content-padding) * -1)",
-            }}
-          />
           <AccountBox
             {...account}
             ss58Format={getAddressPrefix(dstChain)}
@@ -173,8 +165,16 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
               </Text>
             </div>
           )}
+          <Separator
+            color="darkBlue401"
+            sx={{
+              width: "auto",
+              mx: "calc(var(--modal-content-padding) * -1)",
+            }}
+          />
         </>
       )}
+      <CexDepositGuide />
     </div>
   )
 }

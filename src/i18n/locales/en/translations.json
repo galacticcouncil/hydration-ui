@@ -1292,7 +1292,7 @@
   "deposit.crypto.fund.title": "Fund with crypto",
   "deposit.cex.select.title": "Exchange and asset to deposit",
   "deposit.cex.exchange.title": "Exchange:",
-  "deposit.cex.asset.title": "How to deposit?",
+  "deposit.cex.asset.title": "Deposit to Hydration",
   "deposit.cex.asset.alert": "Please don’t close this tab while proceeding with your deposit, it might cause unexpected errors. Only click shiny buttons.",
   "deposit.cex.asset.select.label": "From <0></0> <1>{{ name }}</1>",
   "deposit.cex.account.evmError": "EVM Account not allowed for depositing {{ symbol }}",
