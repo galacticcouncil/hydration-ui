@@ -23,6 +23,7 @@ declare global {
       ethereum: MetaMaskLikeProvider
       solana: SolanaWalletProvider
     }
+    braveSolana?: SolanaWalletProvider
     solflare?: SolanaWalletProvider
     injectedWeb3?: Record<string, InjectedWindowProvider>
     walletExtension?: { isNovaWallet?: boolean }
