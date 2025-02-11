@@ -17,7 +17,7 @@ export const SubpageMenu = () => {
   )
 
   return (
-    <Flex gap={20} mb={20} justify="center">
+    <Flex gap={20} mb={20} justify="center" sx={{ overflowX: "auto" }}>
       {subnav.map(({ key, to, icon: IconComponent }) => (
         <Button
           key={key}

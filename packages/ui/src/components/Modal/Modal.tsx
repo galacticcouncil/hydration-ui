@@ -3,7 +3,9 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
 import { forwardRef, ReactNode } from "react"
 
+import { Drawer } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
+import { useBreakpoints } from "@/theme"
 
 import {
   SModalBody,
@@ -128,6 +130,23 @@ const Modal = ({
   customTitle,
   ...props
 }: ModalProps) => {
+  const { isDesktop } = useBreakpoints()
+
+  if (!isDesktop) {
+    return (
+      <Drawer
+        title={title}
+        description={description}
+        disableInteractOutside={disableInteractOutside}
+        customHeader={customHeader}
+        customTitle={customTitle}
+        {...props}
+      >
+        {children}
+      </Drawer>
+    )
+  }
+
   return (
     <ModalRoot {...props}>
       <ModalContent
