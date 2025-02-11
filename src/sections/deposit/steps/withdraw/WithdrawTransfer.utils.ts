@@ -35,7 +35,7 @@ type WithdrawalTransferValues = {
   amount: string
 }
 
-export const useMultistepCexWithdraw = (cexId: string, assetId: string) => {
+export const useWithdraw = (cexId: string, assetId: string) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { createTransaction } = useStore()
@@ -87,7 +87,7 @@ export const useMultistepCexWithdraw = (cexId: string, assetId: string) => {
         asset.data.asset.key,
         account.address,
         srcChain,
-        account.address,
+        cex.isXcmCompatible ? values.cexAddress : account.address,
         dstChain,
       )
 
@@ -100,27 +100,31 @@ export const useMultistepCexWithdraw = (cexId: string, assetId: string) => {
             amount: values.amount,
             symbol: assetMeta.symbol,
             srcChain: srcChain.name,
-            dstChain: dstChain.name,
+            dstChain: cex.isXcmCompatible ? cex.title : dstChain.name,
           }),
           tx: api.tx(call.data),
         },
         {
           onSuccess: () => {
             isFirstStepCompleted.current = true
+            const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
+            setWithdrawnAmount(BigInt(amount.toString()))
           },
-          steps: getSteps(),
+          steps: cex.isXcmCompatible ? undefined : getSteps(),
           toast: createToastMessages("xcm.transfer.toast", {
             t,
             tOptions: {
               amount: values.amount,
               symbol: asset.data.asset.originSymbol,
               srcChain: srcChain.name,
-              dstChain: dstChain.name,
+              dstChain: cex.isXcmCompatible ? cex.title : dstChain.name,
             },
           }),
         },
       )
     }
+
+    if (cex.isXcmCompatible) return
 
     const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
 
