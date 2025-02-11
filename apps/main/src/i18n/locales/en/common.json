@@ -7,6 +7,7 @@
   "sell": "Sell",
   "buy": "Buy",
   "hide": "Hide",
+  "more": "More",
   "slippage": "Slippage",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.maxNumber": "Max value is {{value}}",

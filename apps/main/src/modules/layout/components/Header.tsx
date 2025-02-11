@@ -10,7 +10,7 @@ export const Header = () => {
   const { theme, setTheme } = useTheme()
   return (
     <SHeader>
-      <HydrationLogoFull />
+      <HydrationLogoFull sx={{ flexShrink: 0 }} />
       <HeaderMenu display={["none", null, "flex"]} />
       <Flex ml="auto" align="center" gap={12}>
         <Flex gap={8}>

@@ -3,6 +3,7 @@ import { Flex } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 
 export const SHeader = styled(Flex)`
+  width: 100%;
   padding: 10px 20px;
   gap: 20px;
   flex-direction: column;

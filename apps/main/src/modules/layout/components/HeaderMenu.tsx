@@ -1,56 +1,77 @@
+import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import {
-  Box,
-  Flex,
   FlexProps,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 
 import { DetailedLink } from "@/components/DetailedLink"
-import { NAVIGATION } from "@/config/navigation"
-import { SHeaderMenuItem } from "@/modules/layout/components/HeaderMenu.styled"
-import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import {
+  SHeaderMenu,
+  SHeaderMenuItem,
+  SHeaderMoreMenuItem,
+} from "@/modules/layout/components/HeaderMenu.styled"
+import {
+  useMenuTranslations,
+  useVisibleHeaderMenuItems,
+} from "@/modules/layout/components/HeaderMenu.utils"
 
 export const HeaderMenu: React.FC<FlexProps> = (props) => {
+  const { t } = useTranslation()
   const translations = useMenuTranslations()
+
+  const { items, visibleItemKeys, hiddenItems, observe, moreButtonKey } =
+    useVisibleHeaderMenuItems()
+
   return (
-    <Flex gap={4} {...props}>
-      {NAVIGATION.map(({ key, to, children, order }) => (
-        <HoverCard key={key}>
-          <Box py={6}>
-            {children ? (
-              <>
-                <HoverCardTrigger asChild>
-                  <SHeaderMenuItem sx={{ order }} asChild>
-                    <Link to={to}>{translations[key].title}</Link>
-                  </SHeaderMenuItem>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  borderRadius="xxl"
-                  sideOffset={10}
-                  alignOffset={-40}
-                >
-                  {children.map(({ key, to, icon }) => (
-                    <DetailedLink
-                      key={key}
-                      to={to}
-                      title={translations[key].title}
-                      description={translations[key].description}
-                      icon={icon}
-                    />
-                  ))}
-                </HoverCardContent>
-              </>
-            ) : (
-              <SHeaderMenuItem sx={{ order }} asChild>
+    <SHeaderMenu ref={observe} {...props}>
+      {items.map(({ key, to, children, order }) => {
+        const isMoreButton = key === moreButtonKey
+        const subItems = isMoreButton ? hiddenItems : children
+
+        return (
+          <HoverCard key={key}>
+            <HoverCardTrigger
+              sx={{ position: "relative" }}
+              data-intersect={key}
+            >
+              <SHeaderMenuItem
+                sx={{ order }}
+                isHidden={isMoreButton || !visibleItemKeys.includes(key)}
+                asChild
+              >
                 <Link to={to}>{translations[key].title}</Link>
               </SHeaderMenuItem>
+              {isMoreButton && (
+                <SHeaderMoreMenuItem>
+                  {t("more")}
+                  <ChevronDown />
+                </SHeaderMoreMenuItem>
+              )}
+            </HoverCardTrigger>
+            {subItems && (
+              <HoverCardContent
+                borderRadius="xxl"
+                sideOffset={10}
+                alignOffset={-40}
+              >
+                {subItems.map(({ key, to, icon }) => (
+                  <DetailedLink
+                    key={key}
+                    to={to}
+                    title={translations[key].title}
+                    description={translations[key].description}
+                    icon={icon}
+                  />
+                ))}
+              </HoverCardContent>
             )}
-          </Box>
-        </HoverCard>
-      ))}
-    </Flex>
+          </HoverCard>
+        )
+      })}
+    </SHeaderMenu>
   )
 }
