@@ -34,7 +34,9 @@
     "lucide-react": "^0.459.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-loading-skeleton": "^3.5.0"
+    "react-loading-skeleton": "^3.5.0",
+    "react18-json-view": "^0.2.9-canary.9",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.9.0",

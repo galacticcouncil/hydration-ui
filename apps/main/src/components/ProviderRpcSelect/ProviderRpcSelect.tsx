@@ -1,4 +1,4 @@
-import { Button } from "@galacticcouncil/ui/components"
+import { Button, Skeleton, Spinner } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
@@ -16,22 +16,22 @@ export const ProviderRpcSelect = () => {
   return (
     <>
       <Button
-        sx={{
-          position: "fixed",
-          bottom: 10,
-          right: 10,
-          color: "successGreen.500",
-        }}
+        sx={{ position: "fixed", bottom: 10, right: 10 }}
         variant="tertiary"
         size="small"
         outline
         onClick={() => setModalOpen(true)}
       >
-        {data && (
+        {data ? (
           <RpcStatus
             blockNumber={data.parachainBlockNumber}
             timestamp={data.timestamp}
           />
+        ) : (
+          <>
+            <Skeleton width={60} />
+            <Spinner />
+          </>
         )}
       </Button>
       <RpcSelectModal open={modalOpen} onOpenChange={setModalOpen} title="" />
