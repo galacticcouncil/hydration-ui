@@ -2353,10 +2353,10 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-8.2.0.tgz#06edb8db85adbd8743c77a0b5c82ef3c4682dd83"
-  integrity sha512-uf0EG+Sox/sUNXuTcFZ12vMYEY0n+JfpcFczOO8wZETTcHv7LV/t1GLnumKZrbidttazIKSo1yu3mPeKlP7LoA==
+"@galacticcouncil/xcm-sdk@8.3.0-pr131-c4e8b70":
+  version "8.3.0-pr131-c4e8b70"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-8.3.0-pr131-c4e8b70.tgz#72986a3eb57f0b98f23eed64950e0982665c49a2"
+  integrity sha512-3F7o8fAawHFiVw6MvpiqBz21UJ92CDSqE1yze8M5wJV4PbYWanTom5dW6p/zYFwqU/9kVN1s+0DaNIXR4tlAdA==
   dependencies:
     "@galacticcouncil/xcm-core" "^6.2.0"
 
