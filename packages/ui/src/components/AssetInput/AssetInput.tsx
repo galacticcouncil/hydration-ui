@@ -1,14 +1,13 @@
 import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, Skeleton, Text } from "@/components"
+import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
 import { getToken } from "@/utils"
 
 import {
   SAssetButton,
   SAssetButtonEmpty,
   SAssetInput,
-  SMaxButton,
 } from "./AssetInput.styled"
 import { formatAssetValue } from "./AssetInput.utils"
 
@@ -73,13 +72,13 @@ export const AssetInput = ({
               <span>{formatAssetValue(maxBalance) ?? "0"}</span>
             )}
           </Text>
-          <SMaxButton
+          <MicroButton
             aria-label="Max balance button"
             onClick={onMaxButtonClick}
             disabled={!maxBalance || maxBalance === "0" || loading}
           >
             max
-          </SMaxButton>
+          </MicroButton>
         </Flex>
       </Flex>
       <Flex direction="column">
@@ -172,7 +171,12 @@ const AssetButton = ({
       <SAssetButton isError={!!error} onClick={onAsssetBtnClick}>
         {icon}
         <Flex align="center" gap={4}>
-          <Text color={getToken("text.high")} fw={600} fs="p3">
+          <Text
+            color={getToken("text.high")}
+            fw={600}
+            fs="p3"
+            sx={{ whiteSpace: "nowrap" }}
+          >
             {symbol}
           </Text>
           <Icon
@@ -186,7 +190,7 @@ const AssetButton = ({
 
   return (
     <SAssetButtonEmpty variant="secondary" onClick={onAsssetBtnClick}>
-      <Text fw={600} fs="p3">
+      <Text fw={600} fs="p3" sx={{ whiteSpace: "nowrap" }}>
         Select asset
       </Text>
       <Icon size={20} component={ChevronDown} />

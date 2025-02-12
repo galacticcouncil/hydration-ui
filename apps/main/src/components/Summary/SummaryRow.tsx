@@ -17,7 +17,9 @@ export const SummaryRow = ({
 }: RowModel) => {
   return (
     <>
-      <Flex sx={{ justifyContent: "space-between", my: 8 }}>
+      <Flex
+        sx={{ justifyContent: "space-between", alignItems: "center", my: 8 }}
+      >
         <Flex
           sx={{
             flexDirection: "column",

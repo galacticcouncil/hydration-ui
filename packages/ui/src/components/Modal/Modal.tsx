@@ -3,10 +3,16 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
 import { forwardRef, ReactNode } from "react"
 
-import { Drawer } from "@/components/Drawer"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerRoot,
+} from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { useBreakpoints } from "@/theme"
 
+import { AnimatePresence } from "../AnimatePresence"
 import {
   SModalBody,
   SModalClose,
@@ -115,6 +121,9 @@ ModalFooter.displayName = "ModalFooter"
 
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableInteractOutside?: boolean
+} & ModalHeaderProps
+
+type ModalHeaderProps = {
   title: string
   description?: string
   customHeader?: ReactNode
@@ -130,9 +139,9 @@ const Modal = ({
   customTitle,
   ...props
 }: ModalProps) => {
-  const { isDesktop } = useBreakpoints()
+  const { gte } = useBreakpoints()
 
-  if (!isDesktop) {
+  if (!gte("md")) {
     return (
       <Drawer
         title={title}
@@ -154,15 +163,88 @@ const Modal = ({
           disableInteractOutside ? (e) => e.preventDefault() : undefined
         }
       >
-        <ModalHeader
+        <AnimatePresence open={!!props.open}>
+          <ModalHeader
+            title={title}
+            description={description}
+            customHeader={customHeader}
+            customTitle={customTitle}
+          />
+          {children}
+        </AnimatePresence>
+      </ModalContent>
+    </ModalRoot>
+  )
+}
+
+const ModalMounted = (
+  props: React.ComponentProps<typeof ModalRoot> & {
+    disableInteractOutside?: boolean
+  },
+) => {
+  const { gte } = useBreakpoints()
+
+  if (!gte("md")) {
+    return (
+      <DrawerRoot {...props}>
+        <DrawerContent
+          onInteractOutside={
+            props.disableInteractOutside ? (e) => e.preventDefault() : undefined
+          }
+        >
+          {props.children}
+        </DrawerContent>
+      </DrawerRoot>
+    )
+  }
+
+  return (
+    <ModalRoot {...props}>
+      <ModalContent
+        onInteractOutside={
+          props.disableInteractOutside ? (e) => e.preventDefault() : undefined
+        }
+      >
+        {props.children}
+      </ModalContent>
+    </ModalRoot>
+  )
+}
+
+const ModalUnmounted = ({
+  open,
+  title,
+  description,
+  customHeader,
+  customTitle,
+  children,
+}: ModalProps) => {
+  const { gte } = useBreakpoints()
+
+  if (!gte("md")) {
+    return (
+      <AnimatePresence open={!!open}>
+        <DrawerHeader
           title={title}
           description={description}
           customHeader={customHeader}
           customTitle={customTitle}
         />
         {children}
-      </ModalContent>
-    </ModalRoot>
+      </AnimatePresence>
+    )
+  }
+
+  return (
+    <AnimatePresence open={!!open}>
+      <ModalHeader
+        title={title}
+        description={description}
+        customHeader={customHeader}
+        customTitle={customTitle}
+      />
+      {children}
+    </AnimatePresence>
   )
 }
 
@@ -174,9 +256,11 @@ export {
   ModalDescription,
   ModalFooter,
   ModalHeader,
+  ModalMounted,
   ModalOverlay,
   ModalPortal,
   ModalRoot,
   ModalTitle,
   ModalTrigger,
+  ModalUnmounted,
 }

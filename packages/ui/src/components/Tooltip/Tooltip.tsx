@@ -50,7 +50,7 @@ export const Tooltip = ({
           e.stopPropagation()
         }}
       >
-        {children || <SInfoIcon component={CircleInfo} />}
+        {children || <SInfoIcon component={CircleInfo} size={14} />}
       </TriggerComp>
       <Portal>
         <SContent

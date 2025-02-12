@@ -1,4 +1,10 @@
-import { Button, Flex, Separator, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Separator,
+  Text,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -6,11 +12,12 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { DynamicFee } from "@/components"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { Summary } from "@/components/Summary"
 import { useAssets } from "@/providers/assetsProvider"
 
-import { AssetSwitcher, TradeOption } from "./components"
+import { AssetSwitcher, TradeOption, TradeRoutes } from "./components"
 import { useMarketValidation } from "./Market.utils"
 
 type SwapType = "swap" | "twap"
@@ -22,6 +29,8 @@ type FormValues = {
   sellAsset: TAssetData | undefined
   buyAsset: TAssetData | undefined
 }
+
+const range = { low: 1, middle: 1.5, high: 2 }
 
 export const Market = () => {
   const { t } = useTranslation(["common", "wallet"])
@@ -79,6 +88,7 @@ export const Market = () => {
               selectedAsset={buyAsset}
               setSelectedAsset={(asset) => form.setValue("buyAsset", asset)}
               error={error?.message}
+              maxBalance="10000"
             />
           )}
         />
@@ -116,12 +126,20 @@ export const Market = () => {
           rows={[
             {
               label: "Price impact:",
-              content: "5%",
+              content: t("percent", { value: "5" }),
               separator: <Separator mx={-20} />,
             },
             {
               label: "Est. trade fees:",
-              content: "0.10%",
+              content: (
+                <Flex align="center" gap={8}>
+                  <Text fs="p6" fw={500} color={getToken("text.high")}>
+                    {t("percent", { value: "2.5" })}
+                  </Text>
+                  <DynamicFee range={range} value={2.5} />
+                  <Tooltip text="Some information about trade fees" />
+                </Flex>
+              ),
               separator: <Separator mx={-20} />,
             },
             {
@@ -131,6 +149,8 @@ export const Market = () => {
             },
           ]}
         />
+        <TradeRoutes routes={["HDX", "DOT", "USDT"]} />
+        <Separator mx={-20} />
         <Flex
           sx={{
             flexDirection: "column",

@@ -4,6 +4,7 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { Flex, FlexProps } from "@/components/Flex"
 
+import { AnimatePresence } from "../AnimatePresence"
 import {
   SDrawerBody,
   SDrawerContent,
@@ -127,13 +128,15 @@ const Drawer = ({
           disableInteractOutside ? (e) => e.preventDefault() : undefined
         }
       >
-        <DrawerHeader
-          title={title}
-          description={description}
-          customHeader={customHeader}
-          customTitle={customTitle}
-        />
-        {children}
+        <AnimatePresence open={!!props.open}>
+          <DrawerHeader
+            title={title}
+            description={description}
+            customHeader={customHeader}
+            customTitle={customTitle}
+          />
+          {children}
+        </AnimatePresence>
       </DrawerContent>
     </DrawerRoot>
   )

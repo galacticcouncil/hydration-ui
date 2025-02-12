@@ -12,6 +12,8 @@ export type ButtonVariant =
   | "emphasis"
   | "accent"
 
+export type MicroButtonVariant = "low" | "emphasis"
+
 export type ButtonSize = "small" | "medium" | "large"
 
 export type SButtonProps = {
@@ -44,11 +46,35 @@ const defaulStyles = createStyles(
   `,
 )
 
-const variantStyles = (color: string, bg: string, bgHover: string) => css`
+const microVariantStyles = (
+  color: string,
+  bg: string,
+  borderColor: string,
+  bgHover: string,
+  colorHover?: string,
+) => css`
+  background-color: ${bg};
+  color: ${color};
+
+  border-color: ${borderColor};
+
+  &:not(:disabled):hover {
+    background-color: ${bgHover};
+    color: ${colorHover};
+  }
+`
+
+const variantStyles = (
+  color: string,
+  bg: string,
+  bgHover: string,
+  colorHover?: string,
+) => css`
   background-color: ${bg};
   color: ${color};
   &:not(:disabled):hover {
     background-color: ${bgHover};
+    color: ${colorHover};
   }
 `
 
@@ -105,6 +131,22 @@ const variants = createVariants(({ buttons }) => ({
     buttons.primary.high.onButton,
     buttons.secondary.accent.onRest,
     buttons.secondary.accent.outline,
+  ),
+}))
+
+const microVariants = createVariants((theme) => ({
+  low: microVariantStyles(
+    theme.text.medium,
+    theme.buttons.secondary.low.rest,
+    theme.buttons.secondary.low.borderRest,
+    theme.buttons.secondary.low.hover,
+    theme.text.high,
+  ),
+  emphasis: microVariantStyles(
+    theme.buttons.secondary.accent.onRest,
+    theme.buttons.secondary.accent.rest,
+    theme.buttons.secondary.accent.outline,
+    theme.buttons.secondary.accent.hover,
   ),
 }))
 
@@ -193,3 +235,32 @@ export const SButtonTransparent = styled.button`
     cursor: unset;
   }
 `
+
+export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
+  ({ theme, variant = "low" }) => [
+    css`
+      all: unset;
+
+      cursor: pointer;
+
+      padding: 0 8px;
+
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 140%;
+      text-transform: uppercase;
+
+      transition: ${theme.transitions.colors};
+
+      border: 1px solid;
+      border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+
+      &:disabled {
+        cursor: not-allowed;
+
+        opacity: 0.3;
+      }
+    `,
+    microVariants(variant),
+  ],
+)
