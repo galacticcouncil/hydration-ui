@@ -54,7 +54,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
           <Flex>{routeComponents}</Flex>
 
           <Icon
-            size={"70%"}
+            size="70%"
             component={Routes}
             color={getToken("buttons.primary.high.rest")}
           />
