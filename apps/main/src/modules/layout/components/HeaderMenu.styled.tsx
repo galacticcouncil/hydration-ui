@@ -25,7 +25,7 @@ export const SHeaderMenuItem = styled(Text)<{
 
     border-radius: ${theme.radii.md}px;
 
-    word-break: keep-all;
+    white-space: nowrap;
 
     &.active,
     &:hover {

@@ -1,11 +1,18 @@
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS, NAVIGATION } from "@/config/navigation"
+import {
+  desktopNavOrder,
+  mobileNavOrder,
+  NAVIGATION,
+  NavigationKey,
+} from "@/config/navigation"
 import { useVisibleElements } from "@/hooks/useVisibleElements"
 
 export const useMenuTranslations = () => {
   const { t } = useTranslation(["common"])
+
   return {
     home: {
       title: t("navigation.home.title"),
@@ -33,7 +40,7 @@ export const useMenuTranslations = () => {
     },
     lbp: {
       title: t("navigation.lbp.title"),
-      description: "",
+      description: t("navigation.lbp.description"),
     },
     wallet: {
       title: t("navigation.wallet.title"),
@@ -89,7 +96,7 @@ export const useMenuTranslations = () => {
     },
     stats: {
       title: t("navigation.stats.title"),
-      description: "",
+      description: t("navigation.stats.description"),
     },
     statsOverview: {
       title: t("navigation.statsOverview.title"),
@@ -101,7 +108,7 @@ export const useMenuTranslations = () => {
     },
     staking: {
       title: t("navigation.staking.title"),
-      description: "",
+      description: t("navigation.staking.description"),
     },
     stakingDashboard: {
       title: t("navigation.stakingDashboard.title"),
@@ -127,14 +134,18 @@ export const useMenuTranslations = () => {
       title: t("navigation.submitTransaction.title"),
       description: "",
     },
-  } satisfies Record<keyof typeof LINKS, { title: string; description: string }>
+  } satisfies Record<NavigationKey, { title: string; description: string }>
 }
 
 export const useVisibleHeaderMenuItems = () => {
+  const { isDesktop } = useBreakpoints()
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
   return useMemo(() => {
-    const items = NAVIGATION
+    const order = isDesktop ? desktopNavOrder : mobileNavOrder
+    const items = NAVIGATION.toSorted(
+      (item1, item2) => order.indexOf(item1.key) - order.indexOf(item2.key),
+    )
 
     const visibleItemKeys = items
       .filter((item) => !hiddenElementsKeys.includes(item.key))
@@ -155,6 +166,12 @@ export const useVisibleHeaderMenuItems = () => {
       hiddenItemsKeys.includes(item.key),
     )
 
-    return { items, visibleItemKeys, hiddenItems, moreButtonKey, observe }
-  }, [hiddenElementsKeys, observe])
+    return {
+      items,
+      visibleItemKeys,
+      hiddenItems,
+      moreButtonKey,
+      observe,
+    }
+  }, [hiddenElementsKeys, observe, isDesktop])
 }
