@@ -4,7 +4,11 @@ import { Text } from "components/Typography/Text/Text"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { PendingDeposit } from "sections/deposit/components/PendingDeposit"
-import { useDeposit } from "sections/deposit/DepositPage.utils"
+import {
+  selectPendingDepositsByAccount,
+  useDeposit,
+  useDepositStore,
+} from "sections/deposit/DepositPage.utils"
 import { DepositAsset } from "sections/deposit/steps/deposit/DepositAsset"
 import { DepositCexSelect } from "sections/deposit/steps/deposit/DepositCexSelect"
 import { DepositCrypto } from "sections/deposit/steps/deposit/DepositCrypto"
@@ -14,6 +18,7 @@ import { DepositTransfer } from "sections/deposit/steps/deposit/DepositTransfer"
 import { DepositMethod, DepositScreen } from "sections/deposit/types"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
+import { useShallow } from "hooks/useShallow"
 
 export const DepositPage = () => {
   const { t } = useTranslation()
@@ -31,7 +36,6 @@ export const DepositPage = () => {
     paginateTo,
     paginateBack,
     direction,
-    getPendingDeposits,
   } = useDeposit()
 
   useEffect(() => {
@@ -43,7 +47,9 @@ export const DepositPage = () => {
 
   const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 
-  const pendingDeposits = account ? getPendingDeposits(account.address) : []
+  const pendingDeposits = useDepositStore(
+    useShallow(selectPendingDepositsByAccount(account?.address)),
+  )
 
   const showPendingDeposits =
     page === DepositScreen.Select && pendingDeposits.length > 0

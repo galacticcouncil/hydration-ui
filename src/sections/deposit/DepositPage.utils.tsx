@@ -164,7 +164,6 @@ type DepositStore = {
   setCurrentDeposit: (deposit: TCreateDepositEntry | null) => void
   setPendingDeposit: (deposit: TCreateDepositEntry) => void
   setFinishedDeposit: (id: string) => void
-  getPendingDeposits: (address: string) => DepositConfig[]
   paginateTo: (page: DepositScreen) => void
   paginateBack: () => void
   reset: () => void
@@ -182,7 +181,7 @@ const initialState = {
 
 export const useDepositStore = create(
   persist<DepositStore>(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       setAsset: (asset) => set({ asset }),
       setCexId: (cexId) => set({ cexId }),
@@ -217,8 +216,6 @@ export const useDepositStore = create(
             ],
           }
         }),
-      getPendingDeposits: (address) =>
-        get().pendingDeposits.filter((deposit) => deposit.address === address),
       setFinishedDeposit: (id) =>
         set((state) => ({
           pendingDeposits: state.pendingDeposits.filter(
@@ -356,3 +353,9 @@ export const useTransferSchema = ({
 
 export const createDepositId = (assetId: string, address: string) =>
   `${assetId}-${address}`
+
+export const selectPendingDepositsByAccount =
+  (address?: string) => (state: DepositStore) =>
+    address
+      ? state.pendingDeposits.filter((deposit) => deposit.address === address)
+      : []

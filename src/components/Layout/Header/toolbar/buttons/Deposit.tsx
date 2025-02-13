@@ -8,17 +8,16 @@ import { useDepositStore } from "sections/deposit/DepositPage.utils"
 import { LINKS } from "utils/navigation"
 import { SBadge } from "./Deposit.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { selectPendingDepositsByAccount } from "sections/deposit/DepositPage.utils"
 
 export const Deposit = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { account } = useAccount()
 
-  const getPendingDeposits = useDepositStore(
-    useShallow((state) => state.getPendingDeposits),
+  const pendingDeposits = useDepositStore(
+    useShallow(selectPendingDepositsByAccount(account?.address)),
   )
-
-  const pendingDeposits = account ? getPendingDeposits(account.address) : []
 
   return (
     <Button
