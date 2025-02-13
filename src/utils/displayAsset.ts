@@ -1,16 +1,21 @@
 import { u32 } from "@polkadot/types-codec"
 import { useQuery } from "@tanstack/react-query"
-import { useSpotPrice, useSpotPrices } from "api/spotPrice"
+import {
+  useNewSpotPrice,
+  useNewSpotPrices,
+  useSpotPrice,
+  useSpotPrices,
+} from "api/spotPrice"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { STABLECOIN_SYMBOL } from "./constants"
 import { QUERY_KEYS } from "./queryKeys"
-import { useAccountsBalances } from "api/accountBalances"
 import { isNotNil } from "./helpers"
 import { TShareToken, useAssets } from "providers/assets"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useXYKSDKPools } from "api/xyk"
 
 type Props = { id: string; amount: BigNumber }
 
@@ -31,26 +36,85 @@ export const useDisplayValue = (props: Props) => {
   return { amount, symbol, isLoading }
 }
 
-export const useDisplayPrice = (id: string | u32 | undefined) => {
+export const useNewDisplayPrice = (id?: string) => {
   const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(id, displayAsset.id)
-  const usdPrice = useCoingeckoUsdPrice()
+  const { data: spotPrice, isInitialLoading: isSpotPriceInitialLoading } =
+    useNewSpotPrice(id?.toString(), displayAsset.id)
 
-  const isLoading = spotPrice.isInitialLoading || usdPrice.isInitialLoading
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
+
+  const isLoading = isSpotPriceInitialLoading || isUsdPriceInitialLoading
+  const data = useMemo(() => {
+    if (isLoading) return undefined
+
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrice
+        ? {
+            ...spotPrice,
+            spotPrice: BigNumber(spotPrice.spotPrice)
+              .times(usdPrice)
+              .toString(),
+          }
+        : undefined
+
+    return spotPrice
+  }, [displayAsset.isRealUSD, isLoading, spotPrice, usdPrice])
+
+  return { data, isLoading, isInitialLoading: isLoading }
+}
+
+export const useNewDisplayPrices = (ids: string[], noRefresh?: boolean) => {
+  const displayAsset = useDisplayAssetStore()
+  const spotPrices = useNewSpotPrices(ids, displayAsset.id, noRefresh)
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
+
+  const isLoading =
+    spotPrices.some((q) => q.isInitialLoading) || isUsdPriceInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
-      return spotPrice.data
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrices.map((sp) =>
+        sp.data
+          ? {
+              ...sp.data,
+              spotPrice: BigNumber(sp.data.spotPrice)
+                .times(usdPrice)
+                .toString(),
+            }
+          : undefined,
+      )
+
+    return spotPrices.map((sp) => sp.data)
+  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice])
+
+  return { data, isLoading, isInitialLoading: isLoading }
+}
+
+export const useDisplayPrice = (id: string | u32 | undefined) => {
+  const displayAsset = useDisplayAssetStore()
+  const { data: spotPrice, isInitialLoading: isSpotPriceInitialLoading } =
+    useSpotPrice(id, displayAsset.id)
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
+
+  const isLoading = isSpotPriceInitialLoading || isUsdPriceInitialLoading
+  const data = useMemo(() => {
+    if (isLoading) return undefined
+
+    if (displayAsset.isRealUSD && usdPrice)
+      return spotPrice
         ? {
-            ...spotPrice.data,
-            spotPrice: spotPrice.data.spotPrice.times(usdPrice.data),
+            ...spotPrice,
+            spotPrice: spotPrice.spotPrice.times(usdPrice),
           }
         : undefined
 
-    return spotPrice.data
-  }, [displayAsset.isRealUSD, isLoading, spotPrice.data, usdPrice.data])
+    return spotPrice
+  }, [displayAsset.isRealUSD, isLoading, spotPrice, usdPrice])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
@@ -58,58 +122,52 @@ export const useDisplayPrice = (id: string | u32 | undefined) => {
 //TODO: mb create a hook for a single share token
 export const useDisplayShareTokenPrice = (ids: string[]) => {
   const { getShareTokens, getAssetWithFallback } = useAssets()
-
   const pools = getShareTokens(ids) as TShareToken[]
-  const poolsAddress = pools.map((pool) => pool?.poolAddress) ?? []
 
-  const poolBalances = useAccountsBalances(poolsAddress)
-  const issuances = useTotalIssuances()
+  const { data: xykPools = [], isLoading: isPoolsLoading } = useXYKSDKPools()
+  const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
 
   const shareTokensTvl = useMemo(() => {
-    return !pools
-      ? []
-      : pools
-          .map((shareToken) => {
-            const { poolAddress } = shareToken ?? {}
+    return pools
+      .map((shareToken) => {
+        const { poolAddress } = shareToken ?? {}
 
-            if (!poolAddress) return undefined
+        if (!poolAddress) return undefined
 
-            const poolBalance = poolBalances.data?.find(
-              (poolBalance) => poolBalance.accountId === poolAddress,
-            )
+        const pool = xykPools.find((pool) => poolAddress === pool.address)
 
-            const assetA = poolBalance?.balances.find((balance) =>
-              shareToken.assets.some((asset) => asset.id === balance.assetId),
-            )
+        if (!pool) return undefined
 
-            if (!assetA) return undefined
+        const { tokens } = pool
+        const [assetA] = tokens
 
-            const assetABalance = BigNumber(assetA.freeBalance).shiftedBy(
-              -getAssetWithFallback(assetA.assetId).decimals,
-            )
+        if (!assetA) return undefined
+        const { balance, decimals, id } = assetA
 
-            const tvl = assetABalance.multipliedBy(2)
+        const assetABalance = BigNumber(balance).shiftedBy(-decimals)
 
-            return {
-              spotPriceId: assetA.assetId,
-              tvl,
-              shareTokenId: shareToken.id,
-            }
-          })
-          .filter(isNotNil)
-  }, [pools, poolBalances.data, getAssetWithFallback])
+        const tvl = assetABalance.multipliedBy(2)
 
-  const spotPrices = useDisplayPrices(
-    shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
-  )
+        return {
+          spotPriceId: id,
+          tvl,
+          shareTokenId: shareToken.id,
+        }
+      })
+      .filter(isNotNil)
+  }, [pools, xykPools])
 
-  const queries = [issuances, poolBalances, spotPrices]
-  const isLoading = queries.some((q) => q.isInitialLoading)
+  const { data: spotPrices, isInitialLoading: isSpotPriceLoading } =
+    useDisplayPrices(
+      shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
+    )
+
+  const isLoading = isIssuanceLoading || isPoolsLoading || isSpotPriceLoading
 
   const data = useMemo(() => {
     return shareTokensTvl
       .map((shareTokenTvl) => {
-        const spotPrice = spotPrices.data?.find(
+        const spotPrice = spotPrices?.find(
           (spotPrice) => spotPrice?.tokenIn === shareTokenTvl.spotPriceId,
         )
 
@@ -117,7 +175,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
           spotPrice?.spotPrice ?? 1,
         )
 
-        const totalIssuance = issuances.data?.get(shareTokenTvl.shareTokenId)
+        const totalIssuance = issuances?.get(shareTokenTvl.shareTokenId)
 
         const shareTokenMeta = getAssetWithFallback(shareTokenTvl.shareTokenId)
 
@@ -134,7 +192,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
         }
       })
       .filter(isNotNil)
-  }, [getAssetWithFallback, issuances.data, shareTokensTvl, spotPrices.data])
+  }, [getAssetWithFallback, issuances, shareTokensTvl, spotPrices])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }
@@ -145,23 +203,24 @@ export const useDisplayPrices = (
 ) => {
   const displayAsset = useDisplayAssetStore()
   const spotPrices = useSpotPrices(ids, displayAsset.id, noRefresh)
-  const usdPrice = useCoingeckoUsdPrice()
+  const { data: usdPrice, isInitialLoading: isUsdPriceInitialLoading } =
+    useCoingeckoUsdPrice()
 
   const isLoading =
-    spotPrices.some((q) => q.isInitialLoading) || usdPrice.isInitialLoading
+    spotPrices.some((q) => q.isInitialLoading) || isUsdPriceInitialLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
 
-    if (displayAsset.isRealUSD && usdPrice.data)
+    if (displayAsset.isRealUSD && usdPrice)
       return spotPrices.map((sp) =>
         sp.data
-          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice.data) }
+          ? { ...sp.data, spotPrice: sp.data.spotPrice.times(usdPrice) }
           : undefined,
       )
 
     return spotPrices.map((sp) => sp.data)
-  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice.data])
+  }, [displayAsset.isRealUSD, isLoading, spotPrices, usdPrice])
 
   return { data, isLoading, isInitialLoading: isLoading }
 }

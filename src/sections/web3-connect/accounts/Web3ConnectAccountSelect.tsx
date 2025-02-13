@@ -7,7 +7,10 @@ import { useTranslation } from "react-i18next"
 import { useCopyToClipboard, useMedia } from "react-use"
 import { shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
-import { WalletProviderType } from "sections/web3-connect/constants/providers"
+import {
+  SOLANA_PROVIDERS,
+  WalletProviderType,
+} from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_BILL } from "utils/constants"
@@ -19,7 +22,9 @@ type Props = {
   name: string
   genesisHash?: `0x${string}`
   address: string
-  balance?: BigNumber
+  balance?: string
+  balanceSymbol?: string
+  balanceDecimals?: number
   onClick?: () => void
   provider?: WalletProviderType | null
   isProxy?: boolean
@@ -31,6 +36,8 @@ export const Web3ConnectAccountSelect = ({
   genesisHash,
   address,
   balance,
+  balanceSymbol,
+  balanceDecimals,
   onClick,
   isActive,
   provider,
@@ -40,6 +47,7 @@ export const Web3ConnectAccountSelect = ({
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
+  const isSol = !!provider && SOLANA_PROVIDERS.includes(provider)
 
   return (
     <div onClick={onClick} sx={{ flex: "row", align: "center", gap: 12 }}>
@@ -67,14 +75,30 @@ export const Web3ConnectAccountSelect = ({
             </Text>
             {isEvm && (
               <Badge size="small" variant="orange" rounded={false}>
-                EVM
+                {t("walletConnect.provider.mode.evm")}
+              </Badge>
+            )}
+            {isSol && (
+              <Badge size="small" variant="secondary" rounded={false}>
+                {t("walletConnect.provider.mode.solana")}
               </Badge>
             )}
           </div>
           <Text fs={14} color="graySoft">
-            {balance?.isFinite() && (
-              <DisplayValue value={balance} compact={balance.gt(BN_BILL)} />
+            {balance && !balanceSymbol && (
+              <DisplayValue
+                value={BigNumber(balance)}
+                compact={BigNumber(balance).gt(BN_BILL)}
+              />
             )}
+            {balance &&
+              balanceSymbol &&
+              balanceDecimals &&
+              t("value.tokenWithSymbol", {
+                value: balance,
+                symbol: balanceSymbol,
+                fixedPointScale: balanceDecimals,
+              })}
           </Text>
         </div>
         <div sx={{ flex: "row", justify: "space-between" }}>

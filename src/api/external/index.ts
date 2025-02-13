@@ -14,13 +14,14 @@ import {
   TRegisteredAsset,
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
-import { BN_0, HYDRATION_PARACHAIN_ID } from "utils/constants"
+import { HYDRATION_PARACHAIN_ID } from "utils/constants"
 import { isAnyParachain, isNotNil } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { assethub, useAssetHubAssetRegistry } from "./assethub"
 import { pendulum, usePendulumAssetRegistry } from "./pendulum"
 import { usePolkadotRegistry } from "./polkadot"
 import { useAssets } from "providers/assets"
+import BigNumber from "bignumber.js"
 
 export { assethub, pendulum }
 
@@ -69,6 +70,17 @@ export const useExternalApi = (chainKey: string) => {
       enabled: !!chain,
       retry: false,
       refetchOnWindowFocus: false,
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
+      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+    },
+  )
+}
+
+export const useExternalWhitelist = () => {
+  return useQuery(
+    QUERY_KEYS.externalStore,
+    async () => MetadataStore.getInstance().externalWhitelist(),
+    {
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
     },
@@ -180,11 +192,11 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
 
         const totalSupplyExternal =
           !shouldIgnoreRugCheck && externalToken.supply
-            ? BN(externalToken.supply)
+            ? externalToken.supply
             : null
 
         const totalSupplyInternal =
-          !shouldIgnoreRugCheck && issuance ? BN(issuance) : null
+          !shouldIgnoreRugCheck && issuance ? issuance.toString() : null
 
         const warnings = createRugWarningList({
           totalSupplyExternal,
@@ -241,8 +253,8 @@ const createRugWarningList = ({
   storedToken,
   externalToken,
 }: {
-  totalSupplyExternal: BN | null
-  totalSupplyInternal: BN | null
+  totalSupplyExternal: string | null
+  totalSupplyInternal: string | null
   externalToken: TExternalAsset
   storedToken?: TRegisteredAsset
 }) => {
@@ -251,12 +263,12 @@ const createRugWarningList = ({
   if (
     totalSupplyExternal &&
     totalSupplyInternal &&
-    totalSupplyExternal.lt(totalSupplyInternal)
+    BigNumber(totalSupplyExternal).lt(totalSupplyInternal)
   ) {
     warnings.push({
       type: "supply",
       severity: "high",
-      diff: [totalSupplyInternal ?? BN_0, totalSupplyExternal ?? BN_0],
+      diff: [totalSupplyInternal ?? "0", totalSupplyExternal ?? "0"],
     })
   }
 
@@ -295,11 +307,7 @@ export const useExternalAssetsWhiteList = () => {
   const { isExternal, getAsset } = useAssets()
   const { isLoaded } = useRpcProvider()
   const assetRegistry = useExternalAssetRegistry()
-
-  const whitelist = useMemo(
-    () => MetadataStore.getInstance().externalWhitelist(),
-    [],
-  )
+  const { data: whitelist } = useExternalWhitelist()
 
   const getIsWhiteListed = useCallback(
     (assetId: string) => {
@@ -310,7 +318,7 @@ export const useExternalAssetsWhiteList = () => {
           ? assetRegistry[+asset.parachainId]?.data?.get(asset.externalId ?? "")
           : null
 
-        const isManuallyWhiteListed = whitelist.includes(asset.id)
+        const isManuallyWhiteListed = !!whitelist?.includes(asset.id)
         const isWhiteListed =
           isManuallyWhiteListed ||
           asset?.isWhiteListed ||

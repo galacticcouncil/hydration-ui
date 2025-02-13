@@ -4,7 +4,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { SContainer, SLocksContainer } from "./WalletAssetsTableDetails.styled"
 import {
   AssetsTableData,
@@ -15,10 +15,8 @@ import {
 import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { BN_0 } from "utils/constants"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { TOAST_MESSAGES } from "state/toasts"
-import { ToastMessage } from "state/store"
+import { BN_NAN } from "utils/constants"
+import { createToastMessages } from "state/toasts"
 import Skeleton from "react-loading-skeleton"
 import { AnyParachain } from "@galacticcouncil/xcm-core"
 import { isAnyParachain } from "utils/helpers"
@@ -28,6 +26,8 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useAssets } from "providers/assets"
 import { TableData } from "components/Table/Table.styled"
+import BigNumber from "bignumber.js"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const chains = Array.from(chainsMap.values())
 
@@ -61,35 +61,37 @@ const NativeAssetDetails = ({
   reserved,
   reservedDisplay,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
 }) => {
   const { account } = useAccount()
   const { t } = useTranslation()
   const lockedTokens = useLockedNativeTokens()
   const unlocable = useUnlockableTokens()
 
-  const toast = TOAST_MESSAGES.reduce((memo, type) => {
-    const msType = type === "onError" ? "onLoading" : type
-    memo[type] = (
-      <Trans
-        t={t}
-        i18nKey={`wallet.assets.table.details.${unlocable.value.isZero() ? "clear" : "unlock"}.${msType}`}
-        tOptions={{
-          amount: unlocable.ids.length,
-          value: unlocable.value,
-        }}
-      >
-        <span />
-      </Trans>
-    )
-    return memo
-  }, {} as ToastMessage)
+  const unlockedIdsAmount = unlocable.ids.length + unlocable.openGovIds.length
+  const isUnlockDisabled = !unlockedIdsAmount && unlocable.unlockedValue === "0"
+
+  const toast = createToastMessages(
+    `wallet.assets.table.details.${unlocable.unlockedValue === "0" ? "clear" : "unlock"}`,
+    {
+      t,
+      tOptions: {
+        amount: unlockedIdsAmount,
+        value: BigNumber(unlocable.unlockedValue),
+      },
+    },
+  )
 
   const unlock = useUnlockTokens({
     ids: unlocable.ids,
+    openGovIds: unlocable.openGovIds,
     toast,
   })
+
+  const title = !unlockedIdsAmount
+    ? t("wallet.assets.table.details.unlock")
+    : t("wallet.assets.table.details.clear")
 
   return (
     <SContainer hasChain={false} isNativeAsset>
@@ -140,7 +142,9 @@ const NativeAssetDetails = ({
           </SLocksContainer>
         ) : null}
       </div>
-      <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
+      <div
+        sx={{ flex: "row", justify: "space-between", align: "center", gap: 4 }}
+      >
         <div>
           <Text fs={14} lh={14} fw={500} color="basic300">
             {t("wallet.assets.table.details.unlockable")}
@@ -150,21 +154,23 @@ const NativeAssetDetails = ({
             {unlocable.isLoading ? (
               <Skeleton height={14} width={30} />
             ) : (
-              t("value.token", { value: unlocable.value ?? BN_0 })
+              t("value.token", {
+                value: BigNumber(unlocable.unlockedValue),
+              })
             )}
           </Text>
           <Text fs={11} lh={14} fw={500} color="whiteish500">
             {unlocable.isLoading ? (
               <Skeleton height={10} width={20} />
             ) : (
-              <DisplayValue value={unlocable.displayValue ?? BN_0} />
+              <DisplayValue value={BigNumber(unlocable.unlockedDisplayValue)} />
             )}
           </Text>
-          {unlocable.votesUnlocked ? (
+          {unlockedIdsAmount ? (
             <SLocksContainer>
               <Text fs={11} lh={15} color="darkBlue200">
                 {t("wallet.assets.table.details.expired", {
-                  count: unlocable.votesUnlocked,
+                  count: unlockedIdsAmount,
                 })}
               </Text>
             </SLocksContainer>
@@ -176,13 +182,13 @@ const NativeAssetDetails = ({
           size="compact"
           disabled={
             account?.isExternalWalletConnected ||
-            !unlocable.ids.length ||
+            isUnlockDisabled ||
             unlock.isLoading
           }
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >
-          {t("wallet.assets.table.details.btn")}
+          {title}
         </Button>
       </div>
       <div css={{ gridColumn: "1/4", height: 1 }}>
@@ -191,17 +197,34 @@ const NativeAssetDetails = ({
         </Separator>
       </div>
       <div>
-        <p />
+        <Text fs={14} lh={14} fw={500} color="basic300">
+          {t("wallet.assets.table.details.lockedReferenda")}
+        </Text>
+        <Text fs={16} lh={18} fw={400} color="white" sx={{ mt: 4 }}>
+          {t("value.token", { value: lockedTokens.lockOpenGov })}
+        </Text>
+        <Text fs={11} lh={14} fw={500} color="whiteish500">
+          <DisplayValue value={lockedTokens.lockOpenGovDisplay} />
+        </Text>
+        {unlocable.openGovEndDate ? (
+          <SLocksContainer sx={{ width: "fit-content" }}>
+            <Text fs={11} lh={15} color="darkBlue200">
+              {t("wallet.assets.table.details.expiring", {
+                duration: unlocable.openGovEndDate,
+              })}
+            </Text>
+          </SLocksContainer>
+        ) : null}
       </div>
       <div>
         <Text fs={14} lh={14} fw={500} color="basic300">
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={16} lh={18} fw={400} color="white" sx={{ mt: 4 }}>
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
       <div>
@@ -232,8 +255,8 @@ const AssetDetails = ({
   reservedDisplay,
   id,
 }: {
-  reserved: BN
-  reservedDisplay: BN
+  reserved: string
+  reservedDisplay?: string
   id: string
 }) => {
   const { t } = useTranslation()
@@ -279,10 +302,10 @@ const AssetDetails = ({
           {t("wallet.assets.table.details.reserved")}
         </Text>
         <Text fs={16} lh={18} fw={400} color="white">
-          {t("value.token", { value: reserved })}
+          {t("value.token", { value: BN(reserved) })}
         </Text>
         <Text fs={11} lh={14} fw={500} color="whiteish500">
-          <DisplayValue value={reservedDisplay} />
+          <DisplayValue value={BN(reservedDisplay ?? BN_NAN)} />
         </Text>
       </div>
     </SContainer>

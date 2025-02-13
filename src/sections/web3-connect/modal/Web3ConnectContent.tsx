@@ -13,6 +13,7 @@ import { Web3ConnectProviders } from "sections/web3-connect/providers/Web3Connec
 import {
   useWeb3ConnectStore,
   WalletMode,
+  WalletProviderState,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AddressBook } from "components/AddressBook/AddressBook"
@@ -22,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { validAddress } from "utils/validators"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
+import { TFunction } from "i18next"
 
 type Props = {
   page: number
@@ -66,8 +68,6 @@ export const Web3ConnectContent: React.FC<Props> = ({
     ({ status }) => status === "pending",
   )
 
-  const chain = meta?.chain ? chainsMap.get(meta?.chain) : null
-
   const { wallet: externalWallet } = useConnectedProvider(
     WalletProviderType.ExternalWallet,
   )
@@ -95,22 +95,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
       {...props}
       contents={[
         {
-          title: t("walletConnect.provider.title").toUpperCase(),
+          title: meta?.title ?? t("walletConnect.provider.title").toUpperCase(),
           content: <Web3ConnectProviders onAccountSelect={onSelect} />,
           headerVariant: "gradient",
-          description:
-            chain && mode === WalletMode.EVM
-              ? t(`walletConnect.provider.description.evmChain`, {
-                  chain: chain.name,
-                })
-              : chain &&
-                  [WalletMode.Substrate, WalletMode.SubstrateH160].includes(
-                    mode,
-                  )
-                ? t(`walletConnect.provider.description.substrateChain`, {
-                    chain: chain.name,
-                  })
-                : "",
+          description: meta?.description ?? getModalDescription(t, mode, meta),
         },
         {
           title: t("walletConnect.externalWallet.modal.title").toUpperCase(),
@@ -126,8 +114,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
           ),
         },
         {
-          title: t("walletConnect.accountSelect.title").toUpperCase(),
-          description: t("walletConnect.accountSelect.description"),
+          title:
+            meta?.title ?? t("walletConnect.accountSelect.title").toUpperCase(),
+          description:
+            meta?.description ?? t("walletConnect.accountSelect.description"),
           content: (
             <>
               {isAccountsLoading || isProvidersConnecting ? (
@@ -176,4 +166,30 @@ export const Web3ConnectContent: React.FC<Props> = ({
       ]}
     />
   )
+}
+
+const getModalDescription = (
+  t: TFunction,
+  mode: WalletMode,
+  meta: WalletProviderState["meta"],
+) => {
+  const chain = meta?.chain ? chainsMap.get(meta?.chain) : null
+
+  if (!chain) return ""
+
+  if (mode === WalletMode.EVM) {
+    return t("walletConnect.provider.description.evmChain", {
+      chain: chain.name,
+    })
+  }
+
+  if (mode === WalletMode.Solana) {
+    return t("walletConnect.provider.description.solanaChain", {
+      chain: chain.name,
+    })
+  }
+
+  return t("walletConnect.provider.description.substrateChain", {
+    chain: chain.name,
+  })
 }

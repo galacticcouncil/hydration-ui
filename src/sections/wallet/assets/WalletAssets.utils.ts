@@ -7,6 +7,8 @@ import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountAssets } from "api/deposits"
+import BigNumber from "bignumber.js"
+import { useUserBorrowSummary } from "api/borrow"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -45,43 +47,45 @@ export const useWalletAssetsTotals = ({
 }: {
   address?: string
 } = {}) => {
+  const borrows = useUserBorrowSummary(address)
   const assets = useAssetsData({ isAllAssets: false, address })
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
-  const balances = useAccountAssets(address)
+  const { data: balances, isLoading: isAccountAssetsLoading } =
+    useAccountAssets(address)
 
   const shareTokenBalances = useMemo(
-    () => [...(balances.data?.accountShareTokensMap.values() ?? [])],
-    [balances.data?.accountShareTokensMap],
+    () => [...(balances?.accountShareTokensMap.values() ?? [])],
+    [balances?.accountShareTokensMap],
   )
 
   const spotPrices = useDisplayShareTokenPrice(
-    shareTokenBalances?.map((token) => token.asset.id),
+    shareTokenBalances.map((token) => token.asset.id),
   )
 
-  const assetsTotal = useMemo(() => {
-    if (!assets.data) return BN_0
+  const assetsTotal = useMemo(
+    () =>
+      assets.data.reduce((acc, cur) => {
+        if (cur.totalDisplay) {
+          return BigNumber(acc).plus(cur.totalDisplay).toString()
+        }
+        return acc
+      }, "0"),
+    [assets.data],
+  )
 
-    return assets.data.reduce((acc, cur) => {
-      if (!cur.totalDisplay.isNaN()) {
-        return acc.plus(cur.totalDisplay)
-      }
-      return acc
-    }, BN_0)
-  }, [assets])
-
-  const lpTotal = useMemo(() => {
-    if (!lpPositions.data) return BN_0
-
-    return lpPositions.data.reduce(
-      (acc, { valueDisplay }) => acc.plus(BN(valueDisplay)),
-      BN_0,
-    )
-  }, [lpPositions.data])
+  const lpTotal = useMemo(
+    () =>
+      lpPositions.data.reduce(
+        (acc, { valueDisplay }) => BigNumber(acc).plus(valueDisplay).toString(),
+        "0",
+      ),
+    [lpPositions.data],
+  )
 
   const xykTotal = useMemo(() => {
-    if (!shareTokenBalances || !spotPrices.data) return BN_0
-    return shareTokenBalances.reduce<BN>((acc, { asset, balance }) => {
+    if (!shareTokenBalances || !spotPrices.data) return BN_NAN
+    return shareTokenBalances.reduce<string>((acc, { asset, balance }) => {
       if (BN(balance.freeBalance).gt(0)) {
         const meta = asset
         const spotPrice = spotPrices.data.find(
@@ -92,25 +96,45 @@ export const useWalletAssetsTotals = ({
           .shiftedBy(-meta.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? BN_NAN)
 
-        return acc.plus(!value.isNaN() ? value : BN_0)
+        return BN(acc)
+          .plus(!value.isNaN() ? value : BN_0)
+          .toString()
       }
+
       return acc
-    }, BN_0)
+    }, "0")
   }, [shareTokenBalances, spotPrices.data])
 
-  const balanceTotal = assetsTotal
-    .plus(farmsTotal.value)
-    .plus(lpTotal)
-    .plus(xykTotal)
+  const borrowsTotal = borrows.data?.totalBorrowsUSD ?? "0"
+
+  const balanceTotal = useMemo(
+    () =>
+      BigNumber(assetsTotal)
+        .plus(farmsTotal.value)
+        .plus(lpTotal)
+        .plus(xykTotal)
+        .minus(borrowsTotal)
+        .toString(),
+    [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
+  )
 
   const isLoading =
-    assets.isLoading || lpPositions.isLoading || farmsTotal.isLoading
+    borrows.isLoading ||
+    assets.isLoading ||
+    lpPositions.isLoading ||
+    farmsTotal.isLoading ||
+    isAccountAssetsLoading ||
+    spotPrices.isInitialLoading
 
   return {
     assetsTotal,
     farmsTotal: farmsTotal.value,
-    lpTotal: lpTotal.plus(xykTotal),
+    lpTotal: BigNumber(lpTotal)
+      .plus(xykTotal)
+      .plus(farmsTotal.value)
+      .toString(),
     balanceTotal,
+    borrowsTotal,
     isLoading,
   }
 }

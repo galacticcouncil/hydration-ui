@@ -23,15 +23,14 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
-import { useRpcProvider } from "providers/rpcProvider"
 
 type Props = {
   className?: string
 }
 
-const ReferralsConnectWrapper = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnectWrapper"))
-    .ReferralsConnectWrapper,
+const ReferralsConnect = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnect"))
+    .ReferralsConnect,
 }))
 
 const Transactions = lazy(async () => ({
@@ -51,7 +50,6 @@ const useSubheaderComponent = () => {
   const matchRoute = useMatchRoute()
   const search = useSearch()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { featureFlags } = useRpcProvider()
 
   const prevUrl = usePreviousUrl()
 
@@ -81,6 +79,7 @@ const useSubheaderComponent = () => {
 
   if (
     matchRoute({ to: LINKS.borrow }) ||
+    matchRoute({ to: LINKS.borrowDashboard }) ||
     matchRoute({ to: LINKS.borrowMarkets })
   ) {
     return <LendingNavigation />
@@ -95,7 +94,7 @@ const useSubheaderComponent = () => {
     ) : (
       <BackSubHeader
         label={t("lending.navigation.dashboard.back")}
-        to={LINKS.borrow}
+        to={LINKS.borrowDashboard}
       />
     )
   }
@@ -105,7 +104,6 @@ export const Page = ({ className }: Props) => {
   const matchRoute = useMatchRoute()
   const ref = useControlScroll()
   const subHeaderComponent = useSubheaderComponent()
-
   const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (
@@ -124,7 +122,7 @@ export const Page = ({ className }: Props) => {
       <Suspense>
         <Web3Connect />
         <Transactions />
-        <ReferralsConnectWrapper />
+        <ReferralsConnect />
         <QuerySubscriptions />
       </Suspense>
     </>

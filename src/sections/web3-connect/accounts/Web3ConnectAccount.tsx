@@ -7,12 +7,10 @@ import { getAddressVariants } from "utils/formatting"
 import { SAccountItem } from "./Web3ConnectAccount.styled"
 import { Web3ConnectAccountSelect } from "./Web3ConnectAccountSelect"
 
-import BN from "bignumber.js"
-
 type Props = Account & {
   isProxy?: boolean
   isActive?: boolean
-  balance?: BN
+  balance?: string
   onClick?: (account: Account) => void
 }
 

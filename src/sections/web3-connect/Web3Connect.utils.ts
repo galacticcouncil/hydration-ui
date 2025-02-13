@@ -24,6 +24,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
   Account,
+  COMPATIBLE_WALLET_PROVIDERS,
   WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
@@ -49,6 +50,8 @@ import {
 } from "sections/web3-connect/types"
 import {
   EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
@@ -56,11 +59,9 @@ import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
 import { PolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
 import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { Talisman } from "sections/web3-connect/wallets/Talisman"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmChain } from "@galacticcouncil/xcm-core"
-import { MetadataStore } from "@galacticcouncil/ui"
 import { create } from "zustand"
-import BN from "bignumber.js"
+import { safeConvertSolanaAddressToSS58 } from "utils/solana"
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -252,9 +253,14 @@ export const useWeb3ConnectEagerEnable = () => {
 
     if (providers.length > 0) {
       providers.forEach((p) => {
+        const isCompatible = COMPATIBLE_WALLET_PROVIDERS.includes(p.type)
+
         const { wallet } = getWalletProviderByType(p.type)
-        if (wallet) {
+
+        if (wallet && isCompatible) {
           eagerEnable(wallet)
+        } else {
+          state.disconnect(p.type)
         }
       })
     } else {
@@ -542,14 +548,22 @@ function mapWalletAccount({
   genesisHash,
 }: WalletAccount) {
   const isEvm = isEvmAddress(address)
+  const isSolana =
+    wallet &&
+    SOLANA_PROVIDERS.includes(wallet.extensionName as WalletProviderType)
 
   const chainInfo = genesisHashToChain(genesisHash)
 
   return {
-    address: isEvm ? new H160(address).toAccount() : address,
-    displayAddress: isEvm
-      ? address
-      : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+    address: isEvm
+      ? new H160(address).toAccount()
+      : isSolana
+        ? safeConvertSolanaAddressToSS58(address, HYDRADX_SS58_PREFIX)
+        : address,
+    displayAddress:
+      isEvm || isSolana
+        ? address
+        : safeConvertAddressSS58(address, chainInfo.prefix) || address,
     genesisHash,
     name: name ?? "",
     provider: normalizeProviderType(wallet!),
@@ -560,17 +574,14 @@ function mapWalletAccount({
 export function getWalletModeIcon(mode: WalletMode) {
   try {
     if (mode === WalletMode.EVM) {
-      const chain = chainsMap.get("ethereum") as EvmChain
-      const asset = chain.getAsset("eth")!
-      const address = chain.getAssetId(asset)
-      return MetadataStore.getInstance().asset(
-        "ethereum",
-        chain.evmChain.id.toString(),
-        address.toString(),
-      )
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
     }
     if (mode === WalletMode.Substrate) {
-      return MetadataStore.getInstance().asset("polkadot", "0", "0")
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
+    }
+
+    if (mode === WalletMode.Solana) {
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
     }
 
     return ""
@@ -578,8 +589,8 @@ export function getWalletModeIcon(mode: WalletMode) {
 }
 
 export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, BN>
-  setBalanceMap: (address: string, balance: BN) => void
+  balanceMap: Map<string, string>
+  setBalanceMap: (address: string, balance: string) => void
 }>((set) => ({
   balanceMap: new Map(),
   setBalanceMap: (address, balance) => {
@@ -588,3 +599,19 @@ export const useAccountBalanceMap = create<{
     }))
   },
 }))
+
+export const isHydrationIncompatibleAccount = (
+  account: Account | null,
+): account is Account => {
+  if (!account) return false
+
+  const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
+
+  const isIncompatibleH160Account =
+    SUBSTRATE_H160_PROVIDERS.includes(account.provider) &&
+    isEvmAccount(account.address)
+
+  return isIncompatibleProvider || isIncompatibleH160Account
+}

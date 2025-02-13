@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick } from "utils/rx"
+import { pick, uniqBy } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -17,10 +17,11 @@ import {
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
-import { undefinedNoop } from "utils/helpers"
+import { identity, undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
+import { PolkadotEvmRpcProvider } from "utils/provider"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -33,24 +34,27 @@ export type ProviderProps = {
 }
 
 export type TFeatureFlags = {
-  referrals: boolean
   dispatchPermit: boolean
-}
+} & { [key: string]: boolean }
+
+export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
 
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
   {
     name: "Dwellir",
-    url: "wss://hydradx-rpc.dwellir.com",
+    url: "wss://hydration-rpc.n.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -58,7 +62,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -66,7 +71,8 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Dotters",
     url: "wss://hydration.dotters.network",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl: "https://hydra-data-squid.play.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: "production",
     dataEnv: "mainnet",
   },
@@ -74,8 +80,18 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl: "https://data-squid.nice.hydration.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
     env: ["development"],
+    dataEnv: "testnet",
+  },
+  {
+    name: "Paseo",
+    url: `wss://${PASEO_WS_URL}`,
+    indexerUrl: "https://explorer.hydradx.cloud/graphql",
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
+    env: ["rococo", "development"],
     dataEnv: "testnet",
   },
 ]
@@ -91,13 +107,26 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const isTestnetRpcUrl = (url: string) =>
   PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
 
+export async function pingAllProvidersAndSort() {
+  const fastestRpc = await Promise.race(
+    PROVIDER_URLS.map(async (url) => {
+      const time = await pingRpc(url)
+      return { url, time }
+    }),
+  )
+
+  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
+  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+}
+
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
     rpcUrlList: string[]
     autoMode: boolean
+    updatedAt: number
     setRpcUrl: (rpcUrl: string | undefined) => void
-    setRpcUrlList: (rpcUrlList: string[]) => void
+    setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
     getDataEnv: () => TEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
@@ -106,9 +135,10 @@ export const useProviderRpcUrlStore = create(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
       rpcUrlList: [],
+      updatedAt: 0,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
-      setRpcUrlList: (rpcUrlList) => set({ rpcUrlList }),
+      setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
@@ -122,7 +152,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 3,
+      version: 3.2,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -231,33 +261,34 @@ export const useProviderData = () => {
         PoolType.XYK,
         PoolType.LBP,
       ]
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
 
-      await poolService.syncRegistry(externalTokens[dataEnv])
-
-      const [isReferralsEnabled, isDispatchPermitEnabled] = await Promise.all([
-        api.query.referrals,
+      const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
         tradeRouter.getPools(),
       ])
 
       const balanceClient = new BalanceClient(api)
 
+      const evm = new PolkadotEvmRpcProvider(api)
+
       return {
         api,
+        evm,
         tradeRouter,
         poolService,
         balanceClient,
         featureFlags: {
-          referrals: !!isReferralsEnabled,
           dispatchPermit: !!isDispatchPermitEnabled,
         } as TFeatureFlags,
       }
     },
     {
+      enabled: rpcUrlList.length > 0,
       refetchOnWindowFocus: false,
       retry: false,
       onSettled: (data) => {

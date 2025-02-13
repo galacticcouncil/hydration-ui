@@ -47,7 +47,7 @@ export const getAccountBalanceData = async (
   >(accountId.toString())
 }
 
-export const getAccountBalances = (
+const getAccountBalances = (
   api: ApiPromise,
   accountId: AccountId32 | string,
 ) => {

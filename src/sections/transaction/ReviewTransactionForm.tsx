@@ -7,6 +7,7 @@ import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import {
+  isHydrationIncompatibleAccount,
   useAccount,
   useEvmWalletReadiness,
   useWallet,
@@ -32,14 +33,9 @@ import {
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { isAnyParachain } from "utils/helpers"
 import {
-  EVM_PROVIDERS,
-  WalletProviderType,
-} from "sections/web3-connect/constants/providers"
-import {
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
-import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
@@ -100,12 +96,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isPermitTxPending = !!pendingPermit
 
-  const isIncompatibleWalletProvider =
-    !props.xcallMeta &&
-    account &&
-    isEvmAccount(account.address) &&
-    !EVM_PROVIDERS.includes(account.provider) &&
-    account.provider !== WalletProviderType.WalletConnect
+  const isIncompatibleWalletProvider = props.xcallMeta
+    ? false // allow all providers for xcm
+    : isHydrationIncompatibleAccount(account)
 
   const isLinking = !isLinkedAccount && storedReferralCode
 
@@ -130,7 +123,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const txData = tx.method.toHex()
 
           if (shouldUsePermit) {
-            const nonce = customNonce ? BN(customNonce) : permitNonce ?? BN_0
+            const nonce = customNonce
+              ? parseFloat(customNonce)
+              : permitNonce ?? 0
             const permit = await wallet.signer.getPermit(txData, nonce)
             return props.onPermitDispatched({
               permit,

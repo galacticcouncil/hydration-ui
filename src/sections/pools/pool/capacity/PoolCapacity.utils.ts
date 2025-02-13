@@ -1,6 +1,4 @@
 import { useOmnipoolDataObserver } from "api/omnipool"
-import { useTokenBalance } from "api/balances"
-import { OMNIPOOL_ACCOUNT_ADDRESS } from "utils/api"
 import { useMemo } from "react"
 import { BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
@@ -9,19 +7,19 @@ import { OmniMath } from "@galacticcouncil/sdk"
 import { useAssets } from "providers/assets"
 
 export const usePoolCapacity = (id: string) => {
-  const { hub, getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback } = useAssets()
 
   const omnipoolAssets = useOmnipoolDataObserver()
-  const hubBalance = useTokenBalance(hub.id, OMNIPOOL_ACCOUNT_ADDRESS)
+  const hubBalance = omnipoolAssets.hubToken?.balance
 
-  const isLoading = omnipoolAssets.isLoading || hubBalance.isLoading
+  const isLoading = omnipoolAssets.isLoading
 
   const data = useMemo(() => {
-    if (!omnipoolAssets.dataMap || !hubBalance.data) return undefined
+    if (!omnipoolAssets.dataMap || !hubBalance) return undefined
 
     const asset = omnipoolAssets.dataMap.get(id)
 
-    if (!asset || !hubBalance?.data)
+    if (!asset || !hubBalance)
       return {
         capacity: BN_NAN,
         filled: BN_NAN,
@@ -34,7 +32,7 @@ export const usePoolCapacity = (id: string) => {
     const assetReserve = asset.balance
     const assetHubReserve = asset.hubReserve
     const assetCap = asset.cap
-    const totalHubReserve = hubBalance.data.total.toString()
+    const totalHubReserve = hubBalance
 
     const capDifference = OmniMath.calculateCapDifference(
       assetReserve,
@@ -59,7 +57,7 @@ export const usePoolCapacity = (id: string) => {
     const filledPercent = filled.div(capacity).times(100)
 
     return { capacity, filled, filledPercent, symbol }
-  }, [getAssetWithFallback, hubBalance.data, id, omnipoolAssets.dataMap])
+  }, [getAssetWithFallback, hubBalance, id, omnipoolAssets.dataMap])
 
   return { data, isLoading }
 }

@@ -45,6 +45,7 @@ import {
   Page,
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
+import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 
 const NonClickableContainer = ({
   children,
@@ -206,6 +207,7 @@ const LiquidityModalWrapper: React.FC<{
   const poolDetails = usePoolDetails(pool.id)
 
   if (!pool) return null
+
   return (
     <PoolContext.Provider
       value={{
@@ -213,13 +215,15 @@ const LiquidityModalWrapper: React.FC<{
         isXYK: isXYKPoolType(pool),
       }}
     >
-      <TransferModal
-        defaultPage={
-          pool?.meta.isStableSwap ? Page.ADD_LIQUIDITY : Page.MOVE_TO_OMNIPOOL
-        }
-        farms={pool.farms ?? []}
-        onClose={onClose}
-      />
+      {pool.meta.isStableSwap ? (
+        <TransferModal
+          defaultPage={Page.ADD_LIQUIDITY}
+          onClose={onClose}
+          farms={pool.farms}
+        />
+      ) : (
+        <AddLiquidity isOpen onClose={onClose} />
+      )}
     </PoolContext.Provider>
   )
 }
@@ -512,7 +516,7 @@ export const usePoolTable = (
               justify: "end",
             }}
           >
-            {!isXyk && <AddLiquidityButton pool={row.original} />}
+            <AddLiquidityButton pool={row.original} />
             <ManageLiquidityButton
               pool={row.original}
               onRowSelect={onRowSelect}

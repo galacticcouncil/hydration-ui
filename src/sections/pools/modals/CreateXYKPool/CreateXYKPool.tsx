@@ -1,4 +1,4 @@
-import { useGetXYKPools } from "api/xyk"
+import { useXYKSDKPools } from "api/xyk"
 import { useMemo, useState } from "react"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { CreateXYKPoolForm } from "./CreateXYKPoolForm"
@@ -44,13 +44,16 @@ export const CreateXYKPool = ({
   onAssetSelectClose,
   children,
 }: CreateXYKPoolProps) => {
-  const { data: xykPools } = useGetXYKPools()
+  const { data: xykPools } = useXYKSDKPools()
 
   const allowedAssets = useAllowedXYKPoolAssets()
   const allowedAssetIds = allowedAssets.map(({ id }) => id)
 
   const poolExclusivityMap = useMemo(
-    () => createPoolExclusivityMap(xykPools?.map(({ assets }) => assets) ?? []),
+    () =>
+      createPoolExclusivityMap(
+        xykPools?.map(({ tokens }) => tokens.map((token) => token.id)) ?? [],
+      ),
     [xykPools],
   )
 
