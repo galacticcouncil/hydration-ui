@@ -23,7 +23,7 @@ export const SModalOverlay = styled(Overlay)`
   }
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
+    animation: ${({ theme }) => theme.animations.fadeOut} 2.2s;
   }
 `
 
@@ -46,7 +46,7 @@ export const SModalWrapper = styled(Overlay)`
   z-index: 10;
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
+    animation: ${({ theme }) => theme.animations.fadeOut} 2.2s;
   }
 `
 
@@ -70,7 +70,7 @@ export const SModalContent = styled(Content)`
   }
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOutBottom} 0.2s;
+    animation: ${({ theme }) => theme.animations.fadeOutBottom} 2.2s;
   }
 
   ${mq("sm")} {
@@ -85,7 +85,7 @@ export const SModalContent = styled(Content)`
     }
 
     &[data-state="closed"] {
-      animation: ${({ theme }) => theme.animations.scaleOutTop} 0.2s;
+      animation: ${({ theme }) => theme.animations.scaleOutTop} 2.2s;
     }
   }
 `

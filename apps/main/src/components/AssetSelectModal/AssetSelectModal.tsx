@@ -2,9 +2,9 @@ import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Input,
+  Modal,
   ModalBody,
-  ModalMounted,
-  ModalUnmounted,
+  ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -27,7 +27,6 @@ type AssetSelectModalProps = {
 
 const Content = ({
   assets,
-  open,
   onOpenChange,
   onSelect,
   emptyState,
@@ -109,23 +108,23 @@ const Content = ({
   }
 
   return (
-    <ModalUnmounted
-      open={open}
-      title={t("assetSelector.title")}
-      customTitle={
-        <Input
-          placeholder={t("assetSelector.input.placeholder")}
-          variant="embedded"
-          customSize="medium"
-          iconStart={Search}
-          value={search}
-          onChange={(v) => setSearch(v.target.value)}
-          onKeyDown={handleInputKeyDown}
-          ref={inputRef}
-          css={{ flexGrow: 1 }}
-        />
-      }
-    >
+    <>
+      <ModalHeader
+        title={t("assetSelector.title")}
+        customTitle={
+          <Input
+            placeholder={t("assetSelector.input.placeholder")}
+            variant="embedded"
+            customSize="medium"
+            iconStart={Search}
+            value={search}
+            onChange={(v) => setSearch(v.target.value)}
+            onKeyDown={handleInputKeyDown}
+            ref={inputRef}
+            css={{ flexGrow: 1 }}
+          />
+        }
+      />
       <ModalBody>
         <Box
           ref={divRef}
@@ -175,14 +174,14 @@ const Content = ({
           )}
         </Box>
       </ModalBody>
-    </ModalUnmounted>
+    </>
   )
 }
 
 export const AssetSelectModal = (props: AssetSelectModalProps) => {
   return (
-    <ModalMounted open={props.open} onOpenChange={props.onOpenChange}>
+    <Modal open={props.open} onOpenChange={props.onOpenChange}>
       <Content {...props} />
-    </ModalMounted>
+    </Modal>
   )
 }

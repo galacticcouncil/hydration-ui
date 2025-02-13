@@ -5,6 +5,7 @@ import {
   Input,
   Modal,
   ModalBody,
+  ModalHeader,
   Separator,
   SliderTabs,
   Text,
@@ -58,13 +59,15 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
   return (
     <Modal
       open
-      title={t("wallet:swap.settings.modal.title")}
-      description={t("wallet:swap.settings.modal.description")}
       onOpenChange={(open) => {
         handleClose()
         onOpenChange(open)
       }}
     >
+      <ModalHeader
+        title={t("wallet:swap.settings.modal.title")}
+        description={t("wallet:swap.settings.modal.description")}
+      />
       <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
         <Controller
           name="swap"

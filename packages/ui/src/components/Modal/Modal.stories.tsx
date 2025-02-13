@@ -10,7 +10,7 @@ import { Input } from "@/components/Input"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
-import { Modal, ModalBody, ModalClose, ModalFooter } from "./Modal"
+import { Modal, ModalBody, ModalClose, ModalFooter, ModalHeader } from "./Modal"
 
 type Story = StoryObj<typeof Modal>
 
@@ -23,7 +23,8 @@ const DefaultTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal {...args} title="Lorem ipsum" open={open} onOpenChange={setOpen}>
+      <Modal {...args} open={open} onOpenChange={setOpen}>
+        <ModalHeader title="Lorem ipsum" />
         <ModalBody>
           Lorem ipsum, dolor sit amet consectetur adipisicing elit. Assumenda
           eaque iure nostrum numquam illum aperiam quasi possimus explicabo
@@ -40,13 +41,11 @@ const WithHeaderAndFooterTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal
-        {...args}
-        open={open}
-        onOpenChange={setOpen}
-        title="Review Transaction"
-        description="Transfer 100 DOT from Hydration to Polkadot"
-      >
+      <Modal {...args} open={open} onOpenChange={setOpen}>
+        <ModalHeader
+          title="Review Transaction"
+          description="Transfer 100 DOT from Hydration to Polkadot"
+        />
         <ModalBody>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit ipsum
           tenetur modi consequatur qui, soluta ratione eveniet cumque aperiam
@@ -73,22 +72,20 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Open Modal</Button>
-      <Modal
-        {...args}
-        open={open}
-        title="Lorem ipsum"
-        onOpenChange={setOpen}
-        customTitle={
-          <Box m="calc(-1 * var(--modal-content-padding))">
-            <Input
-              placeholder="Search tokens..."
-              variant="embedded"
-              customSize="large"
-              iconStart={Search}
-            />
-          </Box>
-        }
-      >
+      <Modal {...args} open={open} onOpenChange={setOpen}>
+        <ModalHeader
+          title="Lorem ipsum"
+          customTitle={
+            <Box m="calc(-1 * var(--modal-content-padding))">
+              <Input
+                placeholder="Search tokens..."
+                variant="embedded"
+                customSize="large"
+                iconStart={Search}
+              />
+            </Box>
+          }
+        />
         <ModalBody p={0}>
           <Box
             mx="calc(-1 * var(--modal-content-padding))"

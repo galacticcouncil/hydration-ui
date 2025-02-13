@@ -4,6 +4,7 @@ import {
   Modal,
   ModalBody,
   ModalFooter,
+  ModalHeader,
 } from "@galacticcouncil/ui/components"
 
 import { Web3ConnectAccountSelect } from "@/components/Web3ConnectAccountSelect"
@@ -27,12 +28,8 @@ export const Web3ConnectModal = () => {
   }
 
   return (
-    <Modal
-      title="Connect wallet"
-      open={open}
-      onOpenChange={() => toggle()}
-      disableInteractOutside
-    >
+    <Modal open={open} onOpenChange={() => toggle()} disableInteractOutside>
+      <ModalHeader title="Connect wallet" />
       <ModalBody>
         {page === Web3ConnectModalPage.ProviderSelect && (
           <Web3ConnectProviderSelect
