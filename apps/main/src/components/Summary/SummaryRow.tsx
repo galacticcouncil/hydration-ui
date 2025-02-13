@@ -21,8 +21,8 @@ export const SummaryRow = ({
         sx={{ justifyContent: "space-between", alignItems: "center", my: 8 }}
       >
         <Flex
+          direction="column"
           sx={{
-            flexDirection: "column",
             gap: 4,
             justifyContent: "space-between",
           }}
