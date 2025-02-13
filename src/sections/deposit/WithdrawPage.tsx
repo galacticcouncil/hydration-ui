@@ -14,7 +14,7 @@ export const WithdrawPage = () => {
   const {
     asset,
     cexId,
-    back,
+    paginateBack,
     direction,
     page,
     reset,
@@ -32,7 +32,7 @@ export const WithdrawPage = () => {
       <SDepositContent data-page={page}>
         <DialogRoot open modal={false}>
           <ModalContents
-            onBack={back}
+            onBack={paginateBack}
             page={page}
             direction={direction}
             contents={[

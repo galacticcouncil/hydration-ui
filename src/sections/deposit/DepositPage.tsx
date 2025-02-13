@@ -1,6 +1,9 @@
 import { Root as DialogRoot } from "@radix-ui/react-dialog"
-import { Alert } from "components/Alert"
 import { ModalContents } from "components/Modal/contents/ModalContents"
+import { Text } from "components/Typography/Text/Text"
+import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { PendingDeposit } from "sections/deposit/components/PendingDeposit"
 import { useDeposit } from "sections/deposit/DepositPage.utils"
 import { DepositAsset } from "sections/deposit/steps/deposit/DepositAsset"
 import { DepositCexSelect } from "sections/deposit/steps/deposit/DepositCexSelect"
@@ -9,15 +12,15 @@ import { DepositMethodSelect } from "sections/deposit/steps/deposit/DepositMetho
 import { DepositSuccess } from "sections/deposit/steps/deposit/DepositSuccess"
 import { DepositTransfer } from "sections/deposit/steps/deposit/DepositTransfer"
 import { DepositMethod, DepositScreen } from "sections/deposit/types"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
-import { useTranslation } from "react-i18next"
 
 export const DepositPage = () => {
   const { t } = useTranslation()
+  const { account } = useAccount()
+
   const {
     asset,
-    back,
-    direction,
     page,
     method,
     setAsset,
@@ -25,19 +28,32 @@ export const DepositPage = () => {
     setTransfer,
     setSuccess,
     reset,
+    paginateTo,
+    paginateBack,
+    direction,
+    getPendingDeposits,
   } = useDeposit()
+
+  useEffect(() => {
+    return () => {
+      // reset to initial page wheb leaving the page
+      paginateTo(DepositScreen.Select)
+    }
+  }, [paginateTo])
 
   const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 
-  const showCexDepositAlert =
-    page === DepositScreen.DepositAsset && method === DepositMethod.DepositCex
+  const pendingDeposits = account ? getPendingDeposits(account.address) : []
+
+  const showPendingDeposits =
+    page === DepositScreen.Select && pendingDeposits.length > 0
 
   return (
     <SContainer>
       <SDepositContent data-page={page}>
         <DialogRoot open modal={false}>
           <ModalContents
-            onBack={back}
+            onBack={paginateBack}
             page={page}
             direction={direction}
             contents={[
@@ -64,7 +80,7 @@ export const DepositPage = () => {
                 title: t("deposit.cex.asset.title"),
                 content: (
                   <DepositAsset
-                    onAsssetSelect={back}
+                    onAsssetSelect={paginateBack}
                     onDepositSuccess={
                       isMultiStepTransfer ? setTransfer : setSuccess
                     }
@@ -84,10 +100,16 @@ export const DepositPage = () => {
           />
         </DialogRoot>
       </SDepositContent>
-      {showCexDepositAlert && (
-        <Alert variant="info" sx={{ mt: 10 }}>
-          {t("deposit.cex.asset.alert")}
-        </Alert>
+
+      {showPendingDeposits && (
+        <div>
+          <Text fs={18} font="GeistMono" sx={{ mb: 10 }}>
+            {t("deposit.cex.transfer.ongoing.title")}
+          </Text>
+          {pendingDeposits.map((deposit) => (
+            <PendingDeposit key={deposit.id} {...deposit} />
+          ))}
+        </div>
       )}
     </SContainer>
   )

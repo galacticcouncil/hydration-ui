@@ -1,6 +1,7 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { useCrossChainBalance, useCrossChainBalanceSubscription } from "api/xcm"
+import { Alert } from "components/Alert"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { Icon } from "components/Icon/Icon"
 import { Separator } from "components/Separator/Separator"
@@ -37,7 +38,13 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { asset, cexId, setAmount: setDepositedAmount } = useDeposit()
+  const {
+    asset,
+    cexId,
+    currentDeposit,
+    setAmount: setDepositedAmount,
+    setCurrentDeposit,
+  } = useDeposit()
 
   const activeCex = CEX_CONFIG.find((cex) => cex.id === cexId)
   const CexIcon = activeCex?.icon
@@ -61,9 +68,18 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       const balance = balances?.find((a) => a.key === assetKey)?.amount ?? null
       if (!isBigInt(balanceSnapshot.current)) {
         balanceSnapshot.current = balance
+        if (asset) {
+          setCurrentDeposit({
+            cexId,
+            asset,
+            address,
+            amount: "",
+            balanceSnapshot: balance ? balance.toString() : "0",
+          })
+        }
       }
     },
-    [assetKey],
+    [address, asset, assetKey, cexId, setCurrentDeposit],
   )
 
   useCrossChainBalanceSubscription(address, dstChain, setBalanceSnapshot)
@@ -80,7 +96,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
       if (balance > balanceSnapshot.current) {
         const amount = balance - balanceSnapshot.current
         onDepositSuccess(asset)
-        setDepositedAmount(amount)
+        setDepositedAmount(amount.toString())
+        if (currentDeposit)
+          setCurrentDeposit({ ...currentDeposit, amount: amount.toString() })
       }
     },
     [balance],
@@ -126,6 +144,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           assetId={asset?.assetId ?? ""}
         />
       </SAssetSelectButtonBox>
+
       {!account && <Web3ConnectModalButton />}
       {account && assetDetails && (
         <>
@@ -156,14 +175,24 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             </div>
           )}
           {isAccountAllowed && (
-            <div
-              sx={{ flex: "row", align: "center", justify: "center", gap: 6 }}
-            >
-              <Spinner size={14} />
-              <Text fs={12} lh={12} font="GeistSemiBold" tTransform="uppercase">
-                {t("deposit.cex.awaiting.title")}
-              </Text>
-            </div>
+            <>
+              <div
+                sx={{ flex: "row", align: "center", justify: "center", gap: 6 }}
+              >
+                <Spinner size={14} />
+                <Text
+                  fs={12}
+                  lh={12}
+                  font="GeistSemiBold"
+                  tTransform="uppercase"
+                >
+                  {t("deposit.cex.awaiting.title")}
+                </Text>
+              </div>
+              <Alert variant="info" sx={{ mt: 10 }}>
+                {t("deposit.cex.asset.alert")}
+              </Alert>
+            </>
           )}
           <Separator
             color="darkBlue401"

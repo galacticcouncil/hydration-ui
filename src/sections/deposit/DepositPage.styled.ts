@@ -2,6 +2,10 @@ import styled from "@emotion/styled"
 import { theme } from "theme"
 
 export const SContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
   width: 100%;
   max-width: 600px;
   margin: 0 auto;

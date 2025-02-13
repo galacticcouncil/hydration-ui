@@ -6,16 +6,18 @@ import KrakenLogo from "assets/icons/KrakenLogoSmall.svg?react"
 import KucoinLogo from "assets/icons/KucoinLogo.svg?react"
 import GateioLogo from "assets/icons/GateioLogo.svg?react"
 import { BigNumber } from "bignumber.js"
-import { useModalPagination } from "components/Modal/Modal.utils"
 import { useTranslation } from "react-i18next"
 import {
   AssetConfig,
+  DepositConfig,
   DepositMethod,
   DepositScreen,
 } from "sections/deposit/types"
 import { required, validAddress } from "utils/validators"
 import { z } from "zod"
 import { create } from "zustand"
+import { usePrevious } from "react-use"
+import { persist } from "zustand/middleware"
 
 const hydration = chainsMap.get("hydration") as EvmParachain
 
@@ -145,64 +147,137 @@ export const CEX_MIN_WITHDRAW_VALUES: Record<string, number> = {
 
 const DEFAULT_CEX_ID = CEX_CONFIG[0].id
 
+type TCreateDepositEntry = Omit<DepositConfig, "id" | "createdAt">
+
 type DepositStore = {
+  page: DepositScreen
   asset: AssetConfig | null
   cexId: string
   method: DepositMethod | null
-  amount: bigint
+  amount: string
+  currentDeposit: DepositConfig | null
+  pendingDeposits: DepositConfig[]
   setAsset: (asset: AssetConfig) => void
   setCexId: (cexId: string) => void
   setMethod: (method: DepositMethod) => void
-  setAmount: (amount: bigint) => void
+  setAmount: (amount: string) => void
+  setCurrentDeposit: (deposit: TCreateDepositEntry | null) => void
+  setPendingDeposit: (deposit: TCreateDepositEntry) => void
+  setFinishedDeposit: (id: string) => void
+  getPendingDeposits: (address: string) => DepositConfig[]
+  paginateTo: (page: DepositScreen) => void
+  paginateBack: () => void
   reset: () => void
 }
 
 const initialState = {
+  page: DepositScreen.Select,
   asset: null,
   cexId: DEFAULT_CEX_ID,
   method: null,
-  amount: 0n,
+  amount: "",
+  currentDeposit: null,
+  pendingDeposits: [],
 }
 
-export const useDepositStore = create<DepositStore>((set) => ({
-  ...initialState,
-  setAsset: (asset) => set({ asset }),
-  setCexId: (cexId) => set({ cexId }),
-  setMethod: (method) => set({ method }),
-  setAmount: (amount) => set({ amount }),
-  reset: () => set(initialState),
-}))
+export const useDepositStore = create(
+  persist<DepositStore>(
+    (set, get) => ({
+      ...initialState,
+      setAsset: (asset) => set({ asset }),
+      setCexId: (cexId) => set({ cexId }),
+      setMethod: (method) => set({ method }),
+      setAmount: (amount) => set({ amount }),
+      setCurrentDeposit: (deposit) =>
+        set({
+          currentDeposit: deposit
+            ? {
+                ...deposit,
+                createdAt: Date.now(),
+                id: createDepositId(deposit.asset.assetId, deposit.address),
+              }
+            : null,
+        }),
+      setPendingDeposit: (deposit) =>
+        set((state) => {
+          // remove previous deposit with the same id
+          const filteredPendingDeposits = state.pendingDeposits.filter(
+            ({ id }) =>
+              id !== createDepositId(deposit.asset.assetId, deposit.address),
+          )
+
+          return {
+            pendingDeposits: [
+              ...filteredPendingDeposits,
+              {
+                ...deposit,
+                createdAt: Date.now(),
+                id: createDepositId(deposit.asset.assetId, deposit.address),
+              },
+            ],
+          }
+        }),
+      getPendingDeposits: (address) =>
+        get().pendingDeposits.filter((deposit) => deposit.address === address),
+      setFinishedDeposit: (id) =>
+        set((state) => ({
+          pendingDeposits: state.pendingDeposits.filter(
+            (deposit) => deposit.id !== id,
+          ),
+        })),
+      paginateTo: (page) => set({ page }),
+      paginateBack: () => set((state) => ({ page: state.page - 1 })),
+      reset: () =>
+        set((state) => ({
+          ...initialState,
+          pendingDeposits: state.pendingDeposits,
+        })),
+    }),
+    {
+      name: "deposit",
+      version: 0.1,
+      partialize: (state) => ({
+        ...state,
+        ...initialState,
+        pendingDeposits: state.pendingDeposits,
+      }),
+    },
+  ),
+)
 
 export const useDeposit = () => {
-  const pagination = useModalPagination()
   const state = useDepositStore()
 
   const setAsset = (asset: AssetConfig) => {
     state.setAsset(asset)
-    pagination.paginateTo(DepositScreen.DepositAsset)
+    state.paginateTo(DepositScreen.DepositAsset)
   }
 
   const setMethod = (method: DepositMethod) => {
     state.setMethod(method)
-    pagination.paginateTo(DepositScreen.method)
+    state.paginateTo(DepositScreen.Method)
   }
 
   const setTransfer = () => {
-    pagination.paginateTo(DepositScreen.Transfer)
+    state.paginateTo(DepositScreen.Transfer)
   }
 
   const setSuccess = () => {
-    pagination.paginateTo(DepositScreen.Success)
+    state.paginateTo(DepositScreen.Success)
   }
 
   const reset = () => {
     state.reset()
-    pagination.paginateTo(DepositScreen.Select)
+    state.paginateTo(DepositScreen.Select)
   }
+
+  const previous = usePrevious(state.page)
+
+  const direction = (previous ?? initialState.page) < state.page ? 1 : -1
 
   return {
     ...state,
-    ...pagination,
+    direction,
     reset,
     setAsset,
     setMethod,
@@ -278,3 +353,6 @@ export const useTransferSchema = ({
     address: validAddress,
   })
 }
+
+export const createDepositId = (assetId: string, address: string) =>
+  `${assetId}-${address}`

@@ -108,7 +108,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
           onSuccess: () => {
             isFirstStepCompleted.current = true
             const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
-            setWithdrawnAmount(BigInt(amount.toString()))
+            setWithdrawnAmount(amount.toString())
           },
           steps: cex.isXcmCompatible ? undefined : getSteps(),
           toast: createToastMessages("xcm.transfer.toast", {
@@ -219,7 +219,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
       },
       {
         onSuccess: () => {
-          setWithdrawnAmount(BigInt(adjustedAmount.toString()))
+          setWithdrawnAmount(adjustedAmount.toString())
         },
         steps: getSteps(),
         toast: createToastMessages("xcm.transfer.toast", {
@@ -262,7 +262,7 @@ export const useWithdrawalOnchain = (assetId: string) => {
       },
       {
         onSuccess: () => {
-          setWithdrawnAmount(BigInt(amount))
+          setWithdrawnAmount(amount)
         },
         toast: createToastMessages("wallet.assets.transfer.toast", {
           t,

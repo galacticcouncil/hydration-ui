@@ -9,10 +9,12 @@ import { AddressBook } from "components/AddressBook/AddressBook"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { Button } from "components/Button/Button"
 import { Modal } from "components/Modal/Modal"
+import { useAssets } from "providers/assets"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
+  createDepositId,
   useDeposit,
   useTransferSchema,
 } from "sections/deposit/DepositPage.utils"
@@ -31,8 +33,11 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { getAsset } = useAssets()
   const {
     asset,
+    currentDeposit,
+    setFinishedDeposit,
     amount: depositAmount,
     setAmount: setDepositedAmount,
   } = useDeposit()
@@ -40,6 +45,8 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
   const address = account?.address ?? ""
   const srcChain = asset?.depositChain ?? ""
+
+  const assetMeta = getAsset(asset?.assetId ?? "")
 
   const wallet = useCrossChainWallet()
 
@@ -89,7 +96,12 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
   }, [xTransfer])
 
   const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction({
-    onSuccess: onTransferSuccess,
+    onSuccess: () => {
+      if (asset) {
+        setFinishedDeposit(createDepositId(asset.assetId, address))
+      }
+      onTransferSuccess()
+    },
   })
 
   const zodSchema = useTransferSchema({
@@ -102,7 +114,10 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
   const form = useForm({
     mode: "onChange",
     defaultValues: {
-      amount: "",
+      amount:
+        currentDeposit && assetMeta
+          ? BN(currentDeposit.amount).shiftedBy(-assetMeta.decimals).toString()
+          : "",
       address,
     },
     resolver: zodResolver(zodSchema),
@@ -125,7 +140,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
     const amount = BN(values.amount).shiftedBy(transferData.decimals).toString()
 
-    setDepositedAmount(BigInt(amount))
+    setDepositedAmount(amount)
   }
 
   function toggleAddressBook() {
