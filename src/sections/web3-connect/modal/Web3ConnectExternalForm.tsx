@@ -78,9 +78,20 @@ export const Web3ConnectExternalForm = ({
         externalWallet.proxyWalletProvider,
       )
 
+      console.log({ proxyWallet, externalWallet })
+
       if (proxyWallet?.installed) {
         await proxyWallet?.enable(POLKADOT_APP_NAME)
         const accounts = await proxyWallet?.getAccounts()
+        console.log(
+          accounts.map((account) =>
+            encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX),
+          ),
+          accounts,
+          "myAccounts",
+        )
+
+        console.log(delegates, "delegates")
         isDelegate = accounts?.some((account) =>
           delegates.find(
             (delegate) =>
@@ -93,7 +104,7 @@ export const Web3ConnectExternalForm = ({
         )
       }
     }
-
+    console.log(isProxy, isDelegate)
     if (isProxy && !isDelegate && !isDelegatesError) {
       form.setError("delegates", {})
       return
