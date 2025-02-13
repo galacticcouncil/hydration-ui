@@ -13,6 +13,7 @@ type Props = {
   assetId: string
   className?: string
   fullWidth?: boolean
+  disabled?: boolean
 }
 
 export const AssetSelectButton = ({
@@ -20,6 +21,7 @@ export const AssetSelectButton = ({
   assetId,
   className,
   fullWidth,
+  disabled,
 }: Props) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
@@ -38,6 +40,7 @@ export const AssetSelectButton = ({
       fullWidth={fullWidth}
       className={className}
       size="small"
+      disabled={disabled}
       onClick={(e) => {
         e.preventDefault()
         onClick?.()

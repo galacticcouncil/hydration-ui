@@ -15,6 +15,8 @@ import {
   isEthereumProvider,
   requestNetworkSwitch,
 } from "utils/metamask"
+import { sleep } from "utils/helpers"
+import { EvmChain } from "@galacticcouncil/xcm-core"
 
 type PermitMessage = {
   from: string
@@ -55,8 +57,8 @@ export class EthereumSigner {
       this.signer.provider.getGasPrice(),
     ])
 
-    const onePrc = gasPrice.div(100)
-    const gasPricePlus = gasPrice.add(onePrc)
+    const fivePrc = gasPrice.div(100).mul(5)
+    const gasPricePlus = gasPrice.add(fivePrc)
 
     return {
       gas,
@@ -70,11 +72,12 @@ export class EthereumSigner {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
-        onSwitch: () => {
-          // update signer after network switch
-          this.signer = this.getSigner(this.provider)
-        },
       })
+      // update signer after network switch
+      // give some leeway for the network switch to take effect,
+      // some wallets like Coinbase dont reflect the change inside provider immediately
+      await sleep(200)
+      this.signer = this.getSigner(this.provider)
     }
   }
 
@@ -234,7 +237,8 @@ export class EthereumSigner {
     transaction: TransactionRequest & { chain?: string },
   ) => {
     const { chain, ...tx } = transaction
-    const from = chain && chainsMap.get(chain) ? chain : "hydration"
+    const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
+    const chainCfg = chainsMap.get(from) as EvmChain
 
     await this.requestNetworkSwitch(from)
 
@@ -242,10 +246,16 @@ export class EthereumSigner {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
 
+      const chainId = chainCfg.evmChain.id
+      const nonce = await this.signer.getTransactionCount()
+
       return await this.signer.sendTransaction({
+        chainId,
+        nonce,
+        value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(12).div(10), // add 20%
+        gasLimit: gas.mul(13).div(10), // add 30%
         ...tx,
       })
     } else {
