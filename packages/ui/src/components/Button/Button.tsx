@@ -2,7 +2,13 @@ import React, { forwardRef } from "react"
 
 import { BoxProps } from "@/components/Box"
 
-import { SButton, SButtonProps, SButtonTransparent } from "./Button.styled"
+import {
+  MicroButtonVariant,
+  SButton,
+  SButtonProps,
+  SButtonTransparent,
+  SMicroButton,
+} from "./Button.styled"
 
 type ButtonOwnProps = {
   iconStart?: React.ComponentType
@@ -13,6 +19,10 @@ export type ButtonProps = BoxProps &
   ButtonOwnProps &
   SButtonProps &
   React.ButtonHTMLAttributes<HTMLButtonElement>
+
+export type MicroButtonProps = BoxProps & {
+  variant?: MicroButtonVariant
+} & React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, iconStart: IconStart, iconEnd: IconEnd, ...props }, ref) => {
@@ -41,3 +51,11 @@ export const ButtonTransparent = forwardRef<HTMLButtonElement, ButtonProps>(
 )
 
 ButtonTransparent.displayName = "ButtonTransparent"
+
+export const MicroButton = forwardRef<HTMLButtonElement, MicroButtonProps>(
+  (props, ref) => (
+    <SMicroButton as="button" type="button" ref={ref} {...props} />
+  ),
+)
+
+MicroButton.displayName = "MicroButton"

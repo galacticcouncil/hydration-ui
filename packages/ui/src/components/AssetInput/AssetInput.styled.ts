@@ -49,35 +49,3 @@ export const SAssetInput = styled(Input)<{ isError: boolean }>(
     color: ${isError ? theme.accents.danger.secondary : "inherit"};
   `,
 )
-
-export const SMaxButton = styled.button(
-  ({ theme }) => css`
-    all: unset;
-
-    cursor: pointer;
-
-    padding: 0 8px;
-
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 140%;
-    text-transform: uppercase;
-    color: ${theme.text.medium};
-
-    transition: ${theme.transitions.colors};
-
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
-    background: ${theme.buttons.secondary.low.rest};
-
-    &:not(:disabled):hover {
-      color: ${theme.text.high};
-      background: ${theme.buttons.outlineDark.hover};
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-
-      opacity: 0.2;
-    }
-  `,
-)

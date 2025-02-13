@@ -43,6 +43,20 @@ const formatters = {
       .join("")
   },
 
+  percent: (
+    value: number | bigint,
+    lng?: string,
+    options: Record<string, unknown> = {},
+  ) => {
+    return Intl.NumberFormat(lng, {
+      style: "percent",
+      maximumFractionDigits: getMaxSignificantDigits(value, options),
+    })
+      .formatToParts(Number(value) / 100)
+      .map(formatNumberParts)
+      .join("")
+  },
+
   currency: (
     value: number | bigint,
     lng?: string,
@@ -145,6 +159,9 @@ export const interpolationFormat: FormatFunction = (
   switch (formatName) {
     case "number":
       return formatters.number(value, lng, options)
+
+    case "percent":
+      return formatters.percent(value, lng, options)
 
     case "currency":
       return formatters.currency(value, lng, options)

@@ -1,13 +1,16 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
-  Flex,
+  Box,
   Input,
   Modal,
   ModalBody,
+  ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components"
@@ -19,22 +22,21 @@ type AssetSelectModalProps = {
   onOpenChange: (value: boolean) => void
   onSelect: (asset: TAssetData) => void
   emptyState?: ReactNode
+  open: boolean
 }
 
-export const AssetSelectModal = ({
+const Content = ({
   assets,
   onOpenChange,
   onSelect,
   emptyState,
 }: AssetSelectModalProps) => {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement>(null)
+
   const [search, setSearch] = useState("")
   const [highlighted, setHighlighted] = useState(0)
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
 
   const filteredAssets = useMemo(() => {
     if (search.length) {
@@ -47,6 +49,17 @@ export const AssetSelectModal = ({
 
     return assets
   }, [assets, search])
+
+  const virtualizer = useVirtualizer({
+    count: filteredAssets.length,
+    getScrollElement: () => divRef.current,
+    estimateSize: () => 50,
+    overscan: 5,
+  })
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   const onSelectOption = (asset: TAssetData) => {
     onSelect(asset)
@@ -95,52 +108,80 @@ export const AssetSelectModal = ({
   }
 
   return (
-    <Modal
-      open
-      title="Asset select modal"
-      onOpenChange={onOpenChange}
-      customTitle={
-        <Input
-          placeholder="Search tokens..."
-          variant="embedded"
-          customSize="medium"
-          iconStart={Search}
-          value={search}
-          onChange={(v) => setSearch(v.target.value)}
-          onKeyDown={handleInputKeyDown}
-          ref={inputRef}
-          css={{ flexGrow: 1 }}
-        />
-      }
-    >
+    <>
+      <ModalHeader
+        title={t("assetSelector.title")}
+        customTitle={
+          <Input
+            placeholder={t("assetSelector.input.placeholder")}
+            variant="embedded"
+            customSize="medium"
+            iconStart={Search}
+            value={search}
+            onChange={(v) => setSearch(v.target.value)}
+            onKeyDown={handleInputKeyDown}
+            ref={inputRef}
+            css={{ flexGrow: 1 }}
+          />
+        }
+      />
       <ModalBody>
-        <Flex
+        <Box
           ref={divRef}
           tabIndex={0}
-          direction="column"
           onKeyDown={handleKeyDown}
           m="calc(-1 * var(--modal-content-padding))"
-          sx={{ minHeight: 360, outline: "none" }}
+          sx={{
+            height: ["calc(100vh - 120px)", 450],
+            outline: "none",
+            overflowY: "auto",
+          }}
         >
-          {filteredAssets.length
-            ? filteredAssets.map((asset, i) => (
-                <SOption
-                  key={`${asset.id}_${i}`}
-                  id={`asset-${i}`}
-                  role="option"
-                  highlighted={highlighted === i}
-                  onMouseMove={() => setHighlighted(i)}
-                  onClick={() => onSelectOption(asset)}
-                >
-                  <AssetLabelFull asset={asset} />
-                  <Text fs="p6" color={getToken("text.medium")}>
-                    $1 000
-                  </Text>
-                </SOption>
-              ))
-            : emptyState}
-        </Flex>
+          {filteredAssets.length ? (
+            <div
+              sx={{
+                width: "100%",
+                height: virtualizer.getTotalSize(),
+                position: "relative",
+              }}
+            >
+              {virtualizer.getVirtualItems().map((virtualRow) => {
+                const asset = filteredAssets[virtualRow.index]
+
+                return (
+                  <SOption
+                    key={virtualRow.key}
+                    id={`asset-${virtualRow.key}`}
+                    role="option"
+                    highlighted={highlighted === virtualRow.index}
+                    onMouseMove={() => setHighlighted(virtualRow.index)}
+                    onClick={() => onSelectOption(asset)}
+                    sx={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    <AssetLabelFull asset={asset} />
+                    <Text fs="p6" color={getToken("text.medium")}>
+                      $1 000
+                    </Text>
+                  </SOption>
+                )
+              })}
+            </div>
+          ) : (
+            emptyState
+          )}
+        </Box>
       </ModalBody>
+    </>
+  )
+}
+
+export const AssetSelectModal = (props: AssetSelectModalProps) => {
+  return (
+    <Modal open={props.open} onOpenChange={props.onOpenChange}>
+      <Content {...props} />
     </Modal>
   )
 }

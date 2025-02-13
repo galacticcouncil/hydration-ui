@@ -34,7 +34,7 @@ export const ProviderRpcSelect = () => {
           </>
         )}
       </Button>
-      <RpcSelectModal open={modalOpen} onOpenChange={setModalOpen} title="" />
+      <RpcSelectModal open={modalOpen} onOpenChange={setModalOpen} />
     </>
   )
 }

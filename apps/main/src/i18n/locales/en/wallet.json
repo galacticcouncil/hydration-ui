@@ -8,5 +8,8 @@
   "swap.header.dca": "DCA",
   "swap.header.market": "Market",
   "market.form.type.single": "Single trade",
-  "market.form.type.split": "Split trade"
+  "market.form.type.split": "Split trade",
+  "market.form.routes.label_one": "{{count}} Route",
+  "market.form.routes.label_other": "{{count}} Routes",
+  "market.form.routes.desc": "Use accumulated asset (USDT) to avoid extra routing cost."
 }

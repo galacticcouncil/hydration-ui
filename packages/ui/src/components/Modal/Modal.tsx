@@ -3,7 +3,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
 import { forwardRef, ReactNode } from "react"
 
-import { Drawer } from "@/components/Drawer"
+import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { useBreakpoints } from "@/theme"
 
@@ -69,40 +69,57 @@ const ModalDescription = forwardRef<
 ))
 ModalDescription.displayName = DialogPrimitive.Description.displayName
 
+type ModalHeaderProps = {
+  title: string
+  description?: string
+  customHeader?: ReactNode
+  customTitle?: ReactNode
+}
+
 const ModalHeader = ({
   title,
   description,
   customHeader,
   customTitle,
   ...props
-}: FlexProps & {
-  title: string
-  description?: string
-  customHeader?: ReactNode
-  customTitle?: ReactNode
-}) => (
-  <SModalHeader {...props}>
-    <Flex>
-      {customTitle ? (
-        <>
-          <VisuallyHidden.Root>
-            <ModalTitle>{title}</ModalTitle>
-          </VisuallyHidden.Root>
-          {customTitle}
-        </>
-      ) : (
-        <ModalTitle>{title}</ModalTitle>
-      )}
+}: FlexProps & ModalHeaderProps) => {
+  const { gte } = useBreakpoints()
 
-      <SModalClose className="close">
-        <X sx={{ width: 20, height: 20 }} />
-      </SModalClose>
-    </Flex>
+  if (!gte("md")) {
+    return (
+      <DrawerHeader
+        title={title}
+        description={description}
+        customHeader={customHeader}
+        customTitle={customTitle}
+      />
+    )
+  }
 
-    {description && <ModalDescription>{description}</ModalDescription>}
-    {customHeader}
-  </SModalHeader>
-)
+  return (
+    <SModalHeader {...props}>
+      <Flex>
+        {customTitle ? (
+          <>
+            <VisuallyHidden.Root>
+              <ModalTitle>{title}</ModalTitle>
+            </VisuallyHidden.Root>
+            {customTitle}
+          </>
+        ) : (
+          <ModalTitle>{title}</ModalTitle>
+        )}
+
+        <SModalClose className="close">
+          <X sx={{ width: 20, height: 20 }} />
+        </SModalClose>
+      </Flex>
+
+      {description && <ModalDescription>{description}</ModalDescription>}
+      {customHeader}
+    </SModalHeader>
+  )
+}
 ModalHeader.displayName = "ModalHeader"
 
 const ModalBody = (props: FlexProps) => (
@@ -115,35 +132,26 @@ ModalFooter.displayName = "ModalFooter"
 
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableInteractOutside?: boolean
-  title: string
-  description?: string
-  customHeader?: ReactNode
-  customTitle?: ReactNode
 }
 
 const Modal = ({
   children,
   disableInteractOutside = false,
-  title,
-  description,
-  customHeader,
-  customTitle,
   ...props
 }: ModalProps) => {
-  const { isDesktop } = useBreakpoints()
+  const { gte } = useBreakpoints()
 
-  if (!isDesktop) {
+  if (!gte("md")) {
     return (
-      <Drawer
-        title={title}
-        description={description}
-        disableInteractOutside={disableInteractOutside}
-        customHeader={customHeader}
-        customTitle={customTitle}
-        {...props}
-      >
-        {children}
-      </Drawer>
+      <DrawerRoot {...props}>
+        <DrawerContent
+          onInteractOutside={
+            disableInteractOutside ? (e) => e.preventDefault() : undefined
+          }
+        >
+          {children}
+        </DrawerContent>
+      </DrawerRoot>
     )
   }
 
@@ -154,12 +162,6 @@ const Modal = ({
           disableInteractOutside ? (e) => e.preventDefault() : undefined
         }
       >
-        <ModalHeader
-          title={title}
-          description={description}
-          customHeader={customHeader}
-          customTitle={customTitle}
-        />
         {children}
       </ModalContent>
     </ModalRoot>

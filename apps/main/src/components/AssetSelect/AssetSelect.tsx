@@ -68,14 +68,14 @@ export const AssetSelect = ({
         }
         symbol={selectedAsset?.symbol}
       />
-      {openModal && (
-        <AssetSelectModal
-          assets={assets}
-          onOpenChange={setOpeModal}
-          onSelect={setSelectedAsset}
-          emptyState={<EmptyState />}
-        />
-      )}
+
+      <AssetSelectModal
+        open={openModal}
+        assets={assets}
+        onOpenChange={setOpeModal}
+        onSelect={setSelectedAsset}
+        emptyState={<EmptyState />}
+      />
     </>
   )
 }
