@@ -142,7 +142,10 @@ export const CEX_MIN_DEPOSIT_VALUES: Record<string, number> = {
 }
 
 export const CEX_MIN_WITHDRAW_VALUES: Record<string, number> = {
-  "5": 2,
+  "5": 2.5,
+  "0": 5,
+  "10": 4,
+  "22": 4,
 }
 
 const DEFAULT_CEX_ID = CEX_CONFIG[0].id

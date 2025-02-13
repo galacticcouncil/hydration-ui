@@ -63,7 +63,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
 
     const { balance, min, max } = xTransfer.source
 
-    const minDeposit = BN(
+    const minWithdraw = BN(
       CEX_MIN_WITHDRAW_VALUES[asset?.assetId ?? ""] ?? "0",
     ).shiftedBy(balance.decimals)
 
@@ -71,7 +71,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
       symbol: balance.symbol,
       decimals: balance.decimals,
       balance: BN(balance.amount.toString()),
-      min: BN.max(min.amount.toString(), minDeposit),
+      min: BN.max(min.amount.toString(), minWithdraw),
       max: BN(max.amount.toString()),
     }
   }, [asset?.assetId, xTransfer])
