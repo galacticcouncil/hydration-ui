@@ -1,7 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
-import { forwardRef, ReactNode } from "react"
+import { FC, forwardRef, ReactNode } from "react"
 
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
@@ -11,6 +11,7 @@ import {
   SModalBody,
   SModalClose,
   SModalContent,
+  SModalContentDivider,
   SModalDescription,
   SModalFooter,
   SModalHeader,
@@ -69,20 +70,20 @@ const ModalDescription = forwardRef<
 ))
 ModalDescription.displayName = DialogPrimitive.Description.displayName
 
-type ModalHeaderProps = {
+type ModalHeaderProps = Omit<FlexProps, "title"> & {
   title: string
   description?: string
   customHeader?: ReactNode
   customTitle?: ReactNode
 }
 
-const ModalHeader = ({
+const ModalHeader: FC<ModalHeaderProps> = ({
   title,
   description,
   customHeader,
   customTitle,
   ...props
-}: FlexProps & ModalHeaderProps) => {
+}) => {
   const { gte } = useBreakpoints()
 
   if (!gte("md")) {
@@ -168,11 +169,14 @@ const Modal = ({
   )
 }
 
+const ModalContentDivider = SModalContentDivider
+
 export {
   Modal,
   ModalBody,
   ModalClose,
   ModalContent,
+  ModalContentDivider,
   ModalDescription,
   ModalFooter,
   ModalHeader,

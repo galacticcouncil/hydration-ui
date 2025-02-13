@@ -9,7 +9,7 @@ type TextSize = keyof ThemeProps["typography"]["text"]["size"]
 
 export type TextProps = BoxProps & {
   fw?: ResponsiveStyleValue<400 | 500 | 600>
-  lh?: ResponsiveStyleValue<number>
+  lh?: ResponsiveStyleValue<number | string>
   fs?: TextSize | ResponsiveStyleValue<number>
   font?: ThemeFont
   align?: ThemeUICSSProperties["textAlign"]

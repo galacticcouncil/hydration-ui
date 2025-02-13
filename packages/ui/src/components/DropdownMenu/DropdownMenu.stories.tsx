@@ -2,15 +2,19 @@ import { Meta, StoryFn } from "@storybook/react"
 import { SettingsIcon } from "lucide-react"
 
 import { Rectangle7101 } from "@/assets/icons"
+import {
+  SMenuItem,
+  SMenuItemDescription,
+  SMenuItemIcon,
+  SMenuItemLabel,
+  SMenuSelectionItem,
+  SMenuSelectionItemArrow,
+} from "@/components/Menu"
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuItemArrow,
-  DropdownMenuItemDescription,
-  DropdownMenuItemIcon,
-  DropdownMenuItemLabel,
   DropdownMenuTrigger,
 } from "./DropdownMenu.styled"
 
@@ -25,18 +29,24 @@ export const DropdownMenuStory: StoryFn = () => {
         <SettingsIcon size={21} />
       </DropdownMenuTrigger>
       <DropdownMenuContent fullWidth>
-        <DropdownMenuItem>
-          <DropdownMenuItemIcon component={Rectangle7101} />
-          <DropdownMenuItemLabel>Item 1</DropdownMenuItemLabel>
-          <DropdownMenuItemArrow />
+        <DropdownMenuItem asChild>
+          <SMenuSelectionItem>
+            <SMenuItemIcon component={Rectangle7101} />
+            <SMenuItemLabel>Item 1</SMenuItemLabel>
+            <SMenuSelectionItemArrow />
+          </SMenuSelectionItem>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <DropdownMenuItemIcon component={Rectangle7101} />
-          <DropdownMenuItemLabel>Item 2</DropdownMenuItemLabel>
-          <DropdownMenuItemDescription>Description</DropdownMenuItemDescription>
+        <DropdownMenuItem asChild>
+          <SMenuItem>
+            <SMenuItemIcon component={Rectangle7101} />
+            <SMenuItemLabel>Item 2</SMenuItemLabel>
+            <SMenuItemDescription>Description</SMenuItemDescription>
+          </SMenuItem>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <DropdownMenuItemLabel>Item 3</DropdownMenuItemLabel>
+        <DropdownMenuItem asChild>
+          <SMenuItem>
+            <SMenuItemLabel>Item 3</SMenuItemLabel>
+          </SMenuItem>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

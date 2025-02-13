@@ -28,9 +28,10 @@ export const STabBarItem = styled.div`
   height: 50px;
   padding: 7px 17px 5px 17px;
 
-  :active {
+  text-decoration: none;
+
+  &:focus {
     outline: none;
-    border: none;
   }
 `
 
@@ -39,8 +40,8 @@ export const STabBarIcon = styled(Icon)(
     color: ${theme.icons.soft};
 
     *[data-status="active"] &,
-    ${STabBarItem}:hover &,
-    ${STabBarItem}:active & {
+    ${STabBarItem}[data-state="open"] &,
+    ${STabBarItem}:hover & {
       color: ${theme.controls.solid.activeHover};
     }
   `,
@@ -58,9 +59,36 @@ export const STabBarLabel = styled.span(
     white-space: nowrap;
 
     *[data-status="active"] &,
-    ${STabBarItem}:hover &,
-    ${STabBarItem}:active & {
+    ${STabBarItem}[data-state="open"] &,
+    ${STabBarItem}:hover & {
       color: ${theme.textButtons.small.hover};
+    }
+  `,
+)
+
+export const STabBarMenuAction = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: ${theme.scales.paddings.m}px
+      ${theme.containers.paddings.tertiary}px;
+
+    cursor: pointer;
+
+    & svg {
+      height: 24px;
+      width: 24px;
+
+      color: ${theme.icons.onSurface};
+    }
+
+    &:active svg,
+    &:focus svg,
+    &:hover svg {
+      color: ${theme.controls.solid.activeHover};
     }
   `,
 )

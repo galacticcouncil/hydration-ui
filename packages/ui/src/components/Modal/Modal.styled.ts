@@ -4,6 +4,7 @@ import { Close, Content, Overlay } from "@radix-ui/react-dialog"
 import { Box } from "@/components/Box"
 import { Flex } from "@/components/Flex"
 import { Paper } from "@/components/Paper"
+import { Separator } from "@/components/Separator"
 import { Text } from "@/components/Text"
 import { mq } from "@/theme"
 
@@ -163,4 +164,9 @@ export const SModalTitle = styled(Text)`
 export const SModalDescription = styled(Text)`
   color: ${({ theme }) => theme.text.medium};
   font-size: ${({ theme }) => theme.paragraphSize.p5};
+`
+
+export const SModalContentDivider = styled(Separator)`
+  margin: 0 calc(0px - var(--modal-content-padding));
+  width: calc(100% + calc(2 * var(--modal-content-padding)));
 `

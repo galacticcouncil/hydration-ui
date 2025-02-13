@@ -1,4 +1,3 @@
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Web3ConnectModal } from "@galacticcouncil/web3-connect"
 import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
@@ -13,12 +12,13 @@ import { assetsQuery } from "@/api/assets"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const MobileTabBar = lazy(async () => ({
-  default: await import("@/modules/layout/components/MobileTabBar").then(
-    (m) => m.MobileTabBar,
-  ),
+  default: await import(
+    "@/modules/layout/components/MobileTabBar/MobileTabBar"
+  ).then((m) => m.MobileTabBar),
 }))
 
 const Subscriptions = () => {
@@ -38,16 +38,16 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { isApiLoaded } = useRpcProvider()
-  const { isDesktop } = useBreakpoints()
+  const hasTopNavbar = useHasTopNavbar()
 
   return (
     <main sx={{ overflow: "auto" }}>
       <MainLayout />
       <ScrollRestoration />
-      {isDesktop && <ReactQueryDevtools buttonPosition="bottom-left" />}
-      {isDesktop && <TanStackRouterDevtools position="bottom-left" />}
+      {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
+      {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
       {isApiLoaded && <Subscriptions />}
-      {isDesktop ? <ProviderRpcSelect /> : <MobileTabBar />}
+      {hasTopNavbar ? <ProviderRpcSelect /> : <MobileTabBar />}
       <Web3ConnectModal />
     </main>
   )

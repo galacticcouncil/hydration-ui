@@ -5,6 +5,7 @@ import { BoxProps } from "@/components/Box"
 import {
   MicroButtonVariant,
   SButton,
+  SButtonIcon,
   SButtonProps,
   SButtonTransparent,
   SMicroButton,
@@ -59,3 +60,11 @@ export const MicroButton = forwardRef<HTMLButtonElement, MicroButtonProps>(
 )
 
 MicroButton.displayName = "MicroButton"
+
+export const ButtonIcon = forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => {
+    return <SButtonIcon type="button" ref={ref} {...props} />
+  },
+)
+
+ButtonIcon.displayName = "ButtonIcon"

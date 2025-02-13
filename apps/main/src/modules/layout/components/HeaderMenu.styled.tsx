@@ -3,7 +3,7 @@ import styled from "@emotion/styled"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 
 export const SHeaderMenu = styled(Flex)`
-  gap: 4px;
+  gap: 2px;
   overflow: hidden;
 `
 
@@ -16,18 +16,18 @@ export const SHeaderMenuItem = styled(Text)<{
       visibility: hidden;
     `}
 
-    padding: 8px 10px;
+    height: 31px;
+    padding: ${theme.buttons.paddings.tertiary}px 10px;
 
-    color: ${theme.text.medium};
+    font-family: ${theme.fontFamilies1.secondary};
     font-size: ${theme.paragraphSize.p5};
     line-height: ${theme.lineHeight.s}px;
+    color: ${theme.text.medium};
     text-decoration: none;
-
-    border-radius: ${theme.radii.md}px;
 
     white-space: nowrap;
 
-    &.active,
+    &[data-status="active"],
     &:hover {
       color: ${theme.text.high};
     }

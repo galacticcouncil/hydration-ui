@@ -1,9 +1,8 @@
-import { Flex, Toggle } from "@galacticcouncil/ui/components"
-import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import { FC, lazy, LazyExoticComponent, SVGProps } from "react"
 
 import { SHeader } from "@/modules/layout/components/Header.styled"
-import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
+import { HeaderToolbar } from "@/modules/layout/components/HeaderToolbar"
+import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 
 const HeaderMenu = lazy(async () => ({
   default: await import("@/modules/layout/components/HeaderMenu").then(
@@ -24,27 +23,17 @@ const HydrationLogoFull = lazy(async () => ({
 }))
 
 export const Header = () => {
-  const { theme, setTheme } = useTheme()
-  const { isDesktop } = useBreakpoints()
+  const hasTopNavbar = useHasTopNavbar()
 
-  const Logo: LazyExoticComponent<FC<SVGProps<SVGSVGElement>>> = isDesktop
+  const Logo: LazyExoticComponent<FC<SVGProps<SVGSVGElement>>> = hasTopNavbar
     ? HydrationLogoFull
     : HydrationLogo
 
   return (
     <SHeader>
-      <Logo sx={{ flexShrink: 0 }} />
-      {isDesktop && <HeaderMenu />}
-      <Flex ml="auto" align="center" gap={12}>
-        <Flex gap={8}>
-          Dark Mode
-          <Toggle
-            checked={theme === "dark"}
-            onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
-          />
-        </Flex>
-        <HeaderWeb3ConnectButton />
-      </Flex>
+      <Logo />
+      {hasTopNavbar && <HeaderMenu />}
+      <HeaderToolbar />
     </SHeader>
   )
 }

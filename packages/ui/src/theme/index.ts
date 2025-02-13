@@ -16,9 +16,6 @@ export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
 export type ThemeToken = Join<Paths<ThemeProps>, ".">
 export type ThemeFont = keyof ThemeProps["fontFamilies1"]
 
-export type ScreenBreakpoint = "xs" | "sm" | "md" | "lg" | "xl"
-export type ScreenType = "mobile" | "tablet" | "desktop"
-
 const base = makeTheme({
   breakpoints: BREAKPOINTS_VALUES,
   space: [],
@@ -72,4 +69,9 @@ declare module "@emotion/react" {
 }
 
 export { ThemeProvider, useTheme } from "./provider"
-export { mq, useBreakpoints } from "@/styles/media"
+export {
+  mq,
+  type ScreenBreakpoint,
+  type ScreenType,
+  useBreakpoints,
+} from "@/styles/media"
