@@ -71,28 +71,18 @@ export const Web3ConnectExternalForm = ({
 
     const { isProxy, delegates } = await getDelegates(api, address)
 
-    let isDelegate = false
+    let hasDelegates = false
 
     if (isProxy) {
       const { wallet: proxyWallet } = getWalletProviderByType(
         externalWallet.proxyWalletProvider,
       )
 
-      console.log({ proxyWallet, externalWallet })
-
       if (proxyWallet?.installed) {
         await proxyWallet?.enable(POLKADOT_APP_NAME)
         const accounts = await proxyWallet?.getAccounts()
-        console.log(
-          accounts.map((account) =>
-            encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX),
-          ),
-          accounts,
-          "myAccounts",
-        )
 
-        console.log(delegates, "delegates")
-        isDelegate = accounts?.some((account) =>
+        hasDelegates = accounts?.some((account) =>
           delegates.find(
             (delegate) =>
               delegate ===
@@ -104,8 +94,7 @@ export const Web3ConnectExternalForm = ({
         )
       }
     }
-    console.log(isProxy, isDelegate)
-    if (isProxy && !isDelegate && !isDelegatesError) {
+    if (isProxy && !hasDelegates && !isDelegatesError) {
       form.setError("delegates", {})
       return
     }
@@ -116,20 +105,20 @@ export const Web3ConnectExternalForm = ({
     const hydraAddress = !isEvm
       ? getAddressVariants(values.address)?.hydraAddress ?? ""
       : ""
-    setAccount({
-      address,
-      displayAddress: isEvm ? evmAddress : hydraAddress,
-      name:
-        delegates.length && isDelegate
-          ? externalWallet.proxyAccountName
-          : externalWallet.accountName,
-      provider: WalletProviderType.ExternalWallet,
-      isExternalWalletConnected: true,
-    })
     onSelect()
     navigate({
       search: { account: evmAddress ? evmAddress.slice(2) : address },
       fromCurrent: true,
+    })
+    setAccount({
+      address,
+      displayAddress: isEvm ? evmAddress : hydraAddress,
+      name:
+        delegates.length && hasDelegates
+          ? externalWallet.proxyAccountName
+          : externalWallet.accountName,
+      provider: WalletProviderType.ExternalWallet,
+      isExternalWalletConnected: true,
     })
 
     if (!delegates.length || (delegates.length && isDelegatesError)) {

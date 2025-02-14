@@ -541,7 +541,7 @@ function getProviderQueryKey(
   return type ?? ""
 }
 
-function mapWalletAccount({
+export function mapWalletAccount({
   address,
   name,
   wallet,

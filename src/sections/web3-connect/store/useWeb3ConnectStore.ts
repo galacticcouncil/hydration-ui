@@ -76,6 +76,7 @@ type WalletProviderStore = WalletProviderState & {
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
+    recentProvider?: WalletProviderType,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
   getConnectedProviders: () => WalletProviderEntry[]
@@ -109,7 +110,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => set((state) => ({ ...state, account })),
-      setStatus: (provider, status) => {
+      setStatus: (provider, status, recentProvider) => {
         const isError = status === WalletProviderStatus.Error
         return set((state) => ({
           ...state,
@@ -119,7 +120,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
                 { type: provider, status },
               ]
             : state.providers,
-          recentProvider: provider,
+          recentProvider: recentProvider ?? provider,
           account: isError ? null : state.account,
           error: isError ? state.error : "",
         }))
