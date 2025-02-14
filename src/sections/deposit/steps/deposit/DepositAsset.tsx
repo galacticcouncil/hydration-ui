@@ -203,7 +203,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
           />
         </>
       )}
-      <CexDepositGuide />
+      <CexDepositGuide cexId={cexId} ss58Format={getAddressPrefix(dstChain)} />
     </div>
   )
 }

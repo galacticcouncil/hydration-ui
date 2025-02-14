@@ -108,8 +108,8 @@ export const DepositPage = () => {
       </SDepositContent>
 
       {showPendingDeposits && (
-        <div>
-          <Text fs={18} font="GeistMono" sx={{ mb: 10 }}>
+        <div sx={{ flex: "column", gap: 10 }}>
+          <Text fs={18} font="GeistMono">
             {t("deposit.cex.transfer.ongoing.title")}
           </Text>
           {pendingDeposits.map((deposit) => (
