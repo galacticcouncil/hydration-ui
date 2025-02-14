@@ -28,8 +28,6 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 declare module "@talismn/connect-wallets" {
   interface Wallet {
     appLink?: string
-    deepLink?: string
-    universalLink?: string
   }
 }
 
