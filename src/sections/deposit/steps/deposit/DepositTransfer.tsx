@@ -50,29 +50,30 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
   const wallet = useCrossChainWallet()
 
-  const { data: xTransfer } = useCrossChainTransfer(
-    wallet,
-    {
-      asset: asset?.data.asset.key ?? "",
-      srcAddr: address,
-      dstAddr: address,
-      srcChain: srcChain,
-      dstChain: "hydration",
-    },
-    {
-      onSuccess: ({ source }) => {
-        if (depositAmount && !form.getValues("amount")) {
-          const amount = BN.min(
-            depositAmount.toString(),
-            source.max.amount.toString(),
-          )
-
-          const shiftedAmount = amount.shiftedBy(-source.balance.decimals)
-          form.setValue("amount", shiftedAmount.toString())
-        }
+  const { data: xTransfer, isLoading: isLoadingTransfer } =
+    useCrossChainTransfer(
+      wallet,
+      {
+        asset: asset?.data.asset.key ?? "",
+        srcAddr: address,
+        dstAddr: address,
+        srcChain: srcChain,
+        dstChain: "hydration",
       },
-    },
-  )
+      {
+        onSuccess: ({ source }) => {
+          if (depositAmount && !form.getValues("amount")) {
+            const amount = BN.min(
+              depositAmount.toString(),
+              source.max.amount.toString(),
+            )
+
+            const shiftedAmount = amount.shiftedBy(-source.balance.decimals)
+            form.setValue("amount", shiftedAmount.toString())
+          }
+        },
+      },
+    )
 
   const transferData = useMemo(() => {
     if (!xTransfer)
@@ -95,14 +96,17 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     }
   }, [xTransfer])
 
-  const { mutateAsync: sendTx, isLoading } = useCrossChainTransaction({
-    onSuccess: () => {
-      if (asset) {
-        setFinishedDeposit(createDepositId(asset.assetId, address))
-      }
-      onTransferSuccess()
-    },
-  })
+  const { mutateAsync: sendTx, isLoading: isLoadingTx } =
+    useCrossChainTransaction({
+      onSuccess: () => {
+        if (asset) {
+          setFinishedDeposit(createDepositId(asset.assetId, address))
+        }
+        onTransferSuccess()
+      },
+    })
+
+  const isLoading = isLoadingTransfer || isLoadingTx
 
   const zodSchema = useTransferSchema({
     min: transferData.min,
@@ -157,6 +161,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
             render={({ field, fieldState }) => (
               <div sx={{ flex: "column" }}>
                 <AssetSelect
+                  disabled={isLoading}
                   name={field.name}
                   value={field.value}
                   id={asset?.assetId ?? ""}
@@ -194,9 +199,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
             disabled={isLoading}
             variant={isLoading ? "secondary" : "primary"}
           >
-            {isLoading
-              ? t("deposit.cex.transfer.depositing")
-              : t("deposit.cex.transfer.button")}
+            {t("deposit.cex.transfer.button")}
           </Button>
         </div>
       </form>

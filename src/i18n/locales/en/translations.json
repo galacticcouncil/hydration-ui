@@ -1317,7 +1317,6 @@
   "deposit.cex.awaiting.title": "Awaiting deposit",
   "deposit.cex.transfer.title": "Deposit to Hydration",
   "deposit.cex.transfer.button": "Confirm deposit",
-  "deposit.cex.transfer.depositing": "Depositing...",
   "deposit.cex.transfer.addressbook.title": "Select destination address",
   "deposit.cex.transfer.ongoing.status": "Ongoing",
   "deposit.cex.transfer.ongoing.title": "Ongoing deposits",
