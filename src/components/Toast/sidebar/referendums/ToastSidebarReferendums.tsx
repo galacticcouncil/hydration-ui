@@ -1,5 +1,6 @@
 import {
   TReferenda,
+  useAccountOpenGovVotes,
   useOpenGovReferendas,
   useReferendaTracks,
   useReferendums,
@@ -12,7 +13,8 @@ import { ReferendaDeprecated } from "components/ReferendumCard/ReferendaDeprecat
 
 export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
-  const openGovQuery = useOpenGovReferendas()
+  const { data: accountVotes = [] } = useAccountOpenGovVotes()
+  const { data: openGovQuery } = useOpenGovReferendas()
   const tracks = useReferendaTracks()
   const { data: hdxSupply } = useHDXSupplyFromSubscan()
   const { data: referendums = [] } = useReferendums("ongoing")
@@ -20,8 +22,8 @@ export const ToastSidebarReferendums = () => {
   return (
     <ToastSidebarGroup title={t("toast.sidebar.referendums.title")} open={true}>
       <div sx={{ flex: "column", gap: 8 }}>
-        {openGovQuery.data?.length && tracks.data
-          ? openGovQuery.data.map((referendum) => {
+        {openGovQuery?.length && tracks.data
+          ? openGovQuery.map((referendum) => {
               const track = tracks.data.get(
                 referendum.referendum.track.toString(),
               ) as TReferenda
@@ -33,6 +35,7 @@ export const ToastSidebarReferendums = () => {
                   referenda={referendum.referendum}
                   track={track}
                   totalIssuance={hdxSupply?.totalIssuance}
+                  voted={accountVotes.some((vote) => vote.id === referendum.id)}
                 />
               )
             })
