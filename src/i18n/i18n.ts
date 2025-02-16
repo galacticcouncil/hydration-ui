@@ -93,7 +93,7 @@ i18n
           if (num == null) return null
           return formatNum(
             num.toFixed(),
-            { notation: "compact", maximumSignificantDigits: 2 },
+            { notation: "compact", maximumSignificantDigits: 4 },
             lng,
           )?.replaceAll(
             getFormatSeparators(lng).group ?? ",",
