@@ -3,6 +3,7 @@ import { useCrossChainBalanceSubscription } from "api/xcm"
 import { useShallow } from "hooks/useShallow"
 import { useCallback, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { useEvent } from "react-use"
 import { CEX_CONFIG, useDepositStore } from "sections/deposit/DepositPage.utils"
 import { DepositConfig } from "sections/deposit/types"
 import { useToast } from "state/toasts"
@@ -23,6 +24,10 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
   const { success } = useToast()
 
   const successToastRef = useRef(success)
+
+  useEvent("beforeunload", (e: BeforeUnloadEvent) => {
+    e.preventDefault()
+  })
 
   useCrossChainBalanceSubscription(
     address,

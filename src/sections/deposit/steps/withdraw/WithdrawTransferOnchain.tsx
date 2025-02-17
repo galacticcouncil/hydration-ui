@@ -16,7 +16,7 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
   CEX_CONFIG,
-  CEX_MIN_WITHDRAW_VALUES,
+  CEX_WITHDRAW_LIMITS,
   useDeposit,
   useTransferSchema,
 } from "sections/deposit/DepositPage.utils"
@@ -69,9 +69,9 @@ export const WithdrawTransferOnchain: React.FC<
             .minus(assetMeta.existentialDeposit)
         : balance
 
-    const min = BN(
-      CEX_MIN_WITHDRAW_VALUES[asset?.assetId ?? ""] ?? "0",
-    ).shiftedBy(assetMeta.decimals)
+    const min = BN(CEX_WITHDRAW_LIMITS[asset?.assetId ?? ""] ?? "0").shiftedBy(
+      assetMeta.decimals,
+    )
 
     return {
       balance,

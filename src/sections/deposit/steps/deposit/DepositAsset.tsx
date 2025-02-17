@@ -15,7 +15,7 @@ import { AccountBox } from "sections/deposit/components/AccountBox"
 import { CexDepositGuide } from "sections/deposit/components/CexDepositGuide"
 import {
   CEX_CONFIG,
-  CEX_MIN_DEPOSIT_VALUES,
+  CEX_DEPOSIT_LIMITS,
   useDeposit,
 } from "sections/deposit/DepositPage.utils"
 import { SAssetSelectButtonBox } from "sections/deposit/steps/deposit/DepositAsset.styled"
@@ -117,7 +117,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   const assetDetails = asset ? getAsset(asset.assetId) : null
 
-  const minDeposit = asset ? CEX_MIN_DEPOSIT_VALUES[asset.assetId] ?? 0 : 0
+  const minDeposit = asset ? CEX_DEPOSIT_LIMITS[asset.assetId] ?? 0 : 0
 
   return (
     <div sx={{ flex: "column", gap: 12 }}>
