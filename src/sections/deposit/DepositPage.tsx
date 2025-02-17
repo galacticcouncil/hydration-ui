@@ -33,14 +33,11 @@ export const DepositPage = () => {
     setTransfer,
     setSuccess,
     reset,
-    paginateTo,
     paginateBack,
     direction,
   } = useDeposit()
 
-  useUnmount(() => {
-    paginateTo(DepositScreen.Select)
-  })
+  useUnmount(reset)
 
   const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 
