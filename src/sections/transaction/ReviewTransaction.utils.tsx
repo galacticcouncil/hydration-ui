@@ -523,6 +523,7 @@ export const useSendDispatchPermit = (
     },
   }
 }
+
 export const useSendTransactionMutation = (
   options: MutationObserverOptions<
     ISubmittableResult,
@@ -555,7 +556,11 @@ export const useSendTransactionMutation = (
             setTxHash(event.txHash)
           }
 
-          if (event.type === "finalized") {
+          const isFound =
+            event.type === "finalized" ||
+            (event.type === "txBestBlocksState" && event.found)
+
+          if (isFound) {
             if (!event.ok) {
               setTxState("Invalid")
               return reject(

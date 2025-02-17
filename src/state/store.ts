@@ -66,6 +66,7 @@ export type TransactionOptions = {
   onClose?: () => void
   onError?: () => void
   disableAutoClose?: boolean
+  rejectOnClose?: boolean
 }
 
 interface Store {
@@ -115,7 +116,12 @@ export const useStore = create<Store>((set) => ({
               isProxy: !!options?.isProxy,
               steps: options?.steps,
               onBack: options?.onBack,
-              onClose: options?.onClose,
+              onClose: () => {
+                if (options?.rejectOnClose) {
+                  reject(new Error("Transaction closed"))
+                }
+                options?.onClose?.()
+              },
               disableAutoClose: options?.disableAutoClose,
             },
             ...(store.transactions ?? []),

@@ -105,6 +105,8 @@ export const useWithdraw = (cexId: string, assetId: string) => {
           tx: api.tx(call.data),
         },
         {
+          disableAutoClose: true,
+          rejectOnClose: true,
           onSuccess: () => {
             isFirstStepCompleted.current = true
             const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
@@ -218,6 +220,8 @@ export const useWithdraw = (cexId: string, assetId: string) => {
         },
       },
       {
+        rejectOnClose: true,
+        disableAutoClose: true,
         onSuccess: () => {
           setWithdrawnAmount(adjustedAmount.toString())
         },
@@ -261,6 +265,8 @@ export const useWithdrawalOnchain = (assetId: string) => {
             : api.tx.tokens.transfer(values.cexAddress, asset.id, amount),
       },
       {
+        rejectOnClose: true,
+        disableAutoClose: true,
         onSuccess: () => {
           setWithdrawnAmount(amount)
         },

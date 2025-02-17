@@ -98,6 +98,8 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
   const { mutateAsync: sendTx, isLoading: isLoadingTx } =
     useCrossChainTransaction({
+      disableAutoClose: true,
+      rejectOnClose: true,
       onSuccess: () => {
         if (asset) {
           setFinishedDeposit(createDepositId(asset.assetId, address))
