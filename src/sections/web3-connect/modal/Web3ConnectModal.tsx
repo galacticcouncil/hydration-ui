@@ -67,7 +67,6 @@ export const Web3ConnectModal = () => {
         }
 
         if (ixExternalProvider) {
-          console.log(account)
           if (account && account.name === proxyAccountName) {
             return paginateTo(ModalPage.Delegates)
           }
