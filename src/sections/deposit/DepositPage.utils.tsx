@@ -233,6 +233,7 @@ export const useDepositStore = create(
       reset: () =>
         set((state) => ({
           ...initialState,
+          currentDeposit: state.currentDeposit,
           pendingDeposits: state.pendingDeposits,
         })),
     }),
