@@ -28,7 +28,7 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
 
   return (
     <SHeaderMenu ref={observe} {...props}>
-      {items.map(({ key, to, children, order }) => {
+      {items.map(({ key, to, children }) => {
         const isMoreButton = key === moreButtonKey
         const subItems = isMoreButton ? hiddenItems : children
 
@@ -39,7 +39,6 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
               data-intersect={key}
             >
               <SHeaderMenuItem
-                sx={{ order }}
                 isHidden={isMoreButton || !visibleItemKeys.includes(key)}
                 asChild
               >

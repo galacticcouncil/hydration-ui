@@ -1,12 +1,10 @@
 import styled from "@emotion/styled"
 import { Flex } from "@galacticcouncil/ui/components"
-import { mq } from "@galacticcouncil/ui/theme"
 
 export const SHeader = styled(Flex)`
   width: 100%;
-  padding: 10px 20px;
-  gap: 20px;
-  flex-direction: column;
+  padding: 10px 30px;
+  gap: 40px;
   align-items: center;
 
   position: sticky;
@@ -16,10 +14,4 @@ export const SHeader = styled(Flex)`
   border-color: ${({ theme }) => theme.details.separators};
 
   background: ${({ theme }) => theme.surfaces.themeBasePalette.background};
-
-  ${mq("md")} {
-    padding: 10px 30px;
-    gap: 40px;
-    flex-direction: row;
-  }
 `

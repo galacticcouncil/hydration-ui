@@ -5,7 +5,6 @@ import {
   TwoColorSwap,
   TwoColorUsers,
 } from "@galacticcouncil/ui/assets/icons"
-import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 
 export const LINKS = {
   home: "/",
@@ -40,12 +39,13 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
 }
 
-type NavigationItem = {
-  key: keyof typeof LINKS
+export type NavigationKey = keyof typeof LINKS
+
+export type NavigationItem = {
+  key: NavigationKey
   to: string
   icon?: React.ComponentType
   enabled?: boolean
-  order?: ResponsiveStyleValue<number>
   children?: NavigationItem[]
 }
 
@@ -60,17 +60,14 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "otc", icon: TwoColorUsers, to: LINKS.otc },
       { key: "bonds", icon: PixelDollarBadge, to: LINKS.bonds },
     ],
-    order: [1],
   },
   {
     key: "borrow",
     to: LINKS.borrow,
-    order: [2],
   },
   {
     key: "liquidity",
     to: LINKS.liquidity,
-    order: [3],
     children: [
       { key: "myLiquidity", to: LINKS.myLiquidity },
       { key: "allPools", to: LINKS.allPools },
@@ -82,7 +79,6 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "wallet",
     to: LINKS.wallet,
-    order: [4],
     children: [
       { key: "walletAssets", to: LINKS.walletAssets },
       { key: "walletTransactions", to: LINKS.walletTransactions },
@@ -92,12 +88,10 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "crossChain",
     to: LINKS.crossChain,
-    order: [5],
   },
   {
     key: "stats",
     to: LINKS.stats,
-    order: [3, 6],
     children: [
       { key: "statsOverview", to: LINKS.statsOverview },
       { key: "statsTreasury", to: LINKS.statsTreasury },
@@ -106,16 +100,39 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "staking",
     to: LINKS.staking,
-    order: [4, 7],
   },
   {
     key: "referrals",
     to: LINKS.referrals,
-    order: [8],
   },
   {
     key: "memepad",
     to: LINKS.memepad,
-    order: [9],
   },
 ]
+
+export const desktopNavOrder: ReadonlyArray<NavigationKey> = [
+  "trade",
+  "borrow",
+  "liquidity",
+  "wallet",
+  "crossChain",
+  "stats",
+  "staking",
+  "referrals",
+  "memepad",
+]
+export const mobileNavOrder: ReadonlyArray<NavigationKey> = [
+  "wallet",
+  "trade",
+  "liquidity",
+  "borrow",
+  "crossChain",
+  "stats",
+  "staking",
+  "referrals",
+  "memepad",
+]
+
+export const NAV_ITEMS_SHOWN_MOBILE = 4
+export const NAV_ITEMS_SHOWN_TABLET = 5

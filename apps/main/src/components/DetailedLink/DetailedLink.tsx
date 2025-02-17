@@ -3,12 +3,12 @@ import { Box, BoxProps, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, LinkProps } from "@tanstack/react-router"
 
-import { LINKS } from "@/config/navigation"
+import { NavigationKey } from "@/config/navigation"
 
 import { SDetailedLink } from "./DetailedLink.styled"
 
 type DetailedLinkOwnProps = {
-  to: string | keyof typeof LINKS
+  to: string | NavigationKey
   title: string
   description?: string
   icon?: React.ComponentType
