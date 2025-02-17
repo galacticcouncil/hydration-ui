@@ -15,6 +15,8 @@ import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import React from "react"
 import { useInterval, useUpdate } from "react-use"
+import { useRpcProvider } from "providers/rpcProvider"
+import ClockIcon from "assets/icons/ClockIcon.svg?react"
 
 const DepositTimestamp: React.FC<{ timestamp: number }> = ({ timestamp }) => {
   const { t } = useTranslation()
@@ -39,6 +41,7 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
   amount,
   createdAt,
 }) => {
+  const { isLoaded } = useRpcProvider()
   const { t } = useTranslation()
   const cex = CEX_CONFIG.find((cex) => cex.id === cexId)!
 
@@ -71,13 +74,18 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
         )}
         <DepositTimestamp timestamp={createdAt} />
       </div>
-      <Text fs={14} color="brightBlue300">
+      <Text
+        fs={14}
+        color="brightBlue300"
+        sx={{ flex: "row", align: "center", gap: 4 }}
+      >
+        <Icon size={14} icon={<ClockIcon />} />
         {t("deposit.cex.transfer.ongoing.status")}
       </Text>
       <Button
         size="small"
         variant="primary"
-        disabled={!isValidAmount}
+        disabled={!isValidAmount || !isLoaded}
         onClick={() => {
           setMethod(DepositMethod.DepositCex)
           setAsset(asset)

@@ -8,6 +8,8 @@ import { WithdrawSuccess } from "sections/deposit/steps/withdraw/WithdrawSuccess
 import { WithdrawTransfer } from "sections/deposit/steps/withdraw/WithdrawTransfer"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
 import { WithdrawTransferOnchain } from "sections/deposit/steps/withdraw/WithdrawTransferOnchain"
+import { useUnmount } from "react-use"
+import { DepositScreen } from "sections/deposit/types"
 
 export const WithdrawPage = () => {
   const { t } = useTranslation()
@@ -21,11 +23,16 @@ export const WithdrawPage = () => {
     setAsset,
     setMethod,
     setSuccess,
+    paginateTo,
   } = useDeposit()
 
   const activeCex = CEX_CONFIG.find(({ id }) => id === cexId)
 
   const isOnchain = asset?.withdrawalChain === "hydration"
+
+  useUnmount(() => {
+    paginateTo(DepositScreen.Select)
+  })
 
   return (
     <SContainer>
