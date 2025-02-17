@@ -1,7 +1,6 @@
 import { Root as DialogRoot } from "@radix-ui/react-dialog"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
-import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { PendingDeposit } from "sections/deposit/components/PendingDeposit"
 import {
@@ -19,6 +18,7 @@ import { DepositMethod, DepositScreen } from "sections/deposit/types"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SContainer, SDepositContent } from "./DepositPage.styled"
 import { useShallow } from "hooks/useShallow"
+import { useUnmount } from "react-use"
 
 export const DepositPage = () => {
   const { t } = useTranslation()
@@ -38,12 +38,9 @@ export const DepositPage = () => {
     direction,
   } = useDeposit()
 
-  useEffect(() => {
-    return () => {
-      // reset to initial page wheb leaving the page
-      paginateTo(DepositScreen.Select)
-    }
-  }, [paginateTo])
+  useUnmount(() => {
+    paginateTo(DepositScreen.Select)
+  })
 
   const isMultiStepTransfer = asset ? asset.depositChain !== "hydration" : false
 

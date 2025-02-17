@@ -4,11 +4,13 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useShallow } from "hooks/useShallow"
 import { useTranslation } from "react-i18next"
-import { useDepositStore } from "sections/deposit/DepositPage.utils"
+import {
+  selectPendingDepositsByAccount,
+  useDepositStore,
+} from "sections/deposit/DepositPage.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { LINKS } from "utils/navigation"
 import { SBadge } from "./Deposit.styled"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { selectPendingDepositsByAccount } from "sections/deposit/DepositPage.utils"
 
 export const Deposit = () => {
   const { t } = useTranslation()

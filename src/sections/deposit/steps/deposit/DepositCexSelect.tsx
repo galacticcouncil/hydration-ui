@@ -1,5 +1,6 @@
 import React, { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { useMount } from "react-use"
 import { AssetSelect } from "sections/deposit/components/AssetSelect"
 import { VerticalTabs } from "sections/deposit/components/VerticalTabs"
 import { CEX_CONFIG, useDepositStore } from "sections/deposit/DepositPage.utils"
@@ -13,7 +14,10 @@ export const DepositCexSelect: React.FC<DepositCexSelectProps> = ({
   onAssetSelect,
 }) => {
   const { t } = useTranslation()
-  const { setCexId, cexId } = useDepositStore()
+  const { setCexId, cexId, setCurrentDeposit } = useDepositStore()
+
+  useMount(() => setCurrentDeposit(null))
+
   const items = useMemo(() => {
     return CEX_CONFIG.map(({ id, title, assets, icon }) => ({
       id,

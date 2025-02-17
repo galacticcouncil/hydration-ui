@@ -14,6 +14,7 @@ export const DepositMethodSelect: React.FC<methodSelectProps> = ({
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
   return (
     <>
       <div>

@@ -1,24 +1,28 @@
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { useCrossChainBalanceSubscription } from "api/xcm"
+import { differenceInMinutes } from "date-fns"
 import { useShallow } from "hooks/useShallow"
 import { useCallback, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { useEvent } from "react-use"
+import { useEvent, useInterval } from "react-use"
 import { CEX_CONFIG, useDepositStore } from "sections/deposit/DepositPage.utils"
-import { DepositConfig } from "sections/deposit/types"
+import { DepositConfig, DepositScreen } from "sections/deposit/types"
 import { useToast } from "state/toasts"
 import { pick } from "utils/rx"
 
 export type DepositSubscriptionProps = DepositConfig & {
   onDepositDetected: (deposit: DepositConfig) => void
+  onDepositExpired: () => void
 }
 
 const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
-  onDepositDetected,
   address,
   asset,
   cexId,
+  createdAt,
+  onDepositDetected,
   balanceSnapshot,
+  onDepositExpired,
 }) => {
   const { t } = useTranslation()
   const { success } = useToast()
@@ -28,6 +32,14 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
   useEvent("beforeunload", (e: BeforeUnloadEvent) => {
     e.preventDefault()
   })
+
+  useInterval(() => {
+    const diffMinutes = differenceInMinutes(Date.now(), createdAt)
+    // if the deposit is older than 10 minutes, expire it
+    if (diffMinutes >= 10) {
+      onDepositExpired()
+    }
+  }, 1000 * 60)
 
   useCrossChainBalanceSubscription(
     address,
@@ -82,13 +94,14 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
 }
 
 export const DepositManager = () => {
-  const { currentDeposit, setCurrentDeposit, setPendingDeposit } =
+  const { currentDeposit, setCurrentDeposit, setPendingDeposit, paginateTo } =
     useDepositStore(
       useShallow((state) =>
         pick(state, [
           "currentDeposit",
           "setCurrentDeposit",
           "setPendingDeposit",
+          "paginateTo",
         ]),
       ),
     )
@@ -97,6 +110,10 @@ export const DepositManager = () => {
   return (
     <DepositSubscription
       {...currentDeposit}
+      onDepositExpired={() => {
+        setCurrentDeposit(null)
+        paginateTo(DepositScreen.Select)
+      }}
       onDepositDetected={(deposit) => {
         setCurrentDeposit(null)
         setPendingDeposit(deposit)

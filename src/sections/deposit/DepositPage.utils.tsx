@@ -138,7 +138,10 @@ export const CEX_CONFIG = [
 ]
 
 export const CEX_DEPOSIT_LIMITS: Record<string, number> = {
-  "5": 2,
+  "5": 2.5,
+  "0": 5,
+  "10": 4,
+  "22": 4,
 }
 
 export const CEX_WITHDRAW_LIMITS: Record<string, number> = {
