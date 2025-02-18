@@ -3,6 +3,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { omit } from "utils/rx"
 import {
+  ALTERNATIVE_PROVIDERS,
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
@@ -28,6 +29,7 @@ export enum WalletMode {
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,
   ...EVM_PROVIDERS,
+  ...ALTERNATIVE_PROVIDERS,
 ]
 
 export const PROVIDERS_BY_WALLET_MODE: Record<
