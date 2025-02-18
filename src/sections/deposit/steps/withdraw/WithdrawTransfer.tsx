@@ -43,13 +43,14 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
 
   const wallet = useCrossChainWallet()
 
-  const { data: xTransfer } = useCrossChainTransfer(wallet, {
-    asset: asset?.data.asset.key ?? "",
-    srcAddr: address,
-    dstAddr: address,
-    srcChain: "hydration",
-    dstChain,
-  })
+  const { data: xTransfer, isLoading: isLoadingXTransfer } =
+    useCrossChainTransfer(wallet, {
+      asset: asset?.data.asset.key ?? "",
+      srcAddr: address,
+      dstAddr: address,
+      srcChain: "hydration",
+      dstChain,
+    })
 
   const transferData = useMemo(() => {
     if (!xTransfer)
@@ -92,7 +93,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     resolver: zodResolver(zodSchema),
   })
 
-  const { mutateAsync: withdraw, isLoading } = useWithdraw(
+  const { mutateAsync: withdraw, isLoading: isWithdrawing } = useWithdraw(
     cexId,
     asset?.assetId ?? "",
   )
@@ -183,15 +184,17 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
             </label>
           </Alert>
           <Button
-            isLoading={isLoading}
-            disabled={isLoading || !disclaimerAccepted}
-            variant={isLoading ? "secondary" : "primary"}
+            isLoading={isWithdrawing}
+            disabled={
+              isWithdrawing || isLoadingXTransfer || !disclaimerAccepted
+            }
+            variant={isWithdrawing ? "secondary" : "primary"}
           >
             {disclaimerAccepted
               ? t("withdraw.transfer.button")
               : t("withdraw.disclaimer.button")}
           </Button>
-          {isLoading && (
+          {isWithdrawing && (
             <WithdrawProcessing
               css={{ position: "absolute", inset: 0, width: "100%", zIndex: 1 }}
             />
