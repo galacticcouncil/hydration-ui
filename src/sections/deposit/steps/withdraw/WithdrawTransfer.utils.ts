@@ -185,16 +185,6 @@ export const useWithdraw = (cexId: string, assetId: string) => {
       .shiftedBy(-assetMeta.decimals)
       .toString()
 
-    console.log({
-      ed: ed.shiftedBy(-assetMeta.decimals).toString(),
-      paymentFee: paymentFee.shiftedBy(-assetMeta.decimals).toString(),
-      prevBalance: prevBalance.shiftedBy(-assetMeta.decimals).toString(),
-      newBalance: balance.shiftedBy(-assetMeta.decimals).toString(),
-      adjustedAmount: adjustedAmount.shiftedBy(-assetMeta.decimals).toString(),
-      amountReceived: amountReceived.shiftedBy(-assetMeta.decimals).toString(),
-      //newAmount: amount.minus(paymentFee)
-    })
-
     const isAssetHub = dstChain.key === "assethub"
 
     await createTransaction(
