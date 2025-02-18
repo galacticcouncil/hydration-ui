@@ -25,7 +25,6 @@ import {
 } from "./Web3ConnectExternalAccount.styled"
 import { H160, isEvmAccount } from "utils/evm"
 import { Web3ConnectEvmAccount } from "sections/web3-connect/accounts/Web3ConnectEvmAccount"
-import { useStore } from "state/store"
 
 export const Web3ConnectExternalAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
@@ -47,7 +46,6 @@ export const Web3ConnectExternalAccount: FC<
       ]),
     ),
   )
-  const { clearTransactions } = useStore()
 
   const { address, provider } = account
   const { wallet } = getWalletProviderByType(provider)
@@ -140,7 +138,6 @@ export const Web3ConnectExternalAccount: FC<
         onClick={() => {
           setAccount(account)
           toggle()
-          clearTransactions()
         }}
       />
     )
@@ -178,7 +175,6 @@ export const Web3ConnectExternalAccount: FC<
                     name: externalWallet.proxyAccountName,
                     delegate: address,
                   })
-                  clearTransactions()
                   await externalWallet?.enableProxy(POLKADOT_APP_NAME)
                   toggle()
                 }}

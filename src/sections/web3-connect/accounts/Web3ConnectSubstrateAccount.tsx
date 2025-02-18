@@ -2,13 +2,11 @@ import { ComponentPropsWithoutRef } from "react"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { useNavigate, useSearch } from "@tanstack/react-location"
 import { Web3ConnectAccount } from "./Web3ConnectAccount"
-import { useStore } from "state/store"
 
 export const Web3ConnectSubstrateAccount: React.FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
 > = ({ balance, ...account }) => {
   const { account: currentAccount, setAccount, toggle } = useWeb3ConnectStore()
-  const { clearTransactions } = useStore()
   const navigate = useNavigate()
   const search = useSearch<{ Search: { account?: string } }>()
 
@@ -26,7 +24,6 @@ export const Web3ConnectSubstrateAccount: React.FC<
         toggle()
         if (search.account) {
           navigate({ search: { account: undefined } })
-          clearTransactions()
         }
       }}
     />

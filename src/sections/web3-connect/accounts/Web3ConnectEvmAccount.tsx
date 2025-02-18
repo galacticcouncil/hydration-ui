@@ -17,13 +17,11 @@ import {
 import { H160 } from "utils/evm"
 import { isMetaMask, isMetaMaskLike, requestAccounts } from "utils/metamask"
 import { pick } from "utils/rx"
-import { useStore } from "state/store"
 
 export const Web3ConnectEvmAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
 > = ({ balance, ...account }) => {
   const { t } = useTranslation()
-  const { clearTransactions } = useStore()
   const {
     account: currentAccount,
     setAccount,
@@ -68,7 +66,6 @@ export const Web3ConnectEvmAccount: FC<
           toggle()
           if (search.account) {
             navigate({ search: { account: undefined } })
-            clearTransactions()
           }
         }}
       >
