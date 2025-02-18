@@ -33,13 +33,23 @@ type GridOwnProps = {
   gap?: ResponsiveStyleValue<string | number>
   repeat?: "fit" | "fill"
   justify?: ThemeUICSSProperties["justifyContent"]
+  align?: ThemeUICSSProperties["alignItems"]
 }
 
 export type GridProps = GridOwnProps & BoxProps
 
 export const Grid = forwardRef<HTMLElement, GridProps>(
   (
-    { columnWidth, columns, gap = 0, repeat = "fit", justify, sx, ...props },
+    {
+      columnWidth,
+      columns,
+      gap = 0,
+      repeat = "fit",
+      justify,
+      align,
+      sx,
+      ...props
+    },
     ref,
   ) => {
     const gridTemplateColumns = columnWidth
@@ -54,6 +64,7 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
           gridGap: gap,
           gridTemplateColumns,
           justify,
+          alignItems: align,
           ...sx,
         }}
         {...props}

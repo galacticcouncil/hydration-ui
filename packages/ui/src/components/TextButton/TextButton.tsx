@@ -1,6 +1,7 @@
+import { ChevronRight } from "lucide-react"
 import { forwardRef } from "react"
 
-import { ChevronRight, MoveUpRight } from "@/assets/icons/index"
+import { MoveUpRight } from "@/assets/icons"
 
 import {
   CustomTextButtonProps,

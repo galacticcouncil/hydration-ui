@@ -88,7 +88,7 @@ const Content = ({
       inputRef.current?.focus()
     } else if (e.key === "Enter") {
       const asset = filteredAssets[highlighted]
-      onSelectOption(asset)
+      onSelectOption(asset!)
     }
   }
 
@@ -155,13 +155,13 @@ const Content = ({
                     role="option"
                     highlighted={highlighted === virtualRow.index}
                     onMouseMove={() => setHighlighted(virtualRow.index)}
-                    onClick={() => onSelectOption(asset)}
+                    onClick={() => onSelectOption(asset!)}
                     sx={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    <AssetLabelFull asset={asset} />
+                    <AssetLabelFull asset={asset!} />
                     <Text fs="p6" color={getToken("text.medium")}>
                       $1 000
                     </Text>

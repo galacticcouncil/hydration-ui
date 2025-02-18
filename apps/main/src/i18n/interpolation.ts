@@ -87,7 +87,7 @@ const formatters = {
     }
 
     try {
-      return formatDate(date, options.format)
+      return formatDate(date, options.format!)
     } catch (error) {
       console.error(error)
     }
@@ -127,14 +127,14 @@ function parseFormatStr(formatStr: string | undefined) {
     const [name, args] = formatStr.split("(")
     formatName = name
 
-    const optList = args
-      .substring(0, args.length - 1)
+    const optList = args!
+      .substring(0, args!.length - 1)
       .split(";")
       .filter((x) => !!x)
 
     for (const item of optList) {
       const [key, ...rest] = item.split(":")
-      formatOptions[key.trim()] = rest
+      formatOptions[key!.trim()] = rest
         .join(":")
         .trim()
         .replace(/^'+|'+$/g, "")
