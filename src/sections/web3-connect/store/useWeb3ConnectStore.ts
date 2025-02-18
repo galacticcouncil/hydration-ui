@@ -112,7 +112,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => set((state) => ({ ...state, account })),
-      setStatus: (provider, status, recentProvider) => {
+      setStatus: (provider, status) => {
         const isError = status === WalletProviderStatus.Error
         return set((state) => ({
           ...state,
@@ -122,7 +122,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
                 { type: provider, status },
               ]
             : state.providers,
-          recentProvider: recentProvider ?? provider,
+          recentProvider: provider,
           account: isError ? null : state.account,
           error: isError ? state.error : "",
         }))
