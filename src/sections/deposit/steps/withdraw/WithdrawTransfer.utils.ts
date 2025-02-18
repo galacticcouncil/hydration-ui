@@ -105,11 +105,11 @@ export const useWithdraw = (cexId: string, assetId: string) => {
           rejectOnClose: true,
           onSuccess: () => {
             isFirstStepCompleted.current = true
-            const amountReceived = BN(values.amount)
+            const receivedAmount = BN(values.amount)
               .shiftedBy(assetMeta.decimals)
               .minus(xTransfer.destination.fee.amount.toString())
 
-            setWithdrawnAmount(amountReceived.toString())
+            setWithdrawnAmount(receivedAmount.toString())
           },
           steps: cex.isXcmCompatible ? undefined : getSteps(),
           toast: createToastMessages("xcm.transfer.toast", {
@@ -131,7 +131,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
     let paymentFee = BN_0
     let balance = BN_0
     let prevBalance = BN(xTransfer.destination.balance.amount.toString())
-    let amountReceived = BN_0
+    let receivedAmount = BN_0
     let ed = BN(externalApi.consts.balances.existentialDeposit.toString())
 
     if (dstChain.key === "assethub") {
@@ -147,12 +147,12 @@ export const useWithdraw = (cexId: string, assetId: string) => {
         prevBalance,
       )
 
-      amountReceived = balance.minus(prevBalance)
+      receivedAmount = balance.minus(prevBalance)
 
       const tx = externalApi.tx.assets.transfer(
         onChainAssetId,
         values.cexAddress,
-        amountReceived.toString(),
+        receivedAmount.toString(),
       )
 
       paymentFee = await calculateAssethubFee(
@@ -168,18 +168,18 @@ export const useWithdraw = (cexId: string, assetId: string) => {
         prevBalance,
       )
 
-      amountReceived = balance.minus(prevBalance)
+      receivedAmount = balance.minus(prevBalance)
 
-      const tx = externalApi.tx.balances.transfer(
+      const tx = externalApi.tx.balances.transferAllowDeath(
         values.cexAddress,
-        amountReceived.toString(),
+        receivedAmount.toString(),
       )
 
       paymentFee = await calculateNativeFee(tx, values.cexAddress)
     }
 
     const halfEd = ed.div(2)
-    const adjustedAmount = amountReceived.minus(paymentFee).minus(halfEd)
+    const adjustedAmount = receivedAmount.minus(paymentFee).minus(halfEd)
 
     const formattedAmount = adjustedAmount
       .shiftedBy(-assetMeta.decimals)
@@ -202,7 +202,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
               values.cexAddress,
               adjustedAmount.toString(),
             )
-          : externalApi.tx.balances.transfer(
+          : externalApi.tx.balances.transferAllowDeath(
               values.cexAddress,
               adjustedAmount.toString(),
             ),
