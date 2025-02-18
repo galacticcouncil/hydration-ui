@@ -8,17 +8,91 @@ import { differenceInHours, differenceInMinutes } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import request, { gql } from "graphql-request"
 import { useIndexerUrl } from "api/provider"
-import {
-  EvmParachain,
-  Parachain,
-  SubstrateApis,
-} from "@galacticcouncil/xcm-core"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
-const getSubscanEndpoint = (network: string, method: string) => {
-  return `https://${network}.api.subscan.io/api/scan/${method}`
-}
+
+// commented out xcm part to have implemnetation for the future when we can check a tarnsfer state
+// {
+//   const link = toastData.link
+
+//   if (link) {
+//     const network = extractKeyFromURL(link, toastData.xcm === "evm")
+
+//     if (network) {
+//       const isSubstrate = toastData.xcm === "substrate"
+//       const endpoint = getSubscanEndpoint(
+//         network,
+//         isSubstrate ? "extrinsic" : "evm/transaction",
+//       )
+
+//       const body = JSON.stringify({
+//         hash: toastData.txHash,
+//         events_limit: 1,
+//       })
+
+//       const subscanRes = await fetch(endpoint, {
+//         method: "POST",
+//         body,
+//       })
+
+//       const resData = await subscanRes.json()
+
+//       const tx = resData
+//       const isFinalized = isSubstrate
+//         ? !!tx.data?.finalized
+//         : tx.data.success || tx.data["error_type"].length
+
+//       if (tx?.data && isFinalized) {
+//         toast.removeToast(toastData.id)
+
+//         if (tx.data.success) {
+//           toast.add("success", { ...toastData, hidden: isHiddenToast })
+//         } else {
+//           toast.add("error", { ...toastData, hidden: isHiddenToast })
+//         }
+
+//         return true
+//       }
+
+//       if (minutesDiff >= 5) {
+//         toast.removeToast(toastData.id)
+//         toast.add("unknown", { ...toastData, hidden: isHiddenToast })
+
+//         return false
+//       }
+//     }
+//   }
+
+//   return false
+// }
+
+// const getSubscanEndpoint = (network: string, method: string) => {
+//   return `https://${network}.api.subscan.io/api/scan/${method}`
+// }
+
+// const extractKeyFromURL = (url: string, isEvm: boolean) => {
+//   if (isEvm) {
+//     const origin = new URL(url)?.origin
+
+//     const chain = [...chainsMap.values()].find((chain) => {
+//       if (chain.isEvmParachain()) {
+//         return (
+//           (chain as EvmParachain).client.chain.blockExplorers?.default.url ===
+//           origin
+//         )
+//       }
+
+//       return false
+//     })
+
+//     return chain?.key
+//   }
+
+//   const match = url.match(/^https?:\/\/([^.]+)\.subscan/)
+//   return match ? match[1] : null
+// }
 
 type TExtrinsic = {
   hash: string
@@ -199,28 +273,6 @@ const getWormholeTx = async (extrinsicIndex: string) => {
   }
 }
 
-const extractKeyFromURL = (url: string, isEvm: boolean) => {
-  if (isEvm) {
-    const origin = new URL(url)?.origin
-
-    const chain = [...chainsMap.values()].find((chain) => {
-      if (chain.isEvmParachain()) {
-        return (
-          (chain as EvmParachain).client.chain.blockExplorers?.default.url ===
-          origin
-        )
-      }
-
-      return false
-    })
-
-    return chain?.key
-  }
-
-  const match = url.match(/^https?:\/\/([^.]+)\.subscan/)
-  return match ? match[1] : null
-}
-
 export const useProcessToasts = (toasts: ToastData[]) => {
   const indexerUrl = useIndexerUrl()
   const toast = useToast()
@@ -244,111 +296,30 @@ export const useProcessToasts = (toasts: ToastData[]) => {
 
         // move to unknown state
         if (hoursDiff >= 1 || !toastData.txHash?.length) {
-          toast.remove(toastData.id)
           toast.add("unknown", { ...toastData, hidden: true })
 
           return false
         }
 
-        if (toastData.xcm) {
-          const link = toastData.link
+        const isEvm =
+          toastData.link?.includes("evm") ||
+          toastData.link?.includes("explorer.nice.hydration.cloud")
 
-          if (link) {
-            const network = extractKeyFromURL(link, toastData.xcm === "evm")
+        if (isEvm) {
+          const ethTx = await api.rpc.eth.getTransactionByHash(toastData.txHash)
 
-            if (network) {
-              const isSubstrate = toastData.xcm === "substrate"
-              const endpoint = getSubscanEndpoint(
-                network,
-                isSubstrate ? "extrinsic" : "evm/transaction",
-              )
+          if (ethTx) {
+            const blockNumber = ethTx.blockNumber.toString()
+            const indexInBlock = ethTx.transactionIndex.toString()
 
-              const body = JSON.stringify({
-                hash: toastData.txHash,
-                events_limit: 1,
-              })
-
-              const subscanRes = await fetch(endpoint, {
-                method: "POST",
-                body,
-              })
-
-              const resData = await subscanRes.json()
-
-              const tx = resData
-              const isFinalized = isSubstrate
-                ? !!tx.data?.finalized
-                : tx.data.success || tx.data["error_type"].length
-
-              if (tx?.data && isFinalized) {
-                toast.remove(toastData.id)
-
-                if (tx.data.success) {
-                  toast.add("success", { ...toastData, hidden: isHiddenToast })
-                } else {
-                  toast.add("error", { ...toastData, hidden: isHiddenToast })
-                }
-
-                return true
-              }
-
-              if (minutesDiff >= 5) {
-                toast.remove(toastData.id)
-                toast.add("unknown", { ...toastData, hidden: isHiddenToast })
-
-                return false
-              }
-            }
-          }
-
-          return false
-        } else {
-          const isEvm =
-            toastData.link?.includes("evm") ||
-            toastData.link?.includes("explorer.nice.hydration.cloud")
-
-          if (isEvm) {
-            const ethTx = await api.rpc.eth.getTransactionByHash(
-              toastData.txHash,
-            )
-
-            if (ethTx) {
-              const blockNumber = ethTx.blockNumber.toString()
-              const indexInBlock = ethTx.transactionIndex.toString()
-
-              const { extrinsics } = await getEvmExtrinsic(
-                indexerUrl,
-                Number(blockNumber),
-                Number(indexInBlock),
-              )
-
-              if (!!extrinsics.length) {
-                const isSuccess = extrinsics[0].success
-                toast.remove(toastData.id)
-
-                if (isSuccess) {
-                  toast.add("success", { ...toastData, hidden: isHiddenToast })
-                } else {
-                  toast.add("error", { ...toastData, hidden: isHiddenToast })
-                }
-
-                return true
-              }
-            }
-
-            return false
-          } else {
-            const res = await getExtrinsic(
+            const { extrinsics } = await getEvmExtrinsic(
               indexerUrl,
-              toastData.txHash as string,
+              Number(blockNumber),
+              Number(indexInBlock),
             )
 
-            const isExtrinsic = !!res.extrinsics.length
-
-            if (isExtrinsic) {
-              const isSuccess = res.extrinsics[0].success
-
-              toast.remove(toastData.id)
+            if (!!extrinsics.length) {
+              const isSuccess = extrinsics[0].success
 
               if (isSuccess) {
                 toast.add("success", { ...toastData, hidden: isHiddenToast })
@@ -358,6 +329,24 @@ export const useProcessToasts = (toasts: ToastData[]) => {
 
               return true
             }
+          }
+
+          return false
+        } else {
+          const res = await getExtrinsic(indexerUrl, toastData.txHash as string)
+
+          const isExtrinsic = !!res.extrinsics.length
+
+          if (isExtrinsic) {
+            const isSuccess = res.extrinsics[0].success
+
+            if (isSuccess) {
+              toast.add("success", { ...toastData, hidden: isHiddenToast })
+            } else {
+              toast.add("error", { ...toastData, hidden: isHiddenToast })
+            }
+
+            return true
           }
         }
 
@@ -389,7 +378,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
 
         if (chainKey === "ethereum") {
           if (diffInMinutes > 45) {
-            toast.remove(toastData.id)
             toast.add("unknown", omit(["bridge"], toastData))
           }
           const hash = url.hash.split("/").slice(-1)[0]
@@ -405,7 +393,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
             const parsedVaa = parseVaa(vaaBuffer)
 
             if (parsedVaa) {
-              toast.remove(toastData.id)
               toast.add("success", omit(["bridge"], toastData))
             }
 
@@ -414,7 +401,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           return false
         } else {
           if (diffInMinutes > 5) {
-            toast.remove(toastData.id)
             toast.add("unknown", omit(["bridge"], toastData))
           }
 
@@ -445,7 +431,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
             const evmTx = await getWormholeTx(extrinsicIndex)
 
             if (evmTx?.isMoonbeamSuccess === false && evmTx.hash) {
-              toast.remove(toastData.id)
               toast.add(
                 "error",
                 omit(["bridge"], {
@@ -456,7 +441,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
             }
             if (evmTx?.isMoonbeamSuccess === true && evmTx.hash) {
               //udpate a link to show tx details on wormhole
-              toast.edit(toastData.id, {
+              toast.editToast(toastData.id, {
                 link: `https://wormholescan.io/#/tx/${evmTx.hash}`,
                 bridge: "ethereum",
               })

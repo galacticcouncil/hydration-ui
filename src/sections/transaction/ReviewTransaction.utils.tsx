@@ -23,6 +23,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import {
+  useAccount,
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
@@ -230,23 +231,27 @@ export const useSendEvmTransactionMutation = (
   toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
+  const { account } = useAccount()
   const { t } = useTranslation()
-  const { loading, success, error, remove, sidebar } = useToast()
+  const { loading, success, error } = useToast()
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
-  const { account } = useEvmAccount()
+  const { account: evmAccount } = useEvmAccount()
   const isTestnet = useIsTestnet()
 
   const isMounted = useMountedState()
 
   const sendTx = useMutation(async ({ evmTx }) => {
     return await new Promise(async (resolve, reject) => {
+      const txWalletAddress = account?.address
       try {
         const txHash = evmTx?.hash
         const txData = evmTx?.data
 
         const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-        const chain = account?.chainId ? getEvmChainById(account.chainId) : null
+        const chain = evmAccount?.chainId
+          ? getEvmChainById(evmAccount.chainId)
+          : null
         const link =
           txHash && chain
             ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
@@ -261,7 +266,9 @@ export const useSendEvmTransactionMutation = (
         const xcm = xcallMeta ? "evm" : undefined
 
         const bridge =
-          chain?.isEvmChain() || destChain?.isEvmChain()
+          !isApproveTx &&
+          !isSnowBridge &&
+          (chain?.isEvmChain() || destChain?.isEvmChain())
             ? chain?.key
             : undefined
 
@@ -270,7 +277,7 @@ export const useSendEvmTransactionMutation = (
           title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
           link,
           txHash,
-          bridge: isApproveTx || isSnowBridge ? undefined : bridge,
+          bridge,
           hidden: true,
           xcm,
         })
@@ -279,23 +286,28 @@ export const useSendEvmTransactionMutation = (
 
         const receipt = await evmTx.wait(1)
 
-        if (isMounted() && !xcm) {
-          success({
-            title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-            link,
-            txHash,
-            hidden: sidebar,
-          })
-
-          remove(id)
+        if (isMounted() && !bridge) {
+          success(
+            {
+              id,
+              title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+              link,
+              txHash,
+            },
+            txWalletAddress,
+          )
         }
 
         return resolve(evmTxReceiptToSubmittableResult(receipt))
       } catch (err) {
-        error({
-          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-          hidden: sidebar,
-        })
+        error(
+          {
+            id,
+            title: toast?.onError ?? <p>{t("toast.error")}</p>,
+          },
+          txWalletAddress,
+        )
+
         reject(
           new TransactionError(err?.toString() ?? "Unknown error", {
             from: evmTx.from,
@@ -317,44 +329,92 @@ export const useSendEvmTransactionMutation = (
 
 export const useSendSolanaTransactionMutation = (
   options: MutationObserverOptions<ISubmittableResult, unknown, string> = {},
+  id: string,
+  toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
-  const [txState, setTxState] = useState<ExtrinsicStatus["type"] | null>(null)
-  const [txHash, setTxHash] = useState<string>("")
+  const { t } = useTranslation()
+  const { account } = useAccount()
+  const { loading, success, error } = useToast()
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const chain = xcallMeta
     ? (chainsMap.get(xcallMeta.srcChain) as SolanaChain)
     : null
 
-  const sendTx = useMutation(async (hash) => {
+  const sendTx = useMutation(async (txHash) => {
     if (!chain) throw new Error("Invalid chain")
 
     return await new Promise(async (resolve, reject) => {
+      const txWalletAddress = account?.address
       try {
-        setTxState("Broadcast")
-        setTxHash(hash)
-        const status = await waitForSolanaTx(chain.connection, hash)
-        setTxState("InBlock")
-        return resolve(solanaStatusToSubmittableResult({ status, hash }))
+        const link = getSolanaTxLink(txHash)
+        const xcm = xcallMeta ? "solana" : undefined
+
+        const destChain = xcallMeta?.dstChain
+          ? chainsMap.get(xcallMeta.dstChain)
+          : undefined
+
+        const bridge =
+          chain?.isSolana() || destChain?.isSolana() ? chain?.key : undefined
+
+        loading({
+          id,
+          title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+          link,
+          txHash,
+          bridge,
+          hidden: true,
+          xcm,
+        })
+
+        setIsBroadcasted(true)
+
+        const status = await waitForSolanaTx(chain.connection, txHash)
+        const result = solanaStatusToSubmittableResult({ status, hash: txHash })
+
+        if (result.isCompleted) {
+          if (!bridge) {
+            success(
+              {
+                id,
+                title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                link,
+                txHash,
+              },
+              txWalletAddress,
+            )
+          }
+        }
+
+        if (result.isError) {
+          error(
+            {
+              id,
+              title: toast?.onError ?? <p>{t("toast.error")}</p>,
+            },
+            txWalletAddress,
+          )
+        }
+
+        return resolve(result)
       } catch (err) {
+        error(
+          {
+            id,
+            title: toast?.onError ?? <p>{t("toast.error")}</p>,
+          },
+          txWalletAddress,
+        )
+
         reject(new TransactionError(err?.toString() ?? "Unknown error", {}))
       }
     })
   }, options)
 
-  const txLink = getSolanaTxLink(txHash)
-
   return {
     ...sendTx,
-    txState,
-    txLink,
-    txHash,
-    bridge: undefined,
-    reset: () => {
-      setTxState(null)
-      setTxHash("")
-      sendTx.reset()
-    },
+    isBroadcasted,
   }
 }
 
@@ -472,10 +532,11 @@ export const useSendDispatchPermit = (
   toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
+  const { account } = useAccount()
   const { api } = useRpcProvider()
   const { wallet } = useWallet()
   const { t } = useTranslation()
-  const { loading, success, error, remove, sidebar } = useToast()
+  const { loading, success, error } = useToast()
   const queryClient = useQueryClient()
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
@@ -483,6 +544,8 @@ export const useSendDispatchPermit = (
 
   const sendTx = useMutation(async ({ permit }) => {
     return await new Promise(async (resolve, reject) => {
+      const txWalletAddress = account?.address
+
       try {
         let isLoadingNotified = false
 
@@ -543,27 +606,29 @@ export const useSendDispatchPermit = (
 
           const onComplete = createResultOnCompleteHandler(api, {
             onError: async (e) => {
-              error({
-                title: toast?.onError ?? <p>{t("toast.error")}</p>,
-                link,
-                txHash,
-                hidden: sidebar,
-              })
-
-              remove(id)
+              error(
+                {
+                  id,
+                  title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                  link,
+                  txHash,
+                },
+                txWalletAddress,
+              )
 
               reject(e)
             },
             onSuccess: async (result) => {
-              if (!xcm) {
-                success({
-                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-                  link,
-                  txHash,
-                  hidden: sidebar,
-                })
-
-                remove(id)
+              if (!bridge) {
+                success(
+                  {
+                    id,
+                    title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                    link,
+                    txHash,
+                  },
+                  txWalletAddress,
+                )
               }
 
               resolve(result)
@@ -591,10 +656,14 @@ export const useSendDispatchPermit = (
           return onComplete(result)
         })
       } catch (err) {
-        error({
-          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-          hidden: sidebar,
-        })
+        error(
+          {
+            id,
+            title: toast?.onError ?? <p>{t("toast.error")}</p>,
+          },
+          txWalletAddress,
+        )
+
         reject(
           new TransactionError(
             err?.toString() ?? "Unknown error",
@@ -629,15 +698,18 @@ export const useSendTransactionMutation = (
   toast?: ToastMessage,
   xcallMeta?: Record<string, string>,
 ) => {
+  const { account } = useAccount()
   const { api } = useRpcProvider()
   const { t } = useTranslation()
-  const { loading, success, error, remove, sidebar } = useToast()
+  const { loading, success, error } = useToast()
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const unsubscribeRef = useRef<null | (() => void)>(null)
 
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
+      const txWalletAddress = account?.address
+
       try {
         let isLoadingNotified = false
 
@@ -672,27 +744,29 @@ export const useSendTransactionMutation = (
 
           const onComplete = createResultOnCompleteHandler(apiPromise, {
             onError: (e) => {
-              error({
-                title: toast?.onError ?? <p>{t("toast.error")}</p>,
-                link,
-                txHash,
-                hidden: sidebar,
-              })
-
-              remove(id)
+              error(
+                {
+                  id,
+                  title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                  link,
+                  txHash,
+                },
+                txWalletAddress,
+              )
 
               reject(e)
             },
             onSuccess: (result) => {
-              if (!xcm) {
-                success({
-                  title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-                  link,
-                  txHash,
-                  hidden: sidebar,
-                })
-
-                remove(id)
+              if (!bridge) {
+                success(
+                  {
+                    id,
+                    title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                    link,
+                    txHash,
+                  },
+                  txWalletAddress,
+                )
               }
 
               resolve(result)
@@ -705,10 +779,14 @@ export const useSendTransactionMutation = (
           return onComplete(result)
         })
       } catch (err) {
-        error({
-          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-          hidden: sidebar,
-        })
+        error(
+          {
+            id,
+            title: toast?.onError ?? <p>{t("toast.error")}</p>,
+          },
+          txWalletAddress,
+        )
+
         reject(
           new TransactionError(err?.toString() ?? "Unknown error", {
             method: getTransactionJSON(tx)?.method,
@@ -775,7 +853,7 @@ function getAssetIdsFromTx(tx: SubmittableExtrinsic<"promise">) {
 
 const useBoundReferralToast = () => {
   const { t } = useTranslation()
-  const { loading, success, remove } = useToast()
+  const { loading, success, removeToast } = useToast()
 
   const pendingToastId = useRef<string>()
   const pendingReferralCode = useRef<string>()
@@ -800,7 +878,7 @@ const useBoundReferralToast = () => {
 
   const onSuccess = () => {
     if (pendingToastId.current) {
-      remove(pendingToastId.current)
+      removeToast(pendingToastId.current)
       success({
         title: (
           <span>
@@ -923,7 +1001,11 @@ export const useSendTx = ({
       onMutate: () => {
         setTxType("solana")
       },
+      onSuccess: (data) => onSuccess?.(data),
+      onError: () => onError?.(),
     },
+    id,
+    toast,
     xcallMeta,
   )
 
