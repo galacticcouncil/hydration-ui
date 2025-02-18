@@ -169,6 +169,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const tx = await papi.txFromCallData(callData)
           const observer = tx
             .signSubmitAndWatch(signer, {
+              at: "best",
               asset: getAssetHubFeeAsset(txOptions.asset),
             })
             .pipe(shareReplay(1))
@@ -187,7 +188,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         return props.onSigned(signature)
       } catch (error) {
-        console.log(error)
         props.onSignError?.(error)
       }
     },

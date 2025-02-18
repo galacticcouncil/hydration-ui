@@ -121,7 +121,7 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
     mode: "onChange",
     defaultValues: {
       amount:
-        currentDeposit && assetMeta
+        currentDeposit?.amount && assetMeta
           ? BN(currentDeposit.amount).shiftedBy(-assetMeta.decimals).toString()
           : "",
       address,

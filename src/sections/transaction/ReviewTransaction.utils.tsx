@@ -550,30 +550,44 @@ export const useSendTransactionMutation = (
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       if (isObservable(tx)) {
-        return tx.subscribe((event) => {
-          if (event.type === "broadcasted") {
-            setTxState("Broadcast")
-            setTxHash(event.txHash)
-          }
-
-          const isFound =
-            event.type === "finalized" ||
-            (event.type === "txBestBlocksState" && event.found)
-
-          if (isFound) {
-            if (!event.ok) {
+        try {
+          return tx.subscribe({
+            error: (err) => {
               setTxState("Invalid")
-              return reject(
-                new TransactionError(
-                  event.dispatchError.value?.toString() ?? "Unknown error",
-                  {},
-                ),
+              reject(
+                new TransactionError(err?.toString() ?? "Unknown error", {}),
               )
-            }
-            setTxState("InBlock")
-            return resolve(toSubmittableResult(event.txHash))
-          }
-        })
+            },
+            next: (event) => {
+              if (event.type === "broadcasted") {
+                setTxState("Broadcast")
+                setTxHash(event.txHash)
+              }
+
+              const isFound =
+                event.type === "finalized" ||
+                (event.type === "txBestBlocksState" && event.found)
+
+              if (isFound) {
+                if (!event.ok) {
+                  setTxState("Invalid")
+                  return reject(
+                    new TransactionError(
+                      event.dispatchError.value?.toString() ?? "Unknown error",
+                      {},
+                    ),
+                  )
+                }
+                setTxState("InBlock")
+                return resolve(toSubmittableResult(event.txHash))
+              }
+            },
+          })
+        } catch (err) {
+          return reject(
+            new TransactionError(err?.toString() ?? "Unknown Error", {}),
+          )
+        }
       }
 
       try {

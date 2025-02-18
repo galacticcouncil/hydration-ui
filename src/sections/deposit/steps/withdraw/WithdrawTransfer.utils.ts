@@ -1,19 +1,15 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import {
   AnyChain,
-  Asset,
   AssetAmount,
   DexFactory,
+  ParachainAssetData,
 } from "@galacticcouncil/xcm-core"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { useMutation } from "@tanstack/react-query"
-import { parseBalanceData } from "api/balances"
 import { useExternalApi } from "api/external"
-import {
-  assethubNativeToken,
-  getAssetHubTokenBalance,
-} from "api/external/assethub"
+import { assethubNativeToken } from "api/external/assethub"
 import { useCrossChainWallet } from "api/xcm"
 import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
@@ -82,15 +78,15 @@ export const useWithdraw = (cexId: string, assetId: string) => {
     if (!asset || !assetMeta) throw new Error(`Asset ${assetId} not found`)
     if (!account) throw new Error("Account not found")
 
-    if (!isFirstStepCompleted.current) {
-      const xTransfer = await wallet.transfer(
-        asset.data.asset.key,
-        account.address,
-        srcChain,
-        cex.isXcmCompatible ? values.cexAddress : account.address,
-        dstChain,
-      )
+    const xTransfer = await wallet.transfer(
+      asset.data.asset.key,
+      account.address,
+      srcChain,
+      cex.isXcmCompatible ? values.cexAddress : account.address,
+      dstChain,
+    )
 
+    if (!isFirstStepCompleted.current) {
       const call = await xTransfer.buildCall(values.amount)
 
       await createTransaction(
@@ -109,8 +105,11 @@ export const useWithdraw = (cexId: string, assetId: string) => {
           rejectOnClose: true,
           onSuccess: () => {
             isFirstStepCompleted.current = true
-            const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
-            setWithdrawnAmount(amount.toString())
+            const amountReceived = BN(values.amount)
+              .shiftedBy(assetMeta.decimals)
+              .minus(xTransfer.destination.fee.amount.toString())
+
+            setWithdrawnAmount(amountReceived.toString())
           },
           steps: cex.isXcmCompatible ? undefined : getSteps(),
           toast: createToastMessages("xcm.transfer.toast", {
@@ -126,63 +125,75 @@ export const useWithdraw = (cexId: string, assetId: string) => {
       )
     }
 
+    // If the CEX is XCM compatible, we don't need to do the second step
     if (cex.isXcmCompatible) return
-
-    const amount = BN(values.amount).shiftedBy(assetMeta.decimals)
 
     let paymentFee = BN_0
     let balance = BN_0
+    let prevBalance = BN(xTransfer.destination.balance.amount.toString())
+    let amountReceived = BN_0
+    let ed = BN(externalApi.consts.balances.existentialDeposit.toString())
 
     if (dstChain.key === "assethub") {
       const onChainAssetId = dstChain.getAssetId(asset.data.asset).toString()
-      await waitForAssetWithdrawal(externalApi, onChainAssetId, account.address)
 
-      const tx = externalApi.tx.assets.transferKeepAlive(
-        onChainAssetId,
-        values.cexAddress,
-        amount.toString(),
-      )
+      const edRes = await externalApi.query.assets.asset(onChainAssetId)
+      ed = edRes.unwrap().minBalance.toBigNumber()
 
-      const balanceRes = await getAssetHubTokenBalance(
+      balance = await waitForAssetWithdrawal(
         externalApi,
         onChainAssetId,
         account.address,
-      )()
+        prevBalance,
+      )
 
-      balance = balanceRes?.balance ?? BN_0
+      amountReceived = balance.minus(prevBalance)
+
+      const tx = externalApi.tx.assets.transfer(
+        onChainAssetId,
+        values.cexAddress,
+        amountReceived.toString(),
+      )
 
       paymentFee = await calculateAssethubFee(
         tx,
         values.cexAddress,
-        asset.data.asset,
+        asset.data,
         dstChain,
       )
     } else if (dstChain.key === "polkadot") {
-      await waitForNativeWithdrawal(externalApi, account.address)
-
-      const tx = externalApi.tx.balances.transferKeepAlive(
-        values.cexAddress,
-        amount.toString(),
-      )
-
-      const balanceRes = await externalApi.query.system.account(account.address)
-      const balanceData = parseBalanceData(
-        balanceRes.data,
-        assetId,
+      balance = await waitForNativeWithdrawal(
+        externalApi,
         account.address,
+        prevBalance,
       )
-      balance = BN(balanceData.balance)
 
-      const paymentInfo = await tx.paymentInfo(values.cexAddress)
-      paymentFee = BN(paymentInfo.partialFee.toString())
-        .multipliedBy(0.1)
-        .decimalPlaces(0)
+      amountReceived = balance.minus(prevBalance)
+
+      const tx = externalApi.tx.balances.transfer(
+        values.cexAddress,
+        amountReceived.toString(),
+      )
+
+      paymentFee = await calculateNativeFee(tx, values.cexAddress)
     }
 
-    const adjustedAmount = amount.minus(paymentFee)
+    const halfEd = ed.div(2)
+    const adjustedAmount = amountReceived.minus(paymentFee).minus(halfEd)
+
     const formattedAmount = adjustedAmount
       .shiftedBy(-assetMeta.decimals)
       .toString()
+
+    console.log({
+      ed: ed.shiftedBy(-assetMeta.decimals).toString(),
+      paymentFee: paymentFee.shiftedBy(-assetMeta.decimals).toString(),
+      prevBalance: prevBalance.shiftedBy(-assetMeta.decimals).toString(),
+      newBalance: balance.shiftedBy(-assetMeta.decimals).toString(),
+      adjustedAmount: adjustedAmount.shiftedBy(-assetMeta.decimals).toString(),
+      amountReceived: amountReceived.shiftedBy(-assetMeta.decimals).toString(),
+      //newAmount: amount.minus(paymentFee)
+    })
 
     const isAssetHub = dstChain.key === "assethub"
 
@@ -196,12 +207,12 @@ export const useWithdraw = (cexId: string, assetId: string) => {
           dstChain: cex.title,
         }),
         tx: isAssetHub
-          ? externalApi.tx.assets.transferKeepAlive(
+          ? externalApi.tx.assets.transfer(
               dstChain.getAssetId(asset.data.asset).toString(),
               values.cexAddress,
               adjustedAmount.toString(),
             )
-          : externalApi.tx.balances.transferKeepAlive(
+          : externalApi.tx.balances.transfer(
               values.cexAddress,
               adjustedAmount.toString(),
             ),
@@ -291,7 +302,8 @@ async function waitForAssetWithdrawal(
   api: ApiPromise,
   assetId: string,
   account: string,
-): Promise<void> {
+  prevBalance: BN,
+): Promise<BN> {
   return new Promise(async (resolve) => {
     const unsub = await api.query.assets.account(
       assetId,
@@ -300,9 +312,10 @@ async function waitForAssetWithdrawal(
         const balance: BN = !res.isNone
           ? res.unwrap().balance.toBigNumber()
           : BN_0
-        if (balance.gt(0)) {
+
+        if (balance.gt(prevBalance)) {
           unsub()
-          resolve()
+          resolve(balance)
         }
       },
     )
@@ -312,13 +325,14 @@ async function waitForAssetWithdrawal(
 async function waitForNativeWithdrawal(
   api: ApiPromise,
   account: string,
-): Promise<void> {
+  prevBalance: BN,
+): Promise<BN> {
   return new Promise(async (resolve) => {
     const unsub = await api.query.system.account(account, async (res) => {
       const balance = res.data.free.toBigNumber()
-      if (balance.gt(0)) {
+      if (balance.gt(prevBalance)) {
         unsub()
-        resolve()
+        resolve(balance)
       }
     })
   })
@@ -327,17 +341,17 @@ async function waitForNativeWithdrawal(
 async function calculateAssethubFee(
   tx: SubmittableExtrinsic,
   address: string,
-  asset: Asset,
+  assetData: ParachainAssetData,
   chain: AnyChain,
 ): Promise<BN> {
   const paymentInfo = await tx.paymentInfo(address)
   const rawFee = BN(paymentInfo.partialFee.toString())
-    .multipliedBy(0.1)
+    .multipliedBy(0.3)
     .decimalPlaces(0)
 
   const dex = DexFactory.getInstance().get(chain.key)!
   const feeQuote = await dex.getQuote(
-    asset,
+    assetData.asset,
     assethubNativeToken.asset,
     AssetAmount.fromAsset(assethubNativeToken.asset, {
       amount: BigInt(rawFee.toString()),
@@ -345,4 +359,11 @@ async function calculateAssethubFee(
     }),
   )
   return BN(feeQuote.amount.toString())
+}
+
+async function calculateNativeFee(tx: SubmittableExtrinsic, address: string) {
+  const paymentInfo = await tx.paymentInfo(address)
+  return BN(paymentInfo.partialFee.toString())
+    .multipliedBy(0.3)
+    .decimalPlaces(0)
 }
