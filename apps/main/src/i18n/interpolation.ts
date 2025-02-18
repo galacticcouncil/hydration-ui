@@ -18,22 +18,27 @@ const getMaxSignificantDigits = (
     return
   }
 
-  let maxDigits = 4
-
-  if (value > 1) {
-    const intPartLen = Math.ceil(Math.log10(Number(value) + 1))
-    maxDigits = (value > 99999.9999 ? 0 : value > 999.9999 ? 2 : 4) + intPartLen
+  if (value <= 1) {
+    return 4
   }
 
-  return maxDigits
+  const intPartLen = Math.ceil(Math.log10(Number(value) + 1))
+  return Math.min(
+    21,
+    (value > 99999.9999 ? 0 : value > 999.9999 ? 2 : 4) + intPartLen,
+  )
 }
 
 const formatters = {
   number: (
-    value: number | bigint,
+    value: number | bigint | null | undefined,
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
+    if (value === null || value === undefined) {
+      return "N / A"
+    }
+
     return new Intl.NumberFormat(lng, {
       maximumSignificantDigits: getMaxSignificantDigits(value, options),
       ...options,
@@ -44,10 +49,14 @@ const formatters = {
   },
 
   percent: (
-    value: number | bigint,
+    value: number | bigint | null | undefined,
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
+    if (value === null || value === undefined) {
+      return "N / A"
+    }
+
     return Intl.NumberFormat(lng, {
       style: "percent",
       maximumFractionDigits: getMaxSignificantDigits(value, options),
@@ -58,10 +67,14 @@ const formatters = {
   },
 
   currency: (
-    value: number | bigint,
+    value: number | bigint | null | undefined,
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
+    if (value === null || value === undefined) {
+      return "N / A"
+    }
+
     let parts = Intl.NumberFormat(lng, {
       style: "currency",
       currency: "USD",
@@ -87,7 +100,7 @@ const formatters = {
     }
 
     try {
-      return formatDate(date, options.format)
+      return formatDate(date, options.format!)
     } catch (error) {
       console.error(error)
     }
@@ -127,14 +140,14 @@ function parseFormatStr(formatStr: string | undefined) {
     const [name, args] = formatStr.split("(")
     formatName = name
 
-    const optList = args
-      .substring(0, args.length - 1)
+    const optList = args!
+      .substring(0, args!.length - 1)
       .split(";")
       .filter((x) => !!x)
 
     for (const item of optList) {
       const [key, ...rest] = item.split(":")
-      formatOptions[key.trim()] = rest
+      formatOptions[key!.trim()] = rest
         .join(":")
         .trim()
         .replace(/^'+|'+$/g, "")

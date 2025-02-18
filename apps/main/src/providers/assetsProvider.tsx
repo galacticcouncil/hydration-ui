@@ -194,8 +194,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     shareTokensMap: Map<string, TShareToken>
   }>(
     (acc, token) => {
-      const assetA = all.get(token.assets[0])
-      const assetB = all.get(token.assets[1])
+      const assetA = all.get(token.assets[0] ?? "")
+      const assetB = all.get(token.assets[1] ?? "")
 
       if (assetA && assetB && assetA.symbol && assetB.symbol) {
         const assetDecimal =

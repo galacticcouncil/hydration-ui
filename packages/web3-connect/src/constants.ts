@@ -1,0 +1,1 @@
+export const HYDRA_ADDRESS_PREFIX = 63

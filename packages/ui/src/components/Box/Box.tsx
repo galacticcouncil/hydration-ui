@@ -6,35 +6,39 @@ import React, { forwardRef } from "react"
 
 import { ThemeColor } from "@/theme"
 
-export type BoxOwnProps = {
+export type BoxOwnProps = Partial<
+  Pick<
+    ThemeUICSSProperties,
+    | "m"
+    | "mt"
+    | "mr"
+    | "mb"
+    | "ml"
+    | "mx"
+    | "my"
+    | "p"
+    | "pt"
+    | "pr"
+    | "pb"
+    | "pl"
+    | "px"
+    | "py"
+    | "display"
+    | "width"
+    | "height"
+    | "maxWidth"
+    | "maxHeight"
+    | "size"
+    | "borderRadius"
+  >
+> & {
   asChild?: boolean
   as?: React.ElementType
   css?: Interpolation<unknown>
   sx?: ThemeUIStyleObject<Theme>
   children?: React.ReactNode
-  m?: ThemeUICSSProperties["m"]
-  mt?: ThemeUICSSProperties["mt"]
-  mr?: ThemeUICSSProperties["mr"]
-  mb?: ThemeUICSSProperties["mb"]
-  ml?: ThemeUICSSProperties["ml"]
-  mx?: ThemeUICSSProperties["mx"]
-  my?: ThemeUICSSProperties["my"]
-  p?: ThemeUICSSProperties["p"]
-  pt?: ThemeUICSSProperties["pt"]
-  pr?: ThemeUICSSProperties["pr"]
-  pb?: ThemeUICSSProperties["pb"]
-  pl?: ThemeUICSSProperties["pl"]
-  px?: ThemeUICSSProperties["px"]
-  py?: ThemeUICSSProperties["py"]
-  display?: ThemeUICSSProperties["display"]
   color?: ThemeColor | ThemeUICSSProperties["color"]
   bg?: ThemeColor | ThemeUICSSProperties["backgroundColor"]
-  width?: ThemeUICSSProperties["width"]
-  height?: ThemeUICSSProperties["height"]
-  maxWidth?: ThemeUICSSProperties["maxWidth"]
-  maxHeight?: ThemeUICSSProperties["maxHeight"]
-  size?: ThemeUICSSProperties["size"]
-  borderRadius?: ThemeUICSSProperties["borderRadius"]
 }
 
 export type BoxProps = BoxOwnProps &
@@ -76,7 +80,7 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
   ) => {
     const SlottedComponent = asChild ? Slot : Component
 
-    const fullSx = {
+    const fullSx: ThemeUIStyleObject<Theme> = {
       ...sx,
       m,
       mt,

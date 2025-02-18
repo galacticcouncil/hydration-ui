@@ -1,0 +1,11 @@
+query OrdersState($offerId: Int!) {
+    events(
+        where: {
+            args_jsonContains: { orderId: $offerId }
+            AND: { name_eq: "OTC.Placed" }
+        }
+    ) {
+        name
+        args
+    }
+}
