@@ -1,17 +1,19 @@
-import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { SContainer, SHeader, SItems } from "./AddressBook.styled"
-import { useAddressStore } from "./AddressBook.utils"
+import { getBlacklistedWallets, useAddressStore } from "./AddressBook.utils"
 import { AddressBookEmpty } from "./empty/AddressBookEmpty"
 import { AddressBookInput } from "./input/AddressBookInput"
 import { AddressBookItem } from "./item/AddressBookItem"
 import { safeConvertAddressH160 } from "utils/evm"
 import { arraySearch } from "utils/helpers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
-import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  PROVIDERS_BY_WALLET_MODE,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 
 type AddressBookProps = {
   onSelect: (address: string) => void
@@ -25,32 +27,16 @@ export const AddressBook = ({
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const { addresses: allAddresses } = useAddressStore()
+
   const [filter, setFilter] = useState(mode)
 
   const addresses = useMemo(() => {
-    if (filter === WalletMode.Substrate) {
-      return allAddresses.filter(
-        (address) => address.provider === "polkadot-js",
-      )
-    }
+    const validProviders = PROVIDERS_BY_WALLET_MODE[mode]
 
-    if (filter === WalletMode.EVM) {
-      return allAddresses.filter((address) => address.provider === "metamask")
-    }
-
-    if (filter === WalletMode.SubstrateEVM) {
-      return allAddresses.filter(
-        (address) =>
-          address.provider === "metamask" || address.provider === "polkadot-js",
-      )
-    }
-
-    if (filter === WalletMode.Solana) {
-      return allAddresses.filter((address) => address.provider === "solana")
-    }
-
-    return allAddresses
-  }, [allAddresses, filter])
+    return allAddresses.filter((address) =>
+      validProviders.includes(address.provider),
+    )
+  }, [allAddresses, mode])
 
   const items = useMemo(
     () => (search ? arraySearch(addresses, search) : addresses),
@@ -71,16 +57,12 @@ export const AddressBook = ({
         onAdd={() => setSearch("")}
         canAdd={canAdd}
       />
-      {mode === WalletMode.Default ? (
-        <div sx={{ py: 14 }}>
-          <Web3ConnectModeFilter
-            active={filter}
-            onSetActive={(mode) => setFilter(mode)}
-          />
-        </div>
-      ) : (
-        <Spacer size={14} />
-      )}
+      <Web3ConnectModeFilter
+        blacklist={getBlacklistedWallets(mode)}
+        active={filter}
+        onSetActive={(mode) => setFilter(mode)}
+        sx={{ py: 14 }}
+      />
       {!items.length ? (
         <AddressBookEmpty canAdd={canAdd} />
       ) : (
