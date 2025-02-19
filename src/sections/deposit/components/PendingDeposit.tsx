@@ -56,7 +56,7 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
 
   return (
     <SContainer>
-      <div sx={{ flex: "row", gap: 10, align: "center" }}>
+      <div sx={{ flex: "row", gap: 6, align: "center" }}>
         <Icon size={30} icon={<cex.icon />} />
         <Icon size={24} icon={<AssetLogo id={asset.assetId} />} />
       </div>
@@ -85,6 +85,7 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
       <Button
         size="small"
         variant="primary"
+        fullWidth
         disabled={!isValidAmount || !isLoaded}
         onClick={() => {
           setMethod(DepositMethod.DepositCex)

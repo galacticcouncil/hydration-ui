@@ -15,6 +15,7 @@ import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModa
 import { useState } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { Text } from "components/Typography/Text/Text"
+import { DepositButton } from "sections/deposit/DepositButton"
 
 type Props = { disconnected?: boolean }
 
@@ -95,15 +96,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             gap: 12,
           }}
         >
-          <Button
-            size="compact"
-            variant="mutedSecondary"
-            onClick={() => navigate({ to: LINKS.deposit })}
-            sx={{ width: ["100%", "auto"] }}
-          >
-            <Icon size={22} sx={{ ml: -4 }} icon={<DownloadIcon />} />
-            {t("deposit")}
-          </Button>
+          <DepositButton sx={{ width: ["100%", "auto"] }} />
           <Button
             size="compact"
             variant="mutedSecondary"
@@ -111,7 +104,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             sx={{ width: ["100%", "auto"] }}
           >
             <Icon
-              size={22}
+              size={18}
               sx={{ ml: -4 }}
               icon={<DownloadIcon css={{ rotate: "180deg" }} />}
             />
@@ -124,7 +117,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             sx={{ width: ["100%", "auto"] }}
           >
             <Icon
-              size={22}
+              size={18}
               sx={{ ml: -4 }}
               icon={<TransferIcon css={{ transform: "scale(0.8)" }} />}
             />

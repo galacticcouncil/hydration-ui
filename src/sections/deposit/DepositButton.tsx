@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-location"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
-import { Button } from "components/Button/Button"
+import { Button, ButtonProps } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useShallow } from "hooks/useShallow"
 import { useTranslation } from "react-i18next"
@@ -10,9 +10,9 @@ import {
 } from "sections/deposit/DepositPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { LINKS } from "utils/navigation"
-import { SBadge } from "./Deposit.styled"
+import { SBadge } from "./DepositButton.styled"
 
-export const Deposit = () => {
+export const DepositButton: React.FC<ButtonProps> = (props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { account } = useAccount()
@@ -23,10 +23,11 @@ export const Deposit = () => {
 
   return (
     <Button
-      size="compact"
       variant="mutedSecondary"
+      size="compact"
       onClick={() => navigate({ to: LINKS.deposit })}
       css={{ position: "relative" }}
+      {...props}
     >
       <Icon size={18} sx={{ ml: -4 }} icon={<DownloadIcon />} />
       {t("deposit")}

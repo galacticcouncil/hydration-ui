@@ -11,8 +11,10 @@ export const SContainer = styled.div`
 
   padding: 20px;
 
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
   align-items: center;
 
   :before {
@@ -37,5 +39,10 @@ export const SContainer = styled.div`
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr auto;
   }
 `

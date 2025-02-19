@@ -1,12 +1,12 @@
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { Bell } from "./buttons/Bell"
-import { Deposit } from "./buttons/Deposit"
 import { Documentation } from "./buttons/Documentation"
 import { Settings } from "./buttons/Settings"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useMatchRoute } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
+import { DepositButton } from "sections/deposit/DepositButton"
 
 export const HeaderToolbar = () => {
   const isSmallMedia = useMedia(theme.viewport.lt.sm)
@@ -20,7 +20,7 @@ export const HeaderToolbar = () => {
         {!isSmallMedia && <Documentation />}
         <Bell />
         {!isSmallMedia && !isSubmitTransactionPath && <Settings />}
-        {!isSmallMedia && <Deposit />}
+        {!isSmallMedia && <DepositButton />}
       </div>
       <Web3ConnectModalButton size="small" css={{ maxHeight: 40 }} />
     </div>
