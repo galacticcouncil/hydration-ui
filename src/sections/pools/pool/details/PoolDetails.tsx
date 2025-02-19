@@ -45,7 +45,7 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const isFarms = pool.farms.length > 0
+  const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
@@ -194,7 +194,10 @@ export const PoolDetails = () => {
                       fw={600}
                       font="GeistMedium"
                     >
-                      <DisplayValue value={pool.spotPrice} type="token" />
+                      <DisplayValue
+                        value={BN(pool.spotPrice ?? NaN)}
+                        type="token"
+                      />
                     </Text>
                   </SValue>
 

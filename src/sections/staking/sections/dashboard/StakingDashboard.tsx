@@ -47,8 +47,11 @@ export const StakingData = () => {
   const showGuide = staking.data && !staking.data.stakePosition
 
   return (
-    <div sx={{ flex: ["column-reverse", "row"], gap: 30 }}>
-      <div sx={{ flex: "column", gap: 28 }} css={{ flex: 3 }}>
+    <div sx={{ flex: ["column-reverse", "row"], gap: 30, flexWrap: "wrap" }}>
+      <div
+        sx={{ flex: "column", gap: 28, minWidth: ["auto", 500] }}
+        css={{ flex: 3 }}
+      >
         {showGuide && <StakingGuide />}
         {account && staking.data?.positionId && <AvailableRewards />}
         <Stats data={staking.data} loading={staking.isLoading} />
@@ -56,7 +59,11 @@ export const StakingData = () => {
       </div>
 
       <div
-        sx={{ flex: ["column-reverse", "column"], gap: 28 }}
+        sx={{
+          flex: ["column-reverse", "column"],
+          gap: 28,
+          minWidth: ["auto", 350],
+        }}
         css={{ flex: 2 }}
       >
         <StakingInputSection data={staking.data} loading={staking.isLoading} />

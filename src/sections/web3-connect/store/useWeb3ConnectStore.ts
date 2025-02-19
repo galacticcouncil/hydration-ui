@@ -3,7 +3,9 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { omit } from "utils/rx"
 import {
+  ALTERNATIVE_PROVIDERS,
   EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
@@ -21,6 +23,25 @@ export enum WalletMode {
   Substrate = "substrate",
   SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
+  Solana = "solana",
+}
+
+export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
+  ...SUBSTRATE_PROVIDERS,
+  ...EVM_PROVIDERS,
+  ...ALTERNATIVE_PROVIDERS,
+]
+
+export const PROVIDERS_BY_WALLET_MODE: Record<
+  WalletMode,
+  WalletProviderType[]
+> = {
+  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
+  [WalletMode.EVM]: EVM_PROVIDERS,
+  [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
+  [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
+  [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
+  [WalletMode.Solana]: SOLANA_PROVIDERS,
 }
 
 export type Account = {
@@ -33,13 +54,15 @@ export type Account = {
   delegate?: string
 }
 type WalletProviderMeta = {
-  chain: string
+  chain?: string
+  title?: string
+  description?: string
 }
 type WalletProviderEntry = {
   type: WalletProviderType
   status: WalletProviderStatus
 }
-type WalletProviderState = {
+export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
@@ -59,6 +82,7 @@ type WalletProviderStore = WalletProviderState & {
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
   getConnectedProviders: () => WalletProviderEntry[]
   setError: (error: string) => void
+  disconnectIncompatible: () => void
   disconnect: (provider?: WalletProviderType) => void
 }
 
@@ -81,7 +105,7 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
           const isValidMode = mode && Object.values(WalletMode).includes(mode)
           return {
             ...state,
-            mode: isValidMode ? mode : WalletMode.Default,
+            mode: isValidMode ? mode : getDefaultWalletMode(),
             open: !state.open,
             meta: meta ?? null,
           }
@@ -114,26 +138,31 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
         }
 
         return providers.filter(({ type }) => {
-          if (mode === WalletMode.EVM) {
-            return EVM_PROVIDERS.includes(type)
-          }
+          const providers = PROVIDERS_BY_WALLET_MODE[mode]
 
-          if (mode === WalletMode.Substrate) {
-            return SUBSTRATE_PROVIDERS.includes(type)
-          }
-
-          if (mode === WalletMode.SubstrateH160) {
-            return SUBSTRATE_H160_PROVIDERS.includes(type)
-          }
-
-          if (mode === WalletMode.SubstrateEVM) {
-            return [...EVM_PROVIDERS, ...SUBSTRATE_PROVIDERS].includes(type)
+          if (providers.length > 0) {
+            return providers.includes(type)
           }
 
           return true
         })
       },
       setError: (error) => set((state) => ({ ...state, error })),
+      disconnectIncompatible: () =>
+        set((state) => ({
+          ...state,
+          ...initialState,
+          account:
+            state.account &&
+            COMPATIBLE_WALLET_PROVIDERS.includes(state.account.provider)
+              ? state.account
+              : null,
+          providers: state.providers.filter((p) =>
+            COMPATIBLE_WALLET_PROVIDERS.includes(p.type),
+          ),
+          mode: state.mode,
+          open: state.open,
+        })),
       disconnect: (provider) => {
         set((state) => ({
           ...state,
@@ -158,3 +187,20 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
     },
   ),
 )
+
+const getDefaultWalletMode = () => {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get("srcChain") === "solana") {
+    return WalletMode.Solana
+  }
+
+  if (params.get("srcChain") === "mythos") {
+    return WalletMode.SubstrateH160
+  }
+
+  if (params.get("srcChain") === "ethereum") {
+    return WalletMode.EVM
+  }
+
+  return WalletMode.Default
+}

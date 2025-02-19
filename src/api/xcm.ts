@@ -3,6 +3,7 @@ import {
   chainsMap,
   routesMap,
   validations,
+  dex,
   HydrationConfigService,
 } from "@galacticcouncil/xcm-cfg"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
@@ -10,7 +11,6 @@ import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { useMutation } from "@tanstack/react-query"
 import { Transaction, useStore } from "state/store"
 import { isAnyParachain } from "utils/helpers"
-import { external } from "@galacticcouncil/apps"
 import { TRegisteredAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -37,9 +37,7 @@ export const syncAssethubXcmConfig = (
   asset: TRegisteredAsset,
   config: HydrationConfigService,
 ) => {
-  const hubAsset = external.toHubAsset(asset)
-  const paraAsset = external.toParachainAsset(asset)
-  config.addExternalHubRoute(hubAsset, paraAsset)
+  config.registerExternal([asset])
 }
 
 export const useCrossChainWallet = () => {
@@ -52,11 +50,23 @@ export const useCrossChainWallet = () => {
       routes: routesMap,
     })
 
-    return new Wallet({
+    const wallet = new Wallet({
       configService: configService,
-      poolService: poolService,
       transferValidations: validations,
     })
+
+    // Register chain swaps
+    const hydration = configService.getChain("hydration")
+    const assethub = configService.getChain("assethub")
+    const assethubCex = configService.getChain("assethub_cex")
+
+    wallet.registerDex(
+      new dex.HydrationDex(hydration, poolService),
+      new dex.AssethubDex(assethub),
+      new dex.AssethubDex(assethubCex),
+    )
+
+    return wallet
   }, [poolService])
 }
 

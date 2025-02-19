@@ -97,6 +97,17 @@ export const QUERY_KEYS = {
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
+  newSpotPrice: (assetA: string, assetB: string) => [
+    "newSpotPrice",
+    assetA,
+    assetB,
+  ],
+  newSpotPriceLive: (assetA: string, assetB: string) => [
+    QUERY_KEY_PREFIX,
+    "newSpotPrice",
+    assetA,
+    assetB,
+  ],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
@@ -156,12 +167,10 @@ export const QUERY_KEYS = {
       ? ["timestamp", bestNumber]
       : [QUERY_KEY_PREFIX, "timestamp"],
   vestingSchedules: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "vestingSchedules",
     address,
   ],
   vestingLockBalance: (address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
     "vestingLock",
     address,
   ],
@@ -207,6 +216,17 @@ export const QUERY_KEYS = {
     "accountOpenGovVotes",
     accountAddress,
   ],
+  accountOpenGovUnlockedTokens: (ids: string[], address?: string) => [
+    "accountOpenGovUnlockedTokens",
+    address,
+    ids.join(","),
+  ],
+  referendums: (accountAddress?: string, type?: "ongoing" | "finished") => [
+    "referendums",
+    accountAddress,
+    type,
+  ],
+  deprecatedReferendumInfo: (id: string) => [id, "deprecatedReferendumInfo"],
   referendumVotes: (accountAddress?: string) => [
     QUERY_KEY_PREFIX,
     "referendumVotes",
@@ -226,6 +246,7 @@ export const QUERY_KEYS = {
     return key
   },
   hdxSupply: ["hdxSupply"],
+  treasuryBalances: ["treasuryBalances"],
   stake: (address: string | undefined) => ["stake", address],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
@@ -330,5 +351,12 @@ export const QUERY_KEYS = {
     dstChain: string,
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
+  externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  ethereumAccountBalance: (address: string) => [
+    "ethereumAccountBalance",
+    address,
+  ],
 } as const

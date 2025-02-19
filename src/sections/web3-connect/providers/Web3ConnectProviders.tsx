@@ -12,15 +12,13 @@ import {
 import {
   ALTERNATIVE_PROVIDERS,
   DESKTOP_ONLY_PROVIDERS,
-  EVM_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
-  SUBSTRATE_H160_PROVIDERS,
-  SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import { Web3ConnectProviderButton } from "sections/web3-connect/providers/Web3ConnectProviderButton"
 import {
   WalletMode,
   WalletProviderStatus,
+  PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { POLKADOT_CAIP_ID_MAP } from "sections/web3-connect/wallets/WalletConnect"
@@ -39,6 +37,7 @@ import { Web3ConnectProviderIcons } from "sections/web3-connect/providers/Web3Co
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { POLKADOT_APP_NAME } from "utils/api"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
+import { isMobileDevice } from "utils/helpers"
 
 const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
@@ -47,10 +46,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
     const wallets = getSupportedWallets()
 
     const isDefaultMode = mode === WalletMode.Default
-    const isEvmMode = mode === WalletMode.EVM
     const isSubstrateMode = mode === WalletMode.Substrate
-    const isSubstrateEvmMode = mode === WalletMode.SubstrateEVM
-    const isSubstrateH160Mode = mode === WalletMode.SubstrateH160
 
     const filteredProviders = wallets
       .filter((provider) => {
@@ -58,32 +54,17 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
           ? !MOBILE_ONLY_PROVIDERS.includes(provider.type)
           : !DESKTOP_ONLY_PROVIDERS.includes(provider.type)
 
-        const isAlternativeProvider = ALTERNATIVE_PROVIDERS.includes(
-          provider.type,
-        )
-        const isEvmProvider =
-          EVM_PROVIDERS.includes(provider.type) || isAlternativeProvider
-
-        const isSubstrateProvider =
-          SUBSTRATE_PROVIDERS.includes(provider.type) || isAlternativeProvider
-
-        const isSubstrateH160Provider = SUBSTRATE_H160_PROVIDERS.includes(
-          provider.type,
-        )
-
-        const byMode =
-          isDefaultMode ||
-          isSubstrateEvmMode ||
-          (isEvmMode && isEvmProvider) ||
-          (isSubstrateMode && isSubstrateProvider) ||
-          (isSubstrateH160Mode && isSubstrateH160Provider)
+        const providers = PROVIDERS_BY_WALLET_MODE[mode]
+        const byProvider =
+          providers.includes(provider.type) ||
+          (isDefaultMode && ALTERNATIVE_PROVIDERS.includes(provider.type))
 
         const byWalletConnect =
           isSubstrateMode && provider.type === "walletconnect" && chain
             ? !!POLKADOT_CAIP_ID_MAP[chain]
             : true
 
-        return byScreen && byMode && byWalletConnect
+        return byScreen && byProvider && byWalletConnect
       })
       .sort((a, b) => {
         const order = Object.values(WalletProviderType)
@@ -95,7 +76,9 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
       otherProviders: WalletProvider[]
     }>(
       (prev, curr) => {
-        if (curr.wallet.installed) {
+        const isInstalled = !!curr.wallet.installed
+        const isOpenableInMobileApp = isMobileDevice() && !!curr.wallet.appLink
+        if (isInstalled || isOpenableInMobileApp) {
           prev.installedProviders.push(curr)
         } else {
           prev.otherProviders.push(curr)
@@ -107,7 +90,7 @@ const useWalletProviders = (mode: WalletMode, chain?: string) => {
         otherProviders: [],
       },
     )
-  }, [isDesktop, mode, chain])
+  }, [mode, isDesktop, chain])
 }
 
 type Web3ConnectProvidersProps = {
@@ -149,6 +132,11 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
 
   const [expanded, setExpanded] = useState(installedExtensions.length === 0)
 
+  const providersByMode = PROVIDERS_BY_WALLET_MODE[mode]
+  const connectedProviders = providers.filter(({ type }) => {
+    return providersByMode.includes(type)
+  })
+
   return (
     <>
       {isDefaultMode && (
@@ -157,6 +145,7 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
             <Web3ConnectModeFilter
               active={modeFilter}
               onSetActive={(mode) => setModeFilter(mode)}
+              blacklist={[WalletMode.Solana]}
             />
           </div>
           <Separator
@@ -175,10 +164,10 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
       </Text>
       {installedProviders.length > 0 ? (
         <SProviderContainer>
-          {providers.length > 0 && mode === WalletMode.Default && (
+          {connectedProviders.length > 0 && mode === WalletMode.Default && (
             <SProviderButton onClick={onAccountSelect}>
               <Web3ConnectProviderIcons
-                providers={providers.map((p) => p.type)}
+                providers={connectedProviders.map((p) => p.type)}
               />
               <Text fs={[12, 14]} sx={{ mt: 8 }} tAlign="center">
                 {t("walletConnect.provider.lastConnected")}
