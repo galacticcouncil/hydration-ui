@@ -1,13 +1,13 @@
 import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_0, BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
-import { useDisplayPrice, useDisplayPrices } from "utils/displayAsset"
+import { useDisplayPrice, useNewDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
-import { useAccountVotes } from "api/democracy"
+import { useAccountVotes, useOpenGovUnlockedTokens } from "api/democracy"
 import { durationInDaysAndHoursFromNow } from "utils/formatting"
 import { ToastMessage, useStore } from "state/store"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -74,7 +74,7 @@ export const useAssetsData = ({
   const { data: acceptedCurrencies } =
     useAcceptedCurrencies(tokensWithBalanceIds)
 
-  const spotPrices = useDisplayPrices(tokensWithBalanceIds)
+  const spotPrices = useNewDisplayPrices(tokensWithBalanceIds)
 
   const allAssets = useMemo(
     () => [...tokens, ...stableswap, ...external, ...erc20],
@@ -102,21 +102,24 @@ export const useAssetsData = ({
       )?.spotPrice
 
       const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
-      const reservedDisplay = spotPrice?.isFinite()
-        ? reserved.times(spotPrice).toString()
-        : undefined
+      const reservedDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? reserved.times(spotPrice).toString()
+          : undefined
 
       const total = BigNumber(balance.total).shiftedBy(-decimals)
-      const totalDisplay = spotPrice?.isFinite()
-        ? total.times(spotPrice).toString()
-        : undefined
+      const totalDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? total.times(spotPrice).toString()
+          : undefined
 
       const transferable = isExternalInvalid
         ? BN_NAN
         : BigNumber(balance.balance).shiftedBy(-decimals)
-      const transferableDisplay = spotPrice?.isFinite()
-        ? transferable.times(spotPrice).toString()
-        : undefined
+      const transferableDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? transferable.times(spotPrice).toString()
+          : undefined
 
       const isAcceptedCurrency = !!acceptedCurrencies?.find(
         (acceptedCurrencie) => acceptedCurrencie.id === id,
@@ -229,78 +232,138 @@ export const useLockedNativeTokens = () => {
   const {
     native: { decimals, id },
   } = useAssets()
-  const locks = useTokenLocks(id)
-  const spotPrice = useDisplayPrice(id)
+  const { data: locks = [], isLoading: isLocksLoading } = useTokenLocks(id)
+  const { data: spotPrice, isLoading: isSpotPriceLoading } = useDisplayPrice(id)
 
   const lockVesting = scaleHuman(
-    locks.data?.find((lock) => lock.type === "ormlvest")?.amount ?? "0",
+    locks.find((lock) => lock.type === "ormlvest")?.amount ?? "0",
     decimals,
   )
+
   const lockDemocracy = scaleHuman(
-    locks.data?.find((lock) => lock.type === "democrac")?.amount ?? "0",
+    locks.find((lock) => lock.type === "democrac")?.amount ?? "0",
+    decimals,
+  )
+
+  const lockOpenGov = scaleHuman(
+    locks.find((lock) => lock.type === "pyconvot")?.amount ?? "0",
     decimals,
   )
 
   const lockStaking = scaleHuman(
-    locks.data?.find((lock) => lock.type === "stk_stks")?.amount ?? "0",
+    locks.find((lock) => lock.type === "stk_stks")?.amount ?? "0",
     decimals,
   )
 
-  const lockVestingDisplay = lockVesting.times(spotPrice.data?.spotPrice ?? 1)
-  const lockDemocracyDisplay = lockDemocracy.times(
-    spotPrice.data?.spotPrice ?? 1,
-  )
-  const lockStakingDisplay = lockStaking.times(spotPrice.data?.spotPrice ?? 1)
+  const lockVestingDisplay = lockVesting.times(spotPrice?.spotPrice ?? 1)
+  const lockDemocracyDisplay = lockDemocracy.times(spotPrice?.spotPrice ?? 1)
+  const lockStakingDisplay = lockStaking.times(spotPrice?.spotPrice ?? 1)
+  const lockOpenGovDisplay = lockOpenGov.times(spotPrice?.spotPrice ?? 1)
 
   return {
-    isLoading: locks.isLoading || spotPrice.isLoading,
+    isLoading: isLocksLoading || isSpotPriceLoading,
     lockVesting,
     lockDemocracy,
     lockStaking,
     lockVestingDisplay,
     lockDemocracyDisplay,
     lockStakingDisplay,
+    lockOpenGov,
+    lockOpenGovDisplay,
   }
 }
 
 export const useUnlockableTokens = () => {
   const { native } = useAssets()
-  const locks = useTokenLocks(native.id)
-  const votes = useAccountVotes()
-  const spotPrice = useDisplayPrice(native.id)
+  const { lockDemocracy, lockOpenGov, isLoading } = useLockedNativeTokens()
+  const { data: unlockedVotes, isLoading: isLoadingVotes } = useAccountVotes()
+  const { data: openGovUnlockedVotes, isInitialLoading: isLoadingOpenGov } =
+    useOpenGovUnlockedTokens()
+  const { data: spotPrice, isLoading: isSpotPriceLoading } = useDisplayPrice(
+    native.id,
+  )
 
-  const lockDemocracy = locks.data?.find(
-    (lock) => lock.type === "democrac",
-  )?.amount
+  const { unlockedValue, endDate } = useMemo(() => {
+    if (unlockedVotes && lockDemocracy) {
+      const unlockedValue = !lockDemocracy
+        ? "0"
+        : lockDemocracy
+            .minus(unlockedVotes.maxLockedValue.shiftedBy(-native.decimals))
+            .toString()
+      const lockedSeconds =
+        unlockedVotes.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
+      const endDate = !unlockedVotes.maxLockedBlock.isZero()
+        ? durationInDaysAndHoursFromNow(
+            lockedSeconds?.times(1000).toNumber() ?? 0,
+          )
+        : undefined
 
-  const value = !lockDemocracy
-    ? BN_0
-    : BigNumber(lockDemocracy)
-        .minus(votes.data?.maxLockedValue ?? 0)
-        .shiftedBy(-native.decimals)
-  const lockedSeconds = votes.data?.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
-  const endDate =
-    votes.data && !votes.data.maxLockedBlock.isZero()
-      ? durationInDaysAndHoursFromNow(
-          lockedSeconds?.times(1000).toNumber() ?? 0,
-        )
-      : undefined
+      return { unlockedValue, endDate }
+    }
+
+    return { unlockedValue: "0", endDate: undefined }
+  }, [unlockedVotes, lockDemocracy, native])
+
+  const { openGovUnlockValue, openGovEndDate } = useMemo(() => {
+    if (openGovUnlockedVotes && lockOpenGov) {
+      const openGovUnlockValue = !lockOpenGov
+        ? "0"
+        : lockOpenGov
+            .minus(
+              BigNumber(openGovUnlockedVotes.maxLockedValue).shiftedBy(
+                -native.decimals,
+              ),
+            )
+
+            .toString()
+      let openGovEndDate: undefined | string
+      if (openGovUnlockedVotes.maxLockedBlock) {
+        const lockedSeconds = BigNumber(
+          openGovUnlockedVotes.maxLockedBlock,
+        ).times(PARACHAIN_BLOCK_TIME)
+
+        openGovEndDate = !BigNumber(
+          openGovUnlockedVotes.maxLockedBlock,
+        ).isZero()
+          ? durationInDaysAndHoursFromNow(
+              lockedSeconds?.times(1000).toNumber() ?? 0,
+            )
+          : undefined
+      }
+
+      return { openGovUnlockValue, openGovEndDate }
+    }
+
+    return { openGovUnlockValue: "0", openGovEndDate: undefined }
+  }, [openGovUnlockedVotes, lockOpenGov, native])
+
+  const commonUnlockedValue =
+    unlockedVotes?.maxLockedValue.gt(openGovUnlockValue) ||
+    BigNumber(openGovUnlockedVotes?.maxLockedValue ?? "0").gt(unlockedValue)
+      ? BigNumber.min(unlockedValue, openGovUnlockValue)
+      : BigNumber.max(unlockedValue, openGovUnlockValue)
 
   return {
-    isLoading: votes.isInitialLoading || spotPrice.isLoading || locks.isLoading,
-    ids: votes.data?.ids ?? [],
-    value,
-    displayValue: value?.times(spotPrice.data?.spotPrice ?? 1),
-    votesUnlocked: votes.data?.ids.length,
+    isLoading:
+      isLoadingVotes || isSpotPriceLoading || isLoadingOpenGov || isLoading,
+    ids: unlockedVotes?.ids ?? [],
+    openGovIds: openGovUnlockedVotes?.ids ?? [],
+    unlockedValue: commonUnlockedValue.toString(),
+    unlockedDisplayValue: BigNumber(commonUnlockedValue)
+      .times(spotPrice?.spotPrice ?? BN_NAN)
+      .toString(),
     endDate,
+    openGovEndDate,
   }
 }
 
 export const useUnlockTokens = ({
   ids,
+  openGovIds,
   toast,
 }: {
   ids: string[]
+  openGovIds: { voteId: string; classId: string }[]
   toast: ToastMessage
 }) => {
   const { api } = useRpcProvider()
@@ -312,16 +375,30 @@ export const useUnlockTokens = ({
   return useMutation(async () => {
     const txs = ids.map((id) => api.tx.democracy.removeVote(id))
 
-    if (!txs.length) return null
+    const openGovTxs = openGovIds.map((id) =>
+      api.tx.convictionVoting.removeVote(id.classId, id.voteId),
+    )
+
+    const opneGovUnlock = openGovIds.reduce<string[]>((acc, id) => {
+      if (acc.find((memoId) => memoId === id.classId)) return acc
+      return [...acc, id.classId]
+    }, [])
+
+    if (!account?.address) return null
 
     return await createTransaction(
       {
-        tx: api.tx.utility.batchAll([
-          ...txs,
-          ...(account?.address
-            ? [api.tx.democracy.unlock(account.address)]
-            : []),
-        ]),
+        tx:
+          txs.length || openGovTxs.length
+            ? api.tx.utility.batchAll([
+                ...txs,
+                ...openGovTxs,
+                api.tx.democracy.unlock(account.address),
+                ...opneGovUnlock.map((classId) =>
+                  api.tx.convictionVoting.unlock(classId, account.address),
+                ),
+              ])
+            : api.tx.democracy.unlock(account.address),
       },
       {
         toast,

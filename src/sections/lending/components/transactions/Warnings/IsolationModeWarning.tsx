@@ -1,5 +1,4 @@
 import { Alert } from "components/Alert"
-import { Link } from "sections/lending/components/primitives/Link"
 import { Text } from "components/Typography/Text/Text"
 
 interface IsolationModeWarningProps {

@@ -12,6 +12,7 @@ import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPo
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
+import { BN_NAN } from "utils/constants"
 
 export const useShareOfPools = (assets: string[]) => {
   const totalIssuances = useTotalIssuances()
@@ -56,6 +57,8 @@ export const useSDKPools = () => {
     queryKey: QUERY_KEYS.pools,
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
+
+      const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
 
       const omnipoolTokens = (
         pools.find((pool) => pool.type === PoolType.Omni)
@@ -107,6 +110,7 @@ export const useSDKPools = () => {
       const xykPools = pools.filter((pool) => pool.type === PoolType.XYK)
 
       queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, tokens)
+      queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
 
@@ -120,11 +124,12 @@ export const useSDKPools = () => {
 const getDynamicAssetFees =
   (api: ApiPromise, assetId: string | u32) => async () => {
     const res = await api.query.dynamicFees.assetFee(assetId)
-    const data = res.unwrap()
+
+    const data = res.unwrapOr(null)
 
     return {
-      protocolFee: data.protocolFee.toBigNumber().div(10_000),
-      assetFee: data.assetFee.toBigNumber().div(10_000),
+      protocolFee: data?.protocolFee.toBigNumber().div(10_000) ?? BN_NAN,
+      assetFee: data?.assetFee.toBigNumber().div(10_000) ?? BN_NAN,
     }
   }
 

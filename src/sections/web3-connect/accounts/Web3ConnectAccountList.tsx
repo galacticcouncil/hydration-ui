@@ -6,6 +6,8 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import {
   Account,
+  COMPATIBLE_WALLET_PROVIDERS,
+  PROVIDERS_BY_WALLET_MODE,
   useWeb3ConnectStore,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
@@ -14,6 +16,7 @@ import {
   SAccountsScrollableContainer,
 } from "./Web3ConnectAccountList.styled"
 import { Web3ConnectEvmAccount } from "./Web3ConnectEvmAccount"
+import { Web3ConnectSolanaAccount } from "./Web3ConnectSolanaAccount"
 import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
 import { useDebounce, useShallowCompareEffect } from "react-use"
@@ -26,10 +29,12 @@ import { Text } from "components/Typography/Text/Text"
 import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
-import { EVM_PROVIDERS } from "sections/web3-connect/constants/providers"
+import {
+  EVM_PROVIDERS,
+  SOLANA_PROVIDERS,
+} from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
-import { isEvmAccount } from "utils/evm"
 import BigNumber from "bignumber.js"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
@@ -39,6 +44,7 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
     return Web3ConnectExternalAccount
 
   if (EVM_PROVIDERS.includes(type)) return Web3ConnectEvmAccount
+  if (SOLANA_PROVIDERS.includes(type)) return Web3ConnectSolanaAccount
 
   return Web3ConnectSubstrateAccount
 }
@@ -51,11 +57,20 @@ const AccountComponent: FC<
   const Component = getAccountComponentByType(account.provider)
   const { setBalanceMap } = useAccountBalanceMap()
 
+  const isCompatibleProvider = COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
+
   const { balanceTotal, isLoading } = useWalletAssetsTotals({
-    address: account.address,
+    address: isCompatibleProvider ? account.address : "",
   })
 
   useShallowCompareEffect(() => {
+    if (!isCompatibleProvider) {
+      setBalanceMap(account.address, "0")
+      return
+    }
+
     if (!isLoading) {
       setBalanceMap(account.address, balanceTotal)
     }
@@ -107,12 +122,14 @@ export const Web3ConnectAccountList: FC<{
       : accounts
 
     let filtered = searched
-    if (filter === WalletMode.EVM) {
-      filtered = searched.filter(({ address }) => isEvmAccount(address))
-    }
 
-    if (filter === WalletMode.Substrate) {
-      filtered = searched.filter(({ address }) => !isEvmAccount(address))
+    const filteredProviders =
+      PROVIDERS_BY_WALLET_MODE[filter !== WalletMode.Default ? filter : mode]
+
+    if (filteredProviders.length > 0) {
+      filtered = searched.filter(({ provider }) =>
+        filteredProviders.includes(provider),
+      )
     }
 
     return filtered.sort((a, b) => {
@@ -128,9 +145,22 @@ export const Web3ConnectAccountList: FC<{
       if (!aBalance || !bBalance) return 0
       return BigNumber(bBalance).comparedTo(aBalance)
     })
-  }, [account, accounts, balanceMap, isReady, filter, search])
+  }, [
+    isReady,
+    accounts,
+    search,
+    mode,
+    filter,
+    account?.address,
+    account?.provider,
+    balanceMap,
+  ])
 
   const noResults = accountList.length === 0
+
+  const hasSolanaAccounts = accountList.some(({ provider }) =>
+    SOLANA_PROVIDERS.includes(provider),
+  )
 
   return (
     <SAccountsContainer>
@@ -145,6 +175,7 @@ export const Web3ConnectAccountList: FC<{
             <Web3ConnectModeFilter
               active={filter}
               onSetActive={(mode) => setFilter(mode)}
+              blacklist={!hasSolanaAccounts ? [WalletMode.Solana] : []}
             />
           )}
         </div>

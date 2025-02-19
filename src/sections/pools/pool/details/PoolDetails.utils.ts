@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import { useDisplayPrices } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import BN from "bignumber.js"
+import { BN_NAN } from "utils/constants"
 
 export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
   const { getAssetWithFallback } = useAssets()
@@ -11,7 +12,6 @@ export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
     useXYKSquidVolumes(shareTokens.map((shareToken) => shareToken.poolAddress))
 
   const allAssetsInPools = [...new Set(volumes.map((volume) => volume.assetId))]
-
   const spotPrices = useDisplayPrices(allAssetsInPools)
   const isLoading = spotPrices.isInitialLoading || isVolumesLoading
 
@@ -26,7 +26,7 @@ export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
 
       const volume = BN(value.volume)
         .shiftedBy(-assetMeta.decimals)
-        .multipliedBy(spotPrice ?? 1)
+        .multipliedBy(spotPrice ?? BN_NAN)
         .toFixed(3)
 
       return { volume, poolAddress: value.poolId, assetMeta }

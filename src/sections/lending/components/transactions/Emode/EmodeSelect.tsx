@@ -22,7 +22,7 @@ export const EmodeSelect = ({
   userEmode,
 }: EmodeSelectProps) => {
   return (
-    <div sx={{ flex: "row", align: "center", justify: "space-between" }}>
+    <div sx={{ flex: "row", align: "center", justify: "space-between", py: 8 }}>
       <Text fs={14} color="basic400">
         Asset category
       </Text>

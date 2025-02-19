@@ -33,7 +33,7 @@ export const BorrowedAssetsStats = () => {
         font="Geist"
         labelColor="basic400"
         label={t("lending.apy")}
-        tooltip={t("lending.tooltip.apy")}
+        tooltip={t("lending.tooltip.borrowApy")}
         isLoading={loading}
       >
         <PercentageValue value={(user?.debtAPY || 0) * 100} />

@@ -28,39 +28,28 @@ import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 
-export const getAddToOmnipoolFee = (api: ApiPromise, farms: TFarmAprData[]) => {
-  const txs = [api.tx.omnipool.addLiquidity("0", "1")]
-  const [firstFarm, ...restFarm] = farms
-
-  if (firstFarm)
-    txs.push(
-      api.tx.omnipoolLiquidityMining.depositShares(
-        firstFarm.globalFarmId,
-        firstFarm.yieldFarmId,
+export const getAddToOmnipoolFee = (
+  api: ApiPromise,
+  isJoinFarms: boolean,
+  farms: TFarmAprData[],
+) => {
+  const tx = isJoinFarms
+    ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+        farms.map<[string, string]>((farm) => [
+          farm.globalFarmId,
+          farm.yieldFarmId,
+        ]),
         "0",
-      ),
-    )
+        "1",
+        //@ts-ignore
+        undefined,
+      )
+    : api.tx.omnipool.addLiquidity("0", "1")
 
-  if (restFarm.length) {
-    const restFarmTxs = restFarm.map((farm) =>
-      api.tx.omnipoolLiquidityMining.redepositShares(
-        farm.globalFarmId,
-        farm.yieldFarmId,
-        "0",
-      ),
-    )
-
-    txs.push(
-      restFarmTxs.length > 1
-        ? api.tx.utility.batch(restFarmTxs)
-        : restFarmTxs[0],
-    )
-  }
-
-  return txs
+  return [tx]
 }
 
-const getSharesToGet = (
+export const getSharesToGet = (
   omnipoolAsset: TOmnipoolAssetsData[number],
   amount: string,
 ) => {
@@ -96,7 +85,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const { data: accountAssets } = useAccountAssets()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
-  const poolShare = useMemo(() => {
+  const { poolShare, sharesToGet } = useMemo(() => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
@@ -106,16 +95,20 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
-      return poolShare
+      return { poolShare, sharesToGet }
     }
+
+    return { poolShare: BN_0, sharesToGet: BN_0 }
   }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
     poolShare,
+    sharesToGet,
     spotPrice,
     omnipoolFee,
     assetMeta: pool.meta,
     assetBalance,
+    ommipoolAsset,
   }
 }
 

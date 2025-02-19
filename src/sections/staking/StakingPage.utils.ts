@@ -5,24 +5,22 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
   TStakingPosition,
-  useCirculatingSupply,
+  useHDXSupplyFromSubscan,
   useStake,
   useStakingConsts,
   useStakingEvents,
-  useStakingPositionBalances,
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
 import { useDisplayPrice } from "utils/displayAsset"
 import {
   BN_0,
-  BN_100,
   BN_BILL,
   BN_QUINTILL,
   PARACHAIN_BLOCK_TIME,
 } from "utils/constants"
 import { useMemo } from "react"
-import { useReferendums } from "api/democracy"
+import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
@@ -46,32 +44,29 @@ const b = "2000"
 
 export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 
-const getVoteActionPoints = (stakeAmount: BN, referendaAmount: number) => {
-  const maxVotingPower = stakeAmount.multipliedBy(CONVICTIONS["locked6x"])
-  const maxActionPointsPerRef = 100
-
-  const points = stakeAmount
-    .multipliedBy(CONVICTIONS["locked6x"])
-    .multipliedBy(maxActionPointsPerRef)
-    .div(maxVotingPower)
-    .multipliedBy(referendaAmount)
-    .toNumber()
-
-  return points
-}
-
 const getCurrentActionPoints = (
   votes: TStakingPosition["votes"],
   initialActionPoints: number,
   stakePosition: BN,
+  activeReferendaIds: string[],
 ) => {
   let currentActionPoints = 0
+  let maxActionPoints = 0
 
   const maxVotingPower = stakePosition.multipliedBy(CONVICTIONS["locked6x"])
   const maxActionPointsPerRef = 100
+  const maxConviction = CONVICTIONS["locked6x"]
+
+  const votedActiveReferendaIds: string[] = []
 
   votes?.forEach((vote) => {
     const convictionIndex = CONVICTIONS[vote.conviction.toLowerCase()]
+
+    const isActiveReferenda = activeReferendaIds.includes(vote.id.toString())
+
+    if (isActiveReferenda) {
+      votedActiveReferendaIds.push(vote.id.toString())
+    }
 
     currentActionPoints += Math.floor(
       vote.amount
@@ -80,6 +75,26 @@ const getCurrentActionPoints = (
         .div(maxVotingPower)
         .toNumber(),
     )
+
+    maxActionPoints += Math.floor(
+      vote.amount
+        .multipliedBy(isActiveReferenda ? maxConviction : convictionIndex)
+        .multipliedBy(maxActionPointsPerRef)
+        .div(maxVotingPower)
+        .toNumber(),
+    )
+  })
+
+  activeReferendaIds.forEach((activeReferendaId) => {
+    if (!votedActiveReferendaIds.includes(activeReferendaId)) {
+      maxActionPoints += Math.floor(
+        stakePosition
+          .multipliedBy(maxConviction)
+          .multipliedBy(maxActionPointsPerRef)
+          .div(maxVotingPower)
+          .toNumber(),
+      )
+    }
   })
 
   const actionMultipliers = {
@@ -89,7 +104,10 @@ const getCurrentActionPoints = (
   currentActionPoints *= actionMultipliers.democracyVote
   currentActionPoints += initialActionPoints ?? 0
 
-  return BN(currentActionPoints)
+  maxActionPoints *= actionMultipliers.democracyVote
+  maxActionPoints += initialActionPoints ?? 0
+
+  return { currentActionPoints, maxActionPoints }
 }
 
 export const useStakeData = () => {
@@ -97,15 +115,13 @@ export const useStakeData = () => {
 
   const { account } = useAccount()
   const stake = useStake(account?.address)
-  const circulatingSupply = useCirculatingSupply()
+  const { data: hdxSupply, isLoading: isSupplyLoading } =
+    useHDXSupplyFromSubscan()
   const accountAssets = useAccountAssets()
 
   const locks = useTokenLocks(native.id)
   const spotPrice = useDisplayPrice(native.id)
-  const positionBalances = useStakingPositionBalances(
-    stake.data?.positionId?.toString(),
-  )
-  const referendas = useReferendums("finished")
+  const circulatingSupply = hdxSupply?.circulatingSupply
 
   const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
   const vestLocks = locks.data?.reduce(
@@ -125,17 +141,10 @@ export const useStakeData = () => {
 
   const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
-  const queries = [
-    stake,
-    circulatingSupply,
-    locks,
-    spotPrice,
-    positionBalances,
-    referendas,
-    accountAssets,
-  ]
+  const queries = [stake, locks, spotPrice]
 
-  const isLoading = queries.some((query) => query.isInitialLoading)
+  const isLoading =
+    queries.some((query) => query.isInitialLoading) || isSupplyLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
@@ -147,7 +156,7 @@ export const useStakeData = () => {
     const totalStake = stake.data?.totalStake ?? 0
 
     const supplyStaked = BN(totalStake)
-      .div(Number(circulatingSupply.data ?? 1))
+      .div(Number(circulatingSupply ?? 1))
       .decimalPlaces(4)
       .multipliedBy(100)
 
@@ -155,68 +164,11 @@ export const useStakeData = () => {
       .multipliedBy(spotPrice.data?.spotPrice ?? 1)
       .shiftedBy(-native.decimals)
 
-    const circulatingSupplyData = BN(circulatingSupply.data ?? 0).shiftedBy(
+    const circulatingSupplyData = BN(circulatingSupply ?? 0).shiftedBy(
       -native.decimals,
     )
 
     const stakePosition = stake.data?.stakePosition
-    let averagePercentage = BN_0
-    let amountOfReferends = 0
-
-    if (stakePosition) {
-      const initialPositionBalance = BN(
-        positionBalances.data?.events.find(
-          (event) => event.name === "Staking.PositionCreated",
-        )?.args.stake ?? 0,
-      )
-
-      const allReferendaPercentages =
-        referendas.data?.reduce((acc, referenda) => {
-          const endReferendaBlockNumber =
-            referenda.referendum.asFinished.end.toBigNumber()
-
-          if (endReferendaBlockNumber.gt(stakePosition.createdAt)) {
-            amountOfReferends++
-
-            if (referenda.amount && referenda.conviction) {
-              /* staked position value when a referenda is over */
-              let positionBalance = initialPositionBalance
-
-              positionBalances.data?.events.forEach((event) => {
-                if (event.name === "Staking.StakeAdded") {
-                  const eventOccurBlockNumber = BN(event.block.height)
-
-                  if (
-                    endReferendaBlockNumber.gte(eventOccurBlockNumber) &&
-                    positionBalance.lt(event.args.totalStake)
-                  ) {
-                    positionBalance = BN(event.args.totalStake)
-                  }
-                }
-              })
-
-              const percentageOfVotedReferenda = referenda.amount
-                .div(positionBalance)
-                .multipliedBy(CONVICTIONS[referenda.conviction.toLowerCase()])
-                .div(CONVICTIONS["locked6x"])
-                .multipliedBy(100)
-
-              return acc.plus(percentageOfVotedReferenda)
-            }
-          }
-
-          return acc
-        }, BN_0) ?? BN(0)
-
-      averagePercentage =
-        allReferendaPercentages.isZero() && !amountOfReferends
-          ? BN_100
-          : allReferendaPercentages.div(amountOfReferends)
-    }
-
-    const rewardBoostPersentage = referendas.data?.length
-      ? averagePercentage
-      : BN_100
 
     return {
       supplyStaked,
@@ -229,16 +181,13 @@ export const useStakeData = () => {
       stakePosition: stakePosition
         ? {
             ...stake.data?.stakePosition,
-            rewardBoostPersentage,
           }
         : undefined,
     }
   }, [
     availableBalance,
-    circulatingSupply.data,
+    circulatingSupply,
     isLoading,
-    positionBalances.data?.events,
-    referendas.data,
     spotPrice.data?.spotPrice,
     stake.data?.minStake,
     stake.data?.positionId,
@@ -447,7 +396,7 @@ export const useClaimReward = () => {
   const bestNumber = useBestNumber()
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
-  const { data: referendums } = useReferendums("ongoing")
+  const { data: openGovReferendas = [] } = useOpenGovReferendas()
 
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
@@ -514,6 +463,7 @@ export const useClaimReward = () => {
       stakePosition.votes,
       stakePosition.actionPoints.toNumber(),
       stakePosition.stake,
+      openGovReferendas.map((referenda) => referenda.id),
     )
 
     const points = wasm.calculate_points(
@@ -521,24 +471,19 @@ export const useClaimReward = () => {
       currentPeriod,
       timePointsPerPeriod.toString(),
       timePointsWeight.toString(),
-      actionPoints.toString(),
+      actionPoints.currentActionPoints.toString(),
       actionPointsWeight.toString(),
       stakePosition.accumulatedSlashPoints.toString(),
     )
 
     let extraPayablePercentageHuman: string | undefined
-    if (referendums?.length) {
-      const voteActionPoints = getVoteActionPoints(
-        stakePosition.stake,
-        referendums.length,
-      )
-
+    if (openGovReferendas.length) {
       const extraPoints = wasm.calculate_points(
         enteredAt,
         currentPeriod,
         timePointsPerPeriod.toString(),
         timePointsWeight.toString(),
-        actionPoints.plus(voteActionPoints).toString(),
+        actionPoints.maxActionPoints.toString(),
         actionPointsWeight.toString(),
         stakePosition.accumulatedSlashPoints.toString(),
       )
@@ -607,7 +552,13 @@ export const useClaimReward = () => {
         .div(totalRewards)
         .multipliedBy(100),
     }
-  }, [bestNumber.data, potBalance.data, stake, stakingConsts, referendums])
+  }, [
+    bestNumber.data,
+    potBalance.data,
+    stake,
+    stakingConsts,
+    openGovReferendas,
+  ])
 
   return { data, isLoading }
 }

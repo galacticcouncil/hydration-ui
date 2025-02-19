@@ -2,7 +2,7 @@ import { Modal } from "components/Modal/Modal"
 import { Stepper } from "components/Stepper/Stepper"
 import { ComponentProps, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Transaction } from "state/store"
+import { Transaction, useStore } from "state/store"
 import { useSendTx } from "./ReviewTransaction.utils"
 import { ReviewTransactionError } from "./ReviewTransactionError"
 import { ReviewTransactionForm } from "./ReviewTransactionForm"
@@ -12,7 +12,10 @@ import { ReviewTransactionToast } from "./ReviewTransactionToast"
 import { ReviewTransactionXCallForm } from "./ReviewTransactionXCallForm"
 import { ReviewTransactionEvmTxForm } from "sections/transaction/ReviewTransactionEvmTxForm"
 import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeModal"
-import { isEvmXCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import {
+  isEvmCall,
+  isSolanaCall,
+} from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const ReviewTransaction = (props: Transaction) => {
@@ -20,11 +23,13 @@ export const ReviewTransaction = (props: Transaction) => {
   const { t } = useTranslation()
   const [minimizeModal, setMinimizeModal] = useState(false)
   const [signError, setSignError] = useState<unknown>()
+  const { cancelTransaction } = useStore()
 
   const {
     sendTx,
     sendEvmTx,
     sendPermitTx,
+    sendSolanaTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -63,8 +68,10 @@ export const ReviewTransaction = (props: Transaction) => {
 
     if (isSuccess) {
       props.onSuccess?.(data)
-    } else {
+    } else if (isError) {
       props.onError?.()
+    } else {
+      cancelTransaction(props.id)
     }
   }
 
@@ -168,7 +175,8 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
           />
-        ) : isEvmXCall(props.xcall) && props.xcallMeta ? (
+        ) : (isEvmCall(props.xcall) || isSolanaCall(props.xcall)) &&
+          props.xcallMeta ? (
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
@@ -176,6 +184,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onEvmSigned={(data) => {
               props.onSubmitted?.()
               sendEvmTx(data)
+            }}
+            onSolanaSigned={(data) => {
+              props.onSubmitted?.()
+              sendSolanaTx(data)
             }}
             onSignError={setSignError}
           />

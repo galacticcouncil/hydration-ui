@@ -29,7 +29,7 @@ export const useAllXykPools = () => {
   })
 }
 
-export const useXYKPools = () => {
+export const useXYKSDKPools = () => {
   return useQuery<PoolBase[]>(QUERY_KEYS.xykPools, {
     enabled: false,
     staleTime: Infinity,

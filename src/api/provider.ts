@@ -21,6 +21,7 @@ import { identity, undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
+import { PolkadotEvmRpcProvider } from "utils/provider"
 
 export type TEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -50,7 +51,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Dwellir",
-    url: "wss://hydradx-rpc.dwellir.com",
+    url: "wss://hydration-rpc.n.dwellir.com",
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
@@ -151,7 +152,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 3.1,
+      version: 3.2,
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true)
       },
@@ -260,12 +261,11 @@ export const useProviderData = () => {
         PoolType.XYK,
         PoolType.LBP,
       ]
+      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
-
-      await poolService.syncRegistry(externalTokens[dataEnv])
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
@@ -274,8 +274,11 @@ export const useProviderData = () => {
 
       const balanceClient = new BalanceClient(api)
 
+      const evm = new PolkadotEvmRpcProvider(api)
+
       return {
         api,
+        evm,
         tradeRouter,
         poolService,
         balanceClient,

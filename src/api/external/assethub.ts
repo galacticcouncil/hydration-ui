@@ -299,15 +299,7 @@ export function assetHubSwapNativeForAssetExactOut(
         })
         .toU8a(),
       api
-        .createType("MultiLocation", {
-          parents: 0,
-          interior: {
-            x2: [
-              { palletInstance: options.asset.palletInstance },
-              { generalIndex: options.asset.id },
-            ],
-          },
-        })
+        .createType("MultiLocation", options.asset.xcmLocation as unknown)
         .toU8a(),
     ],
     options.assetAmount,

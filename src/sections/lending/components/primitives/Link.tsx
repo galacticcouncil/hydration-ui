@@ -35,7 +35,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 )
 
 export const ROUTES = {
-  dashboard: "/borrow",
+  dashboard: "/borrow/dashboard",
   markets: "/borrow/markets",
   faucet: "/borrow/faucet",
   migrationTool: "/borrow/v3-migration",

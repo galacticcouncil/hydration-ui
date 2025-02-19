@@ -1,5 +1,5 @@
-import BN from "bignumber.js"
 import { LinearProgress } from "components/Progress"
+import BN from "bignumber.js"
 import { theme } from "theme"
 
 export type ReferendumCardProgressProps = {
@@ -31,9 +31,9 @@ export const ReferendumCardProgress: React.FC<ReferendumCardProgressProps> = ({
             }}
             percent={100}
             colorCustom={`linear-gradient(
-              270deg,
-              ${theme.colors.green600} 50%,
-              transparent 100%)`}
+                270deg,
+                ${theme.colors.green600} 50%,
+                transparent 100%)`}
           />
           <LinearProgress
             size="small"
@@ -43,9 +43,9 @@ export const ReferendumCardProgress: React.FC<ReferendumCardProgressProps> = ({
             }}
             percent={100}
             colorCustom={`linear-gradient(
-              90deg,
-              ${theme.colors.pink700} 50%,
-              transparent 100%)`}
+                90deg,
+                ${theme.colors.pink700} 50%,
+                transparent 100%)`}
           />
         </>
       )}
