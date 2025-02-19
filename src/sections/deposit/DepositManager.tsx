@@ -1,3 +1,4 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { useCrossChainBalanceSubscription } from "api/xcm"
 import { differenceInMinutes } from "date-fns"
@@ -64,6 +65,10 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
           }
 
           const cex = CEX_CONFIG.find((c) => c.id === cexId)!
+          const dstChainName = (chainsMap.get(asset.depositChain)?.name ?? "")
+            .replace("(CEX)", "")
+            .trim()
+
           successToastRef.current({
             title: (
               <Trans
@@ -71,6 +76,7 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
                 i18nKey="deposit.method.cex.toast.onSuccess"
                 tOptions={{
                   cex: cex.title,
+                  dstChain: dstChainName,
                 }}
               >
                 <span className="highlight" />

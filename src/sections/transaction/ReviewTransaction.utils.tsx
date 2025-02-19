@@ -551,7 +551,7 @@ export const useSendTransactionMutation = (
     return await new Promise(async (resolve, reject) => {
       if (isObservable(tx)) {
         try {
-          return tx.subscribe({
+          const sub = tx.subscribe({
             error: (err) => {
               setTxState("Invalid")
               reject(
@@ -582,7 +582,12 @@ export const useSendTransactionMutation = (
                 return resolve(toSubmittableResult(event.txHash))
               }
             },
+            complete: () => {
+              sub.unsubscribe()
+            },
           })
+
+          return
         } catch (err) {
           return reject(
             new TransactionError(err?.toString() ?? "Unknown Error", {}),

@@ -38,7 +38,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
   const wallet = useCrossChainWallet()
-  const { setAmount: setWithdrawnAmount } = useDeposit()
+  const { setAmount: setWithdrawnAmount, reset } = useDeposit()
 
   const isFirstStepCompleted = useRef(false)
 
@@ -89,14 +89,17 @@ export const useWithdraw = (cexId: string, assetId: string) => {
     if (!isFirstStepCompleted.current) {
       const call = await xTransfer.buildCall(values.amount)
 
+      const srcChainName = srcChain.name.replace("(CEX)", "").trim()
+      const dstChainName = dstChain.name.replace("(CEX)", "").trim()
+
       await createTransaction(
         {
           title: t("withdraw.transfer.cex.modal.title", { cex: cex.title }),
           description: t("xcm.transfer.reviewTransaction.modal.description", {
             amount: values.amount,
             symbol: assetMeta.symbol,
-            srcChain: srcChain.name,
-            dstChain: cex.isXcmCompatible ? cex.title : dstChain.name,
+            srcChain: srcChainName,
+            dstChain: cex.isXcmCompatible ? cex.title : dstChainName,
           }),
           tx: api.tx(call.data),
         },
@@ -117,9 +120,10 @@ export const useWithdraw = (cexId: string, assetId: string) => {
             tOptions: {
               amount: values.amount,
               symbol: asset.data.asset.originSymbol,
-              srcChain: srcChain.name,
-              dstChain: cex.isXcmCompatible ? cex.title : dstChain.name,
+              srcChain: srcChainName,
+              dstChain: cex.isXcmCompatible ? cex.title : dstChainName,
             },
+            components: ["span.highlight"],
           }),
         },
       )
@@ -140,7 +144,7 @@ export const useWithdraw = (cexId: string, assetId: string) => {
       const edRes = await externalApi.query.assets.asset(onChainAssetId)
       ed = edRes.unwrap().minBalance.toBigNumber()
 
-      balance = await waitForAssetWithdrawal(
+      balance = await waitForFinalizedAssetWithdrawal(
         externalApi,
         onChainAssetId,
         account.address,
@@ -187,13 +191,16 @@ export const useWithdraw = (cexId: string, assetId: string) => {
 
     const isAssetHub = dstChain.key === "assethub"
 
+    // destination chain from 1st step is source chain in 2nd step
+    const srcChainName = dstChain.name.replace("(CEX)", "").trim()
+
     await createTransaction(
       {
         title: t("withdraw.transfer.cex.modal.title", { cex: cex.title }),
         description: t("xcm.transfer.reviewTransaction.modal.description", {
           amount: formattedAmount,
           symbol: assetMeta.symbol,
-          srcChain: dstChain.name,
+          srcChain: srcChainName,
           dstChain: cex.title,
         }),
         tx: isAssetHub
@@ -226,15 +233,17 @@ export const useWithdraw = (cexId: string, assetId: string) => {
         onSuccess: () => {
           setWithdrawnAmount(adjustedAmount.toString())
         },
+        onError: reset,
         steps: getSteps(),
         toast: createToastMessages("xcm.transfer.toast", {
           t,
           tOptions: {
             amount: formattedAmount,
             symbol: asset.data.asset.originSymbol,
-            srcChain: dstChain.name,
+            srcChain: srcChainName,
             dstChain: cex.title,
           },
+          components: ["span.highlight"],
         }),
       },
     )
@@ -288,27 +297,24 @@ export const useWithdrawalOnchain = (assetId: string) => {
   })
 }
 
-async function waitForAssetWithdrawal(
+async function waitForFinalizedAssetWithdrawal(
   api: ApiPromise,
   assetId: string,
   account: string,
   prevBalance: BN,
 ): Promise<BN> {
   return new Promise(async (resolve) => {
-    const unsub = await api.query.assets.account(
-      assetId,
-      account,
-      async (res) => {
-        const balance: BN = !res.isNone
-          ? res.unwrap().balance.toBigNumber()
-          : BN_0
+    const unsub = await api.rpc.chain.subscribeFinalizedHeads(async () => {
+      const res = await api.query.assets.account(assetId, account)
+      const balance: BN = !res.isNone
+        ? res.unwrap().balance.toBigNumber()
+        : BN_0
 
-        if (balance.gt(prevBalance)) {
-          unsub()
-          resolve(balance)
-        }
-      },
-    )
+      if (balance.gt(prevBalance)) {
+        unsub()
+        resolve(balance)
+      }
+    })
   })
 }
 

@@ -143,6 +143,9 @@ export const useCrossChainTransaction = ({
 
       const { txOptions } = call as SubstrateCall
 
+      const srcChainName = srcChain.name.replace("(CEX)", "").trim()
+      const dstChainName = dstChain.name.replace("(CEX)", "").trim()
+
       return await createTransaction(
         {
           title: title ?? t("xcm.transfer.reviewTransaction.modal.title"),
@@ -151,8 +154,8 @@ export const useCrossChainTransaction = ({
             t("xcm.transfer.reviewTransaction.modal.description", {
               amount: values.amount,
               symbol: balance.symbol,
-              srcChain: srcChain.name,
-              dstChain: dstChain.name,
+              srcChain: srcChainName,
+              dstChain: dstChainName,
             }),
           tx: api.tx(call.data),
           txOptions,
@@ -173,8 +176,8 @@ export const useCrossChainTransaction = ({
             tOptions: {
               amount: values.amount,
               symbol: balance.symbol,
-              srcChain: srcChain.name,
-              dstChain: dstChain.name,
+              srcChain: srcChainName,
+              dstChain: dstChainName,
             },
             components: ["span.highlight"],
           }),

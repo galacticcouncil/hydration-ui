@@ -169,10 +169,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const tx = await papi.txFromCallData(callData)
           const observer = tx
             .signSubmitAndWatch(signer, {
-              at: "best",
               asset: getAssetHubFeeAsset(txOptions.asset),
             })
             .pipe(shareReplay(1))
+
+          const sub = observer.subscribe({
+            complete: () => {
+              sub.unsubscribe()
+              client.destroy()
+            },
+          })
 
           await firstValueFrom(observer)
           return props.onSigned(observer)
