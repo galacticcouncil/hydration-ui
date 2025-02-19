@@ -83,6 +83,7 @@ export function XcmPage() {
   const { disconnectIncompatible } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
   const [openAddressBook, setOpenAddressBook] = React.useState(false)
+  const [destAddress, setDestAddress] = React.useState<string>("")
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
@@ -192,6 +193,8 @@ export function XcmPage() {
     }
   }, [account, disconnectIncompatible, location, t, toggleWeb3Modal])
 
+  const onModalClose = () => setOpenAddressBook(false)
+
   return (
     <SContainer>
       <XcmApp
@@ -201,6 +204,7 @@ export function XcmPage() {
             r.setAttribute("addressBookEnabled", "")
           }
         }}
+        destAddress={destAddress}
         srcChain={srcChainDefault}
         destChain={destChainDefault}
         asset={assetDefault}
@@ -229,13 +233,16 @@ export function XcmPage() {
       {openAddressBook && (
         <Modal open>
           <ModalContents
-            onClose={() => setOpenAddressBook(false)}
+            onClose={onModalClose}
             contents={[
               {
                 title: "Select destination address",
                 content: (
                   <AddressBook
-                    onSelect={() => null}
+                    onSelect={(address) => {
+                      setDestAddress(address)
+                      onModalClose()
+                    }}
                     mode={getAddressBookMode(dstChain)}
                   />
                 ),

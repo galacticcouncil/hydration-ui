@@ -13,9 +13,15 @@ import { arraySearch } from "utils/helpers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 
-type Props = { onSelect: (address: string) => void; mode?: WalletMode }
+type AddressBookProps = {
+  onSelect: (address: string) => void
+  mode?: WalletMode
+}
 
-export const AddressBook = ({ onSelect, mode = WalletMode.Default }: Props) => {
+export const AddressBook = ({
+  onSelect,
+  mode = WalletMode.Default,
+}: AddressBookProps) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const { addresses: allAddresses } = useAddressStore()
@@ -30,6 +36,10 @@ export const AddressBook = ({ onSelect, mode = WalletMode.Default }: Props) => {
 
     if (filter === WalletMode.EVM) {
       return allAddresses.filter((address) => address.provider === "metamask")
+    }
+
+    if (filter === WalletMode.Solana) {
+      return allAddresses.filter((address) => address.provider === "solana")
     }
 
     return allAddresses
