@@ -458,6 +458,7 @@
   "otc.offers.table.actions.cancel": "Cancel order",
   "transaction.mortal.expire": "{{ date, dd/MM/yyyy HH:mm:ss }}",
   "transaction.immortal.expire": "Never",
+  "walletConnect.delegates.title": "Connect delegated wallet",
   "walletConnect.provider.title": "Connect wallet",
   "walletConnect.provider.description.default": "Select your wallet of choice.",
   "walletConnect.provider.description.substrate": "Select your Polkadot wallet of choice.",
