@@ -111,5 +111,7 @@ export const getAddressBookMode = (chain?: AnyChain) => {
 
   if (chain.isParachain()) return WalletMode.Substrate
 
-  if (chain.isEvmParachain()) return WalletMode.Default
+  if (chain.isEvmParachain()) return WalletMode.SubstrateEVM
+
+  if (chain.isSolana()) return WalletMode.Solana
 }

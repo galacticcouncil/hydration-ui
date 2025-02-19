@@ -38,6 +38,13 @@ export const AddressBook = ({
       return allAddresses.filter((address) => address.provider === "metamask")
     }
 
+    if (filter === WalletMode.SubstrateEVM) {
+      return allAddresses.filter(
+        (address) =>
+          address.provider === "metamask" || address.provider === "polkadot-js",
+      )
+    }
+
     if (filter === WalletMode.Solana) {
       return allAddresses.filter((address) => address.provider === "solana")
     }
