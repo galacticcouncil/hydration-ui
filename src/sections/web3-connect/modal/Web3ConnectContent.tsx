@@ -24,6 +24,7 @@ import { z } from "zod"
 import { validAddress } from "utils/validators"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { TFunction } from "i18next"
+import { Web3ConnectExternalAccount } from "sections/web3-connect/accounts/Web3ConnectExternalAccount"
 
 type Props = {
   page: number
@@ -55,6 +56,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
     error,
     meta,
     getConnectedProviders,
+    account,
   } = useWeb3ConnectStore()
 
   const {
@@ -159,6 +161,20 @@ export const Web3ConnectContent: React.FC<Props> = ({
                   shouldValidate: true,
                 })
                 onCloseAddressBook?.()
+              }}
+            />
+          ),
+        },
+        {
+          title: t("walletConnect.delegates.title"),
+          content: account ? (
+            <Web3ConnectExternalAccount {...account} />
+          ) : (
+            <Web3ConnectError
+              message="Wallet is not connected"
+              onRetry={() => {
+                disconnect(recentProvider || undefined)
+                onRetry?.()
               }}
             />
           ),
