@@ -5,6 +5,8 @@ import {
   getWalletProviderByType,
 } from "sections/web3-connect/Web3Connect.utils"
 
+export const proxyAccountName = "Proxy Account"
+
 /**
  * Mock Wallet for "View as Wallet" functionality
  */
@@ -25,7 +27,7 @@ export class ExternalWallet implements Wallet {
   proxyWalletProvider = WalletProviderType.PolkadotJS
 
   accountName = "External Account"
-  proxyAccountName = "Proxy Account"
+  proxyAccountName = proxyAccountName
 
   get extension() {
     return this._extension
