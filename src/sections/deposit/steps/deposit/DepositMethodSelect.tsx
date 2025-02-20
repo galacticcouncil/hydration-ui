@@ -19,7 +19,7 @@ export const DepositMethodSelect: React.FC<methodSelectProps> = ({
     <>
       <div>
         <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
-          {t("deposit")}
+          {t("deposit.method.title")}
         </GradientText>
       </div>
       <div sx={{ flex: "column", gap: 20 }}>
