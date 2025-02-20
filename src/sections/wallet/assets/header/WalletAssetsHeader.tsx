@@ -16,6 +16,7 @@ import { useState } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { Text } from "components/Typography/Text/Text"
 import { DepositButton } from "sections/deposit/DepositButton"
+import { useMedia } from "react-use"
 
 type Props = { disconnected?: boolean }
 
@@ -33,6 +34,8 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const [transferModalOpen, setTransferModalOpen] = useState(false)
 
   const navigate = useNavigate()
+
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <div
@@ -96,20 +99,25 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             gap: 12,
           }}
         >
-          <DepositButton sx={{ width: ["100%", "auto"] }} />
-          <Button
-            size="compact"
-            variant="mutedSecondary"
-            onClick={() => navigate({ to: LINKS.withdraw })}
-            sx={{ width: ["100%", "auto"] }}
-          >
-            <Icon
-              size={18}
-              sx={{ ml: -4 }}
-              icon={<DownloadIcon css={{ rotate: "180deg" }} />}
-            />
-            {t("withdraw")}
-          </Button>
+          {isDesktop && (
+            <>
+              <DepositButton sx={{ width: ["100%", "auto"] }} />
+              <Button
+                size="compact"
+                variant="mutedSecondary"
+                onClick={() => navigate({ to: LINKS.withdraw })}
+                sx={{ width: ["100%", "auto"] }}
+              >
+                <Icon
+                  size={18}
+                  sx={{ ml: -4 }}
+                  icon={<DownloadIcon css={{ rotate: "180deg" }} />}
+                />
+                {t("withdraw")}
+              </Button>
+            </>
+          )}
+
           <Button
             size="compact"
             variant="mutedSecondary"
