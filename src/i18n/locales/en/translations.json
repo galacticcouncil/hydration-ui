@@ -1307,6 +1307,8 @@
   "deposit.guide.gateio.step4.title": "Specify network, to which you want to withdraw. For DOT its Polkadot, for USDT and USDC its Polkadot/DOTSM.",
   "deposit.crypto.banxa.buy": "Buy on Banxa",
   "deposit.crypto.banxa.description": "Banxa is the leading global Web3 on-and-off ramp solution.",
+  "deposit.crypto.harbour.buy": "Buy on Harbour",
+  "deposit.crypto.harbour.description": "Instantly transfer between your bank account and your Polkadot wallet with minimal fees",
   "deposit.crypto.fund.title": "Fund with crypto",
   "deposit.cex.select.title": "Exchange and asset to deposit",
   "deposit.cex.exchange.title": "Exchange:",

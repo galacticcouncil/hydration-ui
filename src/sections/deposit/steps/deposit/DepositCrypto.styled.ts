@@ -6,10 +6,6 @@ export const SContainer = styled.div`
   flex-flow: column;
   row-gap: 10px;
   padding: 20px;
-
-  @media ${theme.viewport.gte.sm} {
-    gap: 30px;
-  }
 `
 
 export const SCryptoBlock = styled.a`
