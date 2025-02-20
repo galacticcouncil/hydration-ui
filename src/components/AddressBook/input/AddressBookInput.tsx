@@ -3,6 +3,7 @@ import { safeConvertAddressSS58 } from "utils/formatting"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { SButton, SContainer, SIcon, SInput } from "./AddressBookInput.styled"
 import { safeConvertAddressH160 } from "utils/evm"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   search: string
@@ -29,7 +30,7 @@ export const AddressBookInput = ({
 
     const name = t("addressbook.add.name")
     const address = search
-    const provider = "external"
+    const provider = WalletProviderType.ExternalWallet
 
     const convertedAddress =
       safeConvertAddressSS58(address, 0) ||

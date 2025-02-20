@@ -1,5 +1,7 @@
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useQuery } from "@tanstack/react-query"
+import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -25,7 +27,7 @@ export type Address = {
   id?: string
   name: string
   address: string
-  provider: string
+  provider: WalletProviderType
 }
 export type AddressStore = {
   addresses: Address[]
@@ -80,3 +82,30 @@ export const useAddressStore = create<AddressStore>()(
     { name: "address-book" },
   ),
 )
+
+export const getBlacklistedWallets = (mode: WalletMode) => {
+  if (mode === WalletMode.Solana) {
+    return Object.values(WalletMode).filter(
+      (value) => value !== WalletMode.Solana,
+    )
+  }
+
+  if (mode === WalletMode.EVM) {
+    return Object.values(WalletMode).filter((value) => value !== WalletMode.EVM)
+  }
+
+  if (mode === WalletMode.SubstrateEVM) {
+    return Object.values(WalletMode).filter(
+      (value) =>
+        value !== WalletMode.EVM &&
+        value !== WalletMode.Substrate &&
+        value !== WalletMode.Default,
+    )
+  }
+
+  if (mode === WalletMode.Substrate) {
+    return Object.values(WalletMode).filter(
+      (value) => value !== WalletMode.Substrate,
+    )
+  }
+}

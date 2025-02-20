@@ -44,7 +44,7 @@ export const AddressBookItem = ({
     <>
       <SItem onClick={() => onSelect(address)}>
         <SNameContainer>
-          <AccountAvatar address={address} size={30} />
+          <AccountAvatar address={address} provider={provider} size={30} />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
