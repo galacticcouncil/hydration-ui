@@ -81,9 +81,9 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
                 to: evmTx.to as `0x${string}`,
               })
             }
-
-            onEvmSigned({ evmTx })
           }
+
+          onEvmSigned({ evmTx })
         }
 
         if (isSolanaCall(xcall) && wallet?.signer instanceof SolanaSigner) {
