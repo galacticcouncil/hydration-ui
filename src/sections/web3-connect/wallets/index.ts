@@ -12,6 +12,7 @@ import { SubWallet } from "./SubWallet"
 import { Phantom } from "./Phantom"
 import { Solflare } from "./Solflare"
 import { BraveWallet } from "./BraveWallet"
+import { BraveWalletSol } from "./BraveWalletSol"
 import { WalletConnectEvm } from "./WalletConnectEvm"
 import { RabbyWallet } from "./RabbyWallet"
 import { CoinbaseWallet } from "./CoinbaseWallet"
@@ -128,6 +129,8 @@ const externalWallet: Wallet = new ExternalWallet()
 const phantomWallet: Wallet = new Phantom()
 const solflareWallet: Wallet = new Solflare()
 
+const braveWalletSol: Wallet = new BraveWalletSol()
+
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
   metaMask,
@@ -143,6 +146,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   novaWallet,
   phantomWallet,
   solflareWallet,
+  braveWalletSol,
   walletConnect,
   walletConnectEvm,
   externalWallet,

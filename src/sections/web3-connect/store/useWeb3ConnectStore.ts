@@ -78,6 +78,7 @@ type WalletProviderStore = WalletProviderState & {
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
+    recentProvider?: WalletProviderType,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
   getConnectedProviders: () => WalletProviderEntry[]
