@@ -4,34 +4,21 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { SRowNumber } from "sections/deposit/components/CexDepositGuide.styled"
 import { CEX_CONFIG } from "sections/deposit/DepositPage.utils"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { safeConvertAddressSS58 } from "utils/formatting"
 
-const useCexDepositGuide = (cexId: string, ss58Format: number) => {
+const useCexDepositGuide = (cexId: string) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
 
   return useMemo(() => {
-    const formattedAddress =
-      safeConvertAddressSS58(account?.address, ss58Format, false) ?? ""
-
     if (cexId === "binance") {
       return [
         { title: t("deposit.guide.binance.step1.title") },
         { title: t("deposit.guide.binance.step2.title") },
-        ...(formattedAddress
-          ? [
-              {
-                title: t("deposit.guide.binance.step3.title", {
-                  address: formattedAddress,
-                }),
-              },
-            ]
-          : []),
+        { title: t("deposit.guide.binance.step3.title") },
         { title: t("deposit.guide.binance.step4.title") },
         { title: t("deposit.guide.binance.step5.title") },
         { title: t("deposit.guide.binance.step6.title") },
         { title: t("deposit.guide.binance.step7.title") },
+        { title: t("deposit.guide.binance.step8.title") },
       ]
     }
 
@@ -39,19 +26,12 @@ const useCexDepositGuide = (cexId: string, ss58Format: number) => {
       return [
         { title: t("deposit.guide.kucoin.step1.title") },
         { title: t("deposit.guide.kucoin.step2.title") },
-        ...(formattedAddress
-          ? [
-              {
-                title: t("deposit.guide.kucoin.step3.title", {
-                  address: formattedAddress,
-                }),
-              },
-            ]
-          : []),
+        { title: t("deposit.guide.kucoin.step3.title") },
         { title: t("deposit.guide.kucoin.step4.title") },
         { title: t("deposit.guide.kucoin.step5.title") },
         { title: t("deposit.guide.kucoin.step6.title") },
         { title: t("deposit.guide.kucoin.step7.title") },
+        { title: t("deposit.guide.kucoin.step8.title") },
       ]
     }
 
@@ -59,32 +39,42 @@ const useCexDepositGuide = (cexId: string, ss58Format: number) => {
       return [
         { title: t("deposit.guide.gateio.step1.title") },
         { title: t("deposit.guide.gateio.step2.title") },
-        ...(formattedAddress
-          ? [
-              {
-                title: t("deposit.guide.gateio.step3.title", {
-                  address: formattedAddress,
-                }),
-              },
-            ]
-          : []),
+        { title: t("deposit.guide.gateio.step3.title") },
         { title: t("deposit.guide.gateio.step4.title") },
+        { title: t("deposit.guide.gateio.step5.title") },
+        { title: t("deposit.guide.gateio.step6.title") },
+      ]
+    }
+
+    if (cexId === "kraken") {
+      return [
+        { title: t("deposit.guide.kraken.step1.title") },
+        { title: t("deposit.guide.kraken.step2.title") },
+        { title: t("deposit.guide.kraken.step3.title") },
+        { title: t("deposit.guide.kraken.step4.title") },
+        { title: t("deposit.guide.kraken.step5.title") },
+      ]
+    }
+
+    if (cexId === "coinbase") {
+      return [
+        { title: t("deposit.guide.coinbase.step1.title") },
+        { title: t("deposit.guide.coinbase.step2.title") },
+        { title: t("deposit.guide.coinbase.step3.title") },
+        { title: t("deposit.guide.coinbase.step4.title") },
       ]
     }
 
     return []
-  }, [account?.address, ss58Format, cexId, t])
+  }, [cexId, t])
 }
 
-export type CexDepositGuideProps = { ss58Format: number; cexId: string }
+export type CexDepositGuideProps = { cexId: string }
 
-export const CexDepositGuide: React.FC<CexDepositGuideProps> = ({
-  cexId,
-  ss58Format,
-}) => {
+export const CexDepositGuide: React.FC<CexDepositGuideProps> = ({ cexId }) => {
   const { t } = useTranslation()
 
-  const guide = useCexDepositGuide(cexId, ss58Format)
+  const guide = useCexDepositGuide(cexId)
   if (!guide.length) {
     return null
   }
