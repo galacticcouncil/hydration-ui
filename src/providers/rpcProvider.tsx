@@ -41,7 +41,7 @@ const ProviderContext = createContext<TProviderContext>({
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
-const RPC_PING_HOUR_INTERVAL = 4
+const RPC_PING_HOUR_INTERVAL = 1
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry.getState()
