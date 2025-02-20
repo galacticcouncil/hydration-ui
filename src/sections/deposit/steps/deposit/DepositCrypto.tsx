@@ -1,5 +1,6 @@
 import BanxaLogo from "assets/icons/BanxaLogo.png"
 import HarbourLogo from "assets/icons/HarbourLogo.svg"
+import VortexLogo from "assets/icons/VortexLogo.svg"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -46,14 +47,20 @@ export const DepositCrypto = () => {
       <CryptoBlock
         href="https://banxa.com"
         description={t("deposit.crypto.banxa.description")}
-        cta={t("deposit.crypto.banxa.buy")}
+        cta={t("deposit.crypto.banxa.cta")}
         icon={BanxaLogo}
       />
       <CryptoBlock
         href="https://ramp.harbour.fi/polkadot"
         description={t("deposit.crypto.harbour.description")}
-        cta={t("deposit.crypto.harbour.buy")}
+        cta={t("deposit.crypto.harbour.cta")}
         icon={HarbourLogo}
+      />
+      <CryptoBlock
+        href="https://app.vortexfinance.co"
+        description={t("deposit.crypto.vortex.description")}
+        cta={t("deposit.crypto.vortex.cta")}
+        icon={VortexLogo}
       />
     </SContainer>
   )
