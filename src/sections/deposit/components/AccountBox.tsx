@@ -60,7 +60,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
           sx={{ flex: "row", gap: 6, align: "center" }}
           onClick={() => toggleWeb3Modal()}
         >
-          <Text fs={11} color="whiteish500" tTransform="uppercase">
+          <Text fs={11} lh={24} color="whiteish500" tTransform="uppercase">
             {t("deposit.cex.account.depositTo")}
           </Text>
           <AccountAvatar
@@ -69,7 +69,9 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
             genesisHash={genesisHash}
             size={20}
           />
-          <Text fs={14}>{name}</Text>
+          <Text fs={14} lh={24}>
+            {name}
+          </Text>
           <Icon
             size={24}
             icon={<ChevronDown sx={{ color: "basic300", ml: -6 }} />}
