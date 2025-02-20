@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react"
 import { useMedia } from "react-use"
 
 export type ScreenBreakpoint = "xs" | "sm" | "md" | "lg" | "xl"
-export type ScreenType = "mobile" | "tablet" | "desktop"
+export type ScreenType = "mobile" | "tablet" | "laptop" | "desktop"
 
 export const BREAKPOINTS_TYPES = ["xs", "sm", "md", "lg", "xl"]
 export const BREAKPOINTS_VALUES = ["480px", "768px", "1024px", "1280px"]
@@ -63,17 +63,20 @@ export const useBreakpoints = () => {
   const screen = useMemo<ScreenType | null>(() => {
     return gte("lg")
       ? "desktop"
-      : gte("sm")
-        ? "tablet"
-        : gte("xs")
-          ? "mobile"
-          : null
+      : gte("md")
+        ? "laptop"
+        : gte("sm")
+          ? "tablet"
+          : gte("xs")
+            ? "mobile"
+            : null
   }, [gte])
 
   return {
     screen,
     isMobile: screen === "mobile",
     isTablet: screen === "tablet",
+    isLaptop: screen === "laptop",
     isDesktop: screen === "desktop",
     matches: match.matches,
     breakpoint: match.current,

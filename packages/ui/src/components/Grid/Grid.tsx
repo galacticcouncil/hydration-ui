@@ -1,4 +1,8 @@
-import type { ResponsiveStyleValue, ThemeUIEmpty } from "@theme-ui/css"
+import type {
+  ResponsiveStyleValue,
+  ThemeUICSSProperties,
+  ThemeUIEmpty,
+} from "@theme-ui/css"
 import { forwardRef } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
@@ -28,12 +32,16 @@ type GridOwnProps = {
   columns?: ResponsiveStyleValue<string | number>
   gap?: ResponsiveStyleValue<string | number>
   repeat?: "fit" | "fill"
+  justify?: ThemeUICSSProperties["justifyContent"]
 }
 
 export type GridProps = GridOwnProps & BoxProps
 
 export const Grid = forwardRef<HTMLElement, GridProps>(
-  ({ columnWidth, columns, gap = 0, repeat = "fit", sx, ...props }, ref) => {
+  (
+    { columnWidth, columns, gap = 0, repeat = "fit", justify, sx, ...props },
+    ref,
+  ) => {
     const gridTemplateColumns = columnWidth
       ? widthToColumns(columnWidth, repeat)
       : countToColumns(columns)
@@ -45,6 +53,7 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
         sx={{
           gridGap: gap,
           gridTemplateColumns,
+          justify,
           ...sx,
         }}
         {...props}

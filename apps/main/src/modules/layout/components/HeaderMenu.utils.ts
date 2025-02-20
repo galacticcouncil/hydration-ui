@@ -1,14 +1,14 @@
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  desktopNavOrder,
-  mobileNavOrder,
+  bottomNavOrder,
   NAVIGATION,
   NavigationKey,
+  topNavOrder,
 } from "@/config/navigation"
 import { useVisibleElements } from "@/hooks/useVisibleElements"
+import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 
 export const useMenuTranslations = () => {
   const { t } = useTranslation(["common"])
@@ -138,11 +138,11 @@ export const useMenuTranslations = () => {
 }
 
 export const useVisibleHeaderMenuItems = () => {
-  const { isDesktop } = useBreakpoints()
+  const hasTopNavbar = useHasTopNavbar()
   const { hiddenElementsKeys, observe } = useVisibleElements()
 
   return useMemo(() => {
-    const order = isDesktop ? desktopNavOrder : mobileNavOrder
+    const order = hasTopNavbar ? topNavOrder : bottomNavOrder
     const items = NAVIGATION.toSorted(
       (item1, item2) => order.indexOf(item1.key) - order.indexOf(item2.key),
     )
@@ -173,5 +173,5 @@ export const useVisibleHeaderMenuItems = () => {
       moreButtonKey,
       observe,
     }
-  }, [hiddenElementsKeys, observe, isDesktop])
+  }, [hiddenElementsKeys, observe, hasTopNavbar])
 }

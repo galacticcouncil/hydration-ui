@@ -111,7 +111,7 @@ export const NAVIGATION: NavigationItem[] = [
   },
 ]
 
-export const desktopNavOrder: ReadonlyArray<NavigationKey> = [
+export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
   "liquidity",
@@ -122,7 +122,7 @@ export const desktopNavOrder: ReadonlyArray<NavigationKey> = [
   "referrals",
   "memepad",
 ]
-export const mobileNavOrder: ReadonlyArray<NavigationKey> = [
+export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "wallet",
   "trade",
   "liquidity",

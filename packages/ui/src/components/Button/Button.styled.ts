@@ -264,3 +264,25 @@ export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
     microVariants(variant),
   ],
 )
+
+export const SButtonIcon = styled.button(
+  ({ theme }) => css`
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: ${theme.icons.onSurface};
+    cursor: pointer;
+
+    &:hover {
+      color: ${theme.controls.solid.activeHover};
+    }
+
+    &[disabled] {
+      cursor: unset;
+    }
+  `,
+)

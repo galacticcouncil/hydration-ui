@@ -9,6 +9,12 @@
   "hide": "Hide",
   "more": "More",
   "slippage": "Slippage",
+  "settings": "Settings",
+  "docs": "Docs",
+  "off": "Off",
+  "degenMode": "Degen Mode",
+  "degenMode.warning": "Danger: Proceed at your own risk",
+  "darkMode": "Dark mode",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.maxNumber": "Max value is {{value}}",
   "error.minNumber": "Min value is {{value}}",
@@ -80,5 +86,9 @@
   "assetSelector.empty.secondaryText": "The asset your are looking for is missing, feel free to add customasset.",
   "assetSelector.empty.btn.addAsset": "Add custom asset",
   "assetSelector.title": "Asset select modal",
-  "assetSelector.input.placeholder": "Search tokens..."
+  "assetSelector.input.placeholder": "Search tokens...",
+  "paymentAsset": "Payment asset",
+  "paymentAsset.description": "Trade using Hydra swap",
+  "contacts": "Contacts",
+  "contacts.description": "Manage & save adresses"
 }
