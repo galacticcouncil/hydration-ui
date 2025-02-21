@@ -43,15 +43,14 @@ const useToastsStore = create<ToastStore>()(
   persist(
     (set) => ({
       toasts: {},
-      update: (accoutAddress, callback) =>
+      update: (accoutAddress, cb) =>
         set((state) => {
           const accountToasts = state.toasts[accoutAddress] ?? []
-          const toasts = callback(accountToasts)
 
           return {
             toasts: {
               ...state.toasts,
-              ...{ [accoutAddress]: toasts },
+              ...{ [accoutAddress]: cb(accountToasts) },
             },
           }
         }),
