@@ -24,9 +24,11 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
         ? theme.accents.danger.dimBg
         : theme.buttons.secondary.low.borderRest};
 
-    cursor: pointer;
+    &:not(:disabled) {
+      cursor: pointer;
+    }
 
-    &:hover {
+    &:hover:not(:disabled) {
       border-color: ${theme.buttons.secondary.low.hover};
       background: ${theme.buttons.secondary.low.primaryHover};
     }

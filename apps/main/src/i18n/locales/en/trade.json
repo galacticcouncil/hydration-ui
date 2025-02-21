@@ -22,5 +22,21 @@
   "otc.placeOrder.cta": "Place order",
   "otc.placeOrder.title": "Place order",
   "otc.placeOrder.description": "Define the amount you would like to offer and price or  final amount you would like to receive for your assets.",
-  "otc.fillCta": "Fill order"
+  "otc.placeOrder.priceFor1": "Price for 1 {{symbol}}",
+  "otc.placeOrder.loading": "Placing an OTC order for {{ amount }} {{ symbol }}.",
+  "otc.placeOrder.success": "OTC order placed for {{ amount }} {{ symbol }}.",
+  "otc.placeOrder.error": "Failed to place OTC order for {{ amount }} {{ symbol }}.",
+  "otc.placeOrder.lastOmniPoolPrice": "LAST OMNIPOOL PRICE",
+  "otc.placeOrder.validation.sameAssets": "Cannot place order for the same asset.",
+  "otc.fillOrder.cta": "Fill order",
+  "otc.fillOrder.nonPartial.title": "Fill order",
+  "otc.fillOrder.nonPartial.description": "This order is not partially fillable.",
+  "otc.fillOrder.partial.title": "Partial fill order",
+  "otc.fillOrder.loading": "Filling an OTC order for {{ amount }} {{ symbol }}.",
+  "otc.fillOrder.success": "OTC order filled for {{ amount }} {{ symbol }}.",
+  "otc.fillOrder.error": "Failed to fill OTC order for {{ amount }} {{ symbol }}.",
+  "otc.fillOrder.validation.orderTooBig": "The amount exceeds the size of the order.",
+  "otc.fillOrder.conversion.price": "Price: 1 {{ symbol }} = ",
+  "otc.fillOrder.partiallyFillable.title": "Partially fillable",
+  "otc.fillOrder.partiallyFillable.description": "Allow users to fill smaller parts of this offer"
 }
