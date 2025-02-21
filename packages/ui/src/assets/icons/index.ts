@@ -1,4 +1,5 @@
 export { default as Add } from "./Add.svg?react"
+export { default as ArrowDown } from "./ArrowDown.svg?react"
 export { default as Bell } from "./Bell.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as ChevronRight } from "./ChevronRight.svg?react"

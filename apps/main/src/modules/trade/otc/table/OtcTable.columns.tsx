@@ -1,5 +1,15 @@
 import { Add, ChevronRight } from "@galacticcouncil/ui/assets/icons"
-import { Button, ButtonTransparent, Flex } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  ButtonTransparent,
+  DrawerContent,
+  DrawerRoot,
+  DrawerTrigger,
+  Flex,
+  ModalContent,
+  ModalRoot,
+  ModalTrigger,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useWeb3Connect } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -10,6 +20,7 @@ import { AssetAmount } from "@/components/AssetAmount/AssetAmount"
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OfferStatusColumn } from "@/modules/trade/otc/table/columns/OfferStatusColumn"
+import { FillORderModalContent } from "@/modules/trade/otc/table/fill-order/FillOrderModalContent"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 
 export enum OtcColumn {
@@ -113,9 +124,16 @@ export const useOtcTableColums = () => {
             <OfferMarketPriceColumn
               percentage={row.original.marketPricePercentage}
             />
-            <ButtonTransparent disabled={!isSigned} sx={{ flexShrink: 0 }}>
-              <ChevronRight />
-            </ButtonTransparent>
+            <DrawerRoot>
+              <DrawerTrigger asChild>
+                <ButtonTransparent disabled={!isSigned} sx={{ flexShrink: 0 }}>
+                  <ChevronRight />
+                </ButtonTransparent>
+              </DrawerTrigger>
+              <DrawerContent>
+                <FillORderModalContent />
+              </DrawerContent>
+            </DrawerRoot>
           </Flex>
         )
       },
@@ -143,9 +161,21 @@ export const useOtcTableColums = () => {
         const isSigned = useWeb3Connect((s) => !!s.account)
 
         return (
-          <Button variant="accent" outline disabled={!isSigned} iconStart={Add}>
-            {t("trade.otc.fillCta")}
-          </Button>
+          <ModalRoot>
+            <ModalTrigger asChild>
+              <Button
+                variant="accent"
+                outline
+                disabled={!isSigned}
+                iconStart={Add}
+              >
+                {t("trade.otc.fillOrder.cta")}
+              </Button>
+            </ModalTrigger>
+            <ModalContent>
+              <FillORderModalContent />
+            </ModalContent>
+          </ModalRoot>
         )
       },
     })

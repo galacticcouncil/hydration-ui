@@ -21,6 +21,7 @@
   "price": "Price",
   "marketPrice": "Market price",
   "profit": "Profit",
+  "tradeFee": "Trade fee",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.maxNumber": "Max value is {{value}}",
   "error.minNumber": "Min value is {{value}}",
@@ -108,5 +109,8 @@
   "trade.otc.placeOrder.cta": "Place order",
   "trade.otc.placeOrder.title": "Place order",
   "trade.otc.placeOrder.description": "Define the amount you would like to offer and price or  final amount you would like to receive for your assets.",
-  "trade.otc.fillCta": "Fill order"
+  "trade.otc.fillOrder.cta": "Fill order",
+  "trade.otc.fillOrder.nonPartial.title": "Fill order",
+  "trade.otc.fillOrder.nonPartial.description": "This order is not partially fillable.",
+  "trade.otc.fillOrder.partial.title": "Partial fill order"
 }

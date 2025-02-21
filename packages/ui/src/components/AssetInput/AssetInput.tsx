@@ -17,7 +17,7 @@ export type AssetInputProps = {
   value?: string
   dollarValue?: string
   maxBalance?: string
-  onChange: (value: string) => void
+  onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
   error?: string
   disabled?: boolean
@@ -39,7 +39,7 @@ export const AssetInput = ({
   onAsssetBtnClick,
 }: AssetInputProps) => {
   const onMaxButtonClick = () => {
-    if (maxBalance) onChange(maxBalance)
+    if (maxBalance) onChange?.(maxBalance)
   }
 
   return (
@@ -75,7 +75,7 @@ export const AssetInput = ({
           <MicroButton
             aria-label="Max balance button"
             onClick={onMaxButtonClick}
-            disabled={!maxBalance || maxBalance === "0" || loading}
+            disabled={!maxBalance || maxBalance === "0" || loading || !onChange}
           >
             max
           </MicroButton>
@@ -100,7 +100,7 @@ export const AssetInput = ({
               isError={!!error}
               placeholder="0"
               variant="embedded"
-              disabled={disabled || loading}
+              disabled={disabled || loading || !onChange}
               value={formatAssetValue(value)}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {
@@ -109,7 +109,7 @@ export const AssetInput = ({
                     .replace(/,/g, ".")
 
                   if (!isNaN(Number(formattedValue))) {
-                    onChange(formattedValue)
+                    onChange?.(formattedValue)
                   }
                 }
               }}
