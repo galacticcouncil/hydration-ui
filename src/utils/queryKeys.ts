@@ -360,3 +360,12 @@ export const QUERY_KEYS = {
     address,
   ],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+  xcmBalance: (address: string, chain: string) => [
+    "xcmBalance_",
+    address,
+    chain,
+  ],
+}

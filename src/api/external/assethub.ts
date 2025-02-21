@@ -1,5 +1,10 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain, ParachainAssetData } from "@galacticcouncil/xcm-core"
+import {
+  Asset,
+  multiloc,
+  Parachain,
+  ParachainAssetData,
+} from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
@@ -26,6 +31,7 @@ import BN from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Buffer } from "buffer"
+import { XcmV3Junction, XcmV3Junctions } from "@polkadot-api/descriptors"
 
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
@@ -554,5 +560,26 @@ async function calculateNativeFee(
     fee: fee.toString(),
     feeBalance: feeBalance.toString(),
     feeSymbol: assethubNativeToken.asset.originSymbol,
+  }
+}
+
+export type XcmV3Multilocation = {
+  parents: number
+  interior: XcmV3Junctions
+}
+
+export const getAssetHubFeeAsset = (asset: Asset) => {
+  const location = assethub.getAssetXcmLocation(asset)
+  if (location) {
+    const pallet = multiloc.findPalletInstance(location)
+    const index = multiloc.findGeneralIndex(location)
+
+    return {
+      parents: 0,
+      interior: XcmV3Junctions.X2([
+        XcmV3Junction.PalletInstance(Number(pallet)),
+        XcmV3Junction.GeneralIndex(BigInt(index)),
+      ]),
+    } as XcmV3Multilocation
   }
 }
