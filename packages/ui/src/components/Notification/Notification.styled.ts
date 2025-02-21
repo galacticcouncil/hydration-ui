@@ -4,22 +4,7 @@ import styled from "@emotion/styled"
 import { createVariants } from "@/utils"
 
 import { Icon } from "../Icon"
-
-export type ToastVariant =
-  | "submitted"
-  | "success"
-  | "error"
-  | "unknown"
-  | "warning"
-
-export type CustomToastProps = {
-  variant: ToastVariant
-  content: string
-  className?: string
-  onClose?: () => void
-  autoClose?: boolean
-  autoCloseTimeSC?: number
-}
+import { ToastVariant } from "./Notification"
 
 export const SNotification = styled.div(
   ({ theme }) => css`
@@ -86,7 +71,7 @@ export const SProgress = styled.div<{
       }
     }
 
-    animation: shrink ${closeTime}s ease-in-out forwards;
+    animation: shrink ${closeTime}ms ease-in-out forwards;
 
     width: 100%;
     height: 2px;
