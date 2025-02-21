@@ -1,32 +1,32 @@
-import { u32 } from "@polkadot/types"
-import BigNumber from "bignumber.js"
-import { Button } from "components/Button/Button"
-import { Modal } from "components/Modal/Modal"
-import { useModalPagination } from "components/Modal/Modal.utils"
-import { ModalContents } from "components/Modal/contents/ModalContents"
-import { Text } from "components/Typography/Text/Text"
-import { useEffect, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { getFixedPointAmount } from "utils/balance"
-import { BN_10 } from "utils/constants"
-import { FormValues } from "utils/helpers"
-import { useStore } from "state/store"
-import { OrderAssetSelect } from "./cmp/AssetSelect"
-import { OrderAssetRate } from "./cmp/AssetXRate"
-import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { u32 } from "@polkadot/types";
+import BigNumber from "bignumber.js";
+import { Button } from "components/Button/Button";
+import { Modal } from "components/Modal/Modal";
+import { useModalPagination } from "components/Modal/Modal.utils";
+import { ModalContents } from "components/Modal/contents/ModalContents";
+import { Text } from "components/Typography/Text/Text";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
+import { AssetsModalContent } from "sections/assets/AssetsModal";
+import { getFixedPointAmount } from "utils/balance";
+import { BN_10 } from "utils/constants";
+import { FormValues } from "utils/helpers";
+import { useStore } from "state/store";
+import { OrderAssetSelect } from "./cmp/AssetSelect";
+import { OrderAssetRate } from "./cmp/AssetXRate";
+import { PartialOrderToggle } from "./cmp/PartialOrderToggle";
+import { useRpcProvider } from "providers/rpcProvider";
+import { useAssets } from "providers/assets";
+import { useAccountAssets } from "api/deposits";
 
 type PlaceOrderProps = {
-  assetOut?: u32 | string
-  assetIn?: u32 | string
-  isOpen: boolean
-  onClose: () => void
-  onSuccess: () => void
-}
+  assetOut?: u32 | string;
+  assetIn?: u32 | string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+};
 
 export const PlaceOrder = ({
   isOpen,
@@ -35,84 +35,85 @@ export const PlaceOrder = ({
   onClose,
   onSuccess,
 }: PlaceOrderProps) => {
-  const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { t } = useTranslation();
+  const { getAssetWithFallback } = useAssets();
 
-  const [aOut, setAOut] = useState(assetOut)
-  const [aIn, setAIn] = useState(assetIn)
+  const [aOut, setAOut] = useState(assetOut);
+  const [aIn, setAIn] = useState(assetIn);
 
   const form = useForm<{
-    amountOut: string
-    amountIn: string
-    price: string
-    partiallyFillable: boolean
+    amountOut: string;
+    amountIn: string;
+    price: string;
+    partiallyFillable: boolean;
   }>({
     defaultValues: { partiallyFillable: true },
     mode: "onChange",
-  })
+  });
 
-  const { api } = useRpcProvider()
-  const accountAssets = useAccountAssets()
-  const assetOutMeta = aOut ? getAssetWithFallback(aOut.toString()) : undefined
+  const { api } = useRpcProvider();
+  const accountAssets = useAccountAssets();
+  const assetOutMeta = aOut ? getAssetWithFallback(aOut.toString()) : undefined;
   const assetOutBalance = aOut
     ? accountAssets.data?.accountAssetsMap.get(aOut.toString())?.balance
-    : undefined
-  const assetInMeta = aIn ? getAssetWithFallback(aIn.toString()) : undefined
+    : undefined;
+  const assetInMeta = aIn ? getAssetWithFallback(aIn.toString()) : undefined;
   const assetInBalance = aIn
     ? accountAssets.data?.accountAssetsMap.get(aIn.toString())?.balance
-    : undefined
+    : undefined;
 
   useEffect(() => {
-    form.trigger()
-  }, [aIn, aOut, form])
+    form.trigger();
+  }, [aIn, aOut, form]);
 
-  const { createTransaction } = useStore()
+  const { createTransaction } = useStore();
 
   const handleAmountChange = () => {
-    const { amountOut, amountIn, price } = form.getValues()
+    const { amountOut, amountIn, price } = form.getValues();
     if (amountIn && amountOut) {
-      const price = new BigNumber(amountIn).div(new BigNumber(amountOut))
-      form.setValue("price", price.toFixed())
+      const price = new BigNumber(amountIn).div(new BigNumber(amountOut));
+      form.setValue("price", price.toFixed());
     } else if (amountIn && price) {
-      const amountOut = new BigNumber(amountIn).div(new BigNumber(price))
-      form.setValue("amountOut", amountOut.toFixed())
+      const amountOut = new BigNumber(amountIn).div(new BigNumber(price));
+      form.setValue("amountOut", amountOut.toFixed());
     } else if (amountOut && price) {
       const amountIn = new BigNumber(amountOut).multipliedBy(
         new BigNumber(price),
-      )
-      form.setValue("amountIn", amountIn.toFixed())
+      );
+      form.setValue("amountIn", amountIn.toFixed());
     }
-    form.trigger()
-  }
+    form.trigger();
+  };
 
   const handlePriceChange = () => {
-    const { amountOut, amountIn, price } = form.getValues()
+    const { amountOut, amountIn, price } = form.getValues();
     if (amountOut && price) {
       const amountIn = new BigNumber(amountOut).multipliedBy(
         new BigNumber(price),
-      )
-      form.setValue("amountIn", amountIn.toFixed())
+      );
+      form.setValue("amountIn", amountIn.toFixed());
     } else if (amountIn && price) {
-      const amountOut = new BigNumber(amountIn).div(new BigNumber(price))
-      form.setValue("amountOut", amountOut.toFixed())
+      const amountOut = new BigNumber(amountIn).div(new BigNumber(price));
+      form.setValue("amountOut", amountOut.toFixed());
     }
-    form.trigger()
-  }
+    form.trigger();
+  };
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetOutMeta?.decimals == null) throw new Error("Missing assetOut meta")
+    if (assetOutMeta?.decimals == null)
+      throw new Error("Missing assetOut meta");
 
-    if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
+    if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta");
 
     const amountOut = getFixedPointAmount(
       values.amountOut,
       assetOutMeta.decimals,
-    ).decimalPlaces(0, 1)
+    ).decimalPlaces(0, 1);
 
     const amountIn = getFixedPointAmount(
       values.amountIn,
       assetInMeta.decimals,
-    ).decimalPlaces(0, 1)
+    ).decimalPlaces(0, 1);
 
     await createTransaction(
       {
@@ -127,8 +128,8 @@ export const PlaceOrder = ({
       {
         onSuccess,
         onSubmitted: () => {
-          onClose()
-          form.reset()
+          onClose();
+          form.reset();
         },
         toast: {
           onLoading: (
@@ -159,14 +160,14 @@ export const PlaceOrder = ({
           ),
         },
       },
-    )
-  }
+    );
+  };
 
   const onModalClose = () => {
-    onClose()
-    form.reset()
-  }
-  const { page, direction, paginateTo } = useModalPagination()
+    onClose();
+    form.reset();
+  };
+  const { page, direction, paginateTo } = useModalPagination();
 
   return (
     <Modal open={isOpen} disableCloseOutside onClose={onModalClose}>
@@ -198,8 +199,8 @@ export const PlaceOrder = ({
                       required: true,
                       validate: {
                         maxBalance: (value) => {
-                          const balance = assetOutBalance?.balance
-                          const decimals = assetOutMeta?.decimals
+                          const balance = assetOutBalance?.balance;
+                          const decimals = assetOutMeta?.decimals;
                           if (
                             balance &&
                             decimals &&
@@ -209,11 +210,11 @@ export const PlaceOrder = ({
                               ),
                             )
                           ) {
-                            return true
+                            return true;
                           }
                           return t(
                             "otc.order.place.validation.notEnoughBalance",
-                          )
+                          );
                         },
                       },
                     }}
@@ -226,8 +227,8 @@ export const PlaceOrder = ({
                         name={name}
                         value={value}
                         onChange={(e) => {
-                          onChange(e)
-                          handleAmountChange()
+                          onChange(e);
+                          handleAmountChange();
                         }}
                         onOpen={() => paginateTo(2)}
                         asset={aOut}
@@ -237,18 +238,18 @@ export const PlaceOrder = ({
                     )}
                   />
                   <div sx={{ pt: 10, pb: 10 }}>
-                    {assetOutMeta && assetInMeta && (
+                    {assetInMeta && assetInMeta && (
                       <Controller
                         name="price"
                         control={form.control}
                         render={({ field: { value, onChange } }) => (
                           <OrderAssetRate
-                            inputAsset={assetOutMeta.id}
+                            inputAsset={assetInMeta.id}
                             outputAsset={assetInMeta.id}
                             price={value!}
                             onChange={(e) => {
-                              onChange(e)
-                              handlePriceChange()
+                              onChange(e);
+                              handlePriceChange();
                             }}
                           />
                         )}
@@ -276,8 +277,8 @@ export const PlaceOrder = ({
                         name={name}
                         value={value}
                         onChange={(e) => {
-                          onChange(e)
-                          handleAmountChange()
+                          onChange(e);
+                          handleAmountChange();
                         }}
                         onOpen={() => paginateTo(1)}
                         asset={aIn}
@@ -337,8 +338,8 @@ export const PlaceOrder = ({
                 withBonds
                 withExternal
                 onSelect={(asset) => {
-                  setAIn(asset.id)
-                  paginateTo(0)
+                  setAIn(asset.id);
+                  paginateTo(0);
                 }}
               />
             ),
@@ -352,9 +353,9 @@ export const PlaceOrder = ({
                 withBonds
                 withExternal
                 onSelect={(asset) => {
-                  form.trigger()
-                  setAOut(asset.id)
-                  paginateTo(0)
+                  form.trigger();
+                  setAOut(asset.id);
+                  paginateTo(0);
                 }}
               />
             ),
@@ -362,5 +363,5 @@ export const PlaceOrder = ({
         ]}
       />
     </Modal>
-  )
-}
+  );
+};

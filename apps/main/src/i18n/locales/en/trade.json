@@ -22,5 +22,15 @@
   "otc.placeOrder.cta": "Place order",
   "otc.placeOrder.title": "Place order",
   "otc.placeOrder.description": "Define the amount you would like to offer and price or  final amount you would like to receive for your assets.",
-  "otc.fillCta": "Fill order"
+  "otc.placeOrder.priceFor1": "Price for 1 {{symbol}}",
+  "otc.placeOrder.loading": "<0>Placing an OTC order for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
+  "otc.placeOrder.success": "<0>OTC order placed for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
+  "otc.placeOrder.lastOmniPoolPrice": "LAST OMNIPOOL PRICE",
+  "otc.fillOrder.cta": "Fill order",
+  "otc.fillOrder.nonPartial.title": "Fill order",
+  "otc.fillOrder.nonPartial.description": "This order is not partially fillable.",
+  "otc.fillOrder.partial.title": "Partial fill order",
+  "otc.fillOrder.loading": "<0>Filling an OTC order for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
+  "otc.fillOrder.success": "<0>OTC order filled for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
+  "otc.divider.price": "Price: 1 {{symbol}} ="
 }

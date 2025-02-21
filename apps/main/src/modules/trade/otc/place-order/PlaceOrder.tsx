@@ -24,7 +24,7 @@ export const PlaceOrder: FC = () => {
         {t("otc.placeOrder.cta")}
       </Button>
       <Modal open={isOpen} onOpenChange={setIsOpen}>
-        <PlaceOrderModalContent />
+        <PlaceOrderModalContent onClose={() => setIsOpen(false)} />
       </Modal>
     </>
   )

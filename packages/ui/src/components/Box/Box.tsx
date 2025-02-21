@@ -30,6 +30,9 @@ export type BoxOwnProps = Partial<
     | "maxHeight"
     | "size"
     | "borderRadius"
+    | "alignContent"
+    | "alignItems"
+    | "gap"
   >
 > & {
   asChild?: boolean
@@ -74,6 +77,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      alignContent,
+      alignItems,
+      gap,
       ...rest
     },
     ref,
@@ -105,6 +111,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      alignContent,
+      alignItems,
+      gap,
     }
 
     return <SlottedComponent ref={ref} sx={fullSx} css={css} {...rest} />

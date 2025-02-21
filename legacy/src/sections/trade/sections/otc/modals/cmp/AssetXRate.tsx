@@ -1,9 +1,9 @@
-import * as React from "react"
-import * as UI from "@galacticcouncil/ui"
-import { createComponent, EventName } from "@lit-labs/react"
-import { useTranslation } from "react-i18next"
-import { useSpotPrice } from "api/spotPrice"
-import { useAssets } from "providers/assets"
+import * as React from "react";
+import * as UI from "@galacticcouncil/ui";
+import { createComponent, EventName } from "@lit-labs/react";
+import { useTranslation } from "react-i18next";
+import { useSpotPrice } from "api/spotPrice";
+import { useAssets } from "providers/assets";
 
 export const UigcAssetXRate = createComponent({
   tagName: "uigc-asset-x-rate",
@@ -12,28 +12,28 @@ export const UigcAssetXRate = createComponent({
   events: {
     onAssetInputChange: "asset-input-change" as EventName<CustomEvent>,
   },
-})
+});
 
 export const UigcButton = createComponent({
   tagName: "uigc-button",
   elementClass: UI.Button,
   react: React,
-})
+});
 
 export function OrderAssetRate(props: {
-  inputAsset: string | undefined
-  outputAsset: string | undefined
-  price: string
-  onChange: (value: string) => void
+  inputAsset: string | undefined;
+  outputAsset: string | undefined;
+  price: string;
+  onChange: (value: string) => void;
 }) {
-  const { t } = useTranslation()
-  const { getAsset } = useAssets()
+  const { t } = useTranslation();
+  const { getAsset } = useAssets();
 
-  const inputMeta = props.inputAsset ? getAsset(props.inputAsset) : undefined
-  const outputMeta = props.outputAsset ? getAsset(props.outputAsset) : undefined
+  const inputMeta = props.inputAsset ? getAsset("15") : undefined;
+  const outputMeta = props.outputAsset ? getAsset("10") : undefined;
 
-  const sp = useSpotPrice(props.inputAsset, props.outputAsset)
-  const spotPrice = sp.data?.spotPrice
+  const sp = useSpotPrice(props.inputAsset, props.outputAsset);
+  const spotPrice = sp.data?.spotPrice;
 
   return (
     <UigcAssetXRate
@@ -55,5 +55,5 @@ export function OrderAssetRate(props: {
         </UigcButton>
       )}
     </UigcAssetXRate>
-  )
+  );
 }

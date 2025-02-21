@@ -22,6 +22,8 @@
   "price": "Price",
   "marketPrice": "Market price",
   "profit": "Profit",
+  "tradeFee": "Trade fee",
+  "availableAmount": "Available amount",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.maxNumber": "Max value is {{value}}",
   "error.minNumber": "Min value is {{value}}",
