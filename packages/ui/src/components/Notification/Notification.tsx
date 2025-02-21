@@ -9,16 +9,30 @@ import {
 import { ButtonTransparent, Flex, Text } from "@/components"
 
 import {
-  CustomToastProps,
   SCloseIcon,
   SIconVariant,
   SNotification,
   SProgress,
   SProgressContainer,
-  ToastVariant,
 } from "./Notification.styled"
 
-const DEFAULT_AUTO_CLOSE_TIME = 3
+export const DEFAULT_AUTO_CLOSE_TIME = 3000
+
+export type ToastVariant =
+  | "submitted"
+  | "success"
+  | "error"
+  | "unknown"
+  | "warning"
+
+type CustomToastProps = {
+  variant: ToastVariant
+  content: string
+  className?: string
+  onClose?: () => void
+  autoClose?: boolean
+  autoCloseTimeSC?: number
+}
 
 const getNotificationIcon = (variant: ToastVariant) => {
   if (variant === "success") return CircleCheck
