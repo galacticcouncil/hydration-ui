@@ -26,10 +26,18 @@ export const scale = (
   amount: string | number | bigint,
   decimals: number | "t" | "q",
 ) => {
+  const amountBig = new Big(
+    typeof amount === "bigint" ? amount.toString() : amount,
+  )
+
   const _decimals =
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 
-  return normalizeValue(amount) * BigInt(10) ** BigInt(_decimals)
+  if (_decimals === 0) {
+    return BigInt(amountBig.toString())
+  }
+
+  return BigInt(amountBig.mul(10 ** _decimals).toString())
 }
 
 /**

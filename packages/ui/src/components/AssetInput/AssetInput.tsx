@@ -17,10 +17,11 @@ export type AssetInputProps = {
   value?: string
   dollarValue?: string
   maxBalance?: string
-  onChange: (value: string) => void
+  onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
   error?: string
   disabled?: boolean
+  modalDisabled?: boolean
   loading?: boolean
   selectedAssetIcon?: ReactNode
 }
@@ -35,11 +36,12 @@ export const AssetInput = ({
   onChange,
   error,
   disabled,
+  modalDisabled,
   loading,
   onAsssetBtnClick,
 }: AssetInputProps) => {
   const onMaxButtonClick = () => {
-    if (maxBalance) onChange(maxBalance)
+    if (maxBalance) onChange?.(maxBalance)
   }
 
   return (
@@ -75,7 +77,13 @@ export const AssetInput = ({
           <MicroButton
             aria-label="Max balance button"
             onClick={onMaxButtonClick}
-            disabled={!maxBalance || maxBalance === "0" || loading}
+            disabled={
+              !maxBalance ||
+              maxBalance === "0" ||
+              loading ||
+              !onChange ||
+              !!disabled
+            }
           >
             max
           </MicroButton>
@@ -89,6 +97,7 @@ export const AssetInput = ({
             loading={loading}
             error={!!error}
             onAsssetBtnClick={onAsssetBtnClick}
+            disabled={!!modalDisabled || !!disabled}
           />
           <Flex
             direction="column"
@@ -100,7 +109,7 @@ export const AssetInput = ({
               isError={!!error}
               placeholder="0"
               variant="embedded"
-              disabled={disabled || loading}
+              disabled={disabled || loading || !onChange}
               value={formatAssetValue(value)}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {
@@ -109,7 +118,7 @@ export const AssetInput = ({
                     .replace(/,/g, ".")
 
                   if (!isNaN(Number(formattedValue))) {
-                    onChange(formattedValue)
+                    onChange?.(formattedValue)
                   }
                 }
               }}
@@ -146,12 +155,14 @@ const AssetButton = ({
   symbol,
   error,
   icon,
+  disabled,
   onAsssetBtnClick,
 }: {
   loading?: boolean
   symbol?: string
   icon?: ReactNode
   error: boolean
+  disabled?: boolean
   onAsssetBtnClick?: () => void
 }) => {
   if (loading)
@@ -168,7 +179,11 @@ const AssetButton = ({
 
   if (symbol && icon)
     return (
-      <SAssetButton isError={!!error} onClick={onAsssetBtnClick}>
+      <SAssetButton
+        disabled={!!disabled}
+        isError={!!error}
+        onClick={onAsssetBtnClick}
+      >
         {icon}
         <Flex align="center" gap={4}>
           <Text
