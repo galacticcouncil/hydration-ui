@@ -1,3 +1,4 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCrossChainTransfer, useCrossChainWallet } from "api/xcm"
 import BN from "bignumber.js"
@@ -22,6 +23,7 @@ import { useWithdraw } from "sections/deposit/steps/withdraw/WithdrawTransfer.ut
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BN_NAN } from "utils/constants"
+import { isEvmAccount } from "utils/evm"
 import { FormValues } from "utils/helpers"
 
 export type WithdrawTransferProps = {
@@ -117,6 +119,11 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     setAddressBookOpen((open) => !open)
   }
 
+  const chain = chainsMap.get(dstChain)
+  const isAccountAllowed = isEvmAccount(address)
+    ? chain?.isEvmParachain() ?? false
+    : true
+
   return (
     <>
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -183,10 +190,20 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
               </div>
             </label>
           </Alert>
+          {!isAccountAllowed && (
+            <Alert variant="error">
+              {t("withdraw.cex.account.evmError", {
+                symbol: asset?.data.asset.originSymbol,
+              })}
+            </Alert>
+          )}
           <Button
             isLoading={isWithdrawing}
             disabled={
-              isWithdrawing || isLoadingXTransfer || !disclaimerAccepted
+              isWithdrawing ||
+              isLoadingXTransfer ||
+              !disclaimerAccepted ||
+              !isAccountAllowed
             }
             variant={isWithdrawing ? "secondary" : "primary"}
           >
