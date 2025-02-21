@@ -9,6 +9,20 @@ const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
 
     padding-block: 4px;
   `,
+  medium: css`
+    gap: 10px;
+
+    padding-block: 6px;
+
+    & ${SProgressBar} {
+      height: 6px;
+    }
+
+    & ${SProgressBarLabel} {
+      font-weight: 400px;
+      line-height: 1;
+    }
+  `,
   large: css`
     gap: ${containers.paddings.quart}px;
 
@@ -58,6 +72,11 @@ export const SProgressBarFill = styled.div<{ readonly value: number }>(
     height: 100%;
 
     background: ${theme.controls.solid.accent};
+
+    transition: width 0.2s;
+    @starting-style {
+      width: 0%;
+    }
   `,
 )
 
