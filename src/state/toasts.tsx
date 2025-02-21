@@ -1,12 +1,13 @@
-import { create } from "zustand"
-import React, { ReactElement, ReactNode, useMemo } from "react"
+import { create, StateCreator } from "zustand"
+import React, { ReactElement, ReactNode } from "react"
 import { v4 as uuid } from "uuid"
 import { renderToString } from "react-dom/server"
 import { createJSONStorage, persist } from "zustand/middleware"
-import { Maybe, safelyParse } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Trans } from "react-i18next"
 import { ToastMessage } from "./store"
+import { useShallow } from "hooks/useShallow"
+import { usePrevious } from "react-use"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant =
@@ -27,6 +28,8 @@ type ToastParams = {
   bridge?: string
   txHash?: string
   hideTime?: number
+  hidden?: boolean
+  xcm?: "evm" | "substrate" | "solana"
 }
 
 export type ToastData = ToastParams & {
@@ -37,93 +40,70 @@ export type ToastData = ToastParams & {
   title: string
 }
 
-type PersistState<T> = {
-  version: number
-  state: {
-    toasts: Record<string, T>
-  }
-}
-
 interface ToastStore {
   toasts: Record<string, Array<ToastData>>
-  toastsTemp: Array<ToastData>
   update: (
-    accoutAddress: Maybe<string>,
+    accoutAddress: string,
     callback: (toasts: Array<ToastData>) => Array<ToastData>,
   ) => void
-
   sidebar: boolean
   setSidebar: (value: boolean) => void
-  updateToastsTemp: (
-    callback: (toasts: Array<ToastData>) => Array<ToastData>,
-  ) => void
 }
 
-const useToastsStore = create<ToastStore>()(
-  persist(
-    (set) => ({
-      toasts: {},
-      toastsTemp: [],
-      sidebar: false,
-      update(accoutAddress, callback) {
-        set((state) => {
-          const accountToasts = accoutAddress
-            ? state.toasts[accoutAddress] ?? []
-            : []
-          const toasts = callback(accountToasts)
+interface TemporaryToasts {
+  toastsTemp: Array<ToastData>
+  updateToastsTemp: (toast: ToastData) => void
+  hideToastsTemp: (id: string) => void
+}
 
-          return {
-            toasts: {
-              ...state.toasts,
-              ...(!!accoutAddress && { [accoutAddress]: toasts }),
-            },
-          }
-        })
-      },
-      updateToastsTemp: (callback) =>
-        set((state) => ({ toastsTemp: callback(state.toastsTemp) })),
-      setSidebar: (sidebar) =>
-        set({
-          sidebar,
-        }),
-    }),
+export const temporaryToastsSlice: StateCreator<
+  TemporaryToasts & ToastStore,
+  [],
+  [],
+  TemporaryToasts
+> = (set) => ({
+  toastsTemp: [],
+  updateToastsTemp: (toast: ToastData) =>
+    set((state) => ({ toastsTemp: [...state.toastsTemp, toast] })),
+  hideToastsTemp: (id: string) =>
+    set((state) => ({
+      toastsTemp: state.toastsTemp.filter((toast) => toast.id !== id),
+    })),
+})
+
+const useToastsStore = create<ToastStore & TemporaryToasts>()(
+  persist(
+    (...actions) => {
+      const [set] = actions
+
+      return {
+        toasts: {},
+        sidebar: false,
+        update(accoutAddress, callback) {
+          set((state) => {
+            const accountToasts = state.toasts[accoutAddress] ?? []
+            const toasts = callback(accountToasts)
+
+            return {
+              toasts: {
+                ...state.toasts,
+                ...{ [accoutAddress]: toasts },
+              },
+            }
+          })
+        },
+        setSidebar: (sidebar) =>
+          set({
+            sidebar,
+          }),
+        ...temporaryToastsSlice(...actions),
+      }
+    },
     {
       name: "toasts",
       storage: createJSONStorage(() => ({
         async getItem(name: string) {
-          const storeToasts = window.localStorage.getItem(name)
-          const storeAccount = window.localStorage.getItem("web3-connect")
-
-          if (!storeAccount) return storeToasts
-
-          const { state: account } = JSON.parse(storeAccount)
-
-          const accountAddress = account?.account?.address
-
-          if (accountAddress) {
-            if (storeToasts != null) {
-              const { state: toastsState } =
-                safelyParse<PersistState<ToastData[]>>(storeToasts) ?? {}
-
-              const allToasts = { ...toastsState?.toasts }
-
-              return JSON.stringify({
-                ...toastsState,
-                state: { toasts: allToasts },
-              })
-            } else {
-              return JSON.stringify({
-                version: 0,
-                state: {
-                  toasts: {
-                    [accountAddress]: [],
-                  },
-                },
-              })
-            }
-          }
-
-          return storeToasts
+          return window.localStorage.getItem(name)
         },
         setItem(name, value) {
           const parsedState = JSON.parse(value)
@@ -144,17 +124,23 @@ const useToastsStore = create<ToastStore>()(
 )
 
 export const useToast = () => {
-  const store = useToastsStore()
-  const { account } = useAccount()
+  const currentAddress = useAccount().account?.address
+  const prevAddress = usePrevious(currentAddress)
+  const store = useToastsStore(
+    useShallow((state) => {
+      const isAccountSwitched = currentAddress !== prevAddress
+      const toasts = currentAddress ? state.toasts[currentAddress] ?? [] : []
 
-  const toasts = useMemo(() => {
-    if (account?.address) {
-      return store.toasts[account.address] ?? []
-    }
-    return []
-  }, [account?.address, store])
+      return {
+        ...state,
+        toasts: isAccountSwitched
+          ? toasts.map((toast) => ({ ...toast, hidden: true }))
+          : toasts,
+      }
+    }),
+  )
 
-  const add = (variant: ToastVariant, toast: ToastParams) => {
+  const add = (variant: ToastVariant, toast: ToastParams, address?: string) => {
     const id = toast.id ?? uuid()
     const dateCreated = new Date().toISOString()
     const title =
@@ -162,83 +148,71 @@ export const useToast = () => {
         ? toast.title
         : renderToString(toast.title)
 
-    if (variant !== "temporary") {
-      store.update(account?.address, (toasts) => {
-        // set max 10 toasts
-        const prevToasts =
-          toasts.length > 9
-            ? toasts
-                .sort(
-                  (a, b) =>
-                    new Date(b.dateCreated).getTime() -
-                    new Date(a.dateCreated).getTime(),
-                )
-                .slice(0, 9)
-            : [...toasts]
+    const accountAddress = address ?? currentAddress
 
-        return [
-          {
-            ...toast,
-            variant,
-            title,
-            dateCreated,
-            id,
-            hidden: store.sidebar,
-          } as ToastData,
-          ...prevToasts,
-        ]
+    if (!accountAddress) return
+
+    const newToast = {
+      ...toast,
+      variant,
+      title,
+      dateCreated,
+      id,
+      hidden: !!toast.hidden || store.sidebar,
+    } as ToastData
+
+    if (variant !== "temporary") {
+      store.update(accountAddress, (accountToasts) => {
+        //remove toasts with same id and set max 10
+        const prevToasts = accountToasts
+          .filter((toast) => toast.id !== id)
+          .slice(0, 9)
+
+        return [newToast, ...prevToasts]
       })
     } else {
-      store.updateToastsTemp((toasts) => {
-        return [
-          ...toasts,
-          {
-            ...toast,
-            variant,
-            title,
-            dateCreated,
-            id,
-            hidden: store.sidebar,
-          } as ToastData,
-        ]
-      })
+      store.updateToastsTemp(newToast)
     }
 
     return id
   }
 
-  const edit = (id: string, props: Partial<ToastData>) =>
-    store.update(account?.address, (toasts) =>
+  const editToast = (id: string, props: Partial<ToastData>) => {
+    if (!currentAddress) return
+
+    store.update(currentAddress, (toasts) =>
       toasts.map((toast) => (toast.id === id ? { ...toast, ...props } : toast)),
     )
+  }
 
-  const info = (toast: ToastParams) => add("info", toast)
-  const success = (toast: ToastParams) => add("success", toast)
-  const error = (toast: ToastParams) => add("error", toast)
-  const loading = (toast: ToastParams) => add("progress", toast)
-  const unknown = (toast: ToastParams) => add("unknown", toast)
-  const temporary = (toast: ToastParams) => add("temporary", toast)
+  const info = (toast: ToastParams, address?: string) =>
+    add("info", toast, address)
+  const success = (toast: ToastParams, address?: string) =>
+    add("success", toast, address)
+  const error = (toast: ToastParams, address?: string) =>
+    add("error", toast, address)
+  const loading = (toast: ToastParams, address?: string) =>
+    add("progress", toast, address)
+  const unknown = (toast: ToastParams, address?: string) =>
+    add("unknown", toast, address)
+  const temporary = (toast: ToastParams, address?: string) =>
+    add("temporary", toast, address)
 
   const hide = (id: string) => {
-    store.update(account?.address, (toasts) =>
+    if (!currentAddress) return
+
+    store.update(currentAddress, (toasts) =>
       toasts.map((toast) =>
         toast.id === id ? { ...toast, hidden: true } : toast,
       ),
     )
-    store.updateToastsTemp((toasts) =>
-      toasts.filter((toast) => toast.id !== id),
-    )
-  }
 
-  const remove = (id: string) => {
-    store.update(account?.address, (toasts) =>
-      toasts.filter((t) => t.id !== id),
-    )
+    store.hideToastsTemp(id)
   }
 
   const setSidebar = (isOpen: boolean) => {
-    if (isOpen) {
-      store.update(account?.address, (toasts) =>
+    if (isOpen && currentAddress) {
+      store.update(currentAddress, (toasts) =>
         toasts.map((toast) => ({ ...toast, hidden: true })),
       )
     }
@@ -246,21 +220,27 @@ export const useToast = () => {
     store.setSidebar(isOpen)
   }
 
+  const removeToast = (id: string) => {
+    if (!currentAddress) return
+
+    store.update(currentAddress, (toasts) => toasts.filter((t) => t.id !== id))
+  }
+
   return {
     sidebar: store.sidebar,
-    toasts,
+    toasts: store.toasts,
     toastsTemp: store.toastsTemp,
     setSidebar,
     add,
     hide,
-    remove,
+    removeToast,
     info,
     success,
     error,
     loading,
     unknown,
     temporary,
-    edit,
+    editToast,
   }
 }
 

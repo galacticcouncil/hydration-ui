@@ -27,6 +27,7 @@ type Props = TxProps & {
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
   onSolanaSigned: (signature: string) => void
   onSignError?: (error: unknown) => void
+  isLoading: boolean
 }
 
 export const ReviewTransactionXCallForm: FC<Props> = ({
@@ -36,54 +37,69 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
   onSolanaSigned,
   onCancel,
   onSignError,
+  isLoading,
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
   const { wallet } = useWallet()
 
-  const { mutate: signTx, isLoading } = useMutation(async () => {
-    try {
-      if (!account?.address) throw new Error("Missing active account")
-      if (!wallet) throw new Error("Missing wallet")
-      if (!wallet.signer) throw new Error("Missing signer")
-      if (!xcall) throw new Error("Missing xcall")
+  const { mutate: signTx, isLoading: isSignTxLoading } = useMutation(
+    async () => {
+      try {
+        if (!account?.address) throw new Error("Missing active account")
+        if (!wallet) throw new Error("Missing wallet")
+        if (!wallet.signer) throw new Error("Missing signer")
+        if (!xcall) throw new Error("Missing xcall")
 
-      if (isEvmCall(xcall) && wallet?.signer instanceof EthereumSigner) {
-        const { srcChain } = xcallMeta
+        if (isEvmCall(xcall) && wallet?.signer instanceof EthereumSigner) {
+          const { srcChain } = xcallMeta
 
-        const evmTx = await wallet.signer.sendTransaction({
-          chain: srcChain,
-          from: H160.fromAccount(account.address),
-          to: xcall.to,
-          data: xcall.data,
-          value: xcall.value,
-        })
-
-        const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
-        if (isApproveTx) {
-          XItemCursor.reset({
-            data: evmTx.data as `0x${string}`,
-            hash: evmTx.hash as `0x${string}`,
-            nonce: evmTx.nonce,
-            to: evmTx.to as `0x${string}`,
+          const evmTx = await wallet.signer.sendTransaction({
+            chain: srcChain,
+            from: H160.fromAccount(account.address),
+            to: xcall.to,
+            data: xcall.data,
+            value: xcall.value,
           })
+
+          const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
+          if (isApproveTx) {
+            XItemCursor.reset({
+              data: evmTx.data as `0x${string}`,
+              hash: evmTx.hash as `0x${string}`,
+              nonce: evmTx.nonce,
+              to: evmTx.to as `0x${string}`,
+            })
+
+            const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
+            if (isApproveTx) {
+              XItemCursor.reset({
+                data: evmTx.data as `0x${string}`,
+                hash: evmTx.hash as `0x${string}`,
+                nonce: evmTx.nonce,
+                to: evmTx.to as `0x${string}`,
+              })
+            }
+          }
+
+          onEvmSigned({ evmTx })
         }
 
-        onEvmSigned({ evmTx })
+        if (isSolanaCall(xcall) && wallet?.signer instanceof SolanaSigner) {
+          const { signature } = await wallet.signer.signAndSend(
+            xcall.data,
+            xcall.signers,
+          )
+          onSolanaSigned(signature)
+        }
+      } catch (error) {
+        onSignError?.(error)
       }
+    },
+  )
 
-      if (isSolanaCall(xcall) && wallet?.signer instanceof SolanaSigner) {
-        const { signature } = await wallet.signer.signAndSend(
-          xcall.data,
-          xcall.signers,
-        )
-        onSolanaSigned(signature)
-      }
-    } catch (error) {
-      onSignError?.(error)
-    }
-  })
+  const loading = isLoading || isSignTxLoading
 
   return (
     <>
@@ -119,17 +135,17 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
                 <Button
                   variant="primary"
                   onClick={() => signTx()}
-                  isLoading={isLoading}
-                  disabled={isLoading}
+                  isLoading={loading}
+                  disabled={loading}
                   text={
-                    isLoading
+                    loading
                       ? t(
                           "liquidity.reviewTransaction.modal.confirmButton.loading",
                         )
                       : t("liquidity.reviewTransaction.modal.confirmButton")
                   }
                 />
-                {isLoading && (
+                {isSignTxLoading && (
                   <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.warning",
