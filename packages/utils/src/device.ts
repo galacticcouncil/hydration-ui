@@ -22,6 +22,6 @@ export function isIOS() {
   return isSmallIOS() || isLargeIOS()
 }
 
-export function isMobile() {
+export function isMobileDevice() {
   return isAndroid() || isIOS()
 }

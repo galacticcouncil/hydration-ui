@@ -33,7 +33,7 @@ type FormValues = {
 const range = { low: 1, middle: 1.5, high: 2 }
 
 export const Market = () => {
-  const { t } = useTranslation(["common", "wallet"])
+  const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
   const { account } = useAccount()
@@ -104,7 +104,7 @@ export const Market = () => {
                 displayValue="999"
                 active={"swap" === value}
                 onClick={onChange}
-                label={t("wallet:market.form.type.single")}
+                label={t("trade:market.form.type.single")}
                 time="Instant execution"
               />
               <TradeOption
@@ -114,7 +114,7 @@ export const Market = () => {
                 diff="1233"
                 active={"twap" === value}
                 onClick={onChange}
-                label={t("wallet:market.form.type.split")}
+                label={t("trade:market.form.type.split")}
                 time="Instant execution"
               />
             </Flex>

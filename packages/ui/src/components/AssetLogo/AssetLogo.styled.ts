@@ -119,8 +119,8 @@ export const IconsWrapper = styled.div<{
       margin-right: calc(var(--chain-offset) * -1);
 
       --mask-space: 1px;
-      --mask-gradient:
-        calc(var(--chain-size) / 2), black calc(var(--chain-size) / 2 - 1px),
+      --mask-gradient: calc(var(--chain-size) / 2),
+        black calc(var(--chain-size) / 2 - 1px),
         transparent calc(var(--chain-size) / 2 - 1px),
         transparent calc(var(--chain-size) / 2 + var(--mask-space)),
         black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);

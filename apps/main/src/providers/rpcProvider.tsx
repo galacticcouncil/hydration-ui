@@ -4,7 +4,9 @@ import {
   type TradeRouter,
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
+import { hydration } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { TypedApi } from "polkadot-api"
 import { createContext, ReactNode, useContext, useMemo } from "react"
 import { usePrevious } from "react-use"
 
@@ -22,6 +24,7 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TProviderContext = {
   api: ApiPromise
+  papi: TypedApi<typeof hydration>
   tradeRouter: TradeRouter
   poolService: PoolService
   isLoaded: boolean
@@ -37,6 +40,7 @@ const defaultData: TProviderContext = {
   isLoaded: false,
   isApiLoaded: false,
   api: {} as TProviderContext["api"],
+  papi: {} as TProviderContext["papi"],
   tradeRouter: {} as TradeRouter,
   featureFlags: { dispatchPermit: false } as TProviderContext["featureFlags"],
   poolService: {} as TProviderContext["poolService"],

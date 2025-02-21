@@ -3,6 +3,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import {
+  ALTERNATIVE_PROVIDERS,
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
@@ -29,6 +30,7 @@ export enum WalletMode {
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,
   ...EVM_PROVIDERS,
+  ...ALTERNATIVE_PROVIDERS,
 ]
 
 export const PROVIDERS_BY_WALLET_MODE: Record<
@@ -46,7 +48,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
 export type Account = {
   name: string
   address: string
-  displayAddress?: string
+  displayAddress: string
   provider: WalletProviderType
   delegate?: string
   isIncompatible?: boolean
@@ -74,7 +76,7 @@ export type WalletProviderState = {
   meta?: WalletProviderMeta | null
 }
 
-type WalletProviderStore = WalletProviderState & {
+export type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
   setAccount: (account: Account | null) => void
   setAccounts: (accounts: Account[]) => void

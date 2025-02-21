@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { useMount } from "react-use"
 
 import { Web3ConnectModalPage } from "@/config/modal"
 import { WalletProviderType } from "@/config/providers"
@@ -8,10 +7,6 @@ import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
 
 export const useWeb3ConnectInit = () => {
   useWeb3EagerEnable()
-
-  useMount(() => {
-    window.dispatchEvent(new Event("eip6963:requestProvider"))
-  })
 
   const [page, setPage] = useState<Web3ConnectModalPage>(
     Web3ConnectModalPage.ProviderSelect,

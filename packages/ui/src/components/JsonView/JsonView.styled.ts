@@ -4,7 +4,9 @@ export const SRoot = styled.div(
   ({ theme }) => css`
     position: relative;
 
+    pre,
     code {
+      min-height: 20px;
       font-family: GeistMono;
       font-size: inherit;
 
@@ -14,6 +16,27 @@ export const SRoot = styled.div(
       --json-string: ${theme.colors.azureBlue[500]};
       --json-boolean: ${theme.colors.coral[900]};
       --json-null: ${theme.text.medium};
+
+      opacity: 0;
+      animation: ${theme.animations.fadeIn} 0.2s ease forwards;
+    }
+
+    pre {
+      position: relative;
+      color: transparent;
+      > svg {
+        color: ${theme.text.medium};
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        width: 20px;
+        height: 20px;
+
+        margin-left: -10px;
+        margin-top: -10px;
+      }
     }
   `,
 )

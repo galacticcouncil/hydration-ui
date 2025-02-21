@@ -3,9 +3,9 @@ import {
   Notification,
   ToastVariant,
 } from "@galacticcouncil/ui/components"
+import { uuid } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { toast as toastSonner } from "sonner"
-import { v4 as uuid } from "uuid"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"

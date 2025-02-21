@@ -9,7 +9,7 @@ type TradeRoutesProps = {
 }
 
 export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation("trade")
   const routesAmount = routes.length
 
   const routeComponents = useMemo(() => {

@@ -7,7 +7,10 @@ import {
 } from "@galacticcouncil/sdk"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions } from "@tanstack/react-query"
+import { createClient, PolkadotClient } from "polkadot-api"
+import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 
 import { PROVIDERS } from "@/config/rpc"
 
@@ -60,10 +63,24 @@ export const providerQuery = (
   })
 }
 
+export const getPapiClient = async (
+  wsUrl: string | string[],
+): Promise<PolkadotClient> => {
+  const endpoints = typeof wsUrl === "string" ? wsUrl.split(",") : wsUrl
+  const getWsProvider = (await import("polkadot-api/ws-provider/web"))
+    .getWsProvider
+
+  const wsProvider = getWsProvider(endpoints)
+  return createClient(withPolkadotSdkCompat(wsProvider))
+}
+
 const getProviderData = async (rpcUrlList: string[]) => {
   const maxRetries = rpcUrlList.length * 5
   const apiPool = SubstrateApis.getInstance()
   const api = await apiPool.api(rpcUrlList, maxRetries)
+
+  const papiClient = await getPapiClient(rpcUrlList)
+  const papi = papiClient.getTypedApi(hydration)
 
   const provider = getProviderInstance(api)
 
@@ -106,6 +123,7 @@ const getProviderData = async (rpcUrlList: string[]) => {
 
   return {
     api,
+    papi,
     tradeRouter,
     poolService,
     balanceClient,

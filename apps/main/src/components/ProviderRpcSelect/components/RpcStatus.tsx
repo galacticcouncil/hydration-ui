@@ -1,6 +1,6 @@
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
-import { ThemeColor } from "@galacticcouncil/ui/theme"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -45,6 +45,12 @@ const rpcStatusTextMap = {
   offline: "rpc.status.offline",
 } as const
 
+const statusColorMap = {
+  online: "accents.success.emphasis",
+  slow: "accents.alert.primary",
+  offline: "accents.danger.emphasis",
+} as const
+
 export const RpcStatus: React.FC<RpcStatusProps> = ({
   timestamp,
   blockNumber,
@@ -53,20 +59,13 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
   const { t } = useTranslation()
 
   const status = useElapsedTimeStatus(timestamp ?? 0)
-
   const statusText = status ? t(rpcStatusTextMap[status]) : ""
-
-  const statusColor: ThemeColor =
-    status === "online"
-      ? "successGreen.400"
-      : status === "slow"
-        ? "utility.warningPrimary.400"
-        : "utility.red.400"
+  const statusColor = statusColorMap[status]
 
   return (
     <Box>
       <Tooltip text={statusText} side="left" asChild>
-        <Flex align="center" gap={4} color={statusColor}>
+        <Flex align="center" gap={4} color={getToken(statusColor)}>
           <Text fs={12}>
             {t("number", {
               value: blockNumber,
@@ -99,15 +98,15 @@ const RpcPingAverage: React.FC<{ ping: number }> = ({ ping }) => {
       : avgPingArrRef.current.reduce((acc, curr) => acc + curr, 0) /
         avgPingArrRef.current.length
 
-  const pingColor: ThemeColor =
+  const pingColor =
     avgPing < 250
-      ? "successGreen.400"
+      ? statusColorMap.online
       : avgPing < 500
-        ? "utility.warningPrimary.400"
-        : "utility.red.400"
+        ? statusColorMap.slow
+        : statusColorMap.offline
 
   return (
-    <Text fs={10} mt={2} color={pingColor}>
+    <Text fs={10} mt={2} color={getToken(pingColor)}>
       {t("rpc.status.ping", { value: Math.round(avgPing) })}
     </Text>
   )

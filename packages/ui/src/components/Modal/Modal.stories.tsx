@@ -76,7 +76,7 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
         <ModalHeader
           title="Lorem ipsum"
           customTitle={
-            <Box m="calc(-1 * var(--modal-content-padding))">
+            <Box m="var(--modal-content-inset)">
               <Input
                 placeholder="Search tokens..."
                 variant="embedded"
@@ -87,10 +87,7 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
           }
         />
         <ModalBody p={0}>
-          <Box
-            mx="calc(-1 * var(--modal-content-padding))"
-            mt="calc(-1 * var(--modal-content-padding))"
-          >
+          <Box mx="var(--modal-content-inset)" mt="var(--modal-content-inset)">
             {Array.from({ length: 100 }).map((_, i) => (
               <Flex
                 key={i}
@@ -135,4 +132,18 @@ export const WithHeaderAndFooter: Story = {
 
 export const WithCustomHeader: Story = {
   render: WithCustomHeaderTemplate,
+}
+
+export const ForcedDrawerVariant: Story = {
+  render: WithCustomHeaderTemplate,
+  args: {
+    variant: "drawer",
+  },
+}
+
+export const ForcedPopupVariant: Story = {
+  render: WithCustomHeaderTemplate,
+  args: {
+    variant: "popup",
+  },
 }

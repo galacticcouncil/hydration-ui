@@ -1,11 +1,5 @@
 import { ChevronRight, LogOut } from "@galacticcouncil/ui/assets/icons"
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from "@galacticcouncil/ui/components"
+import { Button, Modal, ModalFooter } from "@galacticcouncil/ui/components"
 
 import { Web3ConnectAccountSelect } from "@/components/Web3ConnectAccountSelect"
 import { Web3ConnectError } from "@/components/Web3ConnectError"
@@ -29,20 +23,17 @@ export const Web3ConnectModal = () => {
 
   return (
     <Modal open={open} onOpenChange={() => toggle()} disableInteractOutside>
-      <ModalHeader title="Connect wallet" />
-      <ModalBody>
-        {page === Web3ConnectModalPage.ProviderSelect && (
-          <Web3ConnectProviderSelect
-            onLastConnectedClick={() =>
-              setPage(Web3ConnectModalPage.AccountSelect)
-            }
-          />
-        )}
-        {page === Web3ConnectModalPage.AccountSelect && (
-          <Web3ConnectAccountSelect />
-        )}
-        {page === Web3ConnectModalPage.Error && <Web3ConnectError />}
-      </ModalBody>
+      {page === Web3ConnectModalPage.ProviderSelect && (
+        <Web3ConnectProviderSelect
+          onLastConnectedClick={() =>
+            setPage(Web3ConnectModalPage.AccountSelect)
+          }
+        />
+      )}
+      {page === Web3ConnectModalPage.AccountSelect && (
+        <Web3ConnectAccountSelect />
+      )}
+      {page === Web3ConnectModalPage.Error && <Web3ConnectError />}
       {page !== Web3ConnectModalPage.ProviderSelect && (
         <ModalFooter justify="end">
           {account && (

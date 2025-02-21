@@ -1,0 +1,14 @@
+{
+  "swap.settings.modal.title": "Swap settings",
+  "swap.settings.modal.description": "Reduce cost for bigger orders with high price",
+  "swap.settings.modal.option.single": "Single Trade",
+  "swap.settings.modal.option.split": "Split Trade",
+  "swap.header.cross-chain": "Cross chain",
+  "swap.header.dca": "DCA",
+  "swap.header.market": "Market",
+  "market.form.type.single": "Single trade",
+  "market.form.type.split": "Split trade",
+  "market.form.routes.label_one": "{{count}} Route",
+  "market.form.routes.label_other": "{{count}} Routes",
+  "market.form.routes.desc": "Use accumulated asset (USDT) to avoid extra routing cost."
+}
