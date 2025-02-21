@@ -41,24 +41,21 @@ interface ToastStore {
 
 const useToastsStore = create<ToastStore>()(
   persist(
-    (set) => {
-      return {
-        toasts: {},
-        update(accoutAddress, callback) {
-          set((state) => {
-            const accountToasts = state.toasts[accoutAddress] ?? []
-            const toasts = callback(accountToasts)
+    (set) => ({
+      toasts: {},
+      update: (accoutAddress, callback) =>
+        set((state) => {
+          const accountToasts = state.toasts[accoutAddress] ?? []
+          const toasts = callback(accountToasts)
 
-            return {
-              toasts: {
-                ...state.toasts,
-                ...{ [accoutAddress]: toasts },
-              },
-            }
-          })
-        },
-      }
-    },
+          return {
+            toasts: {
+              ...state.toasts,
+              ...{ [accoutAddress]: toasts },
+            },
+          }
+        }),
+    }),
     {
       name: "toasts",
     },
