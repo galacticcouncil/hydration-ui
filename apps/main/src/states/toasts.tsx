@@ -5,6 +5,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { uuid } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { useCallback } from "react"
 import { toast as toastSonner } from "sonner"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -71,41 +72,44 @@ export const useToasts = () => {
     ),
   )
 
-  const add = (
-    {
-      address = currentAddress,
-      id = uuid(),
-      persist = true,
-      ...toast
-    }: ToastParams,
-    variant: ToastVariant,
-  ) => {
-    const dateCreated = new Date().toISOString()
-    const newToast = {
-      ...toast,
-      variant,
-      dateCreated,
-      id,
-    }
+  const add = useCallback(
+    (
+      {
+        address = currentAddress,
+        id = uuid(),
+        persist = true,
+        ...toast
+      }: ToastParams,
+      variant: ToastVariant,
+    ) => {
+      const dateCreated = new Date().toISOString()
+      const newToast = {
+        ...toast,
+        variant,
+        dateCreated,
+        id,
+      }
 
-    toastSonner.custom(
-      () => <Notification variant={variant} content={toast.title} />,
-      { id, duration: DEFAULT_AUTO_CLOSE_TIME },
-    )
+      toastSonner.custom(
+        () => <Notification variant={variant} content={toast.title} />,
+        { id, duration: DEFAULT_AUTO_CLOSE_TIME },
+      )
 
-    if (persist && address) {
-      update(address, (accountToasts) => {
-        //remove toasts with same id and set max 10
-        const prevToasts = accountToasts
-          .filter((toast) => toast.id !== id)
-          .slice(0, 9)
+      if (persist && address) {
+        update(address, (accountToasts) => {
+          //remove toasts with same id and set max 10
+          const prevToasts = accountToasts
+            .filter((toast) => toast.id !== id)
+            .slice(0, 9)
 
-        return [newToast, ...prevToasts]
-      })
-    }
+          return [newToast, ...prevToasts]
+        })
+      }
 
-    return id
-  }
+      return id
+    },
+    [currentAddress, update],
+  )
 
   const edit = (id: string, props: Partial<ToastData>) => {
     if (!currentAddress) return
@@ -121,10 +125,22 @@ export const useToasts = () => {
     update(currentAddress, (toasts) => toasts.filter((t) => t.id !== id))
   }
 
-  const successToast = (toast: ToastParams) => add(toast, "success")
-  const errorToast = (toast: ToastParams) => add(toast, "error")
-  const loadingToast = (toast: ToastParams) => add(toast, "submitted")
-  const unknownToast = (toast: ToastParams) => add(toast, "unknown")
+  const successToast = useCallback(
+    (toast: ToastParams) => add(toast, "success"),
+    [add],
+  )
+  const errorToast = useCallback(
+    (toast: ToastParams) => add(toast, "error"),
+    [add],
+  )
+  const loadingToast = useCallback(
+    (toast: ToastParams) => add(toast, "submitted"),
+    [add],
+  )
+  const unknownToast = useCallback(
+    (toast: ToastParams) => add(toast, "unknown"),
+    [add],
+  )
 
   return {
     toasts,

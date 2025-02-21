@@ -1,31 +1,31 @@
-import { u32 } from "@polkadot/types"
-import { useTranslation } from "react-i18next"
-import { Maybe, sortAssets } from "utils/helpers"
-import { Text } from "components/Typography/Text/Text"
+import { u32 } from "@polkadot/types";
+import { useTranslation } from "react-i18next";
+import { Maybe, sortAssets } from "utils/helpers";
+import { Text } from "components/Typography/Text/Text";
 import {
   SAssetsModalHeader,
   SAssetsModalSearchWrapper,
-} from "./AssetsModal.styled"
-import { AssetsModalRow } from "./AssetsModalRow"
-import { Input } from "components/Input/Input"
-import { useMemo, useState } from "react"
-import IconSearch from "assets/icons/IconSearch.svg?react"
-import { Button } from "components/Button/Button"
-import { ModalScrollableContent } from "components/Modal/Modal"
-import { useAssetsData } from "./AssetsModal.utils"
-import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton"
-import { TAsset } from "providers/assets"
+} from "./AssetsModal.styled";
+import { AssetsModalRow } from "./AssetsModalRow";
+import { Input } from "components/Input/Input";
+import { useMemo, useState } from "react";
+import IconSearch from "assets/icons/IconSearch.svg?react";
+import { Button } from "components/Button/Button";
+import { ModalScrollableContent } from "components/Modal/Modal";
+import { useAssetsData } from "./AssetsModal.utils";
+import { AssetsModalRowSkeleton } from "./AssetsModalRowSkeleton";
+import { TAsset } from "providers/assets";
 
 type Props = {
-  allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (asset: NonNullable<TAsset>) => void
-  hideInactiveAssets?: boolean
-  allAssets?: boolean
-  withBonds?: boolean
-  withExternal?: boolean
-  confirmRequired?: boolean
-  defaultSelectedAsssetId?: string
-}
+  allowedAssets?: Maybe<u32 | string>[];
+  onSelect?: (asset: NonNullable<TAsset>) => void;
+  hideInactiveAssets?: boolean;
+  allAssets?: boolean;
+  withBonds?: boolean;
+  withExternal?: boolean;
+  confirmRequired?: boolean;
+  defaultSelectedAsssetId?: string;
+};
 
 export const AssetsModalContent = ({
   allowedAssets,
@@ -37,11 +37,11 @@ export const AssetsModalContent = ({
   defaultSelectedAsssetId,
   withExternal,
 }: Props) => {
-  const { t } = useTranslation()
-  const [search, setSearch] = useState("")
+  const { t } = useTranslation();
+  const [search, setSearch] = useState("");
   const [selectedAssetId, setSelectedAssetId] = useState(
     defaultSelectedAsssetId,
-  )
+  );
 
   const { tokens, bonds, isLoading } = useAssetsData({
     search,
@@ -49,42 +49,44 @@ export const AssetsModalContent = ({
     allAssets,
     withExternal,
     allowedAssets,
-  })
+  });
+
+  console.log(tokens, bonds);
 
   const onSelectHandler = (assetData: TAsset) => {
     if (confirmRequired) {
-      setSelectedAssetId(assetData.id)
+      setSelectedAssetId(assetData.id);
     } else {
-      onSelect?.(assetData)
+      onSelect?.(assetData);
     }
-  }
+  };
 
   const onSelectConfirm = () => {
     const asset = tokens.allowed.find(
       (token) => token.meta.id === selectedAssetId,
-    )
+    );
     if (asset) {
-      onSelect?.(asset.meta)
+      onSelect?.(asset.meta);
     }
-  }
+  };
 
   const getIsAssetSelected = (asset: TAsset) => {
     if (confirmRequired) {
-      return asset.id === selectedAssetId
+      return asset.id === selectedAssetId;
     }
-  }
+  };
 
   const sortedTokens = useMemo(
     () => sortAssets(tokens.allowed, "displayValue", defaultSelectedAsssetId),
     [defaultSelectedAsssetId, tokens.allowed],
-  )
+  );
   const sortedBonds = useMemo(
     () =>
       [...bonds.allowed].sort((a, b) => {
-        return b.displayValue.minus(a.displayValue).toNumber()
+        return b.displayValue.minus(a.displayValue).toNumber();
       }),
     [bonds.allowed],
-  )
+  );
 
   if (isLoading)
     return (
@@ -96,7 +98,7 @@ export const AssetsModalContent = ({
           <AssetsModalRowSkeleton key={n} />
         ))}
       </>
-    )
+    );
 
   return (
     <>
@@ -193,15 +195,15 @@ export const AssetsModalContent = ({
         }
       />
     </>
-  )
-}
+  );
+};
 
 const ListHeader = ({
   titles,
   shadowed,
 }: {
-  titles: string[]
-  shadowed?: boolean
+  titles: string[];
+  shadowed?: boolean;
 }) => {
   return (
     <SAssetsModalHeader shadowed={shadowed}>
@@ -218,5 +220,5 @@ const ListHeader = ({
         </Text>
       ))}
     </SAssetsModalHeader>
-  )
-}
+  );
+};
