@@ -1,0 +1,37 @@
+import { Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken, px } from "@galacticcouncil/ui/utils"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Logo } from "@/components/Logo"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
+
+type Props = {
+  readonly assetId: string
+  readonly asset: TAsset | undefined
+  readonly amount: bigint | string | number
+}
+
+export const AssetAmount: FC<Props> = ({ assetId, asset, amount }) => {
+  const { t } = useTranslation()
+  const { isBond } = useAssets()
+
+  return (
+    <Flex align="center" p={4}>
+      <Logo id={assetId} />
+      <Text
+        fw={500}
+        fs="p4"
+        lh={px(13)}
+        py={5}
+        pl={4}
+        color={getToken("text.high")}
+      >
+        {t("number", { value: scaleHuman(amount, asset?.decimals ?? 12) })}{" "}
+        {asset?.symbol}{" "}
+        {asset && isBond(asset) && asset.name.replace("HDX Bond ", "").slice(3)}
+      </Text>
+    </Flex>
+  )
+}

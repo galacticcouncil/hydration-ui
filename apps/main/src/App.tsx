@@ -1,6 +1,7 @@
 import "@/i18n"
 import "@galacticcouncil/ui/fonts.css"
 
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client"
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -14,6 +15,11 @@ import { RpcProvider } from "@/providers/rpcProvider"
 import { routeTree } from "./routeTree.gen"
 
 const queryClient = new QueryClient()
+
+const apolloClient = new ApolloClient({
+  uri: import.meta.env.VITE_INDEXER_URL,
+  cache: new InMemoryCache(),
+})
 
 const router = createRouter({
   routeTree,
@@ -34,19 +40,21 @@ declare module "@tanstack/react-router" {
 
 export const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AssetsProvider>
-          <RpcProvider>
-            <InvalidateOnBlock>
-              <TooltipProvider delayDuration={0}>
-                <RouterProvider router={router} />
-              </TooltipProvider>
-            </InvalidateOnBlock>
-          </RpcProvider>
-        </AssetsProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ApolloProvider client={apolloClient}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AssetsProvider>
+            <RpcProvider>
+              <InvalidateOnBlock>
+                <TooltipProvider delayDuration={0}>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+              </InvalidateOnBlock>
+            </RpcProvider>
+          </AssetsProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ApolloProvider>
   )
 }
 

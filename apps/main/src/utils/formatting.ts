@@ -1,3 +1,5 @@
+import Big from "big.js"
+
 const TRILL = 12
 const QUINTILL = 18
 
@@ -44,7 +46,9 @@ export const scaleHuman = (
   const _decimals =
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 
-  return normalizeValue(amount) * BigInt(10) ** BigInt(-_decimals)
+  return new Big(typeof amount === "bigint" ? amount.toString() : amount)
+    .div(10 ** _decimals)
+    .toString()
 }
 
 export const isNegative = (amount: string | number | bigint) => {
