@@ -376,7 +376,9 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           new Date(toastData.dateCreated),
         )
 
-        if (chainKey === "ethereum") {
+        const isHiddenToast = diffInMinutes > 10
+
+        if (chainKey === "ethereum" || chainKey === "solana") {
           if (diffInMinutes > 45) {
             toast.add("unknown", omit(["bridge"], toastData))
           }
@@ -393,7 +395,13 @@ export const useBridgeToast = (toasts: ToastData[]) => {
             const parsedVaa = parseVaa(vaaBuffer)
 
             if (parsedVaa) {
-              toast.add("success", omit(["bridge"], toastData))
+              toast.add(
+                "success",
+                omit(["bridge", "hidden"], {
+                  ...toastData,
+                  hidden: isHiddenToast,
+                }),
+              )
             }
 
             return true
@@ -401,7 +409,13 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           return false
         } else {
           if (diffInMinutes > 5) {
-            toast.add("unknown", omit(["bridge"], toastData))
+            toast.add(
+              "unknown",
+              omit(["bridge", "hidden"], {
+                ...toastData,
+                hidden: isHiddenToast,
+              }),
+            )
           }
 
           const hash = url.pathname.split("/").slice(-1)[0]

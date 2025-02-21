@@ -505,7 +505,9 @@ const getTransactionData = (
   const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
 
   const bridge =
-    xcmDstChain?.isEvmChain() && !isSnowBridge ? "substrate" : undefined
+    (xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()) && !isSnowBridge
+      ? "substrate"
+      : undefined
 
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
 
