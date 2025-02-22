@@ -2330,14 +2330,14 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^7.4.1":
-  version "7.4.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.4.1.tgz#783f997b2e130c6fe8f86caecade041641d98bcc"
-  integrity sha512-qPCzSkBlmpkjXkZQ79AlLX3uYYqFzwkp5LZjTiuaO3e29OwNE0t5H8hoiyjRYgpoShKXlVY11v/i4ap9LMGrhQ==
+"@galacticcouncil/xcm-cfg@^7.5.0":
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.5.0.tgz#9d9a3fd4ebf6d5642dbea1ec8978d21c2a6c79e2"
+  integrity sha512-VdkP0QCqGk2nPQ0Cmr20DSWzfshC7BHYlkb9HNTy8uU0Hy5cDFTWMkdaSaikzDMyyBA5IiGJptWtqjf7si9PRQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^6.3.0"
 
-"@galacticcouncil/xcm-core@^6.2.0", "@galacticcouncil/xcm-core@^6.3.0":
+"@galacticcouncil/xcm-core@^6.3.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.3.0.tgz#53791cddb4e512059b3874f205dfc194b5d79fef"
   integrity sha512-8af2Vx+vGbbCUc3VXX6ii1cAjDF+ZOD03G5WmETziZPiHFdfj1Bp+TmPnoS9bFqVlcIL40HRnWnMvdT9W0ieLg==
@@ -2353,12 +2353,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^8.3.0":
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-8.3.0.tgz#83761ca596bc83697d4ee5f2785aeea7e4be2284"
-  integrity sha512-rMKy5qhtp7zcjqEzJSD/MClbnOs2rLIuLToD10kazHeVXgHnfOyzvjWn6BXNFQETTriHu7WfTV+AZQE9W43fzQ==
+"@galacticcouncil/xcm-sdk@^8.4.0":
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-8.4.0.tgz#9038acd975518917ab3951f935338481983bf214"
+  integrity sha512-nHh+QK7DgHJcSj/3MSvwTe4pFcpCI+7FL8JzokWsZyywMljKpV5z6oTgWLOW+WyGuQTVncNvVO2H8G6eHznS1A==
   dependencies:
-    "@galacticcouncil/xcm-core" "^6.2.0"
+    "@galacticcouncil/xcm-core" "^6.3.0"
 
 "@graphql-typed-document-node/core@^3.2.0":
   version "3.2.0"
