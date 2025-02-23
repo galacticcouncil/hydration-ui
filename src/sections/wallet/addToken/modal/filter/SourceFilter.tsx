@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { SContainer } from "./SourceFilter.styled"
 import { SELECTABLE_PARACHAINS_IDS } from "sections/wallet/addToken/AddToken.utils"
 import { isAnyParachain } from "utils/helpers"
-import { AnyParachain } from "@galacticcouncil/xcm-core"
+import { AnyParachain, ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { Chip } from "components/Chip"
 
 const chains = Array.from(chainsMap.values()).filter(
@@ -15,7 +15,7 @@ const chains = Array.from(chainsMap.values()).filter(
     isAnyParachain(chain) &&
     !chain.isTestChain &&
     SELECTABLE_PARACHAINS_IDS.includes(chain.parachainId) &&
-    chain.ecosystem === "polkadot",
+    chain.ecosystem === ChainEcosystem.Polkadot,
 ) as AnyParachain[]
 
 type Props = {
