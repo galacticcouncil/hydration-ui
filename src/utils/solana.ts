@@ -10,6 +10,7 @@ type SolanaProviderEventType = "connect" | "disconnect" | "accountChanged"
 export interface SolanaWalletProvider {
   isPhantom?: boolean
   isSolflare?: boolean
+  isBraveWallet?: boolean
   isConnected?: boolean
   publicKey: PublicKey
   connect: () => Promise<{ publicKey: PublicKey }>
@@ -36,6 +37,10 @@ export const isPhantom = (provider?: SolanaWalletProvider) => {
 
 export const isSolflare = (provider?: SolanaWalletProvider) => {
   return !!provider?.isSolflare
+}
+
+export const isBraveSolana = (provider?: SolanaWalletProvider) => {
+  return !!provider?.isBraveWallet
 }
 
 export const safeConvertSolanaAddressToSS58 = (address: string, prefix = 0) => {
