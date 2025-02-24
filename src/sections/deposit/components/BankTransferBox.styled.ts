@@ -1,14 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
-export const SContainer = styled.div`
-  display: flex;
-  flex-flow: column;
-  row-gap: 10px;
-  padding: 20px;
-`
-
-export const SCryptoBlock = styled.a`
+export const SBankBox = styled.a`
   position: relative;
 
   display: flex;

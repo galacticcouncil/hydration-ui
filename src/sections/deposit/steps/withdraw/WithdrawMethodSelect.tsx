@@ -6,6 +6,7 @@ import { DepositMethod } from "sections/deposit/types"
 import { LINKS } from "utils/navigation"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import SuitcaseIcon from "assets/icons/SuitcaseIcon.svg?react"
+import CreditCardIcon from "assets/icons/CreditCardIcon.svg?react"
 
 type WithdrawMethodSelectProps = {
   onSelect: (method: DepositMethod) => void
@@ -35,6 +36,12 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
           onClick={() => navigate({ to: LINKS.cross_chain })}
           title={t("withdraw.method.onchain.title")}
           description={t("withdraw.method.onchain.description")}
+        />
+        <StepButton
+          icon={CreditCardIcon}
+          onClick={() => onSelect(DepositMethod.WithdrawBank)}
+          title={t("withdraw.method.bank.title")}
+          description={t("withdraw.method.bank.description")}
         />
       </div>
     </>

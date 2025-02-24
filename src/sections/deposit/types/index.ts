@@ -11,9 +11,10 @@ export enum DepositScreen {
 export enum DepositMethod {
   DepositCex,
   DepositOnchain,
-  DepositCrypto,
+  DepositBank,
   WithdrawCex,
   WithdrawCrypto,
+  WithdrawBank,
 }
 
 export type AssetConfig = {

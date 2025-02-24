@@ -10,7 +10,7 @@ import {
 } from "sections/deposit/DepositPage.utils"
 import { DepositAsset } from "sections/deposit/steps/deposit/DepositAsset"
 import { DepositCexSelect } from "sections/deposit/steps/deposit/DepositCexSelect"
-import { DepositCrypto } from "sections/deposit/steps/deposit/DepositCrypto"
+import { DepositBank } from "sections/deposit/steps/deposit/DepositBank"
 import { DepositMethodSelect } from "sections/deposit/steps/deposit/DepositMethodSelect"
 import { DepositSuccess } from "sections/deposit/steps/deposit/DepositSuccess"
 import { DepositTransfer } from "sections/deposit/steps/deposit/DepositTransfer"
@@ -63,8 +63,8 @@ export const DepositPage = () => {
               {
                 title: (method === DepositMethod.DepositCex
                   ? t("deposit.cex.select.title")
-                  : method === DepositMethod.DepositCrypto
-                    ? t("deposit.crypto.fund.title")
+                  : method === DepositMethod.DepositBank
+                    ? t("deposit.bank.title")
                     : ""
                 ).toUpperCase(),
                 headerVariant: "GeistMono",
@@ -72,8 +72,8 @@ export const DepositPage = () => {
                 content:
                   method === DepositMethod.DepositCex ? (
                     <DepositCexSelect onAssetSelect={setAsset} />
-                  ) : method === DepositMethod.DepositCrypto ? (
-                    <DepositCrypto />
+                  ) : method === DepositMethod.DepositBank ? (
+                    <DepositBank />
                   ) : null,
               },
               {

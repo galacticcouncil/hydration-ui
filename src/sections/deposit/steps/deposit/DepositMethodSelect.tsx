@@ -38,12 +38,11 @@ export const DepositMethodSelect: React.FC<methodSelectProps> = ({
           title={t("deposit.method.onchain.title")}
           description={t("deposit.method.onchain.description")}
         />
-
         <StepButton
           icon={CreditCardIcon}
-          onClick={() => onSelect(DepositMethod.DepositCrypto)}
-          title={t("deposit.method.crypto.title")}
-          description={t("deposit.method.crypto.description")}
+          onClick={() => onSelect(DepositMethod.DepositBank)}
+          title={t("deposit.method.bank.title")}
+          description={t("deposit.method.bank.description")}
         />
       </div>
     </>

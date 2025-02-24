@@ -7,7 +7,7 @@ export type StepButtonProps = {
   onClick?: () => void
   title: string
   description: string
-  icon: React.ElementType
+  icon?: React.ElementType
 }
 
 export const StepButton: React.FC<StepButtonProps> = ({
@@ -22,11 +22,13 @@ export const StepButton: React.FC<StepButtonProps> = ({
   >
     <div>
       <div sx={{ flex: "row", align: "center", gap: 8, mb: 6 }}>
-        <Icon
-          size={16}
-          icon={<IconComponent />}
-          sx={{ color: "brightBlue300" }}
-        />
+        {IconComponent && (
+          <Icon
+            size={16}
+            icon={<IconComponent />}
+            sx={{ color: "brightBlue300" }}
+          />
+        )}
         <Text fs={18} font="GeistSemiBold" color="basic100">
           {title}
         </Text>

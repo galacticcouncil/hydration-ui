@@ -9,6 +9,8 @@ import { WithdrawTransfer } from "sections/deposit/steps/withdraw/WithdrawTransf
 import { SContainer, SDepositContent } from "./DepositPage.styled"
 import { WithdrawTransferOnchain } from "sections/deposit/steps/withdraw/WithdrawTransferOnchain"
 import { useUnmount } from "react-use"
+import { WithdrawBank } from "sections/deposit/steps/withdraw/WithdrawBank"
+import { DepositMethod } from "sections/deposit/types"
 
 export const WithdrawPage = () => {
   const { t } = useTranslation()
@@ -16,6 +18,7 @@ export const WithdrawPage = () => {
     asset,
     cexId,
     paginateBack,
+    method,
     direction,
     page,
     reset,
@@ -43,10 +46,20 @@ export const WithdrawPage = () => {
                 content: <WithdrawMethodSelect onSelect={setMethod} />,
               },
               {
-                title: t("withdraw.cex.select.title").toUpperCase(),
+                title: (method === DepositMethod.WithdrawCex
+                  ? t("withdraw.cex.select.title")
+                  : method === DepositMethod.WithdrawBank
+                    ? t("withdraw.bank.title")
+                    : ""
+                ).toUpperCase(),
                 headerVariant: "GeistMono",
                 noPadding: true,
-                content: <DepositCexSelect onAssetSelect={setAsset} />,
+                content:
+                  method === DepositMethod.WithdrawCex ? (
+                    <DepositCexSelect onAssetSelect={setAsset} />
+                  ) : method === DepositMethod.WithdrawBank ? (
+                    <WithdrawBank />
+                  ) : null,
               },
               {
                 title: t("withdraw.cex.transfer.title", {
