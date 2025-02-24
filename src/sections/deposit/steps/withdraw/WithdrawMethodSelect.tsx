@@ -18,7 +18,7 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
     <>
       <div>
         <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
-          {t("withdraw")}
+          {t("withdraw.method.title")}
         </GradientText>
       </div>
       <div sx={{ flex: "column", gap: 20 }}>
