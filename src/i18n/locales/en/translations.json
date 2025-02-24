@@ -1363,7 +1363,7 @@
   "deposit.success.cta.depositMore": "Deposit more funds",
   "withdraw.bank.title": "Bank",
   "withdraw.bank.vortex.cta": "Go to Vortex",
-  "withdraw.bank.vortex.description": "Withdraw DOT (via Polkadot) or USDC/USDT (via Polkadot AssetHub).",
+  "withdraw.bank.vortex.description": "Withdraw USDC (via Polkadot AssetHub), sell for EUR, ARS or BRL and deposit to your bank account.",
   "withdraw.method.title": "Withdraw to",
   "withdraw.method.cex.title": "Centralized exchange",
   "withdraw.method.cex.description": "Withdraw to Binance, Kraken, Coinbase, and others.",
