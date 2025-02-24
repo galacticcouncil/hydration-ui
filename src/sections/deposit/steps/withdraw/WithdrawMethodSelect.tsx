@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next"
 import { StepButton } from "sections/deposit/components/StepButton"
 import { DepositMethod } from "sections/deposit/types"
 import { LINKS } from "utils/navigation"
+import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
+import SuitcaseIcon from "assets/icons/SuitcaseIcon.svg?react"
 
 type WithdrawMethodSelectProps = {
   onSelect: (method: DepositMethod) => void
@@ -23,11 +25,13 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
       </div>
       <div sx={{ flex: "column", gap: 20 }}>
         <StepButton
+          icon={SuitcaseIcon}
           onClick={() => onSelect(DepositMethod.WithdrawCex)}
           title={t("withdraw.method.cex.title")}
           description={t("withdraw.method.cex.description")}
         />
         <StepButton
+          icon={ChainlinkIcon}
           onClick={() => navigate({ to: LINKS.cross_chain })}
           title={t("withdraw.method.onchain.title")}
           description={t("withdraw.method.onchain.description")}

@@ -7,21 +7,30 @@ export type StepButtonProps = {
   onClick?: () => void
   title: string
   description: string
+  icon: React.ElementType
 }
 
 export const StepButton: React.FC<StepButtonProps> = ({
   onClick,
   title,
   description,
+  icon: IconComponent,
 }) => (
   <SButton
     onClick={onClick}
     css={!onClick && { pointerEvents: "none", opacity: 0.3 }}
   >
     <div>
-      <Text fs={18} font="GeistSemiBold" color="basic100" sx={{ mb: 6 }}>
-        {title}
-      </Text>
+      <div sx={{ flex: "row", align: "center", gap: 8, mb: 6 }}>
+        <Icon
+          size={16}
+          icon={<IconComponent />}
+          sx={{ color: "brightBlue300" }}
+        />
+        <Text fs={18} font="GeistSemiBold" color="basic100">
+          {title}
+        </Text>
+      </div>
       <Text fs={14} lh={20} color="basic500">
         {description}
       </Text>
