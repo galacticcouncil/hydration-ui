@@ -31,12 +31,12 @@ export const AddressBook = ({
   const [filter, setFilter] = useState(mode)
 
   const addresses = useMemo(() => {
-    const validProviders = PROVIDERS_BY_WALLET_MODE[mode]
+    const validProviders = PROVIDERS_BY_WALLET_MODE[filter]
 
     return allAddresses.filter((address) =>
       validProviders.includes(address.provider),
     )
-  }, [allAddresses, mode])
+  }, [allAddresses, filter])
 
   const items = useMemo(
     () => (search ? arraySearch(addresses, search) : addresses),
