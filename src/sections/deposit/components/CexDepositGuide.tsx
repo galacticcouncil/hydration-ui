@@ -43,6 +43,7 @@ const useCexDepositGuide = (cexId: string) => {
         { title: t("deposit.guide.gateio.step4.title") },
         { title: t("deposit.guide.gateio.step5.title") },
         { title: t("deposit.guide.gateio.step6.title") },
+        { title: t("deposit.guide.gateio.step7.title") },
       ]
     }
 
@@ -62,6 +63,7 @@ const useCexDepositGuide = (cexId: string) => {
         { title: t("deposit.guide.coinbase.step2.title") },
         { title: t("deposit.guide.coinbase.step3.title") },
         { title: t("deposit.guide.coinbase.step4.title") },
+        { title: t("deposit.guide.coinbase.step5.title") },
       ]
     }
 
