@@ -8,7 +8,11 @@ import { differenceInHours, differenceInMinutes } from "date-fns"
 import { useRpcProvider } from "providers/rpcProvider"
 import request, { gql } from "graphql-request"
 import { useIndexerUrl } from "api/provider"
-import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
+import {
+  EvmParachain,
+  Parachain,
+  SubstrateApis,
+} from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
@@ -72,27 +76,27 @@ const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
 //   return `https://${network}.api.subscan.io/api/scan/${method}`
 // }
 
-// const extractKeyFromURL = (url: string, isEvm: boolean) => {
-//   if (isEvm) {
-//     const origin = new URL(url)?.origin
+const extractKeyFromURL = (url: string, isEvm: boolean) => {
+  if (isEvm) {
+    const origin = new URL(url)?.origin
 
-//     const chain = [...chainsMap.values()].find((chain) => {
-//       if (chain.isEvmParachain()) {
-//         return (
-//           (chain as EvmParachain).client.chain.blockExplorers?.default.url ===
-//           origin
-//         )
-//       }
+    const chain = [...chainsMap.values()].find((chain) => {
+      if (chain.isEvmParachain()) {
+        return (
+          (chain as EvmParachain).client.chain.blockExplorers?.default.url ===
+          origin
+        )
+      }
 
-//       return false
-//     })
+      return false
+    })
 
-//     return chain?.key
-//   }
+    return chain?.key
+  }
 
-//   const match = url.match(/^https?:\/\/([^.]+)\.subscan/)
-//   return match ? match[1] : null
-// }
+  const match = url.match(/^https?:\/\/([^.]+)\.subscan/)
+  return match ? match[1] : null
+}
 
 type TExtrinsic = {
   hash: string
@@ -293,6 +297,20 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         )
 
         const isHiddenToast = minutesDiff > 10
+        const isXcm = !!toastData.xcm
+        const isEvm =
+          toastData.link?.includes("evm") ||
+          toastData.link?.includes("explorer.nice.hydration.cloud")
+
+        if (isXcm && toastData.link) {
+          const parachain = extractKeyFromURL(toastData.link, !!isEvm)
+
+          if (parachain !== "hydration") {
+            toast.add("unknown", { ...toastData, hidden: true })
+
+            return false
+          }
+        }
 
         // move to unknown state
         if (hoursDiff >= 1 || !toastData.txHash?.length) {
@@ -300,10 +318,6 @@ export const useProcessToasts = (toasts: ToastData[]) => {
 
           return false
         }
-
-        const isEvm =
-          toastData.link?.includes("evm") ||
-          toastData.link?.includes("explorer.nice.hydration.cloud")
 
         if (isEvm) {
           const ethTx = await api.rpc.eth.getTransactionByHash(toastData.txHash)
