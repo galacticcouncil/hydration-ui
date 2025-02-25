@@ -481,12 +481,9 @@ export const usePendingDispatchPermit = (
 }
 
 const getTransactionData = (
-  result: ISubmittableResult,
+  txHash: string | undefined,
   xcallMeta?: Record<string, string>,
 ) => {
-  const status = result.status
-  const txHash = result.txHash.toHex()
-
   const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
 
   const xcmDstChain = xcallMeta?.dstChain
@@ -508,7 +505,6 @@ const getTransactionData = (
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
 
   return {
-    status,
     txHash,
     srcChain,
     xcmDstChain,
@@ -563,12 +559,12 @@ export const useSendDispatchPermit = (
 
           const isInBlock = result.status.type === "InBlock"
 
-          const { status, txHash, link, bridge, xcm } = getTransactionData(
-            result,
+          const { txHash, link, bridge, xcm } = getTransactionData(
+            result.txHash.toHex(),
             xcallMeta,
           )
 
-          if (status.isBroadcast && txHash && !isLoadingNotified) {
+          if (result.status.isBroadcast && txHash && !isLoadingNotified) {
             loading({
               id,
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
@@ -715,6 +711,7 @@ export const useSendTransactionMutation = (
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       const txWalletAddress = account?.address
+
       if (isObservable(tx)) {
         try {
           const sub = tx.subscribe({
@@ -731,9 +728,21 @@ export const useSendTransactionMutation = (
               )
             },
             next: (event) => {
+              const { txHash, link, bridge, xcm } = getTransactionData(
+                event.txHash,
+                xcallMeta,
+              )
+
               if (event.type === "broadcasted") {
-                setTxState("Broadcast")
-                setTxHash(event.txHash)
+                loading({
+                  id,
+                  title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+                  link,
+                  txHash,
+                  bridge,
+                  hidden: true,
+                  xcm,
+                })
               }
 
               const isFound =
@@ -742,7 +751,16 @@ export const useSendTransactionMutation = (
 
               if (isFound) {
                 if (!event.ok) {
-                  setTxState("Invalid")
+                  error(
+                    {
+                      id,
+                      title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                      link,
+                      txHash,
+                    },
+                    txWalletAddress,
+                  )
+
                   return reject(
                     new TransactionError(
                       event.dispatchError.value?.toString() ?? "Unknown error",
@@ -750,7 +768,19 @@ export const useSendTransactionMutation = (
                     ),
                   )
                 }
-                setTxState("InBlock")
+
+                if (!bridge) {
+                  success(
+                    {
+                      id,
+                      title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+                      link,
+                      txHash,
+                    },
+                    txWalletAddress,
+                  )
+                }
+
                 return resolve(toSubmittableResult(event.txHash))
               }
             },
@@ -773,10 +803,12 @@ export const useSendTransactionMutation = (
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
-          const { status, txHash, srcChain, link, bridge, xcm } =
-            getTransactionData(result, xcallMeta)
+          const { txHash, link, bridge, xcm } = getTransactionData(
+            result.txHash.toHex(),
+            xcallMeta,
+          )
 
-          if (status.isBroadcast && txHash && !isLoadingNotified) {
+          if (result.status.isBroadcast && txHash && !isLoadingNotified) {
             loading({
               id,
               title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
@@ -791,15 +823,7 @@ export const useSendTransactionMutation = (
             setIsBroadcasted(true)
           }
 
-          const apiPromise =
-            xcallMeta &&
-            srcChain &&
-            xcallMeta.srcChain !== "hydration" &&
-            isAnyParachain(srcChain)
-              ? await srcChain.api
-              : api
-
-          const onComplete = createResultOnCompleteHandler(apiPromise, {
+          const onComplete = createResultOnCompleteHandler(await apiPromise, {
             onError: (e) => {
               error(
                 {
