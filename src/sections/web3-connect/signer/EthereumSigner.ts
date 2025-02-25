@@ -68,16 +68,10 @@ export class EthereumSigner {
     }
   }
 
-  requestNetworkSwitch = async (chain: string, onSwitch?: () => void) => {
+  requestNetworkSwitch = async (chain: string) => {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
-        onSwitch: () => {
-          // update signer after network switch
-          this.signer = this.getSigner(this.provider)
-
-          onSwitch?.()
-        },
       })
       // update signer after network switch
       // give some leeway for the network switch to take effect,
@@ -87,20 +81,13 @@ export class EthereumSigner {
     }
   }
 
-  sendDispatch = async (
-    data: string,
-    chain?: string,
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
-    return this.sendTransaction(
-      {
-        to: DISPATCH_ADDRESS,
-        data,
-        from: this.address,
-        chain,
-      },
-      { onNetworkSwitch: options?.onNetworkSwitch },
-    )
+  sendDispatch = async (data: string, chain?: string) => {
+    return this.sendTransaction({
+      to: DISPATCH_ADDRESS,
+      data,
+      from: this.address,
+      chain,
+    })
   }
 
   getPermit = async (
@@ -254,9 +241,7 @@ export class EthereumSigner {
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
     const chainCfg = chainsMap.get(from) as EvmChain
 
-    await this.requestNetworkSwitch(from, () => {
-      options?.onNetworkSwitch?.()
-    })
+    await this.requestNetworkSwitch(from)
 
     if (from === "hydration") {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
