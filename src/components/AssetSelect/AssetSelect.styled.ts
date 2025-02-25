@@ -63,6 +63,8 @@ export const SSelectAssetButton = styled(Button)`
   align-items: center;
   background: transparent;
 
+  width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
+
   text-transform: none;
 
   border: unset;
@@ -74,7 +76,6 @@ export const SSelectAssetButton = styled(Button)`
 
   &:not(:disabled):hover {
     border: unset;
-    margin-right: 20px;
     cursor: pointer;
     background: rgba(${theme.rgbColors.white}, 0.06);
   }
@@ -86,6 +87,7 @@ export const SSelectAssetButton = styled(Button)`
   }
 
   & > span {
+    width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
     min-width: 0;
   }
 `
