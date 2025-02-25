@@ -55,6 +55,8 @@ export const LINKS = {
   borrowMarkets: "/borrow/markets",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
 }
 
 export const MENU_ITEMS = [
@@ -183,13 +185,32 @@ export const MENU_ITEMS = [
     key: "xcm",
     href: LINKS.cross_chain,
     Icon: TransferIcon,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: false,
     mobOrder: 5,
     asyncEnabled: false,
+    subItems: [
+      {
+        key: "xcm.xcm",
+        href: LINKS.cross_chain,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.deposit",
+        href: LINKS.deposit,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.withdraw",
+        href: LINKS.withdraw,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+    ],
   },
   {
     key: "stats",
@@ -244,7 +265,7 @@ export const MENU_ITEMS = [
 export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
-export type TabItemWithSubItems = TabItem & {
+export type TabItemWithSubItems = Omit<TabItem, "subItems"> & {
   subItems: NonNullable<TabSubItem>
 }
 
