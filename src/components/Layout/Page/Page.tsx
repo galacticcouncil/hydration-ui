@@ -41,6 +41,10 @@ const Web3Connect = lazy(async () => ({
   default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
 }))
 
+const DepositManager = lazy(async () => ({
+  default: (await import("sections/deposit/DepositManager")).DepositManager,
+}))
+
 const QuerySubscriptions = lazy(async () => ({
   default: (await import("api/subscriptions")).QuerySubscriptions,
 }))
@@ -124,6 +128,7 @@ export const Page = ({ className }: Props) => {
         <Transactions />
         <ReferralsConnect />
         <QuerySubscriptions />
+        <DepositManager />
       </Suspense>
     </>
   )
