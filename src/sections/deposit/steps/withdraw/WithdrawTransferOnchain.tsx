@@ -45,7 +45,7 @@ export const WithdrawTransferOnchain: React.FC<
 
   const { getAsset } = useAssets()
   const { data: tokenBalance } = useTokenBalance(asset?.assetId, address)
-  const assetMeta = getAsset(asset?.assetId ?? "")
+  const assetMeta = asset?.assetId ? getAsset(asset.assetId) : undefined
 
   const estimatedFees = useEstimatedFees([
     api.tx.currencies.transfer(address, asset?.assetId ?? "0", "1"),

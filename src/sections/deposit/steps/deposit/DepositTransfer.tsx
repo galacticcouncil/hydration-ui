@@ -155,55 +155,54 @@ export const DepositTransfer: React.FC<DepositTransferProps> = ({
 
   return (
     <>
-      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <div sx={{ flex: "column", gap: [14, 20] }}>
-          <Controller
-            name="amount"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <div sx={{ flex: "column" }}>
-                <AssetSelect
-                  disabled={isLoading}
-                  name={field.name}
-                  value={field.value}
-                  id={asset?.assetId ?? ""}
-                  error={fieldState.error?.message}
-                  title={t("selectAssets.asset")}
-                  onChange={field.onChange}
-                  balance={transferData.balance}
-                  balanceMax={
-                    !transferData.max.isNaN() ? transferData.max : undefined
-                  }
-                  balanceLabel={t("selectAsset.balance.label")}
-                />
-              </div>
-            )}
-          />
-          <Controller
-            name="address"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <div sx={{ flex: "column", mx: [-16, 0] }}>
-                <WalletTransferAccountInput
-                  label={t("xcm.transfer.destAddress")}
-                  name={field.name}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder={t("wallet.assets.transfer.dest.placeholder")}
-                  openAddressBook={toggleAddressBook}
-                  error={fieldState.error?.message}
-                />
-              </div>
-            )}
-          />
-          <Button
-            isLoading={isLoading}
-            disabled={isLoading}
-            variant={isLoading ? "secondary" : "primary"}
-          >
-            {t("deposit.cex.transfer.button")}
-          </Button>
-        </div>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
+        sx={{ flex: "column", gap: [14, 20] }}
+      >
+        <Controller
+          name="amount"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <AssetSelect
+              disabled={isLoading}
+              name={field.name}
+              value={field.value}
+              id={asset?.assetId ?? ""}
+              error={fieldState.error?.message}
+              title={t("selectAssets.asset")}
+              onChange={field.onChange}
+              balance={transferData.balance}
+              balanceMax={
+                !transferData.max.isNaN() ? transferData.max : undefined
+              }
+              balanceLabel={t("selectAsset.balance.label")}
+            />
+          )}
+        />
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <WalletTransferAccountInput
+              label={t("xcm.transfer.destAddress")}
+              name={field.name}
+              value={field.value}
+              onChange={field.onChange}
+              placeholder={t("wallet.assets.transfer.dest.placeholder")}
+              openAddressBook={toggleAddressBook}
+              error={fieldState.error?.message}
+              sx={{ mx: [-16, 0] }}
+            />
+          )}
+        />
+        <Button
+          isLoading={isLoading}
+          disabled={isLoading}
+          variant={isLoading ? "secondary" : "primary"}
+        >
+          {t("deposit.cex.transfer.button")}
+        </Button>
       </form>
       <Modal
         open={addressBookOpen}

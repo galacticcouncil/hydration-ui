@@ -179,10 +179,10 @@ export function WalletTransferSectionOnchain({
 
   const dest = form.watch("dest")
   const shouldShowDisclaimer =
-    UNIFIED_ADDRESS_FORMAT_ENABLED &&
-    !!dest &&
-    dest.toLowerCase() ===
-      getAddressVariants(dest).polkadotAddress.toLowerCase()
+    UNIFIED_ADDRESS_FORMAT_ENABLED && dest
+      ? dest.toLowerCase() ===
+        getAddressVariants(dest).polkadotAddress.toLowerCase()
+      : false
 
   const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
 

@@ -20,7 +20,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
   const navigate = useNavigate()
   const { getAsset } = useAssets()
   const { amount, asset } = useDeposit()
-  const assetDetails = asset ? getAsset(asset.assetId) : null
+  const assetDetails = asset?.assetId ? getAsset(asset.assetId) : null
 
   return (
     <div
@@ -79,11 +79,9 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
           onClick={() => navigate({ to: LINKS.walletAssets })}
         />
       </div>
-      <div sx={{ textAlign: "center" }}>
-        <Button variant="mutedSecondary" onClick={onConfirm}>
-          {t("deposit.success.cta.depositMore")}
-        </Button>
-      </div>
+      <Button variant="mutedSecondary" onClick={onConfirm} sx={{ mx: "auto" }}>
+        {t("deposit.success.cta.depositMore")}
+      </Button>
     </div>
   )
 }

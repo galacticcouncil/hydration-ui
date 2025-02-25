@@ -126,97 +126,94 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
 
   return (
     <>
-      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <div
-          sx={{ flex: "column", gap: [14, 20] }}
-          css={{ position: "relative" }}
-        >
-          <Controller
-            name="amount"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <div sx={{ flex: "column" }}>
-                <AssetSelect
-                  name={field.name}
-                  value={field.value}
-                  id={asset?.assetId ?? ""}
-                  error={fieldState.error?.message}
-                  title={t("selectAssets.asset")}
-                  onChange={field.onChange}
-                  balance={transferData.balance}
-                  balanceMax={
-                    !transferData.max.isNaN() ? transferData.max : undefined
-                  }
-                  balanceLabel={t("selectAsset.balance.label")}
-                />
-              </div>
-            )}
-          />
-          <Controller
-            name="address"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <div sx={{ flex: "column", mx: [-16, 0] }}>
-                <WalletTransferAccountInput
-                  label={t("xcm.transfer.destAddress")}
-                  name={field.name}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder={t("wallet.assets.transfer.dest.placeholder")}
-                  openAddressBook={toggleAddressBook}
-                  error={fieldState.error?.message}
-                  hideNativeAddress
-                />
-              </div>
-            )}
-          />
-          <Alert variant="info" hideIcon>
-            <label sx={{ flex: "row", gap: 12, align: "start" }}>
-              <Switch
-                name="disclaimer-accepted"
-                value={disclaimerAccepted}
-                onCheckedChange={setDisclaimerAccepted}
-              />
-              <div>
-                <Text fs={13} color="basic100" font="GeistSemiBold">
-                  {t("withdraw.disclaimer.cex.title", {
-                    cex: activeCex?.title,
-                    symbol: asset?.data.asset.originSymbol,
-                  })}
-                </Text>
-                <Text fs={13} color="basic400">
-                  {t("withdraw.disclaimer.cex.description")}
-                </Text>
-              </div>
-            </label>
-          </Alert>
-          {!isAccountAllowed && (
-            <Alert variant="error">
-              {t("withdraw.cex.account.evmError", {
-                symbol: asset?.data.asset.originSymbol,
-              })}
-            </Alert>
-          )}
-          <Button
-            isLoading={isWithdrawing}
-            disabled={
-              isWithdrawing ||
-              isLoadingXTransfer ||
-              !disclaimerAccepted ||
-              !isAccountAllowed
-            }
-            variant={isWithdrawing ? "secondary" : "primary"}
-          >
-            {disclaimerAccepted
-              ? t("withdraw.transfer.button")
-              : t("withdraw.disclaimer.button")}
-          </Button>
-          {isWithdrawing && (
-            <WithdrawProcessing
-              css={{ position: "absolute", inset: 0, width: "100%", zIndex: 1 }}
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        autoComplete="off"
+        sx={{ flex: "column", gap: [14, 20] }}
+        css={{ position: "relative" }}
+      >
+        <Controller
+          name="amount"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <AssetSelect
+              name={field.name}
+              value={field.value}
+              id={asset?.assetId ?? ""}
+              error={fieldState.error?.message}
+              title={t("selectAssets.asset")}
+              onChange={field.onChange}
+              balance={transferData.balance}
+              balanceMax={
+                !transferData.max.isNaN() ? transferData.max : undefined
+              }
+              balanceLabel={t("selectAsset.balance.label")}
             />
           )}
-        </div>
+        />
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <WalletTransferAccountInput
+              label={t("xcm.transfer.destAddress")}
+              name={field.name}
+              value={field.value}
+              onChange={field.onChange}
+              placeholder={t("wallet.assets.transfer.dest.placeholder")}
+              openAddressBook={toggleAddressBook}
+              error={fieldState.error?.message}
+              hideNativeAddress
+              sx={{ mx: [-16, 0] }}
+            />
+          )}
+        />
+        <Alert variant="info" hideIcon>
+          <label sx={{ flex: "row", gap: 12, align: "start" }}>
+            <Switch
+              name="disclaimer-accepted"
+              value={disclaimerAccepted}
+              onCheckedChange={setDisclaimerAccepted}
+            />
+            <div>
+              <Text fs={13} color="basic100" font="GeistSemiBold">
+                {t("withdraw.disclaimer.cex.title", {
+                  cex: activeCex?.title,
+                  symbol: asset?.data.asset.originSymbol,
+                })}
+              </Text>
+              <Text fs={13} color="basic400">
+                {t("withdraw.disclaimer.cex.description")}
+              </Text>
+            </div>
+          </label>
+        </Alert>
+        {!isAccountAllowed && (
+          <Alert variant="error">
+            {t("withdraw.cex.account.evmError", {
+              symbol: asset?.data.asset.originSymbol,
+            })}
+          </Alert>
+        )}
+        <Button
+          isLoading={isWithdrawing}
+          disabled={
+            isWithdrawing ||
+            isLoadingXTransfer ||
+            !disclaimerAccepted ||
+            !isAccountAllowed
+          }
+          variant={isWithdrawing ? "secondary" : "primary"}
+        >
+          {disclaimerAccepted
+            ? t("withdraw.transfer.button")
+            : t("withdraw.disclaimer.button")}
+        </Button>
+        {isWithdrawing && (
+          <WithdrawProcessing
+            css={{ position: "absolute", inset: 0, width: "100%", zIndex: 1 }}
+          />
+        )}
       </form>
 
       <Modal

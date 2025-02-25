@@ -20,7 +20,7 @@ import { CEX_CONFIG, useDeposit } from "sections/deposit/DepositPage.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
-import { BN_0 } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
@@ -345,16 +345,20 @@ async function calculateAssethubFee(
     .multipliedBy(0.3)
     .decimalPlaces(0)
 
-  const dex = DexFactory.getInstance().get(chain.key)!
-  const feeQuote = await dex.getQuote(
-    assetData.asset,
-    assethubNativeToken.asset,
-    AssetAmount.fromAsset(assethubNativeToken.asset, {
-      amount: BigInt(rawFee.toString()),
-      decimals: assethubNativeToken.decimals!,
-    }),
-  )
-  return BN(feeQuote.amount.toString())
+  const dex = DexFactory.getInstance().get(chain.key)
+  if (dex) {
+    const feeQuote = await dex.getQuote(
+      assetData.asset,
+      assethubNativeToken.asset,
+      AssetAmount.fromAsset(assethubNativeToken.asset, {
+        amount: BigInt(rawFee.toString()),
+        decimals: assethubNativeToken.decimals!,
+      }),
+    )
+    return BN(feeQuote.amount.toString())
+  }
+
+  return BN_NAN
 }
 
 async function calculateNativeFee(tx: SubmittableExtrinsic, address: string) {
