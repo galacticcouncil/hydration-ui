@@ -1,14 +1,14 @@
 import { Icon } from "components/Icon/Icon"
 import { useTranslation } from "react-i18next"
 
-import { TabItem } from "utils/navigation"
+import { TabItem, TabItemWithSubItems } from "utils/navigation"
 import { SNavBarItem } from "./MobileNavBar.styled"
 
 export const MobileNavBarItem = ({
   item,
   isActive,
 }: {
-  item: TabItem
+  item: TabItem | TabItemWithSubItems
   isActive?: boolean
 }) => {
   const { t } = useTranslation()

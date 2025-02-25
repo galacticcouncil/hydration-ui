@@ -36,7 +36,7 @@ const commitHash = child
   .trim()
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command }) => {
   return {
     define: {
       "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
@@ -53,6 +53,14 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },
     },
+    resolve:
+      command === "build"
+        ? {
+            alias: {
+              "@polkadot-api/descriptors": "./.papi/descriptors/dist/index.mjs",
+            },
+          }
+        : undefined,
     plugins: [
       tsconfigPaths(),
       react({

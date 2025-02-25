@@ -49,6 +49,8 @@ import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
+import { TxEvent } from "polkadot-api"
+import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
@@ -156,14 +158,8 @@ function evmTxReceiptToSubmittableResult(txReceipt: TransactionReceipt) {
   return submittableResult
 }
 
-function solanaStatusToSubmittableResult({
-  status,
-  hash,
-}: {
-  status: SignatureStatus
-  hash: string
-}) {
-  const isSuccess = status.confirmationStatus === "confirmed"
+function toSubmittableResult(hash: string) {
+  const isSuccess = true
   const submittableResult: ISubmittableResult = {
     status: {} as ExtrinsicStatus,
     events: [],
@@ -370,8 +366,8 @@ export const useSendSolanaTransactionMutation = (
 
         setIsBroadcasted(true)
 
-        const status = await waitForSolanaTx(chain.connection, txHash)
-        const result = solanaStatusToSubmittableResult({ status, hash: txHash })
+        await waitForSolanaTx(chain.connection, txHash)
+        const result = toSubmittableResult(txHash)
 
         if (result.isCompleted) {
           if (!bridge) {
@@ -693,7 +689,7 @@ export const useSendTransactionMutation = (
     ISubmittableResult,
     unknown,
     {
-      tx: SubmittableExtrinsic<"promise">
+      tx: SubmittableExtrinsic<"promise"> | Observable<TxEvent>
     }
   > = {},
   id: string,
@@ -708,9 +704,68 @@ export const useSendTransactionMutation = (
 
   const unsubscribeRef = useRef<null | (() => void)>(null)
 
+  const externalChain =
+    xcallMeta?.srcChain && xcallMeta.srcChain !== "hydration"
+      ? chainsMap.get(xcallMeta?.srcChain)
+      : null
+
+  const apiPromise =
+    externalChain && isAnyParachain(externalChain) ? externalChain.api : api
+
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       const txWalletAddress = account?.address
+      if (isObservable(tx)) {
+        try {
+          const sub = tx.subscribe({
+            error: (err) => {
+              error(
+                {
+                  id,
+                  title: toast?.onError ?? <p>{t("toast.error")}</p>,
+                },
+                txWalletAddress,
+              )
+              reject(
+                new TransactionError(err?.toString() ?? "Unknown error", {}),
+              )
+            },
+            next: (event) => {
+              if (event.type === "broadcasted") {
+                setTxState("Broadcast")
+                setTxHash(event.txHash)
+              }
+
+              const isFound =
+                event.type === "finalized" ||
+                (event.type === "txBestBlocksState" && event.found)
+
+              if (isFound) {
+                if (!event.ok) {
+                  setTxState("Invalid")
+                  return reject(
+                    new TransactionError(
+                      event.dispatchError.value?.toString() ?? "Unknown error",
+                      {},
+                    ),
+                  )
+                }
+                setTxState("InBlock")
+                return resolve(toSubmittableResult(event.txHash))
+              }
+            },
+            complete: () => {
+              sub.unsubscribe()
+            },
+          })
+
+          return
+        } catch (err) {
+          return reject(
+            new TransactionError(err?.toString() ?? "Unknown Error", {}),
+          )
+        }
+      }
 
       try {
         let isLoadingNotified = false
@@ -950,8 +1005,10 @@ export const useSendTx = ({
   const sendTx = useSendTransactionMutation(
     {
       onMutate: ({ tx }) => {
-        boundReferralToast.onLoading(tx)
-        storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        if (!isObservable(tx)) {
+          boundReferralToast.onLoading(tx)
+          storeExternalAssetsOnSign(getAssetIdsFromTx(tx))
+        }
         setTxType("default")
       },
       onSuccess: (data) => {
