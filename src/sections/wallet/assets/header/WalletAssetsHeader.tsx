@@ -9,7 +9,7 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { LINKS } from "utils/navigation"
 import { useNavigate } from "@tanstack/react-location"
-import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import { WalletTransferModal } from "sections/wallet/transfer/WalletTransferModal"
 import { useState } from "react"
@@ -103,11 +103,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             onClick={() => navigate({ to: LINKS.withdraw })}
             sx={{ width: ["100%", "auto"] }}
           >
-            <Icon
-              size={18}
-              sx={{ ml: -4 }}
-              icon={<DownloadIcon css={{ rotate: "180deg" }} />}
-            />
+            <Icon size={14} sx={{ ml: -4 }} icon={<UploadIcon />} />
             {t("withdraw")}
           </Button>
           <Button
@@ -116,11 +112,7 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
             onClick={() => setTransferModalOpen(true)}
             sx={{ width: ["100%", "auto"] }}
           >
-            <Icon
-              size={18}
-              sx={{ ml: -4 }}
-              icon={<TransferIcon css={{ transform: "scale(0.8)" }} />}
-            />
+            <Icon size={14} sx={{ ml: -4 }} icon={<TransferIcon />} />
             {t("transfer")}
           </Button>
           <WalletTransferModal
