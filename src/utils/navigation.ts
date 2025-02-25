@@ -18,6 +18,8 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
+import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -201,13 +203,13 @@ export const MENU_ITEMS = [
       {
         key: "xcm.deposit",
         href: LINKS.deposit,
-        Icon: TransferIcon,
+        Icon: DownloadIcon,
         enabled: true,
       },
       {
         key: "xcm.withdraw",
         href: LINKS.withdraw,
-        Icon: TransferIcon,
+        Icon: UploadIcon,
         enabled: true,
       },
     ],
