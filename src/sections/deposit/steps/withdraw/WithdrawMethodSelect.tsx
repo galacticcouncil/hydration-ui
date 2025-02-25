@@ -7,6 +7,8 @@ import { LINKS } from "utils/navigation"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import SuitcaseIcon from "assets/icons/SuitcaseIcon.svg?react"
 import CreditCardIcon from "assets/icons/CreditCardIcon.svg?react"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 type WithdrawMethodSelectProps = {
   onSelect: (method: DepositMethod) => void
@@ -17,6 +19,7 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
   return (
     <>
       <div>
@@ -25,12 +28,14 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
         </GradientText>
       </div>
       <div sx={{ flex: "column", gap: 20 }}>
-        <StepButton
-          icon={SuitcaseIcon}
-          onClick={() => onSelect(DepositMethod.WithdrawCex)}
-          title={t("withdraw.method.cex.title")}
-          description={t("withdraw.method.cex.description")}
-        />
+        {isDesktop && (
+          <StepButton
+            icon={SuitcaseIcon}
+            onClick={() => onSelect(DepositMethod.WithdrawCex)}
+            title={t("withdraw.method.cex.title")}
+            description={t("withdraw.method.cex.description")}
+          />
+        )}
         <StepButton
           icon={ChainlinkIcon}
           onClick={() => navigate({ to: LINKS.cross_chain })}
