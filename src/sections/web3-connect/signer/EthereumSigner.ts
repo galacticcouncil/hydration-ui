@@ -235,7 +235,6 @@ export class EthereumSigner {
 
   sendTransaction = async (
     transaction: TransactionRequest & { chain?: string },
-    options?: { onNetworkSwitch?: () => void },
   ) => {
     const { chain, ...tx } = transaction
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
