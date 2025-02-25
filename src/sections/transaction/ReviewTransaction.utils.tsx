@@ -734,6 +734,7 @@ export const useSendTransactionMutation = (
               )
 
               if (event.type === "broadcasted") {
+                setIsBroadcasted(true)
                 loading({
                   id,
                   title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
