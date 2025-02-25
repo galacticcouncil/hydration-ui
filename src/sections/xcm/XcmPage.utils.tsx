@@ -1,6 +1,6 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { EvmCall } from "@galacticcouncil/xcm-sdk"
-import { SubstrateApis, AnyChain } from "@galacticcouncil/xcm-core"
+import { SubstrateApis, AnyChain, Parachain } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { TxInfo } from "@galacticcouncil/apps"
 import { isAnyParachain } from "utils/helpers"
@@ -107,11 +107,24 @@ export function getDesiredWalletMode(chainKey: string) {
 export const getAddressBookMode = (chain?: AnyChain) => {
   if (!chain) return WalletMode.Default
 
-  if (chain.isEvmChain()) return WalletMode.EVM
+  if (isH160AddressSpace(chain)) return WalletMode.EVM
 
-  if (chain.isParachain()) return WalletMode.Substrate
+  if (isSubstrate(chain)) return WalletMode.Substrate
 
   if (chain.isEvmParachain()) return WalletMode.SubstrateEVM
 
   if (chain.isSolana()) return WalletMode.Solana
+}
+
+function isH160AddressSpace(chain: AnyChain) {
+  if (chain instanceof Parachain) {
+    return chain.usesH160Acc
+  }
+  return chain.isEvmChain()
+}
+
+function isSubstrate(chain: AnyChain) {
+  const h160AddrSpace = isH160AddressSpace(chain) || chain.key === "hydration"
+
+  return !h160AddrSpace
 }
