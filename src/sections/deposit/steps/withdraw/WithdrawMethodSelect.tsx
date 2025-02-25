@@ -22,11 +22,14 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
   const isDesktop = useMedia(theme.viewport.gte.sm)
   return (
     <>
-      <div>
-        <GradientText fs={28} gradient="pinkLightBlue" sx={{ mb: 20 }}>
-          {t("withdraw.method.title")}
-        </GradientText>
-      </div>
+      <GradientText
+        fs={28}
+        gradient="pinkLightBlue"
+        sx={{ mb: 20 }}
+        css={{ alignSelf: "start" }}
+      >
+        {t("withdraw.method.title")}
+      </GradientText>
       <div sx={{ flex: "column", gap: 20 }}>
         {isDesktop && (
           <StepButton
