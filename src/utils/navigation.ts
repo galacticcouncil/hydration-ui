@@ -18,7 +18,6 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
-import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -266,7 +265,7 @@ export const MENU_ITEMS = [
 export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
-export type TabItemWithSubItems = TabItem & {
+export type TabItemWithSubItems = Omit<TabItem, "subItems"> & {
   subItems: NonNullable<TabSubItem>
 }
 
