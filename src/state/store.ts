@@ -7,7 +7,7 @@ import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
 import { TransactionRequest } from "@ethersproject/providers"
-import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import { EvmCall, SolanaCall, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 
@@ -29,6 +29,7 @@ export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic
+  txOptions?: SubstrateCall["txOptions"]
   evmTx?: {
     data: TransactionRequest
     abi?: string
@@ -47,7 +48,7 @@ export interface Transaction extends TransactionInput {
   onSuccess?: (result: ISubmittableResult) => void
   onSubmitted?: () => void
   onError?: () => void
-  toastMessage?: ToastMessage
+  toast?: ToastMessage
   isProxy: boolean
   steps?: Array<StepProps>
   onBack?: () => void
@@ -65,6 +66,7 @@ export type TransactionOptions = {
   onClose?: () => void
   onError?: () => void
   disableAutoClose?: boolean
+  rejectOnClose?: boolean
 }
 
 interface Store {
@@ -74,6 +76,7 @@ interface Store {
     options?: TransactionOptions,
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
+  clearTransactions: () => void
 }
 
 type RpcStore = {
@@ -95,11 +98,7 @@ export const useStore = create<Store>((set) => ({
             {
               ...transaction,
               id: uuid(),
-              toastMessage: {
-                onLoading: options?.toast?.onLoading,
-                onSuccess: options?.toast?.onSuccess,
-                onError: options?.toast?.onError,
-              },
+              toast: options?.toast,
               onSubmitted: () => {
                 options?.onSubmitted?.()
               },
@@ -114,7 +113,12 @@ export const useStore = create<Store>((set) => ({
               isProxy: !!options?.isProxy,
               steps: options?.steps,
               onBack: options?.onBack,
-              onClose: options?.onClose,
+              onClose: () => {
+                if (options?.rejectOnClose) {
+                  reject(new Error("Transaction closed"))
+                }
+                options?.onClose?.()
+              },
               disableAutoClose: options?.disableAutoClose,
             },
             ...(store.transactions ?? []),
@@ -130,6 +134,10 @@ export const useStore = create<Store>((set) => ({
       ),
     }))
   },
+  clearTransactions: () =>
+    set(() => ({
+      transactions: [],
+    })),
 }))
 
 export const useRpcStore = create<RpcStore>()(

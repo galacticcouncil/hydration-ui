@@ -342,7 +342,7 @@ export const QUERY_KEYS = {
   assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
-  progressToast: (hash: string) => ["progressToast", hash],
+  progressToast: (hash: string) => [QUERY_KEY_PREFIX, "progressToast", hash],
   xcmTransfer: (
     asset: string,
     srcAddr: string,
@@ -360,3 +360,12 @@ export const QUERY_KEYS = {
     address,
   ],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+  xcmBalance: (address: string, chain: string) => [
+    "xcmBalance_",
+    address,
+    chain,
+  ],
+}

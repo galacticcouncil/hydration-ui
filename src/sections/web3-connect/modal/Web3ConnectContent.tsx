@@ -59,11 +59,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
     account,
   } = useWeb3ConnectStore()
 
-  const {
-    data: accounts,
-    isLoading: isAccountsLoading,
-    isFetching: isAccountsFetching,
-  } = useWalletAccounts()
+  const { data: accounts, isLoading: isAccountsLoading } = useWalletAccounts()
 
   const providers = getConnectedProviders()
   const isProvidersConnecting = providers.some(
@@ -132,7 +128,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
                 />
               ) : (
                 <Web3ConnectAccountList
-                  isLoading={isAccountsFetching}
+                  isLoading={isAccountsLoading}
                   accounts={accounts}
                 />
               )}

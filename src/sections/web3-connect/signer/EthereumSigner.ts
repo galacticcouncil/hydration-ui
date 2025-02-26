@@ -81,13 +81,20 @@ export class EthereumSigner {
     }
   }
 
-  sendDispatch = async (data: string, chain?: string) => {
-    return this.sendTransaction({
-      to: DISPATCH_ADDRESS,
-      data,
-      from: this.address,
-      chain,
-    })
+  sendDispatch = async (
+    data: string,
+    chain?: string,
+    options?: { onNetworkSwitch?: () => void },
+  ) => {
+    return this.sendTransaction(
+      {
+        to: DISPATCH_ADDRESS,
+        data,
+        from: this.address,
+        chain,
+      },
+      { onNetworkSwitch: options?.onNetworkSwitch },
+    )
   }
 
   getPermit = async (
@@ -235,6 +242,7 @@ export class EthereumSigner {
 
   sendTransaction = async (
     transaction: TransactionRequest & { chain?: string },
+    options?: { onNetworkSwitch?: () => void },
   ) => {
     const { chain, ...tx } = transaction
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
