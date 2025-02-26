@@ -107,13 +107,13 @@ export function getDesiredWalletMode(chainKey: string) {
 export const getAddressBookMode = (chain?: AnyChain) => {
   if (!chain) return WalletMode.Default
 
+  if (chain.isSolana()) return WalletMode.Solana
+
   if (isH160AddressSpace(chain)) return WalletMode.EVM
 
   if (isSubstrate(chain)) return WalletMode.Substrate
 
   if (chain.isEvmParachain()) return WalletMode.SubstrateEVM
-
-  if (chain.isSolana()) return WalletMode.Solana
 }
 
 function isH160AddressSpace(chain: AnyChain) {
