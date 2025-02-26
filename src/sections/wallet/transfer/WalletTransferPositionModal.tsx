@@ -41,6 +41,7 @@ import {
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 import { ReactElement } from "react"
 import { useAssets } from "providers/assets"
+import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 enum ModalPage {
   Transfer,
@@ -305,6 +306,7 @@ export const WalletTransferPositionModal = ({
                   form.setValue("dest", address, { shouldValidate: true })
                   paginateTo(ModalPage.Transfer)
                 }}
+                mode={WalletMode.SubstrateEVM}
               />
             ),
           },
