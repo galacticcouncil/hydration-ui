@@ -29,7 +29,7 @@ export const DepositButton: React.FC<ButtonProps> = (props) => {
       css={{ position: "relative" }}
       {...props}
     >
-      <Icon size={18} sx={{ ml: -4 }} icon={<DownloadIcon />} />
+      <Icon size={14} sx={{ ml: -4 }} icon={<DownloadIcon />} />
       {t("deposit")}
       {pendingDeposits.length > 0 && <SBadge>{pendingDeposits.length}</SBadge>}
     </Button>
