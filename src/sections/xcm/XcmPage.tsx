@@ -219,6 +219,10 @@ export function XcmPage() {
         blacklist={blacklist}
         onCheckAssetDataClick={(e) => setTokenCheck(e.detail)}
         onAddressBookClick={(e) => {
+          if (e.detail.address === null && destAddress) {
+            setDestAddress("")
+          }
+
           setOpenAddressBook(true)
           setDstChain(e.detail.destChain)
         }}
