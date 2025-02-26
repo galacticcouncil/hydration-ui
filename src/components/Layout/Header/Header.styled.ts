@@ -8,7 +8,9 @@ export const SHeader = styled.header`
   left: 0;
   z-index: ${theme.zIndices.header};
 
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
 
   backdrop-filter: blur(27px);
   background: rgba(9, 9, 9, 0.11);
@@ -16,6 +18,7 @@ export const SHeader = styled.header`
   padding: 8px;
 
   @media ${theme.viewport.gte.sm} {
+    grid-template-columns: auto 1fr auto;
     padding: 12px 40px;
   }
 

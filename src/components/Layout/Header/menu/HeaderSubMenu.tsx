@@ -8,7 +8,7 @@ import {
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import IconArrow from "assets/icons/IconArrow.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import React, { useMemo } from "react"
+import React from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -21,19 +21,19 @@ import {
   SSubMenuItem,
 } from "./HeaderMenu.styled"
 import { MobileNavBarItem } from "components/Layout/Header/MobileNavBar/MobileNavBarItem"
-import { useAccountAssets } from "api/deposits"
-import { useVestingTotalVestedAmount } from "api/vesting"
 
 type HeaderSubMenuProps = {
   isOpen: boolean
   onOpenChange: () => void
   item: TabItemWithSubItems
+  isHidden?: boolean
 }
 
 export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
   item,
   isOpen,
   onOpenChange,
+  isHidden,
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -42,40 +42,26 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
 
   const match = useMatchRoute()
 
-  const { data: balances } = useAccountAssets()
-  const { data: totalVestedAmount } = useVestingTotalVestedAmount()
-
   const { href, key, subItems } = item
 
-  const isPoolBalances = !!balances?.isAnyPoolPositions
   const isActive = subItems.some(({ href }) => match({ to: href }))
 
-  const filteredItems = useMemo(() => {
-    return subItems.filter((subItem) => {
-      if (subItem.key === "liquidity.myLiquidity") {
-        return isPoolBalances
-      }
-
-      if (subItem.key === "wallet.vesting") {
-        return !!totalVestedAmount?.gt(0)
-      }
-
-      return subItem.enabled
-    })
-  }, [isPoolBalances, subItems, totalVestedAmount])
-
-  const shouldRenderDropdown = filteredItems.length > 1
+  const shouldRenderDropdown = item.subItems.length > 1
 
   return (
     <Root delayDuration={0} open={isOpen} onOpenChange={onOpenChange}>
       <Trigger
-        css={{ all: "unset", height: "100%", cursor: "pointer" }}
+        css={{
+          all: "unset",
+          height: "100%",
+          ...(isHidden ? { pointerEvents: "none" } : { cursor: "pointer" }),
+        }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
           onOpenChange()
 
-          const firstLink = filteredItems?.[0]
+          const firstLink = item.subItems[0]
 
           if (href === LINKS.borrow) {
             navigate({ to: href })
@@ -89,9 +75,9 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
         }}
       >
         {isTablet ? (
-          <SItem isActive={isActive}>
+          <SItem isActive={isActive} isHidden={isHidden}>
             {t(`header.${key}`)}
-            {shouldRenderDropdown && <IconChevron />}
+            {shouldRenderDropdown && <IconChevron sx={{ flexShrink: 0 }} />}
           </SItem>
         ) : (
           <MobileNavBarItem item={item} isActive={isOpen || isActive} />
@@ -99,7 +85,7 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
       </Trigger>
       {shouldRenderDropdown && (
         <HeaderSubMenuContents
-          items={filteredItems.map((subItem) => ({
+          items={item.subItems.map((subItem) => ({
             ...subItem,
             title: t(`header.${subItem.key}.title`),
             subtitle: t(`header.${subItem.key}.subtitle`),

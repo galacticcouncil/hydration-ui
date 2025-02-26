@@ -10,7 +10,6 @@ export const SList = styled.nav`
 
   @media ${theme.viewport.gte.sm} {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
 
     height: 34px;
@@ -20,7 +19,10 @@ export const SList = styled.nav`
     overflow: hidden;
   }
 `
-export const SItem = styled.span<{ isActive?: boolean }>`
+export const SItem = styled.span<{
+  isActive?: boolean
+  isHidden?: boolean
+}>`
   display: flex;
   align-items: center;
 
@@ -54,6 +56,12 @@ export const SItem = styled.span<{ isActive?: boolean }>`
     css`
       color: ${theme.colors.brightBlue100};
       background: rgba(${theme.rgbColors.white}, 0.12);
+    `};
+
+  ${({ isHidden }) =>
+    isHidden &&
+    css`
+      visibility: hidden;
     `};
 `
 

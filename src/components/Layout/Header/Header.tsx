@@ -33,26 +33,21 @@ export const Header = () => {
         </Suspense>
       )}
       <SHeader>
-        <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-          <div sx={{ flex: "row", align: "center", gap: 40 }}>
-            <Link
-              to={
-                isSubmitTransactionPath ? LINKS.submitTransaction : LINKS.swap
-              }
-              search={resetSearchParams(search)}
-            >
-              <HydrationLogo />
-            </Link>
-            {!isSubmitTransactionPath && (
-              <Suspense>
-                <HeaderMenu />
-              </Suspense>
-            )}
-          </div>
+        <Link
+          to={isSubmitTransactionPath ? LINKS.submitTransaction : LINKS.swap}
+          search={resetSearchParams(search)}
+          sx={{ pr: 40 }}
+        >
+          <HydrationLogo />
+        </Link>
+        {!isSubmitTransactionPath && (
           <Suspense>
-            <HeaderToolbar />
+            <HeaderMenu />
           </Suspense>
-        </div>
+        )}
+        <Suspense>
+          <HeaderToolbar />
+        </Suspense>
       </SHeader>
     </div>
   )
