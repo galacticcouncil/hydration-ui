@@ -21,6 +21,7 @@ import {
 } from "sections/web3-connect/store/useWeb3ConnectStore"
 import {
   DEFAULT_DEST_CHAIN,
+  getAddressBookMode,
   getDefaultSrcChain,
   getDesiredWalletMode,
   getNotificationToastTemplates,
@@ -33,6 +34,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { ExternalAssetUpdateModal } from "sections/trade/modal/ExternalAssetUpdateModal"
 import { useTranslation } from "react-i18next"
 import { useMount } from "react-use"
+import { AddressBook } from "components/AddressBook/AddressBook"
+import { Modal } from "components/Modal/Modal"
+import { ModalContents } from "components/Modal/contents/ModalContents"
+import { TransferState } from "@galacticcouncil/apps/build/types/app/xcm/types"
+import { AnyChain } from "@galacticcouncil/xcm-core"
 
 type WalletChangeDetail = {
   srcChain: string
@@ -49,6 +55,9 @@ export const XcmApp = createComponent({
     >,
     onCheckAssetDataClick: "gc:external:checkData" as EventName<
       CustomEvent<Asset>
+    >,
+    onAddressBookClick: "gc:address-book:open" as EventName<
+      CustomEvent<TransferState>
     >,
   },
 })
@@ -73,6 +82,8 @@ export function XcmPage() {
   const location = useLocation()
   const { disconnectIncompatible } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
+  const [openAddressBook, setOpenAddressBook] = React.useState(false)
+  const [destAddress, setDestAddress] = React.useState<string>("")
 
   const [incomingSrcChain, setIncomingSrcChain] = React.useState("")
   const [srcChain, setSrcChain] = React.useState(
@@ -81,6 +92,18 @@ export function XcmPage() {
 
   const rawSearch = useSearch<SearchGenerics>()
   const search = XcmAppSearch.safeParse(rawSearch)
+
+  const srcChainDefault =
+    search.success && search.data.srcChain ? search.data.srcChain : srcChain
+
+  const destChainDefault =
+    search.success && search.data.destChain
+      ? search.data.destChain
+      : DEFAULT_DEST_CHAIN
+
+  const [dstChain, setDstChain] = React.useState<AnyChain | undefined>(
+    undefined,
+  )
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
 
@@ -125,20 +148,13 @@ export function XcmPage() {
     })
   }
 
-  const srcChainDefault =
-    search.success && search.data.srcChain ? search.data.srcChain : srcChain
-
-  const destChainDefault =
-    search.success && search.data.destChain
-      ? search.data.destChain
-      : DEFAULT_DEST_CHAIN
-
   const assetDefault =
     search.success && search.data.asset
       ? search.data.asset
       : srcChain === "ethereum"
         ? "eth"
         : undefined
+
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
   const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
@@ -177,14 +193,18 @@ export function XcmPage() {
     }
   }, [account, disconnectIncompatible, location, t, toggleWeb3Modal])
 
+  const onModalClose = () => setOpenAddressBook(false)
+
   return (
     <SContainer>
       <XcmApp
         ref={(r) => {
           if (r) {
             r.setAttribute("assetCheckEnabled", "")
+            r.setAttribute("addressBookEnabled", "")
           }
         }}
+        destAddress={destAddress}
         srcChain={srcChainDefault}
         destChain={destChainDefault}
         asset={assetDefault}
@@ -198,6 +218,14 @@ export function XcmPage() {
         ss58Prefix={ss58Prefix}
         blacklist={blacklist}
         onCheckAssetDataClick={(e) => setTokenCheck(e.detail)}
+        onAddressBookClick={(e) => {
+          if (e.detail.address === null && destAddress) {
+            setDestAddress("")
+          }
+
+          setOpenAddressBook(true)
+          setDstChain(e.detail.destChain)
+        }}
       />
       {isLoaded && tokenCheck && (
         <ExternalAssetUpdateModal
@@ -205,6 +233,27 @@ export function XcmPage() {
           open={!!tokenCheck}
           onClose={() => setTokenCheck(null)}
         />
+      )}
+      {openAddressBook && (
+        <Modal open>
+          <ModalContents
+            onClose={onModalClose}
+            contents={[
+              {
+                title: "Select destination address",
+                content: (
+                  <AddressBook
+                    onSelect={(address) => {
+                      setDestAddress(address)
+                      onModalClose()
+                    }}
+                    mode={getAddressBookMode(dstChain)}
+                  />
+                ),
+              },
+            ]}
+          />
+        </Modal>
       )}
     </SContainer>
   )

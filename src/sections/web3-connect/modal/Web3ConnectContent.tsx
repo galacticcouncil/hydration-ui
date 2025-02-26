@@ -158,6 +158,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
                 })
                 onCloseAddressBook?.()
               }}
+              mode={WalletMode.SubstrateEVM}
             />
           ),
         },
