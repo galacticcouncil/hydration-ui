@@ -11,6 +11,7 @@ import { WalletTransferSectionOnchain } from "sections/wallet/transfer/onchain/W
 import { theme } from "theme"
 import { useTransferZodSchema } from "./onchain/WalletTransferSectionOnchain.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 
 enum ModalPage {
   Transfer,
@@ -93,6 +94,7 @@ export function WalletTransferModal(props: {
                   form.setValue("dest", address)
                   openTransfer()
                 }}
+                mode={WalletMode.SubstrateEVM}
               />
             ),
           },

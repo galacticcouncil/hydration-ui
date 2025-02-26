@@ -1,7 +1,7 @@
 import { TransactionResponse } from "@ethersproject/providers"
 import { FC, useState } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
 import { ModalScrollableContent } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
@@ -43,6 +43,7 @@ import { Binary, TxEvent } from "polkadot-api"
 import { assethub } from "@polkadot-api/descriptors"
 import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
+import { QUERY_KEYS } from "utils/queryKeys"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -59,6 +60,7 @@ type Props = TxProps & {
     signed: SubmittableExtrinsic<"promise"> | Observable<TxEvent>,
   ) => void
   onSignError?: (error: unknown) => void
+  isLoading: boolean
 }
 
 export const ReviewTransactionForm: FC<Props> = (props) => {
@@ -66,6 +68,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
+  const queryClient = useQueryClient()
 
   const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
 
@@ -141,6 +144,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           const evmTx = await wallet.signer.sendDispatch(
             txData,
             props.xcallMeta?.srcChain,
+            {
+              onNetworkSwitch: () => {
+                queryClient.refetchQueries(
+                  QUERY_KEYS.evmChainInfo(account?.displayAddress ?? ""),
+                )
+              },
+            },
           )
           return props.onEvmSigned({ evmTx, tx })
         }
@@ -208,7 +218,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     wallet?.signer instanceof EthereumSigner ? evmWalletReady : true
 
   const isLoading =
-    transactionValues.isLoading || signTx.isLoading || isChangingFeePaymentAsset
+    transactionValues.isLoading ||
+    signTx.isLoading ||
+    isChangingFeePaymentAsset ||
+    props.isLoading
   const hasMultipleFeeAssets =
     props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false
