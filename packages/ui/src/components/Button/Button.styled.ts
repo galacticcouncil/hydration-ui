@@ -274,11 +274,21 @@ export const SButtonIcon = styled.button(
     justify-content: center;
     align-items: center;
 
-    color: ${theme.icons.onSurface};
+    color: ${theme.icons.onContainer};
+    border-radius: 32px;
     cursor: pointer;
 
     &:hover {
-      color: ${theme.controls.solid.activeHover};
+      background: ${theme.controls.dim.hover};
+    }
+
+    &[data-state="open"],
+    &:active {
+      color: ${theme.icons.primary};
+
+      svg {
+        fill: ${theme.icons.primary};
+      }
     }
 
     &[disabled] {
