@@ -509,6 +509,17 @@ export const useClaimReward = () => {
       )
         .multipliedBy(100)
         .toString()
+
+      console.log({
+        slashedPoints,
+        pointsAfterIncreasing,
+        currentPoints: points,
+        currentPosition: stakePosition.stake.toString(),
+        increaseStakeBy: increaseStake,
+
+        stakeWeight,
+        MIN_SLASH_POINTS,
+      })
     }
 
     let extraPayablePercentageHuman: string | undefined
