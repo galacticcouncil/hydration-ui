@@ -21,12 +21,10 @@ import { Web3ConnectExternalAccount } from "./Web3ConnectExternalAccount"
 import { Web3ConnectSubstrateAccount } from "./Web3ConnectSubstrateAccount"
 import { useDebounce, useShallowCompareEffect } from "react-use"
 import { useWalletAssetsTotals } from "sections/wallet/assets/WalletAssets.utils"
-import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
 import { useTranslation } from "react-i18next"
 import { arraySearch } from "utils/helpers"
 import NoActivities from "assets/icons/NoActivities.svg?react"
 import { Text } from "components/Typography/Text/Text"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Search } from "components/Search/Search"
 import { Alert } from "components/Alert/Alert"
 import {
@@ -49,13 +47,9 @@ const getAccountComponentByType = (type: WalletProviderType | null) => {
   return Web3ConnectSubstrateAccount
 }
 
-const AccountComponent: FC<
-  Account & {
-    isReady: boolean
-  }
-> = ({ isReady, ...account }) => {
+const AccountComponent: FC<Account> = (account) => {
   const Component = getAccountComponentByType(account.provider)
-  const { setBalanceMap } = useAccountBalanceMap()
+  const { balanceMap, setBalanceMap } = useAccountBalanceMap()
 
   const isCompatibleProvider = COMPATIBLE_WALLET_PROVIDERS.includes(
     account.provider,
@@ -76,27 +70,23 @@ const AccountComponent: FC<
     }
   }, [{ isLoading }])
 
-  return isReady ? (
-    <Component {...account} balance={balanceTotal} />
-  ) : (
-    <Web3ConnectAccountPlaceholder {...account} />
+  return (
+    <Component
+      {...account}
+      balance={isLoading ? balanceMap[account.address] : balanceTotal}
+    />
   )
 }
 
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
-  isLoading?: boolean
-}> = ({ accounts = [], isLoading = false }) => {
+}> = ({ accounts = [] }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { isLoaded } = useRpcProvider()
 
   const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
 
   const { balanceMap } = useAccountBalanceMap()
-
-  const isReady =
-    !isLoading && accounts.every(({ address }) => balanceMap.has(address))
 
   const [searchVal, setSearchVal] = useState("")
   const [search, setSearch] = useState("")
@@ -111,7 +101,6 @@ export const Web3ConnectAccountList: FC<{
   )
 
   const accountList = useMemo(() => {
-    if (!isReady) return accounts
     const searched = search
       ? arraySearch(accounts as Required<Account>[], search, [
           "name",
@@ -140,20 +129,19 @@ export const Web3ConnectAccountList: FC<{
         return 1
       }
 
-      const aBalance = balanceMap.get(a.address)
-      const bBalance = balanceMap.get(b.address)
+      const aBalance = balanceMap[a.address]
+      const bBalance = balanceMap[b.address]
       if (!aBalance || !bBalance) return 0
       return BigNumber(bBalance).comparedTo(aBalance)
     })
   }, [
-    isReady,
-    accounts,
-    search,
-    mode,
-    filter,
     account?.address,
     account?.provider,
+    accounts,
     balanceMap,
+    filter,
+    mode,
+    search,
   ])
 
   const noResults = accountList.length === 0
@@ -209,13 +197,10 @@ export const Web3ConnectAccountList: FC<{
 
       <SAccountsScrollableContainer>
         {accountList?.map((account) => (
-          <Fragment key={`${account.provider}-${account.address}`}>
-            {isLoaded ? (
-              <AccountComponent {...account} isReady={isReady} />
-            ) : (
-              <Web3ConnectAccountPlaceholder />
-            )}
-          </Fragment>
+          <AccountComponent
+            key={`${account.provider}-${account.address}`}
+            {...account}
+          />
         ))}
       </SAccountsScrollableContainer>
     </SAccountsContainer>

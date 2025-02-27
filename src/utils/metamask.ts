@@ -1,5 +1,5 @@
 import { Buffer } from "buffer"
-import { Maybe } from "utils/helpers"
+import { identity, Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
@@ -7,6 +7,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { PROVIDER_URLS, useProviderRpcUrlStore } from "api/provider"
 import { wsToHttp } from "utils/formatting"
+import { uniqBy } from "utils/rx"
 
 const METAMASK_LIKE_CHECKS = [
   "isTalisman",
@@ -54,9 +55,7 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
 
   if (chain === "hydration") {
     const primaryRpcUrl = useProviderRpcUrlStore.getState().rpcUrl
-    rpcUrls = [...PROVIDER_URLS]
-      .sort((url) => (url === primaryRpcUrl ? -1 : 1))
-      .map(wsToHttp)
+    rpcUrls = uniqBy(identity, [primaryRpcUrl, ...PROVIDER_URLS]).map(wsToHttp)
   }
 
   return {
