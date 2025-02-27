@@ -6,29 +6,29 @@ import { Text } from "components/Typography/Text/Text"
 import Chevron from "assets/icons/ChevronFull.svg?react"
 import { Icon } from "components/Icon/Icon"
 
-export type TDropdownItem = {
-  key: string
+export type TDropdownItem<TKey extends string = string> = {
+  key: TKey
   icon?: ReactNode
   label: ReactNode
   onSelect?: () => void
   disabled?: boolean
 }
 
-export type DropdownProps = {
-  items: Array<TDropdownItem>
+export type DropdownProps<TKey extends string = string> = {
+  items: Array<TDropdownItem<TKey>>
   children: ReactNode
-  onSelect: (key: TDropdownItem) => void
+  onSelect: (key: TDropdownItem<TKey>) => void
   asChild?: boolean
   align?: "start" | "center" | "end"
 }
 
-export const Dropdown: React.FC<DropdownProps> = ({
+export const Dropdown = <TKey extends string = string>({
   items,
   children,
   onSelect,
   asChild,
   align,
-}) => {
+}: DropdownProps<TKey>) => {
   return (
     <DropdownMenu.Root>
       {asChild ? (

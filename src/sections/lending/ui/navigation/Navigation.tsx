@@ -21,6 +21,11 @@ export const Navigation = () => {
         icon={<AssetsIcon width={15} height={15} />}
         label={t("header.borrow.markets.title")}
       />
+      <SubNavigationTabLink
+        to={ROUTES.transactions}
+        icon={<AssetsIcon width={15} height={15} />}
+        label={t("header.borrow.transactions.title")}
+      />
     </SubNavigation>
   )
 }
