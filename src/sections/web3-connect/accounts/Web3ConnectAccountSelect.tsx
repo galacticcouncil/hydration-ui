@@ -26,6 +26,7 @@ import { Icon } from "components/Icon/Icon"
 import { genesisHashToChain } from "utils/helpers"
 import { useCopy } from "hooks/useCopy"
 import { useTranslation } from "react-i18next"
+import Skeleton from "react-loading-skeleton"
 
 type Props = {
   name: string
@@ -127,6 +128,7 @@ export const Web3ConnectAccountSelect = ({
             )}
           </div>
           <Text fs={14} color="graySoft">
+            {!balance && <Skeleton width={50} height={12} />}
             {balance && !balanceSymbol && (
               <DisplayValue
                 value={BigNumber(balance)}
