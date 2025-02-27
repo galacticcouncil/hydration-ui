@@ -31,7 +31,9 @@ export function isEvmAccount(address?: string) {
   try {
     const { prefixBytes } = H160
     const pub = decodeAddress(address, true)
-    return Buffer.from(pub.subarray(0, prefixBytes.length)).equals(prefixBytes)
+    return Buffer.from(pub.subarray(0, prefixBytes.length)).equals(
+      new Uint8Array(prefixBytes),
+    )
   } catch {
     return false
   }
@@ -53,7 +55,11 @@ export class H160 {
     const addressBytes = Buffer.from(this.address.slice(2), "hex")
     return encodeAddress(
       new Uint8Array(
-        Buffer.concat([H160.prefixBytes, addressBytes, Buffer.alloc(8)]),
+        Buffer.concat(
+          [H160.prefixBytes, addressBytes, Buffer.alloc(8)].map(
+            (buffer) => new Uint8Array(buffer),
+          ),
+        ),
       ),
       useUnifiedFormat ? 0 : HYDRA_ADDRESS_PREFIX,
     )

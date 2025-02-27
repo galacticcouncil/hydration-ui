@@ -36,7 +36,7 @@ export const LendingMarketsPage = () => {
         name="market-search"
         placeholder="Search by token name, symbol or address"
         value={search}
-        setValue={setSearch}
+        onChange={setSearch}
         sx={{ mb: [20, 30] }}
       />
       <MarketAssetsTable search={search} />
