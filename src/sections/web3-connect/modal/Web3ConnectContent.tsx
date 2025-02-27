@@ -127,10 +127,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
                   }
                 />
               ) : (
-                <Web3ConnectAccountList
-                  isLoading={isAccountsLoading}
-                  accounts={accounts}
-                />
+                <Web3ConnectAccountList accounts={accounts} />
               )}
               <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
             </>
