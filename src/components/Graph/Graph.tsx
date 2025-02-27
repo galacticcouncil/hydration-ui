@@ -28,7 +28,14 @@ const labelProps = {
 }
 
 type Props = {
-  data: { x: number; y: number; current: boolean; currentSecondary?: boolean }[]
+  className?: string
+  data: {
+    x: number
+    y: number
+    current: boolean
+    currentSecondary?: boolean
+    currentThird?: boolean
+  }[]
   labelX?: string | ReactElement
   labelY?: string | ReactElement
   withoutReferencedLine?: boolean
@@ -56,10 +63,15 @@ const CustomizedDot = ({
   if (payload.currentSecondary) {
     return <CurrentLoyaltyFactor x={cx - 10} y={cy - 10} color="#F0DA73" />
   }
+
+  if (payload.currentThird) {
+    return <CurrentLoyaltyFactor x={cx - 10} y={cy - 10} color="#57B3EB" />
+  }
+
   return null
 }
 export const Graph: FC<Props> = memo(
-  ({ data, labelX, labelY, withoutReferencedLine, offset }) => {
+  ({ data, labelX, labelY, withoutReferencedLine, offset, className }) => {
     const current = withoutReferencedLine
       ? undefined
       : data.find((point) => point.current)
@@ -67,8 +79,12 @@ export const Graph: FC<Props> = memo(
       ? undefined
       : data.find((point) => point.currentSecondary)
 
+    const currentThird = withoutReferencedLine
+      ? undefined
+      : data.find((point) => point.currentThird)
+
     return (
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" className={className}>
         <SChart data={data} margin={offset}>
           <CartesianGrid stroke={theme.colors.white} opacity={0.05} />
           {labelX && typeof labelX !== "string" ? (
@@ -125,6 +141,7 @@ export const Graph: FC<Props> = memo(
             stroke="url(#lineGradient)"
             strokeLinecap="round"
             strokeWidth={4}
+            isAnimationActive={false}
             dot={(props) => <CustomizedDot {...props} key={props.key} />}
           />
           {withoutReferencedLine ? null : (
@@ -159,6 +176,22 @@ export const Graph: FC<Props> = memo(
                 segment={[
                   { y: 0, x: currentSecondary?.x },
                   { y: currentSecondary?.y, x: currentSecondary?.x },
+                ]}
+              />
+              <ReferenceLine
+                stroke="black"
+                strokeDasharray="3 3"
+                segment={[
+                  { y: currentThird?.y, x: 0 },
+                  { y: currentThird?.y, x: currentThird?.x },
+                ]}
+              />
+              <ReferenceLine
+                stroke="black"
+                strokeDasharray="3 3"
+                segment={[
+                  { y: 0, x: currentThird?.x },
+                  { y: currentThird?.y, x: currentThird?.x },
                 ]}
               />
             </>

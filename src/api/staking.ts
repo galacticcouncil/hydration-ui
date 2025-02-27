@@ -96,9 +96,8 @@ export const useStake = (address: string | undefined) => {
 const getStake = (api: ApiPromise, address: string | undefined) => async () => {
   const collectionId = await api.consts.staking.nftCollectionId
 
-  const [staking, minStake, uniques] = await Promise.all([
+  const [staking, uniques] = await Promise.all([
     api.query.staking.staking(),
-    api.consts.staking.minStake,
     getUniques(api, address, collectionId.toString()),
   ])
 
@@ -109,7 +108,6 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
     accumulatedRewardPerStake:
       staking?.accumulatedRewardPerStake?.toBigNumber() as BN,
     potReservedBalance: staking?.potReservedBalance?.toBigNumber() as BN,
-    minStake: minStake.toBigNumber() as BN,
     positionId: stakePositionId,
     stakePosition: stakePositionId
       ? await getStakingPosition(api, stakePositionId)()
@@ -182,6 +180,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsPerPeriod,
     timePointsWeight,
     actionPointsWeight,
+    stakeWeight,
   ] = await Promise.all([
     api.consts.staking.palletId,
     api.consts.staking.periodLength,
@@ -189,6 +188,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     api.consts.staking.timePointsPerPeriod,
     api.consts.staking.timePointsWeight,
     api.consts.staking.actionPointsWeight,
+    api.consts.staking.currentStakeWeight,
   ])
 
   return {
@@ -198,6 +198,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsPerPeriod: timePointsPerPeriod.toBigNumber(),
     timePointsWeight: timePointsWeight.toBigNumber().div(1000000),
     actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000),
+    stakeWeight: stakeWeight.toString(),
   }
 }
 
@@ -361,4 +362,14 @@ export const usePendingVotesIds = () => {
 
     return { newPendingVotesIds, oldPendingVotesIds }
   })
+}
+
+export const useMinStake = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.minStake,
+    async () => await api.consts.staking.minStake.toString(),
+    { enabled: isLoaded },
+  )
 }
