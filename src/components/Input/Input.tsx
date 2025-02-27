@@ -12,6 +12,7 @@ export type InputProps = {
   unit?: string
   type?: string
   placeholder?: string
+  autoFocus?: boolean
   error?: string
   withLabel?: boolean
   className?: string
@@ -29,6 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       label,
       type = "text",
       placeholder,
+      autoFocus,
       name,
       withLabel,
       tooltip,
@@ -61,6 +63,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             placeholder={placeholder}
             role="presentation"
             autoComplete="off"
+            autoFocus={autoFocus}
             {...p}
           />
           {iconEnd}

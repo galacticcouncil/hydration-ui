@@ -32,6 +32,7 @@ export const SItem = styled(DropdownMenu.Item)`
   transition: all ${theme.transitions.default};
 
   cursor: pointer;
+  white-space: nowrap;
 
   &:focus-visible,
   &:hover {
@@ -44,7 +45,7 @@ export const SItem = styled(DropdownMenu.Item)`
     color: ${theme.colors.pink500};
   }
 `
-export const SContent = styled(DropdownMenu.Content)`
+export const SContent = styled(DropdownMenu.Content)<{ fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -60,8 +61,15 @@ export const SContent = styled(DropdownMenu.Content)`
 
   overflow-y: scroll;
   max-height: 400px;
+  min-width: fit-content;
 
   z-index: ${theme.zIndices.toast};
+
+  ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: var(--radix-dropdown-menu-trigger-width);
+    `}
 `
 export const STrigger = styled(DropdownMenu.Trigger)`
   all: unset;
