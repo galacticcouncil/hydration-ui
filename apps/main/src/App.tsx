@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { Toaster } from "sonner"
 
-import { InvalidateOnBlock } from "@/components/InvalidateOnBlock/InvalidateOnBlock"
+import { InvalidateOnBlock } from "@/components/InvalidateOnBlock"
 import { Page404 } from "@/components/Page404"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { RpcProvider } from "@/providers/rpcProvider"

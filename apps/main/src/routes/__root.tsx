@@ -1,4 +1,3 @@
-import { Web3ConnectModal } from "@galacticcouncil/web3-connect"
 import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import {
@@ -19,6 +18,18 @@ const MobileTabBar = lazy(async () => ({
   default: await import(
     "@/modules/layout/components/MobileTabBar/MobileTabBar"
   ).then((m) => m.MobileTabBar),
+}))
+
+const TransactionManager = lazy(async () => ({
+  default: await import("@/modules/transactions/TransactionManager").then(
+    (m) => m.TransactionManager,
+  ),
+}))
+
+const Web3ConnectModal = lazy(async () => ({
+  default: await import("@galacticcouncil/web3-connect").then(
+    (m) => m.Web3ConnectModal,
+  ),
 }))
 
 const Subscriptions = () => {
@@ -48,6 +59,7 @@ function RootComponent() {
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
       {isApiLoaded && <Subscriptions />}
       {hasTopNavbar ? <ProviderRpcSelect /> : <MobileTabBar />}
+      <TransactionManager />
       <Web3ConnectModal />
     </main>
   )

@@ -71,7 +71,7 @@ export const SProgress = styled.div<{
       }
     }
 
-    animation: shrink ${closeTime}ms ease-in-out forwards;
+    animation: shrink ${closeTime}ms linear forwards;
 
     width: 100%;
     height: 2px;

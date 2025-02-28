@@ -3,7 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --build"
+  },
   "dependencies": {
-    "buffer": "^6.0.3"
+    "@types/uuid": "^10.0.0",
+    "buffer": "^6.0.3",
+    "uuid": "^11.0.5"
   }
 }

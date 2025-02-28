@@ -1,4 +1,7 @@
+import { PolkadotSigner } from "polkadot-api"
+
 import { WalletProviderType } from "@/config/providers"
+import { EthereumSigner } from "@/signers/EthereumSigner"
 import { WalletError } from "@/utils/errors"
 
 export type SubscriptionFn = (
@@ -9,8 +12,6 @@ export type WalletAccount = {
   address: string
   name: string
   provider: WalletProviderType
-  wallet: Wallet
-  signer?: unknown
 }
 
 export type WalletData = {
@@ -24,15 +25,11 @@ export type WalletData = {
 }
 
 type WalletExtension = {
-  extension: unknown
-  signer: unknown
+  extension?: unknown
+  signer: PolkadotSigner | EthereumSigner | undefined
 }
 
-interface Signer {
-  sign?: (address: string, payload: string) => unknown
-}
-
-interface Connector {
+interface WalletConnector {
   enable: () => unknown
   disconnect: () => void
   getAccounts: () => Promise<WalletAccount[]>
@@ -46,6 +43,5 @@ interface WalletErrors {
 export interface Wallet
   extends WalletData,
     WalletExtension,
-    Connector,
-    Signer,
+    WalletConnector,
     WalletErrors {}

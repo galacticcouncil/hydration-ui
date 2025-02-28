@@ -34,7 +34,7 @@ const options = [
 ]
 
 export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
-  const { t } = useTranslation(["common", "wallet"])
+  const { t } = useTranslation(["common", "trade"])
   const { slippage, slippageTwap, setValue } = useTradeSettings()
 
   const {
@@ -65,8 +65,8 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
       }}
     >
       <ModalHeader
-        title={t("wallet:swap.settings.modal.title")}
-        description={t("wallet:swap.settings.modal.description")}
+        title={t("trade:swap.settings.modal.title")}
+        description={t("trade:swap.settings.modal.description")}
       />
       <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
         <Controller
@@ -74,7 +74,7 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
           control={control}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <Collapsible
-              label={t("wallet:swap.settings.modal.option.single")}
+              label={t("trade:swap.settings.modal.option.single")}
               trigger={t("hide")}
             >
               <Flex justify="space-between" align="start" py={4}>
@@ -115,7 +115,7 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
           control={control}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <Collapsible
-              label={t("wallet:swap.settings.modal.option.split")}
+              label={t("trade:swap.settings.modal.option.split")}
               trigger={t("hide")}
             >
               <Flex justify="space-between" align="start" py={4}>

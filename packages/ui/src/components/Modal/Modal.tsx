@@ -1,7 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
-import { FC, forwardRef, ReactNode } from "react"
+import { createContext, FC, forwardRef, ReactNode, useContext } from "react"
 
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
@@ -20,6 +20,14 @@ import {
   SModalTitle,
   SModalWrapper,
 } from "./Modal.styled"
+
+export type ModalVariant = "auto" | "drawer" | "popup"
+
+const ModalContext = createContext<{
+  variant: ModalVariant
+}>({
+  variant: "auto",
+})
 
 const ModalRoot = DialogPrimitive.Root
 
@@ -83,10 +91,10 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   customHeader,
   customTitle,
   ...props
-}) => {
-  const { gte } = useBreakpoints()
+}: FlexProps & ModalHeaderProps) => {
+  const { variant } = useContext(ModalContext)
 
-  if (!gte("md")) {
+  if (variant === "drawer") {
     return (
       <DrawerHeader
         title={title}
@@ -132,40 +140,48 @@ const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
 ModalFooter.displayName = "ModalFooter"
 
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
+  variant?: ModalVariant
   disableInteractOutside?: boolean
 }
 
 const Modal = ({
   children,
+  variant = "auto",
   disableInteractOutside = false,
   ...props
 }: ModalProps) => {
   const { gte } = useBreakpoints()
 
-  if (!gte("md")) {
+  const isDrawer = variant === "auto" ? !gte("md") : variant === "drawer"
+
+  if (isDrawer) {
     return (
-      <DrawerRoot {...props}>
-        <DrawerContent
+      <ModalContext.Provider value={{ variant }}>
+        <DrawerRoot {...props}>
+          <DrawerContent
+            onInteractOutside={
+              disableInteractOutside ? (e) => e.preventDefault() : undefined
+            }
+          >
+            {children}
+          </DrawerContent>
+        </DrawerRoot>
+      </ModalContext.Provider>
+    )
+  }
+
+  return (
+    <ModalContext.Provider value={{ variant }}>
+      <ModalRoot {...props}>
+        <ModalContent
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
           }
         >
           {children}
-        </DrawerContent>
-      </DrawerRoot>
-    )
-  }
-
-  return (
-    <ModalRoot {...props}>
-      <ModalContent
-        onInteractOutside={
-          disableInteractOutside ? (e) => e.preventDefault() : undefined
-        }
-      >
-        {children}
-      </ModalContent>
-    </ModalRoot>
+        </ModalContent>
+      </ModalRoot>
+    </ModalContext.Provider>
   )
 }
 

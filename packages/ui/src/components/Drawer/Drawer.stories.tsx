@@ -92,7 +92,7 @@ const WithCustomHeaderTemplate = (
         title="Lorem ipsum"
         onOpenChange={setOpen}
         customTitle={
-          <Box m="calc(-1 * var(--modal-content-padding))">
+          <Box m="var(--modal-content-inset)">
             <Input
               placeholder="Search tokens..."
               variant="embedded"
@@ -103,10 +103,7 @@ const WithCustomHeaderTemplate = (
         }
       >
         <DrawerBody p={0}>
-          <Box
-            mx="calc(-1 * var(--modal-content-padding))"
-            mt="calc(-1 * var(--modal-content-padding))"
-          >
+          <Box mx="var(--modal-content-inset)" mt="var(--modal-content-inset)">
             {Array.from({ length: 100 }).map((_, i) => (
               <Flex
                 key={i}

@@ -2,6 +2,7 @@ import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { EIP1193Provider } from "viem"
 
 import { WalletProviderType } from "@/config/providers"
+import { EthereumSigner } from "@/signers/EthereumSigner"
 import { EIP6963AnnounceProviderEvent } from "@/types/evm"
 import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
 import { NotInstalledError } from "@/utils/errors"
@@ -23,7 +24,7 @@ export class BaseEIP1193Wallet implements Wallet {
 
   _rawExtension: EIP1193Provider | undefined
   _extension: Required<EIP1193Provider> | undefined
-  _signer: unknown
+  _signer: EthereumSigner | undefined
   _enabled: boolean = false
 
   onAccountsChanged: SubscriptionFn | undefined
@@ -93,7 +94,7 @@ export class BaseEIP1193Wallet implements Wallet {
       this._enabled = true
       this._extension = extension
       this._signer = address
-        ? undefined // @TODO - create Ethereum Signer using viem
+        ? new EthereumSigner(address, extension)
         : undefined
 
       this.subscribeAccounts(this.onAccountsChanged)
@@ -133,8 +134,6 @@ export class BaseEIP1193Wallet implements Wallet {
       address: address,
       provider: this.provider,
       name: shortenAccountAddress(address),
-      wallet: this,
-      signer: this.signer,
     }
   }
 

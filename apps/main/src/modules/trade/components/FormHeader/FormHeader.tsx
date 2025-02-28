@@ -11,7 +11,7 @@ import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
 export const swapTabs = ["market", "dca", "cross-chain"] as const
 
 export const FormHeader = () => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation("trade")
   const [openSettings, setOpenSettings] = useState(false)
 
   return (

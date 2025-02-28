@@ -130,7 +130,7 @@ const Content = ({
           ref={divRef}
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          m="calc(-1 * var(--modal-content-padding))"
+          m="var(--modal-content-inset)"
           sx={{
             height: ["calc(100vh - 120px)", 450],
             outline: "none",

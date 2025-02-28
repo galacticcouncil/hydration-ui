@@ -53,6 +53,7 @@ export const SModalWrapper = styled(Overlay)`
 
 export const SModalContent = styled(Content)`
   --modal-content-padding: 20px;
+  --modal-content-inset: calc(var(--modal-content-padding) * -1);
 
   position: fixed;
   inset: 0;

@@ -30,7 +30,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
         title={t("rpc.change.modal.title")}
         customHeader={
           <Flex direction="column">
-            <Separator my={10} mx="calc(-1 * var(--modal-content-padding))" />
+            <Separator my={10} mx="var(--modal-content-inset)" />
             <Flex align="center" justify="space-between">
               <Box>
                 <Text>{t("rpc.change.modal.autoMode.title")}</Text>
@@ -50,10 +50,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
             </Flex>
             {!autoMode && (
               <>
-                <Separator
-                  my={16}
-                  mx="calc(-1 * var(--modal-content-padding))"
-                />
+                <Separator my={16} mx="var(--modal-content-inset)" />
                 <RpcForm />
               </>
             )}

@@ -1,8 +1,8 @@
-import { Signer as InjectedSigner } from "@polkadot/api/types"
 import {
-  InjectedAccount,
+  connectInjectedExtension,
   InjectedExtension,
-} from "@polkadot/extension-inject/types"
+  PolkadotSigner,
+} from "polkadot-api/pjs-signer"
 
 import { WalletProviderType } from "@/config/providers"
 import { WALLET_DAPP_NAME } from "@/config/wallet"
@@ -17,7 +17,7 @@ export class BaseSubstrateWallet implements Wallet {
   logo = ""
 
   _extension: InjectedExtension | undefined
-  _signer: InjectedSigner | undefined
+  _signer: PolkadotSigner | undefined
   _enabled: boolean = false
 
   get extension() {
@@ -49,6 +49,14 @@ export class BaseSubstrateWallet implements Wallet {
     return err
   }
 
+  setSigner = (address: string) => {
+    const accounts = this.getInjectedAccounts()
+    const account = accounts.find((acc) => acc.address === address)
+    if (account) {
+      this._signer = account.polkadotSigner
+    }
+  }
+
   enable = async () => {
     if (!this.installed || !this.rawExtension) {
       throw new NotInstalledError(
@@ -57,7 +65,10 @@ export class BaseSubstrateWallet implements Wallet {
       )
     }
     try {
-      const rawExtension = await this.rawExtension.enable?.(WALLET_DAPP_NAME)
+      const rawExtension = await connectInjectedExtension(
+        this.accessor,
+        WALLET_DAPP_NAME,
+      )
 
       if (!rawExtension) {
         throw new NotInstalledError(
@@ -66,36 +77,43 @@ export class BaseSubstrateWallet implements Wallet {
         )
       }
 
-      const extension: InjectedExtension = {
-        ...rawExtension,
-        name: this.accessor,
-        version: this.rawExtension.version ?? "?",
+      const accounts = rawExtension.getAccounts()
+
+      if (!accounts.length) {
+        throw new AuthError(
+          `${this.title} is installed but no accounts are available. Please check your wallet.`,
+          this,
+        )
       }
 
+      const defaultSigner = accounts[0].polkadotSigner
+
       this._enabled = true
-      this._extension = extension
-      this._signer = extension?.signer
+      this._extension = rawExtension
+      this._signer = defaultSigner
     } catch (err) {
       throw this.transformError(err as WalletError)
     }
   }
 
-  getAccounts = async (): Promise<WalletAccount[]> => {
+  getInjectedAccounts = () => {
     if (!this._extension) {
       throw new NotInstalledError(
         `Refresh the browser if ${this.title} is already installed.`,
         this,
       )
     }
-    const accounts = await this._extension.accounts.get()
+    return this._extension.getAccounts()
+  }
+
+  getAccounts = async (): Promise<WalletAccount[]> => {
+    const accounts = this.getInjectedAccounts()
     const accountsWithWallet = accounts.map((account) => {
       return {
         address: account.address,
         name: account.name ?? "",
         provider: this.provider,
-        wallet: this,
-        signer: this._extension?.signer,
-      }
+      } satisfies WalletAccount
     })
 
     return accountsWithWallet
@@ -108,20 +126,16 @@ export class BaseSubstrateWallet implements Wallet {
         this,
       )
     }
-    const unsubscribe = this._extension.accounts.subscribe(
-      (accounts: InjectedAccount[]) => {
-        const accountsWithWallet = accounts.map((account) => {
-          return {
-            address: account.address,
-            name: account.name ?? "",
-            provider: this.provider,
-            wallet: this,
-            signer: this._extension?.signer,
-          }
-        })
-        callback(accountsWithWallet)
-      },
-    )
+    const unsubscribe = this._extension.subscribe((accounts) => {
+      const accountsWithWallet = accounts.map((account) => {
+        return {
+          address: account.address,
+          name: account.name ?? "",
+          provider: this.provider,
+        }
+      })
+      callback(accountsWithWallet)
+    })
 
     return unsubscribe
   }

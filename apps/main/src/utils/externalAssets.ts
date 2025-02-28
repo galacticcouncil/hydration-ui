@@ -1,7 +1,6 @@
 import { Asset, findNestedKey } from "@galacticcouncil/sdk"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain } from "@galacticcouncil/xcm-core"
-// @ts-expect-error - idk
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { XcmV3Junction } from "@polkadot/types/lookup"
 //import { assethub, pendulum } from "api/external"

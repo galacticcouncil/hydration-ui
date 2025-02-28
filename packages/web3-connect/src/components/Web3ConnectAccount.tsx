@@ -1,5 +1,6 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { shortenAccountAddress } from "@galacticcouncil/utils"
 
 import { SAccountItem } from "@/components/Web3ConnectAccount.styled"
 import { useAccount } from "@/hooks/useAccount"
@@ -43,7 +44,12 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
         <Flex direction="column">
           <Text fs={14}>{account.name}</Text>
           <Text fs={13} color={getToken("text.medium")}>
-            {account.address}
+            <Text as="span" display={["none", "block"]}>
+              {account.displayAddress}
+            </Text>
+            <Text as="span" display={["block", "none"]}>
+              {shortenAccountAddress(account.displayAddress, 12)}
+            </Text>
           </Text>
         </Flex>
       </Flex>

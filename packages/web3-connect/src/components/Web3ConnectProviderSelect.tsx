@@ -1,4 +1,11 @@
-import { Box, Flex, Grid, Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  Grid,
+  ModalBody,
+  ModalHeader,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useCallback, useMemo } from "react"
 import { groupBy, isNot, prop } from "remeda"
 
@@ -48,49 +55,54 @@ export const Web3ConnectProviderSelect: React.FC<
   }, [enable, disabledCompatible])
 
   return (
-    <Flex direction="column" gap={20}>
-      <Box>
-        <Text mb={4}>Installed</Text>
-        <Grid columns={[2, 4]} gap={10}>
-          {providers.length > 0 && mode === WalletMode.Default && (
-            <SProviderButton onClick={onLastConnectedClick}>
-              <Web3ConnectProviderIcons
-                providers={providers.map(prop("type"))}
-              />
-              <Text fs={[12, 14]} sx={{ mt: 8 }} align="center">
-                Last connected
-              </Text>
-            </SProviderButton>
-          )}
-          {installed.map(getWalletData).map((props) => (
-            <Web3ConnectProviderButton
-              type="button"
-              key={props.provider}
-              {...props}
-            />
-          ))}
-        </Grid>
-        {disabledCompatible.length > 0 && (
-          <SProviderButton
-            sx={{ width: "100%", mt: 8, py: 10 }}
-            onClick={enableCompatible}
-          >
-            Connect all
-          </SProviderButton>
-        )}
-      </Box>
-      <Box>
-        <Text mb={4}>Other</Text>
-        <Grid columns={[2, 4]} gap={10}>
-          {other.map(getWalletData).map((props) => (
-            <Web3ConnectProviderButton
-              type="button"
-              key={props.provider}
-              {...props}
-            />
-          ))}
-        </Grid>
-      </Box>
-    </Flex>
+    <>
+      <ModalHeader title="Connect wallet" />
+      <ModalBody>
+        <Flex direction="column" gap={20}>
+          <Box>
+            <Text mb={4}>Installed</Text>
+            <Grid columns={[2, 4]} gap={10}>
+              {providers.length > 0 && mode === WalletMode.Default && (
+                <SProviderButton onClick={onLastConnectedClick}>
+                  <Web3ConnectProviderIcons
+                    providers={providers.map(prop("type"))}
+                  />
+                  <Text fs={[12, 14]} sx={{ mt: 8 }} align="center">
+                    Last connected
+                  </Text>
+                </SProviderButton>
+              )}
+              {installed.map(getWalletData).map((props) => (
+                <Web3ConnectProviderButton
+                  type="button"
+                  key={props.provider}
+                  {...props}
+                />
+              ))}
+            </Grid>
+            {disabledCompatible.length > 0 && (
+              <SProviderButton
+                sx={{ width: "100%", mt: 8, py: 10 }}
+                onClick={enableCompatible}
+              >
+                Connect all
+              </SProviderButton>
+            )}
+          </Box>
+          <Box>
+            <Text mb={4}>Other</Text>
+            <Grid columns={[2, 4]} gap={10}>
+              {other.map(getWalletData).map((props) => (
+                <Web3ConnectProviderButton
+                  type="button"
+                  key={props.provider}
+                  {...props}
+                />
+              ))}
+            </Grid>
+          </Box>
+        </Flex>
+      </ModalBody>
+    </>
   )
 }
