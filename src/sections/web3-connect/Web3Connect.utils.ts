@@ -6,7 +6,7 @@ import {
   useQuery,
 } from "@tanstack/react-query"
 import { useShallow } from "hooks/useShallow"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { usePrevious } from "react-use"
 import {
   NamespaceType,
@@ -408,6 +408,8 @@ export const useEvmWalletReadiness = () => {
   const { account } = useEvmAccount()
   const address = account?.address ?? ""
 
+  const [hasTriedNetworkSwitch, setHasTriedNetworkSwitch] = useState(false)
+
   const isEvmExtension =
     isMetaMask(wallet?.extension) || isMetaMaskLike(wallet?.extension)
 
@@ -447,6 +449,12 @@ export const useEvmWalletReadiness = () => {
       staleTime: 0,
       initialData: true,
       refetchInterval: 5000,
+      onSuccess: (isReady) => {
+        if (!isReady && !hasTriedNetworkSwitch) {
+          setHasTriedNetworkSwitch(true)
+          requestNetworkSwitch(wallet?.extension)
+        }
+      },
     },
   )
 }
