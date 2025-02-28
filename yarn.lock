@@ -2447,10 +2447,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^5.5.0":
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.5.0.tgz#a3795bd443ff792d914d5df908f4b4049e5b69e9"
-  integrity sha512-k8zRpL3MhS8+avFJ3hcI8qGoe8Kc5tI9auPgC2ivLvaQgs9u8SNoXw/jYljWRcVR+feNJPOzDU/SE5kqRX6TIA==
+"@galacticcouncil/sdk@^5.6.0":
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-5.6.0.tgz#783e9fa3fb8ffb791192ab1b79571bdf753d36a7"
+  integrity sha512-gJ6cHY64FpBdYPj7ej0iknFsz9ErNiUCKP74+5yCCEp16nMcDu7lWCtMsRVA8XCYJxW0aRo0+pj9MYpJfOwkFQ==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2474,10 +2474,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^7.5.2":
-  version "7.5.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.5.2.tgz#fc612edec9c110520481181113cbab598fc29470"
-  integrity sha512-cdsVMp5LTvld36ERN64jEKWooxFHQeNTO3AJv1+4OS8dhgjXSjTXmoz6gjb5UV0xX9DyuYlVsZfYiGLt/Iw3Ig==
+"@galacticcouncil/xcm-cfg@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.6.0.tgz#29af237c620efe5332d86340209b7cb80f1ab281"
+  integrity sha512-oYRPRpotAdfbFBlerPO0AtbmD6p00K10mwVhDMG8k7Qqshh4eEBQ/RajbGsWvLM55GAiz8K5ukaJ5pTyYsYiIg==
   dependencies:
     "@galacticcouncil/xcm-core" "^6.3.0"
 
