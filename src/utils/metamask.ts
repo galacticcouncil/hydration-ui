@@ -48,8 +48,6 @@ const chainIconMap: { [key: string]: string[] } = {
   hydradx: ["https://app.hydration.net/favicon/apple-touch-icon.png"],
 }
 
-const BLACKLISTED_EVM_RPCS = ["wss://rpc.hydradx.cloud"]
-
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
   const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
 
@@ -57,9 +55,7 @@ const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
 
   if (chain === "hydration") {
     const primaryRpcUrl = useProviderRpcUrlStore.getState().rpcUrl
-    rpcUrls = uniqBy(identity, [primaryRpcUrl, ...PROVIDER_URLS])
-      .filter((rpc) => !BLACKLISTED_EVM_RPCS.includes(rpc))
-      .map(wsToHttp)
+    rpcUrls = uniqBy(identity, [primaryRpcUrl, ...PROVIDER_URLS]).map(wsToHttp)
   }
 
   return {
