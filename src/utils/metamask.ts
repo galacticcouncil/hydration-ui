@@ -1,13 +1,10 @@
 import { Buffer } from "buffer"
-import { identity, Maybe } from "utils/helpers"
+import { Maybe } from "utils/helpers"
 import type { ExternalProvider } from "@ethersproject/providers"
 import type EventEmitter from "events"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
-import { PROVIDER_URLS, useProviderRpcUrlStore } from "api/provider"
-import { wsToHttp } from "utils/formatting"
-import { uniqBy } from "utils/rx"
 
 const METAMASK_LIKE_CHECKS = [
   "isTalisman",
@@ -51,17 +48,10 @@ const chainIconMap: { [key: string]: string[] } = {
 const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
   const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
 
-  let rpcUrls = [...chainProps.rpcUrls.default.http]
-
-  if (chain === "hydration") {
-    const primaryRpcUrl = useProviderRpcUrlStore.getState().rpcUrl
-    rpcUrls = uniqBy(identity, [primaryRpcUrl, ...PROVIDER_URLS]).map(wsToHttp)
-  }
-
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),
     chainName: chainProps.name,
-    rpcUrls,
+    rpcUrls: chainProps.rpcUrls.default.http as string[],
     iconUrls: chainIconMap[chain] || [],
     nativeCurrency: chainProps.nativeCurrency,
     blockExplorerUrls: chainProps.blockExplorers?.default
@@ -135,7 +125,6 @@ type RequestNetworkSwitchOptions = {
   onSwitch?: () => void
   chain?: string
 }
-
 export async function requestNetworkSwitch(
   provider: Maybe<MetaMaskLikeProvider>,
   options: RequestNetworkSwitchOptions = {},
@@ -145,11 +134,6 @@ export async function requestNetworkSwitch(
   const params = getAddEvmChainParams(options.chain ?? "hydration")
 
   try {
-    // request to add chain first, wallet will skip this if the chain and rpc combination already exists
-    await provider.request({
-      method: "wallet_addEthereumChain",
-      params: [params],
-    })
     await provider
       .request({
         method: "wallet_switchEthereumChain",
