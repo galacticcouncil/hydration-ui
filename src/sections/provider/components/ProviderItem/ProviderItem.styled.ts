@@ -35,6 +35,8 @@ export const SItem = styled.div`
   align-items: center;
 
   padding: 14px;
+  padding-left: var(--modal-content-padding);
+
   cursor: pointer;
 
   &:hover ${SCircle} {
