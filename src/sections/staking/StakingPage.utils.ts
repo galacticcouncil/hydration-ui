@@ -493,9 +493,10 @@ export const useClaimReward = () => {
         MIN_SLASH_POINTS,
       )
 
-      const pointsAfterIncreasing = BigNumber(points)
-        .minus(slashedPoints)
-        .toString()
+      const pointsAfterIncreasing = BigNumber.max(
+        BigNumber(points).minus(slashedPoints),
+        BN_0,
+      ).toString()
 
       const increasePaylablePercentage = wasm.sigmoid(
         pointsAfterIncreasing,
