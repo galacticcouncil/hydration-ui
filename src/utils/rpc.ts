@@ -93,7 +93,7 @@ async function jsonRpcFetch(
           reject(error)
         }
       },
-      { timeout: 5000 },
+      { timeout: 10000 },
     )
   })
 }
