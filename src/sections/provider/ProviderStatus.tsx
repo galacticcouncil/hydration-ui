@@ -78,9 +78,9 @@ function ProviderStatusSuccess() {
 }
 
 type ProviderStatusProps = {
-  timestamp: number
-  parachainBlockNumber: number
-  ping?: number
+  timestamp: number | null
+  parachainBlockNumber: number | null
+  ping: number | null
   className?: string
   side?: "left" | "top" | "bottom" | "right"
   showPing?: boolean
@@ -113,11 +113,13 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
       <Text
         fs={9}
         lh={9}
-        sx={{ flex: "row", gap: 4, align: "center" }}
+        sx={{ flex: "row", gap: 4, align: "center", height: 10 }}
         css={{ letterSpacing: "1px", color }}
         className={className}
       >
-        <span>{t("value", { value: parachainBlockNumber })}</span>
+        {parachainBlockNumber && (
+          <span>{t("value", { value: parachainBlockNumber })}</span>
+        )}
 
         {status === "online" && <ProviderStatusSuccess key={timestamp ?? 0} />}
 

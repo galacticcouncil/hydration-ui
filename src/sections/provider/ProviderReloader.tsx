@@ -12,6 +12,9 @@ const ProviderSelectButton = lazy(async () => ({
   ).ProviderSelectButton,
 }))
 
+// Don't reset these queries
+const QUERY_KEY_RESET_WHITELIST = ["pingRpc"]
+
 export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()
   const rpcVersion = useRemount(rpcUrlList)
@@ -30,8 +33,7 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
       queryClient
         .resetQueries({
           predicate: (query) =>
-            // Don't reset the pingRpc query
-            !(query.queryKey as string[])[0].includes("pingRpc"),
+            !QUERY_KEY_RESET_WHITELIST.includes(query.queryKey[0] as string),
         })
         .then(() => {
           setVersion((prev) => prev + 1)

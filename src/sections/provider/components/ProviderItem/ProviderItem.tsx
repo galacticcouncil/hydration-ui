@@ -48,6 +48,11 @@ export const ProviderItemLayout = ({
       />
     )
 
+  const isLoading =
+    typeof blockNumber === "undefined" ||
+    typeof timestamp === "undefined" ||
+    typeof ping === "undefined"
+
   return (
     <SItem onClick={() => onClick?.(url)} className={className}>
       <div>
@@ -62,7 +67,9 @@ export const ProviderItemLayout = ({
         </Text>
       </div>
       <div sx={{ flex: "row", align: "center", height: 30 }}>
-        {blockNumber && timestamp && ping ? (
+        {isLoading ? (
+          <Spinner size={14} />
+        ) : (
           <ProviderStatus
             timestamp={timestamp}
             parachainBlockNumber={blockNumber}
@@ -70,8 +77,6 @@ export const ProviderItemLayout = ({
             side="left"
             ping={ping}
           />
-        ) : (
-          <Spinner size={14} />
         )}
       </div>
 
