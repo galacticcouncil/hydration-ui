@@ -925,6 +925,45 @@ function getReferralCodeFromTx(tx: SubmittableExtrinsic<"promise">) {
   return code
 }
 
+const normalizeHumanizedString = (str: string) => str.replace(/,/g, "")
+
+export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
+  if (!tx) return null
+
+  let assetId = null
+  let amount = null
+  try {
+    const json: any = tx.method.toHuman()
+    const isSwapCall =
+      (json.method === "sell" || json.method === "buy") &&
+      (json.section === "router" || json.section === "omnipool")
+
+    const isTransferCall =
+      json.method === "transfer" && json.section === "currencies"
+
+    if (isSwapCall) {
+      const amountArg = json.args.amount || json.args.amount_in
+      assetId = normalizeHumanizedString(json.args.asset_in)
+      amount = normalizeHumanizedString(amountArg)
+    }
+
+    if (isTransferCall) {
+      assetId = normalizeHumanizedString(json.args.currency_id)
+      amount = normalizeHumanizedString(json.args.amount)
+    }
+  } catch {
+    return {
+      assetId,
+      amount,
+    }
+  }
+
+  return {
+    assetId,
+    amount,
+  }
+}
+
 function getAssetIdsFromTx(tx: SubmittableExtrinsic<"promise">) {
   if (!tx) return []
 

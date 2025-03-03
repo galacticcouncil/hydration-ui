@@ -1,7 +1,7 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { Summary } from "components/Summary/Summary"
 import { Text } from "components/Typography/Text/Text"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { useTransactionValues } from "./ReviewTransactionForm.utils"
@@ -16,6 +16,15 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { getAssetFromTx } from "sections/transaction/ReviewTransaction.utils"
+import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { Alert } from "components/Alert"
+import { useUserBorrowSummary } from "api/borrow"
+import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
+import { useSpotPrice } from "api/spotPrice"
+import { BN_0 } from "utils/constants"
+import { CheckBox } from "components/CheckBox/CheckBox"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -29,6 +38,7 @@ type ReviewTransactionSummaryProps = {
 }
 
 export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
+  tx,
   transactionValues,
   xcallMeta,
   editFeePaymentAssetEnabled,
@@ -54,6 +64,28 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   const nonceValue = shouldUsePermit
     ? permitNonce?.toString()
     : nonce?.toString()
+
+  const assetInTx = getAssetFromTx(tx)
+  const assetId = assetInTx?.assetId
+  const { getAsset } = useAssets()
+  const asset = assetId ? getAsset(assetId) : null
+  const isATokenInvolved = asset && !!A_TOKEN_UNDERLYING_ID_MAP[asset.id]
+
+  const { data: spotPrice } = useSpotPrice(assetId, "10")
+  const { data: userBorrowSummary } = useUserBorrowSummary()
+
+  const currentHealthFactor = userBorrowSummary?.healthFactor ?? "-1"
+  const futureHealthFactor = calculateNewHealthFactor(
+    assetInTx?.assetId ?? "",
+    asset?.decimals ?? 0,
+    assetInTx?.amount ?? "",
+    spotPrice?.spotPrice ?? BN_0,
+    BN(userBorrowSummary?.totalBorrowsMarketReferenceCurrency ?? BN_0),
+    BN(userBorrowSummary?.totalCollateralMarketReferenceCurrency ?? BN_0),
+    userBorrowSummary?.currentLiquidationThreshold ?? "0",
+  )
+
+  const [riskAccepted, setRiskAccepted] = useState(!isATokenInvolved)
 
   return (
     <div>
@@ -175,10 +207,40 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                 },
               ]
             : []),
+          ...(isATokenInvolved
+            ? [
+                {
+                  label: t(
+                    "liquidity.reviewTransaction.modal.detail.healthfactor",
+                  ),
+                  content: (
+                    <HealthFactorChange
+                      healthFactor={currentHealthFactor}
+                      futureHealthFactor={futureHealthFactor}
+                    />
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
       {referralCode && (
         <ReviewReferralCodeWrapper referralCode={referralCode} />
+      )}
+      {isATokenInvolved && (
+        <>
+          <Text fs={14} sx={{ my: 10 }}>
+            <CheckBox
+              checked={riskAccepted}
+              onChange={(checked) => setRiskAccepted(checked)}
+              label="I acknowledge the risks involved."
+              sx={{ flex: "row", align: "center" }}
+            />
+          </Text>
+          <Alert variant="warning">
+            This action would affect health factor on your Borrow position
+          </Alert>
+        </>
       )}
     </div>
   )
@@ -240,4 +302,41 @@ const ReferralsLinkFee = () => {
   ) : (
     <Skeleton width={100} height={16} />
   )
+}
+
+function calculateNewHealthFactor(
+  assetId: string,
+  assetDecimals: number,
+  amount: string,
+  spotPrice: BN,
+  userTotalBorrows: BN,
+  userTotalCollateral: BN,
+  currentLiquidationThreshold: string,
+) {
+  if (
+    !assetId ||
+    !assetDecimals ||
+    !amount ||
+    !spotPrice.gt(0) ||
+    !userTotalBorrows.gt(0) ||
+    !userTotalCollateral.gt(0) ||
+    !currentLiquidationThreshold
+  ) {
+    return "-1"
+  }
+
+  const amountToWithdraw = BN(amount).shiftedBy(-assetDecimals)
+  const amountToWithdrawInReferenceCurrency =
+    amountToWithdraw.multipliedBy(spotPrice)
+  const userTotalCollateralAfterWithdraw = userTotalCollateral.minus(
+    amountToWithdrawInReferenceCurrency,
+  )
+
+  const hf = calculateHealthFactorFromBalancesBigUnits({
+    collateralBalanceMarketReferenceCurrency: userTotalCollateralAfterWithdraw,
+    borrowBalanceMarketReferenceCurrency: userTotalBorrows,
+    currentLiquidationThreshold,
+  })
+
+  return hf.toString()
 }
