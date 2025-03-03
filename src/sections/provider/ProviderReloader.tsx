@@ -27,11 +27,17 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
     const shouldReset = curr > prev
 
     if (shouldReset) {
-      queryClient.resetQueries().then(() => {
-        setVersion((prev) => prev + 1)
-        queryClient.invalidateQueries(["provider"])
-        queryClient.refetchQueries(["provider"])
-      })
+      queryClient
+        .resetQueries({
+          predicate: (query) =>
+            // Don't reset the pingRpc query
+            !(query.queryKey as string[])[0].includes("pingRpc"),
+        })
+        .then(() => {
+          setVersion((prev) => prev + 1)
+          queryClient.invalidateQueries(["provider"])
+          queryClient.refetchQueries(["provider"])
+        })
     }
   }, [prevRpcVersion, queryClient, rpcVersion])
 

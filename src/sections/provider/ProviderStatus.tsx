@@ -1,32 +1,21 @@
-import { u32, u64 } from "@polkadot/types"
 import { Text } from "components/Typography/Text/Text"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/helpers"
 import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { useInterval } from "react-use"
+import { RpcInfoResult } from "utils/rpc"
 
-function useElapsedTimeStatus(time: Maybe<u64>) {
+export const useElapsedTimeStatus = (timestamp: RpcInfoResult["timestamp"]) => {
   const [now, setNow] = useState(Date.now())
 
-  const ref = useRef<number>(0)
-  useEffect(() => {
-    function update() {
-      const now = Date.now()
-      const nextTimer = 1000 - (now % 1000)
-      ref.current = window.setTimeout(update, nextTimer)
-      setNow(now)
-    }
+  useInterval(() => {
+    setNow(Date.now())
+  }, 1000)
 
-    update()
-    return () => {
-      window.clearInterval(ref.current)
-    }
-  }, [])
+  if (timestamp === null) return "offline"
 
-  if (time == null) return "offline"
-
-  const diff = now - time.toNumber()
+  const diff = now - timestamp
 
   // Instead of 24s (usual target), use 32s to not show warnings all the time
   if (diff < 32_000) return "online" as const
@@ -89,8 +78,8 @@ function ProviderStatusSuccess() {
 }
 
 type ProviderStatusProps = {
-  timestamp: Maybe<u64>
-  parachainBlockNumber: Maybe<u32>
+  timestamp: number
+  parachainBlockNumber: number
   ping?: number
   className?: string
   side?: "left" | "top" | "bottom" | "right"
@@ -130,9 +119,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
       >
         <span>{t("value", { value: parachainBlockNumber })}</span>
 
-        {status === "online" && (
-          <ProviderStatusSuccess key={timestamp?.toNumber() ?? 0} />
-        )}
+        {status === "online" && <ProviderStatusSuccess key={timestamp ?? 0} />}
 
         {status === "offline" && (
           <span
@@ -156,7 +143,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
           </svg>
         )}
       </Text>
-      {ping && (
+      {ping && ping < Infinity && (
         <Text
           fs={8}
           lh={14}
@@ -164,7 +151,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
             ping < 250 ? "green400" : ping < 500 ? "warningOrange200" : "red300"
           }
         >
-          {t("value", { value: ping })} ms
+          {t("value", { value: Math.round(ping) })} ms
         </Text>
       )}
     </InfoTooltip>

@@ -1,18 +1,15 @@
 import { useActiveProvider, useProviderRpcUrlStore } from "api/provider"
 import { Modal } from "components/Modal/Modal"
-import { useState } from "react"
 
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { ProviderSelectForm } from "sections/provider/ProviderSelectForm"
-import { useRpcStore } from "state/store"
 import {
   SAutoModeActiveContainer,
   SSwitchContainer,
   SSWitchContent,
 } from "./ProviderSelectModal.styled"
-import { DeleteModal } from "./components/DeleteModal/DeleteModal"
 import { Button } from "components/Button/Button"
 import { ProviderItem } from "sections/provider/components/ProviderItem/ProviderItem"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -22,10 +19,8 @@ export function ProviderSelectModal(props: {
   onClose: () => void
 }) {
   const { isLoaded } = useRpcProvider()
-  const { setRpcUrl, autoMode, setAutoMode } = useProviderRpcUrlStore()
-  const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
+  const { autoMode, setAutoMode } = useProviderRpcUrlStore()
   const { t } = useTranslation()
-  const { removeRpc } = useRpcStore()
 
   const activeProvider = useActiveProvider()
 
@@ -89,26 +84,7 @@ export function ProviderSelectModal(props: {
               {t("rpc.change.modal.close")}
             </Button>
           ) : (
-            <>
-              <ProviderSelectForm
-                onSave={(rpcUrl) => {
-                  setRpcUrl(rpcUrl)
-                }}
-                onRemove={(rpc) => {
-                  setRemoveRpcUrl(rpc)
-                }}
-                onClose={props.onClose}
-              />
-              {!!removeRpcUrl && (
-                <DeleteModal
-                  onBack={() => setRemoveRpcUrl(undefined)}
-                  onConfirm={() => {
-                    removeRpc(removeRpcUrl)
-                    setRemoveRpcUrl(undefined)
-                  }}
-                />
-              )}
-            </>
+            <ProviderSelectForm onClose={props.onClose} />
           )}
         </div>
       </Modal>

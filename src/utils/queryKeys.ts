@@ -359,6 +359,7 @@ export const QUERY_KEYS = {
     "ethereumAccountBalance",
     address,
   ],
+  pingRpc: (url: string) => ["pingRpc", url],
 } as const
 
 export const WS_QUERY_KEYS = {
