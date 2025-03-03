@@ -8,34 +8,27 @@ import { wsToHttp } from "utils/formatting"
  * @returns The round-trip time in milliseconds, or `Infinity` if the request timed out or failed.
  */
 export async function pingRpc(url: string, timeoutMs = 5000): Promise<number> {
-  return new Promise((resolve) => {
-    requestIdleCallback(
-      async () => {
-        const start = performance.now()
+  const start = performance.now()
 
+  try {
+    const end = await Promise.race([
+      (async () => {
         try {
-          const end = await Promise.race([
-            (async () => {
-              try {
-                await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
-                return performance.now()
-              } catch {
-                return Infinity
-              }
-            })(),
-            new Promise<number>((resolve) =>
-              setTimeout(() => resolve(Infinity), timeoutMs),
-            ),
-          ])
-
-          resolve(end - start)
+          await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
+          return performance.now()
         } catch {
-          resolve(Infinity)
+          return Infinity
         }
-      },
-      { timeout: timeoutMs },
-    )
-  })
+      })(),
+      new Promise<number>((resolve) =>
+        setTimeout(() => resolve(Infinity), timeoutMs),
+      ),
+    ])
+
+    return end - start
+  } catch {
+    return Infinity
+  }
 }
 
 export type RpcInfoResult = {
@@ -67,29 +60,40 @@ async function jsonRpcFetch(
   url: string,
   method: string,
   params: string[] = [],
-) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: 1,
-      jsonrpc: "2.0",
-      method,
-      params,
-    }),
+): Promise<any> {
+  return new Promise<any>((resolve, reject) => {
+    requestIdleCallback(
+      async () => {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: 1,
+              jsonrpc: "2.0",
+              method,
+              params,
+            }),
+          })
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch")
+          }
+
+          const json = await res.json()
+
+          if (!json.result) {
+            throw new Error("Invalid RPC response")
+          }
+
+          resolve(json.result)
+        } catch (error) {
+          reject(error)
+        }
+      },
+      { timeout: 5000 },
+    )
   })
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch")
-  }
-
-  const json = await res.json()
-
-  if (!json.result) {
-    throw new Error("Failed to fetch")
-  }
-
-  return json.result
 }
