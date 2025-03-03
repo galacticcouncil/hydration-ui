@@ -62,6 +62,7 @@ import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { persist } from "zustand/middleware"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -588,17 +589,28 @@ export function getWalletModeIcon(mode: WalletMode) {
   } catch (e) {}
 }
 
-export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, string>
-  setBalanceMap: (address: string, balance: string) => void
-}>((set) => ({
-  balanceMap: new Map(),
-  setBalanceMap: (address, balance) => {
-    set(({ balanceMap }) => ({
-      balanceMap: new Map(balanceMap).set(address, balance),
-    }))
-  },
-}))
+export const useAccountBalanceMap = create(
+  persist<{
+    balanceMap: Record<string, string>
+    setBalanceMap: (address: string, balance: string) => void
+  }>(
+    (set) => ({
+      balanceMap: {},
+      setBalanceMap: (address, balance) => {
+        set(({ balanceMap }) => ({
+          balanceMap: {
+            ...balanceMap,
+            [address]: balance,
+          },
+        }))
+      },
+    }),
+    {
+      name: "account-balances",
+      version: 1,
+    },
+  ),
+)
 
 export const isHydrationIncompatibleAccount = (
   account: Account | null,

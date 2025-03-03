@@ -177,7 +177,7 @@ export const Web3ConnectExternalAccount: FC<
                 provider={externalWallet?.proxyWalletProvider}
                 name={name ?? "N/A"}
                 address={address}
-                balance={balanceMap.get(address)}
+                balance={balanceMap[address]}
                 onClick={async () => {
                   setAccount({
                     ...account,
