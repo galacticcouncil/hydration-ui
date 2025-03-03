@@ -28,7 +28,7 @@ export const Settings: FC = () => {
     <ModalRoot>
       <ModalTrigger asChild>
         <ButtonIcon>
-          <SettingsIcon />
+          <SettingsIcon size={19} />
         </ButtonIcon>
       </ModalTrigger>
       <ModalContent>

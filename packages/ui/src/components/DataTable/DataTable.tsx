@@ -3,6 +3,7 @@ import {
   flexRender,
   Row,
   RowData,
+  SortingState,
   Table as TableDef,
 } from "@tanstack/react-table"
 import { Fragment, useCallback, useMemo } from "react"
@@ -31,7 +32,9 @@ export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
     pageSize?: number
     globalFilter?: string
+    initialSorting?: SortingState
     data: TData[]
+    noResultsMessage?: string
     columns: {
       [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
     }[keyof TData][]
@@ -54,6 +57,8 @@ export function DataTable<TData>({
   isLoading,
   skeletonRowCount,
   globalFilter,
+  initialSorting,
+  noResultsMessage,
   renderSubComponent,
   onRowClick,
 }: DataTableProps<TData>) {
@@ -76,6 +81,7 @@ export function DataTable<TData>({
         pageIndex: 0,
         pageSize,
       },
+      sorting: initialSorting,
     },
     state: {
       globalFilter,
@@ -148,7 +154,9 @@ export function DataTable<TData>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length}>No results.</TableCell>
+              <TableCell colSpan={columns.length}>
+                {noResultsMessage ?? "No results."}
+              </TableCell>
             </TableRow>
           )}
         </TableBody>

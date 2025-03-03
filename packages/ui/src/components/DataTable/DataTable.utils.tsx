@@ -43,26 +43,39 @@ export const useDataTable = <TData extends RowData>({
   skeletonRowCount = 10,
   ...options
 }: UseDataTableOptions<TData>) => {
-  const { screen } = useBreakpoints()
+  const { screen, gte } = useBreakpoints()
 
   const columnVisibility = useMemo(() => {
     if (!screen) return
 
     return options.columns.reduce(
       (prev, curr) => {
-        const id = isAccessorColumn(curr) ? curr.accessorKey : curr.id
+        const id = isAccessorColumn(curr)
+          ? (curr.id ?? curr.accessorKey)
+          : curr.id
         if (!id) return prev
         const visibility = curr.meta?.visibility
+        const gteBp = curr.meta?.gteBp
         if (visibility) {
-          prev[id] = visibility.includes(screen)
+          return {
+            ...prev,
+            [id]: visibility.includes(screen),
+          }
+        } else if (gteBp) {
+          return {
+            ...prev,
+            [id]: gte(gteBp),
+          }
         } else {
-          prev[id] = true
+          return {
+            ...prev,
+            [id]: true,
+          }
         }
-        return prev
       },
       {} as Record<string | keyof TData, boolean>,
     )
-  }, [options.columns, screen])
+  }, [options.columns, screen, gte])
 
   const data = useMemo(
     () => (isLoading ? Array(skeletonRowCount).fill({}) : options.data),

@@ -1,6 +1,7 @@
 import { forwardRef } from "react"
 
-import { ChevronRight, MoveUpRight } from "@/assets/icons/index"
+import { ChevronRight } from "@/assets/icons"
+import { MoveUpRight } from "@/assets/icons"
 
 import {
   CustomTextButtonProps,

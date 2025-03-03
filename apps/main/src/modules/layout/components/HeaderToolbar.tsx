@@ -25,7 +25,7 @@ export const HeaderToolbar: FC = () => {
       )}
       {/* PLACEHOLDER */}
       <ButtonIcon>
-        <Bell />
+        <Bell size={19} />
       </ButtonIcon>
       {hasTopNavbar && <Settings />}
       <HeaderWeb3ConnectButton />

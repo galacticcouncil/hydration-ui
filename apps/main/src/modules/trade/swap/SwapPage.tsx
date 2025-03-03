@@ -1,7 +1,8 @@
 import { Flex, Paper, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
-import { FormHeader } from "./components"
+import { FormHeader } from "@/modules/trade/components"
+
 import { SContainer } from "./SwapPage.styled"
 
 export const SwapPage = () => {
