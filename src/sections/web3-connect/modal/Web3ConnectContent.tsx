@@ -26,9 +26,10 @@ import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { TFunction } from "i18next"
 import { Web3ConnectExternalAccount } from "sections/web3-connect/accounts/Web3ConnectExternalAccount"
 
-type Props = {
+type Web3ConnectContentProps = {
   page: number
   direction?: number
+  disableAnimation?: boolean
   onClose: () => void
   onBack: () => void
   onSelect: () => void
@@ -39,7 +40,7 @@ type Props = {
   onCloseAddressBook: () => void
 }
 
-export const Web3ConnectContent: React.FC<Props> = ({
+export const Web3ConnectContent: React.FC<Web3ConnectContentProps> = ({
   onSelect,
   onRetry,
   onSwitch,
@@ -88,6 +89,8 @@ export const Web3ConnectContent: React.FC<Props> = ({
     ),
   })
 
+  console.log({ isAccountsLoading, isProvidersConnecting })
+
   return (
     <ModalContents
       {...props}
@@ -118,7 +121,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
             meta?.description ?? t("walletConnect.accountSelect.description"),
           content: (
             <>
-              {isAccountsLoading || isProvidersConnecting ? (
+              {isProvidersConnecting ? (
                 <Web3ConnectProviderPending
                   provider={
                     isAccountsLoading
@@ -127,7 +130,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
                   }
                 />
               ) : (
-                <Web3ConnectAccountList accounts={accounts} />
+                <Web3ConnectAccountList
+                  accounts={accounts}
+                  isLoading={isAccountsLoading}
+                />
               )}
               <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
             </>
