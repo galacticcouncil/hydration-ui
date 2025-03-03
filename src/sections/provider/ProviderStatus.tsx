@@ -80,10 +80,9 @@ function ProviderStatusSuccess() {
 type ProviderStatusProps = {
   timestamp: number | null
   parachainBlockNumber: number | null
-  ping: number | null
+  ping?: number | null
   className?: string
   side?: "left" | "top" | "bottom" | "right"
-  showPing?: boolean
 }
 
 export const ProviderStatus: React.FC<ProviderStatusProps> = ({
