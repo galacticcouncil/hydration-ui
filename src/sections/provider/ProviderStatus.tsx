@@ -6,7 +6,9 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useInterval } from "react-use"
 import { RpcInfoResult } from "utils/rpc"
 
-export const useElapsedTimeStatus = (timestamp: RpcInfoResult["timestamp"]) => {
+export const useElapsedTimeStatus = (
+  timestamp: RpcInfoResult["timestamp"] = null,
+) => {
   const [now, setNow] = useState(Date.now())
 
   useInterval(() => {
@@ -78,8 +80,8 @@ function ProviderStatusSuccess() {
 }
 
 type ProviderStatusProps = {
-  timestamp: number | null
-  parachainBlockNumber: number | null
+  timestamp?: number | null
+  parachainBlockNumber?: number | null
   ping?: number | null
   className?: string
   side?: "left" | "top" | "bottom" | "right"

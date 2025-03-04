@@ -84,7 +84,7 @@ export const useRpcsInfo = (urls: string[]) => {
     queries: urls.map((url) => ({
       queryKey: QUERY_KEYS.rpcInfo(url),
       queryFn: () => fetchRpcInfo(url),
-      retry: 0,
+      retry: 3,
       refetchInterval: PARACHAIN_BLOCK_TIME_MS / 2,
       keepPreviousData: true,
       refetchIntervalInBackground: true,

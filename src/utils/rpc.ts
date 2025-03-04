@@ -81,10 +81,7 @@ export async function fetchRpcInfo(url: string): Promise<RpcInfoResult> {
       blockNumber,
     }
   } else {
-    return {
-      timestamp: null,
-      blockNumber: null,
-    }
+    throw new Error("Failed to fetch RPC info")
   }
 }
 

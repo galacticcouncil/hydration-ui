@@ -152,12 +152,17 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
 
         <SProviderItemScrollableContainer>
           {providerList.map((provider, index) => {
+            const rpcInfoQuery = rpcsInfo[index]
+            const rpcPingAvgQuery = rpcsPingAvg[index]
+            const isLoading =
+              rpcInfoQuery.isLoading || rpcPingAvgQuery.isLoading
             return (
               <div sx={{ width: "auto" }} key={provider.url}>
                 <ProviderItem
                   {...provider}
-                  {...rpcsInfo[index]?.data}
-                  ping={rpcsPingAvg[index]?.data?.avgPing}
+                  {...rpcInfoQuery?.data}
+                  ping={rpcPingAvgQuery.data?.avgPing}
+                  isLoading={isLoading}
                   isActive={provider.url === rpcUrl}
                   onClick={setRpcUrl}
                   onRemove={removeRpc}

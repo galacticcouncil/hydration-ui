@@ -21,6 +21,7 @@ type ProviderItemProps = {
   onRemove?: (id: string) => void
   className?: string
   ping?: number | null
+  isLoading?: boolean
 } & Partial<RpcInfoResult>
 
 export const ProviderItemLayout = ({
@@ -34,6 +35,7 @@ export const ProviderItemLayout = ({
   timestamp,
   blockNumber,
   ping,
+  isLoading,
 }: ProviderItemProps & Partial<RpcInfoResult>) => {
   const [isEdit, setIsEdit] = useState(false)
 
@@ -45,11 +47,6 @@ export const ProviderItemLayout = ({
         onCancel={() => setIsEdit(false)}
       />
     )
-
-  const isLoading =
-    typeof blockNumber === "undefined" ||
-    typeof timestamp === "undefined" ||
-    typeof ping === "undefined"
 
   return (
     <SItem onClick={() => onClick?.(url)} className={className}>
