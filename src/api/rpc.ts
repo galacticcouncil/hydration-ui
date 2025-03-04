@@ -13,6 +13,7 @@ const rpcPingQueryOptions = (url: string, delay = 0) => ({
     if (delay > 0) await sleep(delay) // Stagger queries for more accurate measurment
     return pingRpc(url)
   },
+  retry: 0,
   refetchInterval: PARACHAIN_BLOCK_TIME_MS / 2,
   keepPreviousData: true,
   refetchIntervalInBackground: true,
@@ -38,7 +39,6 @@ export const useRpcsPingAvg = (urls: string[], maxSampleSize = 5) => {
         ...rpcPingQueryOptions(url),
         enabled: currentSampleSize < maxSampleSize,
         queryKey: QUERY_KEYS.rpcPingAvg(url),
-        meta: {},
         queryFn: async () => {
           const delay = index * 150
           if (delay > 0) await sleep(delay)
@@ -64,8 +64,10 @@ export const useRpcsPingAvg = (urls: string[], maxSampleSize = 5) => {
           )
 
           const avgPing =
-            trimmedPings.reduce((acc, curr) => acc + curr, 0) /
-            trimmedPings.length
+            trimmedPings.length > 0
+              ? trimmedPings.reduce((acc, curr) => acc + curr, 0) /
+                trimmedPings.length
+              : null
 
           return {
             ping,
@@ -82,6 +84,7 @@ export const useRpcsInfo = (urls: string[]) => {
     queries: urls.map((url) => ({
       queryKey: QUERY_KEYS.rpcInfo(url),
       queryFn: () => fetchRpcInfo(url),
+      retry: 0,
       refetchInterval: PARACHAIN_BLOCK_TIME_MS / 2,
       keepPreviousData: true,
       refetchIntervalInBackground: true,

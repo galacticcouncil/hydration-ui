@@ -3,6 +3,7 @@ import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
 import { Fragment, PropsWithChildren, lazy, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
+import { useStore } from "state/store"
 
 const ProviderSelectButton = lazy(async () => ({
   default: (
@@ -30,6 +31,7 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
     const shouldReset = curr > prev
 
     if (shouldReset) {
+      useStore.setState({ transactions: [] })
       queryClient
         .resetQueries({
           predicate: (query) =>
