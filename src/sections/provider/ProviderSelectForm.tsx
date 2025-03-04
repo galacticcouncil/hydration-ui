@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRpcProvider } from "providers/rpcProvider"
 import { prop, uniqBy } from "utils/rx"
 import { SProviderItemScrollableContainer } from "sections/provider/components/ProviderItem/ProviderItem.styled"
-import { useRpcsInfo, useRpcsPing } from "api/rpc"
+import { useRpcsInfo, useRpcsPingAvg } from "api/rpc"
 
 export type ProviderSelectFormProps = {
   onClose: () => void
@@ -105,7 +105,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   }, [rpcList, t])
 
   const rpcsInfo = useRpcsInfo(providerList.map(prop("url")))
-  const rpcsPing = useRpcsPing(providerList.map(prop("url")))
+  const rpcsPingAvg = useRpcsPingAvg(providerList.map(prop("url")))
 
   return (
     <>
@@ -157,7 +157,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
                 <ProviderItem
                   {...provider}
                   {...rpcsInfo[index]?.data}
-                  ping={rpcsPing[index]?.data}
+                  ping={rpcsPingAvg[index]?.data?.avgPing}
                   isActive={provider.url === rpcUrl}
                   onClick={setRpcUrl}
                   onRemove={removeRpc}

@@ -360,6 +360,7 @@ export const QUERY_KEYS = {
     address,
   ],
   rpcPing: (url: string) => ["rpcPing", url],
+  rpcPingAvg: (url: string) => ["rpcPingAvg", url],
   rpcInfo: (url: string) => ["rpcInfo", url],
 } as const
 

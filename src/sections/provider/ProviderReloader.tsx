@@ -13,7 +13,7 @@ const ProviderSelectButton = lazy(async () => ({
 }))
 
 // Don't reset these queries
-const QUERY_KEY_RESET_WHITELIST = ["rpcPing", "rpcInfo"]
+const QUERY_KEY_RESET_WHITELIST = ["rpcPing", "rpcPingAvg", "rpcInfo"]
 
 export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()

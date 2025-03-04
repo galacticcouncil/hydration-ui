@@ -13,27 +13,39 @@ export async function pingRpc(
   timeoutMs = 5000,
   signal?: AbortSignal,
 ): Promise<number> {
-  const start = performance.now()
+  return new Promise<number>((resolve) => {
+    requestIdleCallback(
+      async () => {
+        const start = performance.now()
 
-  try {
-    const end = await Promise.race([
-      (async () => {
         try {
-          await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash", [], signal)
-          return performance.now()
-        } catch {
-          return Infinity
-        }
-      })(),
-      new Promise<number>((resolve) =>
-        setTimeout(() => resolve(Infinity), timeoutMs),
-      ),
-    ])
+          const end = await Promise.race([
+            (async () => {
+              try {
+                await jsonRpcFetch(
+                  wsToHttp(url),
+                  "chain_getBlockHash",
+                  [],
+                  signal,
+                )
+                return performance.now()
+              } catch {
+                return Infinity
+              }
+            })(),
+            new Promise<number>((resolve) =>
+              setTimeout(() => resolve(Infinity), timeoutMs),
+            ),
+          ])
 
-    return end - start
-  } catch {
-    return Infinity
-  }
+          resolve(end - start)
+        } catch {
+          resolve(Infinity)
+        }
+      },
+      { timeout: timeoutMs },
+    )
+  })
 }
 
 export type RpcInfoResult = {
@@ -67,40 +79,29 @@ async function jsonRpcFetch(
   params: string[] = [],
   signal?: AbortSignal,
 ): Promise<any> {
-  return new Promise<any>((resolve, reject) => {
-    requestIdleCallback(
-      async () => {
-        try {
-          const res = await fetch(url, {
-            signal,
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              id: 1,
-              jsonrpc: "2.0",
-              method,
-              params,
-            }),
-          })
-
-          if (!res.ok) {
-            throw new Error("Failed to fetch")
-          }
-
-          const json = await res.json()
-
-          if (!json.result) {
-            throw new Error("Invalid RPC response")
-          }
-
-          resolve(json.result)
-        } catch (error) {
-          reject(error)
-        }
-      },
-      { timeout: 5000 },
-    )
+  const res = await fetch(url, {
+    signal,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: 1,
+      jsonrpc: "2.0",
+      method,
+      params,
+    }),
   })
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch")
+  }
+
+  const json = await res.json()
+
+  if (!json.result) {
+    throw new Error("Invalid RPC response")
+  }
+
+  return json.result
 }
