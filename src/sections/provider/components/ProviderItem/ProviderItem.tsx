@@ -11,8 +11,6 @@ import { useState } from "react"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 import { Spinner } from "components/Spinner/Spinner"
 import { RpcInfoResult } from "utils/rpc"
-import { useRpcInfo } from "api/rpc"
-import { PARACHAIN_BLOCK_TIME } from "utils/constants"
 
 type ProviderItemProps = {
   name: string
@@ -133,7 +131,7 @@ export const ProviderItemLayout = ({
   )
 }
 
-const ProviderItemActive: React.FC<
+export const ProviderItemActive: React.FC<
   ProviderItemProps & Partial<RpcInfoResult> & { ping?: number | null }
 > = (props) => {
   const { data: bestNumber } = useBestNumber()
@@ -147,19 +145,10 @@ const ProviderItemActive: React.FC<
   )
 }
 
-const PARACHAIN_BLOCK_TIME_MS = PARACHAIN_BLOCK_TIME.times(1000).toNumber()
-
 export const ProviderItem: React.FC<ProviderItemProps> = (props) => {
-  const { data: status } = useRpcInfo(props.url, {
-    refetchInterval: PARACHAIN_BLOCK_TIME_MS / 2,
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-    refetchIntervalInBackground: true,
-  })
-
   return props.isActive ? (
-    <ProviderItemActive {...props} {...status} />
+    <ProviderItemActive {...props} />
   ) : (
-    <ProviderItemLayout {...props} {...status} />
+    <ProviderItemLayout {...props} />
   )
 }

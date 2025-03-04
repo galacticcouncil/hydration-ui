@@ -11,8 +11,9 @@ import {
   SSWitchContent,
 } from "./ProviderSelectModal.styled"
 import { Button } from "components/Button/Button"
-import { ProviderItem } from "sections/provider/components/ProviderItem/ProviderItem"
+import { ProviderItemActive } from "sections/provider/components/ProviderItem/ProviderItem"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useRpcPing } from "api/rpc"
 
 export function ProviderSelectModal(props: {
   open: boolean
@@ -57,7 +58,7 @@ export function ProviderSelectModal(props: {
           </SSWitchContent>
           {autoMode && activeProvider.url && (
             <SAutoModeActiveContainer sx={{ mt: 14 }}>
-              <ProviderItem
+              <AutoModeActiveProvider
                 sx={{ opacity: isLoaded ? 1 : 0 }}
                 name={activeProvider.name}
                 url={activeProvider.url}
@@ -90,4 +91,11 @@ export function ProviderSelectModal(props: {
       </Modal>
     </>
   )
+}
+
+const AutoModeActiveProvider: React.FC<
+  React.ComponentPropsWithoutRef<typeof ProviderItemActive>
+> = (props) => {
+  const { data: ping } = useRpcPing(props.url)
+  return <ProviderItemActive {...props} ping={ping} />
 }

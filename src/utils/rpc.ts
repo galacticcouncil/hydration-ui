@@ -5,16 +5,21 @@ import { wsToHttp } from "utils/formatting"
  * Sends a ping request to the specified URL and measures the round-trip time.
  * @param url The URL to ping.
  * @param timeoutMs The maximum time to wait for a response, in milliseconds.
+ * @param signal `AbortSignal` to cancel the request.
  * @returns The round-trip time in milliseconds, or `Infinity` if the request timed out or failed.
  */
-export async function pingRpc(url: string, timeoutMs = 5000): Promise<number> {
+export async function pingRpc(
+  url: string,
+  timeoutMs = 5000,
+  signal?: AbortSignal,
+): Promise<number> {
   const start = performance.now()
 
   try {
     const end = await Promise.race([
       (async () => {
         try {
-          await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
+          await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash", [], signal)
           return performance.now()
         } catch {
           return Infinity
@@ -60,12 +65,14 @@ async function jsonRpcFetch(
   url: string,
   method: string,
   params: string[] = [],
+  signal?: AbortSignal,
 ): Promise<any> {
   return new Promise<any>((resolve, reject) => {
     requestIdleCallback(
       async () => {
         try {
           const res = await fetch(url, {
+            signal,
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -93,7 +100,7 @@ async function jsonRpcFetch(
           reject(error)
         }
       },
-      { timeout: 10000 },
+      { timeout: 5000 },
     )
   })
 }
