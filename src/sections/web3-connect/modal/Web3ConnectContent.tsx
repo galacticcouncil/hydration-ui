@@ -89,8 +89,6 @@ export const Web3ConnectContent: React.FC<Web3ConnectContentProps> = ({
     ),
   })
 
-  console.log({ isAccountsLoading, isProvidersConnecting })
-
   return (
     <ModalContents
       {...props}

@@ -68,7 +68,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
     if (shouldPing) {
       pingAllProvidersAndSort(({ url, time }) => {
-        console.log(url, time)
         queryClient.setQueryData(QUERY_KEYS.rpcPing(url), time)
 
         const sortedRpcList = uniqBy(identity, [url, ...PROVIDER_URLS])
