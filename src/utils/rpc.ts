@@ -14,37 +14,40 @@ export async function pingRpc(
   signal?: AbortSignal,
 ): Promise<number> {
   return new Promise<number>((resolve) => {
-    requestIdleCallback(
-      async () => {
-        const start = performance.now()
+    const execute = async () => {
+      const start = performance.now()
 
-        try {
-          const end = await Promise.race([
-            (async () => {
-              try {
-                await jsonRpcFetch(
-                  wsToHttp(url),
-                  "chain_getBlockHash",
-                  [],
-                  signal,
-                )
-                return performance.now()
-              } catch {
-                return Infinity
-              }
-            })(),
-            new Promise<number>((resolve) =>
-              setTimeout(() => resolve(Infinity), timeoutMs),
-            ),
-          ])
+      try {
+        const end = await Promise.race([
+          (async () => {
+            try {
+              await jsonRpcFetch(
+                wsToHttp(url),
+                "chain_getBlockHash",
+                [],
+                signal,
+              )
+              return performance.now()
+            } catch {
+              return Infinity
+            }
+          })(),
+          new Promise<number>((resolve) =>
+            setTimeout(() => resolve(Infinity), timeoutMs),
+          ),
+        ])
 
-          resolve(end - start)
-        } catch {
-          resolve(Infinity)
-        }
-      },
-      { timeout: timeoutMs },
-    )
+        resolve(end - start)
+      } catch {
+        resolve(Infinity)
+      }
+    }
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      requestIdleCallback(execute, { timeout: timeoutMs })
+    } else {
+      execute()
+    }
   })
 }
 
