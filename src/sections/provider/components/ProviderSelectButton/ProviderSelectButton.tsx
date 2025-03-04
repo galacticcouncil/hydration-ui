@@ -30,11 +30,8 @@ export const ProviderSelectButton = () => {
         <SButton
           tabIndex={0}
           onClick={() => setOpen(true)}
-          whileHover="animate"
-          css={{
-            zIndex: theme.zIndices.tablePlaceholder,
-            pointerEvents: isLoading ? "none" : "auto",
-          }}
+          whileHover={isLoading ? "initial" : "animate"}
+          css={{ zIndex: theme.zIndices.tablePlaceholder }}
         >
           <SName
             variants={{

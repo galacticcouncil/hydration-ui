@@ -131,11 +131,12 @@ export const ProviderItemLayout = ({
 export const ProviderItemActive: React.FC<
   ProviderItemProps & Partial<RpcInfoResult> & { ping?: number | null }
 > = (props) => {
-  const { data: bestNumber } = useBestNumber()
+  const { data: bestNumber, isLoading } = useBestNumber()
 
   return (
     <ProviderItemLayout
       {...props}
+      isLoading={isLoading}
       blockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
       timestamp={bestNumber?.timestamp?.toNumber()}
     />
