@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick, uniqBy } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -17,7 +17,7 @@ import {
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
-import { identity, undefinedNoop } from "utils/helpers"
+import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
@@ -144,16 +144,22 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const isTestnetRpcUrl = (url: string) =>
   PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
 
-export async function pingAllProvidersAndSort() {
+export async function pingAllProvidersAndSort(
+  onSuccess?: (rpc: { url: string; time: number }) => void,
+) {
+  const controller = new AbortController()
+  const signal = controller.signal
+
   const fastestRpc = await Promise.race(
     PROVIDER_URLS.map(async (url) => {
-      const time = await pingRpc(url)
+      const time = await pingRpc(url, 5000, signal)
       return { url, time }
     }),
   )
 
-  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
-  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+  controller.abort()
+
+  onSuccess?.(fastestRpc)
 }
 
 export const useProviderRpcUrlStore = create(

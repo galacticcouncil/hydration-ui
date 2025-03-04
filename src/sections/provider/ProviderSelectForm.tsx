@@ -5,7 +5,7 @@ import {
 } from "api/provider"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { Fragment, useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMutation } from "@tanstack/react-query"
@@ -19,22 +19,21 @@ import { ProviderItem } from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRpcProvider } from "providers/rpcProvider"
+import { prop, uniqBy } from "utils/rx"
+import { SProviderItemScrollableContainer } from "sections/provider/components/ProviderItem/ProviderItem.styled"
+import { useRpcsInfo, useRpcsPingAvg } from "api/rpc"
 
 export type ProviderSelectFormProps = {
-  onSave: (rpcUrl: string) => void
-  onRemove: (rpcUrl: string) => void
   onClose: () => void
 }
 
 export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
-  onRemove,
-  onSave,
   onClose,
 }) => {
   const { isLoaded } = useRpcProvider()
-  const { rpcUrl } = useProviderRpcUrlStore()
+  const { rpcUrl, setRpcUrl } = useProviderRpcUrlStore()
   const { t } = useTranslation()
-  const { rpcList, addRpc } = useRpcStore()
+  const { rpcList, addRpc, removeRpc } = useRpcStore()
   const [isRpcUrlChanging, setIsRpcUrlChanging] = useState(false)
 
   const fullRpcUrlList = [...PROVIDER_URLS, ...rpcList.map(({ url }) => url)]
@@ -87,6 +86,27 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     })
   })
 
+  const providerList = useMemo(() => {
+    const list = [
+      ...PROVIDER_LIST.map(({ name, url }) => ({
+        name,
+        url,
+        custom: false,
+      })),
+      ...rpcList.map((rpc, index) => ({
+        ...rpc,
+        name:
+          rpc.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
+        custom: true,
+      })),
+    ]
+
+    return uniqBy(prop("url"), list)
+  }, [rpcList, t])
+
+  const rpcsInfo = useRpcsInfo(providerList.map(prop("url")))
+  const rpcsPingAvg = useRpcsPingAvg(providerList.map(prop("url")))
+
   return (
     <>
       <form onSubmit={form.handleSubmit((a) => mutation.mutate(a))}>
@@ -130,43 +150,43 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
           </div>
         </SHeader>
 
-        {PROVIDER_LIST.map((provider, index) => {
-          return (
-            <Fragment key={provider.url}>
-              <ProviderItem
-                name={provider.name}
-                url={provider.url}
-                isActive={provider.url === rpcUrl}
-                onClick={() => onSave(provider.url)}
-              />
-              {index + 1 < PROVIDER_LIST.length && (
-                <Separator color="alpha0" opacity={0.06} />
-              )}
-            </Fragment>
-          )
-        })}
-
-        {rpcList?.map((rpc, index) => (
-          <Fragment key={rpc.url}>
-            <ProviderItem
-              name={
-                rpc.name ??
-                t("rpc.change.modal.name.label", { index: index + 1 })
-              }
-              url={rpc.url}
-              isActive={rpc.url === rpcUrl}
-              onClick={() => onSave(rpc.url)}
-              custom
-              onRemove={onRemove}
-            />
-            {index + 1 < rpcList.length && (
-              <Separator color="alpha0" opacity={0.06} />
-            )}
-          </Fragment>
-        ))}
+        <SProviderItemScrollableContainer>
+          {providerList.map((provider, index) => {
+            const rpcInfoQuery = rpcsInfo[index]
+            const rpcPingAvgQuery = rpcsPingAvg[index]
+            const isLoading =
+              rpcInfoQuery.isLoading || rpcPingAvgQuery.isLoading
+            return (
+              <div sx={{ width: "auto" }} key={provider.url}>
+                <ProviderItem
+                  {...provider}
+                  {...rpcInfoQuery?.data}
+                  ping={rpcPingAvgQuery.data?.avgPing}
+                  isLoading={isLoading}
+                  isActive={provider.url === rpcUrl}
+                  onClick={setRpcUrl}
+                  onRemove={removeRpc}
+                />
+                {index + 1 < PROVIDER_LIST.length && (
+                  <Separator color="alpha0" opacity={0.06} />
+                )}
+              </div>
+            )
+          })}
+        </SProviderItemScrollableContainer>
       </SContainer>
 
-      <Button variant="primary" fullWidth sx={{ mt: 50 }} onClick={onClose}>
+      <Separator
+        color="alpha0"
+        opacity={0.06}
+        sx={{
+          mb: "var(--modal-content-padding)",
+          width: "auto",
+          mx: "calc(var(--modal-content-padding) * -1)",
+        }}
+      />
+
+      <Button variant="primary" fullWidth onClick={onClose}>
         {t("rpc.change.modal.close")}
       </Button>
     </>

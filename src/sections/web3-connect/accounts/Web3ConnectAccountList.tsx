@@ -34,6 +34,7 @@ import {
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import BigNumber from "bignumber.js"
+import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
@@ -80,7 +81,8 @@ const AccountComponent: FC<Account> = (account) => {
 
 export const Web3ConnectAccountList: FC<{
   accounts?: Account[]
-}> = ({ accounts = [] }) => {
+  isLoading?: boolean
+}> = ({ accounts = [], isLoading }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
@@ -144,15 +146,16 @@ export const Web3ConnectAccountList: FC<{
     search,
   ])
 
-  const noResults = accountList.length === 0
-
   const hasSolanaAccounts = accountList.some(({ provider }) =>
     SOLANA_PROVIDERS.includes(provider),
   )
 
+  const shouldRenderFilter = accounts.length > 1 || isLoading
+  const shouldRenderNoResults = accountList.length === 0 && !isLoading
+
   return (
     <SAccountsContainer>
-      {accounts.length > 1 && (
+      {shouldRenderFilter && (
         <div sx={{ flex: "column", mb: [4, 8], gap: [12, 16] }}>
           <Search
             value={searchVal}
@@ -169,7 +172,7 @@ export const Web3ConnectAccountList: FC<{
         </div>
       )}
 
-      {noResults && (
+      {shouldRenderNoResults && (
         <>
           {search || filter !== WalletMode.Default ? (
             <div
@@ -196,6 +199,11 @@ export const Web3ConnectAccountList: FC<{
       )}
 
       <SAccountsScrollableContainer>
+        {isLoading &&
+          Array.from({ length: 5 }).map((_, index) => (
+            <Web3ConnectAccountPlaceholder key={index} />
+          ))}
+
         {accountList?.map((account) => (
           <AccountComponent
             key={`${account.provider}-${account.address}`}
