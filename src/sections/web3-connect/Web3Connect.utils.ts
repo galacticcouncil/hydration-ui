@@ -111,6 +111,16 @@ export const useEvmAccount = () => {
     },
   )
 
+  useEffect(() => {
+    if (isEvmWalletExtension(wallet?.extension)) {
+      // Refetch chainId on chainChanged event from wallet extension
+      wallet.extension.on("chainChanged", evm.refetch)
+      return () => {
+        wallet.extension.off("chainChanged", evm.refetch)
+      }
+    }
+  }, [evm, wallet])
+
   if (!address) {
     return {
       isBound: false,
