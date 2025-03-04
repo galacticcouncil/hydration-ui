@@ -43,8 +43,8 @@ export const StakingInputSection = ({
           <Stake
             loading={!!loading}
             positionId={data?.positionId}
-            minStake={data?.minStake}
             balance={data?.availableBalance ?? BN_0}
+            stakedBalance={data?.stakePosition?.stake}
           />
         ) : (
           <Unstake
