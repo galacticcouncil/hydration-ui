@@ -26,7 +26,7 @@ export const AssetPrice = ({
 
   const isDollar = isRealUSD || isStableCoin
 
-  const { price, isLoading } = priceRaw[assetId]
+  const { price, isLoading } = priceRaw[assetId] ?? {}
 
   const Wrapper = wrapper ?? <Text />
   const Content = (

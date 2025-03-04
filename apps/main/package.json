@@ -19,9 +19,12 @@
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "i18n": "i18next src/**/*.{js,jsx,ts,tsx}",
-    "postinstall": "papi"
+    "postinstall": "papi",
+    "codegen:indexer": "graphql-codegen --require dotenv/config --config src/codegen/indexer.ts dotenv_config_path=.env.development",
+    "codegen:squid": "graphql-codegen --require dotenv/config --config src/codegen/squid.ts dotenv_config_path=.env.development"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.1",
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",
@@ -36,7 +39,10 @@
     "@tanstack/react-virtual": "^3.13.0",
     "@tanstack/router-devtools": "^1.75.0",
     "@tanstack/router-plugin": "^1.76.0",
+    "@tanstack/zod-adapter": "^1.105.0",
+    "big.js": "^6.2.2",
     "date-fns": "^4.1.0",
+    "graphql": "^16.10.0",
     "i18next": "^23.16.4",
     "polkadot-api": "^1.9.1",
     "react": "^18.3.1",
@@ -51,9 +57,15 @@
   "devDependencies": {
     "@galacticcouncil/eslint-config": "*",
     "@galacticcouncil/typescript-config": "*",
+    "@graphql-codegen/cli": "^5.0.5",
+    "@graphql-codegen/typescript": "^4.1.4",
+    "@graphql-codegen/typescript-operations": "^4.5.0",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.2",
+    "@types/big.js": "^6.2.2",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
+    "graphql-config": "^5.1.3",
     "i18next-parser": "^9.0.2",
     "vite": "^5.1.4",
     "vite-tsconfig-paths": "^5.0.1"

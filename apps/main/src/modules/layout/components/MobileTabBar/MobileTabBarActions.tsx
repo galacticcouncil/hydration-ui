@@ -19,7 +19,7 @@ export const MobileTabBarActions: FC<Props> = ({ onOpenDrawer }) => {
   return (
     <Grid gap={4} sx={{ gridTemplateColumns: "1fr auto 1fr" }}>
       <MobileTabBarAction
-        icon={<Settings />}
+        icon={<Settings size={19} />}
         label={t("settings")}
         onClick={() => onOpenDrawer(MobileTabBarDrawer.Settings)}
       />

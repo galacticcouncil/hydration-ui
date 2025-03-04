@@ -5,3 +5,4 @@ export * from "./useWeb3ConnectInit"
 export * from "./useWeb3ConnectModal"
 export * from "./useWeb3EagerEnable"
 export * from "./useWeb3Enable"
+export * from './useHydraAccountAddress'

@@ -1,4 +1,4 @@
-export { default as Bell } from "./Bell.svg?react"
+export { default as Add } from "./Add.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"
 export { default as CircleCheck } from "./CircleCheck.svg?react"
@@ -17,7 +17,6 @@ export { default as QuestionCircleRegular } from "./QuestionCircleRegular.svg?re
 export { default as Rectangle7101 } from "./Rectangle7101.svg?react"
 export { default as Routes } from "./Routes.svg?react"
 export { default as Send } from "./Send.svg?react"
-export { default as Settings } from "./Settings.svg?react"
 export { default as SquareQuestion } from "./SquareQuestion.svg?react"
 export { default as TriangleAlert } from "./TriangleAlert.svg?react"
 export { default as TwoColorCirclePercentage } from "./TwoColorCirclePercentage.svg?react"

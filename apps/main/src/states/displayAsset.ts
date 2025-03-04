@@ -40,7 +40,7 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
 )
 
 type TStoredAssetPrice = Record<string, string>
-type AssetPrice = Record<string, { price: string; isLoading: boolean }>
+export type AssetPrice = Record<string, { price: string; isLoading: boolean }>
 
 type Store = {
   assets: TStoredAssetPrice
@@ -67,7 +67,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
       assetIds.reduce<Record<string, string>>((acc, assetId) => {
-        acc[assetId] = state.assets[assetId]
+        acc[assetId] = state.assets[assetId] ?? ""
         return acc
       }, {}),
     ),

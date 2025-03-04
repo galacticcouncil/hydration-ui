@@ -1,4 +1,5 @@
-import { SerializedStyles, Theme as EmotionTheme } from "@emotion/react"
+import { css, SerializedStyles, Theme as EmotionTheme } from "@emotion/react"
+import { SxProp } from "@theme-ui/core"
 import { get, Theme as ThemeUI, ThemeUICSSObject } from "@theme-ui/css"
 
 import { ThemeToken } from "@/theme"
@@ -18,13 +19,13 @@ export function createStyles<T extends SerializedStyles>(
       callback(theme)
 }
 
-export function createVariants<T extends Record<string, SerializedStyles>>(
-  callback: (theme: EmotionTheme) => T,
+export function createVariants<TKey extends string>(
+  callback: (theme: EmotionTheme) => Record<TKey, SerializedStyles>,
 ) {
-  return (key: keyof T) =>
+  return (key: TKey) =>
     ({ theme }: { theme: EmotionTheme }) =>
       callback(theme)[key]
 }
 
-export { css } from "@emotion/react"
+export { css, type SxProp }
 export { default as styled } from "@emotion/styled"
