@@ -19,7 +19,10 @@ export const ProviderSelectButton = () => {
 
   const { isLoaded } = useRpcProvider()
 
-  const { data: bestNumber } = useBestNumber(!isLoaded)
+  const { data: bestNumber, isLoading: isLoadingBestNumber } =
+    useBestNumber(!isLoaded)
+
+  const isLoading = !isLoaded || isLoadingBestNumber
 
   return (
     <LazyMotion features={domAnimation}>
@@ -28,7 +31,10 @@ export const ProviderSelectButton = () => {
           tabIndex={0}
           onClick={() => setOpen(true)}
           whileHover="animate"
-          css={{ zIndex: theme.zIndices.tablePlaceholder }}
+          css={{
+            zIndex: theme.zIndices.tablePlaceholder,
+            pointerEvents: isLoading ? "none" : "auto",
+          }}
         >
           <SName
             variants={{
@@ -44,13 +50,13 @@ export const ProviderSelectButton = () => {
             <ChevronRightIcon />
             <Separator orientation="vertical" sx={{ height: 14, mr: 10 }} />
           </SName>
-          {bestNumber ? (
+          {isLoading ? (
+            <Spinner size={14} />
+          ) : (
             <ProviderStatus
               parachainBlockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
               timestamp={bestNumber?.timestamp?.toNumber()}
             />
-          ) : (
-            <Spinner size={14} />
           )}
         </SButton>
         {open && (
