@@ -41,6 +41,9 @@ import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { createToastMessages } from "state/toasts"
 import { Switch } from "components/Switch/Switch"
 import { useState } from "react"
+import { useHealthFactorChange } from "api/borrow"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import BN from "bignumber.js"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -175,6 +178,12 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
+  const amountShifted = BN(debouncedAmount).shiftedBy(assetMeta.decimals)
+  const hfChange = useHealthFactorChange(
+    assetMeta.id,
+    amountShifted.gt(0) ? amountShifted.toString() : "",
+  )
+
   const dest = form.watch("dest")
   const shouldShowDisclaimer =
     UNIFIED_ADDRESS_FORMAT_ENABLED && dest
@@ -275,27 +284,40 @@ export function WalletTransferSectionOnchain({
             </label>
           </Alert>
         )}
-        <SummaryRow
-          label={t("wallet.assets.transfer.transaction_cost")}
-          content={
-            insufficientFee ? (
-              <div sx={{ flex: "row", gap: 4 }}>
-                {basicFeeComp}
-                <Text fs={14} color="brightBlue300" tAlign="right">
-                  {t("value.tokenWithSymbol", {
-                    value: insufficientFee.displayValue.multipliedBy(
-                      spotPrice?.spotPrice ?? BN_1,
-                    ),
-                    symbol: accountCurrencyMeta?.symbol,
-                    numberPrefix: "+  ",
-                  })}
-                </Text>
-              </div>
-            ) : (
-              basicFeeComp
-            )
-          }
-        />
+        <div>
+          <SummaryRow
+            label={t("wallet.assets.transfer.transaction_cost")}
+            content={
+              insufficientFee ? (
+                <div sx={{ flex: "row", gap: 4 }}>
+                  {basicFeeComp}
+                  <Text fs={14} color="brightBlue300" tAlign="right">
+                    {t("value.tokenWithSymbol", {
+                      value: insufficientFee.displayValue.multipliedBy(
+                        spotPrice?.spotPrice ?? BN_1,
+                      ),
+                      symbol: accountCurrencyMeta?.symbol,
+                      numberPrefix: "+  ",
+                    })}
+                  </Text>
+                </div>
+              ) : (
+                basicFeeComp
+              )
+            }
+          />
+          {hfChange && (
+            <SummaryRow
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+              label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
+            />
+          )}
+        </div>
         {asset !== "0" && (
           <Alert variant="warning">
             {t("wallet.assets.transfer.warning.nonNative")}
@@ -309,6 +331,11 @@ export function WalletTransferSectionOnchain({
               ),
               symbol: accountCurrencyMeta?.symbol,
             })}
+          </Alert>
+        )}
+        {hfChange && (
+          <Alert variant="warning">
+            {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
         )}
       </div>
