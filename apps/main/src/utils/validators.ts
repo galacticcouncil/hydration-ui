@@ -1,3 +1,4 @@
+import Big from "big.js"
 import { z } from "zod"
 
 import i18n from "@/i18n"
@@ -10,3 +11,5 @@ export const WSS_REGEX =
 export const validWebsocketUrl = z
   .string()
   .refine((value) => WSS_REGEX.test(value), i18n.t("error.invalidWebsocketUrl"))
+
+export const nonZeroAmount = z.string().refine((value) => new Big(value).gte(0))
