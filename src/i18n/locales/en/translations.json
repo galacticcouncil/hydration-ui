@@ -27,6 +27,7 @@
   "connecting": "Connecting",
   "deposit": "Deposit",
   "withdraw": "Withdraw",
+  "milliseconds": "{{ value, bignumber }} ms",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",
   "toast.counter": "{{ index }} of {{ count }}",

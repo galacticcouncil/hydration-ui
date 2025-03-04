@@ -152,7 +152,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
             ping < 250 ? "green400" : ping < 500 ? "warningOrange200" : "red300"
           }
         >
-          {t("value", { value: Math.round(ping) })} ms
+          {t("milliseconds", { value: Math.round(ping) })}
         </Text>
       )}
     </InfoTooltip>
