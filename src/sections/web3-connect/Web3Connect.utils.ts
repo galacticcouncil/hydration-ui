@@ -112,7 +112,7 @@ export const useEvmAccount = () => {
   )
 
   useEffect(() => {
-    if (isEvmWalletExtension(wallet?.extension)) {
+    if (wallet && isEvmWalletExtension(wallet?.extension)) {
       // Refetch chainId on chainChanged event from wallet extension
       wallet.extension.on("chainChanged", evm.refetch)
       return () => {
