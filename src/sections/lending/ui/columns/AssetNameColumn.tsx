@@ -1,3 +1,4 @@
+import { Icon } from "components/Icon/Icon"
 import { Link } from "components/Link/Link"
 import { FC } from "react"
 import { ROUTES } from "sections/lending/components/primitives/Link"
