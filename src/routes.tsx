@@ -8,6 +8,7 @@ import { DepositPageSkeleton } from "sections/deposit/DepositPageSkeleton"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
 import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
 import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
+import { LendingTransactionsSkeleton } from "sections/lending/skeleton/LendingTransactionsSkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
@@ -131,6 +132,14 @@ const LendingDashboardPage = lazy(async () => ({
 const LendingMarketsPage = lazy(async () => ({
   default: (await import("sections/lending/LendingMarketsPage"))
     .LendingMarketsPage,
+}))
+
+const LendingTransactionsPage = lazy(async () => ({
+  default: (
+    await import(
+      "sections/lending/subsections/transactions/LendingTransactionsPage"
+    )
+  ).LendingTransactionsPage,
 }))
 
 const LendingReserveOverviewPage = lazy(async () => ({
@@ -470,6 +479,14 @@ export const routes: Route[] = [
             ),
           },
         ],
+      },
+      {
+        path: LINKS.borrowTransactions.split("/").pop(),
+        element: (
+          <Suspense fallback={<LendingTransactionsSkeleton />}>
+            <LendingTransactionsPage />
+          </Suspense>
+        ),
       },
     ],
   },
