@@ -63,7 +63,7 @@ export const IncentivesTooltipContent = ({
                 }}
               >
                 <TokenIcon
-                  symbol={incentive.rewardTokenSymbol}
+                  address={incentive.rewardTokenAddress}
                   size={20}
                   sx={{ mr: 16 }}
                 />

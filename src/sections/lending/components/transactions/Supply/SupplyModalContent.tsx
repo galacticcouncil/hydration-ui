@@ -244,6 +244,7 @@ export const SupplyModalContent = React.memo(
               iconSymbol: supplyUnWrapped
                 ? currentNetworkConfig.baseAssetSymbol
                 : poolReserve.iconSymbol,
+              address: poolReserve.underlyingAsset,
             },
           ]}
           isMaxSelected={isMaxSelected}

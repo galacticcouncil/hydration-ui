@@ -80,10 +80,10 @@ export const IncentivesButton = ({
               <>
                 {incentives.map((incentive) => (
                   <TokenIcon
-                    symbol={incentive.rewardTokenSymbol}
+                    address={incentive.rewardTokenAddress}
                     size={iconSize}
                     sx={{ ml: -2 }}
-                    key={incentive.rewardTokenSymbol}
+                    key={incentive.rewardTokenAddress}
                   />
                 ))}
               </>
@@ -91,10 +91,10 @@ export const IncentivesButton = ({
               <>
                 {incentives.slice(0, 3).map((incentive) => (
                   <TokenIcon
-                    symbol={incentive.rewardTokenSymbol}
+                    address={incentive.rewardTokenAddress}
                     size={iconSize}
                     sx={{ ml: -2 }}
-                    key={incentive.rewardTokenSymbol}
+                    key={incentive.rewardTokenAddress}
                   />
                 ))}
                 <div
