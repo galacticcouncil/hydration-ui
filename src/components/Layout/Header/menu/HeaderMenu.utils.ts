@@ -1,5 +1,6 @@
-import { useAccountAssets } from "api/deposits"
+import { useAccountData } from "api/deposits"
 import { useVestingTotalVestedAmount } from "api/vesting"
+import { useShallow } from "hooks/useShallow"
 
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -10,10 +11,11 @@ export const useVisibleHeaderMenuItems = () => {
   const { hiddenElementsKeys, observe } = useVisibleElements()
   const { featureFlags } = useRpcProvider()
 
-  const { data: balances } = useAccountAssets()
+  const isPositions = useAccountData(useShallow((state) => state.isPositions))
+
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
 
-  const isPoolBalances = !!balances?.isAnyPoolPositions
+  const isPoolBalances = isPositions
 
   return useMemo(() => {
     const items = MENU_ITEMS.filter(

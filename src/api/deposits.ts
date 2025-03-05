@@ -16,6 +16,8 @@ import { parseBalanceData, TBalance } from "./balances"
 import { TAsset, TBond, TShareToken, useAssets } from "providers/assets"
 import { millisecondsInHour } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
+import { create } from "zustand"
+import { useShallow } from "hooks/useShallow"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -183,6 +185,9 @@ export const useAccountAssets = (givenAddress?: string) => {
   const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, getShareTokenByAddress, isShareToken, isBond } =
     useAssets()
+  const setIsPositions = useAccountData(
+    useShallow((state) => state.setIsPositions),
+  )
 
   const address = givenAddress ?? account?.address
 
@@ -423,6 +428,8 @@ export const useAccountAssets = (givenAddress?: string) => {
           }
         })
 
+        setIsPositions(isAnyPoolPositions)
+
         return {
           ...data,
           accountAssetsMap,
@@ -435,3 +442,17 @@ export const useAccountAssets = (givenAddress?: string) => {
     },
   )
 }
+
+type useAccountDataStore = {
+  isPositions: boolean
+  setIsPositions: (isPositions: boolean) => void
+}
+
+export const useAccountData = create<useAccountDataStore>((set) => ({
+  isPositions: false,
+  setIsPositions(isPositions) {
+    set({
+      isPositions,
+    })
+  },
+}))
