@@ -39,7 +39,7 @@ export function MobileRow<T>({
     <SContainer>
       <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
-          {iconSymbol && <TokenIcon symbol={iconSymbol} size={28} />}
+          {detailsAddress && <TokenIcon address={detailsAddress} size={28} />}
           <div>
             <Text fs={16} font="GeistSemiBold">
               {symbol}

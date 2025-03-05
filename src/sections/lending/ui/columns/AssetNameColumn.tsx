@@ -1,4 +1,3 @@
-import { Icon } from "components/Icon/Icon"
 import { Link } from "components/Link/Link"
 import { FC } from "react"
 import { ROUTES } from "sections/lending/components/primitives/Link"
@@ -21,7 +20,7 @@ export const AssetNameColumn: FC<AssetNameColumnProps> = ({
   return (
     <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
       <span sx={{ flex: "row", align: "center", gap: 8 }}>
-        {iconSymbol && <TokenIcon symbol={iconSymbol} />}
+        {iconSymbol && <TokenIcon address={detailsAddress} />}
         {symbol}
       </span>
     </Link>

@@ -8,6 +8,7 @@ import { EvmParachain } from "@galacticcouncil/xcm-core"
 import { PROVIDER_URLS, useProviderRpcUrlStore } from "api/provider"
 import { wsToHttp } from "utils/formatting"
 import { HYDRATION_CHAIN_KEY } from "utils/constants"
+import { getAddressFromAssetId } from "utils/evm"
 
 const METAMASK_LIKE_CHECKS = [
   "isTalisman",
@@ -209,14 +210,7 @@ export async function watchAsset(
 ) {
   if (!isMetaMask(provider)) return
 
-  const tokenAddress = Buffer.from(
-    "0000000000000000000000000000000100000000",
-    "hex",
-  )
-  const assetIdBuffer = numToBuffer(+assetId)
-  assetIdBuffer.copy(new Uint8Array(tokenAddress), 16)
-
-  const address = "0x" + tokenAddress.toString("hex")
+  const address = getAddressFromAssetId(assetId.toString())
 
   return await requestNetworkSwitch(provider, {
     onSwitch: async () =>
@@ -277,10 +271,4 @@ function normalizeChainSwitchError(
   if (errorCode === 4902) {
     return "CHAIN_NOT_FOUND"
   }
-}
-
-function numToBuffer(num: number) {
-  const arr = new Uint8Array(4)
-  for (let i = 0; i < 4; i++) arr.set([num / 0x100 ** i], 3 - i)
-  return Buffer.from(arr)
 }

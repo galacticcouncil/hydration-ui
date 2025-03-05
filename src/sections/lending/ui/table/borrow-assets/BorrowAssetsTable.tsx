@@ -3,7 +3,6 @@ import { Alert } from "components/Alert/Alert"
 import { DataTable } from "components/DataTable"
 import { Text } from "components/Typography/Text/Text"
 import { useReactTable } from "hooks/useReactTable"
-import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { ROUTES } from "sections/lending/components/primitives/Link"
@@ -32,10 +31,6 @@ export const BorrowAssetsTable = () => {
     isLoading,
     skeletonRowCount: 6,
   })
-
-  useEffect(() => {
-    console.log("data", data)
-  }, [data])
 
   const { user } = useAppDataContext()
 
