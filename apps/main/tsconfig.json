@@ -1,6 +1,7 @@
 {
   "extends": "@galacticcouncil/typescript-config/vite.json",
   "include": ["src"],
+  "exclude": ["src/codegen/__generated__"],
   "references": [
     { "path": "../../packages/ui" },
     { "path": "../../packages/utils" },
@@ -16,6 +17,7 @@
       ]
     },
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "noUncheckedIndexedAccess": true
   }
 }

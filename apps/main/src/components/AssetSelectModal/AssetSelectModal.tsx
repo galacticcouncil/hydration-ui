@@ -88,7 +88,10 @@ const Content = ({
       inputRef.current?.focus()
     } else if (e.key === "Enter") {
       const asset = filteredAssets[highlighted]
-      onSelectOption(asset)
+
+      if (asset) {
+        onSelectOption(asset)
+      }
     }
   }
 
@@ -147,6 +150,10 @@ const Content = ({
             >
               {virtualizer.getVirtualItems().map((virtualRow) => {
                 const asset = filteredAssets[virtualRow.index]
+
+                if (!asset) {
+                  return null
+                }
 
                 return (
                   <SOption
