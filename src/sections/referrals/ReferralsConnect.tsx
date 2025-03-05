@@ -31,8 +31,8 @@ export const ReferralsConnect = () => {
 
   const activeReferralCode = storedReferralCode ?? queryParamReferralCode
 
-  const referrer = useUserReferrer(account?.address)
-  const isNoReferrer = referrer.data === null
+  const { data: referrer } = useUserReferrer(account?.address)
+  const isNoReferrer = referrer === null
 
   const codes = useReferralCodes(
     isNoReferrer && activeReferralCode ? "all" : undefined,

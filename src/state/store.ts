@@ -10,6 +10,9 @@ import { TransactionRequest } from "@ethersproject/providers"
 import { EvmCall, SolanaCall, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { Parachain } from "@galacticcouncil/xcm-core"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -288,6 +291,44 @@ export const useAssetRegistry = create<AssetRegistryStore>()(
       storage: createJSONStorage(() => storage),
     },
   ),
+)
+
+type ExternalMetadataStore = {
+  chains: Record<string, TExternalAsset[]>
+  chainsMap: Record<string, Map<string, TExternalAsset>>
+  sync: (chainId: string, assets: TExternalAsset[]) => void
+  getExternalAssetMetadata: (
+    chainId: string,
+    assetId: string,
+  ) => TExternalAsset | undefined
+  isInitialized: () => boolean
+}
+
+export const useExternalAssetsMetadata = create<ExternalMetadataStore>(
+  (set, get) => ({
+    chains: {},
+    chainsMap: {},
+    sync(chainId, assets) {
+      set((state) => {
+        return {
+          chains: { ...state.chains, [chainId]: assets },
+          chainsMap: {
+            ...state.chainsMap,
+            [chainId]: new Map(assets.map((asset) => [asset.id, asset])),
+          },
+        }
+      })
+    },
+    getExternalAssetMetadata(chainId, assetId) {
+      return get().chainsMap[chainId]?.get(assetId)
+    },
+    isInitialized() {
+      return (
+        !!get().chains[(chainsMap.get("assethub") as Parachain).parachainId] &&
+        !!get().chains[(chainsMap.get("pendulum") as Parachain).parachainId]
+      )
+    },
+  }),
 )
 
 type SettingsStore = {

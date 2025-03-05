@@ -16,9 +16,9 @@ import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
-import { AssetsProvider } from "./assets"
 import { differenceInHours } from "date-fns"
 import { PolkadotEvmRpcProvider } from "utils/provider"
+import { AssetsProvider } from "./assets"
 
 type TProviderContext = {
   api: ApiPromise

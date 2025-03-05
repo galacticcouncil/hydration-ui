@@ -60,7 +60,7 @@ export const usePools = () => {
   const { stableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolDataObserver()
-  const accountAssets = useAccountAssets()
+  const { data: accountAssets } = useAccountAssets()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
@@ -87,7 +87,7 @@ export const usePools = () => {
 
     const rows = omnipoolAssets.data.map((asset) => {
       const meta = getAssetWithFallback(asset.id)
-      const accountAsset = accountAssets.data?.accountAssetsMap.get(asset.id)
+      const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
 
       const spotPrice = spotPrices.data?.find(
         (sp) => sp?.tokenIn === asset.id,
@@ -178,7 +178,7 @@ export const usePools = () => {
     native.id,
     fees.data,
     fees?.isLoading,
-    accountAssets.data,
+    accountAssets,
     stableCoinId,
     getAssetWithFallback,
     allFarms,

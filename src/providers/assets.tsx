@@ -60,7 +60,7 @@ const getFullAsset = (asset: TAssetStored) => {
 
   return {
     ...asset,
-    parachainId: parachainEntry?.parachain,
+    parachainId: parachainEntry?.parachain.toString() as string | undefined,
     existentialDeposit: asset.existentialDeposit,
     isToken,
     isBond,

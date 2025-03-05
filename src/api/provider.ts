@@ -225,38 +225,39 @@ export const useProviderAssets = () => {
 
           const assetClient = new AssetClient(provider.api)
 
-          return await Promise.all([
+          const [tradeAssets, sdkAssets] = await Promise.all([
             provider.tradeRouter.getAllAssets(),
             assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
           ])
+
+          if (sdkAssets?.length && tradeAssets?.length) {
+            const { sync } = useAssetRegistry.getState()
+
+            sync(
+              sdkAssets.map((asset) => {
+                const isTradable = tradeAssets.some(
+                  (tradeAsset) => tradeAsset.id === asset.id,
+                )
+                return {
+                  ...asset,
+                  symbol: asset.symbol ?? "",
+                  decimals: asset.decimals ?? 0,
+                  name: asset.name ?? "",
+                  externalId: getExternalId(asset),
+                  isTradable,
+                }
+              }),
+            )
+          }
+
+          return []
         }
       : undefinedNoop,
     {
       enabled: !!provider,
+      notifyOnChangeProps: [],
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
-      onSuccess: (data) => {
-        const [tradeAssets, sdkAssets] = data ?? []
-        if (sdkAssets?.length && tradeAssets?.length) {
-          const { sync } = useAssetRegistry.getState()
-
-          sync(
-            sdkAssets.map((asset) => {
-              const isTradable = tradeAssets.some(
-                (tradeAsset) => tradeAsset.id === asset.id,
-              )
-              return {
-                ...asset,
-                symbol: asset.symbol ?? "",
-                decimals: asset.decimals ?? 0,
-                name: asset.name ?? "",
-                externalId: getExternalId(asset),
-                isTradable,
-              }
-            }),
-          )
-        }
-      },
     },
   )
 }

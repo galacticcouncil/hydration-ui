@@ -1,5 +1,4 @@
 import { useMemo } from "react"
-import { useExternalAssetRegistry } from "api/external"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Icon } from "components/Icon/Icon"
 import { ModalScrollableContent } from "components/Modal/Modal"
@@ -17,7 +16,7 @@ import {
 import { AssetRow } from "sections/wallet/addToken/modal/AddTokenModal.styled"
 import { SourceFilter } from "sections/wallet/addToken/modal/filter/SourceFilter"
 import { AddTokenListSkeleton } from "sections/wallet/addToken/modal/skeleton/AddTokenListSkeleton"
-import { useSettingsStore } from "state/store"
+import { useExternalAssetsMetadata, useSettingsStore } from "state/store"
 import { theme } from "theme"
 import { ExternalAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAssets } from "providers/assets"
@@ -46,14 +45,10 @@ export const AddTokenListModal: React.FC<Props> = ({
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const assetRegistry = useExternalAssetRegistry()
+  const chains = useExternalAssetsMetadata(useShallow((state) => state.chains))
   const { isAdded } = useUserExternalTokenStore()
 
-  const selectedParachain = assetRegistry?.[parachainId]
-
-  const externalAssets = selectedParachain.data
-    ? Array.from(selectedParachain.data.values())
-    : []
+  const externalAssets = chains?.[parachainId] ?? []
 
   const { registeredAssetsMap, internalAssetsMap } = useMemo(() => {
     const internalAssets =
@@ -129,7 +124,7 @@ export const AddTokenListModal: React.FC<Props> = ({
               width: "100%",
             }}
             content={
-              selectedParachain.isLoading || !isLoaded ? (
+              !isLoaded ? (
                 <AddTokenListSkeleton />
               ) : (
                 <>

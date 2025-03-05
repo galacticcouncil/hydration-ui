@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { Parachain } from "@galacticcouncil/xcm-core"
+import { Parachain, SubstrateApis } from "@galacticcouncil/xcm-core"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { isJson } from "utils/helpers"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { arrayToMap } from "utils/rx"
-import { ApiPromise } from "@polkadot/api"
-import { useExternalApi } from "api/external"
+import { useExternalAssetsMetadata } from "state/store"
 
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
@@ -32,9 +30,14 @@ const getPendulumAssetId = (assetId: string) => {
   return undefined
 }
 
-export const getPedulumAssets = async (api: ApiPromise) => {
+export const getPedulumAssets = async () => {
   try {
+    const apiPool = SubstrateApis.getInstance()
+    const api = await apiPool.api(pendulum.ws)
+
     const dataRaw = await api.query.assetRegistry.metadata.entries()
+
+    api.disconnect()
 
     const data = dataRaw.reduce<
       Array<TExternalAsset & { location: HydradxRuntimeXcmAssetLocation }>
@@ -75,24 +78,25 @@ export const getPedulumAssets = async (api: ApiPromise) => {
  * Used for fetching tokens only from Pendulum parachain
  */
 export const usePendulumAssetRegistry = (enabled = true) => {
-  const { data: api } = useExternalApi("pendulum")
+  const { sync } = useExternalAssetsMetadata()
 
   return useQuery(
     QUERY_KEYS.pendulumAssetRegistry,
     async () => {
-      if (!api) throw new Error("Pendulum is not connected")
-      const pendulum = await getPedulumAssets(api)
+      const pendulum = await getPedulumAssets()
+
       if (pendulum) {
-        return pendulum.data
+        sync(pendulum.id.toString(), pendulum.data)
+        return []
       }
     },
     {
-      enabled: enabled && !!api,
+      enabled: enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      select: (data) => arrayToMap("id", data),
+      notifyOnChangeProps: [],
     },
   )
 }

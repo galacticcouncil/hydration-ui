@@ -1,17 +1,17 @@
 import { useMutation } from "@tanstack/react-query"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
-import { Transaction, useSettingsStore, useStore } from "state/store"
+import { Transaction, useExternalAssetsMetadata, useStore } from "state/store"
 
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { assethub, pendulum, useExternalAssetRegistry } from "api/external"
+import { assethub, pendulum } from "api/external"
 import { TEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { omit } from "utils/rx"
 import { getInputData, TExternalAssetWithLocation } from "utils/externalAssets"
 import { useShallow } from "hooks/useShallow"
@@ -398,41 +398,40 @@ export const useUserExternalTokenStore = create<Store>()(
 )
 
 export const useExternalTokenMeta = () => {
-  const { getExternalByExternalId, getAsset } = useAssets()
+  const { getAsset } = useAssets()
+  const getExternalAssetMetadata = useExternalAssetsMetadata(
+    useShallow((state) => state.getExternalAssetMetadata),
+  )
 
-  const externalRegistry = useExternalAssetRegistry()
-
-  const getExtrernalToken = useCallback(
+  const getExtrernalTokenByInternalId = useCallback(
     (id: string) => {
       const meta = id ? (getAsset(id) as TExternal) : undefined
 
-      if (meta?.isExternal && meta.externalId) {
-        for (const parachain in externalRegistry) {
-          const registry = externalRegistry[Number(parachain)]
-          const externalAsset = registry?.data?.get(meta.externalId)
+      if (meta?.isExternal && meta.externalId && meta.parachainId) {
+        const externalAsset = getExternalAssetMetadata(
+          meta.parachainId,
+          meta.externalId,
+        )
 
-          if (externalAsset) {
-            const meta = getExternalByExternalId(externalAsset.id)
+        if (externalAsset) {
+          if (meta) {
+            const externalMeta = omit(["id"], externalAsset)
 
-            if (meta) {
-              const externalMeta = omit(["id"], externalAsset)
-
-              return {
-                ...meta,
-                ...externalMeta,
-                externalId: externalAsset.id,
-              } as TExternal
-            }
-
-            return undefined
+            return {
+              ...meta,
+              ...externalMeta,
+              externalId: externalAsset.id,
+            } as TExternal
           }
+
+          return undefined
         }
       }
     },
-    [externalRegistry, getAsset, getExternalByExternalId],
+    [getAsset, getExternalAssetMetadata],
   )
 
-  return getExtrernalToken
+  return getExtrernalTokenByInternalId
 }
 
 export const updateExternalAssetsCursor = (
@@ -460,39 +459,6 @@ export const updateExternalAssetsCursor = (
       version,
     })
   }
-}
-
-export const useRegisteredExternalTokens = () => {
-  const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
-  const { getDataEnv } = useProviderRpcUrlStore()
-  const tokens = useUserExternalTokenStore(useShallow((s) => s.tokens))
-  const dataEnv = getDataEnv()
-  const { external } = useAssets()
-  const { isLoaded } = useRpcProvider()
-
-  const externalAssets = useExternalAssetRegistry(degenMode)
-
-  return useMemo(() => {
-    if (degenMode && isLoaded) {
-      const data = external.reduce((acc, asset) => {
-        const externalAsset = externalAssets[
-          Number(asset.parachainId)
-        ]?.data?.get(asset.externalId ?? "")
-
-        if (externalAsset) {
-          acc.push({
-            ...externalAsset,
-            internalId: asset.id,
-          })
-        }
-
-        return acc
-      }, [] as TRegisteredAsset[])
-      return data
-    } else {
-      return tokens[dataEnv]
-    }
-  }, [external, dataEnv, isLoaded, degenMode, externalAssets, tokens])
 }
 
 export const getInternalIdFromResult = (res: ISubmittableResult) => {

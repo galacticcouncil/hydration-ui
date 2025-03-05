@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query"
-import { useAssetHubAssetRegistry } from "api/external/assethub"
 import { useAssets } from "providers/assets"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useXYKSquidVolumes } from "api/volume"
@@ -13,13 +12,22 @@ import {
 import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import BN from "bignumber.js"
+import { useExternalAssetsMetadata } from "state/store"
+import { useShallow } from "hooks/useShallow"
+
+import { pick } from "utils/rx"
+import { assethub } from "api/external/assethub"
 
 const useMissingExternalAssets = (ids: string[]) => {
   const { tradable, getAsset } = useAssets()
-  const externalAssets = useAssetHubAssetRegistry()
+  const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
+    useShallow((state) =>
+      pick(state, ["getExternalAssetMetadata", "isInitialized"]),
+    ),
+  )
 
   const missingExternalAssets = useMemo(() => {
-    if (externalAssets.data) {
+    if (isInitialized()) {
       const invalidTokensId = ids.filter(
         (assetId) => !tradable.some((tradeAsset) => tradeAsset.id === assetId),
       )
@@ -29,7 +37,10 @@ const useMissingExternalAssets = (ids: string[]) => {
           const externalId = getAsset(tokenId)?.externalId
 
           const meta = externalId
-            ? externalAssets.data?.get(externalId)
+            ? getExternalAssetMetadata(
+                assethub.parachainId.toString(),
+                externalId,
+              )
             : undefined
           return meta
             ? {
@@ -42,7 +53,7 @@ const useMissingExternalAssets = (ids: string[]) => {
     }
 
     return []
-  }, [externalAssets.data, getAsset, ids, tradable])
+  }, [getAsset, ids, tradable, getExternalAssetMetadata, isInitialized])
 
   return missingExternalAssets
 }
@@ -52,7 +63,8 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const { poolService } = useRpcProvider()
   const { getAsset } = useAssets()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
-  const getExternalMeta = useExternalTokenMeta()
+
+  const getExtrernalTokenByInternalId = useExternalTokenMeta()
 
   const { tokens: externalTokensStored } = useUserExternalTokenStore.getState()
   const { data: volumes = [], isLoading: isVolumesLoading } =
@@ -115,7 +127,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
 
         const decimals = assetMeta?.name
           ? assetMeta.decimals
-          : getExternalMeta(value.assetId)?.decimals ?? 0
+          : getExtrernalTokenByInternalId(value.assetId)?.decimals ?? 0
 
         const volume = BN(value.volume)
           .shiftedBy(-decimals)
@@ -126,7 +138,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
       })
     }
     return undefined
-  }, [getAsset, getExternalMeta, spotPrices.data, volumes])
+  }, [getAsset, getExtrernalTokenByInternalId, spotPrices.data, volumes])
 
   return { data, isLoading }
 }

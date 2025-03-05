@@ -1,9 +1,4 @@
-import {
-  assethub,
-  TRugCheckData,
-  useExternalAssetRegistry,
-  useParachainAmount,
-} from "api/external"
+import { assethub, TRugCheckData, useParachainAmount } from "api/external"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
@@ -23,6 +18,7 @@ import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/To
 import {
   useAssetHubAssetAdminRights,
   useAssetHubRevokeAdminRights,
+  useRefetchAssetHub,
 } from "api/external/assethub"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -46,10 +42,9 @@ export const TokenInfo = ({
   const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
   const { data: xykPools } = useAllXykPools()
-  const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
-  const externalAssetRegistry = useExternalAssetRegistry()
-  const refetchAssetHub = externalAssetRegistry[assethub.parachainId].refetch
+  const refetchAssetHub = useRefetchAssetHub()
 
+  const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
   const isChainStored = !!chainStoredAsset
 
   const { data: adminRights } = useAssetHubAssetAdminRights(externalAsset.id)
@@ -98,13 +93,6 @@ export const TokenInfo = ({
       return [type, { from, to }]
     }) ?? [],
   )
-
-  const externalMeta = !isChainStored
-    ? externalAssetRegistry[externalAsset.origin].data?.get(externalAsset.id)
-    : null
-
-  const isWhiteListed =
-    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   return (
     <div sx={{ flex: "column" }}>
@@ -231,7 +219,7 @@ export const TokenInfo = ({
           label={t("wallet.addToken.form.info.masterAccount")}
           value={
             <div sx={{ flex: "row", gap: 4, align: "center" }}>
-              {isWhiteListed ? (
+              {externalAsset.isWhiteListed ? (
                 <Text fs={12} color="green600">
                   {t("yes")}
                 </Text>

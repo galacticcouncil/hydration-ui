@@ -10,13 +10,18 @@ import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Option, u32 } from "@polkadot/types"
-import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useExternalApi } from "api/external"
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Transaction, useStore } from "state/store"
+import { Transaction, useExternalAssetsMetadata, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import {
   BN_0,
@@ -26,12 +31,12 @@ import {
 } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { Buffer } from "buffer"
 import { XcmV3Junction, XcmV3Junctions } from "@polkadot-api/descriptors"
+import { getWs } from "api/papi"
+import { assethub as assethubDescriptor } from "@polkadot-api/descriptors"
 
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
@@ -70,39 +75,48 @@ export const assethubNativeToken = assethub.assetsData.get(
   "dot",
 ) as ParachainAssetData
 
-export const getAssetHubAssets = async (api: ApiPromise) => {
+export const getAssetHubAssets = async () => {
   try {
+    const client = await getWs(assethub.ws)
+    const papi = client.getTypedApi(assethubDescriptor)
     const [dataRaw, assetsRaw] = await Promise.all([
-      api.query.assets.metadata.entries(),
-      api.query.assets.asset.entries(),
+      papi.query.Assets.Metadata.getEntries(),
+      papi.query.Assets.Asset.getEntries(),
     ])
 
-    const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
-      const id = key.args[0].toString()
-      const data = dataRaw
+    client.destroy()
 
-      const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
+    const data = dataRaw.reduce<TExternalAsset[]>((acc, { keyArgs, value }) => {
+      const id = keyArgs.toString()
+      const data = value
 
-      const supply = asset?.[1].unwrap().supply.toString()
-      const admin = asset?.[1].unwrap().admin.toString()
-      const owner = asset?.[1].unwrap().owner.toString()
-      const isWhiteListed =
-        admin === ASSETHUB_TREASURY_ADDRESS &&
-        owner === ASSETHUB_TREASURY_ADDRESS
+      const asset = assetsRaw.find(
+        (asset) => asset.keyArgs[0].toString() === id,
+      )
 
-      return {
-        id,
-        decimals: data.decimals.toNumber(),
-        // decode from hex because of non-standard characters
-        symbol: Buffer.from(data.symbol.toHex().slice(2), "hex").toString(
-          "utf8",
-        ),
-        name: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
-        supply,
-        origin: assethub.parachainId,
-        isWhiteListed,
+      if (asset) {
+        const assetData = asset.value
+
+        const supply = assetData.supply.toString()
+        const admin = assetData.admin
+        const owner = assetData.owner
+        const isWhiteListed =
+          admin === ASSETHUB_TREASURY_ADDRESS &&
+          owner === ASSETHUB_TREASURY_ADDRESS
+
+        acc.push({
+          id,
+          decimals: data.decimals,
+          symbol: data.symbol.asText(),
+          name: data.name.asText(),
+          supply,
+          origin: assethub.parachainId,
+          isWhiteListed,
+        })
       }
-    })
+
+      return acc
+    }, [])
     return { data, id: assethub.parachainId }
   } catch (e) {}
 }
@@ -122,33 +136,39 @@ export const getAssetHubAssetsIds = async (api: ApiPromise) => {
  * Used for fetching tokens only from Asset Hub parachain
  */
 export const useAssetHubAssetRegistry = (enabled = true) => {
-  const { data: api } = useExternalApi("assethub")
+  const { sync } = useExternalAssetsMetadata()
 
   return useQuery(
     QUERY_KEYS.assetHubAssetRegistry,
     async () => {
-      if (!api) throw new Error("Asset Hub is not connected")
-      const assetHub = await getAssetHubAssets(api)
+      const assetHub = await getAssetHubAssets()
 
       if (assetHub) {
-        return assetHub.data
+        const filteredAssets = assetHub.data.filter(
+          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
+        )
+
+        sync(assetHub.id.toString(), filteredAssets)
+        return []
       }
     },
     {
-      enabled: enabled && !!api,
+      enabled: enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      select: (data) => {
-        const assets = data ?? []
-        const filteredAssets = assets.filter(
-          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
-        )
-        return arrayToMap("id", filteredAssets)
-      },
+      notifyOnChangeProps: [],
     },
   )
+}
+
+export const useRefetchAssetHub = () => {
+  const queryClient = useQueryClient()
+
+  return () => {
+    queryClient.refetchQueries(QUERY_KEYS.assetHubAssetRegistry)
+  }
 }
 
 export const getAssetHubNativeBalance =
