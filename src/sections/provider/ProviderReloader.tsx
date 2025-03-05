@@ -1,16 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
-import { Fragment, PropsWithChildren, lazy, useEffect, useState } from "react"
+import { Fragment, PropsWithChildren, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
-
-const ProviderSelectButton = lazy(async () => ({
-  default: (
-    await import(
-      "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
-    )
-  ).ProviderSelectButton,
-}))
+import { ProviderSelectButton } from "./components/ProviderSelectButton/ProviderSelectButton"
 
 export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()

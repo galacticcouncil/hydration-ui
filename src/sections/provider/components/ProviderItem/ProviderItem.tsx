@@ -127,7 +127,7 @@ const ProviderSelectItemLive = ({
   className?: string
   url: string
 }) => {
-  const number = useBestNumber()
+  const { data: bestNumber } = useBestNumber()
 
   const { data } = useProviderPing([url], 15000)
 
@@ -135,10 +135,10 @@ const ProviderSelectItemLive = ({
 
   return (
     <SStatus>
-      {number.data?.parachainBlockNumber != null ? (
+      {bestNumber?.parachainBlockNumber != null ? (
         <ProviderStatus
-          timestamp={number.data.timestamp}
-          parachainBlockNumber={number.data?.parachainBlockNumber}
+          timestamp={bestNumber.timestamp}
+          parachainBlockNumber={bestNumber?.parachainBlockNumber}
           ping={time < Infinity ? time : undefined}
           className={className}
           side="left"
