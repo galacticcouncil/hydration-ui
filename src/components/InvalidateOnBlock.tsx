@@ -1,25 +1,25 @@
 import { useQueryClient } from "@tanstack/react-query"
-import { ReactNode, useEffect } from "react"
+import { useEffect } from "react"
 import { QUERY_KEY_PREFIX } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
 
-export const InvalidateOnBlock = (props: { children: ReactNode }) => {
+export const InvalidateOnBlock = () => {
   const { isLoaded, api } = useRpcProvider()
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (isLoaded) {
-      let cancel: () => void
+    let cancel: () => void
 
+    if (isLoaded) {
       api.rpc.chain
         .subscribeNewHeads(() => {
           queryClient.invalidateQueries([QUERY_KEY_PREFIX])
         })
         .then((newCancel) => (cancel = newCancel))
-
-      return () => cancel?.()
     }
+
+    return () => cancel?.()
   }, [api, queryClient, isLoaded])
 
-  return <>{props.children}</>
+  return null
 }
