@@ -1,6 +1,9 @@
 import { hexToU8a, u8aToBn } from "@polkadot/util"
 import { wsToHttp } from "utils/formatting"
 
+const TIMESTAMP_STORAGE_KEY =
+  "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb"
+
 /**
  * Sends a ping request to the specified URL and measures the round-trip time.
  * @param url The URL to ping.
@@ -21,13 +24,29 @@ export async function pingRpc(
         const end = await Promise.race([
           (async () => {
             try {
-              await jsonRpcFetch(
+              const blockHash = await jsonRpcFetch(
                 wsToHttp(url),
                 "chain_getBlockHash",
                 [],
                 signal,
               )
-              return performance.now()
+              const end = performance.now()
+
+              const ts = await jsonRpcFetch(
+                wsToHttp(url),
+                "state_getStorage",
+                [TIMESTAMP_STORAGE_KEY, blockHash],
+                signal,
+              )
+              const timestamp = u8aToBn(hexToU8a(ts), { isLe: true }).toNumber()
+              const blockAge = Date.now() - timestamp
+              console.log({
+                blockAge,
+                end,
+                timestamp,
+                blockAgeFormatted: `${blockAge / 1000}s`,
+              })
+              return end
             } catch {
               return Infinity
             }
@@ -55,9 +74,6 @@ export type RpcInfoResult = {
   blockNumber: number | null
   timestamp: number | null
 }
-
-const TIMESTAMP_STORAGE_KEY =
-  "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb"
 
 export async function fetchRpcInfo(url: string): Promise<RpcInfoResult> {
   const blockHashPromise = jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
