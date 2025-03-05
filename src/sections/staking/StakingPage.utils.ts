@@ -488,7 +488,7 @@ export const useClaimReward = () => {
       const slashedPoints = wasm.calculate_slashed_points(
         points,
         stakePosition.stake.toString(),
-        stakePosition.stake.plus(increaseStake).toString(),
+        increaseStake,
         stakeWeight,
         MIN_SLASH_POINTS,
       )
