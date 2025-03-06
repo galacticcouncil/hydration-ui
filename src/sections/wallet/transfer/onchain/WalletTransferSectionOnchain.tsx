@@ -183,6 +183,7 @@ export function WalletTransferSectionOnchain({
   )
 
   const isHealthFactorChanged =
+    amount.gt(0) &&
     healthFactorChange &&
     healthFactorChange.currentHealthFactor !==
       healthFactorChange.futureHealthFactor
@@ -338,7 +339,7 @@ export function WalletTransferSectionOnchain({
           </Alert>
         )}
         {isHealthFactorChanged && (
-          <Alert variant="warning">
+          <Alert variant="error">
             {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
         )}
