@@ -29,6 +29,7 @@ import {
 } from "sections/transaction/ReviewTransaction.utils"
 import { useAccountAssets } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
+import BN from "bignumber.js"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -279,11 +280,17 @@ export const useEditFeePaymentAsset = (
 export const useHealthFactorChangeFromTx = (
   tx: SubmittableExtrinsic<"promise">,
 ) => {
+  const { getAsset } = useAssets()
   const assetInTx = getAssetFromTx(tx)
-  return useHealthFactorChange(
-    assetInTx?.assetId ?? "",
-    assetInTx?.amount ?? "",
-  )
+  const asset = assetInTx?.assetId ? getAsset(assetInTx.assetId) : null
+
+  const assetId = asset ? asset.id : ""
+  const amount =
+    asset && assetInTx?.amount
+      ? BN(assetInTx.amount).shiftedBy(-asset.decimals).toString()
+      : ""
+
+  return useHealthFactorChange(assetId, amount)
 }
 
 export const createPolkadotJSTxUrl = (
