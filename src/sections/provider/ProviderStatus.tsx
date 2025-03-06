@@ -4,11 +4,9 @@ import { useTranslation } from "react-i18next"
 import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useInterval } from "react-use"
-import { RpcInfoResult } from "utils/rpc"
+import { PingResponse } from "utils/rpc"
 
-export const useElapsedTimeStatus = (
-  timestamp: RpcInfoResult["timestamp"] = null,
-) => {
+export const useElapsedTimeStatus = (timestamp: number | null) => {
   const [now, setNow] = useState(Date.now())
 
   useInterval(() => {
@@ -80,23 +78,20 @@ function ProviderStatusSuccess() {
 }
 
 type ProviderStatusProps = {
-  timestamp?: number | null
-  parachainBlockNumber?: number | null
-  ping?: number | null
   className?: string
   side?: "left" | "top" | "bottom" | "right"
-}
+} & Partial<PingResponse>
 
 export const ProviderStatus: React.FC<ProviderStatusProps> = ({
   timestamp,
-  parachainBlockNumber,
+  blockNumber,
   ping,
   className,
   side,
 }) => {
   const { t } = useTranslation()
 
-  const status = useElapsedTimeStatus(timestamp)
+  const status = useElapsedTimeStatus(timestamp ?? 0)
 
   const color =
     status === "online"
@@ -118,9 +113,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
         css={{ letterSpacing: "1px", color }}
         className={className}
       >
-        {parachainBlockNumber && (
-          <span>{t("value", { value: parachainBlockNumber })}</span>
-        )}
+        {blockNumber && <span>{t("value", { value: blockNumber })}</span>}
 
         {status === "online" && <ProviderStatusSuccess key={timestamp ?? 0} />}
 

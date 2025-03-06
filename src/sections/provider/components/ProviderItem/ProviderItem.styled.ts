@@ -73,6 +73,10 @@ export const SProviderItemScrollableContainer = styled.div`
     background: rgba(41, 41, 45, 0.5);
   }
 
+  & > * {
+    border-top: 1px solid rgba(${theme.rgbColors.alpha0}, 0.06);
+  }
+
   @media ${theme.viewport.gte.sm} {
     max-height: 35vh;
 

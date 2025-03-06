@@ -1,64 +1,64 @@
-import { hexToU8a, u8aToBn } from "@polkadot/util"
 import { wsToHttp } from "utils/formatting"
 
-const TIMESTAMP_STORAGE_KEY =
-  "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb"
+export type PingResponse = {
+  url: string
+  timestamp: number
+  ping: number | null
+  blockNumber: number | null
+}
 
 /**
  * Sends a ping request to the specified URL and measures the round-trip time.
  * @param url The URL to ping.
  * @param timeoutMs The maximum time to wait for a response, in milliseconds.
  * @param signal `AbortSignal` to cancel the request.
- * @returns The round-trip time in milliseconds, or `Infinity` if the request timed out or failed.
+ * @returns The status with blockNumber, timestamp and ping in milliseconds, or `Infinity` if the request timed out or failed.
  */
 export async function pingRpc(
   url: string,
   timeoutMs = 5000,
   signal?: AbortSignal,
-): Promise<number> {
-  return new Promise<number>((resolve) => {
+): Promise<PingResponse> {
+  return new Promise<PingResponse>((resolve) => {
     const execute = async () => {
-      const start = performance.now()
+      let defaultResponse = {
+        url,
+        ping: Infinity,
+        timestamp: 0,
+        blockNumber: null,
+      }
 
       try {
-        const end = await Promise.race([
+        const response = await Promise.race([
           (async () => {
             try {
-              const blockHash = await jsonRpcFetch(
+              const start = performance.now()
+              const latestBlock = await jsonRpcFetch(
                 wsToHttp(url),
-                "chain_getBlockHash",
-                [],
+                "eth_getBlockByNumber",
+                ["latest", false],
                 signal,
               )
-              const end = performance.now()
+              const ping = performance.now() - start
 
-              const ts = await jsonRpcFetch(
-                wsToHttp(url),
-                "state_getStorage",
-                [TIMESTAMP_STORAGE_KEY, blockHash],
-                signal,
-              )
-              const timestamp = u8aToBn(hexToU8a(ts), { isLe: true }).toNumber()
-              const blockAge = Date.now() - timestamp
-              console.log({
-                blockAge,
-                end,
-                timestamp,
-                blockAgeFormatted: `${blockAge / 1000}s`,
-              })
-              return end
+              return {
+                url,
+                ping,
+                blockNumber: parseInt(latestBlock.number, 16),
+                timestamp: parseInt(latestBlock.timestamp, 16) * 1000,
+              }
             } catch {
-              return Infinity
+              return defaultResponse
             }
           })(),
-          new Promise<number>((resolve) =>
-            setTimeout(() => resolve(Infinity), timeoutMs),
+          new Promise<PingResponse>((resolve) =>
+            setTimeout(() => resolve(defaultResponse), timeoutMs),
           ),
         ])
 
-        resolve(end - start)
+        resolve(response)
       } catch {
-        resolve(Infinity)
+        resolve(defaultResponse)
       }
     }
 
@@ -70,41 +70,10 @@ export async function pingRpc(
   })
 }
 
-export type RpcInfoResult = {
-  blockNumber: number | null
-  timestamp: number | null
-}
-
-export async function fetchRpcInfo(url: string): Promise<RpcInfoResult> {
-  const blockHashPromise = jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
-  const headerPromise = blockHashPromise.then((blockHash) =>
-    jsonRpcFetch(wsToHttp(url), "chain_getHeader", [blockHash]),
-  )
-  const storagePromise = blockHashPromise.then((blockHash) =>
-    jsonRpcFetch(wsToHttp(url), "state_getStorage", [
-      TIMESTAMP_STORAGE_KEY,
-      blockHash,
-    ]),
-  )
-
-  const [header, ts] = await Promise.allSettled([headerPromise, storagePromise])
-
-  if (header.status === "fulfilled" && ts.status === "fulfilled") {
-    const timestamp = u8aToBn(hexToU8a(ts.value), { isLe: true }).toNumber()
-    const blockNumber = parseInt(header.value.number, 16)
-    return {
-      timestamp,
-      blockNumber,
-    }
-  } else {
-    throw new Error("Failed to fetch RPC info")
-  }
-}
-
 async function jsonRpcFetch(
   url: string,
   method: string,
-  params: string[] = [],
+  params: (string | boolean | number)[] = [],
   signal?: AbortSignal,
 ): Promise<any> {
   const res = await fetch(url, {

@@ -20,7 +20,7 @@ import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
-import { pingRpc } from "utils/rpc"
+import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 
 export type TEnv = "testnet" | "mainnet"
@@ -144,22 +144,35 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const isTestnetRpcUrl = (url: string) =>
   PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
 
-export async function pingAllProvidersAndSort(
-  onSuccess?: (rpc: { url: string; time: number }) => void,
+export async function getBestProvider(
+  onSuccess?: (rpcs: PingResponse) => void,
 ) {
   const controller = new AbortController()
   const signal = controller.signal
 
-  const fastestRpc = await Promise.race(
-    PROVIDER_URLS.map(async (url) => {
-      const time = await pingRpc(url, 5000, signal)
-      return { url, time }
-    }),
-  )
+  const results: PingResponse[] = []
 
-  controller.abort()
+  const promises = PROVIDER_URLS.map(async (url) => {
+    try {
+      const res = await pingRpc(url, 5000, signal)
+      if (results.length < 3) {
+        results.push(res)
+        results.sort((a, b) => b.timestamp - a.timestamp)
 
-  onSuccess?.(fastestRpc)
+        // wait for top 3 results, then abort
+        if (results.length === 3) {
+          controller.abort()
+          onSuccess?.(results[0])
+        }
+      }
+    } catch (error) {
+      if (!signal.aborted) {
+        console.error(`Error pinging RPC ${url}:`, error)
+      }
+    }
+  })
+
+  await Promise.race(promises)
 }
 
 export const useProviderRpcUrlStore = create(

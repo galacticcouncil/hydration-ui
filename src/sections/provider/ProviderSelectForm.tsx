@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRpcProvider } from "providers/rpcProvider"
 import { prop, uniqBy } from "utils/rx"
 import { SProviderItemScrollableContainer } from "sections/provider/components/ProviderItem/ProviderItem.styled"
-import { useRpcsInfo, useRpcsPingAvg } from "api/rpc"
+import { useRpcsStatus } from "api/rpc"
 
 export type ProviderSelectFormProps = {
   onClose: () => void
@@ -104,8 +104,9 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     return uniqBy(prop("url"), list)
   }, [rpcList, t])
 
-  const rpcsInfo = useRpcsInfo(providerList.map(prop("url")))
-  const rpcsPingAvg = useRpcsPingAvg(providerList.map(prop("url")))
+  const rpcsStatusQueries = useRpcsStatus(providerList.map(prop("url")), {
+    calculateAvgPing: true,
+  })
 
   return (
     <>
@@ -149,28 +150,19 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
             {t("rpc.change.modal.column.rpc")}
           </div>
         </SHeader>
-
         <SProviderItemScrollableContainer>
           {providerList.map((provider, index) => {
-            const rpcInfoQuery = rpcsInfo[index]
-            const rpcPingAvgQuery = rpcsPingAvg[index]
-            const isLoading =
-              rpcInfoQuery.isLoading || rpcPingAvgQuery.isLoading
+            const rpcStatusQuery = rpcsStatusQueries[index]
             return (
-              <div sx={{ width: "auto" }} key={provider.url}>
-                <ProviderItem
-                  {...provider}
-                  {...rpcInfoQuery?.data}
-                  ping={rpcPingAvgQuery.data?.avgPing}
-                  isLoading={isLoading}
-                  isActive={provider.url === rpcUrl}
-                  onClick={setRpcUrl}
-                  onRemove={removeRpc}
-                />
-                {index + 1 < PROVIDER_LIST.length && (
-                  <Separator color="alpha0" opacity={0.06} />
-                )}
-              </div>
+              <ProviderItem
+                key={provider.url}
+                {...provider}
+                {...rpcStatusQuery.data}
+                isLoading={rpcStatusQuery.isLoading}
+                isActive={provider.url === rpcUrl}
+                onClick={setRpcUrl}
+                onRemove={removeRpc}
+              />
             )
           })}
         </SProviderItemScrollableContainer>

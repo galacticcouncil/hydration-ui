@@ -359,9 +359,7 @@ export const QUERY_KEYS = {
     "ethereumAccountBalance",
     address,
   ],
-  rpcPing: (url: string) => ["rpcPing", url],
-  rpcPingAvg: (url: string) => ["rpcPingAvg", url],
-  rpcInfo: (url: string) => ["rpcInfo", url],
+  rpcStatus: (url: string) => ["rpcStatus", url],
 } as const
 
 export const WS_QUERY_KEYS = {

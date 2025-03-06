@@ -4,27 +4,14 @@ import {
   type BalanceClient,
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import {
-  pingAllProvidersAndSort,
-  PROVIDER_URLS,
-  TFeatureFlags,
-  useProviderAssets,
-  useProviderData,
-  useProviderRpcUrlStore,
-} from "api/provider"
+import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
 import { AssetsProvider } from "./assets"
-import { differenceInHours } from "date-fns"
 import { PolkadotEvmRpcProvider } from "utils/provider"
-import { useMount } from "react-use"
-import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { uniqBy } from "utils/rx"
-import { identity } from "utils/helpers"
 
 type TProviderContext = {
   api: ApiPromise
@@ -47,36 +34,13 @@ const ProviderContext = createContext<TProviderContext>({
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
-const RPC_PING_HOUR_INTERVAL = 1
-
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
-  const queryClient = useQueryClient()
   const { assets } = useAssetRegistry.getState()
   const isAssets = !!assets.length
   const { data: providerData } = useProviderData()
   const displayAsset = useDisplayAssetStore()
   useProviderAssets()
   useShareTokens()
-
-  useMount(() => {
-    const { rpcUrlList, updatedAt } = useProviderRpcUrlStore.getState()
-
-    const hourDiff = differenceInHours(new Date(), updatedAt)
-
-    const shouldPing =
-      hourDiff >= RPC_PING_HOUR_INTERVAL || rpcUrlList.length === 0
-
-    if (shouldPing) {
-      pingAllProvidersAndSort(({ url, time }) => {
-        queryClient.setQueryData(QUERY_KEYS.rpcPing(url), time)
-
-        const sortedRpcList = uniqBy(identity, [url, ...PROVIDER_URLS])
-        useProviderRpcUrlStore
-          .getState()
-          .setRpcUrlList(sortedRpcList, Date.now())
-      })
-    }
-  })
 
   useWindowFocus({
     onFocus: () => {

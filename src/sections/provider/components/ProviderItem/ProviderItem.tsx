@@ -10,7 +10,7 @@ import { ProviderStatus } from "sections/provider/ProviderStatus"
 import { useState } from "react"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
 import { Spinner } from "components/Spinner/Spinner"
-import { RpcInfoResult } from "utils/rpc"
+import { PingResponse } from "utils/rpc"
 
 type ProviderItemProps = {
   name: string
@@ -20,9 +20,8 @@ type ProviderItemProps = {
   onClick?: (url: string) => void
   onRemove?: (id: string) => void
   className?: string
-  ping?: number | null
   isLoading?: boolean
-} & Partial<RpcInfoResult>
+} & Partial<PingResponse>
 
 export const ProviderItemLayout = ({
   name,
@@ -36,7 +35,7 @@ export const ProviderItemLayout = ({
   blockNumber,
   ping,
   isLoading,
-}: ProviderItemProps & Partial<RpcInfoResult>) => {
+}: ProviderItemProps & Partial<PingResponse>) => {
   const [isEdit, setIsEdit] = useState(false)
 
   if (isEdit)
@@ -67,7 +66,7 @@ export const ProviderItemLayout = ({
         ) : (
           <ProviderStatus
             timestamp={timestamp}
-            parachainBlockNumber={blockNumber}
+            blockNumber={blockNumber}
             className={className}
             side="left"
             ping={ping}
@@ -129,7 +128,7 @@ export const ProviderItemLayout = ({
 }
 
 export const ProviderItemActive: React.FC<
-  ProviderItemProps & Partial<RpcInfoResult> & { ping?: number | null }
+  ProviderItemProps & Partial<PingResponse>
 > = (props) => {
   const { data: bestNumber, isLoading } = useBestNumber()
 

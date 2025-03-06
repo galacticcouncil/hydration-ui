@@ -51,7 +51,7 @@ export const ProviderSelectButton = () => {
             <Spinner size={14} />
           ) : (
             <ProviderStatus
-              parachainBlockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
+              blockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
               timestamp={bestNumber?.timestamp?.toNumber()}
             />
           )}

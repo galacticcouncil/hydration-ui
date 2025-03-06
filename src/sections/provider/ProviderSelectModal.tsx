@@ -13,7 +13,7 @@ import {
 import { Button } from "components/Button/Button"
 import { ProviderItemActive } from "sections/provider/components/ProviderItem/ProviderItem"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useRpcPing } from "api/rpc"
+import { useRpcStatus } from "api/rpc"
 
 export function ProviderSelectModal(props: {
   open: boolean
@@ -96,6 +96,6 @@ export function ProviderSelectModal(props: {
 const AutoModeActiveProvider: React.FC<
   React.ComponentPropsWithoutRef<typeof ProviderItemActive>
 > = (props) => {
-  const { data: ping } = useRpcPing(props.url)
-  return <ProviderItemActive {...props} ping={ping} />
+  const { data } = useRpcStatus(props.url)
+  return <ProviderItemActive {...props} ping={data?.ping ?? null} />
 }
