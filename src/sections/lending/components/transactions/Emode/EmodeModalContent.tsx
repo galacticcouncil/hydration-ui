@@ -131,7 +131,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       case ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING:
         return (
           <Alert variant="info" sx={{ mt: 12, align: "center" }}>
-            <Text>
+            <Text fs={13}>
               <span>
                 To enable E-mode for the{" "}
                 {selectedEmode && getEmodeMessage(selectedEmode.label)}{" "}
@@ -144,29 +144,23 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       case ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING:
         return (
           <Alert variant="info" sx={{ mt: 12, align: "center" }}>
-            <Text>
-              <span>
-                To disable E-mode for the{" "}
-                {selectedEmode &&
-                  getEmodeMessage(eModes[user.userEmodeCategoryId].label)}{" "}
-                category, all borrow positions within this category must be
-                closed.
-              </span>
+            <Text fs={13}>
+              To disable E-mode for the{" "}
+              {selectedEmode &&
+                getEmodeMessage(eModes[user.userEmodeCategoryId].label)}{" "}
+              category, all borrow positions within this category must be
+              closed.
             </Text>
           </Alert>
         )
       case ErrorType.EMODE_DISABLED_LIQUIDATION:
         return (
           <Alert variant="error" sx={{ mt: 12, align: "center" }}>
-            <Text>
-              <span>Cannot disable E-Mode</span>
-            </Text>
-            <Text>
-              <span>
-                You can not disable E-Mode as your current collateralization
-                level is above 80%, disabling E-Mode can cause liquidation. To
-                exit E-Mode supply or repay borrowed positions.
-              </span>
+            <Text fs={13}>Cannot disable E-Mode</Text>
+            <Text fs={13}>
+              You can not disable E-Mode as your current collateralization level
+              is above 80%, disabling E-Mode can cause liquidation. To exit
+              E-Mode supply or repay borrowed positions.
             </Text>
           </Alert>
         )
@@ -358,7 +352,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       )}
       {user.userEmodeCategoryId === 0 && (
         <Alert variant="warning" sx={{ mt: 12 }}>
-          <Text>
+          <Text fs={13}>
             Enabling E-Mode only allows you to borrow assets belonging to the
             selected category.
           </Text>
@@ -367,14 +361,10 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && <Blocked />}
       {showLiquidationRiskAlert && (
         <Alert variant="error" sx={{ mt: 24, align: "center" }}>
-          <Text>
-            <span>Liquidation risk</span>
-          </Text>
-          <Text>
-            <span>
-              This action will reduce your health factor. Please be mindful of
-              the increased risk of collateral liquidation.{" "}
-            </span>
+          <Text fs={13}>Liquidation risk</Text>
+          <Text fs={13}>
+            This action will reduce your health factor. Please be mindful of the
+            increased risk of collateral liquidation.{" "}
           </Text>
         </Alert>
       )}

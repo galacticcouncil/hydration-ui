@@ -318,7 +318,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             </div>
             {isHealthFactorChanged && (
               <>
-                <Text fs={14} sx={{ my: 10 }}>
+                <Alert variant="error" sx={{ mb: 10 }}>
+                  {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
+                </Alert>
+                <Text fs={14}>
                   <CheckBox
                     checked={healthFactorRiskAccepted}
                     onChange={(checked) => setHealthFactorRiskAccepted(checked)}
@@ -326,9 +329,6 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                     sx={{ flex: "row", align: "center" }}
                   />
                 </Text>
-                <Alert variant="warning">
-                  {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
-                </Alert>
               </>
             )}
             <div
