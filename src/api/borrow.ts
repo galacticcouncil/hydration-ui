@@ -1,12 +1,10 @@
 import { UiPoolDataProvider } from "@aave/contract-helpers"
 import {
-  calculateHealthFactorFromBalancesBigUnits,
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
 import { useQuery } from "@tanstack/react-query"
 import { isTestnetRpcUrl } from "api/provider"
-import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
@@ -128,51 +126,9 @@ export const useHealthFactorChange = (assetId: string, amount: string) => {
       withdrawAmount: amount || "0",
     }).toString()
 
-    console.log({
-      currentHealthFactor,
-      futureHealthFactor,
-    })
-
     return {
       currentHealthFactor,
       futureHealthFactor,
     }
   }, [amount, underlyingAssetId, user])
-}
-
-export const calculateHealthFactorAfterWithdraw = (
-  assetId: string,
-  assetDecimals: number,
-  amount: string,
-  spotPrice: BN,
-  userTotalBorrows: BN,
-  userTotalCollateral: BN,
-  currentLiquidationThreshold: string,
-) => {
-  if (
-    !assetId ||
-    !assetDecimals ||
-    !amount ||
-    !spotPrice.gt(0) ||
-    !userTotalBorrows.gt(0) ||
-    !userTotalCollateral.gt(0) ||
-    !currentLiquidationThreshold
-  ) {
-    return "-1"
-  }
-
-  const amountToWithdraw = BN(amount).shiftedBy(-assetDecimals)
-  const amountToWithdrawInReferenceCurrency =
-    amountToWithdraw.multipliedBy(spotPrice)
-  const userTotalCollateralAfterWithdraw = userTotalCollateral.minus(
-    amountToWithdrawInReferenceCurrency,
-  )
-
-  const hf = calculateHealthFactorFromBalancesBigUnits({
-    collateralBalanceMarketReferenceCurrency: userTotalCollateralAfterWithdraw,
-    borrowBalanceMarketReferenceCurrency: userTotalBorrows,
-    currentLiquidationThreshold,
-  })
-
-  return hf.toString()
 }
