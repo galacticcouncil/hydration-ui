@@ -155,15 +155,15 @@ export async function getBestProvider(
   const promises = PROVIDER_URLS.map(async (url) => {
     try {
       const res = await pingRpc(url, 5000, signal)
-      if (results.length < 3) {
-        results.push(res)
-        results.sort((a, b) => b.timestamp - a.timestamp)
+      if (res.ping === Infinity) return
 
-        // wait for top 3 results, then abort
-        if (results.length === 3) {
-          controller.abort()
-          onSuccess?.(results[0])
-        }
+      results.push(res)
+      results.sort((a, b) => b.timestamp - a.timestamp)
+
+      // wait for up to 3 results, then abort and return the best candidate
+      if (results.length === 3 || results.length === PROVIDER_URLS.length) {
+        controller.abort()
+        onSuccess?.(results[0])
       }
     } catch (error) {
       if (!signal.aborted) {

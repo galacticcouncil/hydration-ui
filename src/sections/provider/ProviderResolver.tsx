@@ -4,13 +4,13 @@ import {
   PROVIDER_URLS,
   useProviderRpcUrlStore,
 } from "api/provider"
-import { PropsWithChildren, useRef, useState } from "react"
+import { PropsWithChildren, useEffect, useRef, useState } from "react"
 import { useMount } from "react-use"
 import { identity } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { uniqBy } from "utils/rx"
 
-export const ProviderManager: React.FC<PropsWithChildren> = ({ children }) => {
+export const ProviderResolver: React.FC<PropsWithChildren> = ({ children }) => {
   const queryClient = useQueryClient()
 
   const stateRef = useRef(useProviderRpcUrlStore.getState())
@@ -31,6 +31,16 @@ export const ProviderManager: React.FC<PropsWithChildren> = ({ children }) => {
       setIsBestRpcFound(true)
     })
   })
+
+  useEffect(() => {
+    if (isBestProviderFound) {
+      const loader = window.document.querySelector(".loader-container")
+      if (loader) {
+        // Removes initial static loader in index.html.
+        loader.remove()
+      }
+    }
+  }, [isBestProviderFound])
 
   if (!isBestProviderFound) return null
 

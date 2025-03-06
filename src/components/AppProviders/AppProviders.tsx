@@ -9,7 +9,7 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderReloader } from "sections/provider/ProviderReloader"
-import { ProviderManager } from "sections/provider/ProviderManager"
+import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 
 const AppsContextProvider = createComponent({
@@ -22,7 +22,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <MigrationProvider>
       <TooltipProvider>
-        <ProviderManager>
+        <ProviderResolver>
           <RpcProvider>
             <ProviderReloader>
               <InvalidateOnBlock>
@@ -38,7 +38,7 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
               </InvalidateOnBlock>
             </ProviderReloader>
           </RpcProvider>
-        </ProviderManager>
+        </ProviderResolver>
       </TooltipProvider>
     </MigrationProvider>
   )
