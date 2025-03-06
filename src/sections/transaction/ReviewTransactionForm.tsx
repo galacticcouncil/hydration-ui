@@ -106,8 +106,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     pendingPermit,
   } = transactionValues.data
 
-  const hfChange = useHealthFactorChangeFromTx(tx)
-  const [hfRiskAccepted, setHfRiskAccepted] = useState(false)
+  const healthFactorChange = useHealthFactorChangeFromTx(tx)
+
+  const isHealthFactorChanged =
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
 
   const isPermitTxPending = !!pendingPermit
 
@@ -273,7 +280,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     !account ||
     isLoading ||
     (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
-    (!!hfChange && !hfRiskAccepted)
+    (!!isHealthFactorChanged && !healthFactorRiskAccepted)
 
   return (
     <>
@@ -305,16 +312,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   isCustomNonceEnabled ? setCustomNonce : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
-                currentHealthFactor={hfChange?.currentHealthFactor}
-                futureHealthFactor={hfChange?.futureHealthFactor}
+                currentHealthFactor={healthFactorChange?.currentHealthFactor}
+                futureHealthFactor={healthFactorChange?.futureHealthFactor}
               />
             </div>
-            {hfChange && (
+            {isHealthFactorChanged && (
               <>
                 <Text fs={14} sx={{ my: 10 }}>
                   <CheckBox
-                    checked={hfRiskAccepted}
-                    onChange={(checked) => setHfRiskAccepted(checked)}
+                    checked={healthFactorRiskAccepted}
+                    onChange={(checked) => setHealthFactorRiskAccepted(checked)}
                     label="I acknowledge the risks involved."
                     sx={{ flex: "row", align: "center" }}
                   />

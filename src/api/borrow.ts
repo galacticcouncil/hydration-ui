@@ -1,26 +1,24 @@
 import { UiPoolDataProvider } from "@aave/contract-helpers"
 import {
   calculateHealthFactorFromBalancesBigUnits,
-  formatReserves,
-  formatUserSummary,
+  formatReservesAndIncentives,
+  formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
 import { useQuery } from "@tanstack/react-query"
 import { isTestnetRpcUrl } from "api/provider"
-import { useSpotPrice } from "api/spotPrice"
-import { useAssets } from "providers/assets"
+import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
+import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { H160, isEvmAccount } from "utils/evm"
+import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
-import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
-import { HYDRA_USDT_ASSET_ID } from "sections/memepad/form/MemepadForm.utils"
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
   const { account } = useAccount()
@@ -67,16 +65,17 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 
       const currentTimestamp = timestamp.toNumber() / 1000
 
-      const formattedReserves = formatReserves({
+      const formattedReserves = formatReservesAndIncentives({
         currentTimestamp,
         reserves: reservesData,
         marketReferencePriceInUsd:
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
+        reserveIncentives: [],
       })
 
-      return formatUserSummary({
+      const summary = formatUserSummaryAndIncentives({
         currentTimestamp,
         marketReferencePriceInUsd:
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
@@ -85,7 +84,18 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         userReserves,
         formattedReserves,
         userEmodeCategoryId,
+        reserveIncentives: [],
+        userIncentives: [],
       })
+
+      const extendedUser = {
+        ...summary,
+        isInEmode: userEmodeCategoryId !== 0,
+        userEmodeCategoryId,
+        calculatedUserIncentives: {},
+      } as ExtendedFormattedUser
+
+      return extendedUser
     },
     {
       retry: false,
@@ -95,30 +105,39 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 }
 
 export const useHealthFactorChange = (assetId: string, amount: string) => {
-  const { getAsset } = useAssets()
-  const asset = assetId ? getAsset(assetId) : null
-  const isAToken = asset && !!A_TOKEN_UNDERLYING_ID_MAP[asset.id]
+  const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
 
-  const { data: spotPrice } = useSpotPrice(assetId, HYDRA_USDT_ASSET_ID)
-  const { data: userBorrowSummary } = useUserBorrowSummary()
+  const { data: user } = useUserBorrowSummary()
 
-  if (!isAToken) return null
+  return useMemo(() => {
+    if (!underlyingAssetId || !user) return null
 
-  const currentHealthFactor = userBorrowSummary?.healthFactor ?? "-1"
-  const futureHealthFactor = calculateHealthFactorAfterWithdraw(
-    assetId ?? "",
-    asset?.decimals ?? 0,
-    amount ?? "",
-    spotPrice?.spotPrice ?? BN_0,
-    BN(userBorrowSummary?.totalBorrowsMarketReferenceCurrency ?? BN_0),
-    BN(userBorrowSummary?.totalCollateralMarketReferenceCurrency ?? BN_0),
-    userBorrowSummary?.currentLiquidationThreshold ?? "0",
-  )
+    const reserveAddress = getAddressFromAssetId(underlyingAssetId)
 
-  return {
-    currentHealthFactor,
-    futureHealthFactor,
-  }
+    const userReserve = user.userReservesData.find(
+      ({ reserve }) => reserve.underlyingAsset === reserveAddress,
+    )
+
+    if (!userReserve) return null
+
+    const currentHealthFactor = user.healthFactor
+    const futureHealthFactor = calculateHFAfterWithdraw({
+      user: user,
+      userReserve: userReserve,
+      poolReserve: userReserve.reserve,
+      withdrawAmount: amount || "0",
+    }).toString()
+
+    console.log({
+      currentHealthFactor,
+      futureHealthFactor,
+    })
+
+    return {
+      currentHealthFactor,
+      futureHealthFactor,
+    }
+  }, [amount, underlyingAssetId, user])
 }
 
 export const calculateHealthFactorAfterWithdraw = (

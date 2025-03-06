@@ -43,7 +43,6 @@ import { Switch } from "components/Switch/Switch"
 import { useState } from "react"
 import { useHealthFactorChange } from "api/borrow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
-import BN from "bignumber.js"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -180,11 +179,15 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
-  const amountShifted = BN(debouncedAmount).shiftedBy(assetMeta.decimals)
-  const hfChange = useHealthFactorChange(
+  const healthFactorChange = useHealthFactorChange(
     assetMeta.id,
-    amountShifted.gt(0) ? amountShifted.toString() : "",
+    debouncedAmount,
   )
+
+  const isHealthFactorChanged =
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
 
   const dest = form.watch("dest")
   const shouldShowDisclaimer =
@@ -288,7 +291,7 @@ export function WalletTransferSectionOnchain({
         )}
         <div>
           <SummaryRow
-            withSeparator={!!hfChange}
+            withSeparator={!!healthFactorChange}
             label={t("wallet.assets.transfer.transaction_cost")}
             content={
               insufficientFee ? (
@@ -309,12 +312,12 @@ export function WalletTransferSectionOnchain({
               )
             }
           />
-          {hfChange && (
+          {healthFactorChange && (
             <SummaryRow
               content={
                 <HealthFactorChange
-                  healthFactor={hfChange.currentHealthFactor}
-                  futureHealthFactor={hfChange.futureHealthFactor}
+                  healthFactor={healthFactorChange.currentHealthFactor}
+                  futureHealthFactor={healthFactorChange.futureHealthFactor}
                 />
               }
               label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
@@ -336,7 +339,7 @@ export function WalletTransferSectionOnchain({
             })}
           </Alert>
         )}
-        {hfChange && (
+        {isHealthFactorChanged && (
           <Alert variant="warning">
             {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
