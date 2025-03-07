@@ -1,31 +1,27 @@
 import { useActiveProvider, useProviderRpcUrlStore } from "api/provider"
 import { Modal } from "components/Modal/Modal"
-import { useState } from "react"
 
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { ProviderSelectForm } from "sections/provider/ProviderSelectForm"
-import { useRpcStore } from "state/store"
 import {
   SAutoModeActiveContainer,
   SSwitchContainer,
   SSWitchContent,
 } from "./ProviderSelectModal.styled"
-import { DeleteModal } from "./components/DeleteModal/DeleteModal"
 import { Button } from "components/Button/Button"
-import { ProviderItem } from "sections/provider/components/ProviderItem/ProviderItem"
+import { ProviderItemActive } from "sections/provider/components/ProviderItem/ProviderItem"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useRpcStatus } from "api/rpc"
 
 export function ProviderSelectModal(props: {
   open: boolean
   onClose: () => void
 }) {
   const { isLoaded } = useRpcProvider()
-  const { setRpcUrl, autoMode, setAutoMode } = useProviderRpcUrlStore()
-  const [removeRpcUrl, setRemoveRpcUrl] = useState<string | undefined>()
+  const { autoMode, setAutoMode } = useProviderRpcUrlStore()
   const { t } = useTranslation()
-  const { removeRpc } = useRpcStore()
 
   const activeProvider = useActiveProvider()
 
@@ -62,7 +58,7 @@ export function ProviderSelectModal(props: {
           </SSWitchContent>
           {autoMode && activeProvider.url && (
             <SAutoModeActiveContainer sx={{ mt: 14 }}>
-              <ProviderItem
+              <AutoModeActiveProvider
                 sx={{ opacity: isLoaded ? 1 : 0 }}
                 name={activeProvider.name}
                 url={activeProvider.url}
@@ -89,29 +85,17 @@ export function ProviderSelectModal(props: {
               {t("rpc.change.modal.close")}
             </Button>
           ) : (
-            <>
-              <ProviderSelectForm
-                onSave={(rpcUrl) => {
-                  setRpcUrl(rpcUrl)
-                }}
-                onRemove={(rpc) => {
-                  setRemoveRpcUrl(rpc)
-                }}
-                onClose={props.onClose}
-              />
-              {!!removeRpcUrl && (
-                <DeleteModal
-                  onBack={() => setRemoveRpcUrl(undefined)}
-                  onConfirm={() => {
-                    removeRpc(removeRpcUrl)
-                    setRemoveRpcUrl(undefined)
-                  }}
-                />
-              )}
-            </>
+            <ProviderSelectForm onClose={props.onClose} />
           )}
         </div>
       </Modal>
     </>
   )
+}
+
+const AutoModeActiveProvider: React.FC<
+  React.ComponentPropsWithoutRef<typeof ProviderItemActive>
+> = (props) => {
+  const { data } = useRpcStatus(props.url)
+  return <ProviderItemActive {...props} ping={data?.ping ?? null} />
 }

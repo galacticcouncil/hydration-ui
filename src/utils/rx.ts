@@ -1,3 +1,8 @@
+export const prop =
+  <T extends object, K extends keyof T>(key: K) =>
+  (obj: T): T[K] =>
+    obj[key]
+
 export const pluck = <TArr, TKey extends keyof TArr>(
   key: TKey,
   arr: TArr[],

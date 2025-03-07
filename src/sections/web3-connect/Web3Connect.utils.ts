@@ -6,7 +6,7 @@ import {
   useQuery,
 } from "@tanstack/react-query"
 import { useShallow } from "hooks/useShallow"
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { usePrevious } from "react-use"
 import {
   NamespaceType,
@@ -95,7 +95,7 @@ export const useEvmAccount = () => {
   const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data
 
-  const evm = useQuery(
+  const { refetch, ...evm } = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
       const chainId = isEvmWalletExtension(wallet?.extension)
@@ -110,6 +110,16 @@ export const useEvmAccount = () => {
       enabled: !!address && !!wallet?.extension,
     },
   )
+
+  useEffect(() => {
+    if (wallet && isEvmWalletExtension(wallet?.extension)) {
+      // Refetch chainId on chainChanged event from wallet extension
+      wallet.extension.on("chainChanged", refetch)
+      return () => {
+        wallet.extension.off("chainChanged", refetch)
+      }
+    }
+  }, [refetch, wallet])
 
   if (!address) {
     return {
@@ -171,6 +181,19 @@ export const useWalletAccounts = (
   const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
   const connectedProviders = useConnectedProviders()
 
+  const selectAccounts = useCallback(
+    (data: WalletAccount[]) => {
+      if (!data) return []
+      if (type) {
+        return data
+          .map(mapWalletAccount)
+          .filter(({ provider }) => provider === type)
+      }
+      return data.map(mapWalletAccount)
+    },
+    [type],
+  )
+
   return useQuery<WalletAccount[], unknown, Account[]>(
     QUERY_KEYS.providerAccounts(
       connectedProviders
@@ -194,18 +217,9 @@ export const useWalletAccounts = (
     },
     {
       enabled: connectedProviders.length > 0,
-      select: (data) => {
-        if (!data) return []
-        if (type) {
-          return data
-            .map(mapWalletAccount)
-            .filter(({ provider }) => provider === type)
-        }
-        return data.map(mapWalletAccount)
-      },
+      select: selectAccounts,
       cacheTime: 0,
       staleTime: 5000,
-      keepPreviousData: true,
       ...options,
     },
   )
