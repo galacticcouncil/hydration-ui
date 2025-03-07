@@ -1,4 +1,3 @@
-import { useExternalAssetRegistry } from "api/external"
 import { useProviderRpcUrlStore, useRefetchProviderData } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEffect, useMemo, useRef } from "react"
@@ -6,15 +5,21 @@ import {
   TRegisteredAsset,
   updateExternalAssetsCursor,
 } from "sections/wallet/addToken/AddToken.utils"
-import { useSettingsStore } from "state/store"
+import { useExternalAssetsMetadata, useSettingsStore } from "state/store"
 import { useAssets } from "providers/assets"
 import { useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { pick } from "utils/rx"
+import { useShallow } from "hooks/useShallow"
 
 export const useDegenModeSubscription = () => {
   const { external, externalInvalid } = useAssets()
   const { degenMode } = useSettingsStore()
-  const externalAssets = useExternalAssetRegistry(degenMode)
+  const { isInitialized, getExternalAssetMetadata } = useExternalAssetsMetadata(
+    useShallow((state) =>
+      pick(state, ["isInitialized", "getExternalAssetMetadata"]),
+    ),
+  )
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
   const { isLoaded, poolService } = useRpcProvider()
@@ -23,27 +28,25 @@ export const useDegenModeSubscription = () => {
   const hasInitializedDegenMode = useRef(false)
 
   const { data, isSuccess } = useMemo(() => {
-    const isSuccess = Object.values(externalAssets)
-      .map(({ isSuccess }) => isSuccess)
-      .every(Boolean)
-
-    if (!isSuccess || !isLoaded) {
+    if (!isInitialized() || !isLoaded)
       return {
         data: [],
         isSuccess: false,
       }
-    }
 
     const data = [...external, ...externalInvalid].reduce((acc, asset) => {
-      const externalAsset = externalAssets[
-        Number(asset.parachainId)
-      ]?.data?.get(asset.externalId ?? "")
+      if (asset.parachainId && asset.externalId) {
+        const externalAsset = getExternalAssetMetadata(
+          asset.parachainId,
+          asset.externalId,
+        )
 
-      if (externalAsset) {
-        acc.push({
-          ...externalAsset,
-          internalId: asset.id,
-        })
+        if (externalAsset) {
+          acc.push({
+            ...externalAsset,
+            internalId: asset.id,
+          })
+        }
       }
 
       return acc
@@ -51,9 +54,15 @@ export const useDegenModeSubscription = () => {
 
     return {
       data,
-      isSuccess,
+      isSuccess: true,
     }
-  }, [external, externalAssets, isLoaded, externalInvalid])
+  }, [
+    external,
+    externalInvalid,
+    isLoaded,
+    getExternalAssetMetadata,
+    isInitialized,
+  ])
 
   // Initialize ExternalAssetCursor if degenMode is true
   useEffect(() => {
@@ -70,7 +79,7 @@ export const useDegenModeSubscription = () => {
       poolService.syncRegistry(data)
       hasInitializedDegenMode.current = true
       refetchProvider()
-      queryClient.invalidateQueries(QUERY_KEYS.pools)
+      queryClient.invalidateQueries(QUERY_KEYS.allPools)
     }
   }, [
     degenMode,

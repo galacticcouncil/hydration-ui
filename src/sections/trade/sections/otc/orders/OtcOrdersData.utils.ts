@@ -1,9 +1,9 @@
 import { useMemo } from "react"
 import { useOrdersData, useOrdersState, getOrderStateValue } from "api/otc"
 import BN from "bignumber.js"
-import { useAssetPrices } from "utils/displayAsset"
 import { calculateDiffToRef } from "@galacticcouncil/sdk"
 import { isNotNil } from "utils/helpers"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const useOrdersTableData = () => {
   const treasuryAddr = import.meta.env.VITE_TRSRY_ADDR
@@ -28,11 +28,14 @@ export const useOrdersTableData = () => {
     [] as { id: string; symbol: string; name: string }[],
   )
 
-  const assetPrices = useAssetPrices(assets ?? [])
+  const { getAssetPrice, isLoading: isPriceLaoding } = useAssetsPrice(
+    assets?.map((asset) => asset.id) ?? [],
+  )
 
-  const queries = [orders, ...ordersState, ...assetPrices]
-  const isLoading = queries.some((q) => q.isLoading)
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const queries = [orders, ...ordersState]
+  const isLoading = queries.some((q) => q.isLoading) || isPriceLaoding
+  const isInitialLoading =
+    queries.some((q) => q.isInitialLoading) || isPriceLaoding
 
   const data = useMemo(() => {
     if (!orders.data || isInitialLoading) return []
@@ -45,7 +48,13 @@ export const useOrdersTableData = () => {
           ? !!order.assetOut?.name
           : true
 
-        if (!assetInValid || !assetOutValid) return null
+        if (
+          !assetInValid ||
+          !assetOutValid ||
+          !order.assetIn ||
+          !order.assetOut
+        )
+          return null
 
         const orderState = ordersState.find(
           (state) => state.data?.orderId === parseInt(order.id),
@@ -58,27 +67,16 @@ export const useOrdersTableData = () => {
         const amountOut: BN = order.amountOut!.shiftedBy(-1 * amountOutDp)
         const amountOutInitial: string | undefined = orderStateValue?.amountOut
 
-        const spotPriceInUSD = assetPrices?.find(
-          (spotPrice) => spotPrice?.data?.tokenIn === order.assetIn?.id,
-        )
+        const priceIn = getAssetPrice(order.assetIn.id).price
+        const priceOut = getAssetPrice(order.assetOut.id).price
 
-        const valueOfAssetIn = amountIn.multipliedBy(
-          spotPriceInUSD?.data?.spotPrice || 0,
-        )
+        const valueOfAssetIn = amountIn.multipliedBy(priceIn)
         const orderPrice = valueOfAssetIn.div(amountOut || 0)
 
-        const marketPriceInUSD = assetPrices?.find(
-          (spotPrice) => spotPrice?.data?.tokenIn === order.assetOut?.id,
-        )
-        const marketPrice = marketPriceInUSD?.data?.spotPrice || null
-
-        let marketPricePercentage = 0
-        if (marketPrice) {
-          marketPricePercentage = calculateDiffToRef(
-            marketPrice,
-            orderPrice,
-          ).toNumber()
-        }
+        const marketPricePercentage = calculateDiffToRef(
+          BN(priceOut),
+          orderPrice,
+        ).toNumber()
 
         return {
           id: order.id,
@@ -103,14 +101,14 @@ export const useOrdersTableData = () => {
           },
           price: amountIn.div(amountOut),
           orderPrice: orderPrice,
-          marketPrice: marketPrice,
+          marketPrice: BN(priceOut),
           marketPricePercentage: marketPricePercentage,
           partiallyFillable: order.partiallyFillable,
           pol: order.owner === treasuryAddr,
         } as OrderTableData
       })
       .filter(isNotNil)
-  }, [orders.data, ordersState, treasuryAddr, assetPrices, isInitialLoading])
+  }, [orders.data, ordersState, treasuryAddr, isInitialLoading, getAssetPrice])
 
   return {
     data,

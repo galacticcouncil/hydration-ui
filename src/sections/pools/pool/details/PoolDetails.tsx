@@ -26,12 +26,12 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { useDisplayPrice } from "utils/displayAsset"
 import { BN_1 } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -270,13 +270,18 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
 
   const prices = useXYKSpotPrice(shareTokenId)
 
-  const usdPriceA = useDisplayPrice(prices?.assetA.id)
-  const usdPriceB = useDisplayPrice(prices?.assetB.id)
+  const { getAssetPrice, isLoading } = useAssetsPrice(
+    prices ? [prices.assetA.id, prices.assetB.id] : [],
+  )
 
   if (!prices) return null
 
-  const displayPriceA = prices.priceA.times(usdPriceB.data?.spotPrice ?? 1)
-  const displayPriceB = prices.priceB.times(usdPriceA.data?.spotPrice ?? 1)
+  const displayPriceA = prices.priceA.times(
+    getAssetPrice(prices.assetB.id).price,
+  )
+  const displayPriceB = prices.priceB.times(
+    getAssetPrice(prices.assetA.id).price,
+  )
 
   return (
     <>
@@ -288,7 +293,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
           </Text>
         </div>
         <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
-          {usdPriceA.isLoading ? (
+          {isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (
             <DisplayValue value={displayPriceA} type="token" />
@@ -305,7 +310,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
           </Text>
         </div>
         <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
-          {usdPriceB.isLoading ? (
+          {isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (
             <DisplayValue value={displayPriceB} type="token" />

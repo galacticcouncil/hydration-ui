@@ -73,13 +73,14 @@ export const useShareTokens = () => {
             syncShareTokens(data)
           }
 
-          return data
+          return []
         }
       : undefinedNoop,
     {
       enabled: !!provider,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
+      notifyOnChangeProps: [],
     },
   )
 }

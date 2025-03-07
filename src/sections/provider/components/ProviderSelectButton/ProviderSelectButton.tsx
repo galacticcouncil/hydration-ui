@@ -18,7 +18,7 @@ export const ProviderSelectButton = () => {
 
   const { isLoaded } = useRpcProvider()
 
-  const number = useBestNumber(!isLoaded)
+  const { data: bestNumber } = useBestNumber(!isLoaded)
 
   return (
     <LazyMotion features={domAnimation}>
@@ -44,8 +44,8 @@ export const ProviderSelectButton = () => {
             <Separator orientation="vertical" sx={{ height: 14, mr: 10 }} />
           </SName>
           <ProviderStatus
-            parachainBlockNumber={number.data?.parachainBlockNumber}
-            timestamp={number.data?.timestamp}
+            parachainBlockNumber={bestNumber?.parachainBlockNumber}
+            timestamp={bestNumber?.timestamp}
           />
         </SButton>
         {open && (

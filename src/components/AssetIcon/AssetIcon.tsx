@@ -9,12 +9,14 @@ import {
 import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useExternalAssetsWhiteList } from "api/external"
+import { ExternalAssetBadgeVariant, useExternalWhitelist } from "api/external"
 import { findNestedKey, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
 import { ResponsiveValue } from "utils/responsive"
 import { useAssets } from "providers/assets"
 import { Icon } from "components/Icon/Icon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useExternalAssetsMetadata } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -73,18 +75,42 @@ export const MultipleAssetLogo = ({
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { getAsset, getErc20, isErc20 } = useAssets()
-
-  const { getIsWhiteListed } = useExternalAssetsWhiteList()
+  const getExternalAssetMetadata = useExternalAssetsMetadata(
+    useShallow((state) => state.getExternalAssetMetadata),
+  )
+  const { data: whitelist } = useExternalWhitelist()
 
   const asset = useMemo(() => {
     const assetDetails = id ? getErc20(id) || getAsset(id) : undefined
-    const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
+
+    let isWhitelisted: boolean | undefined
+    let badge: ExternalAssetBadgeVariant | undefined
+
+    if (assetDetails?.isExternal) {
+      if (assetDetails.parachainId && assetDetails.externalId) {
+        const externalAssetMeta = getExternalAssetMetadata(
+          assetDetails.parachainId,
+          assetDetails.externalId,
+        )
+
+        if (externalAssetMeta) {
+          const { isWhiteListed } = externalAssetMeta
+          isWhitelisted = isWhiteListed
+        }
+      } else {
+        isWhitelisted = false
+      }
+
+      if (!isWhitelisted) isWhitelisted = !!whitelist?.includes(assetDetails.id)
+
+      badge = isWhitelisted ? "warning" : "danger"
+    }
 
     return {
       details: assetDetails,
       badgeVariant: badge,
     }
-  }, [getAsset, getErc20, getIsWhiteListed, id])
+  }, [getAsset, getErc20, getExternalAssetMetadata, id, whitelist])
 
   const { details, badgeVariant } = asset
 

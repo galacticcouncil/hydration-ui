@@ -1,4 +1,3 @@
-import { useExternalAssetRegistry } from "api/external"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { ModalContents } from "components/Modal/contents/ModalContents"
@@ -10,7 +9,7 @@ import {
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 import { AddTokenFormModal } from "sections/wallet/addToken/modal/AddTokenFormModal"
-import { useSettingsStore } from "state/store"
+import { useExternalAssetsMetadata, useSettingsStore } from "state/store"
 import { isNotNil } from "utils/helpers"
 import { TExternal, useAssets } from "providers/assets"
 
@@ -38,7 +37,9 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
     },
   )
 
-  const externalAssets = useExternalAssetRegistry(assetsMeta.length > 0)
+  const getExternalAssetMetadata = useExternalAssetsMetadata(
+    useShallow((state) => state.getExternalAssetMetadata),
+  )
 
   const assetsToAddRef = useRef<TExternalAsset[]>([])
 
@@ -51,8 +52,8 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
     const assetsToAdd = assetsMeta
       .map(({ parachainId, externalId }) => {
         if (!parachainId || !externalId) return null
-        const assets = externalAssets?.[+parachainId]
-        return assets?.data?.get(externalId)
+
+        return getExternalAssetMetadata(parachainId, externalId)
       })
       .filter(isNotNil)
 
@@ -60,7 +61,7 @@ export const ExternalAssetImportModal: React.FC<Props> = ({
       assetsToAddRef.current = assetsToAdd
       setIsOpen(true)
     }
-  }, [assetsMeta, externalAssets, isAdded])
+  }, [assetsMeta, isAdded, getExternalAssetMetadata])
 
   return (
     <Modal open={isOpen} disableCloseOutside={true} onClose={onCloseHandler}>

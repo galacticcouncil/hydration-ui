@@ -46,10 +46,11 @@ export const QUERY_KEYS = {
     "accountsBalances",
     ids.join("."),
   ],
-  pools: [QUERY_KEY_PREFIX, "pools"],
-  omnipoolTokens: ["omnipoolTokens"],
-  stablePools: ["stablePools"],
-  hubToken: ["hubToken"],
+  allPools: [QUERY_KEY_PREFIX, "allPools"],
+  omnipoolTokens: ["pools", "omnipoolTokens"],
+  stablePools: ["pools", "stable"],
+  xykPools: ["pools", "xykPool"],
+  hubToken: ["pools", "hubToken"],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
@@ -97,17 +98,6 @@ export const QUERY_KEYS = {
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
-  newSpotPrice: (assetA: string, assetB: string) => [
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
-  newSpotPriceLive: (assetA: string, assetB: string) => [
-    QUERY_KEY_PREFIX,
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
@@ -273,7 +263,6 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  xykPools: ["xykPools"],
   allXykPools: ["allXykPools"],
   xykConsts: ["xykConsts"],
   shareTokens: (rpc: string) => ["shareTokens", rpc],
@@ -339,7 +328,6 @@ export const QUERY_KEYS = {
     "assetHubExistentialDeposit",
     id,
   ],
-  assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   progressToast: (hash: string) => [QUERY_KEY_PREFIX, "progressToast", hash],
@@ -358,6 +346,12 @@ export const QUERY_KEYS = {
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
     address,
+  ],
+  spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
+  displayPrices: (stableCoinId: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "displayPrices",
+    stableCoinId,
   ],
 } as const
 

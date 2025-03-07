@@ -2,7 +2,6 @@ import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
-import { Suspense, lazy } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
@@ -27,27 +26,6 @@ import { usePreviousUrl } from "hooks/usePreviousUrl"
 type Props = {
   className?: string
 }
-
-const ReferralsConnect = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnect"))
-    .ReferralsConnect,
-}))
-
-const Transactions = lazy(async () => ({
-  default: (await import("sections/transaction/Transactions")).Transactions,
-}))
-
-const Web3Connect = lazy(async () => ({
-  default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
-}))
-
-const DepositManager = lazy(async () => ({
-  default: (await import("sections/deposit/DepositManager")).DepositManager,
-}))
-
-const QuerySubscriptions = lazy(async () => ({
-  default: (await import("api/subscriptions")).QuerySubscriptions,
-}))
 
 const useSubheaderComponent = () => {
   const { t } = useTranslation()
@@ -105,31 +83,34 @@ const useSubheaderComponent = () => {
 }
 
 export const Page = ({ className }: Props) => {
-  const matchRoute = useMatchRoute()
   const ref = useControlScroll()
-  const subHeaderComponent = useSubheaderComponent()
-  const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (
-    <>
-      <SPage ref={ref}>
-        <SGradientBg flipped={flippedBg} />
-        <Header />
-        <SPageContent>
-          {subHeaderComponent && <SSubHeader>{subHeaderComponent}</SSubHeader>}
-          <SPageInner className={className}>
-            <Outlet />
-          </SPageInner>
-        </SPageContent>
-        <MobileNavBar />
-      </SPage>
-      <Suspense>
-        <Web3Connect />
-        <Transactions />
-        <ReferralsConnect />
-        <QuerySubscriptions />
-        <DepositManager />
-      </Suspense>
-    </>
+    <SPage ref={ref}>
+      <Background />
+      <Header />
+      <SPageContent>
+        <SubHeader />
+        <SPageInner className={className}>
+          <Outlet />
+        </SPageInner>
+      </SPageContent>
+      <MobileNavBar />
+    </SPage>
   )
+}
+
+const Background = () => {
+  const matchRoute = useMatchRoute()
+  const flippedBg = !!matchRoute({ to: LINKS.memepad })
+
+  return <SGradientBg flipped={flippedBg} />
+}
+
+const SubHeader = () => {
+  const subHeaderComponent = useSubheaderComponent()
+
+  if (!subHeaderComponent) return null
+
+  return <SSubHeader>{subHeaderComponent}</SSubHeader>
 }

@@ -13,6 +13,7 @@ import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
+import { useActiveQueries } from "hooks/useActiveQueries"
 
 export const useShareOfPools = (assets: string[]) => {
   const totalIssuances = useTotalIssuances()
@@ -52,9 +53,10 @@ export const useShareOfPools = (assets: string[]) => {
 export const useSDKPools = () => {
   const { isLoaded, tradeRouter } = useRpcProvider()
   const queryClient = useQueryClient()
+  const activeQueriesAmount = useActiveQueries(["pools"])
 
   return useQuery({
-    queryKey: QUERY_KEYS.pools,
+    queryKey: QUERY_KEYS.allPools,
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
 
@@ -116,7 +118,7 @@ export const useSDKPools = () => {
 
       return false
     },
-    enabled: isLoaded,
+    enabled: isLoaded && !!activeQueriesAmount,
     staleTime: millisecondsInMinute,
   })
 }
