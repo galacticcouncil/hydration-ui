@@ -32,6 +32,7 @@ export const useSpotPrice = (
     {
       enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded,
       notifyOnChangeProps: TRACKED_PROPS,
+      staleTime: 10000,
     },
   )
 }
