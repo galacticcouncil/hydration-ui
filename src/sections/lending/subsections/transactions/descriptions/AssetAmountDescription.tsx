@@ -23,6 +23,8 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
         flex: "row",
         gap: 8,
         align: "center",
+        flexWrap: "wrap",
+        maxWidth: "80%",
       }}
     >
       <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
@@ -33,6 +35,7 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
             .toString(),
           symbol: asset?.symbol,
           ignoreSmallFormat: true,
+          decimalPlaces: 4,
         })}
       </Text>
     </div>

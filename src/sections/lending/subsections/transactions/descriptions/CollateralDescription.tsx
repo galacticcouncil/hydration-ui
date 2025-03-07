@@ -23,6 +23,8 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
         flex: "row",
         gap: 4,
         align: "center",
+        flexWrap: "wrap",
+        maxWidth: "80%",
       }}
     >
       <Trans
@@ -32,12 +34,14 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
       >
         <span sx={{ color: enabled ? "green500" : "red500" }} />
       </Trans>
-      <Icon
-        icon={<AssetLogo id={assetId ?? undefined} />}
-        size={16}
-        sx={{ mx: 2 }}
-      />{" "}
-      {asset?.symbol}
+      <div sx={{ flex: "row", align: "center", gap: 4 }}>
+        <Icon
+          icon={<AssetLogo id={assetId ?? undefined} />}
+          size={16}
+          sx={{ mx: 2 }}
+        />{" "}
+        {asset?.symbol}
+      </div>
     </Text>
   )
 }

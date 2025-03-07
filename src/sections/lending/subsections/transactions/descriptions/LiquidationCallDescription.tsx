@@ -24,7 +24,10 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
         flex: "row",
         gap: 8,
         align: "center",
+        flexWrap: "wrap",
+        maxWidth: "80%",
       }}
+      css={{ whiteSpace: "collapse" }}
     >
       {t("lending.transactions.table.liquidatedCollateral")}
       <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
@@ -35,6 +38,7 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
           .toString(),
         symbol: asset?.symbol,
         ignoreSmallFormat: true,
+        decimalPlaces: 4,
       })}
     </Text>
   )
