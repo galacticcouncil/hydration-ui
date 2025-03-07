@@ -18,6 +18,7 @@ import { css } from "@emotion/react"
 import { mapMoneyMarketEvents } from "sections/lending/subsections/transactions/LendingTransactionsTable.utils"
 import { useTranslation } from "react-i18next"
 import { LendingTransactionsSearch } from "sections/lending/subsections/transactions/LendingTransactionsFilter.utils"
+import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 
 type Props = {
   readonly searchPhrase: string
@@ -88,10 +89,11 @@ export const LendingTransactionsTable: FC<Props> = ({
           }
         />
       </div>
-      <SDataTable
-        table={table}
-        emptyFallback={t("lending.transactions.table.emptyMessage")}
-      />
+      {eventsWithDays.length ? (
+        <SDataTable table={table} />
+      ) : (
+        <EmptySearchState />
+      )}
       <TablePagination table={table} />
     </TableContainer>
   )

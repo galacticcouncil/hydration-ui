@@ -1174,7 +1174,6 @@
   "lending.transactions.search.placeholder": "Search by asset name or symbol",
   "lending.transactions.filter.title": "Filter by",
   "lending.transactions.table.title": "Transaction history",
-  "lending.transactions.table.emptyMessage": "We couldn't find any transactions related to your search. Try again with a different asset name, or reset filters.",
   "lending.transactions.table.liquidatedCollateral": "Liquidated Collateral",
   "lending.transactions.table.emodeEnabled": "{{ emode }} <0>Enabled</0>",
   "lending.transactions.table.emodeDisabled": "{{ emode }} <0>Disabled</0>",
