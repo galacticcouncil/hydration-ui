@@ -517,7 +517,7 @@ const parseVaa = (vaa: Uint8Array | Buffer) => {
     emitterAddress: body.subarray(10, 42),
     sequence: body.readBigUInt64BE(42),
     consistencyLevel: body[50],
-    payload: payload ? Buffer.from(payload).toString("hex") : null,
+    payload: payload ? payload.toString("hex") : null,
     hash: keccak256(body),
   }
 }
