@@ -248,6 +248,7 @@ export const QUERY_KEYS = {
   hdxSupply: ["hdxSupply"],
   treasuryBalances: ["treasuryBalances"],
   stake: (address: string | undefined) => ["stake", address],
+  minStake: ["minStake"],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
