@@ -98,17 +98,6 @@ export const QUERY_KEYS = {
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
-  newSpotPrice: (assetA: string, assetB: string) => [
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
-  newSpotPriceLive: (assetA: string, assetB: string) => [
-    QUERY_KEY_PREFIX,
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
@@ -339,7 +328,6 @@ export const QUERY_KEYS = {
     "assetHubExistentialDeposit",
     id,
   ],
-  assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
   progressToast: (hash: string) => [QUERY_KEY_PREFIX, "progressToast", hash],
@@ -358,6 +346,12 @@ export const QUERY_KEYS = {
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
     address,
+  ],
+  spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
+  displayPrices: (stableCoinId: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "displayPrices",
+    stableCoinId,
   ],
 } as const
 

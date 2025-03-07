@@ -9,7 +9,6 @@ import {
   useUserExternalTokenStore,
 } from "sections/wallet/addToken/AddToken.utils"
 
-import { useDisplayPrices } from "utils/displayAsset"
 import { isNotNil } from "utils/helpers"
 import BN from "bignumber.js"
 import { useExternalAssetsMetadata } from "state/store"
@@ -17,6 +16,7 @@ import { useShallow } from "hooks/useShallow"
 
 import { pick } from "utils/rx"
 import { assethub } from "api/external/assethub"
+import { useAssetsPrice } from "state/displayPrice"
 
 const useMissingExternalAssets = (ids: string[]) => {
   const { tradable, getAsset } = useAssets()
@@ -108,22 +108,17 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
       enabled: !valid && !!missingAssets.length,
     },
   )
+  const { getAssetPrice, isLoading: isLoadingPrice } = useAssetsPrice(
+    valid ? volumeAssets : [],
+  )
 
-  const spotPrices = useDisplayPrices(valid ? volumeAssets : [])
-
-  const isLoading = isVolumesLoading || spotPrices.isInitialLoading
+  const isLoading = isVolumesLoading || isLoadingPrice
 
   const data = useMemo(() => {
-    if (
-      !!volumes.length &&
-      !!spotPrices.data?.length &&
-      spotPrices.data.every((spotPrice) => !spotPrice?.spotPrice.isNaN())
-    ) {
+    if (!!volumes.length && !isLoadingPrice) {
       return volumes.map((value) => {
         const assetMeta = getAsset(value.assetId)
-        const spotPrice = spotPrices.data?.find(
-          (spotPrice) => spotPrice?.tokenIn === value.assetId,
-        )?.spotPrice
+        const spotPrice = getAssetPrice(value.assetId).price
 
         const decimals = assetMeta?.name
           ? assetMeta.decimals
@@ -131,14 +126,20 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
 
         const volume = BN(value.volume)
           .shiftedBy(-decimals)
-          .multipliedBy(spotPrice ?? 1)
+          .multipliedBy(spotPrice)
           .toFixed(3)
 
         return { volume, poolAddress: value.poolId, assetMeta }
       })
     }
     return undefined
-  }, [getAsset, getExtrernalTokenByInternalId, spotPrices.data, volumes])
+  }, [
+    getAsset,
+    getExtrernalTokenByInternalId,
+    getAssetPrice,
+    isLoadingPrice,
+    volumes,
+  ])
 
   return { data, isLoading }
 }

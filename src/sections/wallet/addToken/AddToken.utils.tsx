@@ -184,6 +184,8 @@ export type TExternalAsset = {
   origin: number
   supply?: string
   isWhiteListed: boolean
+  owner?: string
+  admin?: string
 }
 
 export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {

@@ -3,10 +3,12 @@ import { useSDKPools } from "./pools"
 import { useSettingsStore } from "state/store"
 import { useExternalAssetRegistry } from "./external"
 import { useRpcProvider } from "providers/rpcProvider"
+import { usePriceSubscriber } from "./spotPrice"
 
 export const QuerySubscriptions = () => {
   const { degenMode } = useSettingsStore()
   const { isLoaded } = useRpcProvider()
+  usePriceSubscriber()
 
   return (
     <>

@@ -16,7 +16,6 @@ import { TExternal, useAssets } from "providers/assets"
 import { TokenInfoRow } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoRow"
 import { TokenInfoValueDiff } from "sections/wallet/addToken/modal/components/TokenInfo/TokenInfoValueDiff"
 import {
-  useAssetHubAssetAdminRights,
   useAssetHubRevokeAdminRights,
   useRefetchAssetHub,
 } from "api/external/assethub"
@@ -44,14 +43,13 @@ export const TokenInfo = ({
   const { data: xykPools } = useAllXykPools()
   const refetchAssetHub = useRefetchAssetHub()
 
-  const { totalSupplyInternal, totalSupplyExternal } = rugCheckData ?? {}
+  const { totalSupplyInternal, totalSupplyExternal, externalToken } =
+    rugCheckData ?? {}
   const isChainStored = !!chainStoredAsset
 
-  const { data: adminRights } = useAssetHubAssetAdminRights(externalAsset.id)
-
   const isAdmin =
-    adminRights?.admin && adminRights?.owner && account
-      ? safeConvertAddressSS58(adminRights.owner, 0) ===
+    externalToken?.owner && account
+      ? safeConvertAddressSS58(externalToken.owner, 0) ===
         safeConvertAddressSS58(account.address, 0)
       : false
 

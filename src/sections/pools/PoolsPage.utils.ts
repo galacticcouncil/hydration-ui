@@ -5,7 +5,6 @@ import { normalizeBigNumber } from "utils/balance"
 import { BN_0, BN_1, BN_MILL, BN_NAN } from "utils/constants"
 import {
   useDisplayAssetStore,
-  useDisplayPrices,
   useDisplayShareTokenPrice,
 } from "utils/displayAsset"
 import { useStableSDKPools, useStableswapPool } from "api/stableswap"
@@ -26,6 +25,7 @@ import { TAsset, TShareToken, useAssets } from "providers/assets"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -69,38 +69,34 @@ export const usePools = () => {
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
 
-  const spotPrices = useDisplayPrices(
-    stableCoinId ? [...assetsId, stableCoinId] : assetsId,
+  const { isLoading, getAssetPrice } = useAssetsPrice(
+    stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
   )
 
-  const fees = useFee("all")
-  const tvls = useTVL("all")
+  const { data: fees, isLoading: isFeeLoading } = useFee("all")
+  const { data: tvls } = useTVL("all")
 
   const { data: volumes, isLoading: isVolumeLoading } =
     useOmnipoolVolumes(assetsId)
 
-  const isInitialLoading =
-    spotPrices.isInitialLoading || omnipoolAssets.isLoading
+  const isInitialLoading = omnipoolAssets.isLoading || isLoading
 
   const data = useMemo(() => {
-    if (!omnipoolAssets.data || !spotPrices.data) return undefined
+    if (!omnipoolAssets.data || isLoading) return undefined
 
     const rows = omnipoolAssets.data.map((asset) => {
       const meta = getAssetWithFallback(asset.id)
       const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
 
-      const spotPrice = spotPrices.data?.find(
-        (sp) => sp?.tokenIn === asset.id,
-      )?.spotPrice
-
+      const spotPrice = getAssetPrice(asset.id).price
       const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
-      const apiSpotPrice = spotPrices.data?.find(
-        (sp) => sp?.tokenIn === stableCoinId,
-      )?.spotPrice
+      const apiSpotPrice = stableCoinId
+        ? getAssetPrice(stableCoinId).price
+        : undefined
 
       const tvlDisplay = BN(
-        tvls.data?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
+        tvls?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
           BN_NAN,
       ).multipliedBy(apiSpotPrice ?? 1)
 
@@ -116,7 +112,7 @@ export const usePools = () => {
               .toString()
           : undefined
 
-      const isFeeLoading = fees?.isLoading || isAllFarmsLoading
+      const isTotalFeeLoading = isFeeLoading || isAllFarmsLoading
 
       const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
@@ -124,11 +120,11 @@ export const usePools = () => {
         native.id === asset.id
           ? BN_0
           : BN(
-              fees.data?.find((fee) => fee?.asset_id?.toString() === asset.id)
+              fees?.find((fee) => fee?.asset_id?.toString() === asset.id)
                 ?.projected_apr_perc ?? BN_NAN,
             )
 
-      const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
+      const totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
 
       const filteredOmnipoolPositions = accountAsset?.liquidityPositions ?? []
       const filteredMiningPositions = accountAsset?.omnipoolDeposits ?? []
@@ -141,7 +137,7 @@ export const usePools = () => {
         iconId: meta.iconId,
         meta,
         tvlDisplay,
-        spotPrice: spotPrice?.isNaN() ? undefined : spotPrice?.toFixed(6),
+        spotPrice: spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
         canRemoveLiquidity: tradability.canRemoveLiquidity,
         volume,
@@ -152,7 +148,7 @@ export const usePools = () => {
         ),
         fee,
         totalFee,
-        isFeeLoading,
+        isFeeLoading: isTotalFeeLoading,
         omnipoolPositions: filteredOmnipoolPositions,
         miningPositions: filteredMiningPositions,
         balance: accountAsset?.balance,
@@ -173,11 +169,8 @@ export const usePools = () => {
     })
   }, [
     omnipoolAssets.data,
-    spotPrices.data,
-    tvls.data,
+    tvls,
     native.id,
-    fees.data,
-    fees?.isLoading,
     accountAssets,
     stableCoinId,
     getAssetWithFallback,
@@ -185,6 +178,10 @@ export const usePools = () => {
     isAllFarmsLoading,
     volumes,
     isVolumeLoading,
+    getAssetPrice,
+    isLoading,
+    fees,
+    isFeeLoading,
   ])
 
   return { data, isLoading: isInitialLoading }

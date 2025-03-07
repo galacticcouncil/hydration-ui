@@ -6,7 +6,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
-import { BN_0, BN_1 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { useAccountCurrency } from "api/payments"
@@ -117,7 +117,7 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
   const decimalsDiff =
     nativeDecimals - (accountCurrencyDecimals || nativeDecimals)
 
-  const spotPrice = useSpotPrice(nativeId, accountCurrencyId)
+  const { data: spotPrice } = useSpotPrice(nativeId, accountCurrencyId)
 
   const fees = useMultiplePaymentInfo(txs)
 
@@ -130,12 +130,12 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
       accountCurrencyId,
     }
 
-    if (fees.some(({ data }) => !data) || !spotPrice.data) {
+    if (fees.some(({ data }) => !data) || !spotPrice) {
       return defaultFees
     }
 
     return fees.reduce((prev, curr) => {
-      const price = spotPrice.data.spotPrice ?? BN_1
+      const price = spotPrice.spotPrice
 
       const nativeFee = curr?.data?.partialFee?.toBigNumber() ?? BN_0
       const nativeFeeTotal = nativeFee.plus(prev.nativeFee)
@@ -165,6 +165,6 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
     decimalsDiff,
     fees,
     nativeDecimals,
-    spotPrice.data,
+    spotPrice,
   ])
 }

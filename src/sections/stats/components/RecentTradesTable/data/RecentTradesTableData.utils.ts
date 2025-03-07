@@ -1,8 +1,6 @@
-import { useSpotPrices } from "api/spotPrice"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
-import { useDisplayAssetStore } from "utils/displayAsset"
 import { isHydraAddress } from "utils/formatting"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -15,17 +13,15 @@ import {
 } from "api/volume"
 import { groupBy } from "utils/rx"
 import { isNotNil } from "utils/helpers"
-import { BN_NAN } from "utils/constants"
-import { useAssets } from "providers/assets"
 
-const withoutRefresh = true
+import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 const EVENTS_LIMIT = 10
 
 export const useRecentTradesTableData = (assetId?: string) => {
   const { getAsset } = useAssets()
   const allTrades = useAllTrades(assetId ? Number(assetId) : undefined)
-  const displayAsset = useDisplayAssetStore()
 
   const address = allTrades.data?.events.map((event) => event.args.who) ?? []
   const identities = useAccountsIdentity(address)
@@ -119,18 +115,14 @@ export const useRecentTradesTableData = (assetId?: string) => {
     ? events?.map(({ args }) => args.assetIn.toString())
     : []
 
-  const spotPrices = useSpotPrices(
-    assetIds,
-    displayAsset.stableCoinId,
-    withoutRefresh,
-  )
+  const { getAssetPrice, isLoading: isPriceLaoding } = useAssetsPrice(assetIds)
 
-  const queries = [allTrades, ...spotPrices, ...identities]
+  const queries = [allTrades, ...identities]
 
   const isInitialLoading = queries.some((q) => q.isInitialLoading)
 
   const data = useMemo(() => {
-    if (!events || spotPrices.some((q) => !q.data)) return []
+    if (!events || isPriceLaoding) return []
 
     const trades = events.reduce(
       (memo, trade) => {
@@ -155,9 +147,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
           const assetMetaIn = getAsset(assetIn)
           const assetMetaOut = getAsset(assetOut)
 
-          const spotPriceIn = spotPrices.find(
-            (spotPrice) => spotPrice?.data?.tokenIn === assetIn,
-          )?.data
+          const spotPriceIn = getAssetPrice(assetIn).price
 
           const amountIn = getFloatingPointAmount(
             amountInRaw,
@@ -168,9 +158,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
             assetMetaOut?.decimals ?? 12,
           )
 
-          const tradeValue = amountIn.multipliedBy(
-            spotPriceIn?.spotPrice ?? BN_NAN,
-          )
+          const tradeValue = amountIn.multipliedBy(spotPriceIn)
 
           const hydraAddress = isHydraAddress(trade.args.who)
             ? trade.args.who
@@ -221,7 +209,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
     )
 
     return trades.slice(0, EVENTS_LIMIT)
-  }, [events, spotPrices, assetId, getAsset, identities])
+  }, [events, assetId, getAsset, identities, isPriceLaoding, getAssetPrice])
 
   return { data, isLoading: isInitialLoading }
 }

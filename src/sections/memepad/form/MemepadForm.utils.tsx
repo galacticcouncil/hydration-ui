@@ -435,8 +435,12 @@ export const useMemepadEstimatedFees = (
     HYDRA_DOT_ASSET_ID,
   )
 
-  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_NAN
-  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_NAN
+  const usdtDotSpotPrice = dotSpotPrice?.spotPrice
+    ? BN(dotSpotPrice.spotPrice)
+    : BN_NAN
+  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice
+    ? BN(feeSpotPrice.spotPrice)
+    : BN_NAN
 
   const address = account?.address || HYDRATION_PARACHAIN_ADDRESS
 

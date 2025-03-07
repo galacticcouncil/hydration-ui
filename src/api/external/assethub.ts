@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
-import { ApiPromise } from "@polkadot/api"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Option, u32 } from "@polkadot/types"
 import {
@@ -35,8 +35,6 @@ import BN from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { XcmV3Junction, XcmV3Junctions } from "@polkadot-api/descriptors"
-import { getWs } from "api/papi"
-import { assethub as assethubDescriptor } from "@polkadot-api/descriptors"
 
 export const ASSETHUB_TREASURY_ADDRESS =
   "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"
@@ -77,46 +75,45 @@ export const assethubNativeToken = assethub.assetsData.get(
 
 export const getAssetHubAssets = async () => {
   try {
-    const client = await getWs(assethub.ws)
-    const papi = client.getTypedApi(assethubDescriptor)
+    const provider = new WsProvider(assethub.ws)
+    const api = await ApiPromise.create({ provider })
+
     const [dataRaw, assetsRaw] = await Promise.all([
-      papi.query.Assets.Metadata.getEntries(),
-      papi.query.Assets.Asset.getEntries(),
+      api.query.assets.metadata.entries(),
+      api.query.assets.asset.entries(),
     ])
 
-    client.destroy()
+    api.disconnect()
 
-    const data = dataRaw.reduce<TExternalAsset[]>((acc, { keyArgs, value }) => {
-      const id = keyArgs.toString()
-      const data = value
+    const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
+      const id = key.args[0].toString()
+      const data = dataRaw
 
-      const asset = assetsRaw.find(
-        (asset) => asset.keyArgs[0].toString() === id,
-      )
+      const asset = assetsRaw.find((asset) => asset[0].args.toString() === id)
 
-      if (asset) {
-        const assetData = asset.value
+      const supply = asset?.[1].unwrap().supply.toString()
+      const admin = asset?.[1].unwrap().admin.toString()
+      const owner = asset?.[1].unwrap().owner.toString()
+      const isWhiteListed =
+        admin === ASSETHUB_TREASURY_ADDRESS &&
+        owner === ASSETHUB_TREASURY_ADDRESS
 
-        const supply = assetData.supply.toString()
-        const admin = assetData.admin
-        const owner = assetData.owner
-        const isWhiteListed =
-          admin === ASSETHUB_TREASURY_ADDRESS &&
-          owner === ASSETHUB_TREASURY_ADDRESS
-
-        acc.push({
-          id,
-          decimals: data.decimals,
-          symbol: data.symbol.asText(),
-          name: data.name.asText(),
-          supply,
-          origin: assethub.parachainId,
-          isWhiteListed,
-        })
+      return {
+        id,
+        decimals: data.decimals.toNumber(),
+        // decode from hex because of non-standard characters
+        symbol: Buffer.from(data.symbol.toHex().slice(2), "hex").toString(
+          "utf8",
+        ),
+        name: Buffer.from(data.name.toHex().slice(2), "hex").toString("utf8"),
+        supply,
+        origin: assethub.parachainId,
+        isWhiteListed,
+        admin,
+        owner,
       }
+    })
 
-      return acc
-    }, [])
     return { data, id: assethub.parachainId }
   } catch (e) {}
 }
@@ -538,30 +535,6 @@ export const useAssetHubRevokeAdminRights = ({
         onSuccess,
       },
     )
-  })
-}
-
-const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
-  try {
-    const asset = await api.query.assets.asset(id)
-
-    const admin = asset.unwrap().admin.toString()
-    const owner = asset.unwrap().owner.toString()
-
-    return {
-      admin,
-      owner,
-    }
-  } catch (e) {
-    return { admin: "", owner: "" }
-  }
-}
-
-export const useAssetHubAssetAdminRights = (id: string) => {
-  const { data: api } = useExternalApi("assethub")
-  return useQuery(QUERY_KEYS.assetHubAssetAdminRights(id), async () => {
-    if (!api) throw new Error("Asset Hub is not connected")
-    return getAssetHubAssetAdminRights(api, id)
   })
 }
 
