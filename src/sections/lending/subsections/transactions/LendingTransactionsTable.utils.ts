@@ -16,6 +16,12 @@ export const mapMoneyMarketEvents = (
       })) ?? []
 
   return Array.from(
-    Map.groupBy(events, (event) => event.date).entries(),
-  ).flatMap<LendingTransactionRow>(([date, events]) => [date, ...events])
+    Map.groupBy(
+      events,
+      (event) => event.date.toISOString().split("T")[0],
+    ).entries(),
+  ).flatMap<LendingTransactionRow>(([date, events]) => [
+    new Date(date),
+    ...events,
+  ])
 }

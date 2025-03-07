@@ -59,7 +59,7 @@ export const SContent = styled(DropdownMenu.Content)<{ fullWidth?: boolean }>`
 
   padding: 10px;
 
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 400px;
   min-width: fit-content;
 
