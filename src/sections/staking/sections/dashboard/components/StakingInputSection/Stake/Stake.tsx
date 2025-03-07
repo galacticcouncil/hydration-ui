@@ -52,22 +52,21 @@ export const Stake = ({
   })
 
   const form = useForm<{ amount: string }>({
+    mode: "onChange",
     resolver: validation ? zodResolver(validation.zodSchema) : undefined,
   })
 
-  const increaseValue = stakedBalance ? form.watch("amount") : undefined
+  const amount = form.watch("amount")
 
   useDebounce(
     () => {
       update(
-        "value",
-        increaseValue
-          ? scale(increaseValue, native.decimals).toString()
-          : undefined,
+        stakedBalance ? "value" : "stakeValue",
+        amount ? scale(amount, native.decimals).toString() : undefined,
       )
     },
     500,
-    [increaseValue],
+    [amount, stakedBalance],
   )
 
   const { data: votes } = useProcessedVotesIdsQuery()
@@ -194,7 +193,7 @@ export const Stake = ({
                   symbol: native.symbol,
                 }),
               },
-              ...(diffDays
+              ...(diffDays && diffDays !== "0"
                 ? [
                     {
                       label: (
@@ -227,7 +226,11 @@ export const Stake = ({
           <Button
             variant="primary"
             type="submit"
-            disabled={loading || account?.isExternalWalletConnected}
+            disabled={
+              loading ||
+              account?.isExternalWalletConnected ||
+              !form.formState.isValid
+            }
           >
             {positionId == null
               ? t("staking.dashboard.form.stake.button")

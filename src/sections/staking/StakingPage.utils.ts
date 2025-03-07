@@ -25,6 +25,7 @@ import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 import { useIncreaseStake } from "./sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
+import { useShallow } from "hooks/useShallow"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -203,7 +204,7 @@ export const useStakeData = () => {
   }
 }
 
-export const useStakeARP = (availableUserBalance: BN | undefined) => {
+export const useStakeARP = () => {
   const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -212,6 +213,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
+  const stakeValue = useIncreaseStake(useShallow((state) => state.stakeValue))
 
   const queries = [bestNumber, stake, stakingConsts, potBalance, stakingEvents]
 
@@ -307,7 +309,8 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
       return { apr }
     } else {
-      const totalToStake = stake.data.totalStake.plus(availableUserBalance ?? 0)
+      const totalToStake = stake.data.totalStake.plus(stakeValue ?? 0)
+
       const rpsNow = pendingRewards.div(totalToStake)
       let deltaBlocks = BN_0
       let rpsAvg = BN_0
@@ -341,7 +344,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
               .multipliedBy(event.args.totalStake)
           }
           deltaRpsAdjusted = deltaRpsAdjusted.plus(
-            re.div(BN(event.args.totalStake).plus(availableUserBalance ?? 0)),
+            re.div(BN(event.args.totalStake).plus(stakeValue ?? 0)),
           )
         })
 
@@ -380,7 +383,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
       return { apr: BN_0 }
     }
   }, [
-    availableUserBalance,
+    stakeValue,
     bestNumber.data,
     potBalance.data,
     stake.data,
@@ -510,17 +513,6 @@ export const useClaimReward = () => {
       )
         .multipliedBy(100)
         .toString()
-
-      console.log({
-        slashedPoints,
-        pointsAfterIncreasing,
-        currentPoints: points,
-        currentPosition: stakePosition.stake.toString(),
-        increaseStakeBy: increaseStake,
-
-        stakeWeight,
-        MIN_SLASH_POINTS,
-      })
     }
 
     let extraPayablePercentageHuman: string | undefined
@@ -598,6 +590,7 @@ export const useClaimReward = () => {
       } else {
         const diffDays = BigNumber(increasePointDays)
           .minus(currentPointDays)
+          .abs()
           .toString()
 
         if (diffDays !== storedDiffDays) {

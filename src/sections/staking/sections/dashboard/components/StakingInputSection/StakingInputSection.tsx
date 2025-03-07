@@ -9,7 +9,7 @@ import { Unstake } from "./Unstake/Unstake"
 import { BN_0 } from "utils/constants"
 import { TStakingData } from "sections/staking/StakingPage.utils"
 
-const stakeActions = ["stake", "unstake"] as const
+const stakeActions = ["stake", "unstake"]
 
 type StakeAction = (typeof stakeActions)[number]
 
@@ -28,15 +28,17 @@ export const StakingInputSection = ({
   return (
     <SSectionContainer>
       <SSectionHeader>
-        {stakeActions.map((action) => (
-          <SStakeTab
-            key={action}
-            active={action === activeStakeAction}
-            onClick={() => setActiveStakeAction(action)}
-          >
-            <p>{action}</p>
-          </SStakeTab>
-        ))}
+        {(stakedValue.isZero() ? [stakeActions[0]] : stakeActions).map(
+          (action) => (
+            <SStakeTab
+              key={action}
+              active={action === activeStakeAction}
+              onClick={() => setActiveStakeAction(action)}
+            >
+              <p>{action}</p>
+            </SStakeTab>
+          ),
+        )}
       </SSectionHeader>
       <div sx={{ p: "0px 20px 20px" }}>
         {activeStakeAction === "stake" ? (
