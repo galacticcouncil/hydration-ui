@@ -36,7 +36,9 @@ export const OfferStatusColumn: FC<Props> = ({
     assetInDecimals,
   )
 
-  if (!isPartiallyFillable || !new Big(amountInInitial).gt(0)) {
+  const amountInInitialBig = new Big(amountInInitial)
+
+  if (!isPartiallyFillable || amountInInitialBig.lte(0)) {
     return (
       <Text fw={500} fs={13} lh={1} align="center">
         N / A
@@ -44,7 +46,7 @@ export const OfferStatusColumn: FC<Props> = ({
     )
   }
 
-  const filled = new Big(amountInInitial).minus(assetInAmount)
+  const filled = amountInInitialBig.minus(assetInAmount)
   const filledPct = filled.div(amountInInitial).mul(100).toNumber()
 
   return (
