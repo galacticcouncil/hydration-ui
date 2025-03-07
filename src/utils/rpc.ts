@@ -21,7 +21,7 @@ export async function pingRpc(
 ): Promise<PingResponse> {
   return new Promise<PingResponse>((resolve) => {
     const execute = async () => {
-      let defaultResponse = {
+      let defaultResponse: PingResponse = {
         url,
         ping: Infinity,
         timestamp: 0,

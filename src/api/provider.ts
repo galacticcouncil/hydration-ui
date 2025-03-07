@@ -144,9 +144,7 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const isTestnetRpcUrl = (url: string) =>
   PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
 
-export async function getBestProvider(
-  onSuccess?: (rpcs: PingResponse) => void,
-) {
+export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
   const signal = controller.signal
 
@@ -160,10 +158,9 @@ export async function getBestProvider(
       results.push(res)
       results.sort((a, b) => b.timestamp - a.timestamp)
 
-      // wait for up to 3 results, then abort and return the best candidate
+      // Wait for up to 3 results, then abort
       if (results.length === 3 || results.length === PROVIDER_URLS.length) {
         controller.abort()
-        onSuccess?.(results[0])
       }
     } catch (error) {
       if (!signal.aborted) {
@@ -172,7 +169,13 @@ export async function getBestProvider(
     }
   })
 
-  await Promise.race(promises)
+  await Promise.all(promises)
+
+  if (results.length === 0) {
+    throw new Error("All RPC providers failed or timed out")
+  }
+
+  return results
 }
 
 export const useProviderRpcUrlStore = create(

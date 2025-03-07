@@ -1,11 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { useRef } from "react"
-import { PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { PARACHAIN_BLOCK_TIME_MS } from "utils/constants"
 import { sleep } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { PingResponse, pingRpc } from "utils/rpc"
-
-const PARACHAIN_BLOCK_TIME_MS = PARACHAIN_BLOCK_TIME.toNumber() * 1000
 
 const rpcStatusQueryOptions = (url: string) => ({
   queryKey: QUERY_KEYS.rpcStatus(url),

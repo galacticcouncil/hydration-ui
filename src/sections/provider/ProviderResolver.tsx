@@ -4,33 +4,32 @@ import {
   PROVIDER_URLS,
   useProviderRpcUrlStore,
 } from "api/provider"
-import { PropsWithChildren, useEffect, useRef, useState } from "react"
-import { useMount } from "react-use"
-import { identity } from "utils/helpers"
+import { PropsWithChildren, useEffect, useState } from "react"
+import { useAsyncFn } from "react-use"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { uniqBy } from "utils/rx"
+import { prop } from "utils/rx"
 
 export const ProviderResolver: React.FC<PropsWithChildren> = ({ children }) => {
   const queryClient = useQueryClient()
 
-  const stateRef = useRef(useProviderRpcUrlStore.getState())
-  const isInitialAutoMode = !!stateRef.current.autoMode
+  const [isBestProviderFound, setIsBestProviderFound] = useState(
+    () => !useProviderRpcUrlStore.getState().autoMode,
+  )
 
-  const [isBestProviderFound, setIsBestRpcFound] = useState(!isInitialAutoMode)
+  const [, fetchBestProvider] = useAsyncFn(async () => {
+    const result = await getBestProvider()
 
-  useMount(() => {
-    if (!isInitialAutoMode) return
+    const bestRpc = result[0]
+    queryClient.setQueryData(QUERY_KEYS.rpcStatus(bestRpc.url), bestRpc)
 
-    getBestProvider((result) => {
-      const { url } = result
-      queryClient.setQueryData(QUERY_KEYS.rpcStatus(url), result)
+    // top RPC results are added to the top of the list
+    const urls = result.map(prop("url"))
+    const sortedRpcList = Array.from(new Set([...urls, ...PROVIDER_URLS]))
 
-      const sortedRpcList = uniqBy(identity, [url, ...PROVIDER_URLS])
-      useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+    useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
 
-      setIsBestRpcFound(true)
-    })
-  })
+    setIsBestProviderFound(true)
+  }, [])
 
   useEffect(() => {
     if (isBestProviderFound) {
@@ -39,8 +38,12 @@ export const ProviderResolver: React.FC<PropsWithChildren> = ({ children }) => {
         // Removes initial static loader in index.html.
         loader.remove()
       }
+
+      return
     }
-  }, [isBestProviderFound])
+
+    fetchBestProvider()
+  }, [fetchBestProvider, isBestProviderFound])
 
   if (!isBestProviderFound) return null
 

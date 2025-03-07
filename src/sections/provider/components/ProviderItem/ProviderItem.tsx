@@ -12,7 +12,7 @@ import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/
 import { Spinner } from "components/Spinner/Spinner"
 import { PingResponse } from "utils/rpc"
 
-type ProviderItemProps = {
+export type ProviderItemProps = {
   name: string
   url: string
   isActive?: boolean

@@ -15,7 +15,10 @@ import { useRpcStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import { SContainer, SHeader } from "./ProviderSelectModal.styled"
 import { ProviderInput } from "./components/ProviderInput/ProviderInput"
-import { ProviderItem } from "./components/ProviderItem/ProviderItem"
+import {
+  ProviderItem,
+  ProviderItemProps,
+} from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -86,7 +89,9 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     })
   })
 
-  const providerList = useMemo(() => {
+  const providerList = useMemo<
+    Required<Pick<ProviderItemProps, "name" | "url" | "custom">>[]
+  >(() => {
     const list = [
       ...PROVIDER_LIST.map(({ name, url }) => ({
         name,

@@ -95,7 +95,7 @@ export const useEvmAccount = () => {
   const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data
 
-  const evm = useQuery(
+  const { refetch, ...evm } = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
       const chainId = isEvmWalletExtension(wallet?.extension)
@@ -114,12 +114,12 @@ export const useEvmAccount = () => {
   useEffect(() => {
     if (wallet && isEvmWalletExtension(wallet?.extension)) {
       // Refetch chainId on chainChanged event from wallet extension
-      wallet.extension.on("chainChanged", evm.refetch)
+      wallet.extension.on("chainChanged", refetch)
       return () => {
-        wallet.extension.off("chainChanged", evm.refetch)
+        wallet.extension.off("chainChanged", refetch)
       }
     }
-  }, [evm, wallet])
+  }, [refetch, wallet])
 
   if (!address) {
     return {
