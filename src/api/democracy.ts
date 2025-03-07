@@ -94,23 +94,29 @@ export const useOpenGovReferendas = () => {
   )
 }
 
+export type OpenGovReferendum = {
+  id: string
+  referendum: PalletReferendaReferendumStatus
+}
+
 const getOpenGovRegerendas = (api: ApiPromise) => async () => {
   const newReferendumsRaw =
     await api.query.referenda.referendumInfoFor.entries()
 
   // get only ongoing referenas so far
-  return newReferendumsRaw.reduce<
-    Array<{ id: string; referendum: PalletReferendaReferendumStatus }>
-  >((acc, [key, dataRaw]) => {
-    const id = key.args[0].toString()
-    const data = dataRaw.unwrap()
+  return newReferendumsRaw.reduce<Array<OpenGovReferendum>>(
+    (acc, [key, dataRaw]) => {
+      const id = key.args[0].toString()
+      const data = dataRaw.unwrap()
 
-    if (!data.isNone && data.isOngoing) {
-      acc.push({ id, referendum: data.asOngoing })
-    }
+      if (!data.isNone && data.isOngoing) {
+        acc.push({ id, referendum: data.asOngoing })
+      }
 
-    return acc
-  }, [])
+      return acc
+    },
+    [],
+  )
 }
 
 export const getReferendumInfo = (referendumIndex: string) => async () => {

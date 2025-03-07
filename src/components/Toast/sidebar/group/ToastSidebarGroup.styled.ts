@@ -1,6 +1,5 @@
 import styled from "@emotion/styled"
 import { ButtonTransparent } from "components/Button/Button"
-import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 
 export const SContainer = styled.div<{ isOpen: boolean }>`
@@ -9,6 +8,11 @@ export const SContainer = styled.div<{ isOpen: boolean }>`
   width: 100%;
 
   transition: grid-template-rows 0.15s ease-in-out;
+`
+export const SSide = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `
 
 export const SHide = styled.div`
@@ -31,14 +35,4 @@ export const SToggle = styled(ButtonTransparent)<{ isOpen: boolean }>`
     rotate: ${({ isOpen }) => (!isOpen ? "0deg" : "180deg")};
     transition: all 0.15s ease-in-out;
   }
-`
-
-export const SHeader = styled(Text)`
-  font-size: 14px;
-  font-weight: 400;
-  color: ${theme.colors.basic400};
-`
-
-export const SContent = styled.div`
-  overflow: hidden;
 `
