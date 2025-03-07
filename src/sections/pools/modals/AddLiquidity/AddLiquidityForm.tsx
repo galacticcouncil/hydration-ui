@@ -32,6 +32,7 @@ import { useAssets } from "providers/assets"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
+import { useAssetsPrice } from "state/displayPrice"
 
 type Props = {
   assetId: string
@@ -74,14 +75,10 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const {
-    poolShare,
-    spotPrice,
-    omnipoolFee,
-    assetMeta,
-    assetBalance,
-    sharesToGet,
-  } = useAddLiquidity(assetId, debouncedAmount)
+  const { getAssetPrice } = useAssetsPrice([assetId])
+
+  const { poolShare, omnipoolFee, assetMeta, assetBalance, sharesToGet } =
+    useAddLiquidity(assetId, debouncedAmount)
 
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
@@ -281,7 +278,7 @@ export const AddLiquidityForm = ({
                       firstCurrency: assetMeta?.symbol,
                     }}
                   >
-                    <DisplayValue value={spotPrice?.spotPrice} />
+                    <DisplayValue value={BN(getAssetPrice(assetId).price)} />
                   </Trans>
                 </Text>
               ),
