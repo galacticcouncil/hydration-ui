@@ -4,7 +4,12 @@ import {
   type BalanceClient,
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
+import {
+  TDataEnv,
+  TFeatureFlags,
+  useProviderAssets,
+  useProviderData,
+} from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
@@ -15,22 +20,29 @@ import { PolkadotEvmRpcProvider } from "utils/provider"
 
 type TProviderContext = {
   api: ApiPromise
-  evm: PolkadotEvmRpcProvider
-  tradeRouter: TradeRouter
-  poolService: PoolService
   balanceClient: BalanceClient
-  isLoaded: boolean
+  dataEnv: TDataEnv
+  endpoint: string
+  evm: PolkadotEvmRpcProvider
   featureFlags: TFeatureFlags
+  isLoaded: boolean
+  poolService: PoolService
+  tradeRouter: TradeRouter
 }
-const ProviderContext = createContext<TProviderContext>({
-  isLoaded: false,
+
+const defaultData: TProviderContext = {
   api: {} as TProviderContext["api"],
-  evm: {} as TProviderContext["evm"],
-  tradeRouter: {} as TradeRouter,
-  featureFlags: {} as TProviderContext["featureFlags"],
-  poolService: {} as TProviderContext["poolService"],
   balanceClient: {} as TProviderContext["balanceClient"],
-})
+  dataEnv: "mainnet",
+  endpoint: "",
+  evm: {} as TProviderContext["evm"],
+  featureFlags: {} as TProviderContext["featureFlags"],
+  isLoaded: false,
+  poolService: {} as TProviderContext["poolService"],
+  tradeRouter: {} as TradeRouter,
+}
+
+const ProviderContext = createContext<TProviderContext>(defaultData)
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
@@ -88,20 +100,18 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         tradeRouter: providerData.tradeRouter,
         balanceClient: providerData.balanceClient,
         featureFlags: providerData.featureFlags,
-        isLoaded: true,
+        isLoaded: providerData.api.isConnected,
+        endpoint: providerData.endpoint,
+        dataEnv: providerData.dataEnv,
       }
     }
 
     return {
-      isLoaded: false,
-      api: {} as TProviderContext["api"],
-      evm: {} as TProviderContext["evm"],
-      tradeRouter: {} as TradeRouter,
-      balanceClient: {} as BalanceClient,
+      ...defaultData,
       featureFlags: {
-        dispatchPermit: true,
-      } as TProviderContext["featureFlags"],
-      poolService: {} as TProviderContext["poolService"],
+        ...defaultData.featureFlags,
+        dispatchPermit: true, // optimistically assume dispatch permit is enabled
+      },
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayAsset, isAssets, providerData])

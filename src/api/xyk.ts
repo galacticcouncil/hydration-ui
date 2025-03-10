@@ -37,17 +37,17 @@ export const useXYKSDKPools = () => {
 }
 
 export const useShareTokens = () => {
-  const { data: provider } = useProviderData()
+  const { api, isLoaded } = useRpcProvider()
   const { syncShareTokens } = useAssetRegistry.getState()
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return useQuery(
-    QUERY_KEYS.shareTokens(rpcUrlList.join()),
-    provider
+    QUERY_KEYS.shareTokens(dataEnv),
+    isLoaded
       ? async () => {
           const [shareToken, poolAssets] = await Promise.all([
-            provider.api.query.xyk.shareToken.entries(),
-            provider.api.query.xyk.poolAssets.entries(),
+            api.query.xyk.shareToken.entries(),
+            api.query.xyk.poolAssets.entries(),
           ])
           const data = shareToken
             .map(([key, shareTokenIdRaw]) => {
@@ -77,7 +77,7 @@ export const useShareTokens = () => {
         }
       : undefinedNoop,
     {
-      enabled: !!provider,
+      enabled: isLoaded,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
     },

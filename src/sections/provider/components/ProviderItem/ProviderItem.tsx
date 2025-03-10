@@ -47,8 +47,15 @@ export const ProviderItemLayout = ({
       />
     )
 
+  const isOffline = !blockNumber
+  const isDisabled = isLoading || isOffline
+
   return (
-    <SItem onClick={() => onClick?.(url)} className={className}>
+    <SItem
+      isDisabled={isDisabled}
+      onClick={() => onClick?.(url)}
+      className={className}
+    >
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
@@ -95,7 +102,10 @@ export const ProviderItemLayout = ({
         </Text>
 
         {custom && (
-          <div sx={{ flex: "row", align: "center", gap: 12 }}>
+          <div
+            sx={{ flex: "row", align: "center", gap: 12 }}
+            css={{ pointerEvents: "auto" }}
+          >
             <InfoTooltip text="Remove" type="black">
               <Icon
                 icon={<IconRemove />}

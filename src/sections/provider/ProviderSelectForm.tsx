@@ -1,11 +1,7 @@
-import {
-  PROVIDER_LIST,
-  PROVIDER_URLS,
-  useProviderRpcUrlStore,
-} from "api/provider"
+import { PROVIDER_LIST, useProviderRpcUrlStore } from "api/provider"
 import { Button } from "components/Button/Button"
 import { Separator } from "components/Separator/Separator"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMutation } from "@tanstack/react-query"
@@ -21,7 +17,6 @@ import {
 } from "./components/ProviderItem/ProviderItem"
 import { useProviderSelectFormSchema } from "./ProviderSelectForm.utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRpcProvider } from "providers/rpcProvider"
 import { prop, uniqBy } from "utils/rx"
 import { SProviderItemScrollableContainer } from "sections/provider/components/ProviderItem/ProviderItem.styled"
 import { useRpcsStatus } from "api/rpc"
@@ -33,27 +28,37 @@ export type ProviderSelectFormProps = {
 export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
   onClose,
 }) => {
-  const { isLoaded } = useRpcProvider()
   const { rpcUrl, setRpcUrl } = useProviderRpcUrlStore()
   const { t } = useTranslation()
   const { rpcList, addRpc, removeRpc } = useRpcStore()
-  const [isRpcUrlChanging, setIsRpcUrlChanging] = useState(false)
 
-  const fullRpcUrlList = [...PROVIDER_URLS, ...rpcList.map(({ url }) => url)]
+  const providerList = useMemo<
+    Required<Pick<ProviderItemProps, "name" | "url" | "custom">>[]
+  >(() => {
+    const list = [
+      ...PROVIDER_LIST.map(({ name, url }) => ({
+        name,
+        url,
+        custom: false,
+      })),
+      ...rpcList.map((rpc, index) => ({
+        ...rpc,
+        name:
+          rpc.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
+        custom: true,
+      })),
+    ]
+
+    return uniqBy(prop("url"), list)
+  }, [rpcList, t])
+
+  const providerUrlList = providerList.map(prop("url"))
 
   const form = useForm<{ address: string }>({
     defaultValues: { address: "wss://" },
     mode: "onChange",
-    resolver: zodResolver(useProviderSelectFormSchema(fullRpcUrlList)),
+    resolver: zodResolver(useProviderSelectFormSchema(providerUrlList)),
   })
-
-  useEffect(() => {
-    setIsRpcUrlChanging(true)
-    const id = setTimeout(() => {
-      setIsRpcUrlChanging(false)
-    }, 5000)
-    return () => clearTimeout(id)
-  }, [rpcUrl])
 
   const mutation = useMutation(async (value: FormValues<typeof form>) => {
     return await new Promise(async (resolve, reject) => {
@@ -89,27 +94,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
     })
   })
 
-  const providerList = useMemo<
-    Required<Pick<ProviderItemProps, "name" | "url" | "custom">>[]
-  >(() => {
-    const list = [
-      ...PROVIDER_LIST.map(({ name, url }) => ({
-        name,
-        url,
-        custom: false,
-      })),
-      ...rpcList.map((rpc, index) => ({
-        ...rpc,
-        name:
-          rpc.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
-        custom: true,
-      })),
-    ]
-
-    return uniqBy(prop("url"), list)
-  }, [rpcList, t])
-
-  const rpcsStatusQueries = useRpcsStatus(providerList.map(prop("url")), {
+  const rpcsStatusQueries = useRpcsStatus(providerUrlList, {
     calculateAvgPing: true,
   })
 
@@ -143,7 +128,7 @@ export const ProviderSelectForm: React.FC<ProviderSelectFormProps> = ({
         />
       </form>
 
-      <SContainer isLoading={!isLoaded && isRpcUrlChanging}>
+      <SContainer>
         <SHeader>
           <div css={{ gridArea: "name" }}>
             {t("rpc.change.modal.column.name")}
