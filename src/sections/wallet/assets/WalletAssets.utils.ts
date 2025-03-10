@@ -4,7 +4,10 @@ import { useMemo } from "react"
 import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { BN_0, BN_NAN } from "utils/constants"
-import { useDisplayShareTokenPrice } from "utils/displayAsset"
+import {
+  useDisplayShareTokenPrice,
+  useNewDisplayPrices,
+} from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
@@ -54,9 +57,18 @@ export const useWalletAssetsTotals = ({
   const { data: balances, isLoading: isAccountAssetsLoading } =
     useAccountAssets(address)
 
+  const stableswaps = useMemo(
+    () => [...(balances?.accountStableswapMap.values() ?? [])],
+    [balances?.accountStableswapMap],
+  )
+
   const shareTokenBalances = useMemo(
     () => [...(balances?.accountShareTokensMap.values() ?? [])],
     [balances?.accountShareTokensMap],
+  )
+
+  const stableswapSpotPrices = useNewDisplayPrices(
+    stableswaps.map((stableswap) => stableswap.asset.id),
   )
 
   const spotPrices = useDisplayShareTokenPrice(
@@ -82,6 +94,30 @@ export const useWalletAssetsTotals = ({
       ),
     [lpPositions.data],
   )
+
+  const stableswapsTotal = useMemo(() => {
+    if (!stableswapSpotPrices.data) return "0"
+
+    return stableswaps
+      .reduce((acc, stableswap) => {
+        const balance = BigNumber(stableswap.balance.freeBalance).shiftedBy(
+          -stableswap.asset.decimals,
+        )
+
+        const spotPrice = stableswapSpotPrices.data?.find(
+          (spotPrice) => spotPrice?.tokenIn === stableswap.asset.id,
+        )?.spotPrice
+
+        if (spotPrice !== undefined) {
+          const displayValue = balance.times(spotPrice)
+
+          return acc.plus(displayValue)
+        }
+
+        return acc
+      }, BN_0)
+      .toString()
+  }, [stableswapSpotPrices.data, stableswaps])
 
   const xykTotal = useMemo(() => {
     if (!shareTokenBalances || !spotPrices.data) return BN_NAN
@@ -113,9 +149,17 @@ export const useWalletAssetsTotals = ({
         .plus(farmsTotal.value)
         .plus(lpTotal)
         .plus(xykTotal)
+        .plus(stableswapsTotal)
         .minus(borrowsTotal)
         .toString(),
-    [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
+    [
+      assetsTotal,
+      farmsTotal.value,
+      lpTotal,
+      xykTotal,
+      borrowsTotal,
+      stableswapsTotal,
+    ],
   )
 
   const isLoading =
@@ -124,7 +168,8 @@ export const useWalletAssetsTotals = ({
     lpPositions.isLoading ||
     farmsTotal.isLoading ||
     isAccountAssetsLoading ||
-    spotPrices.isInitialLoading
+    spotPrices.isInitialLoading ||
+    stableswapSpotPrices.isInitialLoading
 
   return {
     assetsTotal,
@@ -132,9 +177,11 @@ export const useWalletAssetsTotals = ({
     lpTotal: BigNumber(lpTotal)
       .plus(xykTotal)
       .plus(farmsTotal.value)
+      .plus(stableswapsTotal)
       .toString(),
     balanceTotal,
     borrowsTotal,
+    stableswapsTotal,
     isLoading,
   }
 }

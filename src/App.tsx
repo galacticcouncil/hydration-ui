@@ -6,7 +6,6 @@ import {
 import { lazy, Suspense, useEffect } from "react"
 import { routes } from "./routes"
 import { Page } from "components/Layout/Page/Page"
-import { AppLoader } from "components/AppLoader/AppLoader"
 
 import "unfonts.css"
 
@@ -45,7 +44,7 @@ export const App = () => {
 
   return (
     <Router location={location} routes={routes}>
-      <Suspense fallback={<AppLoader />}>
+      <Suspense>
         <AppProviders>
           <Page />
         </AppProviders>

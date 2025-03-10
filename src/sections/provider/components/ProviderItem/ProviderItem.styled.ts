@@ -34,7 +34,9 @@ export const SItem = styled.div`
   row-gap: 8px;
   align-items: center;
 
-  padding: 14px var(--modal-content-padding);
+  padding: 14px;
+  padding-left: var(--modal-content-padding);
+
   cursor: pointer;
 
   &:hover ${SCircle} {
@@ -53,4 +55,33 @@ export const SStatus = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+`
+
+export const SProviderItemScrollableContainer = styled.div`
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  max-height: calc(100vh - 400px);
+
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(41, 41, 45, 0.5);
+  }
+
+  & > * {
+    border-top: 1px solid rgba(${theme.rgbColors.alpha0}, 0.06);
+  }
+
+  @media ${theme.viewport.gte.sm} {
+    max-height: 35vh;
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+  }
 `
