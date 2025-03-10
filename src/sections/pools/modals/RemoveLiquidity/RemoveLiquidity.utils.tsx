@@ -1,6 +1,5 @@
 import { useOraclePrice } from "api/farms"
 import { useOmnipoolDataObserver } from "api/omnipool"
-import { useSpotPrice } from "api/spotPrice"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
 import { BN_0 } from "utils/constants"
@@ -58,7 +57,6 @@ export const useRemoveLiquidity = (
   const meta = pool.meta
   const hubMeta = hub
 
-  const spotPrice = useSpotPrice(hubMeta.id, assetId)
   const oracle = useOraclePrice(assetId, hubMeta.id)
   const minlFeeQuery = useMinWithdrawalFee()
   const { getData } = useLiquidityPositionData([assetId])
@@ -99,7 +97,7 @@ export const useRemoveLiquidity = (
 
   const calculateLiquidityValues = useCallback(
     (position: TLPData, removeSharesValue: BN) => {
-      if (omnipoolAsset && spotPrice.data && oracle.data && minlFeeQuery.data) {
+      if (omnipoolAsset && oracle.data && minlFeeQuery.data) {
         const oraclePrice = oracle.data.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery.data
 
@@ -148,7 +146,7 @@ export const useRemoveLiquidity = (
         }
       }
     },
-    [getData, minlFeeQuery.data, omnipoolAsset, oracle.data, spotPrice.data],
+    [getData, minlFeeQuery.data, omnipoolAsset, oracle.data],
   )
 
   const values = useMemo(() => {

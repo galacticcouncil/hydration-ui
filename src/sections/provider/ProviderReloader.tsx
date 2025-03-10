@@ -1,17 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
-import { Fragment, PropsWithChildren, lazy, useEffect, useState } from "react"
+import { Fragment, PropsWithChildren, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
+import { ProviderSelectButton } from "./components/ProviderSelectButton/ProviderSelectButton"
 import { useStore } from "state/store"
-
-const ProviderSelectButton = lazy(async () => ({
-  default: (
-    await import(
-      "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
-    )
-  ).ProviderSelectButton,
-}))
 
 // Don't reset these queries
 const QUERY_KEY_RESET_WHITELIST = ["rpcStatus"]

@@ -4,6 +4,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useTranslation } from "react-i18next"
 import { useSpotPrice } from "api/spotPrice"
 import { useAssets } from "providers/assets"
+import BN from "bignumber.js"
 
 export const UigcAssetXRate = createComponent({
   tagName: "uigc-asset-x-rate",
@@ -32,8 +33,8 @@ export function OrderAssetRate(props: {
   const inputMeta = props.inputAsset ? getAsset(props.inputAsset) : undefined
   const outputMeta = props.outputAsset ? getAsset(props.outputAsset) : undefined
 
-  const sp = useSpotPrice(props.inputAsset, props.outputAsset)
-  const spotPrice = sp.data?.spotPrice
+  const { data: sp } = useSpotPrice(props.inputAsset, props.outputAsset)
+  const spotPrice = sp?.spotPrice
 
   return (
     <UigcAssetXRate
@@ -43,11 +44,11 @@ export function OrderAssetRate(props: {
       amount={props.price}
       unit={outputMeta?.symbol}
     >
-      {!spotPrice?.isNaN() && (
+      {spotPrice && (
         <UigcButton
           slot="button"
           onClick={() =>
-            spotPrice ? props.onChange(spotPrice.toFixed()) : "0"
+            spotPrice ? props.onChange(BN(spotPrice).toFixed()) : "0"
           }
           {...{ variant: "max", size: "micro", nowrap: true }}
         >
