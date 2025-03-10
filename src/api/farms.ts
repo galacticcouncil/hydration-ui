@@ -582,25 +582,29 @@ export const useFarmsPoolAssets = () => {
   const indexerUrl = useIndexerUrl()
   const { api } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.yieldFarmCreated, async () => {
-    const { events } = await getYieldFarmCreated(indexerUrl)()
-    const currentBlockNumber = await api.derive.chain.bestNumber()
-    const blockNumberDiff = currentBlockNumber
-      .toBigNumber()
-      .minus(NEW_YIELD_FARMS_BLOCKS)
+  return useQuery(
+    QUERY_KEYS.yieldFarmCreated,
+    async () => {
+      const { events } = await getYieldFarmCreated(indexerUrl)()
+      const currentBlockNumber = await api.derive.chain.bestNumber()
+      const blockNumberDiff = currentBlockNumber
+        .toBigNumber()
+        .minus(NEW_YIELD_FARMS_BLOCKS)
 
-    const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
-      if (
-        blockNumberDiff.lt(event.block.height) &&
-        !acc.includes(event.args.assetId)
-      )
-        acc.push(event.args.assetId)
+      const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
+        if (
+          blockNumberDiff.lt(event.block.height) &&
+          !acc.includes(event.args.assetId)
+        )
+          acc.push(event.args.assetId)
 
-      return acc
-    }, [])
+        return acc
+      }, [])
 
-    return newFarmsByPoolAsset
-  })
+      return newFarmsByPoolAsset
+    },
+    { staleTime: millisecondsInHour },
+  )
 }
 
 export const getYieldFarmCreated = (indexerUrl: string) => async () => {
