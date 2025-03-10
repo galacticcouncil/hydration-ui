@@ -4,21 +4,14 @@ import {
   type BalanceClient,
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
-import {
-  pingAllProvidersAndSort,
-  TFeatureFlags,
-  useProviderAssets,
-  useProviderData,
-  useProviderRpcUrlStore,
-} from "api/provider"
-import { ReactNode, createContext, useContext, useEffect, useMemo } from "react"
+import { TFeatureFlags, useProviderAssets, useProviderData } from "api/provider"
+import { ReactNode, createContext, useContext, useMemo } from "react"
 import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
-import { differenceInHours } from "date-fns"
-import { PolkadotEvmRpcProvider } from "utils/provider"
 import { AssetsProvider } from "./assets"
+import { PolkadotEvmRpcProvider } from "utils/provider"
 
 type TProviderContext = {
   api: ApiPromise
@@ -41,8 +34,6 @@ const ProviderContext = createContext<TProviderContext>({
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
-const RPC_PING_HOUR_INTERVAL = 1
-
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry.getState()
   const isAssets = !!assets.length
@@ -50,19 +41,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const displayAsset = useDisplayAssetStore()
   useProviderAssets()
   useShareTokens()
-
-  useEffect(() => {
-    const { rpcUrlList, updatedAt } = useProviderRpcUrlStore.getState()
-
-    const hourDiff = differenceInHours(new Date(), updatedAt)
-
-    const shouldPing =
-      hourDiff >= RPC_PING_HOUR_INTERVAL || rpcUrlList.length === 0
-
-    if (shouldPing) {
-      pingAllProvidersAndSort()
-    }
-  }, [])
 
   useWindowFocus({
     onFocus: () => {

@@ -10,6 +10,7 @@ import { SButton, SName, SContainer } from "./ProviderSelectButton.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
 import { LazyMotion, domAnimation } from "framer-motion"
+import { Spinner } from "components/Spinner/Spinner"
 
 export const ProviderSelectButton = () => {
   const [open, setOpen] = useState(false)
@@ -18,7 +19,10 @@ export const ProviderSelectButton = () => {
 
   const { isLoaded } = useRpcProvider()
 
-  const { data: bestNumber } = useBestNumber(!isLoaded)
+  const { data: bestNumber, isLoading: isLoadingBestNumber } =
+    useBestNumber(!isLoaded)
+
+  const isLoading = !isLoaded || isLoadingBestNumber
 
   return (
     <LazyMotion features={domAnimation}>
@@ -26,7 +30,7 @@ export const ProviderSelectButton = () => {
         <SButton
           tabIndex={0}
           onClick={() => setOpen(true)}
-          whileHover="animate"
+          whileHover={isLoading ? "initial" : "animate"}
           css={{ zIndex: theme.zIndices.tablePlaceholder }}
         >
           <SName
@@ -43,10 +47,14 @@ export const ProviderSelectButton = () => {
             <ChevronRightIcon />
             <Separator orientation="vertical" sx={{ height: 14, mr: 10 }} />
           </SName>
-          <ProviderStatus
-            parachainBlockNumber={bestNumber?.parachainBlockNumber}
-            timestamp={bestNumber?.timestamp}
-          />
+          {isLoading ? (
+            <Spinner size={14} />
+          ) : (
+            <ProviderStatus
+              blockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
+              timestamp={bestNumber?.timestamp?.toNumber()}
+            />
+          )}
         </SButton>
         {open && (
           <ProviderSelectModal open={open} onClose={() => setOpen(false)} />

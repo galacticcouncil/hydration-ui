@@ -1,5 +1,4 @@
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
-import { InvalidateOnBlock } from "components/InvalidateOnBlock"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { RpcProvider } from "providers/rpcProvider"
 import { FC, PropsWithChildren, lazy } from "react"
@@ -8,7 +7,7 @@ import { theme } from "theme"
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
-import { ProviderReloader } from "sections/provider/ProviderReloader"
+import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 
 const AppsContextProvider = createComponent({
@@ -42,9 +41,8 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <MigrationProvider>
       <TooltipProvider>
-        <RpcProvider>
-          <ProviderReloader>
-            <InvalidateOnBlock />
+        <ProviderResolver>
+          <RpcProvider>
             <ToastProvider />
             <SkeletonTheme
               baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
@@ -56,8 +54,8 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
                 <Services />
               </AppsContextProvider>
             </SkeletonTheme>
-          </ProviderReloader>
-        </RpcProvider>
+          </RpcProvider>
+        </ProviderResolver>
       </TooltipProvider>
     </MigrationProvider>
   )

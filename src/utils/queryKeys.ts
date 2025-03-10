@@ -353,6 +353,7 @@ export const QUERY_KEYS = {
     "displayPrices",
     stableCoinId,
   ],
+  rpcStatus: (url: string) => ["rpcStatus", url],
 } as const
 
 export const WS_QUERY_KEYS = {

@@ -149,7 +149,7 @@ export const TxActionsWrapper = ({
       <Button
         variant="primary"
         disabled={disabled || blocked || readOnlyModeAddress !== undefined}
-        onClick={handleClick}
+        onClick={() => handleClick?.()}
         size="medium"
         type="button"
         isLoading={loading}
