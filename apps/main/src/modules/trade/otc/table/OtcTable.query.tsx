@@ -13,12 +13,14 @@ export type OtcOffer = {
   readonly isPartiallyFillable: boolean
 }
 
+export const otcOffersQueryKey = ["trade", "otc", "offers"]
+
 export const useOtcOffersQuery = () => {
   const { papi, isLoaded: isRpcReady } = useRpcProvider()
   const { getAsset, isExternal } = useAssets()
 
   const { isLoading, ...queryResult } = useQuery({
-    queryKey: ["trade", "otc", "offers"],
+    queryKey: otcOffersQueryKey,
     queryFn: async (): Promise<ReadonlyArray<OtcOffer>> => {
       const offers = await papi.query.OTC.Orders.getEntries()
 
