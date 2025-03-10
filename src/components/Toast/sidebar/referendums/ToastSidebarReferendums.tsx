@@ -10,20 +10,38 @@ import { useHDXSupplyFromSubscan } from "api/staking"
 import { ToastSidebarGroup } from "components/Toast/sidebar/group/ToastSidebarGroup"
 import { useTranslation } from "react-i18next"
 import { ReferendaDeprecated } from "components/ReferendumCard/ReferendaDeprecated"
+import { splitReferendaByVoted } from "components/Toast/sidebar/referendums/ToastSidebarReferendums.utils"
 
 export const ToastSidebarReferendums = () => {
   const { t } = useTranslation()
   const { data: accountVotes = [] } = useAccountOpenGovVotes()
-  const { data: openGovQuery } = useOpenGovReferendas()
+  const { data: openGovQuery = [] } = useOpenGovReferendas()
   const tracks = useReferendaTracks()
   const { data: hdxSupply } = useHDXSupplyFromSubscan()
   const { data: referendums = [] } = useReferendums("ongoing")
 
+  const { openGovNonVoted, openGovVoted } = splitReferendaByVoted(
+    openGovQuery,
+    accountVotes,
+  )
+
+  const openGovSorted = openGovNonVoted.concat(openGovVoted)
+
   return (
-    <ToastSidebarGroup title={t("toast.sidebar.referendums.title")} open={true}>
+    <ToastSidebarGroup
+      title={t("toast.sidebar.referendums.title")}
+      info={
+        openGovNonVoted.length
+          ? t("toast.sidebar.referendums.nonVoted", {
+              count: openGovNonVoted.length,
+            })
+          : undefined
+      }
+      open={false}
+    >
       <div sx={{ flex: "column", gap: 8 }}>
-        {openGovQuery?.length && tracks.data
-          ? openGovQuery.map((referendum) => {
+        {openGovSorted.length && tracks.data
+          ? openGovSorted.map((referendum) => {
               const track = tracks.data.get(
                 referendum.referendum.track.toString(),
               ) as TReferenda
@@ -35,7 +53,7 @@ export const ToastSidebarReferendums = () => {
                   referenda={referendum.referendum}
                   track={track}
                   totalIssuance={hdxSupply?.totalIssuance}
-                  voted={accountVotes.some((vote) => vote.id === referendum.id)}
+                  voted={referendum.hasVoted}
                 />
               )
             })

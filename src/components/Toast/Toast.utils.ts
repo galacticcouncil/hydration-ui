@@ -230,7 +230,8 @@ const getExtrinsicIndex = (
 
 const getWormholeTx = async (extrinsicIndex: string) => {
   // find xcm transfer
-  const xcmListEndpoint = "https://polkadot.api.subscan.io/api/scan/xcm/list"
+  const xcmListEndpoint =
+    "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/proxy/subscan/polkadot/xcm/list"
   const xcmBody = JSON.stringify({
     extrinsic_index: extrinsicIndex,
     message_type: "transfer",
@@ -240,6 +241,9 @@ const getWormholeTx = async (extrinsicIndex: string) => {
   const xcmRes = await fetch(xcmListEndpoint, {
     method: "POST",
     body: xcmBody,
+    headers: {
+      "Content-type": "application/json",
+    },
   })
   const xcmListData = await xcmRes.json()
 
