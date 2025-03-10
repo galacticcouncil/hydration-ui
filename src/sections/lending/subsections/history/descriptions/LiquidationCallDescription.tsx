@@ -20,16 +20,17 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
     <Text
       fs={14}
       sx={{
-        color: "white",
         flex: "row",
         gap: 8,
         align: "center",
+        justify: ["end", "start"],
         flexWrap: "wrap",
-        maxWidth: "80%",
       }}
       css={{ whiteSpace: "collapse" }}
     >
-      {t("lending.history.table.liquidatedCollateral")}
+      <span sx={{ textAlign: ["right", "left"] }}>
+        {t("lending.history.table.liquidatedCollateral")}
+      </span>
       <div sx={{ flex: "row", gap: 8, align: "center" }}>
         <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
         {t("value.tokenWithSymbol", {

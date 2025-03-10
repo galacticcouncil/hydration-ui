@@ -23,8 +23,8 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
         flex: "row",
         gap: 4,
         align: "center",
+        justify: ["end", "start"],
         flexWrap: "wrap",
-        maxWidth: "80%",
       }}
     >
       <Trans

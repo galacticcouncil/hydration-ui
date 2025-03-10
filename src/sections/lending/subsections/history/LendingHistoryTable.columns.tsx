@@ -63,6 +63,11 @@ export const useLendingHistoryColumns = () => {
 
     const description = columnHelper.display({
       header: t("description"),
+      meta: {
+        sx: {
+          textAlign: ["right", "left"],
+        },
+      },
       cell({ row }) {
         if (row.original instanceof Date) {
           return

@@ -16,7 +16,14 @@ export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
   const isEnabled = categoryId !== 0
 
   return (
-    <Text fs={14} css={{ whiteSpace: "collapse" }}>
+    <Text
+      fs={14}
+      css={{
+        whiteSpace: "collapse",
+        display: "flex",
+        justify: ["end", "start"],
+      }}
+    >
       <Trans
         t={t}
         i18nKey={
