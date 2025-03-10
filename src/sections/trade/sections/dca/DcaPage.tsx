@@ -39,7 +39,7 @@ export function DcaPage() {
   } = useAccountCurrency(isLoaded ? account?.address : "")
   const { stableCoinId } = useDisplayAssetStore()
 
-  const rpcUrlList = useActiveRpcUrlList()
+  const { rpcUrlListKey } = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
@@ -90,7 +90,7 @@ export function DcaPage() {
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={rpcUrlList.join()}
+        apiAddress={rpcUrlListKey}
         assetIn={!isLoading ? assetInDefault : ""}
         assetOut={!isLoading ? assetOutDefault : ""}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
