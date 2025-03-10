@@ -11,14 +11,18 @@ import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
   BalanceClient,
-  PoolService,
+  CachingPoolService,
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { identity, undefinedNoop } from "utils/helpers"
-import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import {
+  ChainCursor,
+  Ecosystem,
+  ExternalAssetCursor,
+} from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
@@ -272,6 +276,25 @@ export const useProviderData = () => {
       const apiPool = SubstrateApis.getInstance()
       const api = await apiPool.api(rpcUrlList, maxRetries)
 
+      const poolService = new CachingPoolService(api)
+      const traderRoutes = [
+        PoolType.Omni,
+        PoolType.Stable,
+        PoolType.XYK,
+        PoolType.LBP,
+      ]
+      const tradeRouter = new TradeRouter(poolService, {
+        includeOnly: traderRoutes,
+      })
+
+      ChainCursor.reset({
+        api,
+        poolService,
+        router: tradeRouter,
+        ecosystem: Ecosystem.Polkadot,
+        isTestnet: false,
+      })
+
       const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
       const degenMode = useSettingsStore.getState().degenMode
       const { tokens: externalTokens } = degenMode
@@ -291,18 +314,7 @@ export const useProviderData = () => {
         },
       })
 
-      const poolService = new PoolService(api)
-      const traderRoutes = [
-        PoolType.Omni,
-        PoolType.Stable,
-        PoolType.XYK,
-        PoolType.LBP,
-      ]
       await poolService.syncRegistry(externalTokens[dataEnv])
-
-      const tradeRouter = new TradeRouter(poolService, {
-        includeOnly: traderRoutes,
-      })
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
