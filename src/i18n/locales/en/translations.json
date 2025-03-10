@@ -38,6 +38,7 @@
   "toast.sidebar.empty.text1": "No recent activities.",
   "toast.sidebar.empty.text2": "It's quite a peaceful day.",
   "toast.sidebar.referendums.title": "Active Referenda",
+  "toast.sidebar.referendums.nonVoted": "{{ count }} Non-voted",
   "toast.sidebar.referendums.aye": "Aye",
   "toast.sidebar.referendums.nay": "Nay",
   "toast.sidebar.referendums.value": "{{ value, compact }} HDX ({{ percent, bignumber(type: 'percentage') }}%)",
