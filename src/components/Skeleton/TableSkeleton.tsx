@@ -1,3 +1,4 @@
+import { ColumnDef } from "@tanstack/react-table"
 import { DataTable, TableProps } from "components/DataTable"
 import { useReactTable } from "hooks/useReactTable"
 import Skeleton from "react-loading-skeleton"
@@ -8,6 +9,7 @@ export type TableSkeletonProps = {
   rowCount?: number
   titleSkeleton?: boolean
   background?: string
+  colSizes?: ReadonlyArray<number>
 } & TableProps
 
 export const TableSkeleton: React.FC<TableSkeletonProps> = ({
@@ -15,10 +17,11 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   colCount = 5,
   rowCount = 10,
   titleSkeleton = false,
+  colSizes,
   ...props
 }) => {
   const table = useReactTable({
-    columns: generateCols(colCount),
+    columns: generateCols(colCount, colSizes),
     data: [],
     skeletonRowCount: rowCount,
     isLoading: true,
@@ -33,8 +36,15 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   )
 }
 
-function generateCols(count: number) {
+function generateCols(count: number, colSizes?: ReadonlyArray<number>) {
   return Array(count)
     .fill({})
-    .map((_, index) => ({ id: `${index}` }))
+    .map<ColumnDef<any>>((_, index) => {
+      const colSize = colSizes?.[index]
+
+      return {
+        id: `${index}`,
+        ...(colSize ? { meta: { sx: { width: `${colSize}%` } } } : {}),
+      }
+    })
 }

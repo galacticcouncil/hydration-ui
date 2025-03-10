@@ -92,6 +92,7 @@ export const BigNumberFormatOptionsSchema = z
       ])
       .optional(),
     numberPrefix: z.string().optional(),
+    prefixPositiveWithPlus: z.boolean().optional(),
     numberSuffix: z.string().optional(),
     type: z
       .union([z.literal("dollar"), z.literal("token"), z.literal("percentage")])
@@ -166,7 +167,9 @@ export function formatBigNumber(
 
   const localeOptions = getFormatSeparators(locale)
   const fmtConfig = {
-    prefix: options?.numberPrefix ?? "",
+    prefix:
+      (options?.numberPrefix ?? "") +
+      (options?.prefixPositiveWithPlus && num.gte(0) ? "+" : ""),
     suffix: options?.numberSuffix ?? "",
     decimalSeparator: localeOptions.decimal ?? ".",
     groupSeparator: String.fromCharCode(160), // non-breaking space

@@ -89,7 +89,7 @@ export const LendingHistoryTable: FC<Props> = ({
           }
         />
       </div>
-      {eventsWithDays.length ? (
+      {eventsWithDays.length || isLoading ? (
         <SDataTable table={table} />
       ) : (
         <EmptySearchState />

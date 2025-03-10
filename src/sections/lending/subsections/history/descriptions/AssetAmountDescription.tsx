@@ -36,6 +36,7 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
           symbol: asset?.symbol,
           ignoreSmallFormat: true,
           decimalPlaces: 4,
+          prefixPositiveWithPlus: true,
         })}
       </Text>
     </div>

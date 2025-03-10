@@ -1,4 +1,5 @@
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
+import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import {
   SubNavigation,
@@ -23,7 +24,7 @@ export const Navigation = () => {
       />
       <SubNavigationTabLink
         to={ROUTES.history}
-        icon={<AssetsIcon width={15} height={15} />}
+        icon={<TransferIcon width={15} height={15} />}
         label={t("header.borrow.history.title")}
       />
     </SubNavigation>
