@@ -8,7 +8,7 @@ import { DepositPageSkeleton } from "sections/deposit/DepositPageSkeleton"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
 import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
 import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
-import { LendingTransactionsSkeleton } from "sections/lending/skeleton/LendingTransactionsSkeleton"
+import { LendingHistorySkeleton } from "sections/lending/skeleton/LendingHistorySkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
@@ -134,12 +134,10 @@ const LendingMarketsPage = lazy(async () => ({
     .LendingMarketsPage,
 }))
 
-const LendingTransactionsPage = lazy(async () => ({
+const LendingHistoryPage = lazy(async () => ({
   default: (
-    await import(
-      "sections/lending/subsections/transactions/LendingTransactionsPage"
-    )
-  ).LendingTransactionsPage,
+    await import("sections/lending/subsections/history/LendingHistoryPage")
+  ).LendingHistoryPage,
 }))
 
 const LendingReserveOverviewPage = lazy(async () => ({
@@ -481,10 +479,10 @@ export const routes: Route[] = [
         ],
       },
       {
-        path: LINKS.borrowTransactions.split("/").pop(),
+        path: LINKS.borrowHistory.split("/").pop(),
         element: (
-          <Suspense fallback={<LendingTransactionsSkeleton />}>
-            <LendingTransactionsPage />
+          <Suspense fallback={<LendingHistorySkeleton />}>
+            <LendingHistoryPage />
           </Suspense>
         ),
       },

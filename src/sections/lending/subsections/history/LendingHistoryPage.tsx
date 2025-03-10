@@ -1,29 +1,29 @@
 import { useTablePagination } from "components/Table/TablePagination"
 import { useState } from "react"
-import { LendingTransactionsPlaceholder } from "sections/lending/subsections/transactions/LendingTransactionsPlaceholder"
-import { LendingTransactionsSearch } from "sections/lending/subsections/transactions/LendingTransactionsSearch"
-import { LendingTransactionsTable } from "sections/lending/subsections/transactions/LendingTransactionsTable"
+import { LendingHistoryPlaceholder } from "sections/lending/subsections/history/LendingHistoryPlaceholder"
+import { LendingHistorySearch } from "sections/lending/subsections/history/LendingHistorySearch"
+import { LendingHistoryTable } from "sections/lending/subsections/history/LendingHistoryTable"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-export const LendingTransactionsPage = () => {
+export const LendingHistoryPage = () => {
   const { account } = useAccount()
 
   const [searchPhrase, setSearchPhrase] = useState("")
   const [pagination, setPagination] = useTablePagination()
 
   if (!account?.address) {
-    return <LendingTransactionsPlaceholder />
+    return <LendingHistoryPlaceholder />
   }
 
   return (
     <div sx={{ flex: "column", gap: 20 }}>
-      <LendingTransactionsSearch
+      <LendingHistorySearch
         onChange={(searchPhrase) => {
           setSearchPhrase(searchPhrase)
           setPagination((prev) => ({ ...prev, pageIndex: 0 }))
         }}
       />
-      <LendingTransactionsTable
+      <LendingHistoryTable
         searchPhrase={searchPhrase}
         pagination={pagination}
         onPaginationChange={setPagination}

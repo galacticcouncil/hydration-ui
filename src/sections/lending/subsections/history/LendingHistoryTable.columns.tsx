@@ -1,13 +1,13 @@
-import { EventName } from "sections/lending/subsections/transactions/types"
+import { EventName } from "sections/lending/subsections/history/types"
 import { createColumnHelper } from "@tanstack/react-table"
 import { MoneyMarketEventFragment } from "graphql/__generated__/squid/graphql"
 import { useMemo } from "react"
-import { LiquidationCallDescription } from "sections/lending/subsections/transactions/descriptions/LiquidationCallDescription"
-import { EModeDescription } from "sections/lending/subsections/transactions/descriptions/EModeDescription"
-import { useFormatEventName } from "sections/lending/subsections/transactions/utils"
-import { AssetAmountDescription } from "sections/lending/subsections/transactions/descriptions/AssetAmountDescription"
+import { LiquidationCallDescription } from "sections/lending/subsections/history/descriptions/LiquidationCallDescription"
+import { EModeDescription } from "sections/lending/subsections/history/descriptions/EModeDescription"
+import { useFormatEventName } from "sections/lending/subsections/history/utils"
+import { AssetAmountDescription } from "sections/lending/subsections/history/descriptions/AssetAmountDescription"
 import BigNumber from "bignumber.js"
-import { CollateralDescription } from "sections/lending/subsections/transactions/descriptions/CollateralDescription"
+import { CollateralDescription } from "sections/lending/subsections/history/descriptions/CollateralDescription"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 
@@ -15,11 +15,11 @@ export type MoneyMarketEventWithDate = MoneyMarketEventFragment & {
   readonly date: Date
 }
 
-export type LendingTransactionRow = MoneyMarketEventWithDate | Date
+export type LendingHistoryRow = MoneyMarketEventWithDate | Date
 
-const columnHelper = createColumnHelper<LendingTransactionRow>()
+const columnHelper = createColumnHelper<LendingHistoryRow>()
 
-export const useLendingTransactionsColumns = () => {
+export const useLendingHistoryColumns = () => {
   const { t } = useTranslation()
   const formatEventName = useFormatEventName()
 

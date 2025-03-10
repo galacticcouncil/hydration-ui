@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { theme } from "theme"
 
-export const LendingTransactionsPlaceholder = () => {
+export const LendingHistoryPlaceholder = () => {
   const { t } = useTranslation()
 
   return (
@@ -19,7 +19,7 @@ export const LendingTransactionsPlaceholder = () => {
           fw={500}
           color="white"
         >
-          {t("lending.transactions.table.title")}
+          {t("lending.history.table.title")}
         </Text>
       </TableTitle>
       <div

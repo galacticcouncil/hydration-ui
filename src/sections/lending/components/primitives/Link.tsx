@@ -44,5 +44,4 @@ export const ROUTES = {
   reserveOverview: (underlyingAsset: string, marketName: CustomMarket) =>
     `/borrow/markets/${underlyingAsset}?marketName=${marketName}`,
   history: "/borrow/history",
-  transactions: "/borrow/transactions",
 }

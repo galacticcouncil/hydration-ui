@@ -8,17 +8,17 @@ import { TablePagination } from "components/Table/TablePagination"
 import { Text } from "components/Typography/Text/Text"
 import { useReactTable } from "hooks/useReactTable"
 import { FC, useMemo } from "react"
-import { useLendingTransactionsColumns } from "sections/lending/subsections/transactions/LendingTransactionsTable.columns"
-import { useMoneyMarketEvents } from "sections/lending/subsections/transactions/LendingTransactionsTable.query"
-import { LendingTransactionsFilter } from "sections/lending/subsections/transactions/LendingTransactionsFilter"
+import { useLendingHistoryColumns } from "sections/lending/subsections/history/LendingHistoryTable.columns"
+import { useMoneyMarketEvents } from "sections/lending/subsections/history/LendingHistoryTable.query"
 import { useSearch } from "@tanstack/react-location"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 import { css } from "@emotion/react"
-import { mapMoneyMarketEvents } from "sections/lending/subsections/transactions/LendingTransactionsTable.utils"
+import { mapMoneyMarketEvents } from "sections/lending/subsections/history/LendingHistoryTable.utils"
 import { useTranslation } from "react-i18next"
-import { LendingTransactionsSearch } from "sections/lending/subsections/transactions/LendingTransactionsFilter.utils"
+import { LendingHistorySearch } from "sections/lending/subsections/history/LendingHistoryFilter.utils"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
+import { LendingHistoryFilter } from "sections/lending/subsections/history/LendingHistoryFilter"
 
 type Props = {
   readonly searchPhrase: string
@@ -41,13 +41,13 @@ const SDataTable = styled(DataTable)`
   }
 ` as typeof DataTable
 
-export const LendingTransactionsTable: FC<Props> = ({
+export const LendingHistoryTable: FC<Props> = ({
   searchPhrase,
   pagination,
   onPaginationChange,
 }) => {
   const { t } = useTranslation()
-  const { type } = useSearch<{ readonly Search: LendingTransactionsSearch }>()
+  const { type } = useSearch<{ readonly Search: LendingHistorySearch }>()
 
   const { data, isLoading } = useMoneyMarketEvents(
     type,
@@ -58,7 +58,7 @@ export const LendingTransactionsTable: FC<Props> = ({
   const eventsWithDays = useMemo(() => mapMoneyMarketEvents(data), [data])
 
   const table = useReactTable({
-    columns: useLendingTransactionsColumns(),
+    columns: useLendingHistoryColumns(),
     data: eventsWithDays,
     isLoading,
     state: { pagination },
@@ -79,11 +79,11 @@ export const LendingTransactionsTable: FC<Props> = ({
           fw={500}
           color="white"
         >
-          {t("lending.transactions.table.title")}
+          {t("lending.history.table.title")}
         </Text>
       </TableTitle>
       <div sx={{ px: 20, pb: 20 }}>
-        <LendingTransactionsFilter
+        <LendingHistoryFilter
           onChange={() =>
             onPaginationChange((prev) => ({ ...prev, pageIndex: 0 }))
           }

@@ -6,15 +6,15 @@ import { MoneyMarketEventsDocument } from "graphql/__generated__/squid/graphql"
 import { useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import {
-  BorrowTransactionFilter,
-  borrowTransactionsFilters,
-} from "sections/lending/subsections/transactions/LendingTransactionsFilter.utils"
-import { EventName } from "sections/lending/subsections/transactions/types"
+  LendingHistoryFilterType,
+  lendingHistoryFilters,
+} from "sections/lending/subsections/history/LendingHistoryFilter.utils"
+import { EventName } from "sections/lending/subsections/history/types"
 import { PaginationState } from "@tanstack/react-table"
 import { useSquidUrl } from "api/provider"
 
 export const useMoneyMarketEvents = (
-  filter: ReadonlyArray<BorrowTransactionFilter> | undefined,
+  filter: ReadonlyArray<LendingHistoryFilterType> | undefined,
   searchPhrase: string,
   pagination: PaginationState,
 ) => {
@@ -23,7 +23,7 @@ export const useMoneyMarketEvents = (
     ? u8aToHex(decodeAddress(account.address))
     : ""
 
-  const eventNames = (filter ?? borrowTransactionsFilters).flatMap(
+  const eventNames = (filter ?? lendingHistoryFilters).flatMap(
     mapFilterToEventName,
   )
 
@@ -61,7 +61,7 @@ export const useMoneyMarketEvents = (
 }
 
 const mapFilterToEventName = (
-  type: BorrowTransactionFilter,
+  type: LendingHistoryFilterType,
 ): Array<EventName> => {
   switch (type) {
     case "borrow":

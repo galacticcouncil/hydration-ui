@@ -29,7 +29,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
     >
       <Trans
         t={t}
-        i18nKey="lending.transactions.table.collateralization"
+        i18nKey="lending.history.table.collateralization"
         values={{ state: enabled ? "Enabled" : "Disabled" }}
       >
         <span sx={{ color: enabled ? "green500" : "red500" }} />

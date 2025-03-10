@@ -21,8 +21,8 @@ export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
         t={t}
         i18nKey={
           isEnabled
-            ? "lending.transactions.table.emodeEnabled"
-            : "lending.transactions.table.emodeDisabled"
+            ? "lending.history.table.emodeEnabled"
+            : "lending.history.table.emodeDisabled"
         }
         values={{ emode }}
       >

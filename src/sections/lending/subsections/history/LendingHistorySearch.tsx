@@ -8,7 +8,7 @@ type Props = {
   readonly onChange: (value: string) => void
 }
 
-export const LendingTransactionsSearch: FC<Props> = ({ onChange }) => {
+export const LendingHistorySearch: FC<Props> = ({ onChange }) => {
   const { t } = useTranslation()
 
   const [input, setInput] = useState("")
@@ -28,7 +28,7 @@ export const LendingTransactionsSearch: FC<Props> = ({ onChange }) => {
     <Search
       value={input}
       onChange={setInput}
-      placeholder={t("lending.transactions.search.placeholder")}
+      placeholder={t("lending.history.search.placeholder")}
     />
   )
 }

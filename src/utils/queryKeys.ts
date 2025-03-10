@@ -6,9 +6,8 @@ import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
-import { BorrowTransactionFilter } from "sections/lending/subsections/transactions/LendingTransactionsFilter.utils"
 import { PaginationState } from "@tanstack/react-table"
-import { EventName } from "sections/lending/subsections/transactions/types"
+import { EventName } from "sections/lending/subsections/history/types"
 
 export const QUERY_KEY_PREFIX = "@block"
 

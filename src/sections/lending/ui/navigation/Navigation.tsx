@@ -22,9 +22,9 @@ export const Navigation = () => {
         label={t("header.borrow.markets.title")}
       />
       <SubNavigationTabLink
-        to={ROUTES.transactions}
+        to={ROUTES.history}
         icon={<AssetsIcon width={15} height={15} />}
-        label={t("header.borrow.transactions.title")}
+        label={t("header.borrow.history.title")}
       />
     </SubNavigation>
   )

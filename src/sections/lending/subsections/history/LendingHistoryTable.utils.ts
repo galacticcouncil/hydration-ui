@@ -1,12 +1,12 @@
 import { MoneyMarketEventsQuery } from "graphql/__generated__/squid/graphql"
 import {
-  LendingTransactionRow,
+  LendingHistoryRow,
   MoneyMarketEventWithDate,
-} from "sections/lending/subsections/transactions/LendingTransactionsTable.columns"
+} from "sections/lending/subsections/history/LendingHistoryTable.columns"
 
 export const mapMoneyMarketEvents = (
   data: MoneyMarketEventsQuery | undefined,
-): Array<LendingTransactionRow> => {
+): Array<LendingHistoryRow> => {
   const events =
     data?.moneyMarketEvents?.nodes
       .filter((event) => !!event)
@@ -20,8 +20,5 @@ export const mapMoneyMarketEvents = (
       events,
       (event) => event.date.toISOString().split("T")[0],
     ).entries(),
-  ).flatMap<LendingTransactionRow>(([date, events]) => [
-    new Date(date),
-    ...events,
-  ])
+  ).flatMap<LendingHistoryRow>(([date, events]) => [new Date(date), ...events])
 }

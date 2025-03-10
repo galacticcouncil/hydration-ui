@@ -29,7 +29,7 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
       }}
       css={{ whiteSpace: "collapse" }}
     >
-      {t("lending.transactions.table.liquidatedCollateral")}
+      {t("lending.history.table.liquidatedCollateral")}
       <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
       {t("value.tokenWithSymbol", {
         value: new BigNumber(amount)
