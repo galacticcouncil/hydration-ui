@@ -92,11 +92,13 @@ export const BigNumberFormatOptionsSchema = z
       ])
       .optional(),
     numberPrefix: z.string().optional(),
+    prefixPositiveWithPlus: z.boolean().optional(),
     numberSuffix: z.string().optional(),
     type: z
       .union([z.literal("dollar"), z.literal("token"), z.literal("percentage")])
       .default("token")
       .optional(),
+    ignoreSmallFormat: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length >= 1)
 
@@ -165,7 +167,9 @@ export function formatBigNumber(
 
   const localeOptions = getFormatSeparators(locale)
   const fmtConfig = {
-    prefix: options?.numberPrefix ?? "",
+    prefix:
+      (options?.numberPrefix ?? "") +
+      (options?.prefixPositiveWithPlus && num.gte(0) ? "+" : ""),
     suffix: options?.numberSuffix ?? "",
     decimalSeparator: localeOptions.decimal ?? ".",
     groupSeparator: String.fromCharCode(160), // non-breaking space
@@ -226,7 +230,7 @@ export function formatBigNumber(
 
   /* If the integer number is equal or less than 0 display a maximum of 6 decimals, by cutting them not rounding */
   /* If the final digit of the amount is 0 decimal it should be round it up. */
-  if (num.lt(0.000001)) {
+  if (num.lt(0.000001) && !options.ignoreSmallFormat) {
     return num
       .decimalPlaces(4, BigNumber.ROUND_UP)
       .toFormat({ ...fmtConfig, prefix: "<" })

@@ -214,7 +214,7 @@ export async function watchAsset(
     "hex",
   )
   const assetIdBuffer = numToBuffer(+assetId)
-  assetIdBuffer.copy(tokenAddress, 16)
+  assetIdBuffer.copy(new Uint8Array(tokenAddress), 16)
 
   const address = "0x" + tokenAddress.toString("hex")
 

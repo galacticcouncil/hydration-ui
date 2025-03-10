@@ -159,7 +159,7 @@ export const Web3ConnectAccountList: FC<{
         <div sx={{ flex: "column", mb: [4, 8], gap: [12, 16] }}>
           <Search
             value={searchVal}
-            setValue={setSearchVal}
+            onChange={setSearchVal}
             placeholder={t("walletconnect.accountSelect.search.placeholder")}
           />
           {mode === WalletMode.Default && (

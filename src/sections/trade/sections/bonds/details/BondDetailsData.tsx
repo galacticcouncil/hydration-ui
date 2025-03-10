@@ -69,7 +69,7 @@ export const BondDetailsHeader = ({
 
   if (end && !isLoading) {
     const remainingSeconds = BLOCK_TIME.multipliedBy(
-      end - bestNumber.data?.relaychainBlockNumber.toNumber() ?? 0,
+      end - bestNumber.data?.relaychainBlockNumber.toNumber(),
     ).toNumber()
 
     endingDuration = customFormatDuration({ end: remainingSeconds * 1000 })
