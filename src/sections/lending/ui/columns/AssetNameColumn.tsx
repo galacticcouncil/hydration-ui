@@ -20,7 +20,7 @@ export const AssetNameColumn: FC<AssetNameColumnProps> = ({
   return (
     <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
       <span sx={{ flex: "row", align: "center", gap: 8 }}>
-        {iconSymbol && <TokenIcon symbol={iconSymbol} />}
+        {iconSymbol && <TokenIcon address={detailsAddress} />}
         {symbol}
       </span>
     </Link>

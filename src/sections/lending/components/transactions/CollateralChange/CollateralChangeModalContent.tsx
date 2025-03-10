@@ -135,7 +135,7 @@ export const CollateralChangeModalContent = ({
       <TxModalDetails>
         <DetailsNumberLine
           symbol={poolReserve.symbol}
-          iconSymbol={poolReserve.iconSymbol}
+          iconAddress={poolReserve.underlyingAsset}
           description="Supply balance"
           value={userReserve.underlyingBalance}
         />
