@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick, uniqBy } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
@@ -17,10 +17,10 @@ import {
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
-import { identity, undefinedNoop } from "utils/helpers"
+import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
-import { pingRpc } from "utils/rpc"
+import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 
 export type TEnv = "testnet" | "mainnet"
@@ -144,16 +144,38 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const isTestnetRpcUrl = (url: string) =>
   PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
 
-export async function pingAllProvidersAndSort() {
-  const fastestRpc = await Promise.race(
-    PROVIDER_URLS.map(async (url) => {
-      const time = await pingRpc(url)
-      return { url, time }
-    }),
-  )
+export async function getBestProvider(): Promise<PingResponse[]> {
+  const controller = new AbortController()
+  const signal = controller.signal
 
-  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
-  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+  const results: PingResponse[] = []
+
+  const promises = PROVIDER_URLS.map(async (url) => {
+    try {
+      const res = await pingRpc(url, 5000, signal)
+      if (res.ping === Infinity) return
+
+      results.push(res)
+      results.sort((a, b) => b.timestamp - a.timestamp)
+
+      // Wait for up to 3 results, then abort
+      if (results.length === 3 || results.length === PROVIDER_URLS.length) {
+        controller.abort()
+      }
+    } catch (error) {
+      if (!signal.aborted) {
+        console.error(`Error pinging RPC ${url}:`, error)
+      }
+    }
+  })
+
+  await Promise.all(promises)
+
+  if (results.length === 0) {
+    throw new Error("All RPC providers failed or timed out")
+  }
+
+  return results
 }
 
 export const useProviderRpcUrlStore = create(
