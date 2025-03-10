@@ -34,39 +34,45 @@ const Web3ConnectActiveButton: FC<{
 
   return (
     <SContainer className={className} onClick={onOpen}>
-      <div sx={{ flex: "row", gap: 10, align: "center", justify: "center" }}>
-        <div sx={{ flex: "column", gap: 4 }}>
-          <Text color="basic100" fs={13} lh={13} fw={600} font="GeistMedium">
-            {account.name}
-          </Text>
-          {!shouldHideAddress && (
-            <Text color="basic300" fs={11} lh={11} fw={500}>
-              {shortenedAddress}
-            </Text>
-          )}
-        </div>
-        <div
-          sx={{
-            flex: "row",
-            align: "center",
-            justify: "center",
-            gap: 4,
-          }}
+      <div sx={{ flex: "column", gap: 4 }}>
+        <Text
+          color="basic100"
+          fs={13}
+          lh={13}
+          fw={600}
+          font="GeistMedium"
+          truncate
+          sx={{ maxWidth: 150 }}
         >
-          <SAvatarCointainer>
-            <AccountAvatar
-              size={22}
-              genesisHash={account?.genesisHash}
-              provider={account?.provider}
-              address={displayAddress}
-              css={{
-                pointerEvents: "none",
-                borderRadius: "9999px",
-              }}
-            />
-          </SAvatarCointainer>
-          <ChevronDownSmall width={8} height={8} sx={{ color: "basic100" }} />
-        </div>
+          {account.name}
+        </Text>
+        {!shouldHideAddress && (
+          <Text color="basic300" fs={11} lh={11} fw={500}>
+            {shortenedAddress}
+          </Text>
+        )}
+      </div>
+      <div
+        sx={{
+          flex: "row",
+          align: "center",
+          justify: "center",
+          gap: 4,
+        }}
+      >
+        <SAvatarCointainer>
+          <AccountAvatar
+            size={22}
+            genesisHash={account?.genesisHash}
+            provider={account?.provider}
+            address={displayAddress}
+            css={{
+              pointerEvents: "none",
+              borderRadius: "9999px",
+            }}
+          />
+        </SAvatarCointainer>
+        <ChevronDownSmall width={8} height={8} sx={{ color: "basic100" }} />
       </div>
     </SContainer>
   )
