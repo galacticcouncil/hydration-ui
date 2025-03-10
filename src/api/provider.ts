@@ -11,14 +11,18 @@ import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
   BalanceClient,
-  PoolService,
+  CachingPoolService,
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
-import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import {
+  ChainCursor,
+  Ecosystem,
+  ExternalAssetCursor,
+} from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
@@ -291,6 +295,13 @@ export const useProviderAssets = () => {
 }
 
 const WHITELISTED_QUERIES_ON_PROVIDER_CHANGE = ["rpcStatus"]
+const RPC_CHANGE_QUERY_FILTER: QueryFilters = {
+  type: "active",
+  predicate: (query) =>
+    !WHITELISTED_QUERIES_ON_PROVIDER_CHANGE.includes(
+      query.queryKey[0] as string,
+    ),
+}
 
 export const useProviderData = (
   { shouldRefetchOnRpcChange } = { shouldRefetchOnRpcChange: false },
@@ -316,20 +327,12 @@ export const useProviderData = (
       setEnabled(false)
       queryClient.removeQueries(QUERY_KEYS.provider)
 
-      const queryFilter: QueryFilters = {
-        type: "active",
-        predicate: (query) =>
-          !WHITELISTED_QUERIES_ON_PROVIDER_CHANGE.includes(
-            query.queryKey[0] as string,
-          ),
-      }
-
       if (hasDataEnvChanged) {
-        queryClient.removeQueries(queryFilter)
+        queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
       } else {
         queryClient.invalidateQueries(
           {
-            ...queryFilter,
+            ...RPC_CHANGE_QUERY_FILTER,
             refetchType: "none",
           },
           { cancelRefetch: true },
@@ -354,8 +357,27 @@ export const useProviderData = (
       const api = await apiPool.api(rpcUrlList, maxRetries)
       const provider = getProviderInstance(api)
       const endpoint = provider.endpoint
-
       const dataEnv = getProviderDataEnv(endpoint)
+
+      const poolService = new CachingPoolService(api)
+      const traderRoutes = [
+        PoolType.Omni,
+        PoolType.Stable,
+        PoolType.XYK,
+        PoolType.LBP,
+      ]
+      const tradeRouter = new TradeRouter(poolService, {
+        includeOnly: traderRoutes,
+      })
+
+      ChainCursor.reset({
+        api,
+        poolService,
+        router: tradeRouter,
+        ecosystem: Ecosystem.Polkadot,
+        isTestnet: isTestnetRpcUrl(endpoint),
+      })
+
       const degenMode = useSettingsStore.getState().degenMode
       const { tokens: externalTokens } = degenMode
         ? ExternalAssetCursor.deref().state
@@ -374,18 +396,7 @@ export const useProviderData = (
         },
       })
 
-      const poolService = new PoolService(api)
-      const traderRoutes = [
-        PoolType.Omni,
-        PoolType.Stable,
-        PoolType.XYK,
-        PoolType.LBP,
-      ]
       await poolService.syncRegistry(externalTokens[dataEnv])
-
-      const tradeRouter = new TradeRouter(poolService, {
-        includeOnly: traderRoutes,
-      })
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
