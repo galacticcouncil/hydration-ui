@@ -191,7 +191,7 @@ export const QUERY_KEYS = {
     "otcOrdersState",
     orderId?.toString(),
   ],
-  provider: (url: string) => ["provider", url],
+  provider: ["provider"],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
