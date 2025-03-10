@@ -49,8 +49,8 @@ export const SOverlay = styled(Overlay)<{ variant?: BackdropVariant }>`
   inset: 0;
   z-index: ${theme.zIndices.modal};
 
-  backdrop-filter: blur(16px);
-  ${({ variant }) => variant && backdropVariantStyles[variant]}
+  // backdrop-filter: blur(16px);
+  // ${({ variant }) => variant && backdropVariantStyles[variant]}
 `
 
 export const SContainer = styled(Content)`

@@ -107,7 +107,7 @@ export function XcmPage() {
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
 
-  const rpcUrlList = useActiveRpcUrlList()
+  const { rpcUrlListKey } = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     await createTransaction(
@@ -211,7 +211,7 @@ export function XcmPage() {
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        apiAddress={rpcUrlList.join()}
+        apiAddress={rpcUrlListKey}
         stableCoinAssetId={stableCoinAssetId}
         onXcmNew={handleSubmit}
         onWalletChange={handleWalletChange}

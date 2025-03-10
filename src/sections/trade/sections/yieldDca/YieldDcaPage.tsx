@@ -33,7 +33,7 @@ export function YieldDcaPage() {
   const { t } = useTranslation()
   const { stableCoinId } = useDisplayAssetStore()
 
-  const rpcUrlList = useActiveRpcUrlList()
+  const { rpcUrlListKey } = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
@@ -85,7 +85,7 @@ export function YieldDcaPage() {
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={rpcUrlList.join()}
+        apiAddress={rpcUrlListKey}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

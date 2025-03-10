@@ -39,10 +39,10 @@ export const useXYKSDKPools = () => {
 export const useShareTokens = () => {
   const { data: provider } = useProviderData()
   const { syncShareTokens } = useAssetRegistry.getState()
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return useQuery(
-    QUERY_KEYS.shareTokens(rpcUrlList.join()),
+    QUERY_KEYS.shareTokens(dataEnv),
     provider
       ? async () => {
           const [shareToken, poolAssets] = await Promise.all([
