@@ -5,7 +5,7 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useActiveProvider, useSquidUrl } from "./provider"
+import { PROVIDERS, useActiveProvider } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -262,7 +262,8 @@ const VOLUME_BLOCK_COUNT = 7200 //24 hours
 
 export const useXYKSquidVolumes = (addresses: string[]) => {
   const { api, isLoaded } = useRpcProvider()
-  const url = useSquidUrl()
+  const url =
+    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
@@ -335,7 +336,8 @@ const omnipoolAddress =
 
 export const useOmnipoolVolumes = (ids: string[]) => {
   const { api, isLoaded } = useRpcProvider()
-  const url = useSquidUrl()
+  const url =
+    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
 
   return useQuery(
     QUERY_KEYS.omnipoolSquidVolumes(ids),
