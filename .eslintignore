@@ -1,1 +1,2 @@
 src/interfaces/*
+src/graphql/__generated__/*
