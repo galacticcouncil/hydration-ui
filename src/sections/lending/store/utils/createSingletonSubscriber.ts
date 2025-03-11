@@ -13,7 +13,7 @@ export function createSingletonSubscriber<T extends () => Promise<void>>(
   implementation: T,
   interval: number,
 ): () => T {
-  let id: NodeJS.Timer | null
+  let id: NodeJS.Timeout | null
   let listeners = 0
   function subscribe() {
     implementation()
