@@ -75,6 +75,7 @@ const getButtons = (
 export const TablePagination = <T,>({ table }: PaginationProps<T>) => {
   const { t } = useTranslation()
   const totalPages = Number(table.getPageCount().toLocaleString())
+
   const currentPage = table.getState().pagination.pageIndex + 1
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
