@@ -41,8 +41,7 @@ const Web3ConnectActiveButton: FC<{
           lh={13}
           fw={600}
           font="GeistMedium"
-          truncate
-          sx={{ maxWidth: 150 }}
+          truncate={150}
         >
           {account.name}
         </Text>

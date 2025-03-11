@@ -16,7 +16,7 @@ export interface TypographyProps {
   >
   tAlign?: ResponsiveValue<"left" | "right" | "center">
   tTransform?: ResponsiveValue<"uppercase" | "lowercase" | "none">
-  truncate?: boolean
+  truncate?: true | ResponsiveValue<number | string>
 }
 
 export type STypographyProps = Omit<TypographyProps, "color"> & {
@@ -36,9 +36,10 @@ export const handleTypographyProps: Interpolation<STypographyProps> = (p) => [
   getResponsiveStyles(p.font, (fontFamily) => ({ fontFamily })),
   getResponsiveStyles(p.tTransform, (value) => ({ textTransform: value })),
   getResponsiveStyles(p.tAlign || "left", (textAlign) => ({ textAlign })),
-  p.truncate && {
+  getResponsiveStyles(p.truncate === true ? "none" : p.truncate, (value) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-  },
+    maxWidth: assumePx(value),
+  })),
 ]
