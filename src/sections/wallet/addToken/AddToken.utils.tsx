@@ -8,7 +8,7 @@ import { persist } from "zustand/middleware"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { assethub, pendulum } from "api/external"
-import { TEnv, useProviderRpcUrlStore } from "api/provider"
+import { TDataEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { useCallback } from "react"
@@ -438,7 +438,7 @@ export const useExternalTokenMeta = () => {
 
 export const updateExternalAssetsCursor = (
   externalAssets: TRegisteredAsset[],
-  options: { degenMode: boolean; dataEnv: TEnv },
+  options: { degenMode: boolean; dataEnv: TDataEnv },
 ) => {
   const { degenMode, dataEnv } = options
   const externalTokenState = useUserExternalTokenStore.getState()

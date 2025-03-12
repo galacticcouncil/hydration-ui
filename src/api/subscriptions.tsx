@@ -1,22 +1,51 @@
-import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
+import { useEffect, useRef } from "react"
 import { useSDKPools } from "./pools"
-import { useSettingsStore } from "state/store"
-import { useExternalAssetRegistry } from "./external"
 import { useRpcProvider } from "providers/rpcProvider"
-import { usePriceSubscriber } from "./spotPrice"
+import { useQueryClient } from "@tanstack/react-query"
+import { QUERY_KEY_PREFIX } from "utils/queryKeys"
+import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
+import { useExternalAssetRegistry } from "./external"
+import { useSettingsStore } from "state/store"
 
 export const QuerySubscriptions = () => {
-  const { degenMode } = useSettingsStore()
   const { isLoaded } = useRpcProvider()
-  usePriceSubscriber()
+  const { degenMode } = useSettingsStore()
+
+  if (!isLoaded) return null
 
   return (
     <>
       {degenMode && <DegenMode />}
-      {isLoaded && <ExternalAssetsMetadata />}
+      <InvalidateOnBlockSubscription />
       <OmnipoolAssetsSubscription />
+      <ExternalAssetsMetadata />
     </>
   )
+}
+
+export const InvalidateOnBlockSubscription = () => {
+  const queryClient = useQueryClient()
+  const { api, isLoaded } = useRpcProvider()
+
+  const cancelRef = useRef<VoidFunction | null>(null)
+
+  useEffect(() => {
+    if (isLoaded) {
+      api.rpc.chain
+        .subscribeNewHeads(() => {
+          queryClient.invalidateQueries([QUERY_KEY_PREFIX])
+        })
+        .then((cancel) => {
+          cancelRef.current = cancel
+        })
+    }
+
+    return () => {
+      cancelRef.current?.()
+    }
+  }, [isLoaded, api, queryClient])
+
+  return null
 }
 
 const OmnipoolAssetsSubscription = () => {

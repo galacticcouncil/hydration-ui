@@ -82,11 +82,11 @@ export const useReferendumInfo = (referendumIndex: string) => {
 }
 
 export const useOpenGovReferendas = () => {
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
   const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
-    QUERY_KEYS.openGovReferendas(rpcUrlList.join(".")),
+    QUERY_KEYS.openGovReferendas(dataEnv),
     getOpenGovRegerendas(api),
     {
       enabled: isLoaded,
@@ -432,11 +432,11 @@ export const getAccountUnlockedVotes =
   }
 
 export const useReferendaTracks = () => {
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
   const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
-    QUERY_KEYS.referendaTracks(rpcUrlList.join(".")),
+    QUERY_KEYS.referendaTracks(dataEnv),
     async () => {
       const tracks = await api.consts.referenda.tracks
 

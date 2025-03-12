@@ -22,6 +22,7 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
 
 type Props = {
   className?: string
@@ -97,6 +98,7 @@ export const Page = ({ className }: Props) => {
         </SPageInner>
       </SPageContent>
       <MobileNavBar />
+      <ProviderSelectButton />
     </SPage>
   )
 }
