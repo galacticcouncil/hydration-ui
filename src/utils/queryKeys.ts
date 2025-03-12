@@ -99,7 +99,6 @@ export const QUERY_KEYS = {
   ],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
-  spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",

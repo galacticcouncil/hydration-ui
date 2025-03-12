@@ -296,22 +296,29 @@ export const useAssetRegistry = create<AssetRegistryStore>()(
 type ExternalMetadataStore = {
   chains: Record<string, TExternalAsset[]>
   chainsMap: Record<string, Map<string, TExternalAsset>>
+  isInitialized: boolean
   sync: (chainId: string, assets: TExternalAsset[]) => void
   getExternalAssetMetadata: (
     chainId: string,
     assetId: string,
   ) => TExternalAsset | undefined
-  isInitialized: () => boolean
 }
 
 export const useExternalAssetsMetadata = create<ExternalMetadataStore>(
   (set, get) => ({
     chains: {},
     chainsMap: {},
+    isInitialized: false,
     sync(chainId, assets) {
       set((state) => {
+        const newChains = { ...state.chains, [chainId]: assets }
+        const isInitialized =
+          !!newChains[(chainsMap.get("assethub") as Parachain).parachainId] &&
+          !!newChains[(chainsMap.get("pendulum") as Parachain).parachainId]
+
         return {
-          chains: { ...state.chains, [chainId]: assets },
+          chains: newChains,
+          isInitialized,
           chainsMap: {
             ...state.chainsMap,
             [chainId]: new Map(assets.map((asset) => [asset.id, asset])),
@@ -321,12 +328,6 @@ export const useExternalAssetsMetadata = create<ExternalMetadataStore>(
     },
     getExternalAssetMetadata(chainId, assetId) {
       return get().chainsMap[chainId]?.get(assetId)
-    },
-    isInitialized() {
-      return (
-        !!get().chains[(chainsMap.get("assethub") as Parachain).parachainId] &&
-        !!get().chains[(chainsMap.get("pendulum") as Parachain).parachainId]
-      )
     },
   }),
 )

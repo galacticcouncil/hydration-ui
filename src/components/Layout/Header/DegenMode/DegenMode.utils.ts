@@ -28,7 +28,7 @@ export const useDegenModeSubscription = () => {
   const hasInitializedDegenMode = useRef(false)
 
   const { data, isSuccess } = useMemo(() => {
-    if (!isInitialized() || !isLoaded)
+    if (!isInitialized || !isLoaded)
       return {
         data: [],
         isSuccess: false,

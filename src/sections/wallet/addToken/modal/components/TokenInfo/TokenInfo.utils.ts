@@ -27,7 +27,7 @@ const useMissingExternalAssets = (ids: string[]) => {
   )
 
   const missingExternalAssets = useMemo(() => {
-    if (isInitialized()) {
+    if (isInitialized) {
       const invalidTokensId = ids.filter(
         (assetId) => !tradable.some((tradeAsset) => tradeAsset.id === assetId),
       )
