@@ -12,7 +12,6 @@ import {
   isHydrationIncompatibleAccount,
   useAccount,
 } from "sections/web3-connect/Web3Connect.utils"
-import { useActiveRpcUrlList } from "api/provider"
 import { useStore } from "state/store"
 import {
   PROVIDERS_BY_WALLET_MODE,
@@ -106,8 +105,6 @@ export function XcmPage() {
   )
 
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
-
-  const { rpcUrlListKey } = useActiveRpcUrlList()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
     await createTransaction(
@@ -211,7 +208,6 @@ export function XcmPage() {
         accountName={account?.name}
         accountProvider={account?.provider}
         accountAddress={account?.address}
-        apiAddress={rpcUrlListKey}
         stableCoinAssetId={stableCoinAssetId}
         onXcmNew={handleSubmit}
         onWalletChange={handleWalletChange}

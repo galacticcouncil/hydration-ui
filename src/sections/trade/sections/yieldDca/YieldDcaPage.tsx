@@ -7,7 +7,7 @@ import { Trans, useTranslation } from "react-i18next"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
-import { useActiveProvider, useActiveRpcUrlList } from "api/provider"
+import { useActiveProvider } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -33,7 +33,6 @@ export function YieldDcaPage() {
   const { t } = useTranslation()
   const { stableCoinId } = useDisplayAssetStore()
 
-  const { rpcUrlListKey } = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
@@ -85,7 +84,6 @@ export function YieldDcaPage() {
         ref={(r) => {
           r && r.setAttribute("chart", "")
         }}
-        apiAddress={rpcUrlListKey}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
