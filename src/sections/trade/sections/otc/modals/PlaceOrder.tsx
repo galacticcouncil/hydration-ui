@@ -19,6 +19,8 @@ import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { useExistentialDepositMultiplier } from "sections/trade/sections/otc/useExistentialDepositorMultiplier"
+import { validateOtcExistentialDeposit } from "utils/validators"
 
 type PlaceOrderProps = {
   assetOut?: u32 | string
@@ -62,6 +64,8 @@ export const PlaceOrder = ({
   useEffect(() => {
     form.trigger()
   }, [aIn, aOut, form])
+
+  const existentialDepositMultiplier = useExistentialDepositMultiplier()
 
   const { createTransaction } = useStore()
 
@@ -194,6 +198,12 @@ export const PlaceOrder = ({
                     rules={{
                       required: true,
                       validate: {
+                        existentialDepositor: (value) =>
+                          validateOtcExistentialDeposit(
+                            assetOutMeta,
+                            existentialDepositMultiplier,
+                            value || "0",
+                          ),
                         maxBalance: (value) => {
                           const balance = assetOutBalance?.balance
                           const decimals = assetOutMeta?.decimals
@@ -258,6 +268,12 @@ export const PlaceOrder = ({
                     rules={{
                       required: true,
                       validate: {
+                        existentialDepositor: (value) =>
+                          validateOtcExistentialDeposit(
+                            assetInMeta,
+                            existentialDepositMultiplier,
+                            value || "0",
+                          ),
                         differentFromAmountOut: (value) =>
                           aIn !== aOut ||
                           t("otc.order.place.validation.sameAssets"),
