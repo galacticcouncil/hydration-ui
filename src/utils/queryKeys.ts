@@ -6,6 +6,8 @@ import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { PaginationState } from "@tanstack/react-table"
+import { EventName } from "sections/lending/subsections/history/types"
 
 export const QUERY_KEY_PREFIX = "@block"
 
@@ -354,6 +356,19 @@ export const QUERY_KEYS = {
     stableCoinId,
   ],
   rpcStatus: (url: string) => ["rpcStatus", url],
+  accountMoneyMarketEvents: (
+    accoundId: string,
+    filter: ReadonlyArray<EventName>,
+    searchPhrase: string,
+    pagination: PaginationState,
+  ) => [
+    "moneyMarketEvents",
+    accoundId,
+    filter,
+    searchPhrase,
+    pagination.pageSize,
+    pagination.pageIndex,
+  ],
 } as const
 
 export const WS_QUERY_KEYS = {

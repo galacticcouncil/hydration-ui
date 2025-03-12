@@ -62,7 +62,8 @@ const useSubheaderComponent = () => {
   if (
     matchRoute({ to: LINKS.borrow }) ||
     matchRoute({ to: LINKS.borrowDashboard }) ||
-    matchRoute({ to: LINKS.borrowMarkets })
+    matchRoute({ to: LINKS.borrowMarkets }) ||
+    matchRoute({ to: LINKS.borrowHistory })
   ) {
     return <LendingNavigation />
   }

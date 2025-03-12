@@ -102,7 +102,7 @@ export const AddTokenListModal: React.FC<Props> = ({
     <>
       <Search
         value={search}
-        setValue={setSearch}
+        onChange={setSearch}
         css={{ margin: `0 ${isDesktop ? 20 : 12}px 4px` }}
         placeholder={t("wallet.header.search")}
         autoFocus
