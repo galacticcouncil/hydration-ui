@@ -4,7 +4,6 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useMemo } from "react"
-import { useAllXykPools } from "api/xyk"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { BN_0 } from "utils/constants"
 import { useExternalXYKVolume } from "./TokenInfo.utils"
@@ -34,13 +33,12 @@ export const TokenInfo = ({
   chainStoredAsset?: TExternal
   rugCheckData?: TRugCheckData
 }) => {
-  const { getExternalByExternalId } = useAssets()
+  const { getExternalByExternalId, shareTokens } = useAssets()
   const { account } = useAccount()
   const { t } = useTranslation()
   const { setIsWhiteListed } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
   const parachains = useParachainAmount(externalAsset.id)
-  const { data: xykPools } = useAllXykPools()
   const refetchAssetHub = useRefetchAssetHub()
 
   const { totalSupplyInternal, totalSupplyExternal, externalToken } =
@@ -65,14 +63,14 @@ export const TokenInfo = ({
     })
 
   const { isXYKPool, pools } = useMemo(() => {
-    if (!isChainStored || !xykPools)
+    if (!isChainStored || !shareTokens.length)
       return { isXYKPool: false, pools: undefined }
 
     const chainAsset = getExternalByExternalId(externalAsset.id)
 
     if (chainAsset) {
-      const filteredXykPools = xykPools.filter((shareToken) =>
-        shareToken.assets.includes(chainAsset.id),
+      const filteredXykPools = shareTokens.filter((shareToken) =>
+        shareToken.assets.some((asset) => asset.id === chainAsset.id),
       )
 
       return {
@@ -83,7 +81,7 @@ export const TokenInfo = ({
     }
 
     return { isXYKPool: false, pools: undefined }
-  }, [externalAsset.id, getExternalByExternalId, isChainStored, xykPools])
+  }, [externalAsset.id, getExternalByExternalId, isChainStored, shareTokens])
 
   const warningFlags = Object.fromEntries(
     rugCheckData?.warnings.map(({ type, diff }) => {

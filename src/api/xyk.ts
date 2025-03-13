@@ -6,28 +6,6 @@ import { isNotNil, undefinedNoop } from "utils/helpers"
 import { useAssetRegistry } from "state/store"
 import { useActiveRpcUrlList, useProviderData } from "./provider"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { millisecondsInMinute } from "date-fns"
-
-const getAllXYKPools = (api: ApiPromise) => async () => {
-  const res = await api.query.xyk.poolAssets.entries()
-
-  const data = res.map(([key, data]) => {
-    const poolAddress = key.args[0].toString()
-    const assets = data.unwrap()?.map((el) => el.toString())
-    return { poolAddress, assets }
-  })
-
-  return data
-}
-
-export const useAllXykPools = () => {
-  const { api, isLoaded } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.allXykPools, getAllXYKPools(api), {
-    enabled: isLoaded,
-    staleTime: millisecondsInMinute,
-  })
-}
 
 export const useXYKSDKPools = () => {
   return useQuery<PoolBase[]>(QUERY_KEYS.xykPools, {
