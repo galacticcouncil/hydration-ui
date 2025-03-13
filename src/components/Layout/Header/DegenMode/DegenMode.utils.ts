@@ -7,7 +7,6 @@ import {
 } from "sections/wallet/addToken/AddToken.utils"
 import { useExternalAssetsMetadata, useSettingsStore } from "state/store"
 import { useAssets } from "providers/assets"
-import { useQueryClient } from "@tanstack/react-query"
 import { pick } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
 
@@ -22,7 +21,6 @@ export const useDegenModeSubscription = () => {
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
   const { isLoaded } = useRpcProvider()
-  const queryClient = useQueryClient()
 
   const hasInitializedDegenMode = useRef(false)
 
@@ -78,7 +76,7 @@ export const useDegenModeSubscription = () => {
       hasInitializedDegenMode.current = true
       refetchProvider()
     }
-  }, [degenMode, data, getDataEnv, isSuccess, refetchProvider, queryClient])
+  }, [degenMode, data, getDataEnv, isSuccess, refetchProvider])
 
   // Subscribe to degenMode change to update ExternalAssetCursor
   useEffect(() => {

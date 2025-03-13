@@ -9,6 +9,7 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
+import { AssetsProvider } from "providers/assets"
 
 const AppsContextProvider = createComponent({
   tagName: "gc-context-provider",
@@ -42,18 +43,20 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
     <MigrationProvider>
       <TooltipProvider>
         <ProviderResolver>
-          <RpcProvider>
-            <ToastProvider />
-            <SkeletonTheme
-              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-              borderRadius={4}
-            >
-              <AppsContextProvider>
-                {children} <Services />
-              </AppsContextProvider>
-            </SkeletonTheme>
-          </RpcProvider>
+          <AssetsProvider>
+            <RpcProvider>
+              <ToastProvider />
+              <SkeletonTheme
+                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                borderRadius={4}
+              >
+                <AppsContextProvider>
+                  {children} <Services />
+                </AppsContextProvider>
+              </SkeletonTheme>
+            </RpcProvider>
+          </AssetsProvider>
         </ProviderResolver>
       </TooltipProvider>
     </MigrationProvider>

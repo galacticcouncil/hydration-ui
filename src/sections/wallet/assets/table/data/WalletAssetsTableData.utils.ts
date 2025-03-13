@@ -1,4 +1,4 @@
-import { useTokenLocks } from "api/balances"
+import { TBalance, useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
@@ -42,40 +42,55 @@ export const useAssetsData = ({
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const { data: balances, isLoading: isBalancesLoading } =
+  const { data: accountAssets, isLoading: isBalancesLoading } =
     useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
 
-  const tokensWithBalance = useMemo(() => {
-    if (balances) {
-      const filteredTokens =
-        balances.balances?.filter((balance) => {
+  const { balances = [] } = accountAssets ?? {}
+
+  const { tokensWithBalance, validTokensIdsWithBalance } = useMemo(() => {
+    if (balances.length) {
+      const filteredTokens = balances.reduce<{
+        tokensWithBalance: TBalance[]
+        validTokensIdsWithBalance: string[]
+      }>(
+        (acc, balance) => {
           const meta = getAsset(balance.assetId)
 
-          return (
-            meta?.isToken ||
-            meta?.isStableSwap ||
-            meta?.isExternal ||
-            meta?.isErc20
-          )
-        }) ?? []
+          if (meta) {
+            if (
+              meta.isToken ||
+              meta.isStableSwap ||
+              meta.isExternal ||
+              meta.isErc20
+            ) {
+              acc.tokensWithBalance.push(balance)
+
+              if (meta.symbol) {
+                acc.validTokensIdsWithBalance.push(balance.assetId)
+              }
+            }
+          }
+
+          return acc
+        },
+        { tokensWithBalance: [], validTokensIdsWithBalance: [] },
+      )
 
       return filteredTokens
     }
 
-    return []
+    return { tokensWithBalance: [], validTokensIdsWithBalance: [] }
   }, [balances, getAsset])
 
-  const tokensWithBalanceIds = tokensWithBalance.map(
-    (tokenWithBalance) => tokenWithBalance.assetId,
+  const { data: currencyId } = useAccountCurrency(address)
+  const { data: acceptedCurrencies } = useAcceptedCurrencies(
+    validTokensIdsWithBalance,
   )
 
-  const { data: currencyId } = useAccountCurrency(address)
-  const { data: acceptedCurrencies } =
-    useAcceptedCurrencies(tokensWithBalanceIds)
-
-  const { getAssetPrice, isLoading: isPriceLoading } =
-    useAssetsPrice(tokensWithBalanceIds)
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
+    validTokensIdsWithBalance,
+  )
 
   const allAssets = useMemo(
     () => [...tokens, ...stableswap, ...external, ...erc20],

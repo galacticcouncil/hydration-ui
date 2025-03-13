@@ -15,7 +15,6 @@ import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
-import { AssetsProvider } from "./assets"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 
 type TProviderContext = {
@@ -123,7 +122,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ProviderContext.Provider value={value}>
-      <AssetsProvider>{children}</AssetsProvider>
+      {children}
     </ProviderContext.Provider>
   )
 }
