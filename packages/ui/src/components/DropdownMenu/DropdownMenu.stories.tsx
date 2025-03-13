@@ -3,12 +3,12 @@ import { SettingsIcon } from "lucide-react"
 
 import { Rectangle7101 } from "@/assets/icons"
 import {
-  SMenuItem,
-  SMenuItemDescription,
-  SMenuItemIcon,
-  SMenuItemLabel,
-  SMenuSelectionItem,
-  SMenuSelectionItemArrow,
+  MenuItem,
+  MenuItemDescription,
+  MenuItemIcon,
+  MenuItemLabel,
+  MenuSelectionItem,
+  MenuSelectionItemArrow,
 } from "@/components/Menu"
 
 import {
@@ -30,23 +30,23 @@ export const DropdownMenuStory: StoryFn = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent fullWidth>
         <DropdownMenuItem asChild>
-          <SMenuSelectionItem>
-            <SMenuItemIcon component={Rectangle7101} />
-            <SMenuItemLabel>Item 1</SMenuItemLabel>
-            <SMenuSelectionItemArrow />
-          </SMenuSelectionItem>
+          <MenuSelectionItem>
+            <MenuItemIcon component={Rectangle7101} />
+            <MenuItemLabel>Item 1</MenuItemLabel>
+            <MenuSelectionItemArrow />
+          </MenuSelectionItem>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <SMenuItem>
-            <SMenuItemIcon component={Rectangle7101} />
-            <SMenuItemLabel>Item 2</SMenuItemLabel>
-            <SMenuItemDescription>Description</SMenuItemDescription>
-          </SMenuItem>
+          <MenuItem>
+            <MenuItemIcon component={Rectangle7101} />
+            <MenuItemLabel>Item 2</MenuItemLabel>
+            <MenuItemDescription>Description</MenuItemDescription>
+          </MenuItem>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <SMenuItem>
-            <SMenuItemLabel>Item 3</SMenuItemLabel>
-          </SMenuItem>
+          <MenuItem>
+            <MenuItemLabel>Item 3</MenuItemLabel>
+          </MenuItem>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,7 +1,7 @@
 import {
-  SMenuItem,
-  SMenuItemAction,
-  SMenuItemLabel,
+  MenuItem,
+  MenuItemAction,
+  MenuItemLabel,
   Toggle,
   ToggleLabel,
   ToggleRoot,
@@ -15,9 +15,9 @@ export const DarkMode: FC = () => {
   const { theme, setTheme } = useTheme()
 
   return (
-    <SMenuItem>
-      <SMenuItemLabel>{t("darkMode")}</SMenuItemLabel>
-      <SMenuItemAction>
+    <MenuItem>
+      <MenuItemLabel>{t("darkMode")}</MenuItemLabel>
+      <MenuItemAction>
         <ToggleRoot>
           <ToggleLabel>{t("off")}</ToggleLabel>
           <Toggle
@@ -25,7 +25,7 @@ export const DarkMode: FC = () => {
             onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
           />
         </ToggleRoot>
-      </SMenuItemAction>
-    </SMenuItem>
+      </MenuItemAction>
+    </MenuItem>
   )
 }

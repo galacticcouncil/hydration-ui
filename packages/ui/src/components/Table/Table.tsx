@@ -1,6 +1,6 @@
 import { SortDirection } from "@tanstack/react-table"
 
-import { CaretDown } from "@/assets/icons"
+import { CaretDown, ChevronRight } from "@/assets/icons"
 
 export type { TableProps, TableSize } from "./Table.styled"
 export {
@@ -10,9 +10,16 @@ export {
   TableContainer,
   TableHeader,
   TableRow,
+  TableRowOverride,
 } from "./Table.styled"
 
+import { ComponentProps, FC } from "react"
+
+import { Button, ButtonTransparent } from "@/components/Button"
+import { Flex } from "@/components/Flex"
+
 import {
+  SExpandedTableRowHorizontalSeparator,
   TableHead as TableHeadPrimitive,
   TableHeadSortIndicator,
 } from "./Table.styled"
@@ -44,5 +51,51 @@ export const TableHead: React.FC<TableHeadProps> = ({
         </TableHeadSortIndicator>
       )}
     </TableHeadPrimitive>
+  )
+}
+
+export const ExpandedTableRowHorizontalSeparator: FC<
+  Omit<
+    ComponentProps<typeof SExpandedTableRowHorizontalSeparator>,
+    "orientation"
+  >
+> = (props) => {
+  return (
+    <SExpandedTableRowHorizontalSeparator orientation="horizontal" {...props} />
+  )
+}
+
+export const TableRowAction: FC<ComponentProps<typeof Button>> = ({
+  children,
+  onClick,
+  ...props
+}) => {
+  return (
+    <Button
+      variant="tertiary"
+      outline
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick?.(e)
+      }}
+      {...props}
+    >
+      {children}
+    </Button>
+  )
+}
+
+export const TableRowActionMobile: FC<ComponentProps<typeof Button>> = ({
+  children,
+  sx,
+  ...props
+}) => {
+  return (
+    <Flex gap={8} align="center" justify="flex-end" sx={{ overflow: "hidden" }}>
+      {children}
+      <ButtonTransparent sx={{ flexShrink: 0, ...sx }} {...props}>
+        <ChevronRight size={16} />
+      </ButtonTransparent>
+    </Flex>
   )
 }

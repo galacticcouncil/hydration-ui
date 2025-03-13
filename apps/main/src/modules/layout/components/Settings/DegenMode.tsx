@@ -1,10 +1,10 @@
 import { HelpIcon, Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
 import {
-  SMenuItem,
-  SMenuItemAction,
-  SMenuItemDescription,
-  SMenuItemIcon,
-  SMenuItemLabel,
+  MenuItem,
+  MenuItemAction,
+  MenuItemDescription,
+  MenuItemIcon,
+  MenuItemLabel,
   Toggle,
   ToggleLabel,
   ToggleRoot,
@@ -18,21 +18,21 @@ export const DegenMode: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <SMenuItem>
-      <SMenuItemIcon
+    <MenuItem>
+      <MenuItemIcon
         component={Rectangle7101}
         sx={{ color: getToken("buttons.secondary.emphasis.onRest") }}
       />
-      <SMenuItemLabel>
+      <MenuItemLabel>
         {t("degenMode")} <HelpIcon />
-      </SMenuItemLabel>
-      <SMenuItemDescription>{t("degenMode.warning")}</SMenuItemDescription>
-      <SMenuItemAction>
+      </MenuItemLabel>
+      <MenuItemDescription>{t("degenMode.warning")}</MenuItemDescription>
+      <MenuItemAction>
         <ToggleRoot>
           <ToggleLabel>{t("off")}</ToggleLabel>
           <Toggle checked={false} onCheckedChange={noop} />
         </ToggleRoot>
-      </SMenuItemAction>
-    </SMenuItem>
+      </MenuItemAction>
+    </MenuItem>
   )
 }

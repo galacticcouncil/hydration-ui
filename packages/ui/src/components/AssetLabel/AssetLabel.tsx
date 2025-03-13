@@ -7,7 +7,7 @@ import { Text } from "../Text"
 type AssetLabelSize = "large" | "medium"
 
 export type AssetLabelProps = {
-  name: string
+  name?: string
   symbol: string
   size?: AssetLabelSize
   loading?: boolean
@@ -40,14 +40,16 @@ export const AssetLabel = ({
       >
         {symbol}
       </Text>
-      <Text
-        color={getToken("text.medium")}
-        fs={isMedium ? "p6" : "p5"}
-        fw={400}
-        lh={1}
-      >
-        {name}
-      </Text>
+      {name && (
+        <Text
+          color={getToken("text.medium")}
+          fs={isMedium ? "p6" : "p5"}
+          fw={400}
+          lh={1}
+        >
+          {name}
+        </Text>
+      )}
     </Flex>
   )
 }

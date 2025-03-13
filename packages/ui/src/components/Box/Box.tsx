@@ -30,6 +30,8 @@ export type BoxOwnProps = Partial<
     | "maxHeight"
     | "size"
     | "borderRadius"
+    | "borderWidth"
+    | "borderStyle"
     | "alignContent"
     | "alignItems"
     | "gap"
@@ -42,6 +44,7 @@ export type BoxOwnProps = Partial<
   children?: React.ReactNode
   color?: ThemeColor | ThemeUICSSProperties["color"]
   bg?: ThemeColor | ThemeUICSSProperties["backgroundColor"]
+  borderColor?: ThemeColor | ThemeUICSSProperties["borderColor"]
 }
 
 export type BoxProps = BoxOwnProps &
@@ -77,6 +80,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      borderWidth,
+      borderStyle,
+      borderColor,
       alignContent,
       alignItems,
       gap,
@@ -111,6 +117,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      borderWidth,
+      borderStyle,
+      borderColor,
       alignContent,
       alignItems,
       gap,
