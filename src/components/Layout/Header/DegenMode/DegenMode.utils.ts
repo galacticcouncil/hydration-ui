@@ -21,7 +21,7 @@ export const useDegenModeSubscription = () => {
   )
   const { getDataEnv } = useProviderRpcUrlStore()
   const refetchProvider = useRefetchProviderData()
-  const { isLoaded, poolService } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
   const queryClient = useQueryClient()
 
   const hasInitializedDegenMode = useRef(false)
@@ -78,15 +78,7 @@ export const useDegenModeSubscription = () => {
       hasInitializedDegenMode.current = true
       refetchProvider()
     }
-  }, [
-    degenMode,
-    data,
-    getDataEnv,
-    isSuccess,
-    refetchProvider,
-    poolService,
-    queryClient,
-  ])
+  }, [degenMode, data, getDataEnv, isSuccess, refetchProvider, queryClient])
 
   // Subscribe to degenMode change to update ExternalAssetCursor
   useEffect(() => {
@@ -98,10 +90,9 @@ export const useDegenModeSubscription = () => {
             degenMode,
             dataEnv: getDataEnv(),
           })
-          poolService.syncRegistry(data)
           refetchProvider()
         }
       }
     })
-  }, [data, getDataEnv, refetchProvider, poolService])
+  }, [data, getDataEnv, refetchProvider])
 }
