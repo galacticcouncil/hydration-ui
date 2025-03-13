@@ -1,3 +1,26 @@
 {
-  "title": "Wallet Page"
+  "title": "Wallet Page",
+  "balances.title": "Balances",
+  "balances.header.netWorth": "Net worth",
+  "balances.header.liquidity": "Liquidity balance",
+  "balances.header.inFarms": "{{ price }} in Farms",
+  "balances.header.borrow": "Total borrow",
+  "balances.header.supply": "Total supply",
+  "feePaymentAssets": "Fee payment assets",
+  "rewards.title": "Rewards",
+  "rewards.allocated": "Allocated staking rewards",
+  "rewards.claimable": "Claimable staking rewards",
+  "rewards.total": "Total claimable rewards",
+  "rewards.goToStaking": "Go to Staking",
+  "assets.table.header.title": "My assets",
+  "assets.table.header.cta": "Add new asset",
+  "assets.table.header.toggle": "Show all assets",
+  "assets.table.header.transferable": "Transferable balance",
+  "assets.table.header.total": "Total balance",
+  "assets.table.header.supplyBorrow": "Supply/Borrow",
+  "liquidity.table.header.title": "My liquidity",
+  "liquidity.table.header.cta": "Create isolated pool",
+  "liquidity.table.header.currentValue": "Current value",
+  "liquidity.table.header.numberOfPositions": "Number of positions",
+  "liquidity.table.header.actions.poolDetails": "Pool details"
 }
