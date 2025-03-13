@@ -14,7 +14,6 @@ import {
 import BN, { BigNumber } from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { humanizeUnderscoredString } from "utils/formatting"
-import { useActiveRpcUrlList } from "./provider"
 import { millisecondsInMinute } from "date-fns"
 
 const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
@@ -82,8 +81,7 @@ export const useReferendumInfo = (referendumIndex: string) => {
 }
 
 export const useOpenGovReferendas = () => {
-  const { dataEnv } = useActiveRpcUrlList()
-  const { api, isLoaded } = useRpcProvider()
+  const { api, isLoaded, dataEnv } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.openGovReferendas(dataEnv),
@@ -432,8 +430,7 @@ export const getAccountUnlockedVotes =
   }
 
 export const useReferendaTracks = () => {
-  const { dataEnv } = useActiveRpcUrlList()
-  const { api, isLoaded } = useRpcProvider()
+  const { api, isLoaded, dataEnv } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.referendaTracks(dataEnv),
