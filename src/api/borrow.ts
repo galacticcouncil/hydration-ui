@@ -8,11 +8,13 @@ import { isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { reserveSortFn } from "sections/lending/store/poolSelectors"
 import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
@@ -72,6 +74,13 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
           baseCurrencyData.marketReferenceCurrencyDecimals,
         reserveIncentives: [],
       })
+        .map((r) => ({
+          ...r,
+          ...fetchIconSymbolAndName(r),
+          isEmodeEnabled: r.eModeCategoryId !== 0,
+          isWrappedBaseAsset: false,
+        }))
+        .sort(reserveSortFn)
 
       const summary = formatUserSummaryAndIncentives({
         currentTimestamp,
@@ -86,12 +95,15 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         userIncentives: [],
       })
 
-      const extendedUser = {
+      const extendedUser: ExtendedFormattedUser = {
         ...summary,
         isInEmode: userEmodeCategoryId !== 0,
         userEmodeCategoryId,
         calculatedUserIncentives: {},
-      } as ExtendedFormattedUser
+        earnedAPY: 0,
+        debtAPY: 0,
+        netAPY: 0,
+      }
 
       return extendedUser
     },
