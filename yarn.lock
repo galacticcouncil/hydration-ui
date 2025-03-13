@@ -2582,10 +2582,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.0.tgz#1377809cf125941410eea6ad97b4da0ca1eabb6c"
   integrity sha512-f14ftbivheBK8kSnqd8hSQlMPuVLY9571S5yx0LPU6K6m78F3pDPl09OEuJ+dSKHOw8hWzmFxiv0wRMYvDkeKA==
 
-"@galacticcouncil/apps@^10.6.0":
-  version "10.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.6.0.tgz#944945341f9e6c08f05ef7fde8f44771820a94da"
-  integrity sha512-Nhb787fbh0Tz9jtdtVYzt+AYb3jCdQXM8AMaYsJZLOGqhe5Pc1bN4dlQWHlbGk10EkkWfznSQN0aJECMgK/a/Q==
+"@galacticcouncil/apps@^10.9.0-pr170-1b05247":
+  version "10.9.0-pr170-1b05247"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.9.0-pr170-1b05247.tgz#e46d2a40f87b0089b77a2884a2dbc984471ae95c"
+  integrity sha512-CsxZCs3UuzxZr8ha9vaNrxc3V/qgAXtCSEj5RChB5Jc7QqC5B2AeSmduFz1j7Wh0kPuOb4tJeUkZN4I9ylKGJg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
