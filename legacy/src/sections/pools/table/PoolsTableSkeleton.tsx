@@ -3,30 +3,30 @@ import {
   createColumnHelper,
   getCoreRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { Button, ButtonTransparent } from "components/Button/Button"
-import { TableSkeleton } from "components/Table/TableSkeleton"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import Skeleton from "react-loading-skeleton"
-import { useMedia } from "react-use"
-import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled"
-import { theme } from "theme"
-import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
-import { Icon } from "components/Icon/Icon"
+} from "@tanstack/react-table";
+import { Button, ButtonTransparent } from "components/Button/Button";
+import { TableSkeleton } from "components/Table/TableSkeleton";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import Skeleton from "react-loading-skeleton";
+import { useMedia } from "react-use";
+import { assetsTableStyles } from "sections/wallet/assets/table/WalletAssetsTable.styled";
+import { theme } from "theme";
+import PlusIcon from "assets/icons/PlusIcon.svg?react";
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react";
+import { Icon } from "components/Icon/Icon";
 
 export const PoolsTableSkeleton = ({ isXyk = false }: { isXyk?: boolean }) => {
-  const table = usePoolsTableSkeleton(isXyk)
+  const table = usePoolsTableSkeleton(isXyk);
 
-  return <TableSkeleton table={table} css={assetsTableStyles} />
-}
+  return <TableSkeleton table={table} css={assetsTableStyles} />;
+};
 
 const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
-  const { t } = useTranslation()
-  const { display } = createColumnHelper()
+  const { t } = useTranslation();
+  const { display } = createColumnHelper();
 
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.sm);
   const columnVisibility: VisibilityState = {
     name: true,
     spotPrice: isDesktop,
@@ -35,13 +35,13 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
     fee: isDesktop,
     volume: true,
     actions: isDesktop,
-  }
+  };
 
   const columns = useMemo(
     () => [
       display({
         id: "name",
-        header: t("liquidity.table.header.poolAsset"),
+        header: t("myLiquidity.header.poolAsset"),
         size: 300,
         cell: () => (
           <div sx={{ flex: "row", gap: 8, height: [24, 26] }}>
@@ -63,7 +63,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
       }),
       display({
         id: "tvlDisplay",
-        header: t("liquidity.table.header.tvl"),
+        header: t("myLiquidity.header.tvl"),
         size: 250,
         cell: () => (
           <div
@@ -106,7 +106,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
           })
         : display({
             id: "spotPrice",
-            header: t("liquidity.table.header.price"),
+            header: t("myLiquidity.header.price"),
             cell: () => (
               <Skeleton
                 width={100}
@@ -117,7 +117,7 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
           }),
       display({
         id: "volume",
-        header: t("liquidity.table.header.volume"),
+        header: t("myLiquidity.header.volume"),
         cell: () => (
           <Skeleton width={100} height={26} enableAnimation={enableAnimation} />
         ),
@@ -158,14 +158,14 @@ const usePoolsTableSkeleton = (isXYKPool: boolean, enableAnimation = true) => {
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [enableAnimation],
-  )
+  );
 
   return useReactTable({
     data: mockData,
     columns,
     state: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
-  })
-}
+  });
+};
 
-const mockData = [1, 2, 3, 4]
+const mockData = [1, 2, 3, 4];

@@ -2,41 +2,67 @@ import styled from "@emotion/styled"
 import { ArrowRight } from "lucide-react"
 
 import { Icon } from "@/components/Icon"
-import { css } from "@/utils"
+import { createVariants, css } from "@/utils"
 
-export const SMenuItem = styled.div(
-  ({ theme }) => css`
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    grid-template-rows: 1fr 1fr;
-    column-gap: 9px;
-    align-items: center;
-    justify-items: start;
+export type MenuItemVariant = "default" | "filterLink"
 
-    padding: ${theme.scales.paddings.m}px
-      ${theme.containers.paddings.tertiary}px;
+const menuItemVariants = createVariants<MenuItemVariant>((theme) => ({
+  default: css`
+    & ${MenuItemIcon} {
+      color: ${theme.icons.soft};
+    }
 
-    text-decoration: none;
-
-    &:focus {
-      outline: none;
+    & ${MenuItemLabel} {
+      color: ${theme.text.high};
     }
   `,
-)
+  filterLink: css`
+    & ${MenuItemIcon} {
+      color: ${theme.icons.onSurfaceHover};
+      height: 16px;
+      width: 16px;
+    }
 
-export const SMenuItemIcon = styled(Icon)(
-  ({ theme }) => css`
-    grid-row: 1 / -1;
-    color: ${theme.icons.soft};
+    & ${MenuItemLabel} {
+      color: ${theme.text.medium};
+      line-height: 1.4;
+    }
   `,
+}))
+
+export const MenuItem = styled.div<{ variant?: MenuItemVariant }>(
+  ({ theme, variant = "default" }) => [
+    css`
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: 1fr 1fr;
+      column-gap: 9px;
+      align-items: center;
+      justify-items: start;
+
+      padding: ${theme.scales.paddings.m}px
+        ${theme.containers.paddings.tertiary}px;
+
+      text-decoration: none;
+
+      &:focus {
+        outline: none;
+      }
+    `,
+    menuItemVariants(variant),
+  ],
 )
 
-export const SMenuItemLabel = styled.span(
+export const MenuItemIcon = styled(Icon)`
+  grid-row: 1 / -1;
+`
+
+export const MenuItemLabel = styled.span(
   ({ theme }) => css`
     grid-row: 1;
     grid-column: 2;
 
-    &:not(:has(+ ${SMenuItemDescription})) {
+    &:not(:has(+ ${MenuItemDescription})) {
       grid-row: 1 / -1;
     }
 
@@ -50,12 +76,10 @@ export const SMenuItemLabel = styled.span(
     line-height: ${theme.lineHeight.m}px;
     letter-spacing: 0%;
     text-align: center;
-
-    color: ${theme.text.high};
   `,
 )
 
-export const SMenuItemDescription = styled.span(
+export const MenuItemDescription = styled.span(
   ({ theme }) => css`
     grid-row-start: 2;
     grid-column: 2;
@@ -70,13 +94,15 @@ export const SMenuItemDescription = styled.span(
   `,
 )
 
-export const SMenuItemAction = styled.div`
+export const MenuItemAction = styled.div`
   grid-row: 1 / -1;
   grid-column: 3;
 `
 
-export const SMenuSelectionItem = styled(SMenuItem)(
-  ({ theme }) => css`
+export const MenuSelectionItem = styled(MenuItem)<{
+  variant?: MenuItemVariant
+}>(({ theme, variant = "default" }) => [
+  css`
     border-radius: ${theme.containers.cornerRadius.internalPrimary}px;
     cursor: pointer;
 
@@ -85,18 +111,19 @@ export const SMenuSelectionItem = styled(SMenuItem)(
       background-color: ${theme.buttons.secondary.low.primaryHover};
     }
   `,
-)
+  menuItemVariants(variant),
+])
 
-export const SMenuSelectionItemArrow = styled(ArrowRight)(
+export const MenuSelectionItemArrow = styled(ArrowRight)(
   ({ theme }) => css`
-    ${SMenuItemAction.__emotion_styles}
+    ${MenuItemAction.__emotion_styles}
 
     width: 18px;
     height: 18px;
 
     color: ${theme.icons.onSurface};
 
-    ${SMenuSelectionItem}:hover & {
+    ${MenuSelectionItem}:hover & {
       color: ${theme.icons.primary};
     }
   `,

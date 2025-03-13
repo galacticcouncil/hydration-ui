@@ -2,6 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
 import { Box } from "@/components/Box"
+import { Separator } from "@/components/Separator"
 import { createStyles, createVariants } from "@/utils"
 
 export type TableSize = "small" | "medium" | "large"
@@ -14,21 +15,29 @@ export type TableProps = {
 
 const columnSizeStyles = createVariants((theme) => ({
   small: css`
+    --table-column-padding-x: 16px;
     height: 44px;
-    padding: 0 16px;
+    padding: 0 var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p5};
   `,
   medium: css`
+    --table-column-padding-x: 18px;
     height: 54px;
-    padding: 0 18px;
+    padding: 0 var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p4};
   `,
   large: css`
+    --table-column-padding-x: 20px;
     height: 68px;
-    padding: 0 20px;
+    padding: 0 var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p3};
   `,
 }))
+
+export const SExpandedTableRowHorizontalSeparator = styled(Separator)`
+  margin: 0 calc(0px - var(--table-column-padding-x));
+  width: calc(100% + calc(2 * var(--table-column-padding-x)));
+`
 
 const headSizeStyles = createVariants((theme) => ({
   small: css`

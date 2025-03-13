@@ -1,5 +1,5 @@
-import { Add, ChevronRight } from "@galacticcouncil/ui/assets/icons"
-import { Button, ButtonTransparent, Flex } from "@galacticcouncil/ui/components"
+import { Add } from "@galacticcouncil/ui/assets/icons"
+import { Button, TableRowActionMobile } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -97,18 +97,11 @@ export const useOtcTableColums = () => {
         const { isConnected } = useAccount()
 
         return (
-          <Flex
-            justify="space-between"
-            align="center"
-            sx={{ overflow: "hidden" }}
-          >
+          <TableRowActionMobile disabled={!isConnected}>
             <OfferMarketPriceColumn
               percentage={row.original.marketPricePercentage}
             />
-            <ButtonTransparent disabled={!isConnected} sx={{ flexShrink: 0 }}>
-              <ChevronRight size={18} />
-            </ButtonTransparent>
-          </Flex>
+          </TableRowActionMobile>
         )
       },
     })

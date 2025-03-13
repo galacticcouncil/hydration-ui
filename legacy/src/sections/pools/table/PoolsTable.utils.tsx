@@ -6,60 +6,60 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { Icon } from "components/Icon/Icon"
-import { Text } from "components/Typography/Text/Text"
-import React, { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
+} from "@tanstack/react-table";
+import { DisplayValue } from "components/DisplayValue/DisplayValue";
+import { Icon } from "components/Icon/Icon";
+import { Text } from "components/Typography/Text/Text";
+import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useMedia } from "react-use";
+import { theme } from "theme";
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon";
 import {
   TPool,
   TXYKPool,
   isXYKPoolType,
   usePoolDetails,
   usePools,
-} from "sections/pools/PoolsPage.utils"
-import { useFarms } from "api/farms"
-import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
-import { Button, ButtonTransparent } from "components/Button/Button"
-import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
-import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_1, BN_NAN } from "utils/constants"
-import Skeleton from "react-loading-skeleton"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import BN from "bignumber.js"
-import { CellSkeleton } from "components/Skeleton/CellSkeleton"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
-import { SStablepoolBadge } from "sections/pools/pool/Pool.styled"
-import { LazyMotion, domAnimation } from "framer-motion"
-import { useAssets } from "providers/assets"
+} from "sections/pools/PoolsPage.utils";
+import { useFarms } from "api/farms";
+import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti";
+import { Button, ButtonTransparent } from "components/Button/Button";
+import ChevronRightIcon from "assets/icons/ChevronRight.svg?react";
+import ManageIcon from "assets/icons/IconEdit.svg?react";
+import { BN_0, BN_1, BN_NAN } from "utils/constants";
+import Skeleton from "react-loading-skeleton";
+import { useAccount } from "sections/web3-connect/Web3Connect.utils";
+import BN from "bignumber.js";
+import { CellSkeleton } from "components/Skeleton/CellSkeleton";
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip";
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled";
+import { SStablepoolBadge } from "sections/pools/pool/Pool.styled";
+import { LazyMotion, domAnimation } from "framer-motion";
+import { useAssets } from "providers/assets";
 import {
   defaultPaginationState,
   useTablePagination,
-} from "components/Table/TablePagination"
-import { PoolContext } from "sections/pools/pool/Pool"
+} from "components/Table/TablePagination";
+import { PoolContext } from "sections/pools/pool/Pool";
 import {
   Page,
   TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
-import { useDynamicAssetFees } from "api/pools"
+} from "sections/pools/stablepool/transfer/TransferModal";
+import { useDynamicAssetFees } from "api/pools";
 
 const NonClickableContainer = ({
   children,
   ...rest
 }: React.HTMLAttributes<HTMLDivElement>) => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+  const isDesktop = useMedia(theme.viewport.gte.sm);
 
   return (
     <div
       onClick={(e) => {
         if (isDesktop) {
-          e.preventDefault()
-          e.stopPropagation()
+          e.preventDefault();
+          e.stopPropagation();
         }
       }}
       sx={{ width: "fit-content", px: 8 }}
@@ -68,17 +68,17 @@ const NonClickableContainer = ({
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
-  const asset = pool.meta
+  const asset = pool.meta;
 
-  const farms = useFarms([pool.id])
-  const dynamicFees = useDynamicAssetFees(pool.meta.id)
+  const farms = useFarms([pool.id]);
+  const dynamicFees = useDynamicAssetFees(pool.meta.id);
 
-  const isDesktop = useMedia(theme.viewport.gte.md)
-  const isFarmsVisible = !isDesktop || asset.isShareToken
+  const isDesktop = useMedia(theme.viewport.gte.md);
+  const isFarmsVisible = !isDesktop || asset.isShareToken;
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -137,25 +137,25 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
         )}
       </div>
     </NonClickableContainer>
-  )
-}
+  );
+};
 
 const AddLiquidityButton: React.FC<{
-  poolId: string
+  poolId: string;
 }> = ({ poolId }) => {
-  const { t } = useTranslation()
-  const { native } = useAssets()
-  const { account } = useAccount()
-  const [open, setOpen] = useState(false)
-  const farms = useFarms([poolId])
+  const { t } = useTranslation();
+  const { native } = useAssets();
+  const { account } = useAccount();
+  const [open, setOpen] = useState(false);
+  const farms = useFarms([poolId]);
 
-  if (native.id === poolId) return null
+  if (native.id === poolId) return null;
 
   const onClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setOpen(true)
-  }
+    e.stopPropagation();
+    e.preventDefault();
+    setOpen(true);
+  };
 
   const styles = {
     height: 26,
@@ -166,7 +166,7 @@ const AddLiquidityButton: React.FC<{
       gap: 4,
       alignItems: "center",
     },
-  }
+  };
 
   return (
     <>
@@ -200,23 +200,23 @@ const AddLiquidityButton: React.FC<{
         <LiquidityModalWrapper poolId={poolId} onClose={() => setOpen(false)} />
       )}
     </>
-  )
-}
+  );
+};
 
 const LiquidityModalWrapper: React.FC<{
-  poolId: string
-  onClose: () => void
+  poolId: string;
+  onClose: () => void;
 }> = ({ poolId, onClose }) => {
-  const farms = useFarms([poolId])
-  const pools = usePools()
-  const poolDetails = usePoolDetails(poolId)
+  const farms = useFarms([poolId]);
+  const pools = usePools();
+  const poolDetails = usePoolDetails(poolId);
 
   const pool = useMemo(
     () => pools.data?.find((pool) => pool.id === poolId),
     [poolId, pools.data],
-  )
+  );
 
-  if (!pool) return null
+  if (!pool) return null;
   return (
     <PoolContext.Provider
       value={{
@@ -232,41 +232,41 @@ const LiquidityModalWrapper: React.FC<{
         onClose={onClose}
       />
     </PoolContext.Provider>
-  )
-}
+  );
+};
 
 const ManageLiquidityButton: React.FC<{
-  pool: TPool | TXYKPool
-  onRowSelect: (id: string) => void
+  pool: TPool | TXYKPool;
+  onRowSelect: (id: string) => void;
 }> = ({ pool, onRowSelect }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const isXykPool = isXYKPoolType(pool)
+  const isXykPool = isXYKPoolType(pool);
 
   const userStablePoolBalance = pool.meta.isStableSwap
     ? pool.balance?.freeBalance
-    : BN_0
+    : BN_0;
 
-  let positionsAmount: BN = BN_0
+  let positionsAmount: BN = BN_0;
 
   if (isXykPool) {
     positionsAmount = BN(pool.miningPositions.length).plus(
       pool.shareTokenIssuance?.myPoolShare?.gt(0) ? 1 : 0,
-    )
+    );
   } else {
     positionsAmount = BN(pool.omnipoolPositions.length)
       .plus(pool.miningPositions.length)
-      .plus(userStablePoolBalance?.gt(0) ? 1 : 0)
+      .plus(userStablePoolBalance?.gt(0) ? 1 : 0);
   }
 
-  const isPositions = positionsAmount.gt(0)
+  const isPositions = positionsAmount.gt(0);
 
-  const onClick = () => onRowSelect(pool.id)
+  const onClick = () => onRowSelect(pool.id);
 
   return (
     <div
       onClick={(e) => {
-        e.stopPropagation()
+        e.stopPropagation();
       }}
       css={{ position: "relative" }}
     >
@@ -306,25 +306,25 @@ const ManageLiquidityButton: React.FC<{
         </Text>
       )}
     </div>
-  )
-}
+  );
+};
 
 const APY = ({
   assetId,
   fee,
   isLoading,
 }: {
-  assetId: string
-  fee: BN
-  isLoading: boolean
+  assetId: string;
+  fee: BN;
+  isLoading: boolean;
 }) => {
-  const { t } = useTranslation()
-  const { native } = useAssets()
-  const farms = useFarms([assetId])
-  const dynamicFees = useDynamicAssetFees(assetId)
+  const { t } = useTranslation();
+  const { native } = useAssets();
+  const farms = useFarms([assetId]);
+  const dynamicFees = useDynamicAssetFees(assetId);
 
   if (isLoading || farms.isLoading || dynamicFees.isLoading) {
-    return <CellSkeleton />
+    return <CellSkeleton />;
   }
 
   if (farms.data?.length)
@@ -335,7 +335,7 @@ const APY = ({
           farms={farms.data}
         />
       </NonClickableContainer>
-    )
+    );
 
   return (
     <NonClickableContainer>
@@ -343,8 +343,8 @@ const APY = ({
         {assetId === native.id ? "--" : t("value.percentage", { value: fee })}
       </Text>
     </NonClickableContainer>
-  )
-}
+  );
+};
 
 export const usePoolTable = (
   data: TPool[] | TXYKPool[],
@@ -352,14 +352,14 @@ export const usePoolTable = (
   onRowSelect: (id: string) => void,
   paginated?: boolean,
 ) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const { accessor, display } = createColumnHelper<TPool | TXYKPool>()
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [pagination, setPagination] = useTablePagination()
+  const { accessor, display } = createColumnHelper<TPool | TXYKPool>();
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useTablePagination();
 
-  const isTablet = useMedia(theme.viewport.gte.sm)
-  const isDesktop = useMedia(theme.viewport.gte.md)
+  const isTablet = useMedia(theme.viewport.gte.sm);
+  const isDesktop = useMedia(theme.viewport.gte.md);
 
   const columnVisibility: VisibilityState = {
     name: true,
@@ -368,13 +368,13 @@ export const usePoolTable = (
     tvlDisplay: isTablet,
     apy: isDesktop,
     actions: isTablet,
-  }
+  };
 
   const columns = useMemo(
     () => [
       accessor("name", {
         id: "name",
-        header: t("liquidity.table.header.poolAsset"),
+        header: t("myLiquidity.header.poolAsset"),
         sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
         cell: ({ row }) => <AssetTableName pool={row.original} />,
       }),
@@ -382,7 +382,7 @@ export const usePoolTable = (
         ? [
             accessor("spotPrice", {
               id: "spotPrice",
-              header: t("liquidity.table.header.price"),
+              header: t("myLiquidity.header.price"),
               sortingFn: (a, b) =>
                 (a.original.spotPrice ?? BN_1).gt(b.original.spotPrice ?? 1)
                   ? 1
@@ -399,13 +399,13 @@ export const usePoolTable = (
         : []),
       accessor("id", {
         id: "volume",
-        header: t("liquidity.table.header.volume"),
+        header: t("myLiquidity.header.volume"),
         sortingFn: (a, b) => (a.original.volume.gt(b.original.volume) ? 1 : -1),
         cell: ({ row }) => {
-          const pool = row.original
-          const isInvalid = isXYKPoolType(pool) && pool.isInvalid
+          const pool = row.original;
+          const isInvalid = isXYKPoolType(pool) && pool.isInvalid;
 
-          if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />
+          if (pool.isVolumeLoading) return <Skeleton width={60} height={18} />;
           return (
             <NonClickableContainer
               sx={{
@@ -420,7 +420,7 @@ export const usePoolTable = (
               </Text>
 
               {isInvalid && (
-                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                <InfoTooltip text={t("myLiquidity.invalidPool.tooltip")}>
                   <SInfoIcon />
                 </InfoTooltip>
               )}
@@ -432,18 +432,18 @@ export const usePoolTable = (
                 />
               </ButtonTransparent>
             </NonClickableContainer>
-          )
+          );
         },
       }),
       accessor("tvlDisplay", {
         id: "tvlDisplay",
-        header: t("liquidity.table.header.tvl"),
+        header: t("myLiquidity.header.tvl"),
         size: 220,
         sortingFn: (a, b) =>
           a.original.tvlDisplay.gt(b.original.tvlDisplay) ? 1 : -1,
         cell: ({ row }) => {
           const isInvalid =
-            isXYKPoolType(row.original) && row.original.isInvalid
+            isXYKPoolType(row.original) && row.original.isInvalid;
           return (
             <NonClickableContainer
               sx={{
@@ -457,12 +457,12 @@ export const usePoolTable = (
                 />
               </Text>
               {isInvalid && (
-                <InfoTooltip text={t("liquidity.table.invalidPool.tooltip")}>
+                <InfoTooltip text={t("myLiquidity.invalidPool.tooltip")}>
                   <SInfoIcon />
                 </InfoTooltip>
               )}
             </NonClickableContainer>
-          )
+          );
         },
       }),
       ...(!isXyk
@@ -519,15 +519,15 @@ export const usePoolTable = (
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isDesktop],
-  )
+  );
 
   return useReactTable({
     data,
     columns,
     state: { sorting, columnVisibility, pagination },
     onSortingChange: (data) => {
-      setSorting(data)
-      paginated && setPagination(defaultPaginationState)
+      setSorting(data);
+      paginated && setPagination(defaultPaginationState);
     },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -539,5 +539,5 @@ export const usePoolTable = (
           autoResetPageIndex: false,
         }
       : {}),
-  })
-}
+  });
+};
