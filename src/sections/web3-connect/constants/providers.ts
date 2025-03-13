@@ -20,6 +20,8 @@ export enum WalletProviderType {
   FearlessWallet = "fearless-wallet",
   Polkagate = "polkagate",
   AlephZero = "aleph-zero",
+  ReownPolkadot = "reown-polkadot",
+  Reown = "reown",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
   ExternalWallet = "external",
@@ -42,7 +44,8 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   // WalletProviderType.TrustWallet,
   // WalletProviderType.CoinbaseWallet,
   WalletProviderType.BraveWallet,
-  WalletProviderType.WalletConnectEvm,
+  WalletProviderType.Reown,
+  // WalletProviderType.WalletConnectEvm,
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
@@ -56,7 +59,8 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.FearlessWallet,
   WalletProviderType.Polkagate,
   WalletProviderType.AlephZero,
-  WalletProviderType.WalletConnect,
+  WalletProviderType.ReownPolkadot,
+  // WalletProviderType.WalletConnect,
 ]
 
 export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [

@@ -40,6 +40,7 @@ export default defineConfig(({ command }) => {
   return {
     define: {
       "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
+      "process.env": {}, // Prevents errors related to `process.env` in Reown
     },
     build: {
       target: "esnext",
