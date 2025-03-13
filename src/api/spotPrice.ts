@@ -38,7 +38,7 @@ export const useSpotPrice = (
 }
 
 export const usePriceSubscriber = () => {
-  const { isLoaded, tradeRouter } = useRpcProvider()
+  const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(
     useShallow((state) => state.setAssets),
@@ -48,7 +48,7 @@ export const usePriceSubscriber = () => {
   )
 
   return useQuery(
-    QUERY_KEYS.displayPrices(stableCoinId),
+    [...QUERY_KEYS.displayPrices(stableCoinId), timestamp],
     async () => {
       const activeAssetsIds = queryClient
         .getQueriesData({

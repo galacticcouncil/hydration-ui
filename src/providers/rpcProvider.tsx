@@ -28,6 +28,7 @@ type TProviderContext = {
   isLoaded: boolean
   poolService: PoolService
   tradeRouter: TradeRouter
+  timestamp: string
 }
 
 const defaultData: TProviderContext = {
@@ -40,6 +41,7 @@ const defaultData: TProviderContext = {
   isLoaded: false,
   poolService: {} as TProviderContext["poolService"],
   tradeRouter: {} as TradeRouter,
+  timestamp: "",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -105,6 +107,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         isLoaded: providerData.api.isConnected,
         endpoint: providerData.endpoint,
         dataEnv: providerData.dataEnv,
+        timestamp: providerData.timestamp,
       }
     }
 

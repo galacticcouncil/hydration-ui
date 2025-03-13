@@ -15,7 +15,6 @@ import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/
 import { useOmnipoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
-import { useShareOfPools } from "api/pools"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useFee } from "api/stats"
 import { useTVL } from "api/stats"
@@ -26,6 +25,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
+import { useTotalIssuances } from "api/totalIssuance"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -270,12 +270,15 @@ export const useXYKPools = () => {
   }, [shareTokens, whitelist])
 
   const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
-    allShareTokens.map((pool) => pool.poolAddress) ?? [],
+    validShareTokens.map((pool) => pool.poolAddress) ?? [],
   )
 
-  const shareTokensId = shareTokens.map((shareToken) => shareToken.id) ?? []
+  const shareTokensId =
+    validShareTokens.map((shareToken) => shareToken.id) ?? []
 
-  const totalIssuances = useShareOfPools(shareTokensId)
+  const { data: totalIssuances, isInitialLoading: isIssuanceLoading } =
+    useTotalIssuances()
+
   const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
 
   const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
@@ -283,29 +286,32 @@ export const useXYKPools = () => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useXYKPoolTradeVolumes(validShareTokens)
 
-  const queries = [shareTokeSpotPrices, totalIssuances]
-
-  const isInitialLoading = queries.some((q) => q.isInitialLoading)
+  const isInitialLoading =
+    isIssuanceLoading || shareTokeSpotPrices.isInitialLoading
 
   const data = useMemo(() => {
-    if (!shareTokeSpotPrices.data || !totalIssuances.data) return undefined
+    if (!shareTokeSpotPrices.data || !totalIssuances) return undefined
 
     return allShareTokens
       .map((shareToken) => {
         const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
+        const balance = accountAsset?.balance
 
         const { id: shareTokenId, poolAddress, isInvalid } = shareToken
 
-        const shareTokenIssuance = totalIssuances.data?.find(
-          (issuance) => issuance.asset === shareTokenId,
-        )
+        const issuance = totalIssuances.get(shareTokenId)
 
         const shareTokenSpotPrice = shareTokeSpotPrices.data.find(
           (shareTokeSpotPrice) => shareTokeSpotPrice.tokenIn === shareTokenId,
         )
 
+        const myPoolShare =
+          balance && issuance
+            ? BN(balance.total).div(issuance).multipliedBy(100)
+            : undefined
+
         const tvlDisplay =
-          shareTokenIssuance?.totalShare
+          issuance
             ?.shiftedBy(-shareToken.decimals)
             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
 
@@ -319,7 +325,6 @@ export const useXYKPools = () => {
         const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
 
         const miningPositions = accountAsset?.xykDeposits ?? []
-        const balance = accountAsset?.balance
         const isPositions = !!accountAsset?.isPoolPositions
 
         return {
@@ -335,7 +340,7 @@ export const useXYKPools = () => {
           poolAddress,
           canAddLiquidity: true,
           canRemoveLiquidity: true,
-          shareTokenIssuance,
+          shareTokenIssuance: { totalShare: issuance, myPoolShare },
           volume,
           isVolumeLoading,
           miningPositions,
@@ -361,7 +366,7 @@ export const useXYKPools = () => {
       })
   }, [
     shareTokeSpotPrices.data,
-    totalIssuances.data,
+    totalIssuances,
     allShareTokens,
     accountAssets?.accountAssetsMap,
     volumes,

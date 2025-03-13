@@ -6,10 +6,12 @@ import { QUERY_KEY_PREFIX } from "utils/queryKeys"
 import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
 import { useExternalAssetRegistry } from "./external"
 import { useSettingsStore } from "state/store"
+import { usePriceSubscriber } from "./spotPrice"
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
   const { degenMode } = useSettingsStore()
+  usePriceSubscriber()
 
   if (!isLoaded) return null
 

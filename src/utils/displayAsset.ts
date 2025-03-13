@@ -24,39 +24,53 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
   const { data: xykPools = [], isLoading: isPoolsLoading } = useXYKSDKPools()
   const { data: issuances, isLoading: isIssuanceLoading } = useTotalIssuances()
 
-  const shareTokensTvl = useMemo(() => {
-    return pools
-      .map((shareToken) => {
+  const { ids: pricesIds, tvls: shareTokensTvl } = useMemo(() => {
+    return pools.reduce<{
+      ids: string[]
+      tvls: { spotPriceId: string; tvl: string; shareTokenId: string }[]
+    }>(
+      (acc, shareToken) => {
         const { poolAddress } = shareToken ?? {}
 
-        if (!poolAddress) return undefined
+        if (!poolAddress) return acc
 
         const pool = xykPools.find((pool) => poolAddress === pool.address)
 
-        if (!pool) return undefined
+        if (!pool) return acc
 
         const { tokens } = pool
-        const [assetA] = tokens
+        const cachedIds = acc.ids
 
-        if (!assetA) return undefined
-        const { balance, decimals, id } = assetA
+        const knownAssetPrice =
+          tokens.find((token) => cachedIds.includes(token.id)) ??
+          tokens.find((token) => token.isSufficient) ??
+          tokens[0]
 
-        const assetABalance = BigNumber(balance).shiftedBy(-decimals)
+        if (!knownAssetPrice) return acc
 
-        const tvl = assetABalance.multipliedBy(2)
+        const { balance, decimals, id } = knownAssetPrice
 
-        return {
+        const shiftedBalance = BigNumber(balance).shiftedBy(-decimals)
+
+        const tvl = shiftedBalance.multipliedBy(2).toString()
+
+        acc.tvls.push({
           spotPriceId: id,
           tvl,
           shareTokenId: shareToken.id,
+        })
+
+        if (!cachedIds.includes(id)) {
+          acc.ids.push(id)
         }
-      })
-      .filter(isNotNil)
+
+        return acc
+      },
+      { ids: [], tvls: [] },
+    )
   }, [pools, xykPools])
 
-  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
-    shareTokensTvl.map((shareTokenTvl) => shareTokenTvl.spotPriceId),
-  )
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(pricesIds)
 
   const isLoading = isIssuanceLoading || isPoolsLoading || isPriceLoading
 
@@ -65,7 +79,7 @@ export const useDisplayShareTokenPrice = (ids: string[]) => {
       .map((shareTokenTvl) => {
         const spotPrice = getAssetPrice(shareTokenTvl.spotPriceId).price
 
-        const tvlDisplay = shareTokenTvl.tvl.multipliedBy(spotPrice)
+        const tvlDisplay = BigNumber(shareTokenTvl.tvl).multipliedBy(spotPrice)
 
         const totalIssuance = issuances?.get(shareTokenTvl.shareTokenId)
 

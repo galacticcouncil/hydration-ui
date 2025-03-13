@@ -1,12 +1,8 @@
-import { useMemo } from "react"
-import { useTotalIssuances } from "./totalIssuance"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
-import { useAccountAssets } from "./deposits"
-import BN from "bignumber.js"
 import { PoolToken, PoolType } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import { millisecondsInMinute } from "date-fns"
@@ -15,48 +11,13 @@ import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
 
-export const useShareOfPools = (assets: string[]) => {
-  const totalIssuances = useTotalIssuances()
-  const accountAssets = useAccountAssets()
-
-  const queries = [totalIssuances, accountAssets]
-  const isLoading = queries.some((query) => query.isInitialLoading)
-
-  const data = useMemo(() => {
-    if (!!totalIssuances.data) {
-      return assets.map((asset) => {
-        const balance =
-          accountAssets.data?.accountShareTokensMap.get(asset)?.balance
-        const totalIssuance = totalIssuances.data.get(asset)
-
-        const calculateTotalShare = () => {
-          if (balance && totalIssuance) {
-            return BN(balance.total).div(totalIssuance).multipliedBy(100)
-          }
-          return null
-        }
-
-        return {
-          asset,
-          totalShare: totalIssuance,
-          myPoolShare: calculateTotalShare(),
-        }
-      })
-    }
-
-    return null
-  }, [accountAssets.data, assets, totalIssuances.data])
-
-  return { isLoading, isInitialLoading: isLoading, data }
-}
-
 export const useSDKPools = () => {
-  const { isLoaded, tradeRouter } = useRpcProvider()
+  const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
   const activeQueriesAmount = useActiveQueries(["pools"])
 
   return useQuery({
-    queryKey: QUERY_KEYS.allPools,
+    queryKey: [...QUERY_KEYS.allPools, timestamp],
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
 

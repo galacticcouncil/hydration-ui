@@ -248,7 +248,7 @@ export const useProviderAssets = () => {
   const { dataEnv } = useActiveRpcUrlList()
 
   return useQuery(
-    QUERY_KEYS.assets(dataEnv),
+    [...QUERY_KEYS.assets(dataEnv), provider?.timestamp],
     provider
       ? async () => {
           const degenMode = useSettingsStore.getState().degenMode
@@ -408,6 +408,8 @@ export const useProviderData = (
 
       const evm = new PolkadotEvmRpcProvider(api)
 
+      const timestamp = new Date().toISOString()
+
       return {
         api,
         evm,
@@ -416,6 +418,7 @@ export const useProviderData = (
         balanceClient,
         endpoint,
         dataEnv,
+        timestamp,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
         } as TFeatureFlags,

@@ -8,7 +8,6 @@ import {
 import { useExternalAssetsMetadata, useSettingsStore } from "state/store"
 import { useAssets } from "providers/assets"
 import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { pick } from "utils/rx"
 import { useShallow } from "hooks/useShallow"
 
@@ -76,10 +75,8 @@ export const useDegenModeSubscription = () => {
         degenMode,
         dataEnv: getDataEnv(),
       })
-      poolService.syncRegistry(data)
       hasInitializedDegenMode.current = true
       refetchProvider()
-      queryClient.invalidateQueries(QUERY_KEYS.allPools)
     }
   }, [
     degenMode,
