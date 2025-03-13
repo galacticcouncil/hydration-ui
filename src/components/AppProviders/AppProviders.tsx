@@ -9,6 +9,7 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderReloader } from "sections/provider/ProviderReloader"
+import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 
 const AppsContextProvider = createComponent({
@@ -21,21 +22,23 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <MigrationProvider>
       <TooltipProvider>
-        <RpcProvider>
-          <ProviderReloader>
-            <InvalidateOnBlock>
-              <ToastProvider>
-                <SkeletonTheme
-                  baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-                  highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-                  borderRadius={4}
-                >
-                  <AppsContextProvider>{children}</AppsContextProvider>
-                </SkeletonTheme>
-              </ToastProvider>
-            </InvalidateOnBlock>
-          </ProviderReloader>
-        </RpcProvider>
+        <ProviderResolver>
+          <RpcProvider>
+            <ProviderReloader>
+              <InvalidateOnBlock>
+                <ToastProvider>
+                  <SkeletonTheme
+                    baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                    highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                    borderRadius={4}
+                  >
+                    <AppsContextProvider>{children}</AppsContextProvider>
+                  </SkeletonTheme>
+                </ToastProvider>
+              </InvalidateOnBlock>
+            </ProviderReloader>
+          </RpcProvider>
+        </ProviderResolver>
       </TooltipProvider>
     </MigrationProvider>
   )

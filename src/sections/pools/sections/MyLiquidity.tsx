@@ -22,6 +22,7 @@ import { LINKS } from "utils/navigation"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BigNumber from "bignumber.js"
+import { MyIsolatedPoolsTotal } from "sections/pools/header/MyIsolatedPoolsTotal"
 
 export const MyLiquidity = () => {
   const { account } = useAccount()
@@ -201,10 +202,9 @@ const MyLiquidityData = () => {
             label: t("liquidity.header.isolated"),
             withoutSeparator: true,
             content: (
-              <HeaderTotalData
+              <MyIsolatedPoolsTotal
                 isLoading={xykPools.isInitialLoading}
-                value={xykTotal}
-                fontSize={19}
+                value={xykTotal.toString()}
               />
             ),
           },

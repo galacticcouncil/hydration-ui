@@ -3,6 +3,7 @@ import { useActiveRpcUrlList } from "api/provider"
 import { useRemount } from "hooks/useRemount"
 import { Fragment, PropsWithChildren, lazy, useEffect, useState } from "react"
 import { usePrevious } from "react-use"
+import { useStore } from "state/store"
 
 const ProviderSelectButton = lazy(async () => ({
   default: (
@@ -11,6 +12,9 @@ const ProviderSelectButton = lazy(async () => ({
     )
   ).ProviderSelectButton,
 }))
+
+// Don't reset these queries
+const QUERY_KEY_RESET_WHITELIST = ["rpcStatus"]
 
 export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
   const rpcUrlList = useActiveRpcUrlList()
@@ -27,11 +31,17 @@ export const ProviderReloader: React.FC<PropsWithChildren> = ({ children }) => {
     const shouldReset = curr > prev
 
     if (shouldReset) {
-      queryClient.resetQueries().then(() => {
-        setVersion((prev) => prev + 1)
-        queryClient.invalidateQueries(["provider"])
-        queryClient.refetchQueries(["provider"])
-      })
+      useStore.setState({ transactions: [] })
+      queryClient
+        .resetQueries({
+          predicate: (query) =>
+            !QUERY_KEY_RESET_WHITELIST.includes(query.queryKey[0] as string),
+        })
+        .then(() => {
+          setVersion((prev) => prev + 1)
+          queryClient.invalidateQueries(["provider"])
+          queryClient.refetchQueries(["provider"])
+        })
     }
   }, [prevRpcVersion, queryClient, rpcVersion])
 

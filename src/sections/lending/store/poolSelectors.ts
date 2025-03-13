@@ -209,7 +209,7 @@ export const selectNonEmptyUserBorrowPositions = (
 }
 
 export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
-  const eModes = reserves?.reduce(
+  const eModes = reserves.reduce(
     (acc, r) => {
       if (!acc[r.eModeCategoryId])
         acc[r.eModeCategoryId] = {
