@@ -18,7 +18,21 @@ export const mapMoneyMarketEvents = (
   return Array.from(
     Map.groupBy(
       events,
-      (event) => event.date.toISOString().split("T")[0],
+      (event) =>
+        /* remove timezone offset to get date time in user's timezone that acts as UTC so it can be grouped by it*/
+        new Date(
+          event.date.valueOf() - event.date.getTimezoneOffset() * 60 * 1000,
+        )
+          .toISOString()
+          .split("T")[0],
     ).entries(),
-  ).flatMap<LendingHistoryRow>(([date, events]) => [new Date(date), ...events])
+  ).flatMap<LendingHistoryRow>(([date, events]) => {
+    const dateOnly = new Date(date)
+    // add timezone offset back to preserve the original date in UTC, otherwise the date might shift due to timezone
+    const dt = new Date(
+      dateOnly.valueOf() + dateOnly.getTimezoneOffset() * 60 * 1000,
+    )
+
+    return [dt, ...events]
+  })
 }
