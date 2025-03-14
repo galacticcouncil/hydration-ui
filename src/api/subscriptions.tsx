@@ -1,4 +1,5 @@
 import { useSDKPools } from "./pools"
+import { useProviderMetadata } from "./provider"
 
 export const QuerySubscriptions = () => {
   return <OmnipoolAssetsSubscription />
@@ -6,6 +7,7 @@ export const QuerySubscriptions = () => {
 
 const OmnipoolAssetsSubscription = () => {
   useSDKPools()
+  useProviderMetadata()
 
   return null
 }
