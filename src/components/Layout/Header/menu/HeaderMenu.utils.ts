@@ -15,8 +15,6 @@ export const useVisibleHeaderMenuItems = () => {
 
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
 
-  const isPoolBalances = isPositions
-
   return useMemo(() => {
     const items = MENU_ITEMS.filter(
       (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
@@ -26,7 +24,7 @@ export const useVisibleHeaderMenuItems = () => {
           ...item,
           subItems: item.subItems?.filter((subItem) => {
             if (subItem.key === "liquidity.myLiquidity") {
-              return isPoolBalances
+              return isPositions
             }
 
             if (subItem.key === "wallet.vesting") {
@@ -62,7 +60,7 @@ export const useVisibleHeaderMenuItems = () => {
     featureFlags,
     hiddenElementsKeys,
     observe,
-    isPoolBalances,
+    isPositions,
     totalVestedAmount,
   ])
 }

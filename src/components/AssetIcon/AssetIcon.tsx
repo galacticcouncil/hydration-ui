@@ -18,6 +18,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useExternalAssetsMetadata } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { pick } from "utils/rx"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -77,10 +78,9 @@ export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { getAsset, getErc20, isErc20 } = useAssets()
   const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
-    useShallow((state) => ({
-      getExternalAssetMetadata: state.getExternalAssetMetadata,
-      isInitialized: state.isInitialized,
-    })),
+    useShallow((state) =>
+      pick(state, ["getExternalAssetMetadata", "isInitialized"]),
+    ),
   )
   const { data: whitelist } = useExternalWhitelist()
 
