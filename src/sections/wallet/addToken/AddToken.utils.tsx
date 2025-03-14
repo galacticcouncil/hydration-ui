@@ -401,15 +401,23 @@ export const useUserExternalTokenStore = create<Store>()(
 
 export const useExternalTokenMeta = () => {
   const { getAsset } = useAssets()
-  const getExternalAssetMetadata = useExternalAssetsMetadata(
-    useShallow((state) => state.getExternalAssetMetadata),
+  const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
+    useShallow((state) => ({
+      getExternalAssetMetadata: state.getExternalAssetMetadata,
+      isInitialized: state.isInitialized,
+    })),
   )
 
   const getExtrernalTokenByInternalId = useCallback(
     (id: string) => {
       const meta = id ? (getAsset(id) as TExternal) : undefined
 
-      if (meta?.isExternal && meta.externalId && meta.parachainId) {
+      if (
+        meta?.isExternal &&
+        meta.externalId &&
+        meta.parachainId &&
+        isInitialized
+      ) {
         const externalAsset = getExternalAssetMetadata(
           meta.parachainId,
           meta.externalId,
@@ -430,7 +438,7 @@ export const useExternalTokenMeta = () => {
         }
       }
     },
-    [getAsset, getExternalAssetMetadata],
+    [getAsset, getExternalAssetMetadata, isInitialized],
   )
 
   return getExtrernalTokenByInternalId
