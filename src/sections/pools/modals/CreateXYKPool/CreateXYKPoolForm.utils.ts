@@ -75,7 +75,7 @@ export const useAllowedXYKPoolAssets = () => {
 
   return useMemo(() => {
     return [...all.values()].filter((asset) => {
-      const isTradable = asset.isTradable
+      const isTradable = true // asset.isTradable @TODO remove before merge, only debugging
       const hasBalance = BN(
         data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
       ).gt(0)
