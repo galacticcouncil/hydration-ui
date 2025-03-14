@@ -194,6 +194,7 @@ export const QUERY_KEYS = {
     orderId?.toString(),
   ],
   provider: (url: string) => ["provider", url],
+  providerMetadata: (url: string) => ["providerMetadata", url],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],

@@ -16,7 +16,7 @@ import {
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useAssetRegistry, useSettingsStore } from "state/store"
+import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
@@ -283,16 +283,44 @@ export const useProviderAssets = () => {
   )
 }
 
+export const useProviderMetadata = () => {
+  const { isLoaded, api } = useRpcProvider()
+  const rpcUrlList = useActiveRpcUrlList()
+  const { metadata: storedMetadata, setMetadata } = useApiMetadata()
+
+  return useQuery(
+    QUERY_KEYS.providerMetadata(rpcUrlList.join()),
+    async () => {
+      const genesisHash = await api.genesisHash.toHex()
+      const runtimeVersion = await api.runtimeVersion.specVersion.toNumber()
+      const metadataHex = await api.runtimeMetadata.toHex()
+
+      const metadataKey = `${genesisHash}-${runtimeVersion}`
+      const isStoredMetadata =
+        storedMetadata?.hasOwnProperty(metadataKey) ?? false
+
+      if (!isStoredMetadata) {
+        setMetadata(metadataKey, metadataHex)
+      }
+
+      return true
+    },
+    { enabled: isLoaded, staleTime: Infinity, notifyOnChangeProps: [] },
+  )
+}
+
 export const useProviderData = () => {
   const rpcUrlList = useActiveRpcUrlList()
   const { setRpcUrl } = useProviderRpcUrlStore()
+  const { metadata: storedMetadata } = useApiMetadata()
 
   return useQuery(
     QUERY_KEYS.provider(rpcUrlList.join()),
     async () => {
       const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(rpcUrlList, maxRetries)
+
+      const api = await apiPool.api(rpcUrlList, maxRetries, storedMetadata)
 
       const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
       const degenMode = useSettingsStore.getState().degenMode
