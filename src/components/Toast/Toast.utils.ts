@@ -566,6 +566,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
               //udpate a link to show tx details on wormhole
               toast.editToast(toastData.id, {
                 link: `https://wormholescan.io/#/tx/${evmTx.hash}`,
+                txHash: evmTx.hash,
                 xcm: "evm",
               })
             }
