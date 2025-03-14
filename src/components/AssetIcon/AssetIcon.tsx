@@ -12,11 +12,12 @@ import { useTranslation } from "react-i18next"
 import { ExternalAssetBadgeVariant, useExternalWhitelist } from "api/external"
 import { findNestedKey, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
 import { ResponsiveValue } from "utils/responsive"
-import { useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { Icon } from "components/Icon/Icon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { useExternalAssetsMetadata } from "state/store"
 import { useShallow } from "hooks/useShallow"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -89,15 +90,28 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     let isWhitelisted: boolean | undefined
     let badge: ExternalAssetBadgeVariant | undefined
 
-    if (assetDetails?.isExternal && isInitialized) {
+    if (assetDetails?.isExternal) {
       if (assetDetails.parachainId && assetDetails.externalId) {
-        const externalAssetMeta = getExternalAssetMetadata(
-          assetDetails.parachainId,
-          assetDetails.externalId,
-        )
+        let meta: TExternalAsset | TAsset | undefined
 
-        if (externalAssetMeta) {
-          const { isWhiteListed } = externalAssetMeta
+        if (!assetDetails.symbol) {
+          if (!isInitialized) {
+            return {
+              details: assetDetails,
+              badgeVariant: badge,
+            }
+          }
+
+          meta = getExternalAssetMetadata(
+            assetDetails.parachainId,
+            assetDetails.externalId,
+          )
+        } else {
+          meta = assetDetails
+        }
+
+        if (meta) {
+          const { isWhiteListed } = meta
           isWhitelisted = isWhiteListed
         }
       } else {
