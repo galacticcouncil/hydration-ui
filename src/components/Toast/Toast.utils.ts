@@ -17,7 +17,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
 const moonbeamRpc = (chainsMap.get("moonbeam") as Parachain).ws
 const snowbridgeIndexer =
-  "https://snowbridge.squids.live/snowbridge-subsquid@v2/api/graphql"
+  "https://snowbridge.squids.live/snowbridge-subsquid-polkadot@v1/api/graphql"
 
 // commented out xcm part to have implemnetation for the future when we can check a tarnsfer state
 // {
