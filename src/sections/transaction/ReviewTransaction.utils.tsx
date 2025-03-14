@@ -83,6 +83,14 @@ export class TransactionError extends Error {
 
 type TxHuman = Record<string, { args: TxMethod["args"] }>
 
+function getXcmTab(tags?: string) {
+  if (!tags) return undefined
+
+  const parts = tags.split(",")
+
+  return parts[parts.length - 1] as MetaTags
+}
+
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
   if (!isTxMethod(x)) return null
 
@@ -243,14 +251,20 @@ export const useSendEvmTransactionMutation = (
       try {
         const txHash = evmTx?.hash
         const txData = evmTx?.data
-        const metaTags = xcallMeta?.tags as MetaTags | undefined
+        const metaTags = xcallMeta?.tags
 
         const chain = evmAccount?.chainId
           ? getEvmChainById(evmAccount.chainId)
           : null
         const link =
           txHash && chain
-            ? getEvmTxLink(txHash, txData, chain.key, isTestnet, metaTags)
+            ? getEvmTxLink(
+                txHash,
+                txData,
+                chain.key,
+                isTestnet,
+                getXcmTab(metaTags),
+              )
             : ""
 
         const isApproveTx = txData?.startsWith("0x095ea7b3")
@@ -263,7 +277,7 @@ export const useSendEvmTransactionMutation = (
 
         const bridge =
           !isApproveTx && (chain?.isEvmChain() || destChain?.isEvmChain())
-            ? metaTags
+            ? getXcmTab(metaTags)
             : undefined
 
         loading({
@@ -344,14 +358,16 @@ export const useSendSolanaTransactionMutation = (
       try {
         const link = getSolanaTxLink(txHash)
         const xcm = xcallMeta ? "solana" : undefined
-        const metaTags = xcallMeta?.tags as MetaTags | undefined
+        const metaTags = xcallMeta?.tags
 
         const destChain = xcallMeta?.dstChain
           ? chainsMap.get(xcallMeta.dstChain)
           : undefined
 
         const bridge =
-          chain?.isSolana() || destChain?.isSolana() ? metaTags : undefined
+          chain?.isSolana() || destChain?.isSolana()
+            ? getXcmTab(metaTags)
+            : undefined
 
         loading({
           id,
@@ -484,7 +500,7 @@ const getTransactionData = (
   xcallMeta?: Record<string, string>,
 ) => {
   const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
-  const metaTags = xcallMeta?.tags as MetaTags | undefined
+  const metaTags = xcallMeta?.tags
 
   const xcmDstChain = xcallMeta?.dstChain
     ? chainsMap.get(xcallMeta.dstChain)
@@ -496,7 +512,9 @@ const getTransactionData = (
       : undefined
 
   const bridge =
-    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana() ? metaTags : undefined
+    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()
+      ? getXcmTab(metaTags)
+      : undefined
 
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
 
