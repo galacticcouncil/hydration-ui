@@ -75,8 +75,11 @@ export const MultipleAssetLogo = ({
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { getAsset, getErc20, isErc20 } = useAssets()
-  const getExternalAssetMetadata = useExternalAssetsMetadata(
-    useShallow((state) => state.getExternalAssetMetadata),
+  const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
+    useShallow((state) => ({
+      getExternalAssetMetadata: state.getExternalAssetMetadata,
+      isInitialized: state.isInitialized,
+    })),
   )
   const { data: whitelist } = useExternalWhitelist()
 
@@ -86,7 +89,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
     let isWhitelisted: boolean | undefined
     let badge: ExternalAssetBadgeVariant | undefined
 
-    if (assetDetails?.isExternal) {
+    if (assetDetails?.isExternal && isInitialized) {
       if (assetDetails.parachainId && assetDetails.externalId) {
         const externalAssetMeta = getExternalAssetMetadata(
           assetDetails.parachainId,
@@ -110,7 +113,14 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       details: assetDetails,
       badgeVariant: badge,
     }
-  }, [getAsset, getErc20, getExternalAssetMetadata, id, whitelist])
+  }, [
+    getAsset,
+    getErc20,
+    getExternalAssetMetadata,
+    id,
+    whitelist,
+    isInitialized,
+  ])
 
   const { details, badgeVariant } = asset
 
