@@ -146,6 +146,7 @@ export const useAssetsData = ({
 }) => {
   const {
     external,
+    erc20,
     stableswap,
     bonds: bondAssets,
     isBond,
@@ -225,7 +226,12 @@ export const useAssetsData = ({
 
     const tokens = allAssets
       ? getAssetBalances(
-          [...tokenAssets, ...stableswap, ...(withExternal ? external : [])],
+          [
+            ...tokenAssets,
+            ...stableswap,
+            ...erc20,
+            ...(withExternal ? external : []),
+          ],
           tokensData,
         )
       : tokensData
@@ -236,10 +242,11 @@ export const useAssetsData = ({
   }, [
     allAssets,
     allowedAssets,
-    tokenAssets,
+    erc20,
     external,
     search,
     stableswap,
+    tokenAssets,
     tokensWithBalance,
     withExternal,
     getAssetPrice,
