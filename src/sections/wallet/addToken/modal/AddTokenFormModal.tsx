@@ -12,10 +12,7 @@ import { omit } from "utils/rx"
 import { useAssets } from "providers/assets"
 import { Separator } from "components/Separator/Separator"
 import { TokenInfoHeader } from "./components/TokenInfo/TokenInfoHeader"
-import {
-  useExternalAssetRegistry,
-  useExternalTokensRugCheck,
-} from "api/external"
+import { useExternalTokensRugCheck } from "api/external"
 import { useAddTokenFormModalActions } from "./AddTokenFormModal.utils"
 import { TExternalAssetWithLocation } from "utils/externalAssets"
 import { useSettingsStore } from "state/store"
@@ -44,25 +41,17 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
   const { externalInvalid, external } = useAssets()
   const { getTokenByInternalId } = useUserExternalTokenStore()
   const { degenMode } = useSettingsStore()
-  const externalAssetRegistry = useExternalAssetRegistry()
 
   const chainStored = [...external, ...externalInvalid].find(
     (chainAsset) =>
       chainAsset.externalId === asset.id &&
-      chainAsset.parachainId === asset.origin,
+      chainAsset.parachainId === asset.origin.toString(),
   )
 
   const userStored = getTokenByInternalId(chainStored?.id ?? "")
   const rugCheckIds = chainStored && !userStored ? [chainStored.id] : undefined
   const rugCheck = useExternalTokensRugCheck(rugCheckIds)
   const rugCheckData = rugCheck.tokensMap.get(chainStored?.id ?? "")
-
-  const externalMeta = !chainStored
-    ? externalAssetRegistry[asset.origin].data?.get(asset.id)
-    : null
-
-  const isWhiteListed =
-    rugCheckData?.isWhiteListed ?? externalMeta?.isWhiteListed
 
   const form = useForm<FormFields>({
     mode: "onSubmit",
@@ -113,7 +102,7 @@ export const AddTokenFormModal: FC<Props> = ({ asset, onClose }) => {
     <>
       <TokenInfoHeader
         asset={asset}
-        badge={rugCheckData?.badge || (isWhiteListed ? "warning" : "danger")}
+        internalId={chainStored?.id}
         severity={rugCheckData?.severity}
       />
       <Separator sx={{ my: 10 }} color="darkBlue401" />

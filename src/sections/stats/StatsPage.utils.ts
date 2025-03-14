@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT } from "utils/api"
 import { scaleHuman } from "utils/balance"
 import { BN_0, BN_NAN } from "utils/constants"
-import { useNewDisplayPrices } from "utils/displayAsset"
 import { useFee, useTreasuryBalances, useTVL } from "api/stats"
 import { useOmnipoolVolumes } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
@@ -13,8 +12,7 @@ import { useAccountAssets } from "api/deposits"
 import { useOmnipoolFarms } from "api/farms"
 import { useAssetsData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-
-const withoutRefresh = true
+import { useAssetsPrice } from "state/displayPrice"
 
 export type TTreasuryAsset = {
   value: string
@@ -46,25 +44,22 @@ export const useTreasuryAssets = () => {
 
   const bonds = Array.from(accountAssets?.accountBondsMap.values() ?? [])
 
-  const { data: spotPrices, isLoading: isSpotPriceLoading } =
-    useNewDisplayPrices([
-      ...bonds.map((bond) => bond.asset.id),
-      treasuryBalances?.id ?? "0",
-    ])
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
+    ...bonds.map((bond) => bond.asset.id),
+    treasuryBalances?.id ?? "0",
+  ])
 
   const isLoading =
     isAccountsAssetsLoading ||
     isAssetsDataLoading ||
     isOmnipoolAssetsLoading ||
     isPositionsLoading ||
-    isSpotPriceLoading
+    isPriceLoading
 
   const bondAssets: TTreasuryAsset[] | undefined = useMemo(() => {
-    if (spotPrices && bonds) {
+    if (!isPriceLoading && bonds) {
       return bonds.map((bond) => {
-        const spotPrice =
-          spotPrices.find((spotPrice) => spotPrice?.tokenIn === bond.asset.id)
-            ?.spotPrice ?? BN_NAN
+        const spotPrice = getAssetPrice(bond.asset.id).price
 
         const value = scaleHuman(bond.balance.total, bond.asset.decimals)
 
@@ -78,7 +73,7 @@ export const useTreasuryAssets = () => {
         }
       })
     }
-  }, [bonds, spotPrices])
+  }, [bonds, getAssetPrice, isPriceLoading])
 
   const combinedAssets = useMemo(() => {
     if (treasutyAssets && omnipoolAssets && treasuryBalances) {
@@ -123,9 +118,7 @@ export const useTreasuryAssets = () => {
 
       const treasuryAsset = map.get(treasuryBalances.id)
       const treasuryMeta = getAssetWithFallback(treasuryBalances.id)
-      const treasurySpotPrice = spotPrices?.find(
-        (spotPrice) => spotPrice?.tokenIn === treasuryBalances.id,
-      )?.spotPrice
+      const treasurySpotPrice = getAssetPrice(treasuryBalances.id).price
       const value = BN(treasuryBalances.balance).shiftedBy(
         -treasuryMeta.decimals,
       )
@@ -168,8 +161,8 @@ export const useTreasuryAssets = () => {
     omnipoolAssets,
     native.id,
     getAssetWithFallback,
-    spotPrices,
     treasuryBalances,
+    getAssetPrice,
   ])
 
   const liquidityPositions = useMemo(() => {
@@ -301,14 +294,13 @@ export const useOmnipoolAssetDetails = () => {
   const { data: tvls, isLoading: isTvlsLoading } = useTVL("all")
   const { data: fees, isLoading: isFeesLoading } = useFee("all")
 
-  const { data: spotPrices, isLoading: isSpotPricesLoading } =
-    useNewDisplayPrices(omnipoolAssetsIds, withoutRefresh)
+  const { getAssetPrice, isLoading: isPriceLoading } =
+    useAssetsPrice(omnipoolAssetsIds)
 
-  const isLoading =
-    omnipoolAssets.isLoading || isSpotPricesLoading || isTvlsLoading
+  const isLoading = omnipoolAssets.isLoading || isPriceLoading || isTvlsLoading
 
   const data = useMemo(() => {
-    if (!omnipoolAssets.data || !tvls || !spotPrices) return []
+    if (!omnipoolAssets.data || !tvls || isPriceLoading) return []
 
     const rows = omnipoolAssets.data.map((omnipoolAsset) => {
       const omnipoolAssetId = omnipoolAsset.id
@@ -317,9 +309,7 @@ export const useOmnipoolAssetDetails = () => {
 
       const meta = getAssetWithFallback(omnipoolAsset.id)
 
-      const spotPrice =
-        spotPrices.find((sp) => sp?.tokenIn === omnipoolAssetId)?.spotPrice ??
-        ""
+      const spotPrice = getAssetPrice(omnipoolAssetId).price
 
       const omnipoolAssetCap = scaleHuman(omnipoolAsset.cap, "q")
 
@@ -386,12 +376,13 @@ export const useOmnipoolAssetDetails = () => {
     getAssetWithFallback,
     native.id,
     omnipoolAssets.data,
-    spotPrices,
     tvls,
     volumes,
     isVolumeLoading,
     allFarms,
     isAllFarmsLoading,
+    getAssetPrice,
+    isPriceLoading,
   ]).sort((assetA, assetB) => {
     if (assetA.id === native.id) {
       return -1

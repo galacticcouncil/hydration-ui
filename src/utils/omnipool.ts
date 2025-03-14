@@ -5,11 +5,11 @@ import {
 import { useOmnipoolDataObserver } from "api/omnipool"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
-import { useNewDisplayPrice, useNewDisplayPrices } from "./displayAsset"
 import { scale } from "./balance"
 import { useCallback } from "react"
 import { useAssets } from "providers/assets"
 import { TOmnipoolPosition } from "api/deposits"
+import { useAssetsPrice } from "state/displayPrice"
 
 type IOptions = {
   sharesValue?: string
@@ -26,22 +26,23 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAssetIds = omnipoolAssets.data?.map((asset) => asset.id) ?? []
 
-  const hubSp = useNewDisplayPrice(hub.id)
-  const spotPrices = useNewDisplayPrices(assetsId ?? omnipoolAssetIds)
+  const { getAssetPrice, isLoading } = useAssetsPrice([
+    hub.id,
+    ...(assetsId ?? omnipoolAssetIds),
+  ])
+  const hubPrice = getAssetPrice(hub.id).price
 
   const getData = useCallback(
     (position: TOmnipoolPosition, options?: IOptions) => {
       const omnipoolAsset = omnipoolAssets.dataMap?.get(position.assetId)
 
-      if (!omnipoolAsset) return undefined
+      if (!omnipoolAsset || isLoading) return undefined
 
-      const spotPrice = spotPrices.data?.find(
-        (sp) => sp?.tokenIn === omnipoolAsset.id,
-      )?.spotPrice
+      const spotPrice = getAssetPrice(omnipoolAsset.id).price
 
       const meta = getAssetWithFallback(omnipoolAsset.id)
 
-      if (!spotPrice || !hubSp.data?.spotPrice || !meta) return undefined
+      if (!spotPrice || !meta) return undefined
 
       const [nom, denom] = position.price.map((n) => new BN(n.toString()))
       const price = nom.div(denom)
@@ -90,7 +91,7 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
         valueDisplayWithoutLrna = valueDisplay
 
         if (lrnaShifted.gt(0)) {
-          lrnaDisplay = lrnaShifted.times(hubSp.data.spotPrice)
+          lrnaDisplay = lrnaShifted.times(hubPrice)
           valueDisplay = valueDisplay.plus(lrnaDisplay)
 
           totalValueShifted = valueDisplay.div(spotPrice)
@@ -123,9 +124,10 @@ export const useLiquidityPositionData = (assetsId?: string[]) => {
     [
       getAssetWithFallback,
       hub.decimals,
-      hubSp.data?.spotPrice,
       omnipoolAssets.dataMap,
-      spotPrices.data,
+      getAssetPrice,
+      hubPrice,
+      isLoading,
     ],
   )
 

@@ -1,7 +1,7 @@
 import "./interfaces/augment-bignumber"
 import "./i18n/i18n"
 
-import React from "react"
+import React, { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "App"
 import reportWebVitals from "./reportWebVitals"
@@ -15,11 +15,13 @@ const root = createRoot(document.getElementById("root")!)
 const client = new QueryClient()
 
 root.render(
-  <QueryClientProvider client={client}>
-    <ReactQueryDevtools initialIsOpen={false} />
-    <Global styles={GlobalStyle} />
-    <App />
-  </QueryClientProvider>,
+  <StrictMode>
+    <QueryClientProvider client={client}>
+      <ReactQueryDevtools initialIsOpen={false} />
+      <Global styles={GlobalStyle} />
+      <App />
+    </QueryClientProvider>
+  </StrictMode>,
 )
 
 // If you want to start measuring performance in your app, pass a function

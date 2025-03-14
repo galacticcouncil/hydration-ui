@@ -8,8 +8,8 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { SRow } from "./CurrencyReserves.styled"
 import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
-import { useDisplayPrices } from "utils/displayAsset"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 type Props = {
   reserves: { asset_id: number; amount: string }[]
@@ -20,7 +20,7 @@ export const CurrencyReserves = ({ reserves }: Props) => {
   const { getAssetWithFallback, getAsset } = useAssets()
   const displayAsset = useDisplayAssetStore()
   const assetIds = reserves.map((reserve) => reserve.asset_id.toString())
-  const spotPrices = useDisplayPrices(assetIds)
+  const { getAssetPrice } = useAssetsPrice(assetIds)
 
   const asset = displayAsset.id ? getAsset(displayAsset.id) : undefined
 
@@ -29,20 +29,17 @@ export const CurrencyReserves = ({ reserves }: Props) => {
       reserves.map((reserve) => {
         const id = reserve.asset_id.toString()
         const meta = getAssetWithFallback(id)
-        const spotPrice = spotPrices.data?.find(
-          (spotPrice) => spotPrice?.tokenIn === id,
-        )
-
+        const spotPrice = getAssetPrice(id).price
         const balance = BigNumber(reserve.amount).shiftedBy(-meta.decimals)
 
         return {
           id,
           symbol: meta.symbol,
           balance,
-          value: balance.multipliedBy(spotPrice?.spotPrice ?? 1),
+          value: balance.multipliedBy(spotPrice),
         }
       }),
-    [reserves, getAssetWithFallback, spotPrices.data],
+    [reserves, getAssetWithFallback, getAssetPrice],
   )
 
   const totalValue = assets.reduce((t, asset) => t.plus(asset.value), BN_0)

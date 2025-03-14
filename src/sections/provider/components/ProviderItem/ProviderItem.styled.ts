@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
@@ -26,7 +27,7 @@ export const SCircleThumb = styled.div`
   border-radius: 9999px;
 `
 
-export const SItem = styled.div`
+export const SItem = styled.div<{ isDisabled?: boolean }>`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-areas: "name url" "status url";
@@ -39,9 +40,22 @@ export const SItem = styled.div`
 
   cursor: pointer;
 
+  transition: all ${theme.transitions.default};
+
+  &:hover {
+    background: rgba(${theme.rgbColors.alpha0}, 0.06);
+  }
+
   &:hover ${SCircle} {
     background: ${theme.colors.basic800};
   }
+
+  ${({ isDisabled }) =>
+    isDisabled &&
+    css`
+      pointer-events: none;
+      opacity: 0.5;
+    `}
 
   @media ${theme.viewport.gte.sm} {
     grid-template-columns: 150px 1fr 3fr;

@@ -13,16 +13,9 @@ export const SHeader = styled(SItem)`
   padding: 6px var(--modal-content-padding);
 `
 
-export const SContainer = styled.div<{ isLoading: boolean }>`
+export const SContainer = styled.div`
   margin: 0 calc(-1 * var(--modal-content-padding) + 1px);
   margin-top: 20px;
-
-  ${({ isLoading }) =>
-    isLoading &&
-    `
-      pointer-events: none;
-      opacity: 0.5;
-  `}
 `
 
 export const SSwitchContainer = styled.div`
