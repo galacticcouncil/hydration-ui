@@ -446,8 +446,11 @@ export const useBridgeToast = (toasts: ToastData[]) => {
         }
 
         if (bridge === "Wormhole" && !isHydrationSource) {
+          const url = new URL(link)
+          const hash = url.hash.split("/").slice(-1)[0]
+
           const res = await fetch(
-            `https://api.wormholescan.io/api/v1/operations?txHash=${txHash}`,
+            `https://api.wormholescan.io/api/v1/operations?txHash=${hash}`,
           )
           const data = await res.json()
 
@@ -566,7 +569,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
               //udpate a link to show tx details on wormhole
               toast.editToast(toastData.id, {
                 link: `https://wormholescan.io/#/tx/${evmTx.hash}`,
-                txHash: evmTx.hash,
                 xcm: "evm",
               })
             }
