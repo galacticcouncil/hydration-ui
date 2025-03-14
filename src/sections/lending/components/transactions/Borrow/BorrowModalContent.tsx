@@ -241,6 +241,7 @@ export const BorrowModalContent = ({
             balance: maxAmountToBorrow,
             symbol,
             iconSymbol,
+            address: poolReserve.underlyingAsset,
           },
         ]}
         symbol={symbol}
