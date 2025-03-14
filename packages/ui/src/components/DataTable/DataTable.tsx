@@ -6,10 +6,12 @@ import {
   SortingState,
   Table as TableDef,
 } from "@tanstack/react-table"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { Fragment, useCallback, useMemo } from "react"
 
 import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"
+import { Icon } from "@/components/Icon"
 import {
   Table,
   TableBody,
@@ -39,6 +41,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
       [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
     }[keyof TData][]
     className?: string
+    getIsExpandable?: (row: TData) => boolean
     renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement
     onRowClick?: (props: { row: Row<TData> }) => void
   }
@@ -59,6 +62,7 @@ export function DataTable<TData>({
   globalFilter,
   initialSorting,
   noResultsMessage,
+  getIsExpandable,
   renderSubComponent,
   onRowClick,
 }: DataTableProps<TData>) {
@@ -119,39 +123,72 @@ export function DataTable<TData>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <TableRow
-                  data-expanded={expandable ? row.getIsExpanded() : undefined}
-                  data-selected={row.getIsSelected()}
-                  onClick={onRowClick ? () => onRowClick({ row }) : undefined}
-                  sx={onRowClick && { cursor: "pointer" }}
-                >
-                  {row.getVisibleCells().map((cell) => {
-                    const { meta } = cell.getContext().cell.column.columnDef
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={meta?.className}
-                        sx={meta?.sx}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+            table.getRowModel().rows.map((row) => {
+              const isRowExpandable =
+                expandable && (getIsExpandable?.(row.original) ?? true)
+
+              return (
+                <Fragment key={row.id}>
+                  <TableRow
+                    data-expanded={
+                      isRowExpandable ? row.getIsExpanded() : undefined
+                    }
+                    data-selected={row.getIsSelected()}
+                    onClick={() => {
+                      if (isRowExpandable) {
+                        row.toggleExpanded()
+                      }
+                      onRowClick?.({ row })
+                    }}
+                    sx={{
+                      cursor:
+                        onRowClick || isRowExpandable ? "pointer" : undefined,
+                      ...(isRowExpandable ? { alignItems: "center" } : {}),
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      const { meta } = cell.getContext().cell.column.columnDef
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={meta?.className}
+                          sx={meta?.sx}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      )
+                    })}
+                    {isRowExpandable && (
+                      <TableCell>
+                        <Flex justify="center" align="center">
+                          <Icon
+                            size={18}
+                            color={getToken("icons.onSurface")}
+                            component={
+                              row.getIsExpanded() ? ChevronDown : ChevronUp
+                            }
+                          />
+                        </Flex>
                       </TableCell>
-                    )
-                  })}
-                </TableRow>
-                {expandable && renderSubComponent && row.getIsExpanded() && (
-                  <TableRow>
-                    <TableCell colSpan={table.getVisibleLeafColumns().length}>
-                      {renderSubComponent({ row })}
-                    </TableCell>
+                    )}
                   </TableRow>
-                )}
-              </Fragment>
-            ))
+                  {isRowExpandable &&
+                    renderSubComponent &&
+                    row.getIsExpanded() && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={table.getVisibleLeafColumns().length + 1}
+                        >
+                          {renderSubComponent({ row })}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                </Fragment>
+              )
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length}>
