@@ -3,7 +3,6 @@ import { Text } from "components/Typography/Text/Text"
 import { FC, useState } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_0, BN_NAN } from "utils/constants"
-import { useDisplayPrice } from "utils/displayAsset"
 import {
   SContainer,
   SInput,
@@ -15,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { Switch } from "components/Switch/Switch"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { useAssetsPrice } from "state/displayPrice"
 
 type Props = {
   onChange?: (amount: BN) => void
@@ -32,7 +32,9 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   const [amount, setAmount] = useState("")
   const [error, setError] = useState("")
   const [visible, setVisible] = useState(false)
-  const { data: displayPrice } = useDisplayPrice(NATIVE_ASSET_ID)
+  const { getAssetPrice } = useAssetsPrice([NATIVE_ASSET_ID])
+  const displayPrice = getAssetPrice(NATIVE_ASSET_ID).price
+
   const accountAssets = useAccountAssets()
 
   const asset = native
@@ -40,10 +42,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
     ? accountAssets.data?.accountAssetsMap.get(asset.id)?.balance
     : undefined
 
-  const displayValue =
-    displayPrice?.spotPrice && amount
-      ? displayPrice.spotPrice.multipliedBy(amount)
-      : BN_NAN
+  const displayValue = amount ? BN(displayPrice).multipliedBy(amount) : BN_NAN
 
   const isNativePaymentAssetFee = feePaymentAssetId === NATIVE_ASSET_ID
   const amountMax =

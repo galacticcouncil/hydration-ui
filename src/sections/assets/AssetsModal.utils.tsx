@@ -5,10 +5,10 @@ import { useTranslation } from "react-i18next"
 import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAssets } from "providers/assets"
-import { useDisplayPrices } from "utils/displayAsset"
 import BN from "bignumber.js"
 import { useAccountAssets } from "api/deposits"
 import { TBalance } from "api/balances"
+import { useAssetsPrice } from "state/displayPrice"
 
 interface useAssetsModalProps {
   onSelect?: (asset: NonNullable<TAsset>) => void
@@ -202,23 +202,21 @@ export const useAssetsData = ({
     }
   }, [data?.accountAssetsMap, isBond, withExternal])
 
-  const spotPrices = useDisplayPrices([
+  const { getAssetPrice, isLoading } = useAssetsPrice([
     ...tokensWithBalanceId,
     ...(withBonds ? bondsWithBalanceId : []),
   ])
 
   const tokens = useMemo(() => {
-    if (spotPrices.isInitialLoading) return { allowed: [], notAllowed: [] }
+    if (isLoading) return { allowed: [], notAllowed: [] }
 
     const tokensData = tokensWithBalance.map(
       ({ asset, balance: { balance } }) => {
-        const spotPrice = spotPrices.data?.find(
-          (sp) => sp?.tokenIn === asset.id,
-        )?.spotPrice
+        const spotPrice = getAssetPrice(asset.id).price
 
         const displayValue = BN(balance)
           .shiftedBy(-asset.decimals)
-          .times(spotPrice ?? 1)
+          .times(spotPrice)
           .toString()
 
         return { meta: asset, balance, displayValue }
@@ -241,26 +239,24 @@ export const useAssetsData = ({
     tokenAssets,
     external,
     search,
-    spotPrices.data,
-    spotPrices.isInitialLoading,
     stableswap,
     tokensWithBalance,
     withExternal,
+    getAssetPrice,
+    isLoading,
   ])
 
   const bonds = useMemo(() => {
-    if (spotPrices.isInitialLoading) return { allowed: [], notAllowed: [] }
+    if (isLoading) return { allowed: [], notAllowed: [] }
     const bondsData = bondsWithBalance.map(
       ({ asset, balance: { balance } }) => {
         const meta = asset as TBond
         const id = !meta.isTradable ? meta.underlyingAssetId : meta.id
-        const spotPrice = spotPrices.data?.find(
-          (sp) => sp?.tokenIn === id,
-        )?.spotPrice
+        const spotPrice = getAssetPrice(id).price
 
         const displayValue = BN(balance)
           .shiftedBy(-asset.decimals)
-          .times(spotPrice ?? 1)
+          .times(spotPrice)
           .toString()
 
         return { meta: asset, balance, displayValue }
@@ -279,8 +275,9 @@ export const useAssetsData = ({
     bondAssets,
     bondsWithBalance,
     search,
-    spotPrices,
+    getAssetPrice,
+    isLoading,
   ])
 
-  return { tokens, bonds, isLoading: spotPrices.isInitialLoading }
+  return { tokens, bonds, isLoading }
 }

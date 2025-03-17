@@ -77,7 +77,7 @@ export function WalletTransferSectionOnchain({
     ? getAssetWithFallback(accountCurrency.data)
     : undefined
 
-  const spotPrice = useSpotPrice(native.id, accountCurrencyMeta?.id)
+  const { data: spotPrice } = useSpotPrice(native.id, accountCurrencyMeta?.id)
 
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
@@ -101,11 +101,9 @@ export function WalletTransferSectionOnchain({
   const nativeDecimalsDiff =
     nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
 
-  const convertedFee = currentFee.multipliedBy(
-    spotPrice.data?.spotPrice ?? BN_1,
-  )
+  const convertedFee = currentFee.multipliedBy(spotPrice?.spotPrice ?? BN_1)
 
-  const convertedMaxFee = maxFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+  const convertedMaxFee = maxFee.multipliedBy(spotPrice?.spotPrice ?? BN_1)
 
   const balanceMaxAdjusted = balance
     .minus(convertedMaxFee.div(BN_10.pow(nativeDecimalsDiff)))
@@ -286,7 +284,7 @@ export function WalletTransferSectionOnchain({
                 <Text fs={14} color="brightBlue300" tAlign="right">
                   {t("value.tokenWithSymbol", {
                     value: insufficientFee.displayValue.multipliedBy(
-                      spotPrice.data?.spotPrice ?? BN_1,
+                      spotPrice?.spotPrice ?? BN_1,
                     ),
                     symbol: accountCurrencyMeta?.symbol,
                     numberPrefix: "+  ",
@@ -307,7 +305,7 @@ export function WalletTransferSectionOnchain({
           <Alert variant="info">
             {t("wallet.assets.transfer.warning.insufficient", {
               value: insufficientFee.displayValue.multipliedBy(
-                spotPrice.data?.spotPrice ?? BN_1,
+                spotPrice?.spotPrice ?? BN_1,
               ),
               symbol: accountCurrencyMeta?.symbol,
             })}

@@ -18,9 +18,9 @@ export const AssetTableName = ({
 
   const asset = getAsset(id)
   const getExternalMeta = useExternalTokenMeta()
-  const meta = asset?.isExternal ? getExternalMeta(id) : asset
+  const meta = asset?.isExternal ? getExternalMeta(id) ?? asset : asset
 
-  if (!asset || !meta) return null
+  if (!meta) return null
 
   return (
     <div sx={{ width: ["max-content", "inherit"] }}>
@@ -48,7 +48,7 @@ export const AssetTableName = ({
             sx={{ display: !large ? ["none", "block"] : undefined }}
             color="whiteish500"
           >
-            {asset.name}
+            {meta.name}
           </Text>
         </div>
       </div>

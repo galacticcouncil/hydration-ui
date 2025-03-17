@@ -26,7 +26,11 @@ export const ProviderResolver: React.FC<PropsWithChildren> = ({ children }) => {
     const urls = result.map(prop("url"))
     const sortedRpcList = Array.from(new Set([...urls, ...PROVIDER_URLS]))
 
-    useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+    useProviderRpcUrlStore.setState({
+      rpcUrl: bestRpc.url,
+      rpcUrlList: sortedRpcList,
+      updatedAt: Date.now(),
+    })
 
     setIsBestProviderFound(true)
   }, [])

@@ -113,7 +113,7 @@ export const Web3ConnectAccountSelect = ({
                 height={12}
               />
             )}
-            <Text fs={14} color="white">
+            <Text fs={14} color="white" truncate={[150, 300]}>
               {name}
             </Text>
             {isEvm && (
