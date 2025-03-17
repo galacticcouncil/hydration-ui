@@ -15,7 +15,6 @@ import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
-import { AssetsProvider } from "./assets"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 
 type TProviderContext = {
@@ -28,6 +27,7 @@ type TProviderContext = {
   isLoaded: boolean
   poolService: PoolService
   tradeRouter: TradeRouter
+  timestamp: string
 }
 
 const defaultData: TProviderContext = {
@@ -40,6 +40,7 @@ const defaultData: TProviderContext = {
   isLoaded: false,
   poolService: {} as TProviderContext["poolService"],
   tradeRouter: {} as TradeRouter,
+  timestamp: "",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -105,6 +106,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         isLoaded: providerData.api.isConnected,
         endpoint: providerData.endpoint,
         dataEnv: providerData.dataEnv,
+        timestamp: providerData.timestamp,
       }
     }
 
@@ -120,7 +122,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ProviderContext.Provider value={value}>
-      <AssetsProvider>{children}</AssetsProvider>
+      {children}
     </ProviderContext.Provider>
   )
 }

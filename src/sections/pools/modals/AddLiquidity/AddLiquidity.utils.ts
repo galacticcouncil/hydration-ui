@@ -12,7 +12,6 @@ import {
 } from "api/omnipool"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
-import { useDisplayPrice } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -78,8 +77,6 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const { pool } = usePoolData()
   const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
-  const { data: spotPrice } = useDisplayPrice(assetId)
-
   const { data: omnipoolFee } = useOmnipoolFee()
 
   const { data: accountAssets } = useAccountAssets()
@@ -104,7 +101,6 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   return {
     poolShare,
     sharesToGet,
-    spotPrice,
     omnipoolFee,
     assetMeta: pool.meta,
     assetBalance,

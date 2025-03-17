@@ -399,6 +399,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         return false
       },
       enabled: isLoaded,
+      notifyOnChangeProps: [],
     })),
   })
 }
@@ -579,6 +580,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
       },
       enabled: (!!toastData.id && !!toastData.link) || !isLoaded,
       refetchInterval: toastData.xcm === "evm" ? 60000 : 30000,
+      notifyOnChangeProps: [],
     })),
   })
 }

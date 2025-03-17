@@ -8,7 +8,6 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Separator } from "components/Separator/Separator"
 import { useMemo, useState } from "react"
-import { useDisplayPrices } from "utils/displayAsset"
 import { LiquidityPositionRemoveLiquidity } from "sections/pools/pool/positions/LiquidityPosition"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -38,15 +37,12 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
 
   const [assetMetaA, assetMetaB] = assetsMeta
 
-  const spotPrices = useDisplayPrices(assetsMeta.map((asset) => asset.id))
-
   const myBalance = useMemo(() => {
     if (
       pool.shareTokenIssuance?.myPoolShare &&
       pool.tvlDisplay &&
       assetAReserve &&
-      assetBReserve &&
-      spotPrices.data
+      assetBReserve
     ) {
       const myBalanceA = pool.shareTokenIssuance.myPoolShare
         .times(assetAReserve.balance)
@@ -72,7 +68,6 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     assetMetaB.decimals,
     pool.shareTokenIssuance?.myPoolShare,
     pool.tvlDisplay,
-    spotPrices.data,
   ])
 
   if (!pool.shareTokenIssuance || !pool.shareTokenIssuance.myPoolShare)

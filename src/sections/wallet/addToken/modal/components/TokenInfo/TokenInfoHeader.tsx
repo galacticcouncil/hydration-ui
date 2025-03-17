@@ -1,6 +1,10 @@
 import { AssetBadge } from "@galacticcouncil/ui"
 import { createComponent } from "@lit-labs/react"
-import { ExternalAssetBadgeVariant, RugSeverityLevel } from "api/external"
+import {
+  ExternalAssetBadgeVariant,
+  RugSeverityLevel,
+  useExternalWhitelist,
+} from "api/external"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import * as React from "react"
@@ -18,6 +22,7 @@ export const UigcAssetBadge = createComponent({
 
 export type TokenHeaderProps = {
   asset: TExternalAsset
+  internalId?: string
   severity?: RugSeverityLevel
   badge?: ExternalAssetBadgeVariant
 }
@@ -25,9 +30,14 @@ export type TokenHeaderProps = {
 export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
   asset,
   severity,
-  badge,
+  internalId,
 }) => {
   const { t } = useTranslation()
+  const { data: whitelist } = useExternalWhitelist()
+  const badge =
+    asset.isWhiteListed || whitelist?.includes(internalId ?? "")
+      ? "warning"
+      : "danger"
 
   const isHighSeverity = severity === "high"
 

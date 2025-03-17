@@ -77,7 +77,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   const { formState, reset } = form
 
-  const spotPrice = useSpotPrice(assetA.id, assetB.id)
+  const { data: spotPrice } = useSpotPrice(assetA.id, assetB.id)
   const { data: xykPools } = useXYKSDKPools()
   const [assetAReserve, assetBReserve] =
     xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
@@ -282,7 +282,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
         <TokensConversion
           firstValue={{ amount: BN_1, symbol: assetValues.assetA.meta.symbol }}
           secondValue={{
-            amount: spotPrice.data?.spotPrice ?? BN_0,
+            amount: spotPrice?.spotPrice ? BN(spotPrice.spotPrice) : BN_0,
             symbol: assetValues.assetB.meta.symbol,
           }}
         />

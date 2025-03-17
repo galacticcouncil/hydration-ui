@@ -1,7 +1,7 @@
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { RpcProvider } from "providers/rpcProvider"
-import { FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, lazy } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
 import { theme } from "theme"
 import * as React from "react"
@@ -9,6 +9,7 @@ import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
+import { AssetsProvider } from "providers/assets"
 
 const AppsContextProvider = createComponent({
   tagName: "gc-context-provider",
@@ -16,24 +17,58 @@ const AppsContextProvider = createComponent({
   react: React,
 })
 
+const ReferralsConnect = lazy(async () => ({
+  default: (await import("sections/referrals/ReferralsConnect"))
+    .ReferralsConnect,
+}))
+
+const Transactions = lazy(async () => ({
+  default: (await import("sections/transaction/Transactions")).Transactions,
+}))
+
+const Web3Connect = lazy(async () => ({
+  default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
+}))
+
+const DepositManager = lazy(async () => ({
+  default: (await import("sections/deposit/DepositManager")).DepositManager,
+}))
+
+const QuerySubscriptions = lazy(async () => ({
+  default: (await import("api/subscriptions")).QuerySubscriptions,
+}))
+
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
     <MigrationProvider>
       <TooltipProvider>
         <ProviderResolver>
-          <RpcProvider>
-            <ToastProvider>
+          <AssetsProvider>
+            <RpcProvider>
+              <ToastProvider />
               <SkeletonTheme
                 baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
                 highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
                 borderRadius={4}
               >
-                <AppsContextProvider>{children}</AppsContextProvider>
+                <AppsContextProvider>
+                  {children} <Services />
+                </AppsContextProvider>
               </SkeletonTheme>
-            </ToastProvider>
-          </RpcProvider>
+            </RpcProvider>
+          </AssetsProvider>
         </ProviderResolver>
       </TooltipProvider>
     </MigrationProvider>
   )
 }
+
+const Services = () => (
+  <React.Suspense>
+    <Web3Connect />
+    <Transactions />
+    <ReferralsConnect />
+    <QuerySubscriptions />
+    <DepositManager />
+  </React.Suspense>
+)

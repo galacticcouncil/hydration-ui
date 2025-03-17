@@ -1,9 +1,9 @@
 import BN from "bignumber.js"
-import { BN_0, BN_1 } from "utils/constants"
-import { useDisplayPrices } from "utils/displayAsset"
+import { BN_0 } from "utils/constants"
 import { HeaderTotalData } from "./PoolsHeaderTotal"
 import { useAssets } from "providers/assets"
 import { useStableSDKPools } from "api/stableswap"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const StablePoolsTotal = () => {
   const { getAssetWithFallback } = useAssets()
@@ -28,15 +28,16 @@ export const StablePoolsTotal = () => {
       return memo
     }, {}) ?? {}
 
-  const spotPrices = useDisplayPrices(Object.keys(totalBalances))
-  const isLoading = isPoolLoading || spotPrices.isInitialLoading
-  const total = !spotPrices.isInitialLoading
+  const { getAssetPrice, isLoading: isLoadingPrices } = useAssetsPrice(
+    Object.keys(totalBalances),
+  )
+
+  const isLoading = isPoolLoading || isLoadingPrices
+  const total = !isLoadingPrices
     ? Object.entries(totalBalances).reduce((memo, totalBalance) => {
         const [assetId, balance] = totalBalance
 
-        const spotPrice =
-          spotPrices.data?.find((spotPrices) => spotPrices?.tokenIn === assetId)
-            ?.spotPrice ?? BN_1
+        const spotPrice = getAssetPrice(assetId).price
 
         const meta = getAssetWithFallback(assetId)
 

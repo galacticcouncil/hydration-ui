@@ -3,11 +3,12 @@ import {
   ReactLocation,
   Router,
 } from "@tanstack/react-location"
-import { lazy, Suspense, useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { routes } from "./routes"
 import { Page } from "components/Layout/Page/Page"
 
 import "unfonts.css"
+import { AppProviders } from "components/AppProviders/AppProviders"
 
 /**
  * Vite Preload Error Handling
@@ -16,10 +17,6 @@ import "unfonts.css"
 window.addEventListener("vite:preloadError", (event) => {
   window.location.reload()
 })
-
-const AppProviders = lazy(async () => ({
-  default: (await import("components/AppProviders/AppProviders")).AppProviders,
-}))
 
 const history = createBrowserHistory()
 const location = new ReactLocation({ history })
