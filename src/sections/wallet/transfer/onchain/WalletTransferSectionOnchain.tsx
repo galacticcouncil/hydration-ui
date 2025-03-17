@@ -290,7 +290,6 @@ export function WalletTransferSectionOnchain({
         )}
         <div>
           <SummaryRow
-            withSeparator={!!healthFactorChange}
             label={t("wallet.assets.transfer.transaction_cost")}
             content={
               insufficientFee ? (
