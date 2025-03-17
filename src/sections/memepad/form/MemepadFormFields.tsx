@@ -163,7 +163,9 @@ export const MemepadFormFields: FC<MemepadFormFieldsProps> = ({ form }) => {
           <MemepadTokenPrice
             label={t("memepad.form.initialTokenPrice")}
             symbol={symbol}
-            dotPrice={spotPrice?.spotPrice}
+            dotPrice={
+              spotPrice?.spotPrice ? BN(spotPrice.spotPrice) : undefined
+            }
             xykPoolSupply={BN(xykPoolSupply)}
             allocatedSupply={BN(allocatedSupply)}
           />

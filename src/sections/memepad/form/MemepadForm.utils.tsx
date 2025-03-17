@@ -7,7 +7,6 @@ import {
   assethub,
   assethubNativeToken,
   CreateTokenValues,
-  useAssetHubAssetRegistry,
   useAssetHubNativeBalance,
   useCreateAssetHubToken,
   useGetNextAssetHubId,
@@ -40,6 +39,8 @@ import { noWhitespace, positive, required } from "utils/validators"
 import { z } from "zod"
 import { MemepadFormFields } from "./MemepadFormFields"
 import { useAssets } from "providers/assets"
+import { useExternalAssetsMetadata } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const MEMEPAD_XCM_RELAY_CHAIN = "polkadot"
 export const MEMEPAD_XCM_SRC_CHAIN = "assethub"
@@ -82,11 +83,14 @@ export const useMemepadForm = ({
   const { isLoaded } = useRpcProvider()
   const { getAsset } = useAssets()
 
-  const { data: ahRegistry } = useAssetHubAssetRegistry()
   const { data: fees } = useMemepadEstimatedFees()
 
+  const ahRegistry = useExternalAssetsMetadata(
+    useShallow((state) => state.chains?.[assethub.parachainId.toString()]),
+  )
+
   const { symbols, names } = useMemo(() => {
-    const assets = ahRegistry?.size ? [...ahRegistry.values()] : []
+    const assets = ahRegistry ?? []
     return {
       names: assets.map((asset) => asset.name.toLowerCase()),
       symbols: assets.map((asset) => asset.symbol.toLowerCase()),
@@ -431,8 +435,12 @@ export const useMemepadEstimatedFees = (
     HYDRA_DOT_ASSET_ID,
   )
 
-  const usdtDotSpotPrice = dotSpotPrice?.spotPrice ?? BN_NAN
-  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice ?? BN_NAN
+  const usdtDotSpotPrice = dotSpotPrice?.spotPrice
+    ? BN(dotSpotPrice.spotPrice)
+    : BN_NAN
+  const hydraFeeSpotPrice = feeSpotPrice?.spotPrice
+    ? BN(feeSpotPrice.spotPrice)
+    : BN_NAN
 
   const address = account?.address || HYDRATION_PARACHAIN_ADDRESS
 

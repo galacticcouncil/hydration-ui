@@ -8,7 +8,7 @@ import WarningIcon from "assets/icons/WarningIcon.svg?react"
 import WarningIconRed from "assets/icons/WarningIconRed.svg?react"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
-import { Fragment, useCallback, useMemo } from "react"
+import { Fragment, useMemo } from "react"
 import {
   TExternalAsset,
   TRegisteredAsset,
@@ -22,6 +22,8 @@ import { pendulum, usePendulumAssetRegistry } from "./pendulum"
 import { usePolkadotRegistry } from "./polkadot"
 import { useAssets } from "providers/assets"
 import BigNumber from "bignumber.js"
+import { useExternalAssetsMetadata } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export { assethub, pendulum }
 
@@ -90,19 +92,9 @@ export const useExternalWhitelist = () => {
 /**
  * Used for fetching tokens from supported parachains
  */
-export const useExternalAssetRegistry = (enabled?: boolean) => {
-  const { isLoaded } = useRpcProvider()
-
-  const queryEnabled =
-    typeof enabled === "boolean" ? enabled && isLoaded : isLoaded
-
-  const assethubRegistry = useAssetHubAssetRegistry(queryEnabled)
-  const pendulumRegistry = usePendulumAssetRegistry(queryEnabled)
-
-  return {
-    [assethub.parachainId]: assethubRegistry,
-    [pendulum.parachainId]: pendulumRegistry,
-  }
+export const useExternalAssetRegistry = () => {
+  useAssetHubAssetRegistry()
+  usePendulumAssetRegistry()
 }
 
 export const useParachainAmount = (id: string) => {
@@ -146,8 +138,9 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
   const { getTokenByInternalId, isRiskConsentAdded } =
     useUserExternalTokenStore()
 
-  const assetRegistry = useExternalAssetRegistry()
-  const { getIsWhiteListed } = useExternalAssetsWhiteList()
+  const getExternalAssetMetadata = useExternalAssetsMetadata(
+    useShallow((state) => state.getExternalAssetMetadata),
+  )
 
   const { data: issuanceData } = useTotalIssuances()
 
@@ -178,63 +171,59 @@ export const useExternalTokensRugCheck = (ids?: string[]) => {
         const storedToken = getTokenByInternalId(tokenId)
         const shouldIgnoreRugCheck = isRiskConsentAdded(internalToken.id)
 
-        const externalAssetRegistry = internalToken.parachainId
-          ? assetRegistry[+internalToken.parachainId]
-          : null
+        if (internalToken.parachainId && internalToken.externalId) {
+          const externalToken = getExternalAssetMetadata(
+            internalToken.parachainId,
+            internalToken.externalId,
+          )
 
-        const externalToken = externalAssetRegistry?.data?.get(
-          internalToken.externalId ?? "",
-        )
+          if (externalToken) {
+            const issuance = issuanceData.get(tokenId)
 
-        const issuance = issuanceData.get(tokenId)
+            const totalSupplyExternal =
+              !shouldIgnoreRugCheck && externalToken.supply
+                ? externalToken.supply
+                : null
 
-        if (!externalToken) return null
+            const totalSupplyInternal =
+              !shouldIgnoreRugCheck && issuance ? issuance.toString() : null
 
-        const totalSupplyExternal =
-          !shouldIgnoreRugCheck && externalToken.supply
-            ? externalToken.supply
-            : null
+            const warnings = createRugWarningList({
+              totalSupplyExternal,
+              totalSupplyInternal,
+              storedToken,
+              externalToken,
+            })
 
-        const totalSupplyInternal =
-          !shouldIgnoreRugCheck && issuance ? issuance.toString() : null
+            const severity = warnings.reduce((acc, { severity }) => {
+              return RUG_SEVERITY_LEVELS.indexOf(severity) >
+                RUG_SEVERITY_LEVELS.indexOf(acc)
+                ? severity
+                : acc
+            }, "low" as RugSeverityLevel)
 
-        const warnings = createRugWarningList({
-          totalSupplyExternal,
-          totalSupplyInternal,
-          storedToken,
-          externalToken,
-        })
-
-        const severity = warnings.reduce((acc, { severity }) => {
-          return RUG_SEVERITY_LEVELS.indexOf(severity) >
-            RUG_SEVERITY_LEVELS.indexOf(acc)
-            ? severity
-            : acc
-        }, "low" as RugSeverityLevel)
-
-        const { isWhiteListed, badge } = getIsWhiteListed(internalToken.id)
-
-        return {
-          externalToken,
-          totalSupplyExternal,
-          internalToken,
-          totalSupplyInternal,
-          storedToken,
-          warnings,
-          severity,
-          badge,
-          isWhiteListed,
+            return {
+              externalToken,
+              totalSupplyExternal,
+              internalToken,
+              totalSupplyInternal,
+              storedToken,
+              warnings,
+              severity,
+            }
+          }
         }
+
+        return null
       })
       .filter(isNotNil)
   }, [
-    assetRegistry,
     getAssetWithFallback,
-    getIsWhiteListed,
     getTokenByInternalId,
     internalIds,
     isRiskConsentAdded,
     issuanceData,
+    getExternalAssetMetadata,
   ])
 
   const tokensMap = useMemo(() => {
@@ -302,51 +291,3 @@ const createRugWarningList = ({
 }
 
 export type ExternalAssetBadgeVariant = "warning" | "danger"
-
-export const useExternalAssetsWhiteList = () => {
-  const { isExternal, getAsset } = useAssets()
-  const { isLoaded } = useRpcProvider()
-  const assetRegistry = useExternalAssetRegistry()
-  const { data: whitelist } = useExternalWhitelist()
-
-  const getIsWhiteListed = useCallback(
-    (assetId: string) => {
-      const asset = assetId ? getAsset(assetId) : undefined
-
-      if (isLoaded && asset && isExternal(asset)) {
-        const externalAsset = asset.parachainId
-          ? assetRegistry[+asset.parachainId]?.data?.get(asset.externalId ?? "")
-          : null
-
-        const isManuallyWhiteListed = !!whitelist?.includes(asset.id)
-        const isWhiteListed =
-          isManuallyWhiteListed ||
-          asset?.isWhiteListed ||
-          externalAsset?.isWhiteListed ||
-          false
-
-        const badge: ExternalAssetBadgeVariant = isWhiteListed
-          ? "warning"
-          : "danger"
-
-        return {
-          asset,
-          isWhiteListed,
-          badge,
-        }
-      }
-
-      return {
-        asset: null,
-        isWhiteListed: false,
-        badge: "" as ExternalAssetBadgeVariant,
-      }
-    },
-    [getAsset, isLoaded, isExternal, assetRegistry, whitelist],
-  )
-
-  return {
-    whitelist,
-    getIsWhiteListed,
-  }
-}
