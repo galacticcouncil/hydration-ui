@@ -16,6 +16,7 @@ import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
 import { PolkadotEvmRpcProvider } from "utils/provider"
+import { useShallow } from "hooks/useShallow"
 
 type TProviderContext = {
   api: ApiPromise
@@ -48,7 +49,8 @@ const ProviderContext = createContext<TProviderContext>(defaultData)
 export const useRpcProvider = () => useContext(ProviderContext)
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
-  const { assets } = useAssetRegistry.getState()
+  const assets = useAssetRegistry(useShallow((state) => state.assets))
+
   const isAssets = !!assets.length
   const { data: providerData } = useProviderData({
     shouldRefetchOnRpcChange: true,
