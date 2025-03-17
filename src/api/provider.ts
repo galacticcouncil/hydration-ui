@@ -434,11 +434,11 @@ export const useProviderData = (
 
 export const useRefetchProviderData = () => {
   const queryClient = useQueryClient()
-  const { rpcUrlListKey } = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return () => {
     queryClient.invalidateQueries(QUERY_KEYS.provider)
-    queryClient.invalidateQueries(QUERY_KEYS.assets(rpcUrlListKey))
+    queryClient.invalidateQueries(QUERY_KEYS.assets(dataEnv))
   }
 }
 
