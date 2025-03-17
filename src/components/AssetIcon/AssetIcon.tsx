@@ -155,14 +155,14 @@ export const AssetLogo = ({ id }: { id?: string }) => {
           css={{ "& uigc-logo-chain": { display: "none" } }}
           ref={(el) => {
             el &&
-              ethereumChain.chainId &&
+              ethereumChain?.chainId &&
               el.setAttribute("chainOrigin", ethereumChain.chainId)
             el && el.setAttribute("fit", "")
           }}
           ecosystem="ethereum"
-          asset={ethereumAsset.key}
-          chain={ethereumChain.chainId}
-          chainOrigin={ethereumChain.chainId}
+          asset={ethereumAsset?.key}
+          chain={ethereumChain?.chainId}
+          chainOrigin={ethereumChain?.chainId}
         >
           {badgeVariant && (
             <UigcAssetBadge
