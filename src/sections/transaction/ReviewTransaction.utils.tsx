@@ -43,7 +43,7 @@ import {
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useIsTestnet } from "api/provider"
+import { useActiveRpcUrlList } from "api/provider"
 import { Contract } from "ethers"
 import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
@@ -241,7 +241,7 @@ export const useSendEvmTransactionMutation = (
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const { account: evmAccount } = useEvmAccount()
-  const isTestnet = useIsTestnet()
+  const { isTestnet } = useActiveRpcUrlList()
 
   const isMounted = useMountedState()
 
