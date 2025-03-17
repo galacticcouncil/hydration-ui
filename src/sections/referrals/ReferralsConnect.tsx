@@ -31,14 +31,14 @@ export const ReferralsConnect = () => {
 
   const activeReferralCode = storedReferralCode ?? queryParamReferralCode
 
-  const referrer = useUserReferrer(account?.address)
-  const isNoReferrer = referrer.data === null
+  const { data: referrer } = useUserReferrer(account?.address)
+  const isNoReferrer = referrer === null
 
-  const codes = useReferralCodes(
+  const { data: codes, isInitialLoading } = useReferralCodes(
     isNoReferrer && activeReferralCode ? "all" : undefined,
   )
 
-  const isLoadedCodes = isNoReferrer ? !codes.isInitialLoading : false
+  const isLoadedCodes = isNoReferrer ? !isInitialLoading : false
 
   useEffect(() => {
     // reset displaying referral toasts when switching accounts
@@ -59,7 +59,7 @@ export const ReferralsConnect = () => {
       if (activeReferralCode && !referralStore.displayed) {
         const state = useReferralCodesStore.getState()
 
-        const isValidCode = codes.data?.find(
+        const isValidCode = codes?.find(
           (code) => code?.referralCode === activeReferralCode,
         )
         referralStore.display()
@@ -108,7 +108,7 @@ export const ReferralsConnect = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    codes.data,
+    codes,
     queryParamReferralCode,
     account?.address,
     isLoadedCodes,

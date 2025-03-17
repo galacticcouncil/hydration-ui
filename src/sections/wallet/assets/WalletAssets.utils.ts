@@ -4,14 +4,12 @@ import { useMemo } from "react"
 import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosition.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { BN_0, BN_NAN } from "utils/constants"
-import {
-  useDisplayShareTokenPrice,
-  useNewDisplayPrices,
-} from "utils/displayAsset"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useUserBorrowSummary } from "api/borrow"
+import { useAssetsPrice } from "state/displayPrice"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -67,7 +65,7 @@ export const useWalletAssetsTotals = ({
     [balances?.accountShareTokensMap],
   )
 
-  const stableswapSpotPrices = useNewDisplayPrices(
+  const { getAssetPrice, isLoading: isLoadingPrices } = useAssetsPrice(
     stableswaps.map((stableswap) => stableswap.asset.id),
   )
 
@@ -96,17 +94,13 @@ export const useWalletAssetsTotals = ({
   )
 
   const stableswapsTotal = useMemo(() => {
-    if (!stableswapSpotPrices.data) return "0"
-
     return stableswaps
       .reduce((acc, stableswap) => {
         const balance = BigNumber(stableswap.balance.freeBalance).shiftedBy(
           -stableswap.asset.decimals,
         )
 
-        const spotPrice = stableswapSpotPrices.data?.find(
-          (spotPrice) => spotPrice?.tokenIn === stableswap.asset.id,
-        )?.spotPrice
+        const spotPrice = getAssetPrice(stableswap.asset.id).price
 
         if (spotPrice !== undefined) {
           const displayValue = balance.times(spotPrice)
@@ -117,7 +111,7 @@ export const useWalletAssetsTotals = ({
         return acc
       }, BN_0)
       .toString()
-  }, [stableswapSpotPrices.data, stableswaps])
+  }, [getAssetPrice, stableswaps])
 
   const xykTotal = useMemo(() => {
     if (!shareTokenBalances || !spotPrices.data) return BN_NAN
@@ -169,7 +163,7 @@ export const useWalletAssetsTotals = ({
     farmsTotal.isLoading ||
     isAccountAssetsLoading ||
     spotPrices.isInitialLoading ||
-    stableswapSpotPrices.isInitialLoading
+    isLoadingPrices
 
   return {
     assetsTotal,

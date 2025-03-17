@@ -23,10 +23,10 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { Transaction } from "./transactions/Transactions.utils"
-import { useDisplayPrice } from "utils/displayAsset"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 export type BondTableItem = {
   assetId: string
@@ -233,11 +233,12 @@ export const useActiveBondsTable = (data: BondTableItem[], config: Config) => {
 const BondBalance = ({ bond }: { bond: BondTableItem }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { getAssetPrice } = useAssetsPrice([bond.bondId])
+  const price = getAssetPrice(bond.bondId).price
 
-  const displayPrice = useDisplayPrice(bond.bondId)
   const usdValue =
-    displayPrice.data?.spotPrice.isPositive() && bond.balanceHuman
-      ? displayPrice.data?.spotPrice.times(bond.balanceHuman)
+    BN(price).isPositive() && bond.balanceHuman
+      ? BN(price).times(bond.balanceHuman)
       : undefined
 
   return (
