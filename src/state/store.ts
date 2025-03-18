@@ -13,7 +13,6 @@ import { Asset } from "@galacticcouncil/sdk"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain } from "@galacticcouncil/xcm-core"
-import { HexString } from "polkadot-api"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -409,12 +408,12 @@ const metadataStorage: StateStorage = {
 
 export const useApiMetadata = create(
   persist<{
-    metadata: Record<string, HexString> | undefined
-    setMetadata: (specVersion: string, metadata: HexString) => void
+    metadata: Record<string, `0x${string}`> | undefined
+    setMetadata: (specVersion: string, metadata: `0x${string}`) => void
   }>(
     (set) => ({
       metadata: {},
-      setMetadata: (specVersion: string, metadata: HexString) => {
+      setMetadata: (specVersion: string, metadata: `0x${string}`) => {
         set((state) => ({
           ...state,
           metadata: { [specVersion]: metadata },

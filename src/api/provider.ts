@@ -341,7 +341,7 @@ export const useProviderData = (
   { shouldRefetchOnRpcChange } = { shouldRefetchOnRpcChange: false },
 ) => {
   const queryClient = useQueryClient()
-
+  const { metadata: storedMetadata } = useApiMetadata()
   const [enabled, setEnabled] = useState(true)
 
   useEffect(() => {

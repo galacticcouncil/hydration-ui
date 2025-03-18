@@ -2662,6 +2662,22 @@
   dependencies:
     "@galacticcouncil/xcm-core" "^6.3.0"
 
+"@galacticcouncil/xcm-core@6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.5.0.tgz#67c55af15d548d492f6e1caa6e5e06772d2dcc10"
+  integrity sha512-5GzgXG9lsTxsJC227/H5lhJM7AAavsnBuC0kFyqxv6j8gk8/x2oggjvL6qH5y1BvpVdMg6RhwBjQai5uwTh2oA==
+  dependencies:
+    "@noble/hashes" "^1.6.1"
+    "@wormhole-foundation/sdk-base" "^1.2.0"
+    "@wormhole-foundation/sdk-connect" "^1.2.0"
+    "@wormhole-foundation/sdk-definitions" "^1.2.0"
+    "@wormhole-foundation/sdk-solana" "^1.2.0"
+    "@wormhole-foundation/sdk-solana-tokenbridge" "^1.2.0"
+    big.js "^6.2.1"
+    bigint-buffer "^1.1.5"
+    buffer "^6.0.3"
+    lru-cache "^11.0.0"
+
 "@galacticcouncil/xcm-core@^6.3.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.3.0.tgz#53791cddb4e512059b3874f205dfc194b5d79fef"
