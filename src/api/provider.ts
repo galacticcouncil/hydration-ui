@@ -145,13 +145,21 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
-export const getProviderDataEnv = (rpcUrl: string) => {
-  const provider = PROVIDERS.find((provider) => provider.url === rpcUrl)
-  return provider?.dataEnv ?? "mainnet"
+const getDefaultDataEnv = (): TDataEnv => {
+  const env = import.meta.env.VITE_ENV
+  if (env === "production") return "mainnet"
+  return "testnet"
 }
 
-export const isTestnetRpcUrl = (url: string) =>
-  PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
+export const getProviderDataEnv = (rpcUrl: string) => {
+  const provider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  return provider ? provider.dataEnv : getDefaultDataEnv()
+}
+
+export const isTestnetRpcUrl = (rpcUrl: string) => {
+  const dataEnv = getProviderDataEnv(rpcUrl)
+  return dataEnv === "testnet"
+}
 
 export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
@@ -475,8 +483,7 @@ export const useActiveProvider = (): ProviderProps => {
       indexerUrl: import.meta.env.VITE_INDEXER_URL,
       squidUrl: import.meta.env.VITE_SQUID_URL,
       env: import.meta.env.VITE_ENV,
-      dataEnv:
-        import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet",
+      dataEnv: getDefaultDataEnv(),
     }
   )
 }
