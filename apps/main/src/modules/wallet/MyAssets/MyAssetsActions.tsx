@@ -6,13 +6,19 @@ import {
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { FC, useState } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const MyAssetsActions: FC = () => {
-  const { t } = useTranslation("wallet")
+type Props = {
+  readonly showAllAssets: boolean
+  readonly onToggleShowAllAssets: () => void
+}
 
-  const [showAllAssets, setShowAllAssets] = useState(false)
+export const MyAssetsActions: FC<Props> = ({
+  showAllAssets,
+  onToggleShowAllAssets,
+}) => {
+  const { t } = useTranslation("wallet")
 
   return (
     <Flex gap={16} align="center">
@@ -23,7 +29,7 @@ export const MyAssetsActions: FC = () => {
         <ToggleLabel>{t("myAssets.header.toggle")}</ToggleLabel>
         <Toggle
           checked={showAllAssets}
-          onCheckedChange={() => setShowAllAssets(!showAllAssets)}
+          onCheckedChange={onToggleShowAllAssets}
         />
       </ToggleRoot>
     </Flex>

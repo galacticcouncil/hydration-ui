@@ -1,4 +1,5 @@
 import {
+  Modal,
   TableRowAction,
   TableRowActionMobile,
   Text,
@@ -120,13 +121,13 @@ export const useMyLiquidityColumns = () => {
                 currentValue={row.original.currentValue}
               />
             </TableRowActionMobile>
-            <LiquidityDetailMobileModal
-              assetId={row.original.assetId}
-              currentValue={row.original.currentValue}
-              positions={row.original.positions}
-              isOpen={isDetailOpen}
-              onClose={() => setIsDetailOpen(false)}
-            />
+            <Modal open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+              <LiquidityDetailMobileModal
+                assetId={row.original.assetId}
+                currentValue={row.original.currentValue}
+                positions={row.original.positions}
+              />
+            </Modal>
           </>
         )
       },

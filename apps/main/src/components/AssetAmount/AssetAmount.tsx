@@ -27,8 +27,10 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
         pl={4}
         color={getToken("text.high")}
       >
-        {t("number", { value: scaleHuman(amount, asset.decimals) })}{" "}
-        {asset.symbol}{" "}
+        {t("currency", {
+          value: scaleHuman(amount, asset.decimals),
+          symbol: asset.symbol,
+        })}{" "}
         {isBond(asset) && asset.name.replace("HDX Bond ", "").slice(3)}
       </Text>
     </Flex>

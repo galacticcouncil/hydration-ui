@@ -1,4 +1,5 @@
 import { Skeleton, Text } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import React from "react"
 import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
@@ -29,7 +30,7 @@ export const AssetPrice = ({
 
 export const useDisplayAssetPrice = (
   assetId: string,
-  value: number,
+  value: string | number,
   compact?: boolean,
 ) => {
   const { t } = useTranslation()
@@ -42,7 +43,7 @@ export const useDisplayAssetPrice = (
 
   return [
     t(compact ? "currency.compact" : "currency", {
-      value: value * Number(price),
+      value: new Big(value || "0").times(price || "0").toString(),
       ...(isDollar ? {} : { currency: symbol }),
     }),
     { isLoading },

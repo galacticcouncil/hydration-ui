@@ -3,6 +3,7 @@ import {
   Amount,
   Flex,
   Icon,
+  Modal,
   TableRowAction,
   TableRowActionMobile,
 } from "@galacticcouncil/ui/components"
@@ -17,14 +18,24 @@ import {
   AssetLabelFullMobile,
   useDisplayAssetPrice,
 } from "@/components"
+import { AssetDetailMobileAction } from "@/modules/wallet/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModal } from "@/modules/wallet/MyAssets/AssetDetailMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
+import { TransferPositionModal } from "@/modules/wallet/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
 import { TAssetStored } from "@/states/assetRegistry"
 
+export enum MyAssetsTableColumn {
+  Asset = "asset",
+  Total = "total",
+  Transferable = "transferable",
+  Staking = "staking",
+  Actions = "actions",
+}
+
 export type MyAsset = TAssetStored & {
-  readonly total: number
-  readonly transferable: number
+  readonly total: string
+  readonly transferable: string
   readonly canStake: boolean
 }
 
@@ -37,6 +48,7 @@ export const useMyAssetsColumns = () => {
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
+      id: MyAssetsTableColumn.Asset,
       enableSorting: false,
       header: t("common:asset"),
       cell: ({ row }) => {
@@ -47,6 +59,7 @@ export const useMyAssetsColumns = () => {
     })
 
     const totalColumn = columnHelper.accessor("total", {
+      id: MyAssetsTableColumn.Total,
       header: t("myAssets.header.total"),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -54,11 +67,19 @@ export const useMyAssetsColumns = () => {
           row.original.total,
         )
 
-        return <Amount value={row.original.total} displayValue={displayPrice} />
+        return (
+          <Amount
+            value={t("common:number", {
+              value: row.original.total,
+            })}
+            displayValue={displayPrice}
+          />
+        )
       },
     })
 
     const transferableColumn = columnHelper.accessor("transferable", {
+      id: MyAssetsTableColumn.Transferable,
       header: t("myAssets.header.transferable"),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -68,7 +89,9 @@ export const useMyAssetsColumns = () => {
 
         return (
           <Amount
-            value={row.original.transferable}
+            value={t("common:number", {
+              value: row.original.transferable,
+            })}
             displayValue={displayPrice}
           />
         )
@@ -76,13 +99,14 @@ export const useMyAssetsColumns = () => {
     })
 
     const stakingColumn = columnHelper.display({
-      id: "staking",
+      id: MyAssetsTableColumn.Staking,
       cell: ({ row }) => {
         return <AssetDetailStaking asset={row.original} />
       },
     })
 
     const actionsColumn = columnHelper.display({
+      id: MyAssetsTableColumn.Actions,
       header: t("common:actions"),
       meta: {
         sx: {
@@ -124,7 +148,12 @@ export const useMyAssetsColumns = () => {
         },
       },
       cell: function Cell({ row }) {
-        const [isDetailOpen, setIsDetailOpen] = useState(false)
+        type DetailState =
+          | "closed"
+          | "open"
+          | `action:${AssetDetailMobileAction}`
+
+        const [detailState, setDetailState] = useState<DetailState>("closed")
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
@@ -132,18 +161,32 @@ export const useMyAssetsColumns = () => {
 
         return (
           <>
-            <TableRowActionMobile onClick={() => setIsDetailOpen(true)}>
+            <TableRowActionMobile onClick={() => setDetailState("open")}>
               <Amount
                 variant="small"
-                value={row.original.total}
+                value={t("common:number", {
+                  value: row.original.total,
+                })}
                 displayValue={displayPrice}
               />
             </TableRowActionMobile>
-            <AssetDetailMobileModal
-              asset={row.original}
-              isOpen={isDetailOpen}
-              onClose={() => setIsDetailOpen(false)}
-            />
+            <Modal
+              open={detailState === "open"}
+              onOpenChange={() => setDetailState("closed")}
+            >
+              <AssetDetailMobileModal
+                asset={row.original}
+                onActionOpen={(action) => setDetailState(`action:${action}`)}
+              />
+            </Modal>
+            <Modal
+              open={detailState.startsWith("action")}
+              onOpenChange={() => setDetailState("open")}
+            >
+              {detailState === "action:transfer" && (
+                <TransferPositionModal onClose={() => setDetailState("open")} />
+              )}
+            </Modal>
           </>
         )
       },

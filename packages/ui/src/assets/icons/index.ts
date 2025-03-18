@@ -28,4 +28,5 @@ export { default as TwoColorCirclePercentage } from "./TwoColorCirclePercentage.
 export { default as TwoColorClock } from "./TwoColorClock.svg?react"
 export { default as TwoColorSwap } from "./TwoColorSwap.svg?react"
 export { default as TwoColorUsers } from "./TwoColorUsers.svg?react"
+export { default as Warning } from "./Warning.svg?react"
 export * from "lucide-react"
