@@ -57,7 +57,7 @@ export const Market = () => {
 
   return (
     <form onSubmit={form.handleSubmit(() => null)}>
-      <Flex sx={{ flexDirection: "column" }}>
+      <Flex direction="column">
         <Controller
           name="sell"
           control={form.control}

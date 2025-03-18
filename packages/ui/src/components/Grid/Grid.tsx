@@ -28,12 +28,13 @@ const countToColumns = (n: ResponsiveStyleValue<string | number>) =>
   Array.isArray(n) ? n.map(singleCountToColumns) : singleCountToColumns(n)
 
 type GridOwnProps = {
-  columnWidth?: ResponsiveStyleValue<string | number>
-  columns?: ResponsiveStyleValue<string | number>
   gap?: ResponsiveStyleValue<string | number>
   repeat?: "fit" | "fill"
   justify?: ThemeUICSSProperties["justifyContent"]
   align?: ThemeUICSSProperties["alignItems"]
+  columns?: ResponsiveStyleValue<string | number>
+  columnWidth?: ResponsiveStyleValue<string | number>
+  columnTemplate?: ResponsiveStyleValue<string>
 }
 
 export type GridProps = GridOwnProps & BoxProps
@@ -41,8 +42,9 @@ export type GridProps = GridOwnProps & BoxProps
 export const Grid = forwardRef<HTMLElement, GridProps>(
   (
     {
-      columnWidth,
       columns,
+      columnWidth,
+      columnTemplate = "1fr",
       gap = 0,
       repeat = "fit",
       justify,
@@ -54,7 +56,9 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
   ) => {
     const gridTemplateColumns = columnWidth
       ? widthToColumns(columnWidth, repeat)
-      : countToColumns(columns)
+      : columns
+        ? countToColumns(columns)
+        : columnTemplate
 
     return (
       <Box

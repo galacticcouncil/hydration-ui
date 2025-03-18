@@ -5,6 +5,7 @@ import { useState } from "react"
 import { bestNumberQuery } from "@/api/chain"
 import { RpcSelectModal } from "@/components/ProviderRpcSelect/components/RpcSelectModal"
 import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
+import { SContainer } from "@/components/ProviderRpcSelect/ProviderRpcSelect.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const ProviderRpcSelect = () => {
@@ -14,9 +15,8 @@ export const ProviderRpcSelect = () => {
   const { data } = useQuery(bestNumberQuery(provider))
 
   return (
-    <>
+    <SContainer>
       <Button
-        sx={{ position: "fixed", bottom: 10, right: 10 }}
         variant="tertiary"
         size="small"
         outline
@@ -35,6 +35,6 @@ export const ProviderRpcSelect = () => {
         )}
       </Button>
       <RpcSelectModal open={modalOpen} onOpenChange={setModalOpen} />
-    </>
+    </SContainer>
   )
 }

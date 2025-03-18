@@ -15,7 +15,9 @@ const fetchTokens = async () => {
   const res = await fetch(
     "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json",
   )
-  return res.json()
+  const tokens = await res.text()
+
+  return JSON.parse(tokens.replace(/lch/g, "srgb"))
 }
 
 const saveFile = async (path, content) => {

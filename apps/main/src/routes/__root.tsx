@@ -52,15 +52,16 @@ function RootComponent() {
   const hasTopNavbar = useHasTopNavbar()
 
   return (
-    <main sx={{ overflow: "auto" }}>
+    <>
       <MainLayout />
       <ScrollRestoration />
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
       {isApiLoaded && <Subscriptions />}
-      {hasTopNavbar ? <ProviderRpcSelect /> : <MobileTabBar />}
+      {!hasTopNavbar && <MobileTabBar />}
+      <ProviderRpcSelect />
       <TransactionManager />
       <Web3ConnectModal />
-    </main>
+    </>
   )
 }
