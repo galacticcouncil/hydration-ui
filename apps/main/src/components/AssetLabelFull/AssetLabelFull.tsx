@@ -17,7 +17,7 @@ export const AssetLabelFull = ({
 }) => {
   return (
     <AssetLabelFullRoot>
-      <Logo id={asset.id} />
+      <Logo id={asset.id} size={size} />
       <AssetLabel symbol={asset.symbol} name={asset.name} size={size} />
     </AssetLabelFullRoot>
   )
@@ -32,7 +32,7 @@ export const AssetLabelFullMobile = ({
 }) => {
   return (
     <AssetLabelFullRoot>
-      <Logo id={asset.id} />
+      <Logo id={asset.id} size={size} />
       <AssetLabel symbol={asset.symbol} size={size} />
     </AssetLabelFullRoot>
   )

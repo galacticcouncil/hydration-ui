@@ -7,12 +7,16 @@ export type CustomTextButtonProps = {
 }
 
 export const STextButton = styled.button<CustomTextButtonProps>(
-  ({ theme, variant = "plain" }) => css`
+  ({ theme, variant = "plain", direction = "none" }) => css`
     cursor: pointer;
     font-weight: 500;
     line-height: 120%;
 
     display: inline-flex;
+    ${direction === "external" &&
+    css`
+      gap: 4px;
+    `}
     align-items: center;
 
     transition: ${theme.transitions.colors};
@@ -20,18 +24,22 @@ export const STextButton = styled.button<CustomTextButtonProps>(
     font-size: ${theme.paragraphSize.p5};
     font-family: ${theme.fontFamilies1.secondary};
     border-bottom: ${variant === "underline"
-      ? `1px solid ${theme.text.medium}`
-      : "transaprent"};
+      ? `1px solid ${theme.textButtons.small.rest}`
+      : "transparent"};
 
-    color: ${theme.text.medium};
+    color: ${theme.textButtons.small.rest};
 
     &:hover {
-      color: ${theme.buttons.primary.medium.rest};
+      color: ${theme.textButtons.small.hover};
       border-bottom: ${variant === "underline"
-        ? `1px solid ${theme.buttons.primary.medium.rest}`
-        : "transaprent"};
+        ? `1px solid ${theme.textButtons.small.hover}`
+        : "transparent"};
     }
   `,
 )
 
-export const SLinkTextButton = STextButton.withComponent("a")
+export const SLinkTextButton = styled.a<CustomTextButtonProps>`
+  ${STextButton.__emotion_styles}
+
+  border-bottom: none;
+`

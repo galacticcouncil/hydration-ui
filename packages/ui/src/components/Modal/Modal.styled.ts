@@ -168,6 +168,5 @@ export const SModalDescription = styled(Text)`
 `
 
 export const SModalContentDivider = styled(Separator)`
-  margin: 0 calc(0px - var(--modal-content-padding));
-  width: calc(100% + calc(2 * var(--modal-content-padding)));
+  margin-inline: calc(-1 * var(--modal-content-padding));
 `
