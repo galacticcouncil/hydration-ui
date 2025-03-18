@@ -9,10 +9,9 @@ import { useHubAssetImbalance } from "api/omnipool"
 import { formatValue } from "sections/stats/sections/LRNA/StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useDisplayAssetStore } from "utils/displayAsset"
-import { useSpotPrice } from "api/spotPrice"
 import { BlockSkeleton } from "./BlockSkeleton"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const Burning = () => {
   const { t } = useTranslation()
@@ -27,12 +26,13 @@ export const Burning = () => {
     ? new BigNumber(hubAssetImbalance.data.value.toHex())
     : BN_0
 
-  const displayAsset = useDisplayAssetStore()
-  const spotPrice = useSpotPrice(meta?.id, displayAsset.stableCoinId)
-  const toBeBurnedSpotPrice = formatValue(
-    spotPrice?.data?.spotPrice.multipliedBy(imbalance),
-    meta?.decimals,
-  ).toNumber()
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([meta.id])
+  const price = getAssetPrice(meta.id).price
+
+  const toBeBurnedSpotPrice = imbalance
+    .times(price)
+    .shiftedBy(-meta.decimals)
+    .toNumber()
 
   // TODO: fetch historical value form indexer
   const maxHistoricalValue = new BigNumber(4567456745674564)
@@ -40,12 +40,9 @@ export const Burning = () => {
 
   // TODO: fetch protocol fees
   const fees = new BigNumber(14551455145514)
-  const feesSpotPrice = formatValue(
-    spotPrice?.data?.spotPrice.multipliedBy(fees),
-    meta?.decimals,
-  ).toNumber()
+  const feesSpotPrice = fees.times(price).shiftedBy(-meta.decimals).toNumber()
 
-  const isLoading = hubAssetImbalance.isLoading || spotPrice.isLoading
+  const isLoading = hubAssetImbalance.isLoading || isPriceLoading
 
   return (
     <SBurnContainer>
@@ -72,8 +69,7 @@ export const Burning = () => {
               })}
             </Text>
             <Text color="darkBlue200" fs={14}>
-              ≈{displayAsset.symbol}
-              {toBeBurnedSpotPrice}
+              ≈{toBeBurnedSpotPrice}
             </Text>
           </>
         )}
@@ -98,8 +94,7 @@ export const Burning = () => {
               })}
             </Text>
             <Text color="darkBlue200" fs={14}>
-              ≈{displayAsset.symbol}
-              {feesSpotPrice}
+              ≈{feesSpotPrice}
             </Text>
           </>
         )}

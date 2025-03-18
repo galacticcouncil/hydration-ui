@@ -6,6 +6,7 @@ export const SContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
 
   height: 40px;
   padding: 6px 6px 6px 10px;

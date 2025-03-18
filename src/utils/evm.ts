@@ -13,6 +13,7 @@ import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 import { UNIFIED_ADDRESS_FORMAT_ENABLED } from "utils/constants"
+import { MetaTags } from "state/toasts"
 
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
@@ -80,7 +81,7 @@ export function getEvmTxLink(
   txData: string | undefined,
   chainKey = "hydration",
   isTestnet = false,
-  isSnowbridge: boolean,
+  tags: MetaTags | undefined,
 ) {
   const chain = chainsMap.get(chainKey)
 
@@ -89,9 +90,11 @@ export function getEvmTxLink(
   if (chain.isEvmChain()) {
     const isApproveTx = txData?.startsWith("0x095ea7b3")
 
-    return isApproveTx || isSnowbridge
-      ? `https://etherscan.io/tx/${txHash}`
-      : `https://wormholescan.io/#/tx/${txHash}`
+    if (tags === "Wormhole" && !isApproveTx) {
+      return `https://wormholescan.io/#/tx/${txHash}`
+    }
+
+    return `https://etherscan.io/tx/${txHash}`
   }
 
   if (chain.isEvmParachain()) {

@@ -60,7 +60,7 @@ const getFullAsset = (asset: TAssetStored) => {
 
   return {
     ...asset,
-    parachainId: parachainEntry?.parachain,
+    parachainId: parachainEntry?.parachain.toString() as string | undefined,
     existentialDeposit: asset.existentialDeposit,
     isToken,
     isBond,
@@ -109,7 +109,7 @@ export type TShareToken = TAsset & {
 }
 
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets, shareTokens: shareTokensRaw } = useAssetRegistry.getState()
+  const { assets, shareTokens: shareTokensRaw } = useAssetRegistry()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
   const degenMode = useSettingsStore.getState().degenMode
   const { tokens: externalTokens } =

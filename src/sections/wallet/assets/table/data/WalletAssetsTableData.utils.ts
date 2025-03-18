@@ -1,9 +1,8 @@
-import { useTokenLocks } from "api/balances"
+import { TBalance, useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
-import { useDisplayPrice, useNewDisplayPrices } from "utils/displayAsset"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAcceptedCurrencies, useAccountCurrency } from "api/payments"
@@ -18,6 +17,7 @@ import { useExternalTokensRugCheck } from "api/external"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { scaleHuman } from "utils/balance"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -42,39 +42,55 @@ export const useAssetsData = ({
 
   const rugCheck = useExternalTokensRugCheck()
 
-  const { data: balances, isLoading: isBalancesLoading } =
+  const { data: accountAssets, isLoading: isBalancesLoading } =
     useAccountAssets(address)
   const getExternalMeta = useExternalTokenMeta()
 
-  const tokensWithBalance = useMemo(() => {
-    if (balances) {
-      const filteredTokens =
-        balances.balances?.filter((balance) => {
+  const { balances = [] } = accountAssets ?? {}
+
+  const { tokensWithBalance, validTokensIdsWithBalance } = useMemo(() => {
+    if (balances.length) {
+      const filteredTokens = balances.reduce<{
+        tokensWithBalance: TBalance[]
+        validTokensIdsWithBalance: string[]
+      }>(
+        (acc, balance) => {
           const meta = getAsset(balance.assetId)
 
-          return (
-            meta?.isToken ||
-            meta?.isStableSwap ||
-            meta?.isExternal ||
-            meta?.isErc20
-          )
-        }) ?? []
+          if (meta) {
+            if (
+              meta.isToken ||
+              meta.isStableSwap ||
+              meta.isExternal ||
+              meta.isErc20
+            ) {
+              acc.tokensWithBalance.push(balance)
+
+              if (meta.symbol) {
+                acc.validTokensIdsWithBalance.push(balance.assetId)
+              }
+            }
+          }
+
+          return acc
+        },
+        { tokensWithBalance: [], validTokensIdsWithBalance: [] },
+      )
 
       return filteredTokens
     }
 
-    return []
+    return { tokensWithBalance: [], validTokensIdsWithBalance: [] }
   }, [balances, getAsset])
 
-  const tokensWithBalanceIds = tokensWithBalance.map(
-    (tokenWithBalance) => tokenWithBalance.assetId,
+  const { data: currencyId } = useAccountCurrency(address)
+  const { data: acceptedCurrencies } = useAcceptedCurrencies(
+    validTokensIdsWithBalance,
   )
 
-  const { data: currencyId } = useAccountCurrency(address)
-  const { data: acceptedCurrencies } =
-    useAcceptedCurrencies(tokensWithBalanceIds)
-
-  const spotPrices = useNewDisplayPrices(tokensWithBalanceIds)
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
+    validTokensIdsWithBalance,
+  )
 
   const allAssets = useMemo(
     () => [...tokens, ...stableswap, ...external, ...erc20],
@@ -82,7 +98,7 @@ export const useAssetsData = ({
   )
 
   const data = useMemo(() => {
-    if (isBalancesLoading || !spotPrices.data) return []
+    if (isBalancesLoading || isPriceLoading) return []
 
     const rowsWithBalance = tokensWithBalance.map((balance) => {
       const asset = getAssetWithFallback(balance.assetId)
@@ -97,9 +113,7 @@ export const useAssetsData = ({
 
       const { decimals, id, name, symbol } = meta
       const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
-      const spotPrice = spotPrices.data?.find(
-        (spotPrice) => spotPrice?.tokenIn === id,
-      )?.spotPrice
+      const spotPrice = getAssetPrice(id).price
 
       const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
       const reservedDisplay =
@@ -210,7 +224,6 @@ export const useAssetsData = ({
       : sortedAssets
   }, [
     tokensWithBalance,
-    spotPrices.data,
     isAllAssets,
     allAssets,
     search,
@@ -221,9 +234,11 @@ export const useAssetsData = ({
     currencyId,
     isBalancesLoading,
     rugCheck.tokensMap,
+    getAssetPrice,
+    isPriceLoading,
   ])
 
-  return { data, isLoading: isBalancesLoading || spotPrices.isInitialLoading }
+  return { data, isLoading: isBalancesLoading || isPriceLoading }
 }
 
 export type AssetsTableData = ReturnType<typeof useAssetsData>["data"][number]
@@ -233,7 +248,8 @@ export const useLockedNativeTokens = () => {
     native: { decimals, id },
   } = useAssets()
   const { data: locks = [], isLoading: isLocksLoading } = useTokenLocks(id)
-  const { data: spotPrice, isLoading: isSpotPriceLoading } = useDisplayPrice(id)
+  const { getAssetPrice, isLoading } = useAssetsPrice([id])
+  const price = getAssetPrice(id).price
 
   const lockVesting = scaleHuman(
     locks.find((lock) => lock.type === "ormlvest")?.amount ?? "0",
@@ -255,13 +271,13 @@ export const useLockedNativeTokens = () => {
     decimals,
   )
 
-  const lockVestingDisplay = lockVesting.times(spotPrice?.spotPrice ?? 1)
-  const lockDemocracyDisplay = lockDemocracy.times(spotPrice?.spotPrice ?? 1)
-  const lockStakingDisplay = lockStaking.times(spotPrice?.spotPrice ?? 1)
-  const lockOpenGovDisplay = lockOpenGov.times(spotPrice?.spotPrice ?? 1)
+  const lockVestingDisplay = lockVesting.times(price)
+  const lockDemocracyDisplay = lockDemocracy.times(price)
+  const lockStakingDisplay = lockStaking.times(price)
+  const lockOpenGovDisplay = lockOpenGov.times(price)
 
   return {
-    isLoading: isLocksLoading || isSpotPriceLoading,
+    isLoading: isLocksLoading || isLoading,
     lockVesting,
     lockDemocracy,
     lockStaking,
@@ -279,9 +295,10 @@ export const useUnlockableTokens = () => {
   const { data: unlockedVotes, isLoading: isLoadingVotes } = useAccountVotes()
   const { data: openGovUnlockedVotes, isInitialLoading: isLoadingOpenGov } =
     useOpenGovUnlockedTokens()
-  const { data: spotPrice, isLoading: isSpotPriceLoading } = useDisplayPrice(
+
+  const { getAssetPrice, isLoading: isLoadingPrice } = useAssetsPrice([
     native.id,
-  )
+  ])
 
   const { unlockedValue, endDate } = useMemo(() => {
     if (unlockedVotes && lockDemocracy) {
@@ -345,12 +362,12 @@ export const useUnlockableTokens = () => {
 
   return {
     isLoading:
-      isLoadingVotes || isSpotPriceLoading || isLoadingOpenGov || isLoading,
+      isLoadingVotes || isLoadingPrice || isLoadingOpenGov || isLoading,
     ids: unlockedVotes?.ids ?? [],
     openGovIds: openGovUnlockedVotes?.ids ?? [],
     unlockedValue: commonUnlockedValue.toString(),
     unlockedDisplayValue: BigNumber(commonUnlockedValue)
-      .times(spotPrice?.spotPrice ?? BN_NAN)
+      .times(getAssetPrice(native.id).price)
       .toString(),
     endDate,
     openGovEndDate,

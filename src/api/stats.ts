@@ -1,5 +1,9 @@
 import { ApiPromise } from "@polkadot/api"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import {
+  NotifyOnChangeProps,
+  useQueries,
+  useQuery,
+} from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
 import { useRpcProvider } from "providers/rpcProvider"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
@@ -141,6 +145,7 @@ export const useAccountsIdentity = (addresses: string[]) => {
       queryFn:
         address != null ? getAccountIdentity(api, address) : undefinedNoop,
       enabled: !!address,
+      notifyOnChangeProps: ["data", "isLoading"] as NotifyOnChangeProps,
     })),
   })
 }
