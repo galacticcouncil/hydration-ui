@@ -53,7 +53,7 @@ export interface Asset {
   balance?: string
   symbol: string
   iconSymbol?: string
-  address?: string
+  address: string
   aToken?: boolean
   priceInUsd?: string
   decimals?: number
@@ -171,7 +171,7 @@ export const AssetInput = <T extends Asset = Asset>({
             <div sx={{ flex: "row", align: "center" }}>
               <TokenIcon
                 aToken={asset.aToken}
-                symbol={asset.iconSymbol || asset.symbol}
+                address={asset.address}
                 size={28}
                 sx={{ mr: 8 }}
               />
@@ -199,7 +199,7 @@ export const AssetInput = <T extends Asset = Asset>({
                 icon: (
                   <TokenIcon
                     aToken={asset.aToken}
-                    symbol={asset.iconSymbol || asset.symbol}
+                    address={asset.address}
                     size={28}
                     sx={{ mr: 8 }}
                   />
@@ -212,7 +212,7 @@ export const AssetInput = <T extends Asset = Asset>({
               >
                 <TokenIcon
                   aToken={asset.aToken}
-                  symbol={asset.iconSymbol || asset.symbol}
+                  address={asset.address}
                   size={28}
                   sx={{ mr: 8 }}
                 />

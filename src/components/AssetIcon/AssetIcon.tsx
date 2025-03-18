@@ -6,7 +6,7 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
+import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ExternalAssetBadgeVariant, useExternalWhitelist } from "api/external"
@@ -175,32 +175,29 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       )
     }
 
-    const Wrapper = underlyingAssetId ? SATokenWrapper : React.Fragment
-
     return (
-      <Wrapper>
-        <UigcAssetId
-          css={{ "& uigc-logo-chain": { display: "none" } }}
-          ref={(el) => {
-            el &&
-              details.parachainId &&
-              el.setAttribute("chainOrigin", details.parachainId)
-            el && el.setAttribute("fit", "")
-          }}
-          ecosystem="polkadot"
-          asset={underlyingAssetId ?? details.id}
-          chain={HYDRADX_PARACHAIN_ID.toString()}
-          chainOrigin={details.parachainId}
-        >
-          {badgeVariant && (
-            <UigcAssetBadge
-              slot="badge"
-              variant={badgeVariant}
-              text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
-            />
-          )}
-        </UigcAssetId>
-      </Wrapper>
+      <UigcAssetId
+        css={{ "& uigc-logo-chain": { display: "none" } }}
+        ref={(el) => {
+          el &&
+            details.parachainId &&
+            el.setAttribute("chainOrigin", details.parachainId)
+          el && el.setAttribute("fit", "")
+        }}
+        ecosystem="polkadot"
+        isAToken={!!underlyingAssetId}
+        asset={underlyingAssetId ?? details.id}
+        chain={HYDRADX_PARACHAIN_ID.toString()}
+        chainOrigin={details.parachainId}
+      >
+        {badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={badgeVariant}
+            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
   }
 

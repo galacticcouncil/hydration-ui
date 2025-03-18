@@ -28,6 +28,8 @@ import {
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
 import { useAccountAssets } from "api/deposits"
+import { useHealthFactorChange } from "api/borrow"
+import BN from "bignumber.js"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -275,6 +277,22 @@ export const useEditFeePaymentAsset = (
   }
 }
 
+export const useHealthFactorChangeFromTx = (
+  tx: SubmittableExtrinsic<"promise">,
+) => {
+  const { getAsset } = useAssets()
+  const assetInTx = getAssetFromTx(tx)
+  const asset = assetInTx?.assetId ? getAsset(assetInTx.assetId) : null
+
+  const assetId = asset ? asset.id : ""
+  const amount =
+    asset && assetInTx?.amount
+      ? BN(assetInTx.amount).shiftedBy(-asset.decimals).toString()
+      : ""
+
+  return useHealthFactorChange(assetId, amount)
+}
+
 export const createPolkadotJSTxUrl = (
   rpcUrl: string,
   tx: SubmittableExtrinsic<"promise">,
@@ -297,4 +315,49 @@ export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   return useMemo(() => {
     return createPolkadotJSTxUrl(rpcUrl, tx)
   }, [rpcUrl, tx])
+}
+
+const normalizeHumanizedString = (str: string) => str.replace(/,/g, "")
+
+export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
+  if (!tx) return null
+
+  let assetId = null
+  let amount = null
+  try {
+    const json: any = tx.method.toHuman()
+    const isSwapCall =
+      (json.method === "sell" || json.method === "buy") &&
+      (json.section === "router" || json.section === "omnipool")
+
+    const isTransferCall =
+      json.method === "transfer" && json.section === "currencies"
+
+    const isDcaCall = json.method === "schedule" && json.section === "dca"
+
+    if (isSwapCall) {
+      const amountArg = json.args.amount || json.args.amount_in
+      assetId = normalizeHumanizedString(json.args.asset_in)
+      amount = normalizeHumanizedString(amountArg)
+    }
+
+    if (isTransferCall) {
+      assetId = normalizeHumanizedString(json.args.currency_id)
+      amount = normalizeHumanizedString(json.args.amount)
+    }
+    if (isDcaCall) {
+      assetId = normalizeHumanizedString(json.args.schedule.order.Sell.assetIn)
+      amount = normalizeHumanizedString(json.args.schedule.totalAmount)
+    }
+  } catch {
+    return {
+      assetId,
+      amount,
+    }
+  }
+
+  return {
+    assetId,
+    amount,
+  }
 }

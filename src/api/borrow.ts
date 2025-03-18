@@ -1,15 +1,23 @@
 import { UiPoolDataProvider } from "@aave/contract-helpers"
-import { formatReserves, formatUserSummary } from "@aave/math-utils"
+import {
+  formatReservesAndIncentives,
+  formatUserSummaryAndIncentives,
+} from "@aave/math-utils"
 import { useQuery } from "@tanstack/react-query"
 import { isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
+import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { reserveSortFn } from "sections/lending/store/poolSelectors"
 import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
+import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
+import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { H160, isEvmAccount } from "utils/evm"
+import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
@@ -57,16 +65,24 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 
       const currentTimestamp = timestamp.toNumber() / 1000
 
-      const formattedReserves = formatReserves({
+      const formattedReserves = formatReservesAndIncentives({
         currentTimestamp,
         reserves: reservesData,
         marketReferencePriceInUsd:
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
+        reserveIncentives: [],
       })
+        .map((r) => ({
+          ...r,
+          ...fetchIconSymbolAndName(r),
+          isEmodeEnabled: r.eModeCategoryId !== 0,
+          isWrappedBaseAsset: false,
+        }))
+        .sort(reserveSortFn)
 
-      return formatUserSummary({
+      const summary = formatUserSummaryAndIncentives({
         currentTimestamp,
         marketReferencePriceInUsd:
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
@@ -75,11 +91,56 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         userReserves,
         formattedReserves,
         userEmodeCategoryId,
+        reserveIncentives: [],
+        userIncentives: [],
       })
+
+      const extendedUser: ExtendedFormattedUser = {
+        ...summary,
+        isInEmode: userEmodeCategoryId !== 0,
+        userEmodeCategoryId,
+        calculatedUserIncentives: {},
+        earnedAPY: 0,
+        debtAPY: 0,
+        netAPY: 0,
+      }
+
+      return extendedUser
     },
     {
       retry: false,
       enabled: isLoaded && !!evmAddress,
     },
   )
+}
+
+export const useHealthFactorChange = (assetId: string, amount: string) => {
+  const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+
+  const { data: user } = useUserBorrowSummary()
+
+  return useMemo(() => {
+    if (!underlyingAssetId || !user) return null
+
+    const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+
+    const userReserve = user.userReservesData.find(
+      ({ reserve }) => reserve.underlyingAsset === reserveAddress,
+    )
+
+    if (!userReserve) return null
+
+    const currentHealthFactor = user.healthFactor
+    const futureHealthFactor = calculateHFAfterWithdraw({
+      user: user,
+      userReserve: userReserve,
+      poolReserve: userReserve.reserve,
+      withdrawAmount: amount || "0",
+    }).toString()
+
+    return {
+      currentHealthFactor,
+      futureHealthFactor,
+    }
+  }, [amount, underlyingAssetId, user])
 }
