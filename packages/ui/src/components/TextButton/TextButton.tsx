@@ -27,7 +27,7 @@ const TextButtonIcon = ({
 
 export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(
   ({ direction = "none", ...props }, ref) => (
-    <STextButton ref={ref} type="button" direction={direction} {...props}>
+    <STextButton ref={ref} type="button" {...props}>
       {props.children}
       <TextButtonIcon direction={direction} />
     </STextButton>
@@ -37,11 +37,22 @@ export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(
 TextButton.displayName = "TextButton"
 
 export type LinkTextButtonProps = React.ComponentPropsWithoutRef<"a"> &
-  CustomTextButtonProps
+  Omit<CustomTextButtonProps, "variant" | "direction">
 
 export const LinkTextButton = forwardRef<
   HTMLAnchorElement,
   LinkTextButtonProps
->((props, ref) => <SLinkTextButton ref={ref} {...props} />)
+>((props, ref) => (
+  <SLinkTextButton
+    ref={ref}
+    target="_blank"
+    rel="noreferrer"
+    direction="external"
+    {...props}
+  >
+    {props.children}
+    <TextButtonIcon direction="external" />
+  </SLinkTextButton>
+))
 
 LinkTextButton.displayName = "LinkButton"

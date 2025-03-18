@@ -16,6 +16,5 @@ export const AssetDetailModalBody = styled(ModalBody)`
 `
 
 export const AssetDetailMobileSeparator = styled(Separator)`
-  margin: 0 calc(0px - var(--modal-body-padding));
-  width: calc(100% + calc(2 * var(--modal-body-padding)));
+  margin-inline: calc(-1 * var(--modal-body-padding));
 `

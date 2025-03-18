@@ -3,6 +3,7 @@ import {
   Amount,
   Flex,
   Icon,
+  Modal,
   TableRowAction,
   TableRowActionMobile,
 } from "@galacticcouncil/ui/components"
@@ -17,8 +18,10 @@ import {
   AssetLabelFullMobile,
   useDisplayAssetPrice,
 } from "@/components"
+import { AssetDetailMobileAction } from "@/modules/wallet/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModal } from "@/modules/wallet/MyAssets/AssetDetailMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
+import { TransferPositionModal } from "@/modules/wallet/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
 import { TAssetStored } from "@/states/assetRegistry"
 
@@ -124,7 +127,12 @@ export const useMyAssetsColumns = () => {
         },
       },
       cell: function Cell({ row }) {
-        const [isDetailOpen, setIsDetailOpen] = useState(false)
+        type DetailState =
+          | "closed"
+          | "open"
+          | `action:${AssetDetailMobileAction}`
+
+        const [detailState, setDetailState] = useState<DetailState>("closed")
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
@@ -132,18 +140,28 @@ export const useMyAssetsColumns = () => {
 
         return (
           <>
-            <TableRowActionMobile onClick={() => setIsDetailOpen(true)}>
+            <TableRowActionMobile onClick={() => setDetailState("open")}>
               <Amount
                 variant="small"
                 value={row.original.total}
                 displayValue={displayPrice}
               />
             </TableRowActionMobile>
-            <AssetDetailMobileModal
-              asset={row.original}
-              isOpen={isDetailOpen}
-              onClose={() => setIsDetailOpen(false)}
-            />
+            <Modal
+              open={detailState === "open"}
+              onOpenChange={() => setDetailState("closed")}
+            >
+              <AssetDetailMobileModal
+                asset={row.original}
+                onActionOpen={(action) => setDetailState(`action:${action}`)}
+              />
+            </Modal>
+            <Modal
+              open={detailState.startsWith("action")}
+              onOpenChange={() => setDetailState("open")}
+            >
+              {detailState === "action:transfer" && <TransferPositionModal />}
+            </Modal>
           </>
         )
       },
