@@ -8,7 +8,6 @@ import {
 import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { Trans, useTranslation } from "react-i18next"
-import { useDisplayPrice } from "utils/displayAsset"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import Skeleton from "react-loading-skeleton"
 import { useClaimReward } from "sections/staking/StakingPage.utils"
@@ -27,6 +26,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()
@@ -34,7 +34,9 @@ export const AvailableRewards = () => {
   const { account } = useAccount()
   const { data: reward, isLoading: isRewardLoading } = useClaimReward()
   const { native } = useAssets()
-  const spotPrice = useDisplayPrice(native.id)
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
+    native.id,
+  ])
   const refetch = useRefetchAccountAssets()
 
   const processedVotes = useProcessedVotesIds()
@@ -42,7 +44,7 @@ export const AvailableRewards = () => {
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
 
-  const isLoading = isRewardLoading || spotPrice.isLoading
+  const isLoading = isRewardLoading || isPriceLoading
 
   const onClaimRewards = async () => {
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
@@ -132,7 +134,7 @@ export const AvailableRewards = () => {
               <DisplayValue
                 value={
                   reward.maxRewards?.multipliedBy(
-                    spotPrice.data?.spotPrice ?? 1,
+                    getAssetPrice(native.id).price,
                   ) ?? BN_0
                 }
               />
@@ -183,7 +185,7 @@ export const AvailableRewards = () => {
                 <Text fs={14} css={{ color: "rgba(255, 255, 255, 0.6)" }}>
                   <DisplayValue
                     value={reward.rewards.multipliedBy(
-                      spotPrice.data?.spotPrice ?? 1,
+                      getAssetPrice(native.id).price,
                     )}
                   />
                 </Text>

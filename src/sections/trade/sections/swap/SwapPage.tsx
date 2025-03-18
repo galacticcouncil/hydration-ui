@@ -8,11 +8,7 @@ import { createComponent, EventName } from "@lit-labs/react"
 import { useStore } from "state/store"
 import { z } from "zod"
 import { MakeGenerics, useSearch } from "@tanstack/react-location"
-import {
-  useActiveProvider,
-  useActiveRpcUrlList,
-  useIsTestnet,
-} from "api/provider"
+import { useActiveProvider } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -67,9 +63,7 @@ export function SwapPage() {
   const [addToken, setAddToken] = useState(false)
   const [tokenCheck, setTokenCheck] = useState<Asset | null>(null)
 
-  const rpcUrlList = useActiveRpcUrlList()
   const activeProvider = useActiveProvider()
-  const isTestnet = useIsTestnet()
 
   const isEvm = isEvmAccount(account?.address)
   const version = useRemount([isEvm])
@@ -137,7 +131,6 @@ export function SwapPage() {
         }}
         assetIn={assetIn}
         assetOut={assetOut}
-        apiAddress={rpcUrlList.join()}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}
@@ -150,7 +143,6 @@ export function SwapPage() {
         onDcaTerminate={(e) => handleSubmit(e)}
         onNewAssetClick={() => setAddToken(true)}
         onCheckAssetDataClick={(e) => setTokenCheck(e.detail)}
-        isTestnet={isTestnet}
       />
       {isLoaded && <ExternalAssetImportModal assetIds={[assetIn, assetOut]} />}
       {isLoaded && tokenCheck && (

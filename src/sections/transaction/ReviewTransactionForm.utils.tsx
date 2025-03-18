@@ -97,13 +97,16 @@ export const useTransactionValues = ({
     ? getAsset(accountFeePaymentId)
     : undefined
 
-  const spotPrice = useSpotPrice(native.id, accountFeePaymentId)
+  const { data: spotPrice, isInitialLoading: isPriceLoading } = useSpotPrice(
+    native.id,
+    accountFeePaymentId,
+  )
   const accountAssets = useAccountAssets()
   const feeAssetBalance = accountFeePaymentId
     ? accountAssets.data?.accountAssetsMap.get(accountFeePaymentId)?.balance
     : undefined
 
-  const isSpotPriceNan = spotPrice.data?.spotPrice.isNaN()
+  const isSpotPriceNan = BigNumber(spotPrice?.spotPrice ?? NaN).isNaN()
 
   const srcChain = xcallMeta?.srcChain || HYDRATION_CHAIN_KEY
 
@@ -136,7 +139,7 @@ export const useTransactionValues = ({
     feePaymentAssets.isInitialLoading ||
     evmPaymentFee.isInitialLoading ||
     isPaymentInfoLoading ||
-    spotPrice.isInitialLoading ||
+    isPriceLoading ||
     isNonceLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
@@ -166,12 +169,12 @@ export const useTransactionValues = ({
 
   if (!isSpotPriceNan) {
     displayFeePaymentValue = paymentFeeHDX.multipliedBy(
-      spotPrice.data?.spotPrice ?? 1,
+      spotPrice?.spotPrice ?? 1,
     )
     displayFeeExtra = feeExtra
       ? feeExtra
           .shiftedBy(-native.decimals)
-          .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+          .multipliedBy(spotPrice?.spotPrice ?? 1)
       : undefined
   } else {
     const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(

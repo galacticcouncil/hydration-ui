@@ -100,6 +100,7 @@ export const Web3ConnectModal = () => {
       `}
     >
       <Web3ConnectContent
+        disableAnimation={page === ModalPage.AccountSelect}
         page={page}
         direction={direction}
         onBack={() => {

@@ -9,6 +9,7 @@ import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useUserBorrowSummary } from "api/borrow"
+import { useAssetsPrice } from "state/displayPrice"
 
 type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
@@ -54,9 +55,18 @@ export const useWalletAssetsTotals = ({
   const { data: balances, isLoading: isAccountAssetsLoading } =
     useAccountAssets(address)
 
+  const stableswaps = useMemo(
+    () => [...(balances?.accountStableswapMap.values() ?? [])],
+    [balances?.accountStableswapMap],
+  )
+
   const shareTokenBalances = useMemo(
     () => [...(balances?.accountShareTokensMap.values() ?? [])],
     [balances?.accountShareTokensMap],
+  )
+
+  const { getAssetPrice, isLoading: isLoadingPrices } = useAssetsPrice(
+    stableswaps.map((stableswap) => stableswap.asset.id),
   )
 
   const spotPrices = useDisplayShareTokenPrice(
@@ -82,6 +92,26 @@ export const useWalletAssetsTotals = ({
       ),
     [lpPositions.data],
   )
+
+  const stableswapsTotal = useMemo(() => {
+    return stableswaps
+      .reduce((acc, stableswap) => {
+        const balance = BigNumber(stableswap.balance.freeBalance).shiftedBy(
+          -stableswap.asset.decimals,
+        )
+
+        const spotPrice = getAssetPrice(stableswap.asset.id).price
+
+        if (spotPrice !== undefined) {
+          const displayValue = balance.times(spotPrice)
+
+          return acc.plus(displayValue)
+        }
+
+        return acc
+      }, BN_0)
+      .toString()
+  }, [getAssetPrice, stableswaps])
 
   const xykTotal = useMemo(() => {
     if (!shareTokenBalances || !spotPrices.data) return BN_NAN
@@ -113,9 +143,17 @@ export const useWalletAssetsTotals = ({
         .plus(farmsTotal.value)
         .plus(lpTotal)
         .plus(xykTotal)
+        .plus(stableswapsTotal)
         .minus(borrowsTotal)
         .toString(),
-    [assetsTotal, farmsTotal.value, lpTotal, xykTotal, borrowsTotal],
+    [
+      assetsTotal,
+      farmsTotal.value,
+      lpTotal,
+      xykTotal,
+      borrowsTotal,
+      stableswapsTotal,
+    ],
   )
 
   const isLoading =
@@ -124,7 +162,8 @@ export const useWalletAssetsTotals = ({
     lpPositions.isLoading ||
     farmsTotal.isLoading ||
     isAccountAssetsLoading ||
-    spotPrices.isInitialLoading
+    spotPrices.isInitialLoading ||
+    isLoadingPrices
 
   return {
     assetsTotal,
@@ -132,9 +171,11 @@ export const useWalletAssetsTotals = ({
     lpTotal: BigNumber(lpTotal)
       .plus(xykTotal)
       .plus(farmsTotal.value)
+      .plus(stableswapsTotal)
       .toString(),
     balanceTotal,
     borrowsTotal,
+    stableswapsTotal,
     isLoading,
   }
 }

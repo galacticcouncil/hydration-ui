@@ -1,5 +1,4 @@
-import { useProviderPing, useProviderRpcUrlStore } from "api/provider"
-import { SCircle, SCircleThumb, SItem, SStatus } from "./ProviderItem.styled"
+import { SCircle, SCircleThumb, SItem } from "./ProviderItem.styled"
 import { Text } from "components/Typography/Text/Text"
 import { theme } from "theme"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -8,23 +7,23 @@ import IconRemove from "assets/icons/IconRemove.svg?react"
 import IconEdit from "assets/icons/IconEdit.svg?react"
 import { useBestNumber } from "api/chain"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
-import { useEffect, useState } from "react"
-import { u32, u64 } from "@polkadot/types"
+import { useState } from "react"
 import { ProviderItemEdit } from "sections/provider/components/ProviderItemEdit/ProviderItemEdit"
-import { ApiPromise, WsProvider } from "@polkadot/api"
 import { Spinner } from "components/Spinner/Spinner"
+import { PingResponse } from "utils/rpc"
 
-type ProviderItemProps = {
+export type ProviderItemProps = {
   name: string
   url: string
   isActive?: boolean
   custom?: boolean
-  onClick?: () => void
+  onClick?: (url: string) => void
   onRemove?: (id: string) => void
   className?: string
-}
+  isLoading?: boolean
+} & Partial<PingResponse>
 
-export const ProviderItem = ({
+export const ProviderItemLayout = ({
   name,
   url,
   isActive,
@@ -32,12 +31,12 @@ export const ProviderItem = ({
   onClick,
   onRemove,
   className,
-}: ProviderItemProps) => {
+  timestamp,
+  blockNumber,
+  ping,
+  isLoading,
+}: ProviderItemProps & Partial<PingResponse>) => {
   const [isEdit, setIsEdit] = useState(false)
-  const store = useProviderRpcUrlStore()
-  const rpcUrl = store.rpcUrl ?? import.meta.env.VITE_PROVIDER_URL
-
-  const isLive = url === rpcUrl
 
   if (isEdit)
     return (
@@ -48,8 +47,15 @@ export const ProviderItem = ({
       />
     )
 
+  const isOffline = !blockNumber
+  const isDisabled = isLoading || isOffline
+
   return (
-    <SItem onClick={onClick} className={className}>
+    <SItem
+      isDisabled={isDisabled}
+      onClick={() => onClick?.(url)}
+      className={className}
+    >
       <div>
         <Text
           color={isActive ? "pink600" : "white"}
@@ -61,11 +67,19 @@ export const ProviderItem = ({
           {name}
         </Text>
       </div>
-      {isLive ? (
-        <ProviderSelectItemLive url={url} css={{ gridArea: "status" }} />
-      ) : (
-        <ProviderSelectItemExternal url={url} css={{ gridArea: "status" }} />
-      )}
+      <div sx={{ flex: "row", align: "center", height: 30 }}>
+        {isLoading ? (
+          <Spinner size={14} />
+        ) : (
+          <ProviderStatus
+            timestamp={timestamp}
+            blockNumber={blockNumber}
+            className={className}
+            side="left"
+            ping={ping}
+          />
+        )}
+      </div>
 
       <div
         css={{ gridArea: "url" }}
@@ -88,7 +102,10 @@ export const ProviderItem = ({
         </Text>
 
         {custom && (
-          <div sx={{ flex: "row", align: "center", gap: 12 }}>
+          <div
+            sx={{ flex: "row", align: "center", gap: 12 }}
+            css={{ pointerEvents: "auto" }}
+          >
             <InfoTooltip text="Remove" type="black">
               <Icon
                 icon={<IconRemove />}
@@ -120,140 +137,25 @@ export const ProviderItem = ({
   )
 }
 
-const ProviderSelectItemLive = ({
-  className,
-  url,
-}: {
-  className?: string
-  url: string
-}) => {
-  const number = useBestNumber()
-
-  const { data } = useProviderPing([url], 15000)
-
-  const time = data?.[0]?.time || Infinity
+export const ProviderItemActive: React.FC<
+  ProviderItemProps & Partial<PingResponse>
+> = (props) => {
+  const { data: bestNumber, isLoading } = useBestNumber()
 
   return (
-    <SStatus>
-      {number.data?.parachainBlockNumber != null ? (
-        <ProviderStatus
-          timestamp={number.data.timestamp}
-          parachainBlockNumber={number.data?.parachainBlockNumber}
-          ping={time < Infinity ? time : undefined}
-          className={className}
-          side="left"
-        />
-      ) : (
-        <span className={className}>
-          <Spinner size={16} />
-        </span>
-      )}
-    </SStatus>
+    <ProviderItemLayout
+      {...props}
+      isLoading={isLoading}
+      blockNumber={bestNumber?.parachainBlockNumber?.toNumber()}
+      timestamp={bestNumber?.timestamp?.toNumber()}
+    />
   )
 }
 
-const ProviderSelectItemExternal = ({
-  url,
-  className,
-}: {
-  url: string
-  className?: string
-}) => {
-  const [time, setTime] = useState(Infinity)
-  const [disconnected, setDisconnected] = useState(false)
-  const [bestNumberState, setBestNumberState] = useState<
-    | { parachainBlockNumber: u32; timestamp: u64; ping: number | undefined }
-    | undefined
-  >(undefined)
-
-  useEffect(() => {
-    let cancel: () => void
-    let cancelInactive: () => void
-
-    const provider = new WsProvider(url)
-
-    const startTime = performance.now()
-    let endTime = Infinity
-
-    provider.on("error", () => {
-      cancelInactive = () => provider.disconnect()
-    })
-
-    provider.on("disconnected", () => {
-      provider.disconnect()
-      setDisconnected(true)
-    })
-
-    provider.on("connected", load)
-
-    async function load() {
-      endTime = performance.now()
-      setTime(Math.round(endTime - startTime))
-
-      const api = await ApiPromise.create({ provider })
-
-      async function onNewBlock() {
-        const [parachain, timestamp] = await Promise.all([
-          api.derive.chain.bestNumber(),
-          api.query.timestamp.now(),
-        ])
-
-        const now = Date.now()
-        const tsNum = timestamp.toNumber()
-        const ping = now > tsNum ? now - tsNum : undefined
-
-        setBestNumberState((prev) => ({
-          parachainBlockNumber: parachain,
-          timestamp: timestamp,
-          ping: ping ?? prev?.ping,
-        }))
-      }
-
-      api.on("connected", () => {
-        onNewBlock()
-        setDisconnected(false)
-      })
-      api.rpc.chain.subscribeNewHeads(onNewBlock).then(
-        (newCancel) =>
-          (cancel = () => {
-            newCancel()
-            api.disconnect()
-          }),
-      )
-    }
-
-    return () => {
-      cancel?.()
-      cancelInactive?.()
-    }
-  }, [url])
-
-  if (disconnected) {
-    return (
-      <SStatus>
-        <span
-          sx={{ width: 7, height: 7, display: "block" }}
-          css={{ background: "#FF4B4B" }}
-        />
-      </SStatus>
-    )
-  }
-
-  return (
-    <SStatus>
-      {bestNumberState != null ? (
-        <ProviderStatus
-          timestamp={bestNumberState.timestamp}
-          parachainBlockNumber={bestNumberState.parachainBlockNumber}
-          className={className}
-          side="left"
-          ping={time < Infinity ? time : undefined}
-        />
-      ) : (
-        <span className={className}>
-          <Spinner size={16} />
-        </span>
-      )}
-    </SStatus>
+export const ProviderItem: React.FC<ProviderItemProps> = (props) => {
+  return props.isActive ? (
+    <ProviderItemActive {...props} />
+  ) : (
+    <ProviderItemLayout {...props} />
   )
 }

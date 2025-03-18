@@ -12,7 +12,6 @@ import {
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
-import { useDisplayPrice } from "utils/displayAsset"
 import {
   BN_0,
   BN_BILL,
@@ -24,6 +23,7 @@ import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { useAssetsPrice } from "state/displayPrice"
 import { useIncreaseStake } from "./sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
 import { useShallow } from "hooks/useShallow"
 
@@ -124,7 +124,10 @@ export const useStakeData = () => {
   const accountAssets = useAccountAssets()
 
   const locks = useTokenLocks(native.id)
-  const spotPrice = useDisplayPrice(native.id)
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
+    native.id,
+  ])
+
   const circulatingSupply = hdxSupply?.circulatingSupply
 
   const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
@@ -145,16 +148,19 @@ export const useStakeData = () => {
 
   const availableBalance = BigNumber.max(0, rawAvailableBalance)
 
-  const queries = [stake, locks, spotPrice]
+  const queries = [stake, locks]
 
   const isLoading =
-    queries.some((query) => query.isInitialLoading) || isSupplyLoading
+    queries.some((query) => query.isInitialLoading) ||
+    isSupplyLoading ||
+    isPriceLoading
 
   const data = useMemo(() => {
     if (isLoading) return undefined
+    const price = getAssetPrice(native.id).price
 
     const availableBalanceDollar = availableBalance
-      ?.multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      ?.multipliedBy(price)
       .shiftedBy(-native.decimals)
 
     const totalStake = stake.data?.totalStake ?? 0
@@ -165,7 +171,7 @@ export const useStakeData = () => {
       .multipliedBy(100)
 
     const stakeDollar = stake.data?.stakePosition?.stake
-      .multipliedBy(spotPrice.data?.spotPrice ?? 1)
+      .multipliedBy(price)
       .shiftedBy(-native.decimals)
 
     const circulatingSupplyData = BN(circulatingSupply ?? 0).shiftedBy(
@@ -191,11 +197,11 @@ export const useStakeData = () => {
     availableBalance,
     circulatingSupply,
     isLoading,
-    spotPrice.data?.spotPrice,
     stake.data?.positionId,
     stake.data?.stakePosition,
     stake.data?.totalStake,
     native,
+    getAssetPrice,
   ])
 
   return {

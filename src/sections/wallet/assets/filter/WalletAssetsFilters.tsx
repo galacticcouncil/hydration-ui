@@ -53,7 +53,7 @@ export const WalletAssetsFilters = () => {
     <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>
       <Search
         value={searchVal}
-        setValue={setSearchVal}
+        onChange={setSearchVal}
         placeholder={t("wallet.header.search")}
       />
       <div
