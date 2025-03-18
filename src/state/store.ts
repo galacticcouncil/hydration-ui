@@ -394,6 +394,15 @@ const metadataStorage: StateStorage = {
       const isStored = data.some((el) => metadata.hasOwnProperty(el.key))
 
       if (!isStored) {
+        const transaction = storage.transaction(
+          IndexedDBStores.ApiMetadata,
+          "readwrite",
+        )
+        const store = transaction.objectStore(IndexedDBStores.ApiMetadata)
+
+        // clear previous metadata
+        store.clear()
+
         Object.entries(metadata).forEach(([key, data]) => {
           setItems(storage, IndexedDBStores.ApiMetadata, {
             key,
@@ -413,7 +422,7 @@ export const useApiMetadata = create(
   }>(
     (set) => ({
       metadata: {},
-      setMetadata: (specVersion: string, metadata: `0x${string}`) => {
+      setMetadata: (specVersion, metadata) => {
         set((state) => ({
           ...state,
           metadata: { [specVersion]: metadata },

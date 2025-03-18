@@ -360,10 +360,10 @@ export const useProviderData = (
 
       setEnabled(false)
       queryClient.removeQueries(QUERY_KEYS.provider)
-      queryClient.removeQueries(QUERY_KEYS.providerMetadata)
 
       if (hasDataEnvChanged) {
         queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
+        queryClient.removeQueries(QUERY_KEYS.providerMetadata)
       } else {
         queryClient.invalidateQueries(
           {
