@@ -39,8 +39,8 @@ const variants = createVariants((theme) => ({
   embedded: css`
     border: none;
 
-    :focus,
-    :focus-visible,
+    has(:focus),
+    has(:focus-visible),
     :hover {
       outline: none;
     }
@@ -50,8 +50,8 @@ const variants = createVariants((theme) => ({
     border: 1px solid ${theme.buttons.outlineDark.rest};
     border-radius: ${theme.radii.full}px;
 
-    :focus,
-    :focus-visible {
+    :has(:focus),
+    :has(:focus-visible) {
       outline: none;
       background-color: ${theme.buttons.outlineDark.hover};
       border-color: ${theme.buttons.secondary.outline.outline};
@@ -66,13 +66,19 @@ const variants = createVariants((theme) => ({
 
 export const SInputContainer = styled.div<
   Pick<CustomInputProps, "customSize" | "variant">
->(({ customSize = "medium", variant = "standalone" }) => [
+>(({ theme, customSize = "medium", variant = "standalone" }) => [
   sizes(customSize),
   variants(variant),
   css`
     display: flex;
     gap: 4px;
     align-items: center;
+
+    transition: ${theme.transitions.colors};
+
+    svg {
+      color: ${theme.icons.onSurface};
+    }
   `,
 ])
 

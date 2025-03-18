@@ -22,10 +22,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref,
   ) => (
     <SInputContainer variant={variant} customSize={customSize}>
-      {IconStart && <IconStart data-slot="icon" />}
+      {IconStart && <IconStart />}
       <SInput ref={ref} {...props} />
       {unit && <Text>{unit}</Text>}
-      {IconEnd && <IconEnd data-slot="icon" />}
+      {IconEnd && <IconEnd />}
     </SInputContainer>
   ),
 )

@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { Download, Search } from "lucide-react"
 
-import { Box } from "@/components/Box"
+import { Box } from "@/components"
 
 import { Input } from "./Input"
 
@@ -60,15 +60,11 @@ export const IconEnd: Story = {
   },
 }
 
-export const IconComponent: Story = {
+export const Unit: Story = {
   render: Template,
   args: {
     placeholder,
-    iconEnd: (props) => (
-      <span {...props} sx={{ fontWeight: 500, fontSize: 14 }}>
-        HDX
-      </span>
-    ),
+    unit: "HDX",
     customSize: "large",
   },
 }
