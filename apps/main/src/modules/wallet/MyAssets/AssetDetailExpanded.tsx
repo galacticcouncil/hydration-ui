@@ -10,7 +10,7 @@ type Props = {
 }
 
 export const AssetDetailExpanded: FC<Props> = ({ assetId }) => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation(["wallet", "common"])
   const { getAsset } = useAssets()
 
   const asset = getAsset(assetId)
@@ -35,15 +35,19 @@ export const AssetDetailExpanded: FC<Props> = ({ assetId }) => {
       <Separator orientation="vertical" />
       <Amount
         label={t("myAssets.expandedAsset.reserved")}
-        value={reserved}
-        valueSymbol={asset?.symbol}
+        value={t("common:currency", {
+          value: reserved,
+          symbol: asset?.symbol,
+        })}
         displayValue={reservedDisplayPrice}
       />
       <Separator orientation="vertical" />
       <Amount
         label={t("myAssets.expandedAsset.reservedDca")}
-        value={reservedDca}
-        valueSymbol={asset?.symbol}
+        value={t("common:currency", {
+          value: reservedDca,
+          symbol: asset?.symbol,
+        })}
         displayValue={reservedDcaDisplayPrice}
       />
     </Flex>

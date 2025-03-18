@@ -42,12 +42,16 @@ export const LiquidityPosition: FC<Props> = ({ assetId, number, position }) => {
       </Text>
       <Amount
         label={t("initialValue")}
-        value={position.initialValue}
+        value={t("number", {
+          value: position.initialValue,
+        })}
         displayValue={initialDisplayPrice}
       />
       <Amount
         label={t("currentValue")}
-        value={position.currentValue}
+        value={t("number", {
+          value: position.currentValue,
+        })}
         displayValue={currentDisplayPrice}
       />
       <LiquidityFarms assetId={assetId} rewards={position.rewards} />

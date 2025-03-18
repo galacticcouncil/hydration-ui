@@ -1,28 +1,59 @@
-import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
+import { Amount, Flex, ModalHeader } from "@galacticcouncil/ui/components"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
-import { AssetDetailMobileModalBody } from "@/modules/wallet/MyAssets/AssetDetailMobileModalBody"
+import { useDisplayAssetPrice } from "@/components"
+import {
+  AssetDetailMobileAction,
+  AssetDetailMobileActions,
+} from "@/modules/wallet/MyAssets/AssetDetailMobileActions"
+import {
+  SAssetDetailMobileSeparator,
+  SAssetDetailModalBody,
+} from "@/modules/wallet/MyAssets/AssetDetailMobileModal.styled"
+import { AssetDetailMobileModalBalances } from "@/modules/wallet/MyAssets/AssetDetailMobileModalBalances"
+import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/MyAssets/AssetDetailMobileModalBalancesHeader"
+import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
 import { MyAsset } from "@/modules/wallet/MyAssets/MyAssetsTable.columns"
 
 type Props = {
   readonly asset: MyAsset
-  readonly isOpen: boolean
-  readonly onClose: () => void
+  readonly onActionOpen: (action: AssetDetailMobileAction) => void
 }
 
-export const AssetDetailMobileModal: FC<Props> = ({
-  asset,
-  isOpen,
-  onClose,
-}) => {
+export const AssetDetailMobileModal: FC<Props> = ({ asset, onActionOpen }) => {
+  const { t } = useTranslation(["wallet", "common"])
+
+  const [totalDisplayPrice] = useDisplayAssetPrice(asset.id, asset.total)
+
   return (
-    <Modal open={isOpen} onOpenChange={onClose}>
+    <>
       <ModalHeader
         sx={{ p: 16 }}
         title={asset.symbol}
         description={asset.name}
       />
-      <AssetDetailMobileModalBody asset={asset} />
-    </Modal>
+      <SAssetDetailModalBody>
+        <Flex gap={16} direction="column">
+          <Flex justify="space-between" align="center">
+            <Amount
+              label={t("myAssets.header.total")}
+              value={t("common:number", {
+                value: asset.total,
+              })}
+              displayValue={totalDisplayPrice}
+            />
+            <AssetDetailStaking asset={asset} />
+          </Flex>
+          <AssetDetailMobileActions onActionOpen={onActionOpen} />
+          <div>
+            <SAssetDetailMobileSeparator />
+            <AssetDetailMobileModalBalancesHeader />
+            <SAssetDetailMobileSeparator />
+          </div>
+          <AssetDetailMobileModalBalances assetId={asset.id} />
+        </Flex>
+      </SAssetDetailModalBody>
+    </>
   )
 }

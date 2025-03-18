@@ -73,12 +73,16 @@ export const LiquidityPositionMobile: FC<Props> = ({ assetId, position }) => {
       <Flex px={getTokenPx("containers.paddings.primary")} gap={54}>
         <Amount
           label={t("initialValue")}
-          value={position.initialValue}
+          value={t("number", {
+            value: position.initialValue,
+          })}
           displayValue={initialValueDisplayPrice}
         />
         <Amount
           label={t("currentValue")}
-          value={position.currentValue}
+          value={t("number", {
+            value: position.currentValue,
+          })}
           displayValue={currentValueDisplayPrice}
         />
       </Flex>
