@@ -6,41 +6,53 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useMemo } from "react"
 
+import { InvalidAssetRow } from "@/modules/wallet/Invalid/InvalidAssetRow"
 import { AssetDetailExpanded } from "@/modules/wallet/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/MyAssets/ExpandedNativeRow"
-import { InvalidAssetRow } from "@/modules/wallet/MyAssets/InvalidAssetRow"
 import {
   MyAsset,
+  MyAssetsTableColumn,
   useMyAssetsColumns,
 } from "@/modules/wallet/MyAssets/MyAssetsTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
+import { useAccountData } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly searchPhrase: string
+  readonly showAllAssets: boolean
 }
 
-export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
+export const MyAssetsTable: FC<Props> = ({ searchPhrase, showAllAssets }) => {
   const { isMobile } = useBreakpoints()
-  const { tokens, stableswap, bonds, erc20, native, isExternal } = useAssets()
-  const columns = useMyAssetsColumns()
 
-  const filteredTokens = useMemo(
+  const { native, all, isExternal } = useAssets()
+  const balances = useAccountData((data) => data.balances)
+
+  const ownedAssets = useMemo(
     () =>
-      [...tokens, ...stableswap, ...bonds, ...erc20].filter(
-        (asset) => asset.isTradable && !isExternal(asset),
-      ),
-    [tokens, stableswap, bonds, erc20, isExternal],
+      Array.from(all.values())
+        .filter((asset) => !isExternal(asset) || !!asset.name)
+        .map<MyAsset | null>((asset) => {
+          const balance = balances[asset.id]
+
+          if (!showAllAssets && !balance) {
+            return null
+          }
+
+          return {
+            ...asset,
+            total: scaleHuman(balance?.total ?? 0n, asset.decimals),
+            transferable: scaleHuman(balance?.free ?? 0n, asset.decimals),
+            // TODO 1071 can stake for asset
+            canStake: asset.symbol === "HDX",
+          }
+        })
+        .filter((asset) => !!asset),
+    [all, balances, showAllAssets, isExternal],
   )
 
-  // TODO integrate
-  const assets = useMemo(() => {
-    return filteredTokens.map<MyAsset>((asset) => ({
-      ...asset,
-      total: 12345678,
-      transferable: 12345678,
-      canStake: asset.symbol === "USDC",
-    }))
-  }, [filteredTokens])
+  const columns = useMyAssetsColumns()
 
   return (
     <TableContainer as={Paper}>
@@ -48,9 +60,10 @@ export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
         paginated
         pageSize={10}
         globalFilter={searchPhrase}
-        data={assets}
+        data={ownedAssets}
         columns={columns}
         expandable={!isMobile}
+        initialSorting={[{ id: MyAssetsTableColumn.Total, desc: true }]}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
             <ExpandedNativeRow assetId={asset.id} />
@@ -59,8 +72,10 @@ export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
           )
         }
         renderOverride={(asset) =>
-          // TODO rug check
-          asset.id === "10" ? <InvalidAssetRow assetId={asset.id} /> : undefined
+          // TODO 1071 rug check
+          asset.id === "10" ? (
+            <InvalidAssetRow assetId={asset.id} origin="Assethub" />
+          ) : undefined
         }
       />
     </TableContainer>
