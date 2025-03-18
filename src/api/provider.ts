@@ -319,15 +319,17 @@ export const useProviderMetadata = () => {
   return useQuery(
     QUERY_KEYS.providerMetadata,
     async () => {
-      const genesisHash = await api.genesisHash.toHex()
-      const runtimeVersion = await api.runtimeVersion.specVersion.toNumber()
-      const metadataHex = await api.runtimeMetadata.toHex()
+      const [genesisHash, runtimeVersion] = await Promise.all([
+        api.genesisHash.toHex(),
+        api.runtimeVersion.specVersion.toNumber(),
+      ])
 
       const metadataKey = `${genesisHash}-${runtimeVersion}`
       const isStoredMetadata =
         storedMetadata?.hasOwnProperty(metadataKey) ?? false
 
       if (!isStoredMetadata) {
+        const metadataHex = await api.runtimeMetadata.toHex()
         setMetadata(metadataKey, metadataHex)
       }
 
