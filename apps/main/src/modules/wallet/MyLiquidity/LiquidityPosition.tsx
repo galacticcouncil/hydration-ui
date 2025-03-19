@@ -1,6 +1,6 @@
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import {
-  Amount,
+  AmountMedium,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -51,22 +51,19 @@ export const LiquidityPosition: FC<Props> = ({ assetId, number, position }) => {
       <Text fs="p4" fw={500} color={getToken("text.high")}>
         #{number} {position.name}
       </Text>
-      <Amount
-        size="small"
+      <AmountMedium
         label={t("initialValue")}
         value={position.initialValue}
         displayValue={initialDisplayPrice}
       />
-      <Amount
-        size="small"
+      <AmountMedium
         label={t("currentValue")}
         value={position.currentValue}
         displayValue={currentDisplayPrice}
       />
       <LiquidityFarms assetId={assetId} rewards={position.rewards} />
-
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button variant="tertiary" outline iconEnd={ChevronDown}>
             {t("actions")}
           </Button>

@@ -6,7 +6,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 
-import { ExpandedLiquidityRow } from "@/modules/wallet/MyLiquidity/ExpandedLiquidityRow"
+import { LiquidityDetailExpanded } from "@/modules/wallet/MyLiquidity/LiquidityDetailExpanded"
 import {
   useMyLiquidityColumns,
   WalletLiquidityRow as MyLiquidityRow,
@@ -93,7 +93,7 @@ export const MyLiquidityTable: FC<Props> = ({ searchPhrase }) => {
         globalFilter={searchPhrase}
         expandable={!isMobile}
         renderSubComponent={(asset) => (
-          <ExpandedLiquidityRow
+          <LiquidityDetailExpanded
             assetId={asset.assetId}
             positions={asset.positions}
           />

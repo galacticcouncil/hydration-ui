@@ -5,10 +5,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
+import { LiquidityDetailMobileModal } from "@/modules/wallet/MyLiquidity/LiquidityDetailMobileModal"
 import { MyLiquidityCurrentValue } from "@/modules/wallet/MyLiquidity/MyLiquidityCurrentValue"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -109,11 +110,24 @@ export const useMyLiquidityColumns = () => {
           textAlign: "right",
         },
       },
-      cell: ({ row }) => {
+      cell: function Cell({ row }) {
+        const [isDetailOpen, setIsDetailOpen] = useState(false)
+
         return (
-          <TableRowActionMobile>
-            <MyLiquidityCurrentValue currentValue={row.original.currentValue} />
-          </TableRowActionMobile>
+          <>
+            <TableRowActionMobile onClick={() => setIsDetailOpen(true)}>
+              <MyLiquidityCurrentValue
+                currentValue={row.original.currentValue}
+              />
+            </TableRowActionMobile>
+            <LiquidityDetailMobileModal
+              assetId={row.original.assetId}
+              currentValue={row.original.currentValue}
+              positions={row.original.positions}
+              isOpen={isDetailOpen}
+              onClose={() => setIsDetailOpen(false)}
+            />
+          </>
         )
       },
     })

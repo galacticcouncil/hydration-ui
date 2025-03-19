@@ -1,9 +1,4 @@
-import {
-  Amount,
-  AmountValue,
-  Flex,
-  Separator,
-} from "@galacticcouncil/ui/components"
+import { AmountMedium, Flex, Separator } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,7 +9,7 @@ type Props = {
   readonly assetId: string
 }
 
-export const ExpandedAssetRow: FC<Props> = ({ assetId }) => {
+export const AssetDetailExpanded: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation("wallet")
   const { getAsset } = useAssets()
 
@@ -30,27 +25,22 @@ export const ExpandedAssetRow: FC<Props> = ({ assetId }) => {
 
   return (
     <Flex px={50} justify="space-around">
-      <Amount
+      <AmountMedium
         label={t("myAssets.expandedAsset.assetOrigin")}
-        customValue={
-          <AmountValue>
-            {t("myAssets.expandedAsset.customOrigin", {
-              origin: assetOrigin,
-            })}
-          </AmountValue>
-        }
-        // align on flexbox breaks separators with height auto
+        value={t("myAssets.expandedAsset.customOrigin", {
+          origin: assetOrigin,
+        })}
         sx={{ alignSelf: "center" }}
       />
       <Separator orientation="vertical" />
-      <Amount
+      <AmountMedium
         label={t("myAssets.expandedAsset.reserved")}
         value={reserved}
         valueSymbol={asset?.symbol}
         displayValue={reservedDisplayPrice}
       />
       <Separator orientation="vertical" />
-      <Amount
+      <AmountMedium
         label={t("myAssets.expandedAsset.reservedDca")}
         value={reservedDca}
         valueSymbol={asset?.symbol}

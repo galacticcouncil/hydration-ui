@@ -9,7 +9,7 @@ type Props = {
   readonly positions: ReadonlyArray<WalletLiquidityPosition>
 }
 
-export const ExpandedLiquidityRow: FC<Props> = ({ assetId, positions }) => {
+export const LiquidityDetailExpanded: FC<Props> = ({ assetId, positions }) => {
   return (
     <Flex direction="column" gap={8}>
       {positions.map((position, index) => (

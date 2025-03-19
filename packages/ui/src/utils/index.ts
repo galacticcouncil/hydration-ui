@@ -11,6 +11,12 @@ export const getToken =
   (theme: ThemeUI): ThemeUICSSObject =>
     Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
 
+export const getTokenPx =
+  (token: ThemeToken | ThemeToken[]) => (theme: ThemeUI) =>
+    Array.isArray(token)
+      ? token.map((t) => `${get(theme, t)}px`)
+      : `${get(theme, token)}px`
+
 export function createStyles<T extends SerializedStyles>(
   callback: (theme: EmotionTheme) => T,
 ) {

@@ -6,7 +6,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useMemo } from "react"
 
-import { ExpandedAssetRow } from "@/modules/wallet/MyAssets/ExpandedAssetRow"
+import { AssetDetailExpanded } from "@/modules/wallet/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/MyAssets/ExpandedNativeRow"
 import { InvalidAssetRow } from "@/modules/wallet/MyAssets/InvalidAssetRow"
 import {
@@ -38,7 +38,7 @@ export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
       ...asset,
       total: 12345678,
       transferable: 12345678,
-      canStake: Math.random() > 0.6,
+      canStake: asset.symbol === "USDC",
     }))
   }, [filteredTokens])
 
@@ -55,7 +55,7 @@ export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
           asset.id === native.id ? (
             <ExpandedNativeRow assetId={asset.id} />
           ) : (
-            <ExpandedAssetRow assetId={asset.id} />
+            <AssetDetailExpanded assetId={asset.id} />
           )
         }
         renderOverride={(asset) =>

@@ -1,5 +1,4 @@
-import { AmountValue } from "@galacticcouncil/ui/components"
-import { Amount } from "@galacticcouncil/ui/components"
+import { AmountMedium } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
 import { useDisplayAssetPrice } from "@/components"
@@ -8,10 +7,11 @@ import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
+  readonly label?: string
   readonly currentValue: WalletLiquidityCurrentValue
 }
 
-export const MyLiquidityCurrentValue: FC<Props> = ({ currentValue }) => {
+export const MyLiquidityCurrentValue: FC<Props> = ({ label, currentValue }) => {
   const [displayPrice] = useDisplayAssetPrice(
     currentValue.asset1Id,
     currentValue.balance,
@@ -33,15 +33,9 @@ export const MyLiquidityCurrentValue: FC<Props> = ({ currentValue }) => {
   const asset2Symbol = asset2?.symbol ?? ""
 
   return (
-    <Amount
-      size="small"
-      customValue={
-        <AmountValue>
-          {asset1Amount} {asset1Symbol}
-          {" | "}
-          {asset2Amount} {asset2Symbol}
-        </AmountValue>
-      }
+    <AmountMedium
+      label={label}
+      value={`${asset1Amount} ${asset1Symbol} | ${asset2Amount} ${asset2Symbol}`}
       displayValue={displayPrice}
     />
   )

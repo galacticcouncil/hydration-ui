@@ -1,16 +1,15 @@
-import { Ellipsis, StylizedAdd } from "@galacticcouncil/ui/assets/icons"
+import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
-  Button,
+  AmountMedium,
   Flex,
   Icon,
   TableRowAction,
   TableRowActionMobile,
 } from "@galacticcouncil/ui/components"
-import { Amount } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -18,6 +17,8 @@ import {
   AssetLabelFullMobile,
   useDisplayAssetPrice,
 } from "@/components"
+import { AssetDetailMobileModal } from "@/modules/wallet/MyAssets/AssetDetailMobileModal"
+import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
 import { useAssets } from "@/providers/assetsProvider"
 import { TAssetStored } from "@/states/assetRegistry"
 
@@ -53,7 +54,12 @@ export const useMyAssetsColumns = () => {
           row.original.total,
         )
 
-        return <Amount value={row.original.total} displayValue={displayPrice} />
+        return (
+          <AmountMedium
+            value={row.original.total}
+            displayValue={displayPrice}
+          />
+        )
       },
     })
 
@@ -66,7 +72,7 @@ export const useMyAssetsColumns = () => {
         )
 
         return (
-          <Amount
+          <AmountMedium
             value={row.original.transferable}
             displayValue={displayPrice}
           />
@@ -77,24 +83,7 @@ export const useMyAssetsColumns = () => {
     const stakingColumn = columnHelper.display({
       id: "staking",
       cell: ({ row }) => {
-        if (!row.original.canStake) {
-          return null
-        }
-
-        const asset = getAsset(row.original.id)
-
-        return (
-          <Button
-            type="button"
-            variant="emphasis"
-            outline
-            iconStart={StylizedAdd}
-          >
-            {t("myAssets.actions.staking", {
-              symbol: asset?.symbol,
-            })}
-          </Button>
-        )
+        return <AssetDetailStaking asset={row.original} />
       },
     })
 
@@ -140,15 +129,27 @@ export const useMyAssetsColumns = () => {
         },
       },
       cell: function Cell({ row }) {
+        const [isDetailOpen, setIsDetailOpen] = useState(false)
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
         )
 
         return (
-          <TableRowActionMobile>
-            <Amount value={row.original.total} displayValue={displayPrice} />
-          </TableRowActionMobile>
+          <>
+            <TableRowActionMobile onClick={() => setIsDetailOpen(true)}>
+              <AmountMedium
+                variant="small"
+                value={row.original.total}
+                displayValue={displayPrice}
+              />
+            </TableRowActionMobile>
+            <AssetDetailMobileModal
+              asset={row.original}
+              isOpen={isDetailOpen}
+              onClose={() => setIsDetailOpen(false)}
+            />
+          </>
         )
       },
     })

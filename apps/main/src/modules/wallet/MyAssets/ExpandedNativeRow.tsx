@@ -1,6 +1,5 @@
 import {
-  Amount,
-  Button,
+  AmountMedium,
   ExpandedTableRowHorizontalSeparator,
   Flex,
   Separator,
@@ -9,6 +8,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
+import { AssetDetailUnlock } from "@/modules/wallet/MyAssets/AssetDetailUnlock"
 import { LockExpiration } from "@/modules/wallet/MyLiquidity/LockExpiration"
 
 type Props = {
@@ -47,7 +47,7 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
   return (
     <Flex direction="column" gap={20}>
       <Flex px={50} justify="space-around">
-        <Amount
+        <AmountMedium
           label={t("myAssets.expandedNative.lockedInStaking")}
           value={lockedInStaking}
           displayValue={lockedInStakingDisplayPrice}
@@ -56,7 +56,7 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
         />
         <Separator orientation="vertical" />
         <Flex direction="column" gap={8}>
-          <Amount
+          <AmountMedium
             label={t("myAssets.expandedNative.lockedInDemocracy")}
             value={lockedInDemocracy}
             displayValue={lockedInDemocracyDisplayPrice}
@@ -70,7 +70,7 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
         <Separator orientation="vertical" />
         <Flex gap={20} align="center">
           <Flex direction="column" gap={8}>
-            <Amount
+            <AmountMedium
               label={t("myAssets.expandedNative.unlockable")}
               value={unlockable}
               displayValue={unlockableDisplayPrice}
@@ -81,20 +81,18 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
               })}
             </LockExpiration>
           </Flex>
-          <Button variant="accent" outline>
-            {t("myAssets.expandedNative.actions.unlockAvailableAssets")}
-          </Button>
+          <AssetDetailUnlock />
         </Flex>
       </Flex>
       <ExpandedTableRowHorizontalSeparator />
       <Flex px={50} justify="space-around">
-        <Amount
+        <AmountMedium
           label={t("myAssets.expandedNative.reserved")}
           value={reserved}
           displayValue={reservedDisplayPrice}
         />
         <Separator orientation="vertical" />
-        <Amount
+        <AmountMedium
           label={t("myAssets.expandedNative.lockedInVesting")}
           value={lockedInVesting}
           displayValue={lockedInVestingDisplayPrice}
