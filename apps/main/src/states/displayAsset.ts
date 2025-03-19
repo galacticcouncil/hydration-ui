@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from "react"
-import { isNullish } from "remeda"
 import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
@@ -76,7 +75,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
     Object.entries(assets).forEach(([key, price]) => {
       result[key] = {
         price,
-        isLoading: isNullish(price),
+        isLoading: !price.length,
       }
     })
     return result
@@ -97,6 +96,8 @@ export const useAssetsPrice = (assetIds: string[]) => {
     }
     return false
   }, [prices])
+
+  console.log(prices, isLoading)
 
   return { prices, isLoading, getAssetPrice }
 }
