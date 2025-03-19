@@ -97,7 +97,5 @@ export const useAssetsPrice = (assetIds: string[]) => {
     return false
   }, [prices])
 
-  console.log(prices, isLoading)
-
   return { prices, isLoading, getAssetPrice }
 }
