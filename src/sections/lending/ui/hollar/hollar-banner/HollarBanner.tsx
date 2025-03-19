@@ -18,7 +18,8 @@ import {
   SValuesContainer,
 } from "./HollarBanner.styled"
 import { HollarBorrowApyRange } from "./HollarBorrowApyRange"
-import hollarImage from "./assets/hollar-image.png"
+import HollarImage from "./assets/hollar-image.png"
+import HollarText from "./assets/hollar-text.svg?react"
 import { useTranslation } from "react-i18next"
 
 type HollarBannerProps = {
@@ -67,14 +68,8 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
       >
         <SContent>
           <div sx={{ pr: [120, 0] }}>
-            <Text font="GeistSemiBold" sx={{ mb: 4 }}>
-              {t("lending.hollar.banner.title")}
-            </Text>
-            <Text
-              fs={12}
-              lh={16}
-              sx={{ maxWidth: ["100%", 245], opacity: 0.7 }}
-            >
+            <HollarText sx={{ color: ["white", "basic900"] }} />
+            <Text fs={12} lh={16} sx={{ maxWidth: ["100%", 500] }}>
               {t("lending.hollar.banner.description")}
             </Text>
           </div>
@@ -118,7 +113,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
           </Button>
         </SContent>
       </SInnerContainer>
-      <SHollarImage src={hollarImage} width={120} height={120} />
+      <SHollarImage src={HollarImage} width={120} height={120} />
     </SContainer>
   )
 }

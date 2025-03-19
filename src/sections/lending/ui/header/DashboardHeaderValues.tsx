@@ -88,58 +88,61 @@ export const DashboardHeaderValues: FC<{
 
   return (
     <>
-      <div sx={{ maxWidth: ["100%", 1000] }} className={className}>
-        <DataValueList separated>
-          <DataValue
-            labelColor="brightBlue300"
-            label={t("lending.header.networth.title")}
-            isLoading={loading}
-          >
-            {currentAccount ? (
-              <DisplayValue value={Number(user?.netWorthUSD || 0)} isUSD />
-            ) : (
-              <NoData />
-            )}
-          </DataValue>
-          <DataValue
-            labelColor="brightBlue300"
-            label={t("lending.header.netAPY.title")}
-            tooltip={t("lending.header.netAPY.tooltip")}
-            isLoading={loading}
-          >
-            {currentAccount && Number(user?.netWorthUSD) > 0 ? (
-              <PercentageValue value={Number(user.netAPY) * 100} />
-            ) : (
-              <NoData />
-            )}
-          </DataValue>
-          {vDotSuppliedOrBorrowed && vDotApy && (
-            <DataValue
-              labelColor="brightBlue300"
-              label={t("lending.header.vdotAPY.title")}
-              isLoading={loading || isVDotApyLoading}
-            >
-              <PercentageValue value={Number(vDotApy.apy)} />
-            </DataValue>
+      <DataValueList
+        separated
+        className={className}
+        sx={{ maxWidth: ["100%", 700] }}
+      >
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.networth.title")}
+          isLoading={loading}
+        >
+          {currentAccount ? (
+            <DisplayValue value={Number(user?.netWorthUSD || 0)} isUSD />
+          ) : (
+            <NoData />
           )}
+        </DataValue>
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.netAPY.title")}
+          tooltip={t("lending.header.netAPY.tooltip")}
+          isLoading={loading}
+        >
+          {currentAccount && Number(user?.netWorthUSD) > 0 ? (
+            <PercentageValue value={Number(user.netAPY) * 100} />
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
+        {vDotSuppliedOrBorrowed && vDotApy && (
           <DataValue
             labelColor="brightBlue300"
-            label={t("lending.header.healthfactor.title")}
-            isLoading={loading}
+            label={t("lending.header.vdotAPY.title")}
+            isLoading={loading || isVDotApyLoading}
           >
-            {currentAccount && user?.healthFactor !== "-1" ? (
-              <HealthFactorNumber
-                fontSize={19}
-                value={user?.healthFactor || "-1"}
-                onInfoClick={() => {
-                  setOpen(true)
-                }}
-              />
-            ) : (
-              <NoData />
-            )}
+            <PercentageValue value={Number(vDotApy.apy)} />
           </DataValue>
-          {/* <DataValue
+        )}
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.healthfactor.title")}
+          isLoading={loading}
+        >
+          {currentAccount && user?.healthFactor !== "-1" ? (
+            <HealthFactorNumber
+              fontSize={19}
+              value={user?.healthFactor || "-1"}
+              onInfoClick={() => {
+                setOpen(true)
+              }}
+            />
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
+        {/* <DataValue
             labelColor="brightBlue300"
             label="Available rewards"
             isLoading={loading}
@@ -159,8 +162,7 @@ export const DashboardHeaderValues: FC<{
               <NoData />
             )}
           </DataValue> */}
-        </DataValueList>
-      </div>
+      </DataValueList>
       <LiquidationRiskParametresInfoModal
         open={open}
         setOpen={setOpen}

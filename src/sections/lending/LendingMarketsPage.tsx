@@ -3,6 +3,7 @@ import { Search } from "components/Search/Search"
 import { useState } from "react"
 import { useDebounce } from "react-use"
 import { MarketsHeaderValues } from "sections/lending/ui/header/MarketsHeaderValues"
+import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 import { MarketAssetsTable } from "sections/lending/ui/table/market-assets/MarketAssetsTable"
 
 export const LendingMarketsPage = () => {
@@ -32,6 +33,7 @@ export const LendingMarketsPage = () => {
   return (
     <>
       <MarketsHeaderValues sx={{ mb: [10, 40] }} />
+      <HollarBanner />,
       <Search
         name="market-search"
         placeholder="Search by token name, symbol or address"

@@ -11,6 +11,7 @@ import { SupplyAssetsTable } from "sections/lending/ui/table/supply-assets/Suppl
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { SContainer, SFilterContainer } from "./LendingDashboardPage.styled"
+import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 
 export const LendingDashboardPage = () => {
   const { t } = useTranslation()
@@ -25,6 +26,7 @@ export const LendingDashboardPage = () => {
   return (
     <>
       <DashboardHeaderValues sx={{ mb: [10, 40] }} />
+      <HollarBanner />,
       {evmAccount && !isLoading && !isBound && (
         <MoneyMarketBanner sx={{ mb: [20, 30] }} />
       )}

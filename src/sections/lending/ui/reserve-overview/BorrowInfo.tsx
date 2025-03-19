@@ -25,6 +25,7 @@ interface BorrowInfoProps {
   renderCharts: boolean
   showBorrowCapStatus: boolean
   borrowCap: AssetCapHookData
+  collectorInfoHidden?: boolean
 }
 
 export const BorrowInfo = ({
@@ -34,6 +35,7 @@ export const BorrowInfo = ({
   renderCharts,
   showBorrowCapStatus,
   borrowCap,
+  collectorInfoHidden = false,
 }: BorrowInfoProps) => {
   const { t } = useTranslation()
   const maxAvailableToBorrow = BigNumber.max(
@@ -194,7 +196,7 @@ export const BorrowInfo = ({
           currentMarketData={currentMarketData}
         />
       )}
-      {currentMarketData.addresses.COLLECTOR && (
+      {currentMarketData.addresses.COLLECTOR && !collectorInfoHidden && (
         <>
           <div sx={{ mt: 20 }}>
             <Text
