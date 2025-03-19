@@ -1,6 +1,6 @@
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
-export const GHO_SYMBOL = "GHO"
+export const GHO_SYMBOL = "HOLLAR"
 
 /**
  * Determines if GHO is available for borrowing (minting) on the provided network, also based off the token symbol being borrowed
@@ -8,12 +8,7 @@ export const GHO_SYMBOL = "GHO"
  * @returns {bool} - If the GHO token is available for minting
  */
 
-export const GHO_SUPPORTED_MARKETS = [
-  "proto_mainnet_v3",
-  "fork_proto_mainnet_v3",
-  "proto_sepolia_v3",
-  "fork_proto_sepolia_v3",
-]
+export const GHO_SUPPORTED_MARKETS = ["hydration_testnet_v3"]
 
 export const getGhoReserve = (reserves: ComputedReserveData[]) => {
   return reserves.find((reserve) => reserve.symbol === GHO_SYMBOL)
