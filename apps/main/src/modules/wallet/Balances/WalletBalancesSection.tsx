@@ -9,41 +9,46 @@ import { useDisplayAssetPrice } from "@/components"
 export const WalletBalancesSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const [liquidity] = useDisplayAssetPrice("10", 10301874)
-  const [borrow] = useDisplayAssetPrice("10", 10301874)
-  const [supply] = useDisplayAssetPrice("10", 10301874)
-  const [inFarms] = useDisplayAssetPrice("10", 1245)
+  const assets = 10301874
+  const [assetsDisplay] = useDisplayAssetPrice("10", assets)
+
+  const liquidity = 10301874
+  const [liquidityDisplay] = useDisplayAssetPrice("10", liquidity)
+
+  const farms = 10301874
+  const [farmsDisplay] = useDisplayAssetPrice("10", farms)
+
+  const supplyBorrow = 10301874
+  const [supplyBorrowDisplay] = useDisplayAssetPrice("10", supplyBorrow)
 
   return (
-    <Flex py={20} direction="column" justify="space-between">
+    <Flex py={[0, 20]} direction="column" justify="space-between" gap={[8, 0]}>
       <ValueStats
         size="small"
-        label={t("balances.header.liquidity")}
-        value={liquidity}
-        bottomLabel={t("balances.header.inFarms", {
-          price: inFarms,
-        })}
+        label={t("balances.header.assets")}
+        value={t("common:number", { value: assets })}
+        bottomLabel={assetsDisplay}
       />
       <Separator />
       <ValueStats
         size="small"
         label={t("balances.header.liquidity")}
-        value={liquidity}
-        bottomLabel={t("balances.header.inFarms", {
-          price: inFarms,
-        })}
+        value={t("common:number", { value: liquidity })}
+        bottomLabel={liquidityDisplay}
       />
       <Separator />
       <ValueStats
         size="small"
-        label={t("balances.header.borrow")}
-        value={borrow}
+        label={t("balances.header.farms")}
+        value={t("common:number", { value: farms })}
+        bottomLabel={farmsDisplay}
       />
       <Separator />
       <ValueStats
         size="small"
-        label={t("balances.header.supply")}
-        value={supply}
+        label={t("balances.header.supplyBorrow")}
+        value={t("common:number", { value: supplyBorrow })}
+        bottomLabel={supplyBorrowDisplay}
       />
     </Flex>
   )

@@ -17,23 +17,23 @@ const containerSizeVariants = createVariants<ValueStatsSize>((theme) => ({
 
 export const SValueStats = styled.div<{
   readonly size?: ValueStatsSize
-  readonly alwaysWrap: boolean
+  readonly alwaysWrap?: boolean
 }>(({ size = "large", alwaysWrap }) => [
-  css`
-    display: flex;
-    flex-direction: column;
-
-    ${!alwaysWrap &&
-    css`
-      flex-direction: row;
-      justify-content: space-between;
-
-      ${mq("sm")} {
+  alwaysWrap
+    ? css`
+        display: flex;
         flex-direction: column;
-        justify-content: initial;
-      }
-    `}
-  `,
+      `
+    : css`
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        ${mq("sm")} {
+          flex-direction: column;
+          justify-content: initial;
+        }
+      `,
   containerSizeVariants(size),
 ])
 
@@ -58,12 +58,16 @@ export const SValueStatsLabel = styled.div(
 
 const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
-    font-family: ${theme.fontFamilies1.secondary};
-    font-size: ${theme.headlineSize.base}px;
+    font-size: ${theme.headlineSize.base};
     line-height: 1;
+
+    ${mq("sm")} {
+      font-size: ${theme.headlineSize.h7};
+    }
   `,
   medium: css`
-    font-size: ${theme.headlineSize.h7}px;
+    font-size: ${theme.headlineSize.h7};
+    line-height: 1;
 
     ${mq("sm")} {
       font-size: 22px;
@@ -71,7 +75,8 @@ const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
     }
   `,
   large: css`
-    font-size: ${theme.headlineSize.h7}px;
+    font-size: ${theme.headlineSize.h7};
+    line-height: 1;
 
     ${mq("sm")} {
       font-size: 28px;

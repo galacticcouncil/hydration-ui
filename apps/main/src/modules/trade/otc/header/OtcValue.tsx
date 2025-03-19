@@ -14,7 +14,6 @@ export const OtcValue: FC<Props> = ({ label, price }) => {
 
   return (
     <ValueStats
-      alwaysWrap={false}
       label={label}
       customValue={
         <AssetPrice

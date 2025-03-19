@@ -25,25 +25,29 @@ export const WalletAssetsPage = () => {
   }, [isMobile])
 
   return (
-    <Flex direction="column" gap={20}>
-      <Grid gap={20} sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}>
+    <Flex direction="column" gap={[0, 20]}>
+      <Grid
+        columnGap={[10, 20]}
+        sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
+      >
         <WalletBalances />
         <WalletRewards />
       </Grid>
-      <Flex pt={12} align="flex-end" justify="space-between">
-        <WalletAssetsSubpageMenu />
-        {!isMobile && (
+      {!isMobile && (
+        <Flex pt={12} align="flex-end" justify="space-between">
+          <WalletAssetsSubpageMenu />
+
           <Input
             placeholder={t("searchAssets")}
             iconStart={Search}
             onChange={(e) => setSearchPhrase(e.target.value)}
           />
-        )}
-      </Flex>
-      {(category === "all" || category === "assets") && (
+        </Flex>
+      )}
+      {(isMobile || category === "all" || category === "assets") && (
         <MyAssets searchPhrase={searchPhrase} />
       )}
-      {(category === "all" || category === "liquidity") && (
+      {(isMobile || category === "all" || category === "liquidity") && (
         <MyLiquidity searchPhrase={searchPhrase} />
       )}
     </Flex>

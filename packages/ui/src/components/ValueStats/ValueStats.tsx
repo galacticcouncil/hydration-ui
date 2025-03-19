@@ -24,7 +24,7 @@ type ValueStatsProps = {
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
-  alwaysWrap = true,
+  alwaysWrap,
   size,
   label,
   customLabel,

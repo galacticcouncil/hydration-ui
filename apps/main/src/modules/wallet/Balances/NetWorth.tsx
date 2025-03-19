@@ -1,4 +1,5 @@
-import { ValueStats } from "@galacticcouncil/ui/components"
+import { Flex, ValueStats } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,14 +11,29 @@ export const NetWorth: FC = () => {
   const [netWorth] = useDisplayAssetPrice("10", 10301874)
 
   return (
-    <div>
+    <Flex
+      direction={["row", "column"]}
+      align={["center", "flex-start"]}
+      pb={[8, 0]}
+    >
       <ValueStats
+        alwaysWrap
         size="medium"
         label={t("balances.header.netWorth")}
         value={netWorth}
       />
-      {/* Graph placeholder */}
-      <div />
-    </div>
+      <Flex
+        borderWidth={1}
+        borderStyle="solid"
+        borderColor={getToken("details.borders")}
+        align="center"
+        justify="center"
+        sx={{ textAlign: "center" }}
+        height="100%"
+        width="100%"
+      >
+        Graph placeholder
+      </Flex>
+    </Flex>
   )
 }
