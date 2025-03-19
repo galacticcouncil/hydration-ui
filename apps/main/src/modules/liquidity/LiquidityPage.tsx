@@ -1,13 +1,16 @@
 import { Button, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { omnipoolTokens } from "@/api/pools"
 import { useToasts } from "@/states/toasts"
 
 export const LiquidityPage = () => {
   const { t } = useTranslation(["liquidity"])
+  const { data: omnipool } = useQuery(omnipoolTokens)
   const { successToast } = useToasts()
-
+  console.log(omnipool)
   return (
     <div>
       <Text as="h1" fs={40} fw={600} font="primary">

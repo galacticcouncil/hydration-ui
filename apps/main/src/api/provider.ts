@@ -86,36 +86,8 @@ const getProviderData = async (rpcUrlList: string[]) => {
 
   const endpoint = provider.endpoint
 
-  api.registry.register({
-    XykLMDeposit: {
-      shares: "u128",
-      ammPoolId: "AccountId",
-      yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-    },
-    OmnipoolLMDeposit: {
-      shares: "u128",
-      ammPoolId: "u32",
-      yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-    },
-  })
-
-  const poolService = new PoolService(api)
-  const traderRoutes = [
-    PoolType.Omni,
-    PoolType.Stable,
-    PoolType.XYK,
-    PoolType.LBP,
-  ]
-
-  const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: traderRoutes,
-  })
-
-  // await poolService.syncRegistry(externalTokens[dataEnv])
-
   const [isDispatchPermitEnabled] = await Promise.all([
     api.tx.multiTransactionPayment.dispatchPermit,
-    //tradeRouter.getPools(),
   ])
 
   const balanceClient = new BalanceClient(api)
@@ -124,8 +96,6 @@ const getProviderData = async (rpcUrlList: string[]) => {
   return {
     api,
     papi,
-    tradeRouter,
-    poolService,
     balanceClient,
     assetClient,
     rpcUrlList,
@@ -172,4 +142,37 @@ export async function changeProvider(prevUrl: string, nextUrl: string) {
   if (nextApi && !nextApi.isConnected) {
     await reconnectProvider(getProviderInstance(nextApi))
   }
+}
+
+let tradeRouter: TradeRouter | null = null
+let poolService: PoolService | null = null
+
+export const initializeServices = (api: ApiPromise) => {
+  if (!poolService) {
+    poolService = new PoolService(api)
+
+    tradeRouter = new TradeRouter(poolService, {
+      includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
+    })
+  }
+
+  return { poolService, tradeRouter }
+}
+
+export const getTradeRouter = () => {
+  if (!tradeRouter) {
+    throw new Error(
+      "TradeRouter has not been initialized. Call initializeServices(api) first.",
+    )
+  }
+  return tradeRouter
+}
+
+export const getPoolService = () => {
+  if (!poolService) {
+    throw new Error(
+      "PoolService has not been initialized. Call initializeServices(api) first.",
+    )
+  }
+  return poolService
 }

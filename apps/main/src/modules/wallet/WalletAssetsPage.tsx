@@ -10,15 +10,23 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { useWalletAssetsColumns } from "@/modules/wallet/WalletAssetsPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { useAccountData } from "@/states/account"
 
 export const WalletAssetsPage = () => {
   const { t } = useTranslation()
   const columns = useWalletAssetsColumns()
   const [search, setSearch] = useState("")
   const { tokens, stableswap, bonds, erc20, isExternal } = useAssets()
+  const { balances, positions } = useAccountData(
+    useShallow(pick(["balances", "positions"])),
+  )
+
+  console.log({ balances, positions })
 
   const filteredTokens = [...tokens, ...stableswap, ...bonds, ...erc20].filter(
     (asset) => asset.isTradable && !isExternal(asset),
