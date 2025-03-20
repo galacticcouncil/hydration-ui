@@ -27,6 +27,8 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
+import { useIncreaseStake } from "sections/staking/sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
+import { useShallow } from "hooks/useShallow"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()
@@ -38,6 +40,7 @@ export const AvailableRewards = () => {
     native.id,
   ])
   const refetch = useRefetchAccountAssets()
+  const diffDays = useIncreaseStake(useShallow((state) => state.diffDays))
 
   const processedVotes = useProcessedVotesIds()
 
@@ -98,9 +101,8 @@ export const AvailableRewards = () => {
     (value) => value.currentSecondary,
   )
 
-  const isGraphIncreasePoint = reward?.chartValues?.find(
-    (value) => value.currentThird,
-  )
+  const isGraphIncreasePoint =
+    reward?.chartValues?.find((value) => value.currentThird) && diffDays !== "0"
 
   return (
     <SRewardCardContainer>
