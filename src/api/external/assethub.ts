@@ -7,16 +7,21 @@ import {
 } from "@galacticcouncil/xcm-core"
 import { Wallet } from "@galacticcouncil/xcm-sdk"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
-import { ApiPromise } from "@polkadot/api"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { Option, u32 } from "@polkadot/types"
-import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useExternalApi } from "api/external"
 import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { Transaction, useStore } from "state/store"
+import { Transaction, useExternalAssetsMetadata, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import {
   BN_0,
@@ -26,11 +31,9 @@ import {
 } from "utils/constants"
 import { Maybe, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { arrayToMap } from "utils/rx"
 import BN from "bignumber.js"
 import { useSpotPrice } from "api/spotPrice"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
-import { Buffer } from "buffer"
 import { XcmV3Junction, XcmV3Junctions } from "@polkadot-api/descriptors"
 
 export const ASSETHUB_TREASURY_ADDRESS =
@@ -70,12 +73,17 @@ export const assethubNativeToken = assethub.assetsData.get(
   "dot",
 ) as ParachainAssetData
 
-export const getAssetHubAssets = async (api: ApiPromise) => {
+export const getAssetHubAssets = async () => {
   try {
+    const provider = new WsProvider(assethub.ws)
+    const api = await ApiPromise.create({ provider })
+
     const [dataRaw, assetsRaw] = await Promise.all([
       api.query.assets.metadata.entries(),
       api.query.assets.asset.entries(),
     ])
+
+    api.disconnect()
 
     const data: TExternalAsset[] = dataRaw.map(([key, dataRaw]) => {
       const id = key.args[0].toString()
@@ -101,8 +109,11 @@ export const getAssetHubAssets = async (api: ApiPromise) => {
         supply,
         origin: assethub.parachainId,
         isWhiteListed,
+        admin,
+        owner,
       }
     })
+
     return { data, id: assethub.parachainId }
   } catch (e) {}
 }
@@ -122,33 +133,39 @@ export const getAssetHubAssetsIds = async (api: ApiPromise) => {
  * Used for fetching tokens only from Asset Hub parachain
  */
 export const useAssetHubAssetRegistry = (enabled = true) => {
-  const { data: api } = useExternalApi("assethub")
+  const { sync } = useExternalAssetsMetadata()
 
   return useQuery(
     QUERY_KEYS.assetHubAssetRegistry,
     async () => {
-      if (!api) throw new Error("Asset Hub is not connected")
-      const assetHub = await getAssetHubAssets(api)
+      const assetHub = await getAssetHubAssets()
 
       if (assetHub) {
-        return assetHub.data
+        const filteredAssets = assetHub.data.filter(
+          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
+        )
+
+        sync(assetHub.id.toString(), filteredAssets)
+        return []
       }
     },
     {
-      enabled: enabled && !!api,
+      enabled: enabled,
       retry: false,
       refetchOnWindowFocus: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours,
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      select: (data) => {
-        const assets = data ?? []
-        const filteredAssets = assets.filter(
-          ({ id }) => !ASSETHUB_ID_BLACKLIST.includes(id),
-        )
-        return arrayToMap("id", filteredAssets)
-      },
+      notifyOnChangeProps: [],
     },
   )
+}
+
+export const useRefetchAssetHub = () => {
+  const queryClient = useQueryClient()
+
+  return () => {
+    queryClient.refetchQueries(QUERY_KEYS.assetHubAssetRegistry)
+  }
 }
 
 export const getAssetHubNativeBalance =
@@ -518,30 +535,6 @@ export const useAssetHubRevokeAdminRights = ({
         onSuccess,
       },
     )
-  })
-}
-
-const getAssetHubAssetAdminRights = async (api: ApiPromise, id: string) => {
-  try {
-    const asset = await api.query.assets.asset(id)
-
-    const admin = asset.unwrap().admin.toString()
-    const owner = asset.unwrap().owner.toString()
-
-    return {
-      admin,
-      owner,
-    }
-  } catch (e) {
-    return { admin: "", owner: "" }
-  }
-}
-
-export const useAssetHubAssetAdminRights = (id: string) => {
-  const { data: api } = useExternalApi("assethub")
-  return useQuery(QUERY_KEYS.assetHubAssetAdminRights(id), async () => {
-    if (!api) throw new Error("Asset Hub is not connected")
-    return getAssetHubAssetAdminRights(api, id)
   })
 }
 

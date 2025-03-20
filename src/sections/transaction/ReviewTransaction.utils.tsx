@@ -3,7 +3,7 @@ import {
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
-import { chainsMap, tags } from "@galacticcouncil/xcm-cfg"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AccountId32, Hash } from "@open-web3/orml-types/interfaces"
 import { ApiPromise } from "@polkadot/api"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
@@ -27,7 +27,7 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
-import { useToast } from "state/toasts"
+import { MetaTags, useToast } from "state/toasts"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
 import { ToastMessage, useSettingsStore } from "state/store"
 import {
@@ -43,7 +43,7 @@ import {
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useIsTestnet } from "api/provider"
+import { useActiveRpcUrlList } from "api/provider"
 import { Contract } from "ethers"
 import BN from "bignumber.js"
 import { SolanaChain } from "@galacticcouncil/xcm-core"
@@ -82,6 +82,14 @@ export class TransactionError extends Error {
 }
 
 type TxHuman = Record<string, { args: TxMethod["args"] }>
+
+function getXcmTab(tags?: string) {
+  if (!tags) return undefined
+
+  const parts = tags.split(",")
+
+  return parts[parts.length - 1] as MetaTags
+}
 
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
   if (!isTxMethod(x)) return null
@@ -233,7 +241,7 @@ export const useSendEvmTransactionMutation = (
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const { account: evmAccount } = useEvmAccount()
-  const isTestnet = useIsTestnet()
+  const { isTestnet } = useActiveRpcUrlList()
 
   const isMounted = useMountedState()
 
@@ -243,14 +251,20 @@ export const useSendEvmTransactionMutation = (
       try {
         const txHash = evmTx?.hash
         const txData = evmTx?.data
+        const metaTags = xcallMeta?.tags
 
-        const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
         const chain = evmAccount?.chainId
           ? getEvmChainById(evmAccount.chainId)
           : null
         const link =
           txHash && chain
-            ? getEvmTxLink(txHash, txData, chain.key, isTestnet, isSnowBridge)
+            ? getEvmTxLink(
+                txHash,
+                txData,
+                chain.key,
+                isTestnet,
+                getXcmTab(metaTags),
+              )
             : ""
 
         const isApproveTx = txData?.startsWith("0x095ea7b3")
@@ -262,10 +276,8 @@ export const useSendEvmTransactionMutation = (
         const xcm = xcallMeta ? "evm" : undefined
 
         const bridge =
-          !isApproveTx &&
-          !isSnowBridge &&
-          (chain?.isEvmChain() || destChain?.isEvmChain())
-            ? chain?.key
+          !isApproveTx && (chain?.isEvmChain() || destChain?.isEvmChain())
+            ? getXcmTab(metaTags)
             : undefined
 
         loading({
@@ -346,13 +358,16 @@ export const useSendSolanaTransactionMutation = (
       try {
         const link = getSolanaTxLink(txHash)
         const xcm = xcallMeta ? "solana" : undefined
+        const metaTags = xcallMeta?.tags
 
         const destChain = xcallMeta?.dstChain
           ? chainsMap.get(xcallMeta.dstChain)
           : undefined
 
         const bridge =
-          chain?.isSolana() || destChain?.isSolana() ? chain?.key : undefined
+          chain?.isSolana() || destChain?.isSolana()
+            ? getXcmTab(metaTags)
+            : undefined
 
         loading({
           id,
@@ -485,6 +500,7 @@ const getTransactionData = (
   xcallMeta?: Record<string, string>,
 ) => {
   const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
+  const metaTags = xcallMeta?.tags
 
   const xcmDstChain = xcallMeta?.dstChain
     ? chainsMap.get(xcallMeta.dstChain)
@@ -495,11 +511,9 @@ const getTransactionData = (
       ? createSubscanLink("extrinsic", txHash, srcChain.key)
       : undefined
 
-  const isSnowBridge = xcallMeta?.tags === tags.Tag.Snowbridge
-
   const bridge =
-    (xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()) && !isSnowBridge
-      ? "substrate"
+    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()
+      ? getXcmTab(metaTags)
       : undefined
 
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined

@@ -117,7 +117,6 @@ export const BondsTrade = ({
         }}
         assetIn={search.success ? search.data.assetIn : undefined}
         assetOut={search.success ? search.data.assetOut : undefined}
-        apiAddress={activeProvider?.url}
         stableCoinAssetId={stableCoinId ?? stableCoinAssetId}
         accountName={account?.name}
         accountProvider={account?.provider}

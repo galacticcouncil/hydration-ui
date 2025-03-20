@@ -1,7 +1,5 @@
 import { DetailCard } from "sections/trade/sections/bonds/details/components/DetailCard/DetailCard"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useDisplayPrice } from "utils/displayAsset"
-import { BN_1 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { TBond, useAssets } from "providers/assets"
 import { formatDate } from "utils/formatting"
@@ -17,6 +15,7 @@ import { useTokenBalance } from "api/balances"
 import { useSpotPrice } from "api/spotPrice"
 import { Text } from "components/Typography/Text/Text"
 import Skeleton from "react-loading-skeleton"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const BondInfoCards = ({
   bond,
@@ -33,8 +32,7 @@ export const BondInfoCards = ({
 }) => {
   const { t } = useTranslation()
   const { getAsset } = useAssets()
-  const spotPrice = useDisplayPrice(bond.underlyingAssetId)
-  const spotPriceBond = useDisplayPrice(bond.id)
+  const { getAssetPrice } = useAssetsPrice([bond.underlyingAssetId, bond.id])
 
   const lbpPoolEvents = useLBPPoolEvents(bond?.id)
 
@@ -67,8 +65,8 @@ export const BondInfoCards = ({
 
   const averagePrice = averagePriceData.data?.price
 
-  const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
-  const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1
+  const currentSpotPrice = getAssetPrice(bond.underlyingAssetId).price
+  const currentBondPrice = getAssetPrice(bond.id).price
 
   const accumulatedAsset = accumulatedAssetId
     ? getAsset(accumulatedAssetId.toString())
@@ -85,9 +83,9 @@ export const BondInfoCards = ({
         initialAccumulatedAssetValue ?? 0,
       )
 
-  const isDiscount = currentSpotPrice.gt(currentBondPrice)
+  const isDiscount = BN(currentSpotPrice).gt(currentBondPrice)
 
-  const discount = currentSpotPrice
+  const discount = BN(currentSpotPrice)
     .minus(currentBondPrice)
     .div(currentSpotPrice)
     .multipliedBy(100)
@@ -114,7 +112,9 @@ export const BondInfoCards = ({
               ) : (
                 <Text fs={12} lh={12} color="basic400">
                   {t("value.tokenWithSymbol", {
-                    value: spotPriceBondAccumulated.data?.spotPrice,
+                    value: spotPriceBondAccumulated.data?.spotPrice
+                      ? BN(spotPriceBondAccumulated.data.spotPrice)
+                      : undefined,
                     symbol: accumulatedAsset?.symbol,
                   })}
                 </Text>
@@ -139,7 +139,9 @@ export const BondInfoCards = ({
                 ) : (
                   <Text fs={12} lh={12} color="basic400">
                     {t("value.tokenWithSymbol", {
-                      value: spotPriceAccumulated.data?.spotPrice,
+                      value: spotPriceAccumulated.data?.spotPrice
+                        ? BN(spotPriceAccumulated.data.spotPrice)
+                        : undefined,
                       symbol: accumulatedAsset?.symbol,
                     })}
                   </Text>

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { useInterval } from "react-use"
+import { useInterval, useMountedState } from "react-use"
 import { PingResponse } from "utils/rpc"
+
+const CIRC = Math.ceil(2 * Math.PI * 5)
 
 export const useElapsedTimeStatus = (timestamp: number | null) => {
   const [now, setNow] = useState(Date.now())
@@ -24,21 +26,24 @@ export const useElapsedTimeStatus = (timestamp: number | null) => {
 }
 
 function ProviderStatusSuccess() {
-  const circ = Math.ceil(2 * Math.PI * 5)
+  const isMounted = useMountedState()
 
   const controls = useAnimationControls()
-  useEffect(() => {
-    async function animate() {
-      controls.set({ opacity: 1, strokeDashoffset: circ * (1 - 0) })
-      await controls.start(
-        { strokeDashoffset: circ * (1 - 1) },
-        { duration: 0.8 },
-      )
-      await controls.start({ opacity: 0 }, { duration: 0.2 })
-    }
 
-    animate()
-  }, [controls, circ])
+  useEffect(() => {
+    controls.set({ opacity: 1, strokeDashoffset: CIRC * (1 - 0) })
+    controls
+      .start({ strokeDashoffset: CIRC * (1 - 1) }, { duration: 0.8 })
+      .then(() => {
+        if (isMounted()) {
+          controls.start({ opacity: 0 }, { duration: 0.2 })
+        }
+      })
+
+    return () => {
+      controls.stop()
+    }
+  }, [controls, isMounted])
 
   return (
     <span css={{ position: "relative" }}>
@@ -68,8 +73,8 @@ function ProviderStatusSuccess() {
           cy="5.5"
           r="5"
           stroke="currentColor"
-          strokeDasharray={circ}
-          strokeDashoffset={circ}
+          strokeDasharray={CIRC}
+          strokeDashoffset={CIRC}
           animate={controls}
         />
       </svg>

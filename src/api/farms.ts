@@ -29,11 +29,11 @@ import { MultiCurrencyContainer } from "utils/farms/claiming/multiCurrency"
 import { OmnipoolLiquidityMiningClaimSim } from "utils/farms/claiming/claimSimulator"
 import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
 import { TDeposit, useAccountAssets } from "./deposits"
-import { useDisplayPrices } from "utils/displayAsset"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BalanceClient } from "@galacticcouncil/sdk"
+import { useAssetsPrice } from "state/displayPrice"
 
 const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
 
@@ -582,25 +582,29 @@ export const useFarmsPoolAssets = () => {
   const indexerUrl = useIndexerUrl()
   const { api } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.yieldFarmCreated, async () => {
-    const { events } = await getYieldFarmCreated(indexerUrl)()
-    const currentBlockNumber = await api.derive.chain.bestNumber()
-    const blockNumberDiff = currentBlockNumber
-      .toBigNumber()
-      .minus(NEW_YIELD_FARMS_BLOCKS)
+  return useQuery(
+    QUERY_KEYS.yieldFarmCreated,
+    async () => {
+      const { events } = await getYieldFarmCreated(indexerUrl)()
+      const currentBlockNumber = await api.derive.chain.bestNumber()
+      const blockNumberDiff = currentBlockNumber
+        .toBigNumber()
+        .minus(NEW_YIELD_FARMS_BLOCKS)
 
-    const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
-      if (
-        blockNumberDiff.lt(event.block.height) &&
-        !acc.includes(event.args.assetId)
-      )
-        acc.push(event.args.assetId)
+      const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
+        if (
+          blockNumberDiff.lt(event.block.height) &&
+          !acc.includes(event.args.assetId)
+        )
+          acc.push(event.args.assetId)
 
-      return acc
-    }, [])
+        return acc
+      }, [])
 
-    return newFarmsByPoolAsset
-  })
+      return newFarmsByPoolAsset
+    },
+    { staleTime: millisecondsInHour },
+  )
 }
 
 export const getYieldFarmCreated = (indexerUrl: string) => async () => {
@@ -822,7 +826,7 @@ export const useSummarizeClaimableValues = (
     ),
   )
 
-  const { data: spotPrices, isLoading } = useDisplayPrices(assetsId)
+  const { getAssetPrice, isLoading } = useAssetsPrice(assetsId)
 
   const {
     total,
@@ -831,7 +835,7 @@ export const useSummarizeClaimableValues = (
     claimableAssetValues,
     totalsByYieldFarms,
   } = useMemo(() => {
-    if (!spotPrices) {
+    if (isLoading) {
       return {
         total: "0",
         maxTotal: "0",
@@ -895,15 +899,14 @@ export const useSummarizeClaimableValues = (
           .plus(maxRewards)
           .toString()
 
-        const { spotPrice } =
-          spotPrices.find((price) => price?.tokenIn === rewardCurrency) ?? {}
+        const spotPrice = getAssetPrice(rewardCurrency).price
 
         if (spotPrice) {
-          const rewardTotal = spotPrice.times(rewards).toString()
-          const claimableRewardTotal = spotPrice
-            .times(claimableRewards)
+          const rewardTotal = rewards.times(spotPrice).toString()
+          const claimableRewardTotal = claimableRewards
+            .times(spotPrice)
             .toString()
-          const maxRewardTotal = spotPrice.times(maxRewards).toString()
+          const maxRewardTotal = maxRewards.times(spotPrice).toString()
 
           acc.total = BN(acc.total).plus(rewardTotal).toString()
           acc.claimableTotal = BN(acc.claimableTotal)
@@ -930,7 +933,7 @@ export const useSummarizeClaimableValues = (
         totalsByYieldFarms: [],
       },
     )
-  }, [claimableValues, spotPrices])
+  }, [claimableValues, getAssetPrice, isLoading])
 
   const diffRewards = BN(maxTotal).minus(claimableTotal).toString()
 
