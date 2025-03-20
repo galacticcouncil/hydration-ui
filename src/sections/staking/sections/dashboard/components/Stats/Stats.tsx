@@ -68,7 +68,7 @@ export const Stats = ({
                       <Skeleton width={100} height={24} />
                     </div>
                   ) : (
-                    <AprStatValue availableBalance={data?.availableBalance} />
+                    <AprStatValue />
                   )
                 }
               />

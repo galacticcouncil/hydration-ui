@@ -5,7 +5,6 @@ import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransf
 import { useStore } from "state/store"
 import { FormValues } from "utils/helpers"
 import BigNumber from "bignumber.js"
-import { BN_10 } from "utils/constants"
 import { Button } from "components/Button/Button"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 import { scale } from "utils/balance"
@@ -21,17 +20,22 @@ import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useEstimatedFees } from "api/transaction"
 import { useCallback } from "react"
+import { useIncreaseStake, useStakeValidation } from "./Stake.utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Summary } from "components/Summary/Summary"
+import { useDebounce } from "react-use"
+import { Text } from "components/Typography/Text/Text"
 
 export const Stake = ({
   loading,
   positionId,
-  minStake,
   balance,
+  stakedBalance,
 }: {
   loading: boolean
-  minStake?: BigNumber
   positionId?: number
   balance: BigNumber
+  stakedBalance?: BigNumber
 }) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -40,8 +44,30 @@ export const Stake = ({
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const refetchAccountAssets = useRefetchAccountAssets()
+  const { update, diffDays } = useIncreaseStake()
 
-  const form = useForm<{ amount: string }>()
+  const validation = useStakeValidation({
+    availableBalance: balance,
+    stakedBalance,
+  })
+
+  const form = useForm<{ amount: string }>({
+    mode: "onChange",
+    resolver: validation ? zodResolver(validation.zodSchema) : undefined,
+  })
+
+  const amount = form.watch("amount")
+
+  useDebounce(
+    () => {
+      update(
+        stakedBalance ? "value" : "stakeValue",
+        amount ? scale(amount, native.decimals).toString() : undefined,
+      )
+    },
+    500,
+    [amount, stakedBalance],
+  )
 
   const { data: votes } = useProcessedVotesIdsQuery()
 
@@ -132,37 +158,6 @@ export const Stake = ({
         <Controller
           name="amount"
           control={form.control}
-          rules={{
-            required: t("wallet.assets.transfer.error.required"),
-            validate: {
-              validNumber: (value) => {
-                try {
-                  if (!new BigNumber(value).isNaN()) return true
-                } catch {}
-                return t("error.validNumber")
-              },
-              positive: (value) =>
-                new BigNumber(value).gt(0) || t("error.positive"),
-              maxBalance: (value) => {
-                try {
-                  if (balance.gte(BigNumber(value).multipliedBy(BN_10.pow(12))))
-                    return true
-                } catch {}
-                return t("liquidity.add.modal.validation.notEnoughBalance")
-              },
-              minStake: (value) => {
-                const minStakeValue = minStake?.shiftedBy(-12) ?? 0
-
-                try {
-                  if (!new BigNumber(value).lt(minStakeValue ?? 0)) return true
-                } catch {}
-                return t("staking.dashboard.form.stake.minStakeError", {
-                  value: minStakeValue,
-                  symbol: "HDX",
-                })
-              },
-            },
-          }}
           render={({
             field: { name, value, onChange },
             fieldState: { error },
@@ -188,13 +183,54 @@ export const Stake = ({
           }
         />
 
+        {validation && (
+          <Summary
+            rows={[
+              {
+                label: t("staking.dashboard.form.stake.summary.minimum"),
+                content: t("value.tokenWithSymbol", {
+                  value: BigNumber(validation.value),
+                  symbol: native.symbol,
+                }),
+              },
+              ...(diffDays && diffDays !== "0"
+                ? [
+                    {
+                      label: (
+                        <Text color="brightBlue200" fs={14}>
+                          {t(
+                            "staking.dashboard.form.stake.summary.period.label",
+                          )}
+                        </Text>
+                      ),
+                      content: (
+                        <Text color="brightBlue200" fs={14}>
+                          {t(
+                            "staking.dashboard.form.stake.summary.period.value",
+                            {
+                              value: diffDays,
+                            },
+                          )}
+                        </Text>
+                      ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        )}
+
         <Spacer size={20} />
 
         {account ? (
           <Button
             variant="primary"
             type="submit"
-            disabled={loading || account?.isExternalWalletConnected}
+            disabled={
+              loading ||
+              account?.isExternalWalletConnected ||
+              !form.formState.isValid
+            }
           >
             {positionId == null
               ? t("staking.dashboard.form.stake.button")
