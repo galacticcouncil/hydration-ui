@@ -2,12 +2,17 @@ import { useNavigate, useSearch } from "@tanstack/react-location"
 import { Search } from "components/Search/Search"
 import { useState } from "react"
 import { useDebounce } from "react-use"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { MarketsHeaderValues } from "sections/lending/ui/header/MarketsHeaderValues"
 import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 import { MarketAssetsTable } from "sections/lending/ui/table/market-assets/MarketAssetsTable"
 
 export const LendingMarketsPage = () => {
   const navigate = useNavigate()
+
+  const { currentMarketData } = useProtocolDataContext()
+  const isHollarEnabled = !!currentMarketData.addresses.GHO_TOKEN_ADDRESS
+
   const query = useSearch<{
     Search: {
       search?: string
@@ -33,7 +38,7 @@ export const LendingMarketsPage = () => {
   return (
     <>
       <MarketsHeaderValues sx={{ mb: [10, 40] }} />
-      <HollarBanner />,
+      {isHollarEnabled && <HollarBanner sx={{ mb: [10, 40] }} />}
       <Search
         name="market-search"
         placeholder="Search by token name, symbol or address"

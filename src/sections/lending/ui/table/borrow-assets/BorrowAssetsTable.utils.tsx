@@ -160,8 +160,6 @@ export const useBorrowAssetsTableData = () => {
           )
         }
 
-        console.log({ availableBorrows, s: reserve.symbol })
-
         const availableBorrowsInUSD = valueToBigNumber(availableBorrows)
           .multipliedBy(reserve.formattedPriceInMarketReferenceCurrency)
           .multipliedBy(marketReferencePriceInUsd)

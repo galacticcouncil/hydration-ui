@@ -26,15 +26,11 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { ERC20TokenType } from "sections/lending/libs/web3-data-provider/Web3Provider"
 import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
-import {
-  getMaxAmountAvailableToBorrow,
-  getMaxGhoMintAmount,
-} from "sections/lending/utils/getMaxAmountAvailableToBorrow"
+import { getMaxAmountAvailableToBorrow } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { BorrowActions } from "./BorrowActions"
 import { BorrowAmountWarning } from "./BorrowAmountWarning"
 import { ParameterChangewarning } from "./ParameterChangewarning"
-import { useRootStore } from "sections/lending/store/root"
 
 export enum ErrorType {
   MAX_EXCEEDED,
@@ -100,13 +96,9 @@ export const BorrowModalContent = ({
   setUnwrap: (unwrap: boolean) => void
 }) => {
   const { mainTxState: borrowTxState, txError } = useModalContext()
-  const { user, marketReferencePriceInUsd, ghoReserveData } =
-    useAppDataContext()
-  const { currentMarket, currentNetworkConfig } = useProtocolDataContext()
+  const { user, marketReferencePriceInUsd } = useAppDataContext()
+  const { currentNetworkConfig } = useProtocolDataContext()
   const { borrowCap } = useAssetCaps()
-  const displayGho = useRootStore((store) => store.displayGho)
-
-  const isGho = displayGho({ currentMarket, symbol })
 
   const [interestRateMode, setInterestRateMode] = useState<InterestRate>(
     InterestRate.Variable,
@@ -114,12 +106,11 @@ export const BorrowModalContent = ({
   const [amount, setAmount] = useState("")
   const [riskCheckboxAccepted, setRiskCheckboxAccepted] = useState(false)
 
-  const maxAmountToBorrow = isGho
-    ? Math.min(
-        Number(getMaxGhoMintAmount(user, poolReserve)),
-        ghoReserveData.aaveFacilitatorRemainingCapacity,
-      ).toFixed(10)
-    : getMaxAmountAvailableToBorrow(poolReserve, user, interestRateMode)
+  const maxAmountToBorrow = getMaxAmountAvailableToBorrow(
+    poolReserve,
+    user,
+    interestRateMode,
+  )
 
   // We set this in a useEffect, so it doesn't constantly change when
   // max amount selected

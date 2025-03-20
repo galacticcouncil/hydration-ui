@@ -86,12 +86,14 @@ export const DashboardHeaderValues: FC<{
     enabled: vDotSuppliedOrBorrowed,
   })
 
+  const shouldRenderVdotApy = vDotSuppliedOrBorrowed && !!vDotApy
+
   return (
     <>
       <DataValueList
         separated
         className={className}
-        sx={{ maxWidth: ["100%", 700] }}
+        sx={{ maxWidth: ["100%", shouldRenderVdotApy ? 1000 : 700] }}
       >
         <DataValue
           labelColor="brightBlue300"
@@ -116,7 +118,7 @@ export const DashboardHeaderValues: FC<{
             <NoData />
           )}
         </DataValue>
-        {vDotSuppliedOrBorrowed && vDotApy && (
+        {shouldRenderVdotApy && (
           <DataValue
             labelColor="brightBlue300"
             label={t("lending.header.vdotAPY.title")}

@@ -27,7 +27,7 @@ export const FrozenTooltip = ({
   return (
     <InfoTooltip
       text={
-        <Text>
+        <Text fs={12}>
           This asset is frozen due to a protocol governance decision.{" "}
           <Link
             href={getFrozenProposalLink(symbol, currentMarket)}
