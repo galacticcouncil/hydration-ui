@@ -76,7 +76,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
           <SValuesContainer>
             <DataValue
               size="small"
-              label={t("lending.hollar.banner.total")}
+              label={t("lending.market.table.totalBorrowed")}
               labelColor="alpha0"
               isLoading={isLoading}
             >
@@ -84,7 +84,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             </DataValue>
             <DataValue
               size="small"
-              label={t("lending.hollar.banner.apy")}
+              label={t("lending.apyBorrowRate")}
               labelColor="alpha0"
               isLoading={isLoading}
             >

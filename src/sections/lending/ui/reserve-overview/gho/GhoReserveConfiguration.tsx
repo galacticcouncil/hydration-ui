@@ -1,13 +1,14 @@
+import { valueToBigNumber } from "@aave/math-utils"
+import BN from "bignumber.js"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import {
   ComputedReserveData,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { BorrowInfo } from "sections/lending/ui/reserve-overview/BorrowInfo"
+import { getBorrowCapData } from "sections/lending/hooks/useAssetCaps"
 import { EModeInfo } from "sections/lending/ui/reserve-overview/EModeInfo"
+import { GhoBorrowInfo } from "sections/lending/ui/reserve-overview/gho/GhoBorrowInfo"
 import { GhoDiscountParameters } from "sections/lending/ui/reserve-overview/gho/GhoDiscountCalculator"
 import { ReserveSectionDivider } from "sections/lending/ui/reserve-overview/ReserveSectionDivider"
 
@@ -19,18 +20,35 @@ export const GhoReserveConfiguration: React.FC<
   GhoReserveConfigurationProps
 > = ({ reserve }) => {
   const { t } = useTranslation()
-  const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
   const { ghoLoadingData, ghoReserveData } = useAppDataContext()
 
-  const renderCharts =
-    !!currentNetworkConfig.ratesHistoryApiUrl &&
-    !currentMarketData.disableCharts
-
-  const { borrowCap } = useAssetCaps()
-
-  const showBorrowCapStatus: boolean = reserve.borrowCap !== "0"
-
   const shouldRenderEModeInfo = reserve.eModeCategoryId !== 0
+
+  const totalBorrowed = BN.min(
+    valueToBigNumber(reserve.totalDebt),
+    valueToBigNumber(reserve.borrowCap),
+  ).toNumber()
+
+  const totalBorrowedUSD = BN.min(
+    valueToBigNumber(reserve.totalDebtUSD),
+    valueToBigNumber(reserve.borrowCapUSD),
+  ).toString()
+
+  const maxAvailableToBorrow = BN.max(
+    valueToBigNumber(reserve.borrowCap).minus(
+      valueToBigNumber(reserve.totalDebt),
+    ),
+    0,
+  ).toNumber()
+
+  const maxAvailableToBorrowUSD = BN.max(
+    valueToBigNumber(reserve.borrowCapUSD).minus(
+      valueToBigNumber(reserve.totalDebtUSD),
+    ),
+    0,
+  ).toNumber()
+
+  const borrowCapUsage = getBorrowCapData(reserve).borrowCapUsage
 
   return (
     <>
@@ -46,14 +64,14 @@ export const GhoReserveConfiguration: React.FC<
       <Text color="pink500" fs={14} sx={{ mb: 30 }}>
         Borrow info
       </Text>
-      <BorrowInfo
+      <GhoBorrowInfo
         reserve={reserve}
-        currentMarketData={currentMarketData}
-        currentNetworkConfig={currentNetworkConfig}
-        renderCharts={renderCharts}
-        showBorrowCapStatus={showBorrowCapStatus}
-        borrowCap={borrowCap}
-        collectorInfoHidden
+        ghoReserveData={ghoReserveData}
+        totalBorrowed={totalBorrowed}
+        totalBorrowedUSD={totalBorrowedUSD}
+        maxAvailableToBorrow={maxAvailableToBorrow}
+        maxAvailableToBorrowUSD={maxAvailableToBorrowUSD}
+        borrowCapUsage={borrowCapUsage}
       />
 
       {ghoReserveData.ghoDiscountRate > 0 && (
