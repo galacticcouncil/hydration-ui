@@ -2655,30 +2655,14 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^7.8.0":
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.8.0.tgz#030387a5a2d32bc3242874ca1a63e6203b8794d2"
-  integrity sha512-0//EQUECCwnlcL7akXxXUsYmrU4fvUUCqHP2EtJHtXo6BvQZKH2jyrD/9FxcmQfh8qMeXCoAuhsHKc5e0Sp5Rg==
+"@galacticcouncil/xcm-cfg@7.10.0-pr140-46e3573":
+  version "7.10.0-pr140-46e3573"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.10.0-pr140-46e3573.tgz#823fa19ba8d759b9ea388f8f69818f5eda60b1d6"
+  integrity sha512-OeanxBVgYGutReqE7WW7DBkmv6K1HPfuFD82k03K5ll+tUYeroCTyEutZK4IhPnH61tSb7gzGU8Tp+vU6Q0OIg==
   dependencies:
-    "@galacticcouncil/xcm-core" "^6.4.0"
+    "@galacticcouncil/xcm-core" "^6.6.0"
 
-"@galacticcouncil/xcm-core@^6.4.0":
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.4.0.tgz#a0e5929b5b6680174dbdda121c990dbc52c6d9f7"
-  integrity sha512-npndLs7puSDAB2ob0LZLp0WNRX7zyXy6+KJqYuR+q7Ya58iAEoVpLgXls9cACjwnU2LVJdw/E5JRTt5x+dV6aQ==
-  dependencies:
-    "@noble/hashes" "^1.6.1"
-    "@wormhole-foundation/sdk-base" "^1.2.0"
-    "@wormhole-foundation/sdk-connect" "^1.2.0"
-    "@wormhole-foundation/sdk-definitions" "^1.2.0"
-    "@wormhole-foundation/sdk-solana" "^1.2.0"
-    "@wormhole-foundation/sdk-solana-tokenbridge" "^1.2.0"
-    big.js "^6.2.1"
-    bigint-buffer "^1.1.5"
-    buffer "^6.0.3"
-    lru-cache "^11.0.0"
-
-"@galacticcouncil/xcm-core@^6.5.0":
+"@galacticcouncil/xcm-core@^6.4.0", "@galacticcouncil/xcm-core@^6.5.0", "@galacticcouncil/xcm-core@^6.6.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.5.0.tgz#67c55af15d548d492f6e1caa6e5e06772d2dcc10"
   integrity sha512-5GzgXG9lsTxsJC227/H5lhJM7AAavsnBuC0kFyqxv6j8gk8/x2oggjvL6qH5y1BvpVdMg6RhwBjQai5uwTh2oA==
