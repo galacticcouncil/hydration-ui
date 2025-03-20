@@ -30,6 +30,8 @@ export type BoxOwnProps = Partial<
     | "maxHeight"
     | "size"
     | "borderRadius"
+    | "borderWidth"
+    | "borderStyle"
   >
 > & {
   asChild?: boolean
@@ -39,6 +41,7 @@ export type BoxOwnProps = Partial<
   children?: React.ReactNode
   color?: ThemeColor | ThemeUICSSProperties["color"]
   bg?: ThemeColor | ThemeUICSSProperties["backgroundColor"]
+  borderColor?: ThemeColor | ThemeUICSSProperties["borderColor"]
 }
 
 export type BoxProps = BoxOwnProps &
@@ -74,6 +77,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      borderWidth,
+      borderStyle,
+      borderColor,
       ...rest
     },
     ref,
@@ -105,6 +111,9 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       maxHeight,
       size,
       borderRadius,
+      borderWidth,
+      borderStyle,
+      borderColor,
     }
 
     return <SlottedComponent ref={ref} sx={fullSx} css={css} {...rest} />

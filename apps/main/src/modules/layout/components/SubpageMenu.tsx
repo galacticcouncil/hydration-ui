@@ -1,7 +1,10 @@
-import { Button, Flex } from "@galacticcouncil/ui/components"
-import { Link, useLocation } from "@tanstack/react-router"
+import { useLocation } from "@tanstack/react-router"
 import { useMemo } from "react"
 
+import {
+  SubpageItem,
+  SubpageMenu as SubpageMenuComponent,
+} from "@/components/SubpageMenu/SubpageMenu"
 import { NAVIGATION } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 
@@ -12,24 +15,16 @@ export const SubpageMenu = () => {
   })
 
   const subnav = useMemo(
-    () => NAVIGATION.find(({ to }) => pathname.startsWith(to))?.children || [],
-    [pathname],
+    () =>
+      NAVIGATION.find(({ to }) =>
+        pathname.startsWith(to),
+      )?.children?.map<SubpageItem>((nav) => ({
+        to: nav.to,
+        title: translations[nav.key].title,
+        icon: nav.icon,
+      })) || [],
+    [pathname, translations],
   )
 
-  return (
-    <Flex gap={20} mb={20} justify="center" sx={{ overflowX: "auto" }}>
-      {subnav.map(({ key, to, icon: IconComponent }) => (
-        <Button
-          key={key}
-          variant={pathname.startsWith(to) ? "secondary" : "tertiary"}
-          asChild
-        >
-          <Link to={to}>
-            {IconComponent && <IconComponent />}
-            {translations[key].title}
-          </Link>
-        </Button>
-      ))}
-    </Flex>
-  )
+  return <SubpageMenuComponent items={subnav} />
 }

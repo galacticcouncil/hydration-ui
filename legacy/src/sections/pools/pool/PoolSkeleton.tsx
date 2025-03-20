@@ -1,20 +1,20 @@
-import { GradientText } from "components/Typography/GradientText/GradientText"
-import { useTranslation } from "react-i18next"
-import { Button } from "components/Button/Button"
-import { Icon } from "components/Icon/Icon"
-import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import Skeleton from "react-loading-skeleton"
-import { Separator } from "components/Separator/Separator"
-import { Text } from "components/Typography/Text/Text"
+import { GradientText } from "components/Typography/GradientText/GradientText";
+import { useTranslation } from "react-i18next";
+import { Button } from "components/Button/Button";
+import { Icon } from "components/Icon/Icon";
+import PlusIcon from "assets/icons/PlusIcon.svg?react";
+import Skeleton from "react-loading-skeleton";
+import { Separator } from "components/Separator/Separator";
+import { Text } from "components/Typography/Text/Text";
 import {
   SPoolDetailsContainer,
   SValue,
   SValuesContainer,
-} from "sections/pools/pool/details/PoolDetails.styled"
-import { SPoolContainer } from "./Pool.styled"
+} from "sections/pools/pool/details/PoolDetails.styled";
+import { SPoolContainer } from "./Pool.styled";
 
 export const PoolSkeleton = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <SPoolContainer>
@@ -79,7 +79,7 @@ export const PoolSkeleton = () => {
 
           <SValue>
             <Text color="basic400" fs={[12, 13]}>
-              {t("liquidity.table.header.volume")}
+              {t("myLiquidity.header.volume")}
             </Text>
             <Skeleton height={16} width={50} />
           </SValue>
@@ -109,5 +109,5 @@ export const PoolSkeleton = () => {
         </SValuesContainer>
       </SPoolDetailsContainer>
     </SPoolContainer>
-  )
-}
+  );
+};

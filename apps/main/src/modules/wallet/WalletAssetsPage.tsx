@@ -1,144 +1,55 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
-import {
-  Box,
-  DataTable,
-  Flex,
-  Input,
-  Paper,
-  TableContainer,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { useState } from "react"
+import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useSearch } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useWalletAssetsColumns } from "@/modules/wallet/WalletAssetsPage.utils"
-import { useAssets } from "@/providers/assetsProvider"
+import { WalletBalances } from "@/modules/wallet/Balances/WalletBalances"
+import { MyAssets } from "@/modules/wallet/MyAssets/MyAssets"
+import { MyLiquidity } from "@/modules/wallet/MyLiquidity/MyLiquidity"
+import { WalletRewards } from "@/modules/wallet/Rewards/WalletRewards"
+import { WalletAssetsSubpageMenu } from "@/modules/wallet/WalletAssetsSubpageMenu"
 
 export const WalletAssetsPage = () => {
-  const { t } = useTranslation()
-  const columns = useWalletAssetsColumns()
-  const [search, setSearch] = useState("")
-  const { tokens, stableswap, bonds, erc20, isExternal } = useAssets()
+  const { t } = useTranslation("wallet")
+  const { isMobile } = useBreakpoints()
+  const [searchPhrase, setSearchPhrase] = useState("")
 
-  const filteredTokens = [...tokens, ...stableswap, ...bonds, ...erc20].filter(
-    (asset) => asset.isTradable && !isExternal(asset),
-  )
+  const { category } = useSearch({
+    from: "/_wallet/wallet/assets",
+  })
+
+  useEffect(() => {
+    setSearchPhrase("")
+  }, [isMobile])
 
   return (
-    <Flex direction="column" gap={20}>
-      <Box>
-        <Text>
-          {t("number", {
-            value: 1234.56789,
-          })}
-        </Text>
+    <Flex direction="column" gap={[0, 20]}>
+      <Grid
+        columnGap={[10, 20]}
+        sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
+      >
+        <WalletBalances />
+        <WalletRewards />
+      </Grid>
+      {!isMobile && (
+        <Flex pt={12} align="flex-end" justify="space-between">
+          <WalletAssetsSubpageMenu />
 
-        <Text>
-          {t("number", {
-            value: 0.00001234567,
-          })}
-        </Text>
-
-        <Text>
-          {t("number", {
-            value: 123456789,
-          })}
-        </Text>
-
-        <Text>
-          {t("number.compact", {
-            value: 123456789,
-          })}
-        </Text>
-      </Box>
-      <Box>
-        <Text>
-          {t("currency", {
-            value: 1234.56789,
-          })}
-        </Text>
-        <Text>
-          {t("currency", {
-            value: 0.00001234567,
-          })}
-        </Text>
-        <Text>
-          {t("currency", {
-            value: 123456789,
-            currency: "CZK",
-          })}
-        </Text>
-        <Text>
-          {t("currency", {
-            value: 123456789,
-            currency: "EUR",
-          })}
-        </Text>
-        <Text>
-          {t("currency", {
-            value: 123456789,
-            symbol: "HDX",
-          })}
-        </Text>
-        <Text>
-          {t("currency.compact", {
-            value: 123456789,
-          })}
-        </Text>
-      </Box>
-      <Box>
-        <Text>
-          {t("date", {
-            value: new Date(),
-            format: "d/MM/yyyy HH:mm:ss",
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() + 25000,
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() - 25000,
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() - 1000 * 60 * 60 * 12,
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() + 1000 * 60 * 60 * 12,
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() - 1000 * 60 * 60 * 24 * 365 * 6,
-          })}
-        </Text>
-        <Text>
-          {t("date.relative", {
-            value: Date.now() + 1000 * 60 * 60 * 24 * 365 * 6,
-          })}
-        </Text>
-      </Box>
-      <Input
-        customSize="large"
-        placeholder="Search..."
-        iconStart={Search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <TableContainer as={Paper}>
-        <DataTable
-          paginated
-          pageSize={10}
-          globalFilter={search}
-          data={filteredTokens}
-          columns={columns}
-        />
-      </TableContainer>
+          <Input
+            placeholder={t("searchAssets")}
+            iconStart={Search}
+            onChange={(e) => setSearchPhrase(e.target.value)}
+          />
+        </Flex>
+      )}
+      {(isMobile || category === "all" || category === "assets") && (
+        <MyAssets searchPhrase={searchPhrase} />
+      )}
+      {(isMobile || category === "all" || category === "liquidity") && (
+        <MyLiquidity searchPhrase={searchPhrase} />
+      )}
     </Flex>
   )
 }

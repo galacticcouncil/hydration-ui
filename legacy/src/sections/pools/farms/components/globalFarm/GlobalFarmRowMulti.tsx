@@ -1,13 +1,13 @@
-import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { Text } from "components/Typography/Text/Text"
-import { useTranslation } from "react-i18next"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { Icon } from "components/Icon/Icon"
-import { useAssets } from "providers/assets"
-import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { Farm, useFarmAprs, getMinAndMaxAPR } from "api/farms";
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons";
+import { Text } from "components/Typography/Text/Text";
+import { useTranslation } from "react-i18next";
+import { AssetLogo } from "components/AssetIcon/AssetIcon";
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip";
+import { Icon } from "components/Icon/Icon";
+import { useAssets } from "providers/assets";
+import BN from "bignumber.js";
+import { BN_0 } from "utils/constants";
 
 export const GlobalFarmRowMulti = ({
   farms,
@@ -17,22 +17,22 @@ export const GlobalFarmRowMulti = ({
   withAprSuffix = false,
   className,
 }: {
-  farms: Farm[]
-  assetFee?: BN
-  fontSize?: number
-  iconSize?: number
-  withAprSuffix?: boolean
-  className?: string
+  farms: Farm[];
+  assetFee?: BN;
+  fontSize?: number;
+  iconSize?: number;
+  withAprSuffix?: boolean;
+  className?: string;
 }) => {
-  const { getAssetWithFallback } = useAssets()
-  const { t } = useTranslation()
-  const farmAprs = useFarmAprs(farms)
+  const { getAssetWithFallback } = useAssets();
+  const { t } = useTranslation();
+  const farmAprs = useFarmAprs(farms);
 
-  if (!farmAprs.data) return null
+  if (!farmAprs.data) return null;
 
-  const { maxApr } = getMinAndMaxAPR(farmAprs)
+  const { maxApr } = getMinAndMaxAPR(farmAprs);
 
-  const totalMaxApr = maxApr.plus(assetFee ?? 0)
+  const totalMaxApr = maxApr.plus(assetFee ?? 0);
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
@@ -50,13 +50,13 @@ export const GlobalFarmRowMulti = ({
         preventDefault
         text={
           <>
-            <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
+            <Text fs={12}>{t("myLiquidity.farms.apr.description")}</Text>
             {assetFee.gt(0) && (
               <div
                 sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
               >
                 <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
-                  {t("liquidity.table.farms.apr.lpFee")}
+                  {t("myLiquidity.farms.apr.lpFee")}
                 </Text>
                 <Text fs={12} font="GeistSemiBold">
                   {t("value.percentage", { value: assetFee })}
@@ -74,10 +74,10 @@ export const GlobalFarmRowMulti = ({
                 }}
               >
                 <Text fs={10} tTransform="uppercase">
-                  {t("liquidity.table.farms.apr.rewards")}
+                  {t("myLiquidity.farms.apr.rewards")}
                 </Text>
                 <Text fs={10} tTransform="uppercase">
-                  {t("liquidity.table.farms.apr")}
+                  {t("myLiquidity.farms.apr")}
                 </Text>
               </div>
             )}
@@ -100,11 +100,11 @@ export const GlobalFarmRowMulti = ({
                     {t("value.percentage", { value: apr })}
                   </Text>
                 </div>
-              )
+              );
             })}
           </>
         }
       />
     </div>
-  )
-}
+  );
+};

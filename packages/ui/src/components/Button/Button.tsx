@@ -12,8 +12,8 @@ import {
 } from "./Button.styled"
 
 type ButtonOwnProps = {
-  iconStart?: React.ComponentType
-  iconEnd?: React.ComponentType
+  iconStart?: React.ComponentType<{ readonly className?: string }>
+  iconEnd?: React.ComponentType<{ readonly className?: string }>
 }
 
 export type ButtonProps = BoxProps &
@@ -33,9 +33,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           children
         ) : (
           <>
-            {IconStart && <IconStart />}
+            {IconStart && <IconStart sx={{ flexShrink: 0 }} />}
             {children}
-            {IconEnd && <IconEnd />}
+            {IconEnd && <IconEnd sx={{ flexShrink: 0 }} />}
           </>
         )}
       </SButton>

@@ -1,7 +1,13 @@
 import { Skeleton, Text } from "@galacticcouncil/ui/components"
 import { createFileRoute } from "@tanstack/react-router"
+import { fallback, zodValidator } from "@tanstack/zod-adapter"
+import * as z from "zod"
 
-import { postsQuery } from "@/api/posts"
+const searchSchema = z.object({
+  category: fallback(z.enum(["all", "assets", "liquidity"]), "all").default(
+    "all",
+  ),
+})
 
 const WalletAssetsSkeleton = () => (
   <>
@@ -16,6 +22,5 @@ const WalletAssetsSkeleton = () => (
 
 export const Route = createFileRoute("/_wallet/wallet/assets")({
   pendingComponent: WalletAssetsSkeleton,
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(postsQuery),
+  validateSearch: zodValidator(searchSchema),
 })
