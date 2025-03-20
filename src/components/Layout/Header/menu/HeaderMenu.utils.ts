@@ -7,16 +7,12 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { MENU_ITEMS } from "utils/navigation"
 
-export const useVisibleHeaderMenuItems = () => {
-  const { hiddenElementsKeys, observe } = useVisibleElements()
+export const useActiveMenuItems = () => {
   const { featureFlags } = useRpcProvider()
-
-  const isPositions = useAccountData(useShallow((state) => state.isPositions))
-
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
-
+  const isPositions = useAccountData(useShallow((state) => state.isPositions))
   return useMemo(() => {
-    const items = MENU_ITEMS.filter(
+    return MENU_ITEMS.filter(
       (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
     ).map(
       (item) =>
@@ -35,7 +31,15 @@ export const useVisibleHeaderMenuItems = () => {
           }),
         }) as (typeof MENU_ITEMS)[number],
     )
+  }, [featureFlags, isPositions, totalVestedAmount])
+}
 
+export const useVisibleHeaderMenuItems = () => {
+  const { hiddenElementsKeys, observe } = useVisibleElements()
+
+  const items = useActiveMenuItems()
+
+  return useMemo(() => {
     const visibleItemKeys = items
       .filter((item) => !hiddenElementsKeys.includes(item.key))
       .map((item) => item.key)
@@ -56,11 +60,5 @@ export const useVisibleHeaderMenuItems = () => {
     )
 
     return { items, visibleItemKeys, hiddenItems, moreButtonKey, observe }
-  }, [
-    featureFlags,
-    hiddenElementsKeys,
-    observe,
-    isPositions,
-    totalVestedAmount,
-  ])
+  }, [hiddenElementsKeys, items, observe])
 }
