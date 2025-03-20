@@ -21,6 +21,7 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import {
   assetCanBeBorrowedByUser,
   getMaxAmountAvailableToBorrow,
+  getMaxGhoMintAmount,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 
@@ -130,27 +131,36 @@ export const useBorrowAssetsTableColumns = () => {
 
 export const useBorrowAssetsTableData = () => {
   const { currentNetworkConfig, currentMarket } = useProtocolDataContext()
-  const { user, reserves, marketReferencePriceInUsd, loading } =
+  const { user, reserves, marketReferencePriceInUsd, ghoReserveData, loading } =
     useAppDataContext()
-  const [displayGho] = useRootStore((store) => [store.displayGho])
-  const [account] = useRootStore((store) => [store.account])
+  const displayGho = useRootStore((store) => store.displayGho)
+  const account = useRootStore((store) => store.account)
 
   const { baseAssetSymbol } = currentNetworkConfig
-
   const sortedReserves = useMemo(() => {
     const tokensToBorrow = reserves
       .filter((reserve) => assetCanBeBorrowedByUser(reserve, user))
       .map((reserve: ComputedReserveData) => {
-        const availableBorrows =
-          user && account
-            ? Number(
-                getMaxAmountAvailableToBorrow(
-                  reserve,
-                  user,
-                  InterestRate.Variable,
-                ),
-              )
-            : 0
+        const isGho = displayGho({ symbol: reserve.symbol, currentMarket })
+        let availableBorrows = 0
+
+        if (!user && !account) {
+          availableBorrows = 0
+        } else if (isGho) {
+          const maxAmountUserCanMint = Number(
+            getMaxGhoMintAmount(user, reserve),
+          )
+          availableBorrows = Math.min(
+            maxAmountUserCanMint,
+            ghoReserveData.aaveFacilitatorRemainingCapacity,
+          )
+        } else {
+          availableBorrows = Number(
+            getMaxAmountAvailableToBorrow(reserve, user, InterestRate.Variable),
+          )
+        }
+
+        console.log({ availableBorrows, s: reserve.symbol })
 
         const availableBorrowsInUSD = valueToBigNumber(availableBorrows)
           .multipliedBy(reserve.formattedPriceInMarketReferenceCurrency)
@@ -212,6 +222,7 @@ export const useBorrowAssetsTableData = () => {
     baseAssetSymbol,
     currentMarket,
     displayGho,
+    ghoReserveData.aaveFacilitatorRemainingCapacity,
     marketReferencePriceInUsd,
     reserves,
     user,

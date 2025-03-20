@@ -12,6 +12,7 @@ import {
 
 import { PoolReserve } from "./poolSlice"
 import { RootStore } from "./root"
+import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -114,9 +115,11 @@ export const selectCurrentBaseCurrencyData = (state: RootStore) => {
 }
 
 export const reserveSortFn = (
-  a: { totalLiquidityUSD: string },
-  b: { totalLiquidityUSD: string },
+  a: { totalLiquidityUSD: string; symbol: string },
+  b: { totalLiquidityUSD: string; symbol: string },
 ) => {
+  if (a.symbol === GHO_SYMBOL) return -1
+  if (b.symbol === GHO_SYMBOL) return 1
   const numA = parseFloat(a.totalLiquidityUSD)
   const numB = parseFloat(b.totalLiquidityUSD)
 

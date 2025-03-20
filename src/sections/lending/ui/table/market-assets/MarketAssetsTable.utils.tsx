@@ -9,10 +9,8 @@ import { ROUTES } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { arraySearch } from "utils/helpers"
 
 export type TSupplyAssetsTableData = ReturnType<typeof useAppDataContext>
@@ -192,28 +190,16 @@ export const useMarketAssetsTableData = ({
   search,
 }: { search?: string } = {}) => {
   const { reserves, loading } = useAppDataContext()
-  const { currentNetworkConfig } = useProtocolDataContext()
 
   const data = useMemo(() => {
-    const data = reserves
-      // Filter out any non-active reserves
-      .filter((res) => res.isActive)
-      // Transform the object for list to consume it
-      .map((reserve) => ({
-        ...reserve,
-        ...(reserve.isWrappedBaseAsset
-          ? fetchIconSymbolAndName({
-              symbol: currentNetworkConfig.baseAssetSymbol,
-              underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-            })
-          : {}),
-      }))
-      .filter((r) => !r.isFrozen && !r.isPaused)
+    const data = reserves.filter(
+      (r) => r.isActive && !r.isFrozen && !r.isPaused,
+    )
 
     return search
       ? arraySearch(data, search, ["name", "symbol", "underlyingAsset"])
       : data
-  }, [currentNetworkConfig.baseAssetSymbol, reserves, search])
+  }, [reserves, search])
 
   return {
     data,
