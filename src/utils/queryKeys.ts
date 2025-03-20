@@ -183,6 +183,7 @@ export const QUERY_KEYS = {
     orderId?.toString(),
   ],
   provider: ["provider"],
+  providerMetadata: ["providerMetadata"],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],

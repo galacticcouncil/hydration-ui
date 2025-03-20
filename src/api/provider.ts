@@ -16,7 +16,7 @@ import {
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useAssetRegistry, useSettingsStore } from "state/store"
+import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import {
   ChainCursor,
@@ -312,11 +312,38 @@ const RPC_CHANGE_QUERY_FILTER: QueryFilters = {
     ),
 }
 
+export const useProviderMetadata = () => {
+  const { isLoaded, api } = useRpcProvider()
+  const { metadata: storedMetadata, setMetadata } = useApiMetadata()
+
+  return useQuery(
+    QUERY_KEYS.providerMetadata,
+    async () => {
+      const [genesisHash, runtimeVersion] = await Promise.all([
+        api.genesisHash.toHex(),
+        api.runtimeVersion.specVersion.toNumber(),
+      ])
+
+      const metadataKey = `${genesisHash}-${runtimeVersion}`
+      const isStoredMetadata =
+        storedMetadata?.hasOwnProperty(metadataKey) ?? false
+
+      if (!isStoredMetadata) {
+        const metadataHex = await api.runtimeMetadata.toHex()
+        setMetadata(metadataKey, metadataHex)
+      }
+
+      return true
+    },
+    { enabled: isLoaded, staleTime: Infinity, notifyOnChangeProps: [] },
+  )
+}
+
 export const useProviderData = (
   { shouldRefetchOnRpcChange } = { shouldRefetchOnRpcChange: false },
 ) => {
   const queryClient = useQueryClient()
-
+  const { metadata: storedMetadata } = useApiMetadata()
   const [enabled, setEnabled] = useState(true)
 
   useEffect(() => {
@@ -338,6 +365,7 @@ export const useProviderData = (
 
       if (hasDataEnvChanged) {
         queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
+        queryClient.removeQueries(QUERY_KEYS.providerMetadata)
       } else {
         queryClient.invalidateQueries(
           {
@@ -363,7 +391,8 @@ export const useProviderData = (
       const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
 
-      const api = await apiPool.api(rpcUrlList, maxRetries)
+      const api = await apiPool.api(rpcUrlList, maxRetries, storedMetadata)
+
       const provider = getProviderInstance(api)
       const endpoint = provider.endpoint
       const dataEnv = getProviderDataEnv(endpoint)
