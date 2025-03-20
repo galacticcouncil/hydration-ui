@@ -191,7 +191,7 @@ export enum IndexedDBStores {
 }
 
 const db: IDBDatabase | null = await new Promise((resolve) => {
-  const request = indexedDB.open("storage")
+  const request = indexedDB.open("storage", 2)
 
   request.onsuccess = () => resolve(request.result)
 
