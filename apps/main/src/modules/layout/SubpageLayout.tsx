@@ -1,16 +1,19 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
+import { FC, ReactNode } from "react"
 
 import { SubpageMenu } from "@/modules/layout/components/SubpageMenu"
 
-export const SUBPAGE_LAYOUT_ACTIONS_ELEMENT_ID = "subpage-layout-actions"
+type Props = {
+  readonly actions?: ReactNode
+}
 
-export const SubpageLayout = () => {
+export const SubpageLayout: FC<Props> = ({ actions }) => {
   return (
     <Flex direction="column" gap={20}>
       <Flex justify="space-between" align="center">
         <SubpageMenu />
-        <div id={SUBPAGE_LAYOUT_ACTIONS_ELEMENT_ID} />
+        {actions}
       </Flex>
       <Outlet />
     </Flex>
