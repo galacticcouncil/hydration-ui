@@ -31,7 +31,9 @@ export type TBorrowAssetsRow = TBorrowAssetsTableData["data"][number]
 
 const { accessor, display } = createColumnHelper<TBorrowAssetsRow>()
 
-export const useBorrowAssetsTableColumns = () => {
+export const useBorrowAssetsTableColumns = ({
+  isGho,
+}: { isGho?: boolean } = {}) => {
   const { t } = useTranslation()
   const { openBorrow } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
@@ -79,7 +81,7 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
       accessor("variableBorrowRate", {
-        header: t("lending.apyVariable"),
+        header: isGho ? t("lending.apyBorrowRate") : t("lending.apyVariable"),
         meta: {
           sx: {
             textAlign: "center",
@@ -125,7 +127,7 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, openBorrow, t],
+    [currentMarket, isGho, openBorrow, t],
   )
 }
 

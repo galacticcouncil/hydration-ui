@@ -9,6 +9,7 @@ import { ROUTES } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
 import { arraySearch } from "utils/helpers"
@@ -189,17 +190,20 @@ export const useMarketAssetsTableColumns = () => {
 export const useMarketAssetsTableData = ({
   search,
 }: { search?: string } = {}) => {
+  const displayGho = useRootStore((state) => state.displayGho)
   const { reserves, loading } = useAppDataContext()
+  const { currentMarket } = useProtocolDataContext()
 
   const data = useMemo(() => {
-    const data = reserves.filter(
-      (r) => r.isActive && !r.isFrozen && !r.isPaused,
-    )
+    const data = reserves.filter((r) => {
+      const isGho = displayGho({ symbol: r.symbol, currentMarket })
+      return !isGho && r.isActive && !r.isFrozen && !r.isPaused
+    })
 
     return search
       ? arraySearch(data, search, ["name", "symbol", "underlyingAsset"])
       : data
-  }, [reserves, search])
+  }, [currentMarket, displayGho, reserves, search])
 
   return {
     data,
