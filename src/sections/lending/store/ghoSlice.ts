@@ -144,9 +144,7 @@ export const createGhoSlice: StateCreator<
         }
       } else {
         try {
-          console.log("BEFORE")
           const ghoReserveData = await ghoService.getGhoReserveData()
-          console.log("AFTER", { ghoReserveData })
 
           set({
             ghoReserveData: ghoReserveData,
