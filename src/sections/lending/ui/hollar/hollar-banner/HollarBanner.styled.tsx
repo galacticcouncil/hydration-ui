@@ -87,18 +87,20 @@ export const SContent = styled.div`
 `
 
 export const SValuesContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 
   margin-top: 20px;
 
   @media ${theme.viewport.gte.sm} {
-    gap: 60px;
-
+    grid-template-columns: 1fr 1fr auto;
     margin-left: auto;
     margin-top: 0;
+  }
+
+  @media ${theme.viewport.gte.md} {
+    gap: 60px;
   }
 `
 

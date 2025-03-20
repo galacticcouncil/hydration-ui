@@ -12,17 +12,14 @@ import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { SContainer, SFilterContainer } from "./LendingDashboardPage.styled"
 import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export const LendingDashboardPage = () => {
   const { t } = useTranslation()
   const [mode, setMode] = useState<"supply" | "borrow">("supply")
   const isDesktop = useMedia(theme.viewport.gte.sm)
-
+  const { ghoEnabled } = useAppDataContext()
   const { account: evmAccount, isBound, isLoading } = useEvmAccount()
-
-  const { currentMarketData } = useProtocolDataContext()
-  const isHollarEnabled = !!currentMarketData.addresses.GHO_TOKEN_ADDRESS
 
   const shouldRenderSupply = mode === "supply" || isDesktop
   const shouldRenderBorrow = mode === "borrow" || isDesktop
@@ -30,7 +27,7 @@ export const LendingDashboardPage = () => {
   return (
     <>
       <DashboardHeaderValues sx={{ mb: [10, 40] }} />
-      {isHollarEnabled && <HollarBanner sx={{ mb: [10, 40] }} />}
+      {ghoEnabled && <HollarBanner sx={{ mb: [10, 40] }} />}
       {evmAccount && !isLoading && !isBound && (
         <MoneyMarketBanner sx={{ mb: [20, 30] }} />
       )}

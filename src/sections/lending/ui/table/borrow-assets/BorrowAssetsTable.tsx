@@ -1,7 +1,13 @@
 import { css } from "@emotion/react"
 import { useNavigate } from "@tanstack/react-location"
 import { Alert } from "components/Alert/Alert"
-import { DataTable, TableContainer } from "components/DataTable"
+import {
+  DataTable,
+  TableAddons,
+  TableContainer,
+  TableTitle,
+  TableTitleContainer,
+} from "components/DataTable"
 import { Text } from "components/Typography/Text/Text"
 import { useReactTable } from "hooks/useReactTable"
 import { useMemo } from "react"
@@ -25,10 +31,11 @@ export const BorrowAssetsTable = () => {
   const navigate = useNavigate()
   const displayGho = useRootStore((state) => state.displayGho)
   const { currentMarket } = useProtocolDataContext()
+  const { ghoEnabled } = useAppDataContext()
   const { data, isLoading } = useBorrowAssetsTableData()
   const { account } = useAccount()
 
-  const { hollar, assets } = useMemo(() => {
+  const { hollar = [], assets = [] } = useMemo(() => {
     return groupBy(data, (reserve) =>
       displayGho({ symbol: reserve.symbol, currentMarket })
         ? "hollar"
@@ -59,34 +66,38 @@ export const BorrowAssetsTable = () => {
 
   return (
     <TableContainer background="darkBlue700">
-      <DataTable
-        css={css`
-          --border-color: transparent;
-        `}
-        fixedLayout
-        background="transparent"
-        table={hollarTable}
-        spacing="large"
-        title={t("lending.borrow.table.title")}
-        renderRow={isDesktop ? undefined : BorrowAssetsMobileRow}
-        hoverable
-        onRowClick={(row) => {
-          navigate({
-            to: ROUTES.reserveOverview(
-              row.original.underlyingAsset,
-              currentMarket,
-            ),
-          })
-        }}
-        addons={
-          account &&
-          user?.totalCollateralMarketReferenceCurrency === "0" && (
-            <Alert variant="info" size="small">
-              <Text fs={13}>{t("lending.borrow.table.alert")}</Text>
-            </Alert>
-          )
-        }
-      />
+      <TableTitleContainer spacing="large">
+        <TableTitle>{t("lending.borrow.table.title")}</TableTitle>
+      </TableTitleContainer>
+      {account && user?.totalCollateralMarketReferenceCurrency === "0" && (
+        <TableAddons spacing="large">
+          <Alert variant="info" size="small">
+            <Text fs={13}>{t("lending.borrow.table.alert")}</Text>
+          </Alert>
+        </TableAddons>
+      )}
+      {ghoEnabled && (
+        <DataTable
+          css={css`
+            --border-color: transparent;
+          `}
+          fixedLayout
+          background="transparent"
+          table={hollarTable}
+          spacing="large"
+          renderRow={isDesktop ? undefined : BorrowAssetsMobileRow}
+          hoverable
+          onRowClick={(row) => {
+            navigate({
+              to: ROUTES.reserveOverview(
+                row.original.underlyingAsset,
+                currentMarket,
+              ),
+            })
+          }}
+        />
+      )}
+
       <DataTable
         css={css`
           --border-color: transparent;
