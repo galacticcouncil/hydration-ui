@@ -1,35 +1,33 @@
 import { Link, useSearch } from "@tanstack/react-location"
 import { Icon } from "components/Icon/Icon"
 import { HeaderSubMenu } from "components/Layout/Header/menu/HeaderSubMenu"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Trans, useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
-import { LINKS, MENU_ITEMS, TabItem, resetSearchParams } from "utils/navigation"
+import { LINKS, resetSearchParams } from "utils/navigation"
 import { SNavBarItemHidden } from "./MobileNavBar.styled"
 import { MobileNavBarItem } from "./MobileNavBarItem"
 import { MoreButton } from "./MoreButton"
 import { SNoFunBadge } from "components/Layout/Header/menu/HeaderMenu.styled"
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import { useActiveMenuItems } from "components/Layout/Header/menu/HeaderMenu.utils"
+import { groupBy } from "utils/rx"
 
 export const MobileNavBarContent = () => {
   const { t } = useTranslation()
-  const { featureFlags } = useRpcProvider()
   const search = useSearch()
   const isMediumMedia = useMedia(theme.viewport.gte.sm)
 
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null)
 
-  const [visibleTabs, hiddenTabs] = MENU_ITEMS.filter(
-    (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),
-  ).reduce(
-    (result, value) => {
-      const isVisible = isMediumMedia ? value.tabVisible : value.mobVisible
-      result[isVisible ? 0 : 1].push(value)
-      return result
-    },
-    [[], []] as [TabItem[], TabItem[]],
-  )
+  const menuItems = useActiveMenuItems()
+
+  const { visibleTabs, hiddenTabs } = useMemo(() => {
+    return groupBy(menuItems, (item) => {
+      const isVisible = isMediumMedia ? item.tabVisible : item.mobVisible
+      return isVisible ? "visibleTabs" : "hiddenTabs"
+    })
+  }, [isMediumMedia, menuItems])
 
   const hiddenTabItems = hiddenTabs.map((hiddenTab, index) => (
     <SNavBarItemHidden
