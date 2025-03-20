@@ -54,17 +54,7 @@ function SingleTokenIcon({
   return (
     <Icon
       size={size}
-      icon={
-        // workaround until HOLLAR is registered asset
-        symbol === GHO_SYMBOL ? (
-          <img
-            src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/222/logo.svg"
-            alt={GHO_SYMBOL}
-          />
-        ) : (
-          <AssetLogo id={SYMBOL_TO_ASSET_ID_MAP[symbol?.toLowerCase()]} />
-        )
-      }
+      icon={<AssetLogo id={SYMBOL_TO_ASSET_ID_MAP[symbol?.toLowerCase()]} />}
       {...rest}
     />
   )
