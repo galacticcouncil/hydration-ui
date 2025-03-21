@@ -49,7 +49,7 @@ const createAccountsBalances: StateCreator<
       balances.forEach((balance) => (newBalances[balance.assetId] = balance))
 
       if (isDeepEqual(newBalances, state.balances)) {
-        return { ...state.balances, isBalanceLoading: false }
+        return { balances: state.balances, isBalanceLoading: false }
       }
 
       return { balances: newBalances, isBalanceLoading: false }
