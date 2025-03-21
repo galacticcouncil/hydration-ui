@@ -9,12 +9,12 @@ export const SContainer = styled.div`
 
   font-size: 12px;
 
-  border: 1px solid ${theme.colors.basic800};
+  border: 1px solid rgba(${theme.rgbColors.basic300}, 0.2);
   border-radius: ${theme.borderRadius.default}px;
+  background-color: rgba(${theme.rgbColors.basic300}, 0.1);
 
   cursor: pointer;
 
-  background-color: transparent;
   &:hover {
     background-color: rgba(${theme.rgbColors.basic300}, 0.2);
     border-color: rgba(${theme.rgbColors.basic300}, 0.2);

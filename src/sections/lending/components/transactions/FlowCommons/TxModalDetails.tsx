@@ -254,9 +254,9 @@ export const DetailsIncentivesLine = ({
     return null
   return (
     <Row captionColor="basic400" caption={<span>Rewards APR</span>}>
-      <div sx={{ flex: "row", align: "center" }}>
+      <div sx={{ flex: "row", align: "center", height: 18 }}>
         {loading ? (
-          <Skeleton height={20} width={100} />
+          <Skeleton height={16} width={100} />
         ) : (
           <>
             <IncentivesButton incentives={incentives} symbol={symbol} />
