@@ -7,7 +7,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Link } from "components/Link/Link"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import {
   ComputedReserveData,

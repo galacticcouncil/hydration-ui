@@ -19,7 +19,7 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData

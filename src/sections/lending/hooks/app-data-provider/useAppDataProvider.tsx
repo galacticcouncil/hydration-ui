@@ -126,6 +126,8 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     state.displayGho,
   ])
 
+  console.log(formattedPoolReserves)
+
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
       ghoReserveData,

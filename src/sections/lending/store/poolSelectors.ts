@@ -156,6 +156,11 @@ export const selectFormattedReserves = (
     }))
     .sort(reserveSortFn)
 
+  console.log({
+    reserveIncentiveData: state.reserveIncentiveData,
+    formattedPoolReserves,
+  })
+
   return formattedPoolReserves
 }
 
@@ -170,7 +175,6 @@ export const selectUserSummaryAndIncentives = (
   const reserveIncentiveData = state.reserveIncentiveData
   const userIncentiveData = state.userIncentiveData
 
-  // TODO: why <any>
   return formatUserSummaryAndIncentives({
     currentTimestamp,
     marketReferencePriceInUsd:

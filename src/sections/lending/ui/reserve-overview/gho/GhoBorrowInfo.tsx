@@ -31,8 +31,6 @@ export const GhoBorrowInfo = ({
 
   const hasBorrowCap = reserve.borrowCapUSD && reserve.borrowCapUSD !== "0"
 
-  console.log(reserve)
-
   const CapProgress = () => (
     <CapsCircularStatus
       value={borrowCapUsage}

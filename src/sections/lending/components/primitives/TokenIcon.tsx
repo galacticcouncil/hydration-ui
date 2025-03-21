@@ -2,7 +2,6 @@ import { Icon } from "components/Icon/Icon"
 import { MetadataStore } from "@galacticcouncil/ui"
 import { useMemo } from "react"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 
 const SYMBOL_TO_ASSET_ID_MAP_TESTNET: Record<string, string> = {
   dot: "5",
