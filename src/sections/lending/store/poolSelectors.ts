@@ -2,6 +2,8 @@ import { ReserveDataHumanized } from "@aave/contract-helpers"
 import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
+  valueToBigNumber,
+  WEI_DECIMALS,
 } from "@aave/math-utils"
 import { EmodeCategory } from "sections/lending/helpers/types"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
@@ -12,6 +14,7 @@ import {
 
 import { PoolReserve } from "./poolSlice"
 import { RootStore } from "./root"
+import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -114,17 +117,16 @@ export const selectCurrentBaseCurrencyData = (state: RootStore) => {
 }
 
 export const reserveSortFn = (
-  a: { totalLiquidityUSD: string },
-  b: { totalLiquidityUSD: string },
+  a: { totalLiquidityUSD: string; symbol: string },
+  b: { totalLiquidityUSD: string; symbol: string },
 ) => {
+  if (a.symbol === GHO_SYMBOL) return -1
+  if (b.symbol === GHO_SYMBOL) return 1
   const numA = parseFloat(a.totalLiquidityUSD)
   const numB = parseFloat(b.totalLiquidityUSD)
 
   return numB > numA ? 1 : -1
 }
-
-// TODO move formatUserSummaryAndIncentives
-// export const selectSortedCurrentUserReservesData = (state: RootStore) => {};
 
 export const selectFormattedReserves = (
   state: RootStore,
@@ -134,6 +136,28 @@ export const selectFormattedReserves = (
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
   const currentNetworkConfig = state.currentNetworkConfig
 
+  const defaultReserveIncentives = state.reserveIncentiveData || []
+  const reserveIncentives = defaultReserveIncentives.map((incentive) => {
+    if (!incentive.aIncentiveData.rewardsTokenInformation.length) {
+      return incentive
+    }
+
+    return {
+      ...incentive,
+      aIncentiveData: {
+        ...incentive.aIncentiveData,
+        rewardsTokenInformation:
+          incentive.aIncentiveData.rewardsTokenInformation.map((reward) => ({
+            ...reward,
+            // emissionPerSecond is expected to be in WEI, so we need to convert it to the correct decimals
+            emissionPerSecond: valueToBigNumber(reward.emissionPerSecond)
+              .shiftedBy(WEI_DECIMALS - reward.rewardTokenDecimals)
+              .toString(),
+          })),
+      },
+    }
+  })
+
   const formattedPoolReserves = formatReservesAndIncentives({
     reserves,
     currentTimestamp,
@@ -141,7 +165,7 @@ export const selectFormattedReserves = (
       baseCurrencyData.marketReferenceCurrencyDecimals,
     marketReferencePriceInUsd:
       baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-    reserveIncentives: state.reserveIncentiveData || [],
+    reserveIncentives: reserveIncentives,
   })
     .map((r) => ({
       ...r,
@@ -167,7 +191,6 @@ export const selectUserSummaryAndIncentives = (
   const reserveIncentiveData = state.reserveIncentiveData
   const userIncentiveData = state.userIncentiveData
 
-  // TODO: why <any>
   return formatUserSummaryAndIncentives({
     currentTimestamp,
     marketReferencePriceInUsd:

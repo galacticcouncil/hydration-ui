@@ -19,7 +19,7 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
@@ -176,7 +176,8 @@ export const useSupplyAssetsTableColumns = () => {
 }
 
 export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
-  const currentMarketData = useRootStore((store) => store.currentMarketData)
+  const displayGho = useRootStore((store) => store.displayGho)
+  const { currentMarket, currentMarketData } = useProtocolDataContext()
   const {
     user,
     reserves,
@@ -189,6 +190,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     const tokensToSupply = reserves
       .filter(
         (reserve: ComputedReserveData) =>
+          !displayGho({ currentMarket, symbol: reserve.symbol }) &&
           !(reserve.isFrozen || reserve.isPaused),
       )
       .map((reserve: ComputedReserveData) => {
@@ -226,65 +228,6 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
             ? false
             : !hasDifferentCollateral
 
-        /* if (reserve.isWrappedBaseAsset) {
-          let baseAvailableToDeposit = valueToBigNumber(
-            walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount,
-          )
-          if (reserve.supplyCap !== "0") {
-            baseAvailableToDeposit = baseAvailableToDeposit.isNaN()
-              ? new BigNumber(0)
-              : BigNumber.min(
-                  baseAvailableToDeposit,
-                  new BigNumber(reserve.supplyCap)
-                    .minus(reserve.totalLiquidity)
-                    .multipliedBy("0.995"),
-                )
-          }
-          const baseAvailableToDepositUSD = valueToBigNumber(
-            baseAvailableToDeposit,
-          )
-            .multipliedBy(reserve.priceInMarketReferenceCurrency)
-            .multipliedBy(marketReferencePriceInUsd)
-            .shiftedBy(-USD_DECIMALS)
-            .toString()
-          return [
-            {
-              ...reserve,
-              reserve,
-              underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-              ...fetchIconSymbolAndName({
-                symbol: baseAssetSymbol,
-                underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-              }),
-              walletBalance:
-                walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount,
-              walletBalanceUSD:
-                walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amountUSD,
-              availableToDeposit: baseAvailableToDeposit.toString(),
-              availableToDepositUSD: baseAvailableToDepositUSD,
-              usageAsCollateralEnabledOnUser,
-              detailsAddress: reserve.underlyingAsset,
-              id: reserve.id + "base",
-            },
-            {
-              ...reserve,
-              reserve,
-              walletBalance,
-              walletBalanceUSD,
-              availableToDeposit:
-                availableToDeposit.toNumber() <= 0
-                  ? "0"
-                  : availableToDeposit.toString(),
-              availableToDepositUSD:
-                Number(availableToDepositUSD) <= 0
-                  ? "0"
-                  : availableToDepositUSD.toString(),
-              usageAsCollateralEnabledOnUser,
-              detailsAddress: reserve.underlyingAsset,
-            },
-          ]
-        } */
-
         return {
           ...reserve,
           reserve,
@@ -320,6 +263,8 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
 
     return supplyReserves as DashboardReserve[]
   }, [
+    currentMarket,
+    displayGho,
     marketReferencePriceInUsd,
     reserves,
     showAll,

@@ -6,13 +6,13 @@ import { useRootStore } from "sections/lending/store/root"
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 
 export type ClaimRewardsActionsProps = {
-  isWrongNetwork: boolean
+  isWrongNetwork?: boolean
   blocked: boolean
   selectedReward: Reward
 }
 
 export const ClaimRewardsActions = ({
-  isWrongNetwork,
+  isWrongNetwork = false,
   blocked,
   selectedReward,
 }: ClaimRewardsActionsProps) => {
