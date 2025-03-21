@@ -169,8 +169,11 @@ export const assetsQuery = (data: TProviderContext) => {
                 const { ethereum } = ethereumNetworkEntry
                 ecosystem = AssetEcosystem.ETHEREUM
 
-                parachainId = findNestedKey(ethereum, "chainId")
-                const assetId = findNestedKey(asset.location, "key")
+                parachainId = findNestedKey(
+                  ethereum,
+                  "chainId",
+                )?.chainId.toString()
+                const assetId = findNestedKey(asset.location, "key")?.key
                 iconSrc = items.find((item) =>
                   item.includes(`${parachainId}/assets/${assetId}`),
                 )
