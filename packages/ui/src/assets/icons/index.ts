@@ -1,4 +1,5 @@
 export { default as Add } from "./Add.svg?react"
+export { default as ArrowTiny } from "./ArrowTiny.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"
 export { default as CircleCheck } from "./CircleCheck.svg?react"
@@ -27,4 +28,5 @@ export { default as TwoColorCirclePercentage } from "./TwoColorCirclePercentage.
 export { default as TwoColorClock } from "./TwoColorClock.svg?react"
 export { default as TwoColorSwap } from "./TwoColorSwap.svg?react"
 export { default as TwoColorUsers } from "./TwoColorUsers.svg?react"
+export { default as Warning } from "./Warning.svg?react"
 export * from "lucide-react"

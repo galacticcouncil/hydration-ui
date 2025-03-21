@@ -6,9 +6,9 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useMemo } from "react"
 
+import { InvalidAssetRow } from "@/modules/wallet/Invalid/InvalidAssetRow"
 import { AssetDetailExpanded } from "@/modules/wallet/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/MyAssets/ExpandedNativeRow"
-import { InvalidAssetRow } from "@/modules/wallet/MyAssets/InvalidAssetRow"
 import {
   MyAsset,
   useMyAssetsColumns,
@@ -60,7 +60,9 @@ export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
         }
         renderOverride={(asset) =>
           // TODO rug check
-          asset.id === "10" ? <InvalidAssetRow assetId={asset.id} /> : undefined
+          asset.id === "10" ? (
+            <InvalidAssetRow assetId={asset.id} origin="Assethub" />
+          ) : undefined
         }
       />
     </TableContainer>
