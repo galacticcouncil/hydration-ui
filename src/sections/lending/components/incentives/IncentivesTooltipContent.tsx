@@ -71,10 +71,10 @@ export const IncentivesTooltipContent = ({
         ))}
         {incentives.length > 1 && (
           <div
-            css={{ border: `1px solid ${theme.colors.basic400}` }}
-            sx={{ pt: 4, mt: 4 }}
+            css={{ borderTop: `1px solid ${theme.colors.basic700}` }}
+            sx={{ pt: 8, mt: 8 }}
           >
-            <Row caption="Net APR">
+            <Row caption={<Text fs={14}>Net APR</Text>}>
               <Number incentiveAPR={incentivesNetAPR} />
             </Row>
           </div>

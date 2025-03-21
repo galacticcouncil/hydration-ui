@@ -2,6 +2,8 @@ import { ReserveDataHumanized } from "@aave/contract-helpers"
 import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
+  valueToBigNumber,
+  WEI_DECIMALS,
 } from "@aave/math-utils"
 import { EmodeCategory } from "sections/lending/helpers/types"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
@@ -126,9 +128,6 @@ export const reserveSortFn = (
   return numB > numA ? 1 : -1
 }
 
-// TODO move formatUserSummaryAndIncentives
-// export const selectSortedCurrentUserReservesData = (state: RootStore) => {};
-
 export const selectFormattedReserves = (
   state: RootStore,
   currentTimestamp: number,
@@ -137,6 +136,28 @@ export const selectFormattedReserves = (
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
   const currentNetworkConfig = state.currentNetworkConfig
 
+  const defaultReserveIncentives = state.reserveIncentiveData || []
+  const reserveIncentives = defaultReserveIncentives.map((incentive) => {
+    if (!incentive.aIncentiveData.rewardsTokenInformation.length) {
+      return incentive
+    }
+
+    return {
+      ...incentive,
+      aIncentiveData: {
+        ...incentive.aIncentiveData,
+        rewardsTokenInformation:
+          incentive.aIncentiveData.rewardsTokenInformation.map((reward) => ({
+            ...reward,
+            // emissionPerSecond is expected to be in WEI, so we need to convert it to the correct decimals
+            emissionPerSecond: valueToBigNumber(reward.emissionPerSecond)
+              .shiftedBy(WEI_DECIMALS - reward.rewardTokenDecimals)
+              .toString(),
+          })),
+      },
+    }
+  })
+
   const formattedPoolReserves = formatReservesAndIncentives({
     reserves,
     currentTimestamp,
@@ -144,7 +165,7 @@ export const selectFormattedReserves = (
       baseCurrencyData.marketReferenceCurrencyDecimals,
     marketReferencePriceInUsd:
       baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-    reserveIncentives: state.reserveIncentiveData || [],
+    reserveIncentives: reserveIncentives,
   })
     .map((r) => ({
       ...r,
@@ -155,11 +176,6 @@ export const selectFormattedReserves = (
         currentNetworkConfig.wrappedBaseAssetSymbol?.toLowerCase(),
     }))
     .sort(reserveSortFn)
-
-  console.log({
-    reserveIncentiveData: state.reserveIncentiveData,
-    formattedPoolReserves,
-  })
 
   return formattedPoolReserves
 }
