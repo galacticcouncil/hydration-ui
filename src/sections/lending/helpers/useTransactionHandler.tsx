@@ -314,6 +314,7 @@ export const useTransactionHandler = ({
         setMainTxState({ ...mainTxState, loading: true })
         const txns = await handleGetPermitTxns(signatures, signatureDeadline)
         const params = await txns[0].tx()
+
         delete params.gasPrice
         return processTx({
           tx: () => sendTx(params as PopulatedTransaction),
@@ -353,13 +354,16 @@ export const useTransactionHandler = ({
     if ((!usePermit || !approvalTxes) && actionTx) {
       try {
         setMainTxState({ ...mainTxState, loading: true })
+        console.log("BEFORE TX", actionTx)
         const params = await actionTx.tx()
+        console.log("AFTER TX")
         delete params.gasPrice
         delete params.gasLimit
         params.gasLimit = BigNumber.from(gasLimit).mul(12).div(10)
         const gasPrice = await jsonRpcProvider().getGasPrice()
         const gasOnePrc = gasPrice.div(100)
         const gasPricePlus = gasPrice.add(gasOnePrc)
+
         Object.assign(params, {
           maxFeePerGas: gasPricePlus,
           maxPriorityFeePerGas: gasPricePlus,

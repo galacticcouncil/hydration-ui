@@ -12,15 +12,13 @@ import {
   DetailsNumberLineWithSub,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
-import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { Reward } from "sections/lending/helpers/types"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ClaimRewardsActions } from "./ClaimRewardsActions"
 import { RewardsSelect } from "./RewardsSelect"
+import { Separator } from "components/Separator/Separator"
 
 export enum ErrorType {
   NOT_ENOUGH_BALANCE,
@@ -29,18 +27,14 @@ export enum ErrorType {
 export const ClaimRewardsModalContent = () => {
   const { mainTxState: claimRewardsTxState, txError } = useModalContext()
   const { user, reserves } = useAppDataContext()
-  const { currentChainId, currentMarketData } = useProtocolDataContext()
-  const { chainId: connectedChainId, readOnlyModeAddress } = useWeb3Context()
+  const { currentMarketData } = useProtocolDataContext()
   const [claimableUsd, setClaimableUsd] = useState("0")
   const [selectedRewardSymbol, setSelectedRewardSymbol] =
     useState<string>("all")
   const [rewards, setRewards] = useState<Reward[]>([])
   const [allReward, setAllReward] = useState<Reward>()
 
-  const networkConfig = getNetworkConfig(currentChainId)
-
   // is Network mismatched
-  const isWrongNetwork = currentChainId !== connectedChainId
   const selectedReward =
     selectedRewardSymbol === "all"
       ? allReward
@@ -111,14 +105,8 @@ export const ClaimRewardsModalContent = () => {
 
     setRewards(userIncentives)
     setClaimableUsd(totalClaimableUsd.toString())
-  }, [
-    claimableUsd,
-    currentMarketData.chainId,
-    currentMarketData.v3,
-    reserves,
-    selectedReward,
-    user.calculatedUserIncentives,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // error handling
   let blockingError: ErrorType | undefined = undefined
@@ -149,23 +137,19 @@ export const ClaimRewardsModalContent = () => {
 
   return (
     <>
-      {isWrongNetwork && !readOnlyModeAddress && (
-        <ChangeNetworkWarning
-          networkName={networkConfig.name}
-          chainId={currentChainId}
-        />
-      )}
-
       {blockingError !== undefined && (
         <Text color="red400">{handleBlocked()}</Text>
       )}
 
       {rewards.length > 1 && (
-        <RewardsSelect
-          rewards={rewards}
-          selectedReward={selectedRewardSymbol}
-          setSelectedReward={setSelectedRewardSymbol}
-        />
+        <>
+          <RewardsSelect
+            rewards={rewards}
+            selectedReward={selectedRewardSymbol}
+            setSelectedReward={setSelectedRewardSymbol}
+          />
+          <Separator sx={{ my: 20 }} />
+        </>
       )}
 
       {selectedReward && (
@@ -208,7 +192,7 @@ export const ClaimRewardsModalContent = () => {
           )}
           {selectedRewardSymbol !== "all" && (
             <DetailsNumberLineWithSub
-              symbol={<TokenIcon symbol={selectedReward.symbol} />}
+              symbol={selectedReward.symbol}
               futureValue={selectedReward.balance}
               futureValueUSD={selectedReward.balanceUsd}
               description={<span>{selectedReward.symbol} Balance</span>}
@@ -220,7 +204,6 @@ export const ClaimRewardsModalContent = () => {
       {txError && <GasEstimationError txError={txError} />}
 
       <ClaimRewardsActions
-        isWrongNetwork={isWrongNetwork}
         selectedReward={selectedReward ?? ({} as Reward)}
         blocked={blockingError !== undefined}
       />

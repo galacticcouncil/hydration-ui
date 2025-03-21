@@ -1,4 +1,8 @@
-import { valueToBigNumber } from "@aave/math-utils"
+import {
+  normalize,
+  UserIncentiveData,
+  valueToBigNumber,
+} from "@aave/math-utils"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PercentageValue } from "components/PercentageValue"
@@ -11,6 +15,8 @@ import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-par
 import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { useBifrostVDotApy } from "api/external/bifrost"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { Button } from "components/Button/Button"
 
 export const DashboardHeaderValues: FC<{
   className?: string
@@ -19,9 +25,9 @@ export const DashboardHeaderValues: FC<{
   const { user, loading } = useAppDataContext()
   const { currentAccount } = useWeb3Context()
   const [open, setOpen] = useState(false)
-  //const { openClaimRewards } = useModalContext()
+  const { openClaimRewards } = useModalContext()
 
-  /* const { claimableRewardsUsd } = Object.keys(
+  const { claimableRewardsUsd } = Object.keys(
     user.calculatedUserIncentives,
   ).reduce(
     (acc, rewardTokenAddress) => {
@@ -32,25 +38,7 @@ export const DashboardHeaderValues: FC<{
         incentive.rewardTokenDecimals,
       )
 
-      let tokenPrice = 0
-      // getting price from reserves for the native rewards for v2 markets
-      if (!currentMarketData.v3 && Number(rewardBalance) > 0) {
-        if (currentMarketData.chainId === ChainId.mainnet) {
-          const aave = reserves.find((reserve) => reserve.symbol === "AAVE")
-          tokenPrice = aave ? Number(aave.priceInUSD) : 0
-        } else {
-          reserves.forEach((reserve) => {
-            if (
-              reserve.symbol === currentNetworkConfig.wrappedBaseAssetSymbol
-            ) {
-              tokenPrice = Number(reserve.priceInUSD)
-            }
-          })
-        }
-      } else {
-        tokenPrice = Number(incentive.rewardPriceFeed)
-      }
-
+      const tokenPrice = Number(incentive.rewardPriceFeed)
       const rewardBalanceUsd = Number(rewardBalance) * tokenPrice
 
       if (rewardBalanceUsd > 0) {
@@ -67,7 +55,7 @@ export const DashboardHeaderValues: FC<{
       claimableRewardsUsd: number
       assets: string[]
     },
-  ) */
+  )
 
   const loanToValue =
     user?.totalCollateralMarketReferenceCurrency === "0"
@@ -93,7 +81,9 @@ export const DashboardHeaderValues: FC<{
       <DataValueList
         separated
         className={className}
-        sx={{ maxWidth: ["100%", shouldRenderVdotApy ? 1000 : 700] }}
+        sx={{
+          maxWidth: ["100%", shouldRenderVdotApy ? "100%" : 1000],
+        }}
       >
         <DataValue
           labelColor="brightBlue300"
@@ -144,26 +134,28 @@ export const DashboardHeaderValues: FC<{
             <NoData />
           )}
         </DataValue>
-        {/* <DataValue
-            labelColor="brightBlue300"
-            label="Available rewards"
-            isLoading={loading}
-          >
-            {currentAccount && claimableRewardsUsd > 0 ? (
-              <div sx={{ flex: "row", gap: 10 }}>
+        <DataValue
+          labelColor="brightBlue300"
+          label="Available rewards"
+          isLoading={loading}
+        >
+          {currentAccount && claimableRewardsUsd > 0 ? (
+            <div sx={{ flex: "row", align: "center", gap: 10 }}>
+              <span>
                 <DisplayValue value={claimableRewardsUsd} isUSD />
-                <Button
-                  variant="primary"
-                  size="micro"
-                  onClick={() => openClaimRewards()}
-                >
-                  <span>Claim</span>
-                </Button>
-              </div>
-            ) : (
-              <NoData />
-            )}
-          </DataValue> */}
+              </span>
+              <Button
+                variant="primary"
+                size="micro"
+                onClick={() => openClaimRewards()}
+              >
+                <span>Claim</span>
+              </Button>
+            </div>
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
       </DataValueList>
       <LiquidationRiskParametresInfoModal
         open={open}
