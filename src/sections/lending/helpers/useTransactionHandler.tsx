@@ -354,9 +354,7 @@ export const useTransactionHandler = ({
     if ((!usePermit || !approvalTxes) && actionTx) {
       try {
         setMainTxState({ ...mainTxState, loading: true })
-        console.log("BEFORE TX", actionTx)
         const params = await actionTx.tx()
-        console.log("AFTER TX")
         delete params.gasPrice
         delete params.gasLimit
         params.gasLimit = BigNumber.from(gasLimit).mul(12).div(10)
