@@ -50,21 +50,14 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
     [filteredOffers],
   )
 
-  const assetPrices = useAssetsPrice(assetIds)
-  const areSpotPricesLoading = Object.values(assetPrices).reduce(
-    (areSpotPricesLoading, spotPrice) =>
-      areSpotPricesLoading || spotPrice.isLoading,
-    false,
-  )
+  const { isLoading: isPriceLoading, prices } = useAssetsPrice(assetIds)
 
-  const isTableLoading = isLoading || areSpotPricesLoading
+  const isTableLoading = isLoading || isPriceLoading
 
   const offersWithPrices = useMemo(
     () =>
-      isTableLoading
-        ? []
-        : filteredOffers.map(mapOtcOffersToTableData(assetPrices)),
-    [filteredOffers, assetPrices, isTableLoading],
+      isTableLoading ? [] : filteredOffers.map(mapOtcOffersToTableData(prices)),
+    [filteredOffers, prices, isTableLoading],
   )
 
   return (

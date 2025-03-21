@@ -1,5 +1,10 @@
 import { TradeRouter } from "@galacticcouncil/sdk"
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  queryOptions,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { isNullish } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -10,8 +15,10 @@ import {
 } from "@/states/displayAsset"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
+import { getTradeRouter } from "./provider"
+
 export const usePriceSubscriber = () => {
-  const { tradeRouter, isApiLoaded } = useRpcProvider()
+  const { isApiLoaded } = useRpcProvider()
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(
     useShallow((state) => state.setAssets),
@@ -23,12 +30,17 @@ export const usePriceSubscriber = () => {
   return useQuery({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "displayPrices", stableCoinId],
     queryFn: async () => {
+      const tradeRouter = getTradeRouter()
       const activeAssetsIds = queryClient
         .getQueriesData({
           queryKey: ["spotPriceKey"],
           type: "active",
         })
-        .map(([key]) => key[1] as string)
+        .reduce<string[]>((acc, [key, data]) => {
+          if (data) acc.push(key[1] as string)
+
+          return acc
+        }, [])
 
       const prices = await Promise.all(
         activeAssetsIds.map((assetId) =>
@@ -51,24 +63,22 @@ export const usePriceSubscriber = () => {
   })
 }
 
-export const spotPriceKey = (assetId: string) =>
-  queryOptions({
-    queryKey: ["spotPriceKey", assetId],
-    queryFn: () => null,
-  })
-
 export const spotPrice = (
   context: TProviderContext,
   assetIn: string,
   assetOut: string,
 ) => {
-  const { isApiLoaded, tradeRouter } = context
+  const { isApiLoaded } = context
 
   return queryOptions({
     enabled: isApiLoaded,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "spotPrice", assetIn, assetOut],
     queryFn: async () => {
-      const spotPrice = await getSpotPrice(tradeRouter, assetIn, assetOut)()
+      const { spotPrice } = await getSpotPrice(
+        getTradeRouter(),
+        assetIn,
+        assetOut,
+      )()
 
       return spotPrice
     },
@@ -103,3 +113,35 @@ export const getSpotPrice =
     }
     return { tokenIn, tokenOut, spotPrice }
   }
+
+export const usePriceKeys = (assetIds: string[]) => {
+  const stableCoinId = useDisplayAssetStore(
+    useShallow((state) => state.stableCoinId),
+  )
+
+  const setAssets = useDisplaySpotPriceStore(
+    useShallow((state) => state.setAssets),
+  )
+
+  const { isLoaded } = useRpcProvider()
+
+  useQueries({
+    queries: assetIds.map((assetId) => ({
+      queryKey: ["spotPriceKey", assetId],
+      queryFn: async () => {
+        const price = await getSpotPrice(
+          getTradeRouter(),
+          assetId,
+          stableCoinId ?? "",
+        )()
+
+        setAssets([{ id: assetId, price: price.spotPrice }])
+
+        return true
+      },
+      notifyOnChangeProps: [],
+      staleTime: Infinity,
+      enabled: isLoaded,
+    })),
+  })
+}

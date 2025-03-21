@@ -1,14 +1,9 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query"
-import { useMemo } from "react"
-import { useMount } from "react-use"
-import { isNullish } from "remeda"
+import { useCallback, useMemo } from "react"
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import { combine } from "zustand/middleware"
+import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
-import { spotPriceKey } from "@/api/spotPrice"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { usePriceKeys } from "@/api/spotPrice"
 
 type TDisplayAsset = {
   id: string | undefined
@@ -62,8 +57,6 @@ export const useDisplaySpotPriceStore = create<Store>(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
-  const queryClient = useQueryClient()
-
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
       assetIds.reduce<Record<string, string>>((acc, assetId) => {
@@ -74,27 +67,35 @@ export const useAssetsPrice = (assetIds: string[]) => {
   )
 
   // subscribe to price changes by asset id
-  useQueries({
-    queries: assetIds.map((assetId) => spotPriceKey(assetId)),
-  })
+  usePriceKeys(assetIds)
 
-  // invalidate query to subscribe to new assets
-  useMount(() => {
-    queryClient.invalidateQueries({
-      queryKey: [QUERY_KEY_BLOCK_PREFIX, "displayPrices"],
-    })
-  })
-
-  return useMemo(() => {
+  const prices = useMemo(() => {
     const result: AssetPrice = {}
 
     Object.entries(assets).forEach(([key, price]) => {
       result[key] = {
         price,
-        isLoading: isNullish(price),
+        isLoading: !price.length,
       }
     })
-
     return result
   }, [assets])
+
+  const getAssetPrice = useCallback(
+    (assetId: string) => {
+      return prices[assetId] ?? { price: "NaN", isLoading: false }
+    },
+    [prices],
+  )
+
+  const isLoading = useMemo(() => {
+    for (const [, price] of Object.entries(prices)) {
+      if (price && price.isLoading === true) {
+        return true
+      }
+    }
+    return false
+  }, [prices])
+
+  return { prices, isLoading, getAssetPrice }
 }

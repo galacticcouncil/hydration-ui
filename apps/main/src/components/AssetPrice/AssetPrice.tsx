@@ -22,11 +22,10 @@ export const AssetPrice = ({
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )
 
-  const priceRaw = useAssetsPrice([assetId])
+  const { getAssetPrice } = useAssetsPrice([assetId])
+  const { price, isLoading } = getAssetPrice(assetId)
 
   const isDollar = isRealUSD || isStableCoin
-
-  const { price, isLoading } = priceRaw[assetId] ?? {}
 
   const Wrapper = wrapper ?? <Text />
   const Content = (
