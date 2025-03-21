@@ -16,6 +16,7 @@ export type AssetInputProps = {
   symbol?: string
   value?: string
   dollarValue?: string
+  dollarValueLoading?: boolean
   maxBalance?: string
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
@@ -31,6 +32,7 @@ export const AssetInput = ({
   selectedAssetIcon,
   value,
   dollarValue,
+  dollarValueLoading,
   label,
   maxBalance,
   onChange,
@@ -130,7 +132,18 @@ export const AssetInput = ({
               fw={400}
               sx={{ width: "fit-content" }}
             >
-              ${dollarValue ? formatAssetValue(dollarValue) : "0"}
+              {(() => {
+                if (dollarValueLoading) {
+                  return <Skeleton width={48} />
+                }
+                if (dollarValue === "NaN") {
+                  return "-"
+                }
+                if (!dollarValue) {
+                  return "$0"
+                }
+                return `$${formatAssetValue(dollarValue)}`
+              })()}
             </Text>
           </Flex>
         </Flex>

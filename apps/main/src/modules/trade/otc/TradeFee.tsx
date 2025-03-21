@@ -1,4 +1,4 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -10,7 +10,7 @@ import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
-  readonly assetOut: TAsset | undefined
+  readonly assetOut: TAsset | undefined | null
   readonly assetAmountOut: string
 }
 
@@ -18,7 +18,7 @@ export const TradeFee: FC<Props> = ({ assetOut, assetAmountOut }) => {
   const { t } = useTranslation()
 
   const rpc = useRpcProvider()
-  const { data } = useQuery(otcTradeFeeQuery(rpc))
+  const { data, isLoading } = useQuery(otcTradeFeeQuery(rpc))
 
   const fee = new Big(data || "0").times(assetAmountOut).toString()
 
@@ -28,13 +28,15 @@ export const TradeFee: FC<Props> = ({ assetOut, assetAmountOut }) => {
         {t("tradeFee")}
       </Text>
       <Text fw={500} fs="p5" lh={px(14.4)} color={getToken("text.high")}>
-        {data ? (
-          <>
-            ={t("number", { value: fee })} {assetOut?.symbol}
-          </>
-        ) : (
-          "N / A"
-        )}
+        {(() => {
+          if (isLoading) {
+            return <Skeleton width={48} />
+          }
+          if (!data) {
+            return "N / A"
+          }
+          return `=${t("number", { value: fee })} ${assetOut?.symbol}`
+        })()}
       </Text>
     </Flex>
   )

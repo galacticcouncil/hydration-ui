@@ -6,6 +6,10 @@ import { TAsset } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 export const required = z.string().trim().min(1, i18n.t("error.required"))
+export const requiredCustom = [
+  (value: unknown) => value !== null || value !== undefined,
+  i18n.t("error.required"),
+] as const
 
 export const WSS_REGEX =
   /^wss?:\/\/(localhost|[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]+)?(\/.*)?$/i
@@ -41,7 +45,7 @@ export const maxBalance = (balance: bigint | string | number) =>
     )
 
 export const existentialDeposit = (
-  asset: TAsset | undefined,
+  asset: TAsset | undefined | null,
   multiplier: number | undefined,
 ) =>
   z
@@ -58,7 +62,7 @@ export const existentialDeposit = (
     )
 
 export const validateExistentialDeposit = (
-  asset: TAsset | undefined,
+  asset: TAsset | undefined | null,
   amount: string,
   multiplier: number | undefined,
 ): string | undefined => {

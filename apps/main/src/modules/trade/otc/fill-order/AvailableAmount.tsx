@@ -43,7 +43,7 @@ export const AvailableAmount: FC<Props> = ({
           {t("availableAmount")}:
         </Text>
         <Text fw={600} fs={16} lh={1}>
-          {assetInAmount} {assetIn?.symbol}
+          {t("number", { value: assetInAmount })} {assetIn?.symbol}
         </Text>
       </Flex>
       {isPartiallyFillable && (

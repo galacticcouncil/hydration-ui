@@ -45,10 +45,8 @@ export const PlaceOrderPrice: FC<Props> = ({ offerAsset, buyAsset }) => {
               })}
             </Text>
             <MicroButton
-              onClick={() =>
-                field.onChange(omniPoolPrice === "NaN" ? "0" : omniPoolPrice)
-              }
-              disabled={isLoading}
+              onClick={() => field.onChange(omniPoolPrice)}
+              disabled={isLoading || omniPoolPrice === "NaN"}
             >
               {t("otc.placeOrder.lastOmniPoolPrice")}
             </MicroButton>

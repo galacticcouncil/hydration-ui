@@ -29,7 +29,7 @@ const buyAmountBalance = "5"
 
 export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const { t } = useTranslation(["trade", "common"])
-  const { all, getAsset, isExternal } = useAssets()
+  const { all, isExternal } = useAssets()
   const allAssets = useMemo(
     () =>
       all
@@ -41,14 +41,11 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
   const form = usePlaceOrderForm(offerAmountBalance)
   const submit = useSubmitPlaceOrder({ onSubmit: onClose })
-  const [offerAssetId, offerAmount, buyAssetId] = form.watch([
-    "offerAssetId",
+  const [offerAsset, offerAmount, buyAsset] = form.watch([
+    "offerAsset",
     "offerAmount",
-    "buyAssetId",
+    "buyAsset",
   ])
-
-  const offerAsset = getAsset(offerAssetId)
-  const buyAsset = getAsset(buyAssetId)
 
   const isSubmitEnabled = form.formState.isValid
 
@@ -59,17 +56,13 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         description={t("otc.placeOrder.description")}
       />
       <FormProvider {...form}>
-        <form
-          onSubmit={form.handleSubmit((form) =>
-            submit(form, offerAsset, buyAsset),
-          )}
-        >
+        <form onSubmit={form.handleSubmit((value) => submit.mutate(value))}>
           <ModalBody sx={{ p: 0 }}>
             <Box px={20}>
               <PlaceOrderAssetField
                 label={t("common:offer")}
                 maxBalance={offerAmountBalance}
-                assetIdFieldName="offerAssetId"
+                assetFieldName="offerAsset"
                 assetAmountFieldName="offerAmount"
                 assets={allAssets}
               />
@@ -86,7 +79,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
               <PlaceOrderAssetField
                 label={t("common:buy")}
                 maxBalance={buyAmountBalance}
-                assetIdFieldName="buyAssetId"
+                assetFieldName="buyAsset"
                 assetAmountFieldName="buyAmount"
                 assets={allAssets}
               />

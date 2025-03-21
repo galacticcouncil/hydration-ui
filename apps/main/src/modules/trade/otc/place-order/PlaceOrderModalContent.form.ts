@@ -5,42 +5,44 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
-import { otcExistentialDepositorMultiplierQuery } from "@/modules/trade/otc/useOtcExistentialDepositorMultiplier"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   maxBalance,
   required,
+  requiredCustom,
   validateExistentialDeposit,
 } from "@/utils/validators"
 
-const getSchema = (
-  offerAmountBalance: string,
-  existentialDepositMultiplier: number | undefined,
-  getAsset: (id: string) => TAsset | undefined,
-) =>
-  z
+const useSchema = (offerAmountBalance: string) => {
+  const rpc = useRpcProvider()
+  const { data: existentialDepositMultiplier } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
+  )
+
+  return z
     .object({
-      offerAssetId: required,
+      offerAsset: z.custom<TAsset | null>().refine(...requiredCustom),
       offerAmount: required.pipe(maxBalance(offerAmountBalance)),
-      buyAssetId: required,
+      buyAsset: z.custom<TAsset | null>().refine(...requiredCustom),
       buyAmount: required,
       price: z.string(),
       isPartiallyFillable: z.boolean(),
     })
-    .superRefine(({ offerAssetId, buyAssetId }, ctx) => {
-      if (!offerAssetId || !buyAssetId || offerAssetId == buyAssetId) {
+    .superRefine(({ offerAsset, buyAsset }, ctx) => {
+      if (!offerAsset || !buyAsset || offerAsset.id == buyAsset.id) {
         ctx.addIssue({
           code: "custom",
           message: i18n.t("trade:otc.placeOrder.validation.sameAssets"),
-          path: ["buyAssetId" satisfies keyof PlaceOrderFormValues],
+          path: ["buyAsset" satisfies keyof PlaceOrderFormValues],
         })
       }
     })
-    .superRefine(({ offerAssetId, offerAmount }, ctx) => {
+    .superRefine(({ offerAsset, offerAmount }, ctx) => {
       const errorMessage = validateExistentialDeposit(
-        getAsset(offerAssetId ?? ""),
+        offerAsset,
         offerAmount || "0",
         existentialDepositMultiplier,
       )
@@ -53,9 +55,9 @@ const getSchema = (
         })
       }
     })
-    .superRefine(({ buyAssetId, buyAmount }, ctx) => {
+    .superRefine(({ buyAsset, buyAmount }, ctx) => {
       const errorMessage = validateExistentialDeposit(
-        getAsset(buyAssetId ?? ""),
+        buyAsset,
         buyAmount || "0",
         existentialDepositMultiplier,
       )
@@ -68,21 +70,15 @@ const getSchema = (
         })
       }
     })
+}
 
-export type PlaceOrderFormValues = z.infer<ReturnType<typeof getSchema>>
+export type PlaceOrderFormValues = z.infer<ReturnType<typeof useSchema>>
 
 export const usePlaceOrderForm = (offerAmountBalance: string) => {
-  const rpc = useRpcProvider()
-
-  const { getAsset } = useAssets()
-  const { data: existentialDepositMultiplier } = useQuery(
-    otcExistentialDepositorMultiplierQuery(rpc),
-  )
-
   const defaultValues: PlaceOrderFormValues = {
-    offerAssetId: "",
+    offerAsset: null,
     offerAmount: "",
-    buyAssetId: "",
+    buyAsset: null,
     buyAmount: "",
     price: "",
     isPartiallyFillable: true,
@@ -90,9 +86,7 @@ export const usePlaceOrderForm = (offerAmountBalance: string) => {
 
   const form = useForm<PlaceOrderFormValues>({
     defaultValues,
-    resolver: zodResolver(
-      getSchema(offerAmountBalance, existentialDepositMultiplier, getAsset),
-    ),
+    resolver: zodResolver(useSchema(offerAmountBalance)),
     mode: "onChange",
   })
 

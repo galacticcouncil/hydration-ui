@@ -5,18 +5,19 @@ import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { type infer as Infer, object, string } from "zod"
 
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
-import { otcExistentialDepositorMultiplierQuery } from "@/modules/trade/otc/useOtcExistentialDepositorMultiplier"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { existentialDeposit, maxBalance, required } from "@/utils/validators"
 
-const getSchema = (
-  offer: OtcOfferTabular,
-  assetInBalance: string,
-  existentialDepositMultiplier: number | undefined,
-) =>
-  object({
+const useSchema = (offer: OtcOfferTabular, assetInBalance: string) => {
+  const rpc = useRpcProvider()
+  const { data: existentialDepositMultiplier } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
+  )
+
+  return object({
     sellAmount: required
       .pipe(maxBalance(assetInBalance))
       .pipe(existentialDeposit(offer.assetIn, existentialDepositMultiplier)),
@@ -29,18 +30,14 @@ const getSchema = (
       )
       .pipe(existentialDeposit(offer.assetOut, existentialDepositMultiplier)),
   })
+}
 
-export type FillOrderFormValues = Infer<ReturnType<typeof getSchema>>
+export type FillOrderFormValues = Infer<ReturnType<typeof useSchema>>
 
 export const useFillOrderForm = (
   otcOffer: OtcOfferTabular,
   assetInBalance: string,
 ) => {
-  const rpc = useRpcProvider()
-  const { data: existentialDepositMultiplier } = useQuery(
-    otcExistentialDepositorMultiplierQuery(rpc),
-  )
-
   const defaultValues: FillOrderFormValues = otcOffer.isPartiallyFillable
     ? {
         sellAmount: "",
@@ -53,9 +50,7 @@ export const useFillOrderForm = (
 
   const form = useForm<FillOrderFormValues>({
     defaultValues,
-    resolver: zodResolver(
-      getSchema(otcOffer, assetInBalance, existentialDepositMultiplier),
-    ),
+    resolver: zodResolver(useSchema(otcOffer, assetInBalance)),
     mode: "onChange",
   })
 

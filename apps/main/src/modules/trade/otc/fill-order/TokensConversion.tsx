@@ -1,15 +1,11 @@
 import { ArrowDown } from "@galacticcouncil/ui/assets/icons"
-import {
-  Box,
-  Flex,
-  ModalContentDivider,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { Box, Flex, ModalContentDivider } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { STokensConversionPrice } from "@/modules/trade/otc/fill-order/TokensConversion.styled"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 
 type Props = {
@@ -44,26 +40,12 @@ export const TokensConversion: FC<Props> = ({ offer }) => {
         >
           <ArrowDown sx={{ size: 12 }} />
         </Box>
-        <Text
-          py={5}
-          px={14}
-          borderRadius={16}
-          bg={getToken("details.separators")}
-          fw={500}
-          fs="p6"
-          lh={px(15.4)}
-          color={getToken("text.high")}
-          alignContent="center"
-          display="flex"
-          alignItems="center"
-          gap={2}
-          sx={{ backdropFilter: "blur(3px)" }}
-        >
+        <STokensConversionPrice>
           {t("otc.fillOrder.conversion.price", {
             symbol: offer.assetOut.symbol,
           })}
           {t("common:number", { value: price })} {offer.assetIn.symbol}
-        </Text>
+        </STokensConversionPrice>
       </Flex>
     </Box>
   )

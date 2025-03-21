@@ -1,10 +1,8 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { otcOffersQueryKey } from "@/modules/trade/otc/table/OtcTable.query"
-import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
@@ -19,28 +17,25 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
   const client = useQueryClient()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
-  return useCallback(
-    async (
-      {
-        offerAssetId,
-        offerAmount,
-        buyAssetId,
-        buyAmount,
-        isPartiallyFillable,
-      }: PlaceOrderFormValues,
-      offerAsset: TAsset | undefined,
-      buyAsset: TAsset | undefined,
-    ) => {
+  return useMutation({
+    mutationFn: async ({
+      offerAsset,
+      offerAmount,
+      buyAsset,
+      buyAmount,
+      isPartiallyFillable,
+    }: PlaceOrderFormValues) => {
       if (!buyAsset || !offerAsset) {
         return
       }
 
-      createTransaction({
+      onSubmit()
+      await createTransaction({
         tx: papi.tx.OTC.place_order({
           amount_in: scale(buyAmount, buyAsset.decimals),
           amount_out: scale(offerAmount, offerAsset.decimals),
-          asset_in: Number(buyAssetId),
-          asset_out: Number(offerAssetId),
+          asset_in: Number(buyAsset.id),
+          asset_out: Number(offerAsset.id),
           partially_fillable: isPartiallyFillable,
         }),
         toasts: {
@@ -57,10 +52,8 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
             amount: offerAmount,
           }),
         },
-      }).then(() => client.invalidateQueries({ queryKey: otcOffersQueryKey }))
-
-      onSubmit()
+      })
     },
-    [client, papi, t, createTransaction, onSubmit],
-  )
+    onSuccess: () => client.invalidateQueries({ queryKey: otcOffersQueryKey }),
+  })
 }

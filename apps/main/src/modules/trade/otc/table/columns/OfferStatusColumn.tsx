@@ -1,8 +1,9 @@
 import { ProgressBar, Skeleton, Text } from "@galacticcouncil/ui/components"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
 
-import { useOrdersStateQuery } from "@/codegen/__generated__/indexer"
+import { otcOrderStatusQuery } from "@/api/otc"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -20,14 +21,11 @@ export const OfferStatusColumn: FC<Props> = ({
 }) => {
   const offerIdNumber = Number(offerId)
 
-  const { data, loading } = useOrdersStateQuery({
-    variables: {
-      orderId: offerIdNumber,
-    },
-    skip: !offerIdNumber || !isPartiallyFillable,
-  })
+  const { data, isLoading } = useQuery(
+    otcOrderStatusQuery(offerIdNumber, isPartiallyFillable),
+  )
 
-  if (loading) {
+  if (isLoading) {
     return <Skeleton />
   }
 

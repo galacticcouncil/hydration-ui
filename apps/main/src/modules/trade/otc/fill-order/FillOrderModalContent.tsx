@@ -30,6 +30,7 @@ export const FillOrderModalContent: FC<Props> = ({ otcOffer, onClose }) => {
   const { t } = useTranslation(["trade", "common"])
   const form = useFillOrderForm(otcOffer, assetInBalance)
   const submit = useSubmitFillOrder({
+    otcOffer,
     onSubmit: onClose,
   })
 
@@ -50,9 +51,7 @@ export const FillOrderModalContent: FC<Props> = ({ otcOffer, onClose }) => {
         }
       />
       <FormProvider {...form}>
-        <form
-          onSubmit={form.handleSubmit((values) => submit(values, otcOffer))}
-        >
+        <form onSubmit={form.handleSubmit((values) => submit.mutate(values))}>
           <ModalBody sx={{ p: 0 }}>
             <Controller
               control={form.control}

@@ -17,7 +17,7 @@ import { useAssetsPrice } from "@/states/displayAsset"
 
 type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
   assets: TAssetData[]
-  selectedAsset: TAssetData | undefined
+  selectedAsset: TAssetData | undefined | null
   setSelectedAsset?: (asset: TAssetData) => void
 }
 
@@ -61,13 +61,14 @@ export const AssetSelect = ({
   const [openModal, setOpeModal] = useState(false)
 
   const assetPrices = useAssetsPrice(selectedAsset ? [selectedAsset.id] : [])
-  const assetPrice = selectedAsset?.id
-    ? assetPrices[selectedAsset.id]?.price || "0"
-    : "0"
+  const assetPrice = selectedAsset?.id ? assetPrices[selectedAsset?.id] : null
+  const assetPriceValue = assetPrice?.price || "0"
+  const assetPriceLoading = assetPrice?.isLoading
 
-  const price = new Big(assetPrice === "NaN" ? "0" : assetPrice)
-    .times(props.value || "0")
-    .toString()
+  const price =
+    assetPriceValue === "NaN"
+      ? "NaN"
+      : new Big(assetPriceValue).times(props.value || "0").toString()
 
   return (
     <>
@@ -80,6 +81,7 @@ export const AssetSelect = ({
         symbol={selectedAsset?.symbol}
         modalDisabled={!setSelectedAsset}
         dollarValue={price}
+        dollarValueLoading={assetPriceLoading}
       />
 
       <AssetSelectModal
