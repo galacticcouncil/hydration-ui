@@ -1,4 +1,4 @@
-query OrdersState($orderId: Int!) {
+query OtcOrderStatus($orderId: Int!) {
     events(
         where: {
             args_jsonContains: { orderId: $orderId }

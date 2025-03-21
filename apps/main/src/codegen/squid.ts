@@ -2,6 +2,9 @@ import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
   schema: process.env.VITE_SQUID_URL,
+  overwrite: true,
+  // TODO remove this option when we have first squid indexer operations
+  ignoreNoDocuments: true,
   generates: {
     "schema.squid.graphql": {
       plugins: ["schema-ast"],
@@ -9,14 +12,14 @@ export default {
         includeDirectives: true,
       },
     },
-    "src/codegen/__generated__/squid.ts": {
+    "src/codegen/__generated__/squid/": {
       documents: ["src/**/*.squid.graphql"],
-      plugins: [
-        "typescript",
-        "typescript-operations",
-        "typescript-react-apollo",
-      ],
+      preset: "client",
+      presetConfig: {
+        fragmentMasking: false,
+      },
       config: {
+        // documentMode: "string",
         avoidOptionals: {
           field: true,
           inputValue: false,
@@ -26,12 +29,7 @@ export default {
         immutableTypes: true,
         preResolveTypes: true,
         onlyOperationTypes: true,
-        withHooks: true,
-        defaultBaseOptions: {
-          context: { clientName: "squid" },
-        },
       },
     },
   },
-  ignoreNoDocuments: true,
 } satisfies CodegenConfig

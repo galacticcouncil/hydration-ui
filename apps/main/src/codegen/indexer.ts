@@ -2,6 +2,7 @@ import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
   schema: process.env.VITE_INDEXER_URL,
+  overwrite: true,
   generates: {
     "schema.indexer.graphql": {
       plugins: ["schema-ast"],
@@ -9,14 +10,14 @@ export default {
         includeDirectives: true,
       },
     },
-    "src/codegen/__generated__/indexer.ts": {
+    "src/codegen/__generated__/indexer/": {
       documents: ["src/**/*.indexer.graphql"],
-      plugins: [
-        "typescript",
-        "typescript-operations",
-        "typescript-react-apollo",
-      ],
+      preset: "client",
+      presetConfig: {
+        fragmentMasking: false,
+      },
       config: {
+        // documentMode: "string",
         avoidOptionals: {
           field: true,
           inputValue: false,
@@ -26,10 +27,6 @@ export default {
         immutableTypes: true,
         preResolveTypes: true,
         onlyOperationTypes: true,
-        withHooks: true,
-        defaultBaseOptions: {
-          context: { clientName: "indexer" },
-        },
       },
     },
   },

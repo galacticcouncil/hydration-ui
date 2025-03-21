@@ -10,12 +10,14 @@ type AssetPriceProps = {
   assetId: string
   value?: number
   wrapper?: JSX.Element
+  compact?: boolean
 }
 
 export const AssetPrice = ({
   assetId,
   wrapper,
   value = 1,
+  compact,
 }: AssetPriceProps) => {
   const { t } = useTranslation()
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
@@ -34,7 +36,7 @@ export const AssetPrice = ({
       {isLoading ? (
         <Skeleton />
       ) : (
-        t("currency", {
+        t(compact ? "currency.compact" : "currency", {
           value: value * Number(price),
           ...(isDollar ? {} : { currency: symbol }),
         })

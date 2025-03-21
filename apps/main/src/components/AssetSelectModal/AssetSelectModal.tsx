@@ -20,7 +20,7 @@ import { SOption } from "./AssetSelectModal.styled"
 type AssetSelectModalProps = {
   assets: TAssetData[]
   onOpenChange: (value: boolean) => void
-  onSelect: (asset: TAssetData) => void
+  onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
   open: boolean
 }
@@ -62,7 +62,7 @@ const Content = ({
   }, [])
 
   const onSelectOption = (asset: TAssetData) => {
-    onSelect(asset)
+    onSelect?.(asset)
     onOpenChange(false)
   }
 

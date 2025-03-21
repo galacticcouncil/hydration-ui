@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+/* eslint-disable */
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -13,44 +13,55 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** A floating point number that requires more precision than IEEE 754 binary 64 */
   BigFloat: { input: any; output: any; }
+  /**
+   * A signed eight-byte integer. The upper big integer values are greater than the
+   * max value for a JavaScript number. Therefore all big integers will be output as
+   * strings and not numbers.
+   */
   BigInt: { input: any; output: any; }
+  /** A location in a connection that can be used for resuming pagination. */
   Cursor: { input: any; output: any; }
+  /**
+   * A point in time as described by the [ISO
+   * 8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
+   */
   Datetime: { input: any; output: any; }
 };
 
 /** A condition to be used against `Account` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type AccountCondition = {
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `lbpPoolId` field. */
-  readonly lbpPoolId?: InputMaybe<Scalars['String']['input']>;
+  lbpPoolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `omnipoolId` field. */
-  readonly omnipoolId?: InputMaybe<Scalars['String']['input']>;
+  omnipoolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `stablepoolId` field. */
-  readonly stablepoolId?: InputMaybe<Scalars['String']['input']>;
+  stablepoolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `xykPoolId` field. */
-  readonly xykPoolId?: InputMaybe<Scalars['String']['input']>;
+  xykPoolId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `Account` object types. All fields are combined with a logical ‘and.’ */
 export type AccountFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<AccountFilter>>;
+  and?: InputMaybe<Array<AccountFilter>>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `lbpPoolId` field. */
-  readonly lbpPoolId?: InputMaybe<StringFilter>;
+  lbpPoolId?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<AccountFilter>;
+  not?: InputMaybe<AccountFilter>;
   /** Filter by the object’s `omnipoolId` field. */
-  readonly omnipoolId?: InputMaybe<StringFilter>;
+  omnipoolId?: InputMaybe<StringFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<AccountFilter>>;
+  or?: InputMaybe<Array<AccountFilter>>;
   /** Filter by the object’s `stablepoolId` field. */
-  readonly stablepoolId?: InputMaybe<StringFilter>;
+  stablepoolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `xykPoolId` field. */
-  readonly xykPoolId?: InputMaybe<StringFilter>;
+  xykPoolId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `Account` for usage during aggregation. */
@@ -63,8 +74,8 @@ export enum AccountGroupBy {
 
 /** Conditions for `Account` aggregates. */
 export type AccountHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<AccountHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<AccountHavingInput>>;
+  AND?: InputMaybe<Array<AccountHavingInput>>;
+  OR?: InputMaybe<Array<AccountHavingInput>>;
 };
 
 /** Methods to use when ordering `Account`. */
@@ -2975,47 +2986,47 @@ export enum AccountsOrderBy {
 /** A condition to be used against `Asset` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type AssetCondition = {
   /** Checks for equality with the object’s `assetType` field. */
-  readonly assetType?: InputMaybe<Scalars['String']['input']>;
+  assetType?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `decimals` field. */
-  readonly decimals?: InputMaybe<Scalars['Int']['input']>;
+  decimals?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `existentialDeposit` field. */
-  readonly existentialDeposit?: InputMaybe<Scalars['BigFloat']['input']>;
+  existentialDeposit?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `isSufficient` field. */
-  readonly isSufficient?: InputMaybe<Scalars['Boolean']['input']>;
+  isSufficient?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `name` field. */
-  readonly name?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `symbol` field. */
-  readonly symbol?: InputMaybe<Scalars['String']['input']>;
+  symbol?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `xcmRateLimit` field. */
-  readonly xcmRateLimit?: InputMaybe<Scalars['BigFloat']['input']>;
+  xcmRateLimit?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `Asset` object types. All fields are combined with a logical ‘and.’ */
 export type AssetFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<AssetFilter>>;
+  and?: InputMaybe<Array<AssetFilter>>;
   /** Filter by the object’s `assetType` field. */
-  readonly assetType?: InputMaybe<StringFilter>;
+  assetType?: InputMaybe<StringFilter>;
   /** Filter by the object’s `decimals` field. */
-  readonly decimals?: InputMaybe<IntFilter>;
+  decimals?: InputMaybe<IntFilter>;
   /** Filter by the object’s `existentialDeposit` field. */
-  readonly existentialDeposit?: InputMaybe<BigFloatFilter>;
+  existentialDeposit?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `isSufficient` field. */
-  readonly isSufficient?: InputMaybe<BooleanFilter>;
+  isSufficient?: InputMaybe<BooleanFilter>;
   /** Filter by the object’s `name` field. */
-  readonly name?: InputMaybe<StringFilter>;
+  name?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<AssetFilter>;
+  not?: InputMaybe<AssetFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<AssetFilter>>;
+  or?: InputMaybe<Array<AssetFilter>>;
   /** Filter by the object’s `symbol` field. */
-  readonly symbol?: InputMaybe<StringFilter>;
+  symbol?: InputMaybe<StringFilter>;
   /** Filter by the object’s `xcmRateLimit` field. */
-  readonly xcmRateLimit?: InputMaybe<BigFloatFilter>;
+  xcmRateLimit?: InputMaybe<BigFloatFilter>;
 };
 
 /** Grouping methods for `Asset` for usage during aggregation. */
@@ -3030,72 +3041,72 @@ export enum AssetGroupBy {
 }
 
 export type AssetHavingAverageInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingDistinctCountInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `Asset` aggregates. */
 export type AssetHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<AssetHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<AssetHavingInput>>;
-  readonly average?: InputMaybe<AssetHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<AssetHavingDistinctCountInput>;
-  readonly max?: InputMaybe<AssetHavingMaxInput>;
-  readonly min?: InputMaybe<AssetHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<AssetHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<AssetHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<AssetHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<AssetHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<AssetHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<AssetHavingInput>>;
+  OR?: InputMaybe<Array<AssetHavingInput>>;
+  average?: InputMaybe<AssetHavingAverageInput>;
+  distinctCount?: InputMaybe<AssetHavingDistinctCountInput>;
+  max?: InputMaybe<AssetHavingMaxInput>;
+  min?: InputMaybe<AssetHavingMinInput>;
+  stddevPopulation?: InputMaybe<AssetHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<AssetHavingStddevSampleInput>;
+  sum?: InputMaybe<AssetHavingSumInput>;
+  variancePopulation?: InputMaybe<AssetHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<AssetHavingVarianceSampleInput>;
 };
 
 export type AssetHavingMaxInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingMinInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingStddevPopulationInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingStddevSampleInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingSumInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingVariancePopulationInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type AssetHavingVarianceSampleInput = {
-  readonly decimals?: InputMaybe<HavingIntFilter>;
-  readonly existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
-  readonly xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
+  decimals?: InputMaybe<HavingIntFilter>;
+  existentialDeposit?: InputMaybe<HavingBigfloatFilter>;
+  xcmRateLimit?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `Asset`. */
@@ -8666,141 +8677,141 @@ export enum AssetsOrderBy {
 /** A filter to be used against BigFloat fields. All fields are combined with a logical ‘and.’ */
 export type BigFloatFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
+  distinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  equalTo?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  greaterThan?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['BigFloat']['input']>>;
+  in?: InputMaybe<Array<Scalars['BigFloat']['input']>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  lessThan?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  notEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['BigFloat']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['BigFloat']['input']>>;
 };
 
 /** A filter to be used against BigInt fields. All fields are combined with a logical ‘and.’ */
 export type BigIntFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['BigInt']['input']>;
+  distinctFrom?: InputMaybe<Scalars['BigInt']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['BigInt']['input']>;
+  equalTo?: InputMaybe<Scalars['BigInt']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['BigInt']['input']>;
+  greaterThan?: InputMaybe<Scalars['BigInt']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['BigInt']['input']>>;
+  in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['BigInt']['input']>;
+  lessThan?: InputMaybe<Scalars['BigInt']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['BigInt']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['BigInt']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  notEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['BigInt']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['BigInt']['input']>>;
 };
 
 /** A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’ */
 export type BooleanFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
+  distinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['Boolean']['input']>;
+  equalTo?: InputMaybe<Scalars['Boolean']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['Boolean']['input']>;
+  greaterThan?: InputMaybe<Scalars['Boolean']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['Boolean']['input']>>;
+  in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['Boolean']['input']>;
+  lessThan?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['Boolean']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
+  notEqualTo?: InputMaybe<Scalars['Boolean']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['Boolean']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['Boolean']['input']>>;
 };
 
 /** A filter to be used against Datetime fields. All fields are combined with a logical ‘and.’ */
 export type DatetimeFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['Datetime']['input']>;
+  distinctFrom?: InputMaybe<Scalars['Datetime']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['Datetime']['input']>;
+  equalTo?: InputMaybe<Scalars['Datetime']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['Datetime']['input']>;
+  greaterThan?: InputMaybe<Scalars['Datetime']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['Datetime']['input']>>;
+  in?: InputMaybe<Array<Scalars['Datetime']['input']>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['Datetime']['input']>;
+  lessThan?: InputMaybe<Scalars['Datetime']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['Datetime']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['Datetime']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  notEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['Datetime']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['Datetime']['input']>>;
 };
 
 export type HavingBigfloatFilter = {
-  readonly equalTo?: InputMaybe<Scalars['BigFloat']['input']>;
-  readonly greaterThan?: InputMaybe<Scalars['BigFloat']['input']>;
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
-  readonly lessThan?: InputMaybe<Scalars['BigFloat']['input']>;
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
-  readonly notEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  equalTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  greaterThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  lessThan?: InputMaybe<Scalars['BigFloat']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
+  notEqualTo?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 export type HavingBigintFilter = {
-  readonly equalTo?: InputMaybe<Scalars['BigInt']['input']>;
-  readonly greaterThan?: InputMaybe<Scalars['BigInt']['input']>;
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
-  readonly lessThan?: InputMaybe<Scalars['BigInt']['input']>;
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
-  readonly notEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  equalTo?: InputMaybe<Scalars['BigInt']['input']>;
+  greaterThan?: InputMaybe<Scalars['BigInt']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  lessThan?: InputMaybe<Scalars['BigInt']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
+  notEqualTo?: InputMaybe<Scalars['BigInt']['input']>;
 };
 
 export type HavingDatetimeFilter = {
-  readonly equalTo?: InputMaybe<Scalars['Datetime']['input']>;
-  readonly greaterThan?: InputMaybe<Scalars['Datetime']['input']>;
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
-  readonly lessThan?: InputMaybe<Scalars['Datetime']['input']>;
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
-  readonly notEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  equalTo?: InputMaybe<Scalars['Datetime']['input']>;
+  greaterThan?: InputMaybe<Scalars['Datetime']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  lessThan?: InputMaybe<Scalars['Datetime']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
+  notEqualTo?: InputMaybe<Scalars['Datetime']['input']>;
 };
 
 export type HavingIntFilter = {
-  readonly equalTo?: InputMaybe<Scalars['Int']['input']>;
-  readonly greaterThan?: InputMaybe<Scalars['Int']['input']>;
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
-  readonly lessThan?: InputMaybe<Scalars['Int']['input']>;
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
-  readonly notEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  equalTo?: InputMaybe<Scalars['Int']['input']>;
+  greaterThan?: InputMaybe<Scalars['Int']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  lessThan?: InputMaybe<Scalars['Int']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  notEqualTo?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /**
@@ -8809,47 +8820,47 @@ export type HavingIntFilter = {
  */
 export type HistoricalAssetVolumeCondition = {
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `totalVolumeIn` field. */
-  readonly totalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  totalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `totalVolumeOut` field. */
-  readonly totalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  totalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `volumeIn` field. */
-  readonly volumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  volumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `volumeOut` field. */
-  readonly volumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  volumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `HistoricalAssetVolume` object types. All fields are combined with a logical ‘and.’ */
 export type HistoricalAssetVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<HistoricalAssetVolumeFilter>>;
+  and?: InputMaybe<Array<HistoricalAssetVolumeFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<HistoricalAssetVolumeFilter>;
+  not?: InputMaybe<HistoricalAssetVolumeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<HistoricalAssetVolumeFilter>>;
+  or?: InputMaybe<Array<HistoricalAssetVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `totalVolumeIn` field. */
-  readonly totalVolumeIn?: InputMaybe<BigFloatFilter>;
+  totalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `totalVolumeOut` field. */
-  readonly totalVolumeOut?: InputMaybe<BigFloatFilter>;
+  totalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `volumeIn` field. */
-  readonly volumeIn?: InputMaybe<BigFloatFilter>;
+  volumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `volumeOut` field. */
-  readonly volumeOut?: InputMaybe<BigFloatFilter>;
+  volumeOut?: InputMaybe<BigFloatFilter>;
 };
 
 /** Grouping methods for `HistoricalAssetVolume` for usage during aggregation. */
@@ -8864,99 +8875,99 @@ export enum HistoricalAssetVolumeGroupBy {
 }
 
 export type HistoricalAssetVolumeHavingAverageInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingDistinctCountInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `HistoricalAssetVolume` aggregates. */
 export type HistoricalAssetVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<HistoricalAssetVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<HistoricalAssetVolumeHavingInput>>;
-  readonly average?: InputMaybe<HistoricalAssetVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<HistoricalAssetVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<HistoricalAssetVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<HistoricalAssetVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<HistoricalAssetVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<HistoricalAssetVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<HistoricalAssetVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<HistoricalAssetVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<HistoricalAssetVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<HistoricalAssetVolumeHavingInput>>;
+  OR?: InputMaybe<Array<HistoricalAssetVolumeHavingInput>>;
+  average?: InputMaybe<HistoricalAssetVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<HistoricalAssetVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<HistoricalAssetVolumeHavingMaxInput>;
+  min?: InputMaybe<HistoricalAssetVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<HistoricalAssetVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<HistoricalAssetVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<HistoricalAssetVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<HistoricalAssetVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<HistoricalAssetVolumeHavingVarianceSampleInput>;
 };
 
 export type HistoricalAssetVolumeHavingMaxInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingMinInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingStddevPopulationInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingStddevSampleInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingSumInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingVariancePopulationInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type HistoricalAssetVolumeHavingVarianceSampleInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly volumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  totalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  totalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  volumeIn?: InputMaybe<HavingBigfloatFilter>;
+  volumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `HistoricalAssetVolume`. */
@@ -8985,153 +8996,153 @@ export enum HistoricalAssetVolumesOrderBy {
 /** A filter to be used against Int fields. All fields are combined with a logical ‘and.’ */
 export type IntFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['Int']['input']>;
+  distinctFrom?: InputMaybe<Scalars['Int']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['Int']['input']>;
+  equalTo?: InputMaybe<Scalars['Int']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['Int']['input']>;
+  greaterThan?: InputMaybe<Scalars['Int']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['Int']['input']>>;
+  in?: InputMaybe<Array<Scalars['Int']['input']>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['Int']['input']>;
+  lessThan?: InputMaybe<Scalars['Int']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['Int']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['Int']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  notEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['Int']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['Int']['input']>>;
 };
 
 /** A filter to be used against Int List fields. All fields are combined with a logical ‘and.’ */
 export type IntListFilter = {
   /** Any array item is equal to the specified value. */
-  readonly anyEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  anyEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Any array item is greater than the specified value. */
-  readonly anyGreaterThan?: InputMaybe<Scalars['Int']['input']>;
+  anyGreaterThan?: InputMaybe<Scalars['Int']['input']>;
   /** Any array item is greater than or equal to the specified value. */
-  readonly anyGreaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  anyGreaterThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Any array item is less than the specified value. */
-  readonly anyLessThan?: InputMaybe<Scalars['Int']['input']>;
+  anyLessThan?: InputMaybe<Scalars['Int']['input']>;
   /** Any array item is less than or equal to the specified value. */
-  readonly anyLessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  anyLessThanOrEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Any array item is not equal to the specified value. */
-  readonly anyNotEqualTo?: InputMaybe<Scalars['Int']['input']>;
+  anyNotEqualTo?: InputMaybe<Scalars['Int']['input']>;
   /** Contained by the specified list of values. */
-  readonly containedBy?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  containedBy?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Contains the specified list of values. */
-  readonly contains?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  contains?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  distinctFrom?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  equalTo?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  greaterThan?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  greaterThanOrEqualTo?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  lessThan?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  lessThanOrEqualTo?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  notDistinctFrom?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  notEqualTo?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Overlaps the specified list of values. */
-  readonly overlaps?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  overlaps?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
 };
 
 /** A condition to be used against `LbpPool` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type LbpPoolCondition = {
   /** Checks for equality with the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<Scalars['String']['input']>;
+  accountId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `endBlockNumber` field. */
-  readonly endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
+  endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `fee` field. */
-  readonly fee?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  fee?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Checks for equality with the object’s `feeCollectorId` field. */
-  readonly feeCollectorId?: InputMaybe<Scalars['String']['input']>;
+  feeCollectorId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `finalWeight` field. */
-  readonly finalWeight?: InputMaybe<Scalars['Int']['input']>;
+  finalWeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialWeight` field. */
-  readonly initialWeight?: InputMaybe<Scalars['Int']['input']>;
+  initialWeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
+  isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `ownerId` field. */
-  readonly ownerId?: InputMaybe<Scalars['String']['input']>;
+  ownerId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `repayTarget` field. */
-  readonly repayTarget?: InputMaybe<Scalars['BigFloat']['input']>;
+  repayTarget?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `startBlockNumber` field. */
-  readonly startBlockNumber?: InputMaybe<Scalars['Int']['input']>;
+  startBlockNumber?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `LbpPool` object types. All fields are combined with a logical ‘and.’ */
 export type LbpPoolFilter = {
   /** Filter by the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<StringFilter>;
+  accountId?: InputMaybe<StringFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<LbpPoolFilter>>;
+  and?: InputMaybe<Array<LbpPoolFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<DatetimeFilter>;
+  createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<IntFilter>;
+  createdAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<IntFilter>;
+  destroyedAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `endBlockNumber` field. */
-  readonly endBlockNumber?: InputMaybe<IntFilter>;
+  endBlockNumber?: InputMaybe<IntFilter>;
   /** Filter by the object’s `fee` field. */
-  readonly fee?: InputMaybe<IntListFilter>;
+  fee?: InputMaybe<IntListFilter>;
   /** Filter by the object’s `feeCollectorId` field. */
-  readonly feeCollectorId?: InputMaybe<StringFilter>;
+  feeCollectorId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `finalWeight` field. */
-  readonly finalWeight?: InputMaybe<IntFilter>;
+  finalWeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialWeight` field. */
-  readonly initialWeight?: InputMaybe<IntFilter>;
+  initialWeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<BooleanFilter>;
+  isDestroyed?: InputMaybe<BooleanFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<LbpPoolFilter>;
+  not?: InputMaybe<LbpPoolFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<LbpPoolFilter>>;
+  or?: InputMaybe<Array<LbpPoolFilter>>;
   /** Filter by the object’s `ownerId` field. */
-  readonly ownerId?: InputMaybe<StringFilter>;
+  ownerId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `repayTarget` field. */
-  readonly repayTarget?: InputMaybe<BigFloatFilter>;
+  repayTarget?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `startBlockNumber` field. */
-  readonly startBlockNumber?: InputMaybe<IntFilter>;
+  startBlockNumber?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `LbpPool` for usage during aggregation. */
@@ -9158,135 +9169,135 @@ export enum LbpPoolGroupBy {
 }
 
 export type LbpPoolHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `LbpPool` aggregates. */
 export type LbpPoolHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<LbpPoolHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<LbpPoolHavingInput>>;
-  readonly average?: InputMaybe<LbpPoolHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<LbpPoolHavingDistinctCountInput>;
-  readonly max?: InputMaybe<LbpPoolHavingMaxInput>;
-  readonly min?: InputMaybe<LbpPoolHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<LbpPoolHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<LbpPoolHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<LbpPoolHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<LbpPoolHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<LbpPoolHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<LbpPoolHavingInput>>;
+  OR?: InputMaybe<Array<LbpPoolHavingInput>>;
+  average?: InputMaybe<LbpPoolHavingAverageInput>;
+  distinctCount?: InputMaybe<LbpPoolHavingDistinctCountInput>;
+  max?: InputMaybe<LbpPoolHavingMaxInput>;
+  min?: InputMaybe<LbpPoolHavingMinInput>;
+  stddevPopulation?: InputMaybe<LbpPoolHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<LbpPoolHavingStddevSampleInput>;
+  sum?: InputMaybe<LbpPoolHavingSumInput>;
+  variancePopulation?: InputMaybe<LbpPoolHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<LbpPoolHavingVarianceSampleInput>;
 };
 
 export type LbpPoolHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly endBlockNumber?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly startBlockNumber?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  endBlockNumber?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  startBlockNumber?: InputMaybe<HavingIntFilter>;
 };
 
 /** Grouping methods for `LbpPoolHistoricalDatum` for usage during aggregation. */
@@ -9310,126 +9321,126 @@ export enum LbpPoolHistoricalDataGroupBy {
 }
 
 export type LbpPoolHistoricalDataHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `LbpPoolHistoricalDatum` aggregates. */
 export type LbpPoolHistoricalDataHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<LbpPoolHistoricalDataHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<LbpPoolHistoricalDataHavingInput>>;
-  readonly average?: InputMaybe<LbpPoolHistoricalDataHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<LbpPoolHistoricalDataHavingDistinctCountInput>;
-  readonly max?: InputMaybe<LbpPoolHistoricalDataHavingMaxInput>;
-  readonly min?: InputMaybe<LbpPoolHistoricalDataHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<LbpPoolHistoricalDataHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<LbpPoolHistoricalDataHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<LbpPoolHistoricalDataHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<LbpPoolHistoricalDataHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<LbpPoolHistoricalDataHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<LbpPoolHistoricalDataHavingInput>>;
+  OR?: InputMaybe<Array<LbpPoolHistoricalDataHavingInput>>;
+  average?: InputMaybe<LbpPoolHistoricalDataHavingAverageInput>;
+  distinctCount?: InputMaybe<LbpPoolHistoricalDataHavingDistinctCountInput>;
+  max?: InputMaybe<LbpPoolHistoricalDataHavingMaxInput>;
+  min?: InputMaybe<LbpPoolHistoricalDataHavingMinInput>;
+  stddevPopulation?: InputMaybe<LbpPoolHistoricalDataHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<LbpPoolHistoricalDataHavingStddevSampleInput>;
+  sum?: InputMaybe<LbpPoolHistoricalDataHavingSumInput>;
+  variancePopulation?: InputMaybe<LbpPoolHistoricalDataHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<LbpPoolHistoricalDataHavingVarianceSampleInput>;
 };
 
 export type LbpPoolHistoricalDataHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalDataHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly end?: InputMaybe<HavingIntFilter>;
-  readonly finalWeight?: InputMaybe<HavingIntFilter>;
-  readonly initialWeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly repayTarget?: InputMaybe<HavingBigfloatFilter>;
-  readonly start?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  end?: InputMaybe<HavingIntFilter>;
+  finalWeight?: InputMaybe<HavingIntFilter>;
+  initialWeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  repayTarget?: InputMaybe<HavingBigfloatFilter>;
+  start?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `LbpPoolHistoricalDatum`. */
@@ -9479,83 +9490,83 @@ export enum LbpPoolHistoricalDataOrderBy {
  */
 export type LbpPoolHistoricalDatumCondition = {
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `end` field. */
-  readonly end?: InputMaybe<Scalars['Int']['input']>;
+  end?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `fee` field. */
-  readonly fee?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['Int']['input']>>>;
+  fee?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   /** Checks for equality with the object’s `feeCollectorId` field. */
-  readonly feeCollectorId?: InputMaybe<Scalars['String']['input']>;
+  feeCollectorId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `finalWeight` field. */
-  readonly finalWeight?: InputMaybe<Scalars['Int']['input']>;
+  finalWeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialWeight` field. */
-  readonly initialWeight?: InputMaybe<Scalars['Int']['input']>;
+  initialWeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `ownerId` field. */
-  readonly ownerId?: InputMaybe<Scalars['String']['input']>;
+  ownerId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `repayTarget` field. */
-  readonly repayTarget?: InputMaybe<Scalars['BigFloat']['input']>;
+  repayTarget?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `start` field. */
-  readonly start?: InputMaybe<Scalars['Int']['input']>;
+  start?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `weightCurve` field. */
-  readonly weightCurve?: InputMaybe<Scalars['String']['input']>;
+  weightCurve?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `LbpPoolHistoricalDatum` object types. All fields are combined with a logical ‘and.’ */
 export type LbpPoolHistoricalDatumFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<LbpPoolHistoricalDatumFilter>>;
+  and?: InputMaybe<Array<LbpPoolHistoricalDatumFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `end` field. */
-  readonly end?: InputMaybe<IntFilter>;
+  end?: InputMaybe<IntFilter>;
   /** Filter by the object’s `fee` field. */
-  readonly fee?: InputMaybe<IntListFilter>;
+  fee?: InputMaybe<IntListFilter>;
   /** Filter by the object’s `feeCollectorId` field. */
-  readonly feeCollectorId?: InputMaybe<StringFilter>;
+  feeCollectorId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `finalWeight` field. */
-  readonly finalWeight?: InputMaybe<IntFilter>;
+  finalWeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialWeight` field. */
-  readonly initialWeight?: InputMaybe<IntFilter>;
+  initialWeight?: InputMaybe<IntFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<LbpPoolHistoricalDatumFilter>;
+  not?: InputMaybe<LbpPoolHistoricalDatumFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<LbpPoolHistoricalDatumFilter>>;
+  or?: InputMaybe<Array<LbpPoolHistoricalDatumFilter>>;
   /** Filter by the object’s `ownerId` field. */
-  readonly ownerId?: InputMaybe<StringFilter>;
+  ownerId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `repayTarget` field. */
-  readonly repayTarget?: InputMaybe<BigFloatFilter>;
+  repayTarget?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `start` field. */
-  readonly start?: InputMaybe<IntFilter>;
+  start?: InputMaybe<IntFilter>;
   /** Filter by the object’s `weightCurve` field. */
-  readonly weightCurve?: InputMaybe<StringFilter>;
+  weightCurve?: InputMaybe<StringFilter>;
 };
 
 /**
@@ -9564,47 +9575,47 @@ export type LbpPoolHistoricalDatumFilter = {
  */
 export type LbpPoolHistoricalPriceCondition = {
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `LbpPoolHistoricalPrice` object types. All fields are combined with a logical ‘and.’ */
 export type LbpPoolHistoricalPriceFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<LbpPoolHistoricalPriceFilter>>;
+  and?: InputMaybe<Array<LbpPoolHistoricalPriceFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<LbpPoolHistoricalPriceFilter>;
+  not?: InputMaybe<LbpPoolHistoricalPriceFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<LbpPoolHistoricalPriceFilter>>;
+  or?: InputMaybe<Array<LbpPoolHistoricalPriceFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `LbpPoolHistoricalPrice` for usage during aggregation. */
@@ -9619,81 +9630,81 @@ export enum LbpPoolHistoricalPriceGroupBy {
 }
 
 export type LbpPoolHistoricalPriceHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `LbpPoolHistoricalPrice` aggregates. */
 export type LbpPoolHistoricalPriceHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<LbpPoolHistoricalPriceHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<LbpPoolHistoricalPriceHavingInput>>;
-  readonly average?: InputMaybe<LbpPoolHistoricalPriceHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<LbpPoolHistoricalPriceHavingDistinctCountInput>;
-  readonly max?: InputMaybe<LbpPoolHistoricalPriceHavingMaxInput>;
-  readonly min?: InputMaybe<LbpPoolHistoricalPriceHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<LbpPoolHistoricalPriceHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<LbpPoolHistoricalPriceHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<LbpPoolHistoricalPriceHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<LbpPoolHistoricalPriceHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<LbpPoolHistoricalPriceHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<LbpPoolHistoricalPriceHavingInput>>;
+  OR?: InputMaybe<Array<LbpPoolHistoricalPriceHavingInput>>;
+  average?: InputMaybe<LbpPoolHistoricalPriceHavingAverageInput>;
+  distinctCount?: InputMaybe<LbpPoolHistoricalPriceHavingDistinctCountInput>;
+  max?: InputMaybe<LbpPoolHistoricalPriceHavingMaxInput>;
+  min?: InputMaybe<LbpPoolHistoricalPriceHavingMinInput>;
+  stddevPopulation?: InputMaybe<LbpPoolHistoricalPriceHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<LbpPoolHistoricalPriceHavingStddevSampleInput>;
+  sum?: InputMaybe<LbpPoolHistoricalPriceHavingSumInput>;
+  variancePopulation?: InputMaybe<LbpPoolHistoricalPriceHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<LbpPoolHistoricalPriceHavingVarianceSampleInput>;
 };
 
 export type LbpPoolHistoricalPriceHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalPriceHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `LbpPoolHistoricalPrice`. */
@@ -9725,91 +9736,91 @@ export enum LbpPoolHistoricalPricesOrderBy {
  */
 export type LbpPoolHistoricalVolumeCondition = {
   /** Checks for equality with the object’s `assetAFee` field. */
-  readonly assetAFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetATotalFees` field. */
-  readonly assetATotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetATotalVolumeIn` field. */
-  readonly assetATotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetATotalVolumeOut` field. */
-  readonly assetATotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAVolumeIn` field. */
-  readonly assetAVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAVolumeOut` field. */
-  readonly assetAVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBFee` field. */
-  readonly assetBFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBTotalFees` field. */
-  readonly assetBTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBTotalVolumeIn` field. */
-  readonly assetBTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBTotalVolumeOut` field. */
-  readonly assetBTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBVolumeIn` field. */
-  readonly assetBVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBVolumeOut` field. */
-  readonly assetBVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `averagePrice` field. */
-  readonly averagePrice?: InputMaybe<Scalars['BigFloat']['input']>;
+  averagePrice?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `LbpPoolHistoricalVolume` object types. All fields are combined with a logical ‘and.’ */
 export type LbpPoolHistoricalVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<LbpPoolHistoricalVolumeFilter>>;
+  and?: InputMaybe<Array<LbpPoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `assetAFee` field. */
-  readonly assetAFee?: InputMaybe<BigFloatFilter>;
+  assetAFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetATotalFees` field. */
-  readonly assetATotalFees?: InputMaybe<BigFloatFilter>;
+  assetATotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetATotalVolumeIn` field. */
-  readonly assetATotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetATotalVolumeOut` field. */
-  readonly assetATotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAVolumeIn` field. */
-  readonly assetAVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetAVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAVolumeOut` field. */
-  readonly assetAVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetAVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBFee` field. */
-  readonly assetBFee?: InputMaybe<BigFloatFilter>;
+  assetBFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBTotalFees` field. */
-  readonly assetBTotalFees?: InputMaybe<BigFloatFilter>;
+  assetBTotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBTotalVolumeIn` field. */
-  readonly assetBTotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBTotalVolumeOut` field. */
-  readonly assetBTotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBVolumeIn` field. */
-  readonly assetBVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetBVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBVolumeOut` field. */
-  readonly assetBVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetBVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `averagePrice` field. */
-  readonly averagePrice?: InputMaybe<BigFloatFilter>;
+  averagePrice?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<LbpPoolHistoricalVolumeFilter>;
+  not?: InputMaybe<LbpPoolHistoricalVolumeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<LbpPoolHistoricalVolumeFilter>>;
+  or?: InputMaybe<Array<LbpPoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `LbpPoolHistoricalVolume` for usage during aggregation. */
@@ -9835,180 +9846,180 @@ export enum LbpPoolHistoricalVolumeGroupBy {
 }
 
 export type LbpPoolHistoricalVolumeHavingAverageInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingDistinctCountInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `LbpPoolHistoricalVolume` aggregates. */
 export type LbpPoolHistoricalVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<LbpPoolHistoricalVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<LbpPoolHistoricalVolumeHavingInput>>;
-  readonly average?: InputMaybe<LbpPoolHistoricalVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<LbpPoolHistoricalVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<LbpPoolHistoricalVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<LbpPoolHistoricalVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<LbpPoolHistoricalVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<LbpPoolHistoricalVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<LbpPoolHistoricalVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<LbpPoolHistoricalVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<LbpPoolHistoricalVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<LbpPoolHistoricalVolumeHavingInput>>;
+  OR?: InputMaybe<Array<LbpPoolHistoricalVolumeHavingInput>>;
+  average?: InputMaybe<LbpPoolHistoricalVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<LbpPoolHistoricalVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<LbpPoolHistoricalVolumeHavingMaxInput>;
+  min?: InputMaybe<LbpPoolHistoricalVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<LbpPoolHistoricalVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<LbpPoolHistoricalVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<LbpPoolHistoricalVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<LbpPoolHistoricalVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<LbpPoolHistoricalVolumeHavingVarianceSampleInput>;
 };
 
 export type LbpPoolHistoricalVolumeHavingMaxInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingMinInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingStddevPopulationInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingStddevSampleInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingSumInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingVariancePopulationInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type LbpPoolHistoricalVolumeHavingVarianceSampleInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `LbpPoolHistoricalVolume`. */
@@ -10995,27 +11006,27 @@ export enum LbpPoolsOrderBy {
  */
 export type MigrationCondition = {
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['Int']['input']>;
+  id?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `name` field. */
-  readonly name?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `timestamp` field. */
-  readonly timestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  timestamp?: InputMaybe<Scalars['BigInt']['input']>;
 };
 
 /** A filter to be used against `Migration` object types. All fields are combined with a logical ‘and.’ */
 export type MigrationFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<MigrationFilter>>;
+  and?: InputMaybe<Array<MigrationFilter>>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<IntFilter>;
+  id?: InputMaybe<IntFilter>;
   /** Filter by the object’s `name` field. */
-  readonly name?: InputMaybe<StringFilter>;
+  name?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<MigrationFilter>;
+  not?: InputMaybe<MigrationFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<MigrationFilter>>;
+  or?: InputMaybe<Array<MigrationFilter>>;
   /** Filter by the object’s `timestamp` field. */
-  readonly timestamp?: InputMaybe<BigIntFilter>;
+  timestamp?: InputMaybe<BigIntFilter>;
 };
 
 /** Grouping methods for `Migration` for usage during aggregation. */
@@ -11025,63 +11036,63 @@ export enum MigrationsGroupBy {
 }
 
 export type MigrationsHavingAverageInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingDistinctCountInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 /** Conditions for `Migration` aggregates. */
 export type MigrationsHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<MigrationsHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<MigrationsHavingInput>>;
-  readonly average?: InputMaybe<MigrationsHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<MigrationsHavingDistinctCountInput>;
-  readonly max?: InputMaybe<MigrationsHavingMaxInput>;
-  readonly min?: InputMaybe<MigrationsHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<MigrationsHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<MigrationsHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<MigrationsHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<MigrationsHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<MigrationsHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<MigrationsHavingInput>>;
+  OR?: InputMaybe<Array<MigrationsHavingInput>>;
+  average?: InputMaybe<MigrationsHavingAverageInput>;
+  distinctCount?: InputMaybe<MigrationsHavingDistinctCountInput>;
+  max?: InputMaybe<MigrationsHavingMaxInput>;
+  min?: InputMaybe<MigrationsHavingMinInput>;
+  stddevPopulation?: InputMaybe<MigrationsHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<MigrationsHavingStddevSampleInput>;
+  sum?: InputMaybe<MigrationsHavingSumInput>;
+  variancePopulation?: InputMaybe<MigrationsHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<MigrationsHavingVarianceSampleInput>;
 };
 
 export type MigrationsHavingMaxInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingMinInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingStddevPopulationInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingStddevSampleInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingSumInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingVariancePopulationInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 export type MigrationsHavingVarianceSampleInput = {
-  readonly id?: InputMaybe<HavingIntFilter>;
-  readonly timestamp?: InputMaybe<HavingBigintFilter>;
+  id?: InputMaybe<HavingIntFilter>;
+  timestamp?: InputMaybe<HavingBigintFilter>;
 };
 
 /** Methods to use when ordering `Migration`. */
@@ -11099,15 +11110,15 @@ export enum MigrationsOrderBy {
 
 /** All input for the `notify` mutation. */
 export type NotifyInput = {
-  readonly actionName: Scalars['String']['input'];
+  actionName: Scalars['String']['input'];
   /**
    * An arbitrary string value with no semantic meaning. Will be included in the
    * payload verbatim. May be used to track mutations by the client.
    */
-  readonly clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  readonly eventName: Scalars['String']['input'];
-  readonly nodeId: Scalars['String']['input'];
-  readonly nodeName: Scalars['String']['input'];
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  eventName: Scalars['String']['input'];
+  nodeId: Scalars['String']['input'];
+  nodeName: Scalars['String']['input'];
 };
 
 /**
@@ -11116,59 +11127,59 @@ export type NotifyInput = {
  */
 export type OmnipoolAssetCondition = {
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `hubWithdrawn` field. */
-  readonly hubWithdrawn?: InputMaybe<Scalars['BigFloat']['input']>;
+  hubWithdrawn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialAmount` field. */
-  readonly initialAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  initialAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `initialPrice` field. */
-  readonly initialPrice?: InputMaybe<Scalars['BigFloat']['input']>;
+  initialPrice?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `isRemoved` field. */
-  readonly isRemoved?: InputMaybe<Scalars['Boolean']['input']>;
+  isRemoved?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `removedAmount` field. */
-  readonly removedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  removedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `removedAtParaBlock` field. */
-  readonly removedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  removedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `OmnipoolAsset` object types. All fields are combined with a logical ‘and.’ */
 export type OmnipoolAssetFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<OmnipoolAssetFilter>>;
+  and?: InputMaybe<Array<OmnipoolAssetFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<DatetimeFilter>;
+  createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<IntFilter>;
+  createdAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `hubWithdrawn` field. */
-  readonly hubWithdrawn?: InputMaybe<BigFloatFilter>;
+  hubWithdrawn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialAmount` field. */
-  readonly initialAmount?: InputMaybe<BigFloatFilter>;
+  initialAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `initialPrice` field. */
-  readonly initialPrice?: InputMaybe<BigFloatFilter>;
+  initialPrice?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `isRemoved` field. */
-  readonly isRemoved?: InputMaybe<BooleanFilter>;
+  isRemoved?: InputMaybe<BooleanFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<OmnipoolAssetFilter>;
+  not?: InputMaybe<OmnipoolAssetFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<OmnipoolAssetFilter>>;
+  or?: InputMaybe<Array<OmnipoolAssetFilter>>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `removedAmount` field. */
-  readonly removedAmount?: InputMaybe<BigFloatFilter>;
+  removedAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `removedAtParaBlock` field. */
-  readonly removedAtParaBlock?: InputMaybe<IntFilter>;
+  removedAtParaBlock?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `OmnipoolAsset` for usage during aggregation. */
@@ -11188,108 +11199,108 @@ export enum OmnipoolAssetGroupBy {
 }
 
 export type OmnipoolAssetHavingAverageInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingDistinctCountInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `OmnipoolAsset` aggregates. */
 export type OmnipoolAssetHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<OmnipoolAssetHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<OmnipoolAssetHavingInput>>;
-  readonly average?: InputMaybe<OmnipoolAssetHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<OmnipoolAssetHavingDistinctCountInput>;
-  readonly max?: InputMaybe<OmnipoolAssetHavingMaxInput>;
-  readonly min?: InputMaybe<OmnipoolAssetHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<OmnipoolAssetHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<OmnipoolAssetHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<OmnipoolAssetHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<OmnipoolAssetHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<OmnipoolAssetHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<OmnipoolAssetHavingInput>>;
+  OR?: InputMaybe<Array<OmnipoolAssetHavingInput>>;
+  average?: InputMaybe<OmnipoolAssetHavingAverageInput>;
+  distinctCount?: InputMaybe<OmnipoolAssetHavingDistinctCountInput>;
+  max?: InputMaybe<OmnipoolAssetHavingMaxInput>;
+  min?: InputMaybe<OmnipoolAssetHavingMinInput>;
+  stddevPopulation?: InputMaybe<OmnipoolAssetHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<OmnipoolAssetHavingStddevSampleInput>;
+  sum?: InputMaybe<OmnipoolAssetHavingSumInput>;
+  variancePopulation?: InputMaybe<OmnipoolAssetHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<OmnipoolAssetHavingVarianceSampleInput>;
 };
 
 export type OmnipoolAssetHavingMaxInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingMinInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingStddevPopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingStddevSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingSumInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingVariancePopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHavingVarianceSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly initialPrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly removedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  hubWithdrawn?: InputMaybe<HavingBigfloatFilter>;
+  initialAmount?: InputMaybe<HavingBigfloatFilter>;
+  initialPrice?: InputMaybe<HavingBigfloatFilter>;
+  removedAmount?: InputMaybe<HavingBigfloatFilter>;
+  removedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Grouping methods for `OmnipoolAssetHistoricalDatum` for usage during aggregation. */
@@ -11311,153 +11322,153 @@ export enum OmnipoolAssetHistoricalDataGroupBy {
 }
 
 export type OmnipoolAssetHistoricalDataHavingAverageInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingDistinctCountInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `OmnipoolAssetHistoricalDatum` aggregates. */
 export type OmnipoolAssetHistoricalDataHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalDataHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalDataHavingInput>>;
-  readonly average?: InputMaybe<OmnipoolAssetHistoricalDataHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<OmnipoolAssetHistoricalDataHavingDistinctCountInput>;
-  readonly max?: InputMaybe<OmnipoolAssetHistoricalDataHavingMaxInput>;
-  readonly min?: InputMaybe<OmnipoolAssetHistoricalDataHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<OmnipoolAssetHistoricalDataHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<OmnipoolAssetHistoricalDataHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<OmnipoolAssetHistoricalDataHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<OmnipoolAssetHistoricalDataHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<OmnipoolAssetHistoricalDataHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<OmnipoolAssetHistoricalDataHavingInput>>;
+  OR?: InputMaybe<Array<OmnipoolAssetHistoricalDataHavingInput>>;
+  average?: InputMaybe<OmnipoolAssetHistoricalDataHavingAverageInput>;
+  distinctCount?: InputMaybe<OmnipoolAssetHistoricalDataHavingDistinctCountInput>;
+  max?: InputMaybe<OmnipoolAssetHistoricalDataHavingMaxInput>;
+  min?: InputMaybe<OmnipoolAssetHistoricalDataHavingMinInput>;
+  stddevPopulation?: InputMaybe<OmnipoolAssetHistoricalDataHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<OmnipoolAssetHistoricalDataHavingStddevSampleInput>;
+  sum?: InputMaybe<OmnipoolAssetHistoricalDataHavingSumInput>;
+  variancePopulation?: InputMaybe<OmnipoolAssetHistoricalDataHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<OmnipoolAssetHistoricalDataHavingVarianceSampleInput>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingMaxInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingMinInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingStddevPopulationInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingStddevSampleInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingSumInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingVariancePopulationInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type OmnipoolAssetHistoricalDataHavingVarianceSampleInput = {
-  readonly balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFlags?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFree?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly balanceReserved?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly stateCap?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
-  readonly stateShares?: InputMaybe<HavingBigfloatFilter>;
+  balanceFeeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceFlags?: InputMaybe<HavingBigfloatFilter>;
+  balanceFree?: InputMaybe<HavingBigfloatFilter>;
+  balanceFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceMiscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  balanceReserved?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  stateCap?: InputMaybe<HavingBigfloatFilter>;
+  stateHubReserve?: InputMaybe<HavingBigfloatFilter>;
+  stateProtocolShares?: InputMaybe<HavingBigfloatFilter>;
+  stateShares?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `OmnipoolAssetHistoricalDatum`. */
@@ -11503,75 +11514,75 @@ export enum OmnipoolAssetHistoricalDataOrderBy {
  */
 export type OmnipoolAssetHistoricalDatumCondition = {
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `balanceFeeFrozen` field. */
-  readonly balanceFeeFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceFeeFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `balanceFlags` field. */
-  readonly balanceFlags?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceFlags?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `balanceFree` field. */
-  readonly balanceFree?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceFree?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `balanceFrozen` field. */
-  readonly balanceFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `balanceMiscFrozen` field. */
-  readonly balanceMiscFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceMiscFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `balanceReserved` field. */
-  readonly balanceReserved?: InputMaybe<Scalars['BigFloat']['input']>;
+  balanceReserved?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `omnipoolAssetId` field. */
-  readonly omnipoolAssetId?: InputMaybe<Scalars['String']['input']>;
+  omnipoolAssetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `stateCap` field. */
-  readonly stateCap?: InputMaybe<Scalars['BigFloat']['input']>;
+  stateCap?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `stateHubReserve` field. */
-  readonly stateHubReserve?: InputMaybe<Scalars['BigFloat']['input']>;
+  stateHubReserve?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `stateProtocolShares` field. */
-  readonly stateProtocolShares?: InputMaybe<Scalars['BigFloat']['input']>;
+  stateProtocolShares?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `stateShares` field. */
-  readonly stateShares?: InputMaybe<Scalars['BigFloat']['input']>;
+  stateShares?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `OmnipoolAssetHistoricalDatum` object types. All fields are combined with a logical ‘and.’ */
 export type OmnipoolAssetHistoricalDatumFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalDatumFilter>>;
+  and?: InputMaybe<Array<OmnipoolAssetHistoricalDatumFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `balanceFeeFrozen` field. */
-  readonly balanceFeeFrozen?: InputMaybe<BigFloatFilter>;
+  balanceFeeFrozen?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `balanceFlags` field. */
-  readonly balanceFlags?: InputMaybe<BigFloatFilter>;
+  balanceFlags?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `balanceFree` field. */
-  readonly balanceFree?: InputMaybe<BigFloatFilter>;
+  balanceFree?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `balanceFrozen` field. */
-  readonly balanceFrozen?: InputMaybe<BigFloatFilter>;
+  balanceFrozen?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `balanceMiscFrozen` field. */
-  readonly balanceMiscFrozen?: InputMaybe<BigFloatFilter>;
+  balanceMiscFrozen?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `balanceReserved` field. */
-  readonly balanceReserved?: InputMaybe<BigFloatFilter>;
+  balanceReserved?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<OmnipoolAssetHistoricalDatumFilter>;
+  not?: InputMaybe<OmnipoolAssetHistoricalDatumFilter>;
   /** Filter by the object’s `omnipoolAssetId` field. */
-  readonly omnipoolAssetId?: InputMaybe<StringFilter>;
+  omnipoolAssetId?: InputMaybe<StringFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalDatumFilter>>;
+  or?: InputMaybe<Array<OmnipoolAssetHistoricalDatumFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `stateCap` field. */
-  readonly stateCap?: InputMaybe<BigFloatFilter>;
+  stateCap?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `stateHubReserve` field. */
-  readonly stateHubReserve?: InputMaybe<BigFloatFilter>;
+  stateHubReserve?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `stateProtocolShares` field. */
-  readonly stateProtocolShares?: InputMaybe<BigFloatFilter>;
+  stateProtocolShares?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `stateShares` field. */
-  readonly stateShares?: InputMaybe<BigFloatFilter>;
+  stateShares?: InputMaybe<BigFloatFilter>;
 };
 
 /**
@@ -11580,55 +11591,55 @@ export type OmnipoolAssetHistoricalDatumFilter = {
  */
 export type OmnipoolAssetHistoricalVolumeCondition = {
   /** Checks for equality with the object’s `assetFee` field. */
-  readonly assetFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetTotalFees` field. */
-  readonly assetTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetTotalVolumeIn` field. */
-  readonly assetTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetTotalVolumeOut` field. */
-  readonly assetTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetVolumeIn` field. */
-  readonly assetVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetVolumeOut` field. */
-  readonly assetVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `omnipoolAssetId` field. */
-  readonly omnipoolAssetId?: InputMaybe<Scalars['String']['input']>;
+  omnipoolAssetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `OmnipoolAssetHistoricalVolume` object types. All fields are combined with a logical ‘and.’ */
 export type OmnipoolAssetHistoricalVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalVolumeFilter>>;
+  and?: InputMaybe<Array<OmnipoolAssetHistoricalVolumeFilter>>;
   /** Filter by the object’s `assetFee` field. */
-  readonly assetFee?: InputMaybe<BigFloatFilter>;
+  assetFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetTotalFees` field. */
-  readonly assetTotalFees?: InputMaybe<BigFloatFilter>;
+  assetTotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetTotalVolumeIn` field. */
-  readonly assetTotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetTotalVolumeOut` field. */
-  readonly assetTotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetVolumeIn` field. */
-  readonly assetVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetVolumeOut` field. */
-  readonly assetVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<OmnipoolAssetHistoricalVolumeFilter>;
+  not?: InputMaybe<OmnipoolAssetHistoricalVolumeFilter>;
   /** Filter by the object’s `omnipoolAssetId` field. */
-  readonly omnipoolAssetId?: InputMaybe<StringFilter>;
+  omnipoolAssetId?: InputMaybe<StringFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalVolumeFilter>>;
+  or?: InputMaybe<Array<OmnipoolAssetHistoricalVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `OmnipoolAssetHistoricalVolume` for usage during aggregation. */
@@ -11645,121 +11656,121 @@ export enum OmnipoolAssetHistoricalVolumeGroupBy {
 }
 
 export type OmnipoolAssetHistoricalVolumeHavingAverageInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingDistinctCountInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `OmnipoolAssetHistoricalVolume` aggregates. */
 export type OmnipoolAssetHistoricalVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<OmnipoolAssetHistoricalVolumeHavingInput>>;
-  readonly average?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<OmnipoolAssetHistoricalVolumeHavingInput>>;
+  OR?: InputMaybe<Array<OmnipoolAssetHistoricalVolumeHavingInput>>;
+  average?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingMaxInput>;
+  min?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<OmnipoolAssetHistoricalVolumeHavingVarianceSampleInput>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingMaxInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingMinInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingStddevPopulationInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingStddevSampleInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingSumInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingVariancePopulationInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeHavingVarianceSampleInput = {
-  readonly assetFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetFee?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolAssetHistoricalVolumeSubscriptionFilter = {
-  readonly omnipoolAssetIds?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  omnipoolAssetIds?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** Methods to use when ordering `OmnipoolAssetHistoricalVolume`. */
@@ -11790,9 +11801,9 @@ export enum OmnipoolAssetHistoricalVolumesOrderBy {
 }
 
 export type OmnipoolAssetVolumesByPeriodFilter = {
-  readonly endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
-  readonly omnipoolAssetIds?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
-  readonly startBlockNumber: Scalars['Int']['input'];
+  endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
+  omnipoolAssetIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  startBlockNumber: Scalars['Int']['input'];
 };
 
 /** Methods to use when ordering `OmnipoolAsset`. */
@@ -12284,39 +12295,39 @@ export enum OmnipoolAssetsOrderBy {
  */
 export type OmnipoolCondition = {
   /** Checks for equality with the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<Scalars['String']['input']>;
+  accountId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
+  isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 /** A filter to be used against `Omnipool` object types. All fields are combined with a logical ‘and.’ */
 export type OmnipoolFilter = {
   /** Filter by the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<StringFilter>;
+  accountId?: InputMaybe<StringFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<OmnipoolFilter>>;
+  and?: InputMaybe<Array<OmnipoolFilter>>;
   /** Filter by the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<DatetimeFilter>;
+  createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<IntFilter>;
+  createdAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<IntFilter>;
+  destroyedAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<BooleanFilter>;
+  isDestroyed?: InputMaybe<BooleanFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<OmnipoolFilter>;
+  not?: InputMaybe<OmnipoolFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<OmnipoolFilter>>;
+  or?: InputMaybe<Array<OmnipoolFilter>>;
 };
 
 /** Grouping methods for `Omnipool` for usage during aggregation. */
@@ -12331,72 +12342,72 @@ export enum OmnipoolGroupBy {
 }
 
 export type OmnipoolHavingAverageInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingDistinctCountInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `Omnipool` aggregates. */
 export type OmnipoolHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<OmnipoolHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<OmnipoolHavingInput>>;
-  readonly average?: InputMaybe<OmnipoolHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<OmnipoolHavingDistinctCountInput>;
-  readonly max?: InputMaybe<OmnipoolHavingMaxInput>;
-  readonly min?: InputMaybe<OmnipoolHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<OmnipoolHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<OmnipoolHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<OmnipoolHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<OmnipoolHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<OmnipoolHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<OmnipoolHavingInput>>;
+  OR?: InputMaybe<Array<OmnipoolHavingInput>>;
+  average?: InputMaybe<OmnipoolHavingAverageInput>;
+  distinctCount?: InputMaybe<OmnipoolHavingDistinctCountInput>;
+  max?: InputMaybe<OmnipoolHavingMaxInput>;
+  min?: InputMaybe<OmnipoolHavingMinInput>;
+  stddevPopulation?: InputMaybe<OmnipoolHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<OmnipoolHavingStddevSampleInput>;
+  sum?: InputMaybe<OmnipoolHavingSumInput>;
+  variancePopulation?: InputMaybe<OmnipoolHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<OmnipoolHavingVarianceSampleInput>;
 };
 
 export type OmnipoolHavingMaxInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingMinInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingStddevPopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingStddevSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingSumInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingVariancePopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type OmnipoolHavingVarianceSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `Omnipool`. */
@@ -12716,35 +12727,35 @@ export enum OmnipoolsOrderBy {
  */
 export type ProcessorStatusCondition = {
   /** Checks for equality with the object’s `assetsActualisedAtBlock` field. */
-  readonly assetsActualisedAtBlock?: InputMaybe<Scalars['Int']['input']>;
+  assetsActualisedAtBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialIndexingFinishedAtTime` field. */
-  readonly initialIndexingFinishedAtTime?: InputMaybe<Scalars['Datetime']['input']>;
+  initialIndexingFinishedAtTime?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `initialIndexingStartedAtTime` field. */
-  readonly initialIndexingStartedAtTime?: InputMaybe<Scalars['Datetime']['input']>;
+  initialIndexingStartedAtTime?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `poolsDestroyedCheckPointAtBlock` field. */
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<Scalars['Int']['input']>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `ProcessorStatus` object types. All fields are combined with a logical ‘and.’ */
 export type ProcessorStatusFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<ProcessorStatusFilter>>;
+  and?: InputMaybe<Array<ProcessorStatusFilter>>;
   /** Filter by the object’s `assetsActualisedAtBlock` field. */
-  readonly assetsActualisedAtBlock?: InputMaybe<IntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialIndexingFinishedAtTime` field. */
-  readonly initialIndexingFinishedAtTime?: InputMaybe<DatetimeFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `initialIndexingStartedAtTime` field. */
-  readonly initialIndexingStartedAtTime?: InputMaybe<DatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<DatetimeFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<ProcessorStatusFilter>;
+  not?: InputMaybe<ProcessorStatusFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<ProcessorStatusFilter>>;
+  or?: InputMaybe<Array<ProcessorStatusFilter>>;
   /** Filter by the object’s `poolsDestroyedCheckPointAtBlock` field. */
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<IntFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `ProcessorStatus` for usage during aggregation. */
@@ -12760,81 +12771,81 @@ export enum ProcessorStatusGroupBy {
 }
 
 export type ProcessorStatusHavingAverageInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingDistinctCountInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `ProcessorStatus` aggregates. */
 export type ProcessorStatusHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<ProcessorStatusHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<ProcessorStatusHavingInput>>;
-  readonly average?: InputMaybe<ProcessorStatusHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<ProcessorStatusHavingDistinctCountInput>;
-  readonly max?: InputMaybe<ProcessorStatusHavingMaxInput>;
-  readonly min?: InputMaybe<ProcessorStatusHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<ProcessorStatusHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<ProcessorStatusHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<ProcessorStatusHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<ProcessorStatusHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<ProcessorStatusHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<ProcessorStatusHavingInput>>;
+  OR?: InputMaybe<Array<ProcessorStatusHavingInput>>;
+  average?: InputMaybe<ProcessorStatusHavingAverageInput>;
+  distinctCount?: InputMaybe<ProcessorStatusHavingDistinctCountInput>;
+  max?: InputMaybe<ProcessorStatusHavingMaxInput>;
+  min?: InputMaybe<ProcessorStatusHavingMinInput>;
+  stddevPopulation?: InputMaybe<ProcessorStatusHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<ProcessorStatusHavingStddevSampleInput>;
+  sum?: InputMaybe<ProcessorStatusHavingSumInput>;
+  variancePopulation?: InputMaybe<ProcessorStatusHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<ProcessorStatusHavingVarianceSampleInput>;
 };
 
 export type ProcessorStatusHavingMaxInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingMinInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingStddevPopulationInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingStddevSampleInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingSumInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingVariancePopulationInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type ProcessorStatusHavingVarianceSampleInput = {
-  readonly assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
-  readonly poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
+  assetsActualisedAtBlock?: InputMaybe<HavingIntFilter>;
+  initialIndexingFinishedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  initialIndexingStartedAtTime?: InputMaybe<HavingDatetimeFilter>;
+  poolsDestroyedCheckPointAtBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `ProcessorStatus`. */
@@ -12860,31 +12871,31 @@ export enum ProcessorStatusesOrderBy {
  */
 export type StablepoolAssetCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `StablepoolAsset` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolAssetFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolAssetFilter>>;
+  and?: InputMaybe<Array<StablepoolAssetFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolAssetFilter>;
+  not?: InputMaybe<StablepoolAssetFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolAssetFilter>>;
+  or?: InputMaybe<Array<StablepoolAssetFilter>>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `StablepoolAsset` for usage during aggregation. */
@@ -12895,54 +12906,54 @@ export enum StablepoolAssetGroupBy {
 }
 
 export type StablepoolAssetHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `StablepoolAsset` aggregates. */
 export type StablepoolAssetHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolAssetHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolAssetHavingInput>>;
-  readonly average?: InputMaybe<StablepoolAssetHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolAssetHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolAssetHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolAssetHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolAssetHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolAssetHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolAssetHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolAssetHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolAssetHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolAssetHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolAssetHavingInput>>;
+  average?: InputMaybe<StablepoolAssetHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolAssetHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolAssetHavingMaxInput>;
+  min?: InputMaybe<StablepoolAssetHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolAssetHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolAssetHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolAssetHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolAssetHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolAssetHavingVarianceSampleInput>;
 };
 
 export type StablepoolAssetHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Grouping methods for `StablepoolAssetHistoricalDatum` for usage during aggregation. */
@@ -12959,108 +12970,108 @@ export enum StablepoolAssetHistoricalDataGroupBy {
 }
 
 export type StablepoolAssetHistoricalDataHavingAverageInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingDistinctCountInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `StablepoolAssetHistoricalDatum` aggregates. */
 export type StablepoolAssetHistoricalDataHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalDataHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalDataHavingInput>>;
-  readonly average?: InputMaybe<StablepoolAssetHistoricalDataHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolAssetHistoricalDataHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolAssetHistoricalDataHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolAssetHistoricalDataHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolAssetHistoricalDataHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolAssetHistoricalDataHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolAssetHistoricalDataHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolAssetHistoricalDataHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolAssetHistoricalDataHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolAssetHistoricalDataHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolAssetHistoricalDataHavingInput>>;
+  average?: InputMaybe<StablepoolAssetHistoricalDataHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolAssetHistoricalDataHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolAssetHistoricalDataHavingMaxInput>;
+  min?: InputMaybe<StablepoolAssetHistoricalDataHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolAssetHistoricalDataHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolAssetHistoricalDataHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolAssetHistoricalDataHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolAssetHistoricalDataHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolAssetHistoricalDataHavingVarianceSampleInput>;
 };
 
 export type StablepoolAssetHistoricalDataHavingMaxInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingMinInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingStddevPopulationInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingStddevSampleInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingSumInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingVariancePopulationInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalDataHavingVarianceSampleInput = {
-  readonly feeFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly flags?: InputMaybe<HavingBigfloatFilter>;
-  readonly free?: InputMaybe<HavingBigfloatFilter>;
-  readonly frozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly miscFrozen?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly reserved?: InputMaybe<HavingBigfloatFilter>;
+  feeFrozen?: InputMaybe<HavingBigfloatFilter>;
+  flags?: InputMaybe<HavingBigfloatFilter>;
+  free?: InputMaybe<HavingBigfloatFilter>;
+  frozen?: InputMaybe<HavingBigfloatFilter>;
+  miscFrozen?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  reserved?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `StablepoolAssetHistoricalDatum`. */
@@ -13096,55 +13107,55 @@ export enum StablepoolAssetHistoricalDataOrderBy {
  */
 export type StablepoolAssetHistoricalDatumCondition = {
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `feeFrozen` field. */
-  readonly feeFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  feeFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `flags` field. */
-  readonly flags?: InputMaybe<Scalars['BigFloat']['input']>;
+  flags?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `free` field. */
-  readonly free?: InputMaybe<Scalars['BigFloat']['input']>;
+  free?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `frozen` field. */
-  readonly frozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  frozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `miscFrozen` field. */
-  readonly miscFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
+  miscFrozen?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolHistoricalDataId` field. */
-  readonly poolHistoricalDataId?: InputMaybe<Scalars['String']['input']>;
+  poolHistoricalDataId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `reserved` field. */
-  readonly reserved?: InputMaybe<Scalars['BigFloat']['input']>;
+  reserved?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `StablepoolAssetHistoricalDatum` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolAssetHistoricalDatumFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalDatumFilter>>;
+  and?: InputMaybe<Array<StablepoolAssetHistoricalDatumFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `feeFrozen` field. */
-  readonly feeFrozen?: InputMaybe<BigFloatFilter>;
+  feeFrozen?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `flags` field. */
-  readonly flags?: InputMaybe<BigFloatFilter>;
+  flags?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `free` field. */
-  readonly free?: InputMaybe<BigFloatFilter>;
+  free?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `frozen` field. */
-  readonly frozen?: InputMaybe<BigFloatFilter>;
+  frozen?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `miscFrozen` field. */
-  readonly miscFrozen?: InputMaybe<BigFloatFilter>;
+  miscFrozen?: InputMaybe<BigFloatFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolAssetHistoricalDatumFilter>;
+  not?: InputMaybe<StablepoolAssetHistoricalDatumFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalDatumFilter>>;
+  or?: InputMaybe<Array<StablepoolAssetHistoricalDatumFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolHistoricalDataId` field. */
-  readonly poolHistoricalDataId?: InputMaybe<StringFilter>;
+  poolHistoricalDataId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `reserved` field. */
-  readonly reserved?: InputMaybe<BigFloatFilter>;
+  reserved?: InputMaybe<BigFloatFilter>;
 };
 
 /**
@@ -13153,103 +13164,103 @@ export type StablepoolAssetHistoricalDatumFilter = {
  */
 export type StablepoolAssetHistoricalVolumeCondition = {
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `liqAddedAmount` field. */
-  readonly liqAddedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqAddedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `liqAddedTotalAmount` field. */
-  readonly liqAddedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqAddedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `liqFee` field. */
-  readonly liqFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `liqRemovedAmount` field. */
-  readonly liqRemovedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqRemovedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `liqRemovedTotalAmount` field. */
-  readonly liqRemovedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqRemovedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `liqTotalFees` field. */
-  readonly liqTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  liqTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `routedLiqAddedAmount` field. */
-  readonly routedLiqAddedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqAddedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `routedLiqAddedTotalAmount` field. */
-  readonly routedLiqAddedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqAddedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `routedLiqFee` field. */
-  readonly routedLiqFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `routedLiqRemovedAmount` field. */
-  readonly routedLiqRemovedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqRemovedAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `routedLiqRemovedTotalAmount` field. */
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqRemovedTotalAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `routedLiqTotalFees` field. */
-  readonly routedLiqTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  routedLiqTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapFee` field. */
-  readonly swapFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapTotalFees` field. */
-  readonly swapTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapTotalVolumeIn` field. */
-  readonly swapTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapTotalVolumeOut` field. */
-  readonly swapTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapVolumeIn` field. */
-  readonly swapVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `swapVolumeOut` field. */
-  readonly swapVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  swapVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `volumesCollectionId` field. */
-  readonly volumesCollectionId?: InputMaybe<Scalars['String']['input']>;
+  volumesCollectionId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `StablepoolAssetHistoricalVolume` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolAssetHistoricalVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalVolumeFilter>>;
+  and?: InputMaybe<Array<StablepoolAssetHistoricalVolumeFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `liqAddedAmount` field. */
-  readonly liqAddedAmount?: InputMaybe<BigFloatFilter>;
+  liqAddedAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `liqAddedTotalAmount` field. */
-  readonly liqAddedTotalAmount?: InputMaybe<BigFloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `liqFee` field. */
-  readonly liqFee?: InputMaybe<BigFloatFilter>;
+  liqFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `liqRemovedAmount` field. */
-  readonly liqRemovedAmount?: InputMaybe<BigFloatFilter>;
+  liqRemovedAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `liqRemovedTotalAmount` field. */
-  readonly liqRemovedTotalAmount?: InputMaybe<BigFloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `liqTotalFees` field. */
-  readonly liqTotalFees?: InputMaybe<BigFloatFilter>;
+  liqTotalFees?: InputMaybe<BigFloatFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolAssetHistoricalVolumeFilter>;
+  not?: InputMaybe<StablepoolAssetHistoricalVolumeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalVolumeFilter>>;
+  or?: InputMaybe<Array<StablepoolAssetHistoricalVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `routedLiqAddedAmount` field. */
-  readonly routedLiqAddedAmount?: InputMaybe<BigFloatFilter>;
+  routedLiqAddedAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `routedLiqAddedTotalAmount` field. */
-  readonly routedLiqAddedTotalAmount?: InputMaybe<BigFloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `routedLiqFee` field. */
-  readonly routedLiqFee?: InputMaybe<BigFloatFilter>;
+  routedLiqFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `routedLiqRemovedAmount` field. */
-  readonly routedLiqRemovedAmount?: InputMaybe<BigFloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `routedLiqRemovedTotalAmount` field. */
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<BigFloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `routedLiqTotalFees` field. */
-  readonly routedLiqTotalFees?: InputMaybe<BigFloatFilter>;
+  routedLiqTotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapFee` field. */
-  readonly swapFee?: InputMaybe<BigFloatFilter>;
+  swapFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapTotalFees` field. */
-  readonly swapTotalFees?: InputMaybe<BigFloatFilter>;
+  swapTotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapTotalVolumeIn` field. */
-  readonly swapTotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapTotalVolumeOut` field. */
-  readonly swapTotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapVolumeIn` field. */
-  readonly swapVolumeIn?: InputMaybe<BigFloatFilter>;
+  swapVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `swapVolumeOut` field. */
-  readonly swapVolumeOut?: InputMaybe<BigFloatFilter>;
+  swapVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `volumesCollectionId` field. */
-  readonly volumesCollectionId?: InputMaybe<StringFilter>;
+  volumesCollectionId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `StablepoolAssetHistoricalVolume` for usage during aggregation. */
@@ -13278,216 +13289,216 @@ export enum StablepoolAssetHistoricalVolumeGroupBy {
 }
 
 export type StablepoolAssetHistoricalVolumeHavingAverageInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingDistinctCountInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `StablepoolAssetHistoricalVolume` aggregates. */
 export type StablepoolAssetHistoricalVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolAssetHistoricalVolumeHavingInput>>;
-  readonly average?: InputMaybe<StablepoolAssetHistoricalVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolAssetHistoricalVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolAssetHistoricalVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolAssetHistoricalVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolAssetHistoricalVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolAssetHistoricalVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolAssetHistoricalVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolAssetHistoricalVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolAssetHistoricalVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolAssetHistoricalVolumeHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolAssetHistoricalVolumeHavingInput>>;
+  average?: InputMaybe<StablepoolAssetHistoricalVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolAssetHistoricalVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolAssetHistoricalVolumeHavingMaxInput>;
+  min?: InputMaybe<StablepoolAssetHistoricalVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolAssetHistoricalVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolAssetHistoricalVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolAssetHistoricalVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolAssetHistoricalVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolAssetHistoricalVolumeHavingVarianceSampleInput>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingMaxInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingMinInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingStddevPopulationInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingStddevSampleInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingSumInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingVariancePopulationInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetHistoricalVolumeHavingVarianceSampleInput = {
-  readonly liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqFee?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  liqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  routedLiqAddedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqAddedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqFee?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqRemovedTotalAmount?: InputMaybe<HavingBigfloatFilter>;
+  routedLiqTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapFee?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  swapVolumeOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `StablepoolAssetHistoricalVolume`. */
@@ -13547,31 +13558,31 @@ export enum StablepoolAssetHistoricalVolumesOrderBy {
  */
 export type StablepoolAssetLiquidityAmountCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `liquidityActionId` field. */
-  readonly liquidityActionId?: InputMaybe<Scalars['String']['input']>;
+  liquidityActionId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `StablepoolAssetLiquidityAmount` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolAssetLiquidityAmountFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolAssetLiquidityAmountFilter>>;
+  and?: InputMaybe<Array<StablepoolAssetLiquidityAmountFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `liquidityActionId` field. */
-  readonly liquidityActionId?: InputMaybe<StringFilter>;
+  liquidityActionId?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolAssetLiquidityAmountFilter>;
+  not?: InputMaybe<StablepoolAssetLiquidityAmountFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolAssetLiquidityAmountFilter>>;
+  or?: InputMaybe<Array<StablepoolAssetLiquidityAmountFilter>>;
 };
 
 /** Grouping methods for `StablepoolAssetLiquidityAmount` for usage during aggregation. */
@@ -13582,54 +13593,54 @@ export enum StablepoolAssetLiquidityAmountGroupBy {
 }
 
 export type StablepoolAssetLiquidityAmountHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `StablepoolAssetLiquidityAmount` aggregates. */
 export type StablepoolAssetLiquidityAmountHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolAssetLiquidityAmountHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolAssetLiquidityAmountHavingInput>>;
-  readonly average?: InputMaybe<StablepoolAssetLiquidityAmountHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolAssetLiquidityAmountHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolAssetLiquidityAmountHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolAssetLiquidityAmountHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolAssetLiquidityAmountHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolAssetLiquidityAmountHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolAssetLiquidityAmountHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolAssetLiquidityAmountHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolAssetLiquidityAmountHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolAssetLiquidityAmountHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolAssetLiquidityAmountHavingInput>>;
+  average?: InputMaybe<StablepoolAssetLiquidityAmountHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolAssetLiquidityAmountHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolAssetLiquidityAmountHavingMaxInput>;
+  min?: InputMaybe<StablepoolAssetLiquidityAmountHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolAssetLiquidityAmountHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolAssetLiquidityAmountHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolAssetLiquidityAmountHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolAssetLiquidityAmountHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolAssetLiquidityAmountHavingVarianceSampleInput>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolAssetLiquidityAmountHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `StablepoolAssetLiquidityAmount`. */
@@ -13668,39 +13679,39 @@ export enum StablepoolAssetsOrderBy {
  */
 export type StablepoolCondition = {
   /** Checks for equality with the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<Scalars['String']['input']>;
+  accountId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
+  isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 /** A filter to be used against `Stablepool` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolFilter = {
   /** Filter by the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<StringFilter>;
+  accountId?: InputMaybe<StringFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolFilter>>;
+  and?: InputMaybe<Array<StablepoolFilter>>;
   /** Filter by the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<DatetimeFilter>;
+  createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<IntFilter>;
+  createdAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<IntFilter>;
+  destroyedAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<BooleanFilter>;
+  isDestroyed?: InputMaybe<BooleanFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolFilter>;
+  not?: InputMaybe<StablepoolFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolFilter>>;
+  or?: InputMaybe<Array<StablepoolFilter>>;
 };
 
 /** Grouping methods for `Stablepool` for usage during aggregation. */
@@ -13715,72 +13726,72 @@ export enum StablepoolGroupBy {
 }
 
 export type StablepoolHavingAverageInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingDistinctCountInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `Stablepool` aggregates. */
 export type StablepoolHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolHavingInput>>;
-  readonly average?: InputMaybe<StablepoolHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolHavingInput>>;
+  average?: InputMaybe<StablepoolHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolHavingMaxInput>;
+  min?: InputMaybe<StablepoolHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolHavingVarianceSampleInput>;
 };
 
 export type StablepoolHavingMaxInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingMinInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingStddevPopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingStddevSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingSumInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingVariancePopulationInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHavingVarianceSampleInput = {
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
 };
 
 /** Grouping methods for `StablepoolHistoricalDatum` for usage during aggregation. */
@@ -13796,108 +13807,108 @@ export enum StablepoolHistoricalDataGroupBy {
 }
 
 export type StablepoolHistoricalDataHavingAverageInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingDistinctCountInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `StablepoolHistoricalDatum` aggregates. */
 export type StablepoolHistoricalDataHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolHistoricalDataHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolHistoricalDataHavingInput>>;
-  readonly average?: InputMaybe<StablepoolHistoricalDataHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolHistoricalDataHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolHistoricalDataHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolHistoricalDataHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolHistoricalDataHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolHistoricalDataHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolHistoricalDataHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolHistoricalDataHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolHistoricalDataHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolHistoricalDataHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolHistoricalDataHavingInput>>;
+  average?: InputMaybe<StablepoolHistoricalDataHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolHistoricalDataHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolHistoricalDataHavingMaxInput>;
+  min?: InputMaybe<StablepoolHistoricalDataHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolHistoricalDataHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolHistoricalDataHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolHistoricalDataHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolHistoricalDataHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolHistoricalDataHavingVarianceSampleInput>;
 };
 
 export type StablepoolHistoricalDataHavingMaxInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingMinInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingStddevPopulationInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingStddevSampleInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingSumInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingVariancePopulationInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalDataHavingVarianceSampleInput = {
-  readonly fee?: InputMaybe<HavingIntFilter>;
-  readonly finalAmplification?: InputMaybe<HavingIntFilter>;
-  readonly finalBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialAmplification?: InputMaybe<HavingIntFilter>;
-  readonly initialBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  fee?: InputMaybe<HavingIntFilter>;
+  finalAmplification?: InputMaybe<HavingIntFilter>;
+  finalBlock?: InputMaybe<HavingIntFilter>;
+  initialAmplification?: InputMaybe<HavingIntFilter>;
+  initialBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `StablepoolHistoricalDatum`. */
@@ -14113,51 +14124,51 @@ export enum StablepoolHistoricalDataOrderBy {
  */
 export type StablepoolHistoricalDatumCondition = {
   /** Checks for equality with the object’s `fee` field. */
-  readonly fee?: InputMaybe<Scalars['Int']['input']>;
+  fee?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `finalAmplification` field. */
-  readonly finalAmplification?: InputMaybe<Scalars['Int']['input']>;
+  finalAmplification?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `finalBlock` field. */
-  readonly finalBlock?: InputMaybe<Scalars['Int']['input']>;
+  finalBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialAmplification` field. */
-  readonly initialAmplification?: InputMaybe<Scalars['Int']['input']>;
+  initialAmplification?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `initialBlock` field. */
-  readonly initialBlock?: InputMaybe<Scalars['Int']['input']>;
+  initialBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `StablepoolHistoricalDatum` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolHistoricalDatumFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolHistoricalDatumFilter>>;
+  and?: InputMaybe<Array<StablepoolHistoricalDatumFilter>>;
   /** Filter by the object’s `fee` field. */
-  readonly fee?: InputMaybe<IntFilter>;
+  fee?: InputMaybe<IntFilter>;
   /** Filter by the object’s `finalAmplification` field. */
-  readonly finalAmplification?: InputMaybe<IntFilter>;
+  finalAmplification?: InputMaybe<IntFilter>;
   /** Filter by the object’s `finalBlock` field. */
-  readonly finalBlock?: InputMaybe<IntFilter>;
+  finalBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialAmplification` field. */
-  readonly initialAmplification?: InputMaybe<IntFilter>;
+  initialAmplification?: InputMaybe<IntFilter>;
   /** Filter by the object’s `initialBlock` field. */
-  readonly initialBlock?: InputMaybe<IntFilter>;
+  initialBlock?: InputMaybe<IntFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolHistoricalDatumFilter>;
+  not?: InputMaybe<StablepoolHistoricalDatumFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolHistoricalDatumFilter>>;
+  or?: InputMaybe<Array<StablepoolHistoricalDatumFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /**
@@ -14166,31 +14177,31 @@ export type StablepoolHistoricalDatumFilter = {
  */
 export type StablepoolHistoricalVolumeCondition = {
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `StablepoolHistoricalVolume` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolHistoricalVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolHistoricalVolumeFilter>>;
+  and?: InputMaybe<Array<StablepoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolHistoricalVolumeFilter>;
+  not?: InputMaybe<StablepoolHistoricalVolumeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolHistoricalVolumeFilter>>;
+  or?: InputMaybe<Array<StablepoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `StablepoolHistoricalVolume` for usage during aggregation. */
@@ -14201,67 +14212,67 @@ export enum StablepoolHistoricalVolumeGroupBy {
 }
 
 export type StablepoolHistoricalVolumeHavingAverageInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingDistinctCountInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `StablepoolHistoricalVolume` aggregates. */
 export type StablepoolHistoricalVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolHistoricalVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolHistoricalVolumeHavingInput>>;
-  readonly average?: InputMaybe<StablepoolHistoricalVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolHistoricalVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolHistoricalVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolHistoricalVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolHistoricalVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolHistoricalVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolHistoricalVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolHistoricalVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolHistoricalVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolHistoricalVolumeHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolHistoricalVolumeHavingInput>>;
+  average?: InputMaybe<StablepoolHistoricalVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolHistoricalVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolHistoricalVolumeHavingMaxInput>;
+  min?: InputMaybe<StablepoolHistoricalVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolHistoricalVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolHistoricalVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolHistoricalVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolHistoricalVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolHistoricalVolumeHavingVarianceSampleInput>;
 };
 
 export type StablepoolHistoricalVolumeHavingMaxInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingMinInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingStddevPopulationInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingStddevSampleInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingSumInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingVariancePopulationInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeHavingVarianceSampleInput = {
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type StablepoolHistoricalVolumeSubscriptionFilter = {
-  readonly poolIds?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  poolIds?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** Methods to use when ordering `StablepoolHistoricalVolume`. */
@@ -14683,47 +14694,47 @@ export enum StablepoolHistoricalVolumesOrderBy {
  */
 export type StablepoolLiquidityActionCondition = {
   /** Checks for equality with the object’s `actionType` field. */
-  readonly actionType?: InputMaybe<Scalars['String']['input']>;
+  actionType?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `feeAmount` field. */
-  readonly feeAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  feeAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `indexInBlock` field. */
-  readonly indexInBlock?: InputMaybe<Scalars['Int']['input']>;
+  indexInBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `sharesAmount` field. */
-  readonly sharesAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  sharesAmount?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `StablepoolLiquidityAction` object types. All fields are combined with a logical ‘and.’ */
 export type StablepoolLiquidityActionFilter = {
   /** Filter by the object’s `actionType` field. */
-  readonly actionType?: InputMaybe<StringFilter>;
+  actionType?: InputMaybe<StringFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<StablepoolLiquidityActionFilter>>;
+  and?: InputMaybe<Array<StablepoolLiquidityActionFilter>>;
   /** Filter by the object’s `feeAmount` field. */
-  readonly feeAmount?: InputMaybe<BigFloatFilter>;
+  feeAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `indexInBlock` field. */
-  readonly indexInBlock?: InputMaybe<IntFilter>;
+  indexInBlock?: InputMaybe<IntFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<StablepoolLiquidityActionFilter>;
+  not?: InputMaybe<StablepoolLiquidityActionFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<StablepoolLiquidityActionFilter>>;
+  or?: InputMaybe<Array<StablepoolLiquidityActionFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `sharesAmount` field. */
-  readonly sharesAmount?: InputMaybe<BigFloatFilter>;
+  sharesAmount?: InputMaybe<BigFloatFilter>;
 };
 
 /** Grouping methods for `StablepoolLiquidityAction` for usage during aggregation. */
@@ -14738,90 +14749,90 @@ export enum StablepoolLiquidityActionGroupBy {
 }
 
 export type StablepoolLiquidityActionHavingAverageInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingDistinctCountInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `StablepoolLiquidityAction` aggregates. */
 export type StablepoolLiquidityActionHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<StablepoolLiquidityActionHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<StablepoolLiquidityActionHavingInput>>;
-  readonly average?: InputMaybe<StablepoolLiquidityActionHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<StablepoolLiquidityActionHavingDistinctCountInput>;
-  readonly max?: InputMaybe<StablepoolLiquidityActionHavingMaxInput>;
-  readonly min?: InputMaybe<StablepoolLiquidityActionHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<StablepoolLiquidityActionHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<StablepoolLiquidityActionHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<StablepoolLiquidityActionHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<StablepoolLiquidityActionHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<StablepoolLiquidityActionHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<StablepoolLiquidityActionHavingInput>>;
+  OR?: InputMaybe<Array<StablepoolLiquidityActionHavingInput>>;
+  average?: InputMaybe<StablepoolLiquidityActionHavingAverageInput>;
+  distinctCount?: InputMaybe<StablepoolLiquidityActionHavingDistinctCountInput>;
+  max?: InputMaybe<StablepoolLiquidityActionHavingMaxInput>;
+  min?: InputMaybe<StablepoolLiquidityActionHavingMinInput>;
+  stddevPopulation?: InputMaybe<StablepoolLiquidityActionHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<StablepoolLiquidityActionHavingStddevSampleInput>;
+  sum?: InputMaybe<StablepoolLiquidityActionHavingSumInput>;
+  variancePopulation?: InputMaybe<StablepoolLiquidityActionHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<StablepoolLiquidityActionHavingVarianceSampleInput>;
 };
 
 export type StablepoolLiquidityActionHavingMaxInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingMinInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingStddevPopulationInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingStddevSampleInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingSumInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingVariancePopulationInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type StablepoolLiquidityActionHavingVarianceSampleInput = {
-  readonly feeAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly indexInBlock?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly sharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  feeAmount?: InputMaybe<HavingBigfloatFilter>;
+  indexInBlock?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  sharesAmount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `StablepoolLiquidityAction`. */
@@ -14922,9 +14933,9 @@ export enum StablepoolLiquidityActionsOrderBy {
 }
 
 export type StablepoolVolumesByPeriodFilter = {
-  readonly endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
-  readonly poolIds: ReadonlyArray<Scalars['String']['input']>;
-  readonly startBlockNumber: Scalars['Int']['input'];
+  endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
+  poolIds: Array<Scalars['String']['input']>;
+  startBlockNumber: Scalars['Int']['input'];
 };
 
 /** Methods to use when ordering `Stablepool`. */
@@ -15499,143 +15510,143 @@ export enum StablepoolsOrderBy {
 /** A filter to be used against String fields. All fields are combined with a logical ‘and.’ */
 export type StringFilter = {
   /** Not equal to the specified value, treating null like an ordinary value. */
-  readonly distinctFrom?: InputMaybe<Scalars['String']['input']>;
+  distinctFrom?: InputMaybe<Scalars['String']['input']>;
   /** Not equal to the specified value, treating null like an ordinary value (case-insensitive). */
-  readonly distinctFromInsensitive?: InputMaybe<Scalars['String']['input']>;
+  distinctFromInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Ends with the specified string (case-sensitive). */
-  readonly endsWith?: InputMaybe<Scalars['String']['input']>;
+  endsWith?: InputMaybe<Scalars['String']['input']>;
   /** Ends with the specified string (case-insensitive). */
-  readonly endsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
+  endsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Equal to the specified value. */
-  readonly equalTo?: InputMaybe<Scalars['String']['input']>;
+  equalTo?: InputMaybe<Scalars['String']['input']>;
   /** Equal to the specified value (case-insensitive). */
-  readonly equalToInsensitive?: InputMaybe<Scalars['String']['input']>;
+  equalToInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Greater than the specified value. */
-  readonly greaterThan?: InputMaybe<Scalars['String']['input']>;
+  greaterThan?: InputMaybe<Scalars['String']['input']>;
   /** Greater than the specified value (case-insensitive). */
-  readonly greaterThanInsensitive?: InputMaybe<Scalars['String']['input']>;
+  greaterThanInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Greater than or equal to the specified value. */
-  readonly greaterThanOrEqualTo?: InputMaybe<Scalars['String']['input']>;
+  greaterThanOrEqualTo?: InputMaybe<Scalars['String']['input']>;
   /** Greater than or equal to the specified value (case-insensitive). */
-  readonly greaterThanOrEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
+  greaterThanOrEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Included in the specified list. */
-  readonly in?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  in?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Included in the specified list (case-insensitive). */
-  readonly inInsensitive?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  inInsensitive?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Contains the specified string (case-sensitive). */
-  readonly includes?: InputMaybe<Scalars['String']['input']>;
+  includes?: InputMaybe<Scalars['String']['input']>;
   /** Contains the specified string (case-insensitive). */
-  readonly includesInsensitive?: InputMaybe<Scalars['String']['input']>;
+  includesInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Is null (if `true` is specified) or is not null (if `false` is specified). */
-  readonly isNull?: InputMaybe<Scalars['Boolean']['input']>;
+  isNull?: InputMaybe<Scalars['Boolean']['input']>;
   /** Less than the specified value. */
-  readonly lessThan?: InputMaybe<Scalars['String']['input']>;
+  lessThan?: InputMaybe<Scalars['String']['input']>;
   /** Less than the specified value (case-insensitive). */
-  readonly lessThanInsensitive?: InputMaybe<Scalars['String']['input']>;
+  lessThanInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Less than or equal to the specified value. */
-  readonly lessThanOrEqualTo?: InputMaybe<Scalars['String']['input']>;
+  lessThanOrEqualTo?: InputMaybe<Scalars['String']['input']>;
   /** Less than or equal to the specified value (case-insensitive). */
-  readonly lessThanOrEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
+  lessThanOrEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Matches the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
-  readonly like?: InputMaybe<Scalars['String']['input']>;
+  like?: InputMaybe<Scalars['String']['input']>;
   /** Matches the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
-  readonly likeInsensitive?: InputMaybe<Scalars['String']['input']>;
+  likeInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Equal to the specified value, treating null like an ordinary value. */
-  readonly notDistinctFrom?: InputMaybe<Scalars['String']['input']>;
+  notDistinctFrom?: InputMaybe<Scalars['String']['input']>;
   /** Equal to the specified value, treating null like an ordinary value (case-insensitive). */
-  readonly notDistinctFromInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notDistinctFromInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Does not end with the specified string (case-sensitive). */
-  readonly notEndsWith?: InputMaybe<Scalars['String']['input']>;
+  notEndsWith?: InputMaybe<Scalars['String']['input']>;
   /** Does not end with the specified string (case-insensitive). */
-  readonly notEndsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notEndsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Not equal to the specified value. */
-  readonly notEqualTo?: InputMaybe<Scalars['String']['input']>;
+  notEqualTo?: InputMaybe<Scalars['String']['input']>;
   /** Not equal to the specified value (case-insensitive). */
-  readonly notEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notEqualToInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Not included in the specified list. */
-  readonly notIn?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  notIn?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Not included in the specified list (case-insensitive). */
-  readonly notInInsensitive?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  notInInsensitive?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Does not contain the specified string (case-sensitive). */
-  readonly notIncludes?: InputMaybe<Scalars['String']['input']>;
+  notIncludes?: InputMaybe<Scalars['String']['input']>;
   /** Does not contain the specified string (case-insensitive). */
-  readonly notIncludesInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notIncludesInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Does not match the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
-  readonly notLike?: InputMaybe<Scalars['String']['input']>;
+  notLike?: InputMaybe<Scalars['String']['input']>;
   /** Does not match the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters. */
-  readonly notLikeInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notLikeInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Does not start with the specified string (case-sensitive). */
-  readonly notStartsWith?: InputMaybe<Scalars['String']['input']>;
+  notStartsWith?: InputMaybe<Scalars['String']['input']>;
   /** Does not start with the specified string (case-insensitive). */
-  readonly notStartsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
+  notStartsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
   /** Starts with the specified string (case-sensitive). */
-  readonly startsWith?: InputMaybe<Scalars['String']['input']>;
+  startsWith?: InputMaybe<Scalars['String']['input']>;
   /** Starts with the specified string (case-insensitive). */
-  readonly startsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
+  startsWithInsensitive?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A condition to be used against `Swap` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type SwapCondition = {
   /** Checks for equality with the object’s `eventIndex` field. */
-  readonly eventIndex?: InputMaybe<Scalars['Int']['input']>;
+  eventIndex?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `extrinsicHash` field. */
-  readonly extrinsicHash?: InputMaybe<Scalars['String']['input']>;
+  extrinsicHash?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `fillerId` field. */
-  readonly fillerId?: InputMaybe<Scalars['String']['input']>;
+  fillerId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `fillerType` field. */
-  readonly fillerType?: InputMaybe<Scalars['String']['input']>;
+  fillerType?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `hubAmountIn` field. */
-  readonly hubAmountIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  hubAmountIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `hubAmountOut` field. */
-  readonly hubAmountOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  hubAmountOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `operationType` field. */
-  readonly operationType?: InputMaybe<Scalars['String']['input']>;
+  operationType?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `paraChainTimestamp` field. */
-  readonly paraChainTimestamp?: InputMaybe<Scalars['Datetime']['input']>;
+  paraChainTimestamp?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `swapIndex` field. */
-  readonly swapIndex?: InputMaybe<Scalars['Int']['input']>;
+  swapIndex?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `swapperId` field. */
-  readonly swapperId?: InputMaybe<Scalars['String']['input']>;
+  swapperId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A condition to be used against `SwapFee` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type SwapFeeCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `recipientId` field. */
-  readonly recipientId?: InputMaybe<Scalars['String']['input']>;
+  recipientId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<Scalars['String']['input']>;
+  swapId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `SwapFee` object types. All fields are combined with a logical ‘and.’ */
 export type SwapFeeFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<SwapFeeFilter>>;
+  and?: InputMaybe<Array<SwapFeeFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<SwapFeeFilter>;
+  not?: InputMaybe<SwapFeeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<SwapFeeFilter>>;
+  or?: InputMaybe<Array<SwapFeeFilter>>;
   /** Filter by the object’s `recipientId` field. */
-  readonly recipientId?: InputMaybe<StringFilter>;
+  recipientId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<StringFilter>;
+  swapId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `SwapFee` for usage during aggregation. */
@@ -15647,54 +15658,54 @@ export enum SwapFeeGroupBy {
 }
 
 export type SwapFeeHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `SwapFee` aggregates. */
 export type SwapFeeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<SwapFeeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<SwapFeeHavingInput>>;
-  readonly average?: InputMaybe<SwapFeeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<SwapFeeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<SwapFeeHavingMaxInput>;
-  readonly min?: InputMaybe<SwapFeeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<SwapFeeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<SwapFeeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<SwapFeeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<SwapFeeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<SwapFeeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<SwapFeeHavingInput>>;
+  OR?: InputMaybe<Array<SwapFeeHavingInput>>;
+  average?: InputMaybe<SwapFeeHavingAverageInput>;
+  distinctCount?: InputMaybe<SwapFeeHavingDistinctCountInput>;
+  max?: InputMaybe<SwapFeeHavingMaxInput>;
+  min?: InputMaybe<SwapFeeHavingMinInput>;
+  stddevPopulation?: InputMaybe<SwapFeeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<SwapFeeHavingStddevSampleInput>;
+  sum?: InputMaybe<SwapFeeHavingSumInput>;
+  variancePopulation?: InputMaybe<SwapFeeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<SwapFeeHavingVarianceSampleInput>;
 };
 
 export type SwapFeeHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapFeeHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `SwapFee`. */
@@ -15717,37 +15728,37 @@ export enum SwapFeesOrderBy {
 /** A filter to be used against `Swap` object types. All fields are combined with a logical ‘and.’ */
 export type SwapFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<SwapFilter>>;
+  and?: InputMaybe<Array<SwapFilter>>;
   /** Filter by the object’s `eventIndex` field. */
-  readonly eventIndex?: InputMaybe<IntFilter>;
+  eventIndex?: InputMaybe<IntFilter>;
   /** Filter by the object’s `extrinsicHash` field. */
-  readonly extrinsicHash?: InputMaybe<StringFilter>;
+  extrinsicHash?: InputMaybe<StringFilter>;
   /** Filter by the object’s `fillerId` field. */
-  readonly fillerId?: InputMaybe<StringFilter>;
+  fillerId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `fillerType` field. */
-  readonly fillerType?: InputMaybe<StringFilter>;
+  fillerType?: InputMaybe<StringFilter>;
   /** Filter by the object’s `hubAmountIn` field. */
-  readonly hubAmountIn?: InputMaybe<BigFloatFilter>;
+  hubAmountIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `hubAmountOut` field. */
-  readonly hubAmountOut?: InputMaybe<BigFloatFilter>;
+  hubAmountOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<SwapFilter>;
+  not?: InputMaybe<SwapFilter>;
   /** Filter by the object’s `operationType` field. */
-  readonly operationType?: InputMaybe<StringFilter>;
+  operationType?: InputMaybe<StringFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<SwapFilter>>;
+  or?: InputMaybe<Array<SwapFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `paraChainTimestamp` field. */
-  readonly paraChainTimestamp?: InputMaybe<DatetimeFilter>;
+  paraChainTimestamp?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `swapIndex` field. */
-  readonly swapIndex?: InputMaybe<IntFilter>;
+  swapIndex?: InputMaybe<IntFilter>;
   /** Filter by the object’s `swapperId` field. */
-  readonly swapperId?: InputMaybe<StringFilter>;
+  swapperId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `Swap` for usage during aggregation. */
@@ -15769,108 +15780,108 @@ export enum SwapGroupBy {
 }
 
 export type SwapHavingAverageInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingDistinctCountInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `Swap` aggregates. */
 export type SwapHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<SwapHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<SwapHavingInput>>;
-  readonly average?: InputMaybe<SwapHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<SwapHavingDistinctCountInput>;
-  readonly max?: InputMaybe<SwapHavingMaxInput>;
-  readonly min?: InputMaybe<SwapHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<SwapHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<SwapHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<SwapHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<SwapHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<SwapHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<SwapHavingInput>>;
+  OR?: InputMaybe<Array<SwapHavingInput>>;
+  average?: InputMaybe<SwapHavingAverageInput>;
+  distinctCount?: InputMaybe<SwapHavingDistinctCountInput>;
+  max?: InputMaybe<SwapHavingMaxInput>;
+  min?: InputMaybe<SwapHavingMinInput>;
+  stddevPopulation?: InputMaybe<SwapHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<SwapHavingStddevSampleInput>;
+  sum?: InputMaybe<SwapHavingSumInput>;
+  variancePopulation?: InputMaybe<SwapHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<SwapHavingVarianceSampleInput>;
 };
 
 export type SwapHavingMaxInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingMinInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingStddevPopulationInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingStddevSampleInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingSumInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingVariancePopulationInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 export type SwapHavingVarianceSampleInput = {
-  readonly eventIndex?: InputMaybe<HavingIntFilter>;
-  readonly hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly swapIndex?: InputMaybe<HavingIntFilter>;
+  eventIndex?: InputMaybe<HavingIntFilter>;
+  hubAmountIn?: InputMaybe<HavingBigfloatFilter>;
+  hubAmountOut?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  paraChainTimestamp?: InputMaybe<HavingDatetimeFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  swapIndex?: InputMaybe<HavingIntFilter>;
 };
 
 /**
@@ -15879,31 +15890,31 @@ export type SwapHavingVarianceSampleInput = {
  */
 export type SwapInputAssetBalanceCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<Scalars['String']['input']>;
+  swapId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `SwapInputAssetBalance` object types. All fields are combined with a logical ‘and.’ */
 export type SwapInputAssetBalanceFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<SwapInputAssetBalanceFilter>>;
+  and?: InputMaybe<Array<SwapInputAssetBalanceFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<SwapInputAssetBalanceFilter>;
+  not?: InputMaybe<SwapInputAssetBalanceFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<SwapInputAssetBalanceFilter>>;
+  or?: InputMaybe<Array<SwapInputAssetBalanceFilter>>;
   /** Filter by the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<StringFilter>;
+  swapId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `SwapInputAssetBalance` for usage during aggregation. */
@@ -15914,54 +15925,54 @@ export enum SwapInputAssetBalanceGroupBy {
 }
 
 export type SwapInputAssetBalanceHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `SwapInputAssetBalance` aggregates. */
 export type SwapInputAssetBalanceHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<SwapInputAssetBalanceHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<SwapInputAssetBalanceHavingInput>>;
-  readonly average?: InputMaybe<SwapInputAssetBalanceHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<SwapInputAssetBalanceHavingDistinctCountInput>;
-  readonly max?: InputMaybe<SwapInputAssetBalanceHavingMaxInput>;
-  readonly min?: InputMaybe<SwapInputAssetBalanceHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<SwapInputAssetBalanceHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<SwapInputAssetBalanceHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<SwapInputAssetBalanceHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<SwapInputAssetBalanceHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<SwapInputAssetBalanceHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<SwapInputAssetBalanceHavingInput>>;
+  OR?: InputMaybe<Array<SwapInputAssetBalanceHavingInput>>;
+  average?: InputMaybe<SwapInputAssetBalanceHavingAverageInput>;
+  distinctCount?: InputMaybe<SwapInputAssetBalanceHavingDistinctCountInput>;
+  max?: InputMaybe<SwapInputAssetBalanceHavingMaxInput>;
+  min?: InputMaybe<SwapInputAssetBalanceHavingMinInput>;
+  stddevPopulation?: InputMaybe<SwapInputAssetBalanceHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<SwapInputAssetBalanceHavingStddevSampleInput>;
+  sum?: InputMaybe<SwapInputAssetBalanceHavingSumInput>;
+  variancePopulation?: InputMaybe<SwapInputAssetBalanceHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<SwapInputAssetBalanceHavingVarianceSampleInput>;
 };
 
 export type SwapInputAssetBalanceHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapInputAssetBalanceHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `SwapInputAssetBalance`. */
@@ -15985,31 +15996,31 @@ export enum SwapInputAssetBalancesOrderBy {
  */
 export type SwapOutputAssetBalanceCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['String']['input']>;
+  assetId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<Scalars['String']['input']>;
+  swapId?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A filter to be used against `SwapOutputAssetBalance` object types. All fields are combined with a logical ‘and.’ */
 export type SwapOutputAssetBalanceFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<SwapOutputAssetBalanceFilter>>;
+  and?: InputMaybe<Array<SwapOutputAssetBalanceFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<StringFilter>;
+  assetId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<SwapOutputAssetBalanceFilter>;
+  not?: InputMaybe<SwapOutputAssetBalanceFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<SwapOutputAssetBalanceFilter>>;
+  or?: InputMaybe<Array<SwapOutputAssetBalanceFilter>>;
   /** Filter by the object’s `swapId` field. */
-  readonly swapId?: InputMaybe<StringFilter>;
+  swapId?: InputMaybe<StringFilter>;
 };
 
 /** Grouping methods for `SwapOutputAssetBalance` for usage during aggregation. */
@@ -16020,54 +16031,54 @@ export enum SwapOutputAssetBalanceGroupBy {
 }
 
 export type SwapOutputAssetBalanceHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `SwapOutputAssetBalance` aggregates. */
 export type SwapOutputAssetBalanceHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<SwapOutputAssetBalanceHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<SwapOutputAssetBalanceHavingInput>>;
-  readonly average?: InputMaybe<SwapOutputAssetBalanceHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<SwapOutputAssetBalanceHavingDistinctCountInput>;
-  readonly max?: InputMaybe<SwapOutputAssetBalanceHavingMaxInput>;
-  readonly min?: InputMaybe<SwapOutputAssetBalanceHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<SwapOutputAssetBalanceHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<SwapOutputAssetBalanceHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<SwapOutputAssetBalanceHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<SwapOutputAssetBalanceHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<SwapOutputAssetBalanceHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<SwapOutputAssetBalanceHavingInput>>;
+  OR?: InputMaybe<Array<SwapOutputAssetBalanceHavingInput>>;
+  average?: InputMaybe<SwapOutputAssetBalanceHavingAverageInput>;
+  distinctCount?: InputMaybe<SwapOutputAssetBalanceHavingDistinctCountInput>;
+  max?: InputMaybe<SwapOutputAssetBalanceHavingMaxInput>;
+  min?: InputMaybe<SwapOutputAssetBalanceHavingMinInput>;
+  stddevPopulation?: InputMaybe<SwapOutputAssetBalanceHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<SwapOutputAssetBalanceHavingStddevSampleInput>;
+  sum?: InputMaybe<SwapOutputAssetBalanceHavingSumInput>;
+  variancePopulation?: InputMaybe<SwapOutputAssetBalanceHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<SwapOutputAssetBalanceHavingVarianceSampleInput>;
 };
 
 export type SwapOutputAssetBalanceHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type SwapOutputAssetBalanceHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `SwapOutputAssetBalance`. */
@@ -16364,47 +16375,47 @@ export enum SwapsOrderBy {
  */
 export type TransferCondition = {
   /** Checks for equality with the object’s `amount` field. */
-  readonly amount?: InputMaybe<Scalars['BigFloat']['input']>;
+  amount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<Scalars['Int']['input']>;
+  assetId?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `extrinsicHash` field. */
-  readonly extrinsicHash?: InputMaybe<Scalars['String']['input']>;
+  extrinsicHash?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `fromId` field. */
-  readonly fromId?: InputMaybe<Scalars['String']['input']>;
+  fromId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `toId` field. */
-  readonly toId?: InputMaybe<Scalars['String']['input']>;
+  toId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `txFee` field. */
-  readonly txFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  txFee?: InputMaybe<Scalars['BigFloat']['input']>;
 };
 
 /** A filter to be used against `Transfer` object types. All fields are combined with a logical ‘and.’ */
 export type TransferFilter = {
   /** Filter by the object’s `amount` field. */
-  readonly amount?: InputMaybe<BigFloatFilter>;
+  amount?: InputMaybe<BigFloatFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<TransferFilter>>;
+  and?: InputMaybe<Array<TransferFilter>>;
   /** Filter by the object’s `assetId` field. */
-  readonly assetId?: InputMaybe<IntFilter>;
+  assetId?: InputMaybe<IntFilter>;
   /** Filter by the object’s `extrinsicHash` field. */
-  readonly extrinsicHash?: InputMaybe<StringFilter>;
+  extrinsicHash?: InputMaybe<StringFilter>;
   /** Filter by the object’s `fromId` field. */
-  readonly fromId?: InputMaybe<StringFilter>;
+  fromId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<TransferFilter>;
+  not?: InputMaybe<TransferFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<TransferFilter>>;
+  or?: InputMaybe<Array<TransferFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `toId` field. */
-  readonly toId?: InputMaybe<StringFilter>;
+  toId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `txFee` field. */
-  readonly txFee?: InputMaybe<BigFloatFilter>;
+  txFee?: InputMaybe<BigFloatFilter>;
 };
 
 /** Grouping methods for `Transfer` for usage during aggregation. */
@@ -16419,81 +16430,81 @@ export enum TransferGroupBy {
 }
 
 export type TransferHavingAverageInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingDistinctCountInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Conditions for `Transfer` aggregates. */
 export type TransferHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<TransferHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<TransferHavingInput>>;
-  readonly average?: InputMaybe<TransferHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<TransferHavingDistinctCountInput>;
-  readonly max?: InputMaybe<TransferHavingMaxInput>;
-  readonly min?: InputMaybe<TransferHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<TransferHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<TransferHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<TransferHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<TransferHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<TransferHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<TransferHavingInput>>;
+  OR?: InputMaybe<Array<TransferHavingInput>>;
+  average?: InputMaybe<TransferHavingAverageInput>;
+  distinctCount?: InputMaybe<TransferHavingDistinctCountInput>;
+  max?: InputMaybe<TransferHavingMaxInput>;
+  min?: InputMaybe<TransferHavingMinInput>;
+  stddevPopulation?: InputMaybe<TransferHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<TransferHavingStddevSampleInput>;
+  sum?: InputMaybe<TransferHavingSumInput>;
+  variancePopulation?: InputMaybe<TransferHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<TransferHavingVarianceSampleInput>;
 };
 
 export type TransferHavingMaxInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingMinInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingStddevPopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingStddevSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingSumInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingVariancePopulationInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 export type TransferHavingVarianceSampleInput = {
-  readonly amount?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetId?: InputMaybe<HavingIntFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly txFee?: InputMaybe<HavingBigfloatFilter>;
+  amount?: InputMaybe<HavingBigfloatFilter>;
+  assetId?: InputMaybe<HavingIntFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  txFee?: InputMaybe<HavingBigfloatFilter>;
 };
 
 /** Methods to use when ordering `Transfer`. */
@@ -16522,63 +16533,63 @@ export enum TransfersOrderBy {
 /** A condition to be used against `XykPool` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export type XykPoolCondition = {
   /** Checks for equality with the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<Scalars['String']['input']>;
+  accountId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
   /** Checks for equality with the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  createdAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
+  destroyedAtParaBlock?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `initialSharesAmount` field. */
-  readonly initialSharesAmount?: InputMaybe<Scalars['BigFloat']['input']>;
+  initialSharesAmount?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
+  isDestroyed?: InputMaybe<Scalars['Boolean']['input']>;
   /** Checks for equality with the object’s `shareTokenId` field. */
-  readonly shareTokenId?: InputMaybe<Scalars['Int']['input']>;
+  shareTokenId?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `XykPool` object types. All fields are combined with a logical ‘and.’ */
 export type XykPoolFilter = {
   /** Filter by the object’s `accountId` field. */
-  readonly accountId?: InputMaybe<StringFilter>;
+  accountId?: InputMaybe<StringFilter>;
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<XykPoolFilter>>;
+  and?: InputMaybe<Array<XykPoolFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `createdAt` field. */
-  readonly createdAt?: InputMaybe<DatetimeFilter>;
+  createdAt?: InputMaybe<DatetimeFilter>;
   /** Filter by the object’s `createdAtParaBlock` field. */
-  readonly createdAtParaBlock?: InputMaybe<IntFilter>;
+  createdAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `destroyedAtParaBlock` field. */
-  readonly destroyedAtParaBlock?: InputMaybe<IntFilter>;
+  destroyedAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Filter by the object’s `initialSharesAmount` field. */
-  readonly initialSharesAmount?: InputMaybe<BigFloatFilter>;
+  initialSharesAmount?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `isDestroyed` field. */
-  readonly isDestroyed?: InputMaybe<BooleanFilter>;
+  isDestroyed?: InputMaybe<BooleanFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<XykPoolFilter>;
+  not?: InputMaybe<XykPoolFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<XykPoolFilter>>;
+  or?: InputMaybe<Array<XykPoolFilter>>;
   /** Filter by the object’s `shareTokenId` field. */
-  readonly shareTokenId?: InputMaybe<IntFilter>;
+  shareTokenId?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `XykPool` for usage during aggregation. */
@@ -16599,108 +16610,108 @@ export enum XykPoolGroupBy {
 }
 
 export type XykPoolHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `XykPool` aggregates. */
 export type XykPoolHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<XykPoolHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<XykPoolHavingInput>>;
-  readonly average?: InputMaybe<XykPoolHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<XykPoolHavingDistinctCountInput>;
-  readonly max?: InputMaybe<XykPoolHavingMaxInput>;
-  readonly min?: InputMaybe<XykPoolHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<XykPoolHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<XykPoolHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<XykPoolHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<XykPoolHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<XykPoolHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<XykPoolHavingInput>>;
+  OR?: InputMaybe<Array<XykPoolHavingInput>>;
+  average?: InputMaybe<XykPoolHavingAverageInput>;
+  distinctCount?: InputMaybe<XykPoolHavingDistinctCountInput>;
+  max?: InputMaybe<XykPoolHavingMaxInput>;
+  min?: InputMaybe<XykPoolHavingMinInput>;
+  stddevPopulation?: InputMaybe<XykPoolHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<XykPoolHavingStddevSampleInput>;
+  sum?: InputMaybe<XykPoolHavingSumInput>;
+  variancePopulation?: InputMaybe<XykPoolHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<XykPoolHavingVarianceSampleInput>;
 };
 
 export type XykPoolHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly createdAt?: InputMaybe<HavingDatetimeFilter>;
-  readonly createdAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
-  readonly initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
-  readonly shareTokenId?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  createdAtParaBlock?: InputMaybe<HavingIntFilter>;
+  destroyedAtParaBlock?: InputMaybe<HavingIntFilter>;
+  initialSharesAmount?: InputMaybe<HavingBigfloatFilter>;
+  shareTokenId?: InputMaybe<HavingIntFilter>;
 };
 
 /** Grouping methods for `XykPoolHistoricalDatum` for usage during aggregation. */
@@ -16715,81 +16726,81 @@ export enum XykPoolHistoricalDataGroupBy {
 }
 
 export type XykPoolHistoricalDataHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `XykPoolHistoricalDatum` aggregates. */
 export type XykPoolHistoricalDataHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<XykPoolHistoricalDataHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<XykPoolHistoricalDataHavingInput>>;
-  readonly average?: InputMaybe<XykPoolHistoricalDataHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<XykPoolHistoricalDataHavingDistinctCountInput>;
-  readonly max?: InputMaybe<XykPoolHistoricalDataHavingMaxInput>;
-  readonly min?: InputMaybe<XykPoolHistoricalDataHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<XykPoolHistoricalDataHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<XykPoolHistoricalDataHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<XykPoolHistoricalDataHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<XykPoolHistoricalDataHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<XykPoolHistoricalDataHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<XykPoolHistoricalDataHavingInput>>;
+  OR?: InputMaybe<Array<XykPoolHistoricalDataHavingInput>>;
+  average?: InputMaybe<XykPoolHistoricalDataHavingAverageInput>;
+  distinctCount?: InputMaybe<XykPoolHistoricalDataHavingDistinctCountInput>;
+  max?: InputMaybe<XykPoolHistoricalDataHavingMaxInput>;
+  min?: InputMaybe<XykPoolHistoricalDataHavingMinInput>;
+  stddevPopulation?: InputMaybe<XykPoolHistoricalDataHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<XykPoolHistoricalDataHavingStddevSampleInput>;
+  sum?: InputMaybe<XykPoolHistoricalDataHavingSumInput>;
+  variancePopulation?: InputMaybe<XykPoolHistoricalDataHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<XykPoolHistoricalDataHavingVarianceSampleInput>;
 };
 
 export type XykPoolHistoricalDataHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalDataHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `XykPoolHistoricalDatum`. */
@@ -16821,47 +16832,47 @@ export enum XykPoolHistoricalDataOrderBy {
  */
 export type XykPoolHistoricalDatumCondition = {
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `XykPoolHistoricalDatum` object types. All fields are combined with a logical ‘and.’ */
 export type XykPoolHistoricalDatumFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<XykPoolHistoricalDatumFilter>>;
+  and?: InputMaybe<Array<XykPoolHistoricalDatumFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<XykPoolHistoricalDatumFilter>;
+  not?: InputMaybe<XykPoolHistoricalDatumFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<XykPoolHistoricalDatumFilter>>;
+  or?: InputMaybe<Array<XykPoolHistoricalDatumFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /**
@@ -16870,47 +16881,47 @@ export type XykPoolHistoricalDatumFilter = {
  */
 export type XykPoolHistoricalPriceCondition = {
   /** Checks for equality with the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetABalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBBalance?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `XykPoolHistoricalPrice` object types. All fields are combined with a logical ‘and.’ */
 export type XykPoolHistoricalPriceFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<XykPoolHistoricalPriceFilter>>;
+  and?: InputMaybe<Array<XykPoolHistoricalPriceFilter>>;
   /** Filter by the object’s `assetABalance` field. */
-  readonly assetABalance?: InputMaybe<BigFloatFilter>;
+  assetABalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBBalance` field. */
-  readonly assetBBalance?: InputMaybe<BigFloatFilter>;
+  assetBBalance?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<XykPoolHistoricalPriceFilter>;
+  not?: InputMaybe<XykPoolHistoricalPriceFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<XykPoolHistoricalPriceFilter>>;
+  or?: InputMaybe<Array<XykPoolHistoricalPriceFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `XykPoolHistoricalPrice` for usage during aggregation. */
@@ -16925,81 +16936,81 @@ export enum XykPoolHistoricalPriceGroupBy {
 }
 
 export type XykPoolHistoricalPriceHavingAverageInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingDistinctCountInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `XykPoolHistoricalPrice` aggregates. */
 export type XykPoolHistoricalPriceHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<XykPoolHistoricalPriceHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<XykPoolHistoricalPriceHavingInput>>;
-  readonly average?: InputMaybe<XykPoolHistoricalPriceHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<XykPoolHistoricalPriceHavingDistinctCountInput>;
-  readonly max?: InputMaybe<XykPoolHistoricalPriceHavingMaxInput>;
-  readonly min?: InputMaybe<XykPoolHistoricalPriceHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<XykPoolHistoricalPriceHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<XykPoolHistoricalPriceHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<XykPoolHistoricalPriceHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<XykPoolHistoricalPriceHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<XykPoolHistoricalPriceHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<XykPoolHistoricalPriceHavingInput>>;
+  OR?: InputMaybe<Array<XykPoolHistoricalPriceHavingInput>>;
+  average?: InputMaybe<XykPoolHistoricalPriceHavingAverageInput>;
+  distinctCount?: InputMaybe<XykPoolHistoricalPriceHavingDistinctCountInput>;
+  max?: InputMaybe<XykPoolHistoricalPriceHavingMaxInput>;
+  min?: InputMaybe<XykPoolHistoricalPriceHavingMinInput>;
+  stddevPopulation?: InputMaybe<XykPoolHistoricalPriceHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<XykPoolHistoricalPriceHavingStddevSampleInput>;
+  sum?: InputMaybe<XykPoolHistoricalPriceHavingSumInput>;
+  variancePopulation?: InputMaybe<XykPoolHistoricalPriceHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<XykPoolHistoricalPriceHavingVarianceSampleInput>;
 };
 
 export type XykPoolHistoricalPriceHavingMaxInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingMinInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingStddevPopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingStddevSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingSumInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingVariancePopulationInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalPriceHavingVarianceSampleInput = {
-  readonly assetABalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBBalance?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetABalance?: InputMaybe<HavingBigfloatFilter>;
+  assetBBalance?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Methods to use when ordering `XykPoolHistoricalPrice`. */
@@ -17031,91 +17042,91 @@ export enum XykPoolHistoricalPricesOrderBy {
  */
 export type XykPoolHistoricalVolumeCondition = {
   /** Checks for equality with the object’s `assetAFee` field. */
-  readonly assetAFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<Scalars['String']['input']>;
+  assetAId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetATotalFees` field. */
-  readonly assetATotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetATotalVolumeIn` field. */
-  readonly assetATotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetATotalVolumeOut` field. */
-  readonly assetATotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetATotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAVolumeIn` field. */
-  readonly assetAVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetAVolumeOut` field. */
-  readonly assetAVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetAVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBFee` field. */
-  readonly assetBFee?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBFee?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<Scalars['String']['input']>;
+  assetBId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `assetBTotalFees` field. */
-  readonly assetBTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalFees?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBTotalVolumeIn` field. */
-  readonly assetBTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBTotalVolumeOut` field. */
-  readonly assetBTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBTotalVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBVolumeIn` field. */
-  readonly assetBVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBVolumeIn?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `assetBVolumeOut` field. */
-  readonly assetBVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
+  assetBVolumeOut?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `averagePrice` field. */
-  readonly averagePrice?: InputMaybe<Scalars['BigFloat']['input']>;
+  averagePrice?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `id` field. */
-  readonly id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  paraChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<Scalars['String']['input']>;
+  poolId?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  relayChainBlockHeight?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** A filter to be used against `XykPoolHistoricalVolume` object types. All fields are combined with a logical ‘and.’ */
 export type XykPoolHistoricalVolumeFilter = {
   /** Checks for all expressions in this list. */
-  readonly and?: InputMaybe<ReadonlyArray<XykPoolHistoricalVolumeFilter>>;
+  and?: InputMaybe<Array<XykPoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `assetAFee` field. */
-  readonly assetAFee?: InputMaybe<BigFloatFilter>;
+  assetAFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAId` field. */
-  readonly assetAId?: InputMaybe<StringFilter>;
+  assetAId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetATotalFees` field. */
-  readonly assetATotalFees?: InputMaybe<BigFloatFilter>;
+  assetATotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetATotalVolumeIn` field. */
-  readonly assetATotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetATotalVolumeOut` field. */
-  readonly assetATotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAVolumeIn` field. */
-  readonly assetAVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetAVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetAVolumeOut` field. */
-  readonly assetAVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetAVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBFee` field. */
-  readonly assetBFee?: InputMaybe<BigFloatFilter>;
+  assetBFee?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBId` field. */
-  readonly assetBId?: InputMaybe<StringFilter>;
+  assetBId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `assetBTotalFees` field. */
-  readonly assetBTotalFees?: InputMaybe<BigFloatFilter>;
+  assetBTotalFees?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBTotalVolumeIn` field. */
-  readonly assetBTotalVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBTotalVolumeOut` field. */
-  readonly assetBTotalVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBVolumeIn` field. */
-  readonly assetBVolumeIn?: InputMaybe<BigFloatFilter>;
+  assetBVolumeIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `assetBVolumeOut` field. */
-  readonly assetBVolumeOut?: InputMaybe<BigFloatFilter>;
+  assetBVolumeOut?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `averagePrice` field. */
-  readonly averagePrice?: InputMaybe<BigFloatFilter>;
+  averagePrice?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `id` field. */
-  readonly id?: InputMaybe<StringFilter>;
+  id?: InputMaybe<StringFilter>;
   /** Negates the expression. */
-  readonly not?: InputMaybe<XykPoolHistoricalVolumeFilter>;
+  not?: InputMaybe<XykPoolHistoricalVolumeFilter>;
   /** Checks for any expressions in this list. */
-  readonly or?: InputMaybe<ReadonlyArray<XykPoolHistoricalVolumeFilter>>;
+  or?: InputMaybe<Array<XykPoolHistoricalVolumeFilter>>;
   /** Filter by the object’s `paraChainBlockHeight` field. */
-  readonly paraChainBlockHeight?: InputMaybe<IntFilter>;
+  paraChainBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `poolId` field. */
-  readonly poolId?: InputMaybe<StringFilter>;
+  poolId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `relayChainBlockHeight` field. */
-  readonly relayChainBlockHeight?: InputMaybe<IntFilter>;
+  relayChainBlockHeight?: InputMaybe<IntFilter>;
 };
 
 /** Grouping methods for `XykPoolHistoricalVolume` for usage during aggregation. */
@@ -17141,184 +17152,184 @@ export enum XykPoolHistoricalVolumeGroupBy {
 }
 
 export type XykPoolHistoricalVolumeHavingAverageInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingDistinctCountInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 /** Conditions for `XykPoolHistoricalVolume` aggregates. */
 export type XykPoolHistoricalVolumeHavingInput = {
-  readonly AND?: InputMaybe<ReadonlyArray<XykPoolHistoricalVolumeHavingInput>>;
-  readonly OR?: InputMaybe<ReadonlyArray<XykPoolHistoricalVolumeHavingInput>>;
-  readonly average?: InputMaybe<XykPoolHistoricalVolumeHavingAverageInput>;
-  readonly distinctCount?: InputMaybe<XykPoolHistoricalVolumeHavingDistinctCountInput>;
-  readonly max?: InputMaybe<XykPoolHistoricalVolumeHavingMaxInput>;
-  readonly min?: InputMaybe<XykPoolHistoricalVolumeHavingMinInput>;
-  readonly stddevPopulation?: InputMaybe<XykPoolHistoricalVolumeHavingStddevPopulationInput>;
-  readonly stddevSample?: InputMaybe<XykPoolHistoricalVolumeHavingStddevSampleInput>;
-  readonly sum?: InputMaybe<XykPoolHistoricalVolumeHavingSumInput>;
-  readonly variancePopulation?: InputMaybe<XykPoolHistoricalVolumeHavingVariancePopulationInput>;
-  readonly varianceSample?: InputMaybe<XykPoolHistoricalVolumeHavingVarianceSampleInput>;
+  AND?: InputMaybe<Array<XykPoolHistoricalVolumeHavingInput>>;
+  OR?: InputMaybe<Array<XykPoolHistoricalVolumeHavingInput>>;
+  average?: InputMaybe<XykPoolHistoricalVolumeHavingAverageInput>;
+  distinctCount?: InputMaybe<XykPoolHistoricalVolumeHavingDistinctCountInput>;
+  max?: InputMaybe<XykPoolHistoricalVolumeHavingMaxInput>;
+  min?: InputMaybe<XykPoolHistoricalVolumeHavingMinInput>;
+  stddevPopulation?: InputMaybe<XykPoolHistoricalVolumeHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<XykPoolHistoricalVolumeHavingStddevSampleInput>;
+  sum?: InputMaybe<XykPoolHistoricalVolumeHavingSumInput>;
+  variancePopulation?: InputMaybe<XykPoolHistoricalVolumeHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<XykPoolHistoricalVolumeHavingVarianceSampleInput>;
 };
 
 export type XykPoolHistoricalVolumeHavingMaxInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingMinInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingStddevPopulationInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingStddevSampleInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingSumInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingVariancePopulationInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeHavingVarianceSampleInput = {
-  readonly assetAFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBFee?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
-  readonly assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
-  readonly averagePrice?: InputMaybe<HavingBigfloatFilter>;
-  readonly paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
-  readonly relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  assetAFee?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetATotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetAVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBFee?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalFees?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBTotalVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeIn?: InputMaybe<HavingBigfloatFilter>;
+  assetBVolumeOut?: InputMaybe<HavingBigfloatFilter>;
+  averagePrice?: InputMaybe<HavingBigfloatFilter>;
+  paraChainBlockHeight?: InputMaybe<HavingIntFilter>;
+  relayChainBlockHeight?: InputMaybe<HavingIntFilter>;
 };
 
 export type XykPoolHistoricalVolumeSubscriptionFilter = {
-  readonly poolIds?: InputMaybe<ReadonlyArray<Scalars['String']['input']>>;
+  poolIds?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** Methods to use when ordering `XykPoolHistoricalVolume`. */
@@ -17367,9 +17378,9 @@ export enum XykPoolHistoricalVolumesOrderBy {
 }
 
 export type XykPoolVolumesByPeriodFilter = {
-  readonly endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
-  readonly poolIds: ReadonlyArray<Scalars['String']['input']>;
-  readonly startBlockNumber: Scalars['Int']['input'];
+  endBlockNumber?: InputMaybe<Scalars['Int']['input']>;
+  poolIds: Array<Scalars['String']['input']>;
+  startBlockNumber: Scalars['Int']['input'];
 };
 
 /** Methods to use when ordering `XykPool`. */
