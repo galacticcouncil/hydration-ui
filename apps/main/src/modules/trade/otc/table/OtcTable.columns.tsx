@@ -1,12 +1,20 @@
-import { Add, ChevronRight } from "@galacticcouncil/ui/assets/icons"
-import { Button, ButtonTransparent, Flex } from "@galacticcouncil/ui/components"
+import { Add } from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  Modal,
+  ModalContent,
+  ModalRoot,
+  ModalTrigger,
+  TableRowActionMobile,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetAmount } from "@/components/AssetAmount/AssetAmount"
+import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OfferStatusColumn } from "@/modules/trade/otc/table/columns/OfferStatusColumn"
@@ -95,20 +103,25 @@ export const useOtcTableColums = () => {
       }),
       cell: function Cell({ row }) {
         const { isConnected } = useAccount()
+        const [isFillOpen, setIsFillOpen] = useState(false)
 
         return (
-          <Flex
-            justify="space-between"
-            align="center"
-            sx={{ overflow: "hidden" }}
-          >
-            <OfferMarketPriceColumn
-              percentage={row.original.marketPricePercentage}
-            />
-            <ButtonTransparent disabled={!isConnected} sx={{ flexShrink: 0 }}>
-              <ChevronRight size={18} />
-            </ButtonTransparent>
-          </Flex>
+          <>
+            <TableRowActionMobile
+              disabled={!isConnected}
+              onClick={() => setIsFillOpen(true)}
+            >
+              <OfferMarketPriceColumn
+                percentage={row.original.marketPricePercentage}
+              />
+            </TableRowActionMobile>
+            <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
+              <FillOrderModalContent
+                otcOffer={row.original}
+                onClose={() => setIsFillOpen(false)}
+              />
+            </Modal>
+          </>
         )
       },
     })
@@ -132,18 +145,29 @@ export const useOtcTableColums = () => {
 
     const actions = columnHelper.display({
       id: OtcColumn.Actions,
-      cell: function Cell() {
+      cell: function Cell({ row }) {
         const { isConnected } = useAccount()
+        const [isFillOpen, setIsFillOpen] = useState(false)
 
         return (
-          <Button
-            variant="accent"
-            outline
-            disabled={!isConnected}
-            iconStart={Add}
-          >
-            {t("otc.fillCta")}
-          </Button>
+          <ModalRoot open={isFillOpen} onOpenChange={setIsFillOpen}>
+            <ModalTrigger asChild>
+              <Button
+                variant="accent"
+                outline
+                disabled={!isConnected}
+                iconStart={Add}
+              >
+                {t("otc.fillOrder.cta")}
+              </Button>
+            </ModalTrigger>
+            <ModalContent>
+              <FillOrderModalContent
+                otcOffer={row.original}
+                onClose={() => setIsFillOpen(false)}
+              />
+            </ModalContent>
+          </ModalRoot>
         )
       },
     })
