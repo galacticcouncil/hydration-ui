@@ -6,17 +6,19 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import Flamingo from "public/Flamingo.webp"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelectModal, Logo } from "@/components"
+import { useAssetsPrice } from "@/states/displayAsset"
 
-type AssetSelectProps = AssetInputProps & {
+type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
   assets: TAssetData[]
-  selectedAsset: TAssetData | undefined
-  setSelectedAsset: (asset: TAssetData) => void
+  selectedAsset: TAssetData | undefined | null
+  setSelectedAsset?: (asset: TAssetData) => void
 }
 
 const EmptyState = () => {
@@ -58,6 +60,16 @@ export const AssetSelect = ({
 }: AssetSelectProps) => {
   const [openModal, setOpeModal] = useState(false)
 
+  const assetPrices = useAssetsPrice(selectedAsset ? [selectedAsset.id] : [])
+  const assetPrice = selectedAsset?.id ? assetPrices[selectedAsset?.id] : null
+  const assetPriceValue = assetPrice?.price || "0"
+  const assetPriceLoading = assetPrice?.isLoading
+
+  const price =
+    assetPriceValue === "NaN"
+      ? "NaN"
+      : new Big(assetPriceValue).times(props.value || "0").toString()
+
   return (
     <>
       <AssetInput
@@ -67,6 +79,9 @@ export const AssetSelect = ({
           selectedAsset ? <Logo id={selectedAsset.id} /> : undefined
         }
         symbol={selectedAsset?.symbol}
+        modalDisabled={!setSelectedAsset}
+        dollarValue={price}
+        dollarValueLoading={assetPriceLoading}
       />
 
       <AssetSelectModal

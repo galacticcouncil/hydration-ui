@@ -8,7 +8,7 @@ import {
   SProgressBarLabel,
 } from "@/components/ProgressBar/ProgressBar.styled"
 
-export type ProgressBarSize = "small" | "large"
+export type ProgressBarSize = "small" | "medium" | "large"
 export type FillVariant = ""
 
 type Props = {
@@ -20,7 +20,8 @@ type Props = {
 export const ProgressBar: FC<Props> = ({ value, size, format }) => {
   const { t } = useTranslation()
   const clippedValue = Math.max(0, Math.min(100, value))
-  const formattedValue = format?.(value) ?? t("percent", { value })
+  const formattedValue =
+    format?.(clippedValue) ?? t("percent", { clippedValue })
 
   return (
     <SContainer size={size}>
