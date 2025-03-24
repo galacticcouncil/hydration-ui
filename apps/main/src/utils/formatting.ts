@@ -34,10 +34,10 @@ export const scale = (
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 
   if (_decimals === 0) {
-    return BigInt(amountBig.toString())
+    return amountBig.toString()
   }
 
-  return BigInt(amountBig.mul(10 ** _decimals).toString())
+  return amountBig.times(10 ** _decimals).toString()
 }
 
 /**

@@ -35,7 +35,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) {
       return "N / A"
     }
 
@@ -53,7 +53,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) {
       return "N / A"
     }
 
@@ -71,7 +71,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) {
       return "N / A"
     }
 
