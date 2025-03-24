@@ -1,6 +1,5 @@
+import { sleep } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const fetchPosts = async () => {
   await sleep(1000)
