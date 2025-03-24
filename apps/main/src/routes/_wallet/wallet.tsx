@@ -9,8 +9,15 @@ const WalletSubpageLayout = () => {
     shouldThrow: false,
   })
 
+  const isTransactionsPage = useMatch({
+    from: "/_wallet/wallet/transactions",
+    shouldThrow: false,
+  })
+
   const actions = (() => {
-    return isAssetsPage ? <WalletAssetsSubpageLayoutActions /> : null
+    return isAssetsPage || isTransactionsPage ? (
+      <WalletAssetsSubpageLayoutActions />
+    ) : null
   })()
 
   return <SubpageLayout actions={actions} />

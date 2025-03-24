@@ -52,7 +52,6 @@ export const useOtcOffersQuery = () => {
         .filter((offer) => !!offer)
     },
     enabled: isRpcReady,
-    initialData: [],
   })
 
   return {

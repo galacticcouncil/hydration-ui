@@ -76,8 +76,11 @@ export const SItem = styled(Item)(
   `,
 )
 
-export const SViewport = styled(Viewport)(css`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`)
+export const SViewport = styled(Viewport)(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: ${theme.zIndices.popover};
+  `,
+)
