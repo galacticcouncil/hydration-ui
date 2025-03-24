@@ -2582,10 +2582,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.0.tgz#1377809cf125941410eea6ad97b4da0ca1eabb6c"
   integrity sha512-f14ftbivheBK8kSnqd8hSQlMPuVLY9571S5yx0LPU6K6m78F3pDPl09OEuJ+dSKHOw8hWzmFxiv0wRMYvDkeKA==
 
-"@galacticcouncil/apps@^10.8.1":
-  version "10.8.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.8.1.tgz#7b65db42da32c4957dca496cfd4755e08a012d06"
-  integrity sha512-K7K83A0v2HYmDkqAsjj3t5a/PeV3kZS7H2k3+rfDiQHDiv6Vnnv9DzQv6u014yL63KJBPk+BwmIodj/qAsMhtA==
+"@galacticcouncil/apps@^10.9.0":
+  version "10.9.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.9.0.tgz#d1baee808cc1602b054de535b53120db9c0ffa58"
+  integrity sha512-7zwvwQTu6jLUKOKNt9YzCWKREH8cd1AM4VHNUN2vRAnE8f1qok1ja51QJ9azrfkpwLypy+C8vJl2D7Iz1JuqZw==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2655,17 +2655,17 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^7.10.0":
-  version "7.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-7.10.0.tgz#ef144be4f7a5c591b50771deb2cb4e0de1cca013"
-  integrity sha512-2hUa3aAjjF6V8//+q0mRZeCJlwbS+JdmUhvsAHrDvHxNwOfL5wgVDrvgYfNKXxBFKLCCIm/qwm3cZGOFeQfNvw==
+"@galacticcouncil/xcm-cfg@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-8.0.0.tgz#7ec6eda69ee98bf36a8cd5d83ee87b75bbd3458e"
+  integrity sha512-9iP7+UxEk/6nV6NKTbhrjjEogauO0nrZylhrv3nB8rGdG1yaDUFhSbE2Dr0DdLY02/NYGt8TiqqJlVG1Qc+zlQ==
   dependencies:
-    "@galacticcouncil/xcm-core" "^6.6.0"
+    "@galacticcouncil/xcm-core" "^7.0.0"
 
-"@galacticcouncil/xcm-core@^6.6.0":
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-6.6.0.tgz#e18d7a807475130507a359fc0d2209dcac198636"
-  integrity sha512-hmWjeDMlP1YbDjq/MfU2hMeo9ME+S8ZtjwMJJloSi3YGxIwnlJJO7lFnrEUbYFmNsA/CDHG62keSIVRcVQv2uw==
+"@galacticcouncil/xcm-core@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-7.0.0.tgz#b97ed8d6c74d70c9e16ca69577d53ae8ac733f5f"
+  integrity sha512-DS43YQlQAtERXCkUBBRzNpRYUnauR1ZOZzt9FGTpkZ1YxI2+fOq6FKmrqR9jxFQ5otFpRxyP+beYI8xlorU+4w==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "^1.2.0"
@@ -2678,12 +2678,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^8.6.0":
-  version "8.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-8.6.0.tgz#4609c842a5aa5f861204a48d06a82562e351d32a"
-  integrity sha512-6hKP1O+AxXLvW6qvTPTPhC9NRX2hGPd09OH0UyAH0jrxfhQkhsJLEXL38dKOiknf1/ED/ya8sa23tgsrGycMHQ==
+"@galacticcouncil/xcm-sdk@^9.1.0":
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-9.1.0.tgz#429a00ac34c7f190cf052c69582c29588503efe8"
+  integrity sha512-9V2JoCFU4MTtCjwtlhHeLsK/Gulr2vVcJ9jO0MS1Jc9U5imOLNY3ttQp3qTW0jy6tU4WEp0QTIXesK2nXP9gAA==
   dependencies:
-    "@galacticcouncil/xcm-core" "^6.6.0"
+    "@galacticcouncil/xcm-core" "^7.0.0"
 
 "@graphql-codegen/add@^5.0.3":
   version "5.0.3"
