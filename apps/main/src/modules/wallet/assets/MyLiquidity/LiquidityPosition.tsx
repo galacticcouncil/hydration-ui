@@ -12,10 +12,10 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { LiquidityFarms } from "@/modules/wallet/MyLiquidity/LiquidityFarms"
-import { SLiquidityPosition } from "@/modules/wallet/MyLiquidity/LiquidityPosition.styled"
-import { LiquidityPositionActions } from "@/modules/wallet/MyLiquidity/LiquidityPositionActions"
-import { WalletLiquidityPosition } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
+import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
+import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
+import { WalletLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 
 type Props = {
   readonly assetId: string

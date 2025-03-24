@@ -6,11 +6,11 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 
-import { LiquidityDetailExpanded } from "@/modules/wallet/MyLiquidity/LiquidityDetailExpanded"
+import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
 import {
   useMyLiquidityColumns,
   WalletLiquidityRow as MyLiquidityRow,
-} from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+} from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 
 const data: MyLiquidityRow[] = [
   {

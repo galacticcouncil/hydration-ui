@@ -6,7 +6,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
-import { InvalidAssetModal } from "@/modules/wallet/Invalid/InvalidAssetModal"
+import { InvalidAssetModal } from "@/modules/wallet/assets/Invalid/InvalidAssetModal"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

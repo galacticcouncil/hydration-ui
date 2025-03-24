@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { WalletLiquidityCurrentValue } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+import { WalletLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 

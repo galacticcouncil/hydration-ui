@@ -4,7 +4,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TransferPositionModal } from "@/modules/wallet/Transfer/TransferPositionModal"
+import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 
 type Actions = "send" | "withdraw" | "deposit"
 

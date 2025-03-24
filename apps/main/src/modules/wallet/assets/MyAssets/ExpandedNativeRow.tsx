@@ -8,8 +8,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { AssetDetailUnlock } from "@/modules/wallet/MyAssets/AssetDetailUnlock"
-import { LockExpiration } from "@/modules/wallet/MyLiquidity/LockExpiration"
+import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
+import { LockExpiration } from "@/modules/wallet/assets/MyLiquidity/LockExpiration"
 
 type Props = {
   readonly assetId: string

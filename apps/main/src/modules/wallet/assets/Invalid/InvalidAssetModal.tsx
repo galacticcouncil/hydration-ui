@@ -7,10 +7,10 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { InvalidAssetAction } from "@/modules/wallet/Invalid/InvalidAssetAction"
-import { InvalidAssetDataPreview } from "@/modules/wallet/Invalid/InvalidAssetDataPreview"
-import { InvalidAssetDataPreviewList } from "@/modules/wallet/Invalid/InvalidAssetDataPreviewList"
-import { InvalidAssetModalHeader } from "@/modules/wallet/Invalid/InvalidAssetModalHeader"
+import { InvalidAssetAction } from "@/modules/wallet/assets/Invalid/InvalidAssetAction"
+import { InvalidAssetDataPreview } from "@/modules/wallet/assets/Invalid/InvalidAssetDataPreview"
+import { InvalidAssetDataPreviewList } from "@/modules/wallet/assets/Invalid/InvalidAssetDataPreviewList"
+import { InvalidAssetModalHeader } from "@/modules/wallet/assets/Invalid/InvalidAssetModalHeader"
 
 type Props = {
   readonly assetId: string

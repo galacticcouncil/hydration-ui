@@ -6,15 +6,15 @@ import { useDisplayAssetPrice } from "@/components"
 import {
   AssetDetailMobileAction,
   AssetDetailMobileActions,
-} from "@/modules/wallet/MyAssets/AssetDetailMobileActions"
+} from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import {
   SAssetDetailMobileSeparator,
   SAssetDetailModalBody,
-} from "@/modules/wallet/MyAssets/AssetDetailMobileModal.styled"
-import { AssetDetailMobileModalBalances } from "@/modules/wallet/MyAssets/AssetDetailMobileModalBalances"
-import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/MyAssets/AssetDetailMobileModalBalancesHeader"
-import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
-import { MyAsset } from "@/modules/wallet/MyAssets/MyAssetsTable.columns"
+} from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
+import { AssetDetailMobileModalBalances } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalances"
+import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalancesHeader"
+import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
   readonly asset: MyAsset

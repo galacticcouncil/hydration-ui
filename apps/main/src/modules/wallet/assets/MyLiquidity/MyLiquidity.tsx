@@ -2,8 +2,8 @@ import { Flex, SectionHeader } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MyLiquidityActions } from "@/modules/wallet/MyLiquidity/MyLiquidityActions"
-import { MyLiquidityTable } from "@/modules/wallet/MyLiquidity/MyLiquidityTable"
+import { MyLiquidityActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityActions"
+import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable"
 type Props = {
   readonly searchPhrase: string
 }

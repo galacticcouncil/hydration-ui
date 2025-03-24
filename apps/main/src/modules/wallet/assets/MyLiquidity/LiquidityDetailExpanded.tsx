@@ -1,8 +1,8 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
-import { LiquidityPosition } from "@/modules/wallet/MyLiquidity/LiquidityPosition"
-import { WalletLiquidityPosition } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+import { LiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition"
+import { WalletLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 
 type Props = {
   readonly assetId: string

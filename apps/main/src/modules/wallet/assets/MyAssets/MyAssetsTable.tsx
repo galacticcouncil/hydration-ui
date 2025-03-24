@@ -7,14 +7,14 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { ForwardedRef, forwardRef, useMemo } from "react"
 
-import { InvalidAssetRow } from "@/modules/wallet/Invalid/InvalidAssetRow"
-import { AssetDetailExpanded } from "@/modules/wallet/MyAssets/AssetDetailExpanded"
-import { ExpandedNativeRow } from "@/modules/wallet/MyAssets/ExpandedNativeRow"
+import { InvalidAssetRow } from "@/modules/wallet/assets/Invalid/InvalidAssetRow"
+import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
+import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
 import {
   MyAsset,
   MyAssetsTableColumn,
   useMyAssetsColumns,
-} from "@/modules/wallet/MyAssets/MyAssetsTable.columns"
+} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"

@@ -3,8 +3,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { SAssetDetailMobileSeparator } from "@/modules/wallet/MyAssets/AssetDetailMobileModal.styled"
-import { AssetDetailUnlock } from "@/modules/wallet/MyAssets/AssetDetailUnlock"
+import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
+import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

@@ -13,9 +13,9 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullMobile, useDisplayAssetPrice } from "@/components"
-import { LiquidityFarms } from "@/modules/wallet/MyLiquidity/LiquidityFarms"
-import { LiquidityPositionActions } from "@/modules/wallet/MyLiquidity/LiquidityPositionActions"
-import { WalletLiquidityPosition } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
+import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
+import { WalletLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

@@ -6,8 +6,8 @@ import {
 import { FC, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MyAssetsActions } from "@/modules/wallet/MyAssets/MyAssetsActions"
-import { MyAssetsTable } from "@/modules/wallet/MyAssets/MyAssetsTable"
+import { MyAssetsActions } from "@/modules/wallet/assets/MyAssets/MyAssetsActions"
+import { MyAssetsTable } from "@/modules/wallet/assets/MyAssets/MyAssetsTable"
 
 type Props = {
   readonly searchPhrase: string
