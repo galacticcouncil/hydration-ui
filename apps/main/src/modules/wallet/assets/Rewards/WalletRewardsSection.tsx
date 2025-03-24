@@ -6,7 +6,7 @@ import { useDisplayAssetPrice } from "@/components"
 import {
   SWalletRewardsActionItem,
   SWalletRewardsSection,
-} from "@/modules/wallet/Rewards/WalletRewardsSection.styled"
+} from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])

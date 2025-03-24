@@ -10,8 +10,8 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
-import { LiquidityDetailMobileModal } from "@/modules/wallet/MyLiquidity/LiquidityDetailMobileModal"
-import { MyLiquidityCurrentValue } from "@/modules/wallet/MyLiquidity/MyLiquidityCurrentValue"
+import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
+import { MyLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityCurrentValue"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type WalletLiquidityPosition = {

@@ -3,14 +3,14 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { SAssetDetailMobileSeparator } from "@/modules/wallet/MyAssets/AssetDetailMobileModal.styled"
-import { SAssetDetailModalBody } from "@/modules/wallet/MyAssets/AssetDetailMobileModal.styled"
-import { LiquidityDetailMobileActions } from "@/modules/wallet/MyLiquidity/LiquidityDetailMobileActions"
-import { LiquidityPositionMobile } from "@/modules/wallet/MyLiquidity/LiquidityPositionMobile"
+import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
+import { SAssetDetailModalBody } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
+import { LiquidityDetailMobileActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileActions"
+import { LiquidityPositionMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile"
 import {
   WalletLiquidityCurrentValue,
   WalletLiquidityPosition,
-} from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+} from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

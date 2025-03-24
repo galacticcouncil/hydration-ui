@@ -5,11 +5,11 @@ import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { WalletBalances } from "@/modules/wallet/Balances/WalletBalances"
-import { MyAssets } from "@/modules/wallet/MyAssets/MyAssets"
-import { MyLiquidity } from "@/modules/wallet/MyLiquidity/MyLiquidity"
-import { WalletRewards } from "@/modules/wallet/Rewards/WalletRewards"
-import { WalletAssetsSubpageMenu } from "@/modules/wallet/WalletAssetsSubpageMenu"
+import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
+import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
+import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
+import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
+import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
 
 export const WalletAssetsPage = () => {
   const { t } = useTranslation("wallet")
@@ -36,7 +36,6 @@ export const WalletAssetsPage = () => {
       {!isMobile && (
         <Flex pt={12} align="flex-end" justify="space-between">
           <WalletAssetsSubpageMenu />
-
           <Input
             placeholder={t("searchAssets")}
             iconStart={Search}
