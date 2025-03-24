@@ -1,14 +1,11 @@
-import { Add, ChevronRight } from "@galacticcouncil/ui/assets/icons"
+import { Add } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
-  ButtonTransparent,
-  DrawerContent,
-  DrawerRoot,
-  DrawerTrigger,
-  Flex,
+  Modal,
   ModalContent,
   ModalRoot,
   ModalTrigger,
+  TableRowActionMobile,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -109,31 +106,22 @@ export const useOtcTableColums = () => {
         const [isFillOpen, setIsFillOpen] = useState(false)
 
         return (
-          <Flex
-            justify="space-between"
-            align="center"
-            sx={{ overflow: "hidden" }}
-          >
-            <OfferMarketPriceColumn
-              percentage={row.original.marketPricePercentage}
-            />
-            <DrawerRoot open={isFillOpen} onOpenChange={setIsFillOpen}>
-              <DrawerTrigger asChild>
-                <ButtonTransparent
-                  disabled={!isConnected}
-                  sx={{ flexShrink: 0 }}
-                >
-                  <ChevronRight size={18} />
-                </ButtonTransparent>
-              </DrawerTrigger>
-              <DrawerContent>
-                <FillOrderModalContent
-                  otcOffer={row.original}
-                  onClose={() => setIsFillOpen(false)}
-                />
-              </DrawerContent>
-            </DrawerRoot>
-          </Flex>
+          <>
+            <TableRowActionMobile
+              disabled={!isConnected}
+              onClick={() => setIsFillOpen(true)}
+            >
+              <OfferMarketPriceColumn
+                percentage={row.original.marketPricePercentage}
+              />
+            </TableRowActionMobile>
+            <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
+              <FillOrderModalContent
+                otcOffer={row.original}
+                onClose={() => setIsFillOpen(false)}
+              />
+            </Modal>
+          </>
         )
       },
     })

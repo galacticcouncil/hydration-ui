@@ -19,30 +19,33 @@ export const AssetPrice = ({
   value = 1,
   compact,
 }: AssetPriceProps) => {
+  const [price, { isLoading }] = useDisplayAssetPrice(assetId, value, compact)
+
+  const Wrapper = wrapper ?? <Text />
+  const Content = <>{isLoading ? <Skeleton /> : price}</>
+
+  return React.cloneElement(Wrapper, {}, Content)
+}
+
+export const useDisplayAssetPrice = (
+  assetId: string,
+  value: number,
+  compact?: boolean,
+) => {
   const { t } = useTranslation()
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )
 
   const priceRaw = useAssetsPrice([assetId])
-
   const isDollar = isRealUSD || isStableCoin
-
   const { price, isLoading } = priceRaw[assetId] ?? {}
 
-  const Wrapper = wrapper ?? <Text />
-  const Content = (
-    <>
-      {isLoading ? (
-        <Skeleton />
-      ) : (
-        t(compact ? "currency.compact" : "currency", {
-          value: value * Number(price),
-          ...(isDollar ? {} : { currency: symbol }),
-        })
-      )}
-    </>
-  )
-
-  return React.cloneElement(Wrapper, {}, Content)
+  return [
+    t(compact ? "currency.compact" : "currency", {
+      value: value * Number(price),
+      ...(isDollar ? {} : { currency: symbol }),
+    }),
+    { isLoading },
+  ] as const
 }

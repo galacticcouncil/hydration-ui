@@ -1,4 +1,4 @@
-import { HeaderInfo, HeaderInfoValue } from "@galacticcouncil/ui/components"
+import { ValueStats, ValueStatsValue } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
 import { AssetPrice } from "@/components"
@@ -13,13 +13,13 @@ export const OtcValue: FC<Props> = ({ label, price }) => {
   const assetId = useDisplayAssetStore((s) => s.id) ?? "10"
 
   return (
-    <HeaderInfo
+    <ValueStats
       label={label}
       customValue={
         <AssetPrice
           assetId={assetId}
           value={price}
-          wrapper={<HeaderInfoValue />}
+          wrapper={<ValueStatsValue />}
         />
       }
     />

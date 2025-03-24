@@ -1,10 +1,10 @@
 import { Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
 import {
-  SMenuItemDescription,
-  SMenuItemIcon,
-  SMenuItemLabel,
-  SMenuSelectionItem,
-  SMenuSelectionItemArrow,
+  MenuItemDescription,
+  MenuItemIcon,
+  MenuItemLabel,
+  MenuSelectionItem,
+  MenuSelectionItemArrow,
 } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { forwardRef } from "react"
@@ -24,14 +24,14 @@ export const MobileTabBarSubmenuItem = forwardRef<HTMLDivElement, Props>(
     const { title, description } = translations[key] ?? {}
 
     return (
-      <SMenuSelectionItem ref={ref} as={Link} {...{ to }} {...props}>
-        <SMenuItemIcon component={icon ?? Rectangle7101} />
-        <SMenuItemLabel>{title}</SMenuItemLabel>
+      <MenuSelectionItem ref={ref} as={Link} {...{ to }} {...props}>
+        <MenuItemIcon component={icon ?? Rectangle7101} />
+        <MenuItemLabel>{title}</MenuItemLabel>
         {description && (
-          <SMenuItemDescription>{description}</SMenuItemDescription>
+          <MenuItemDescription>{description}</MenuItemDescription>
         )}
-        <SMenuSelectionItemArrow />
-      </SMenuSelectionItem>
+        <MenuSelectionItemArrow />
+      </MenuSelectionItem>
     )
   },
 )

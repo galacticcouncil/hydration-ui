@@ -58,7 +58,7 @@ export const Market = () => {
   return (
     <form onSubmit={form.handleSubmit(() => null)}>
       <Flex sx={{ flexDirection: "column" }}>
-        <Controller
+        <Controller<FormValues, "sell">
           name="sell"
           control={form.control}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
@@ -76,7 +76,7 @@ export const Market = () => {
 
         <AssetSwitcher onSwitchAssets={onSwitchAssets} />
 
-        <Controller
+        <Controller<FormValues, "buy">
           name="buy"
           control={form.control}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
@@ -93,7 +93,7 @@ export const Market = () => {
           )}
         />
 
-        <Controller
+        <Controller<FormValues, "type">
           name="type"
           control={form.control}
           render={({ field: { value, onChange } }) => (

@@ -211,26 +211,24 @@ const MockTable = (args: Story["args"]) => {
         globalFilter={search}
         data={(args?.data as TData[]) || LARGE_TABLE_DATA.slice(0, 6)}
         columns={TABLE_COLUMNS}
-        renderSubComponent={({ row }) => (
+        renderSubComponent={(coin) => (
           <Grid columns={[1, 2, 3]} gap={10} py={20}>
             <Box>
               <Text color={getToken("text.low")}>Volume</Text>
               <Text fw={600} fs="p1">
-                {formatters.usdCompact.format(row.original.volume)}
+                {formatters.usdCompact.format(coin.volume)}
               </Text>
             </Box>
             <Box>
               <Text color={getToken("text.low")}>Circulating supply</Text>
               <Text fw={600} fs="p1">
-                {formatters.value.format(row.original.circulatingSupply)}{" "}
-                {row.original.symbol}
+                {formatters.value.format(coin.circulatingSupply)} {coin.symbol}
               </Text>
             </Box>
             <Box>
               <Text color={getToken("text.low")}>Total Supply</Text>
               <Text fw={600} fs="p1">
-                {formatters.value.format(row.original.totalSupply)}{" "}
-                {row.original.symbol}
+                {formatters.value.format(coin.totalSupply)} {coin.symbol}
               </Text>
             </Box>
           </Grid>
