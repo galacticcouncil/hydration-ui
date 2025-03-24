@@ -66,18 +66,18 @@ export const Grid = forwardRef<HTMLElement, GridProps>(
         ? countToColumns(columns)
         : columnTemplate
 
+    const gapProps = gap ? { gap } : { columnGap, rowGap }
+
     return (
       <Box
         ref={ref}
         display="grid"
         sx={{
-          gridGap: gap,
-          gridColumnGap: columnGap,
-          gridRowGap: rowGap,
           gridTemplateColumns,
           gridTemplateRows: rowTemplate,
           justify,
           alignItems: align,
+          ...gapProps,
           ...sx,
         }}
         {...props}
