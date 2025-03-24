@@ -5,7 +5,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components"
-import { SInvalidAssetHeader } from "@/modules/wallet/Invalid/InvalidAssetModalHeader.styled"
+import { SInvalidAssetHeader } from "@/modules/wallet/assets/Invalid/InvalidAssetModalHeader.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
