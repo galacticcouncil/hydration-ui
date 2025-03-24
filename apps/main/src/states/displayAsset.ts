@@ -35,7 +35,7 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
 )
 
 type TStoredAssetPrice = Record<string, string>
-export type AssetPrice = Record<string, { price: string; isLoading: boolean }>
+export type AssetPrice = { price: string; isLoading: boolean; isNaN: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
@@ -70,20 +70,21 @@ export const useAssetsPrice = (assetIds: string[]) => {
   usePriceKeys(assetIds)
 
   const prices = useMemo(() => {
-    const result: AssetPrice = {}
+    const result: Record<string, AssetPrice> = {}
 
     Object.entries(assets).forEach(([key, price]) => {
       result[key] = {
         price,
         isLoading: !price.length,
+        isNaN: price === "NaN",
       }
     })
     return result
   }, [assets])
 
   const getAssetPrice = useCallback(
-    (assetId: string) => {
-      return prices[assetId] ?? { price: "NaN", isLoading: false }
+    (assetId: string): AssetPrice => {
+      return prices[assetId] ?? { price: "NaN", isLoading: false, isNaN: true }
     },
     [prices],
   )
