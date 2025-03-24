@@ -18,10 +18,10 @@ import {
   AssetLabelFullMobile,
   useDisplayAssetPrice,
 } from "@/components"
-import { AssetDetailMobileAction } from "@/modules/wallet/MyAssets/AssetDetailMobileActions"
-import { AssetDetailMobileModal } from "@/modules/wallet/MyAssets/AssetDetailMobileModal"
-import { AssetDetailStaking } from "@/modules/wallet/MyAssets/AssetDetailStaking"
-import { TransferPositionModal } from "@/modules/wallet/Transfer/TransferPositionModal"
+import { AssetDetailMobileAction } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
+import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
+import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
+import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
 import { TAssetStored } from "@/states/assetRegistry"
 

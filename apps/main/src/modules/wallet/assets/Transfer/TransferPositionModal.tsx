@@ -15,7 +15,7 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TransferPositionFormValues,
   useTransferPositionForm,
-} from "@/modules/wallet/Transfer/TransferPosition.form"
+} from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useAssets } from "@/providers/assetsProvider"
 
 const maxBalance = "30"

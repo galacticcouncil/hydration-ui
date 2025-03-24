@@ -2,7 +2,7 @@ import { Amount } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
 import { useDisplayAssetPrice } from "@/components"
-import { WalletLiquidityCurrentValue } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+import { WalletLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 

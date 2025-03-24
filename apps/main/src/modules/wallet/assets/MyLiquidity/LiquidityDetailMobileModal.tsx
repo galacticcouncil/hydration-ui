@@ -1,11 +1,11 @@
 import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
-import { LiquidityDetailMobileModalBody } from "@/modules/wallet/MyLiquidity/LiquidityDetailMobileModalBody"
+import { LiquidityDetailMobileModalBody } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModalBody"
 import {
   WalletLiquidityCurrentValue,
   WalletLiquidityPosition,
-} from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
+} from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
