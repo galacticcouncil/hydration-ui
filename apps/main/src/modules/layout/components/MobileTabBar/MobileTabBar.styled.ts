@@ -7,6 +7,7 @@ export const SMobileTabBar = styled.nav(
     position: fixed;
     left: 0;
     bottom: 0;
+    z-index: ${theme.zIndices.header};
 
     width: 100%;
     height: 60px;

@@ -35,6 +35,11 @@ const base = makeTheme({
     xxl: 32,
     full: 9999,
   },
+  zIndices: {
+    header: 5,
+    modal: 10,
+    tooltip: 9999,
+  },
   typography: {
     text: {
       size: {

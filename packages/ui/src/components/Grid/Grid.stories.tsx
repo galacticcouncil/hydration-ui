@@ -40,6 +40,21 @@ export const ColumnCount: Story = {
   },
 }
 
+export const ColumnTemplate: Story = {
+  render: Template,
+  args: {
+    columnTemplate: "1fr 2fr 3fr 4fr",
+  },
+}
+
+export const RowTemplate: Story = {
+  render: Template,
+  args: {
+    columnTemplate: "repeat(4, 1fr)",
+    rowTemplate: "100px 200px 400px",
+  },
+}
+
 export const ColumnFitWidth: Story = {
   render: Template,
   args: {

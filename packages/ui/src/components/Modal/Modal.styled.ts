@@ -15,7 +15,7 @@ export const SModalOverlay = styled(Overlay)`
   display: grid;
   place-items: center;
 
-  z-index: 10;
+  z-index: ${({ theme }) => theme.zIndices.modal};
 
   background: ${({ theme }) => theme.details.overlays};
 
@@ -44,7 +44,7 @@ export const SModalWrapper = styled(Overlay)`
   gap: 4px;
   justify-items: center;
 
-  z-index: 10;
+  z-index: ${({ theme }) => theme.zIndices.modal};
 
   &[data-state="closed"] {
     animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
