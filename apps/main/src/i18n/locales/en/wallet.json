@@ -60,5 +60,8 @@
   "transfer.modal.title": "Transfer position",
   "transfer.modal.actions.myContacts": "My contacts",
   "transfer.modal.address.label": "Destination address",
-  "transfer.modal.address.placeholder": "Paste address here..."
+  "transfer.modal.address.placeholder": "Paste address here...",
+  "transactions.header.title": "Transactions history",
+  "transactions.search.placeholder": "Search transactions",
+  "transactions.type.label": "Type:"
 }

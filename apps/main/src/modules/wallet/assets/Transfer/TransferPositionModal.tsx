@@ -41,7 +41,8 @@ export const TransferPositionModal: FC<Props> = ({ onClose }) => {
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(() => {})}>
         <ModalHeader title={t("transfer.modal.title")} />
-        <ModalBody>
+        <ModalBody sx={{ py: 0 }}>
+          <ModalContentDivider />
           <Controller
             control={form.control}
             name="address"
@@ -64,6 +65,7 @@ export const TransferPositionModal: FC<Props> = ({ onClose }) => {
             assets={tradable}
             maxBalance={balance.toString()}
           />
+          <ModalContentDivider />
         </ModalBody>
         <ModalFooter
           display={["flex", "grid"]}
