@@ -33,7 +33,9 @@ export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
         otcOffer.isPartiallyFillable && filledPct <= FULL_ORDER_PCT_LBOUND
           ? papi.tx.OTC.partial_fill_order({
               order_id: Number(otcOffer.id),
-              amount_in: scale(form.sellAmount, otcOffer.assetIn.decimals),
+              amount_in: BigInt(
+                scale(form.sellAmount, otcOffer.assetIn.decimals),
+              ),
             })
           : papi.tx.OTC.fill_order({
               order_id: Number(otcOffer.id),

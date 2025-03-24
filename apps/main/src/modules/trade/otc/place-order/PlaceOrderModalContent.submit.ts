@@ -32,8 +32,8 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
       onSubmit()
       await createTransaction({
         tx: papi.tx.OTC.place_order({
-          amount_in: scale(buyAmount, buyAsset.decimals),
-          amount_out: scale(offerAmount, offerAsset.decimals),
+          amount_in: BigInt(scale(buyAmount, buyAsset.decimals)),
+          amount_out: BigInt(scale(offerAmount, offerAsset.decimals)),
           asset_in: Number(buyAsset.id),
           asset_out: Number(offerAsset.id),
           partially_fillable: isPartiallyFillable,

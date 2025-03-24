@@ -60,15 +60,14 @@ export const AssetSelect = ({
 }: AssetSelectProps) => {
   const [openModal, setOpeModal] = useState(false)
 
-  const assetPrices = useAssetsPrice(selectedAsset ? [selectedAsset.id] : [])
-  const assetPrice = selectedAsset?.id ? assetPrices[selectedAsset?.id] : null
-  const assetPriceValue = assetPrice?.price || "0"
-  const assetPriceLoading = assetPrice?.isLoading
+  const { getAssetPrice, isLoading: assetPriceLoading } = useAssetsPrice(
+    selectedAsset ? [selectedAsset.id] : [],
+  )
+  const assetPrice = selectedAsset ? getAssetPrice(selectedAsset.id) : null
 
-  const price =
-    assetPriceValue === "NaN"
-      ? "NaN"
-      : new Big(assetPriceValue).times(props.value || "0").toString()
+  const price = assetPrice
+    ? new Big(assetPrice.price).times(props.value || "0").toString()
+    : "NaN"
 
   return (
     <>
