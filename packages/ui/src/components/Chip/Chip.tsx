@@ -1,8 +1,11 @@
 import { forwardRef } from "react"
 
-import { SChip } from "@/components/Chip/Chip.styled"
+import { BoxProps } from "@/components"
+import { SChip, SChipProps } from "@/components/Chip/Chip.styled"
 
-export const Chip = forwardRef<HTMLSpanElement>((props, ref) => (
+export type ChipProps = BoxProps & SChipProps
+
+export const Chip = forwardRef<HTMLDivElement, ChipProps>((props, ref) => (
   <SChip ref={ref} {...props} />
 ))
 

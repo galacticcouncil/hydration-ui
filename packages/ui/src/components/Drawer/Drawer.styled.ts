@@ -12,7 +12,7 @@ export const SDrawerOverlay = styled(Overlay)`
   display: grid;
   place-items: center;
 
-  z-index: 10;
+  z-index: ${({ theme }) => theme.zIndices.modal};
 
   background: ${({ theme }) => theme.details.overlays};
 `
@@ -38,7 +38,7 @@ export const SDrawerContent = styled(Content)`
   width: 100%;
   height: auto;
 
-  z-index: 10;
+  z-index: ${({ theme }) => theme.zIndices.modal};
 `
 
 export const SDrawerHeader = styled(Flex)`

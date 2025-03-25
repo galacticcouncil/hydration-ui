@@ -11,7 +11,7 @@ export const STrigger = styled(Trigger)`
 `
 
 export const SContent = styled(Content)`
-  z-index: 99999;
+  z-index: ${({ theme }) => theme.zIndices.tooltip};
 
   max-width: calc(100vw - 12px * 2);
   max-width: 280px;

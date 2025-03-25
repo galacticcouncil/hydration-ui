@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import Flamingo from "public/Flamingo.webp"
+import Flamingo from "public/images/Flamingo.webp"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 

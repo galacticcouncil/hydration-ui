@@ -8,7 +8,7 @@ export const SHeader = styled.header(
   ({ theme }) => css`
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: ${theme.zIndices.header};
 
     display: grid;
     grid-template-columns: 1fr auto;

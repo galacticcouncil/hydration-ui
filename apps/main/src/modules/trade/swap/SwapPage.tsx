@@ -1,22 +1,22 @@
-import { Flex, Paper, Separator } from "@galacticcouncil/ui/components"
+import { Box, Grid, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
 import { FormHeader } from "@/modules/trade/components"
+import { TradeChart } from "@/modules/trade/components/TradeChart/TradeChart"
 
 import { SContainer } from "./SwapPage.styled"
 
 export const SwapPage = () => {
   return (
-    <Flex gap={20} sx={{ flexWrap: "wrap" }} justify="center">
-      <Flex direction="column" gap={20} sx={{ width: ["100%", 440] }}>
-        <Paper sx={{ height: 700, minWidth: ["auto", 640] }}></Paper>
-        <SContainer>
-          <FormHeader />
-          <Separator mx={-20} />
-          <Outlet />
-        </SContainer>
-        <Paper sx={{ height: 50 }}></Paper>
-      </Flex>
-    </Flex>
+    <Grid columnTemplate={["1fr", null, null, "3fr 2fr"]} gap={20}>
+      <Box display={["none", null, null, "block"]}>
+        <TradeChart height={500} />
+      </Box>
+      <SContainer>
+        <FormHeader />
+        <Separator mx={-20} />
+        <Outlet />
+      </SContainer>
+    </Grid>
   )
 }
