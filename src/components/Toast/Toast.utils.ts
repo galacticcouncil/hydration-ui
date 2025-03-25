@@ -230,7 +230,7 @@ const getExtrinsicIndex = (
   return `${blockNumber}-${index}`
 }
 
-export const getSnowbridgeStatusToPolkadot = async (txHash: string) => {
+const getSnowbridgeStatusToPolkadot = async (txHash: string) => {
   return {
     ...(await request<{
       transferStatusToPolkadots: Array<{
@@ -243,6 +243,32 @@ export const getSnowbridgeStatusToPolkadot = async (txHash: string) => {
       gql`
         query SnowbridgeTransferStatus($hash: String!) {
           transferStatusToPolkadots(
+            where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
+          ) {
+            status
+            timestamp
+            messageId
+          }
+        }
+      `,
+      { hash: txHash },
+    )),
+  }
+}
+
+const getSnowbridgeStatusToEth = async (txHash: string) => {
+  return {
+    ...(await request<{
+      transferStatusToEthereums: Array<{
+        timestamp: string
+        messageId: string
+        status: 0 | 1 | 2
+      }>
+    }>(
+      snowbridgeIndexer,
+      gql`
+        query SnowbridgeTransferStatus($hash: String!) {
+          transferStatusToEthereums(
             where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
           ) {
             status
@@ -345,7 +371,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         }
 
         // move to unknown state
-        if (hoursDiff >= 1 || !toastData.txHash?.length) {
+        if (!toastData.txHash?.length) {
           toast.add("unknown", { ...toastData, hidden: true })
 
           return false
@@ -396,6 +422,13 @@ export const useProcessToasts = (toasts: ToastData[]) => {
           }
         }
 
+        // move to unknown state
+        if (hoursDiff >= 1) {
+          toast.add("unknown", { ...toastData, hidden: true })
+
+          return false
+        }
+
         return false
       },
       enabled: isLoaded,
@@ -440,10 +473,29 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
         const isHydrationSource = extractKeyFromURL(link, isEvm) === "hydration"
 
-        if (diffInMinutes > 45) {
-          toast.add("unknown", omit(["bridge"], toastData))
+        const pullSnowbridgeToast = (status: number, messageId: string) => {
+          if (status === 2) {
+            toast.add(
+              "error",
+              omit(["bridge"], {
+                ...toastData,
+                link: `https://app.snowbridge.network/history#${messageId}`,
+              }),
+            )
+            return true
+          }
 
-          return false
+          if (status === 1) {
+            toast.add(
+              "success",
+              omit(["bridge"], {
+                ...toastData,
+                link: `https://app.snowbridge.network/history#${messageId}`,
+              }),
+            )
+
+            return true
+          }
         }
 
         if (bridge === "Wormhole" && !isHydrationSource) {
@@ -478,18 +530,38 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           if (isEvm) {
             const ethTx = await api.rpc.eth.getTransactionByHash(txHash)
 
-            if (ethTx) {
-              toast.add("success", omit(["bridge"], toastData))
+            const blockNumber = ethTx.blockNumber.toString()
 
-              return true
+            const extrinsics = await getExtrinsicByBlockNumber(
+              indexerUrl,
+              Number(blockNumber),
+            )
+
+            const extrinsic = extrinsics?.extrinsics.length
+              ? extrinsics?.extrinsics[0]
+              : undefined
+            const hash = extrinsic?.hash
+
+            if (hash) {
+              const data = await getSnowbridgeStatusToEth(hash)
+
+              const { status, messageId } = data.transferStatusToEthereums?.[0]
+
+              pullSnowbridgeToast(status, messageId)
             }
           } else {
-            const extrinsic = await getExtrinsicByHash(indexerUrl, txHash)
+            const extrinsics = await getExtrinsicByHash(indexerUrl, txHash)
+            const extrinsic = extrinsics?.extrinsics.length
+              ? extrinsics?.extrinsics[0]
+              : undefined
+            const hash = extrinsic?.hash
 
-            if (extrinsic) {
-              toast.add("success", omit(["bridge"], toastData))
+            if (hash) {
+              const data = await getSnowbridgeStatusToEth(hash)
 
-              return true
+              const { status, messageId } = data.transferStatusToEthereums?.[0]
+
+              pullSnowbridgeToast(status, messageId)
             }
           }
 
@@ -498,28 +570,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           const data = await getSnowbridgeStatusToPolkadot(txHash)
           const { status, messageId } = data.transferStatusToPolkadots?.[0]
 
-          if (status === 2) {
-            toast.add(
-              "error",
-              omit(["bridge"], {
-                ...toastData,
-                link: `https://app.snowbridge.network/history#${messageId}`,
-              }),
-            )
-            return true
-          }
-
-          if (status === 1) {
-            toast.add(
-              "success",
-              omit(["bridge"], {
-                ...toastData,
-                link: `https://app.snowbridge.network/history#${messageId}`,
-              }),
-            )
-
-            return true
-          }
+          pullSnowbridgeToast(status, messageId)
 
           return false
         } else if (bridge === "Wormhole" && isHydrationSource) {
@@ -574,6 +625,12 @@ export const useBridgeToast = (toasts: ToastData[]) => {
               })
             }
           } catch (error) {}
+        }
+
+        if (diffInMinutes > 59) {
+          toast.add("unknown", omit(["bridge"], toastData))
+
+          return false
         }
 
         return false
