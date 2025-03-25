@@ -3,7 +3,7 @@ import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
-import { usePriceKeys } from "@/api/spotPrice"
+import { useSubscribedPriceKeys } from "@/api/spotPrice"
 
 type TDisplayAsset = {
   id: string | undefined
@@ -67,20 +67,26 @@ export const useAssetsPrice = (assetIds: string[]) => {
   )
 
   // subscribe to price changes by asset id
-  usePriceKeys(assetIds)
+  useSubscribedPriceKeys(assetIds)
 
-  const prices = useMemo(() => {
-    const result: Record<string, AssetPrice> = {}
-
-    Object.entries(assets).forEach(([key, price]) => {
-      result[key] = {
-        price,
-        isLoading: !price.length,
-        isNaN: price === "NaN",
-      }
-    })
-    return result
-  }, [assets])
+  const [prices, isLoading] = useMemo(
+    () =>
+      Object.entries(assets).reduce<[Record<string, AssetPrice>, boolean]>(
+        ([prices, isLoading], [key, price]) => [
+          {
+            ...prices,
+            [key]: {
+              price,
+              isLoading: !price.length,
+              isNaN: price === "NaN",
+            },
+          },
+          isLoading || !price,
+        ],
+        [{}, false],
+      ),
+    [assets],
+  )
 
   const getAssetPrice = useCallback(
     (assetId: string): AssetPrice => {
@@ -89,14 +95,19 @@ export const useAssetsPrice = (assetIds: string[]) => {
     [prices],
   )
 
-  const isLoading = useMemo(() => {
-    for (const [, price] of Object.entries(prices)) {
-      if (price && price.isLoading === true) {
-        return true
-      }
-    }
-    return false
-  }, [prices])
-
   return { prices, isLoading, getAssetPrice }
+}
+
+export const useAssetPrice = (assetId: string) => {
+  const price =
+    useDisplaySpotPriceStore(useShallow((state) => state.assets[assetId])) ?? ""
+
+  // subscribe to price changes by asset id
+  useSubscribedPriceKeys([assetId])
+
+  return {
+    price,
+    isLoading: !price,
+    isNaN: price === "NaN",
+  }
 }

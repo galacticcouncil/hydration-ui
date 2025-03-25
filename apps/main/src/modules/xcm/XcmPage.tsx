@@ -14,12 +14,13 @@ import { useMutation } from "@tanstack/react-query"
 import { Enum } from "polkadot-api"
 import { useMemo } from "react"
 
-import { getPoolService, getTradeRouter } from "@/api/provider"
 import { transformPjsToPapiTx } from "@/modules/transactions/TransactionProvider.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
 export const useCrossChainWallet = () => {
+  const { poolService } = useRpcProvider()
+
   return useMemo(() => {
     const configService = new HydrationConfigService({
       assets: assetsMap,
@@ -38,7 +39,7 @@ export const useCrossChainWallet = () => {
     const assethubCex = configService.getChain("assethub_cex")
 
     wallet.registerDex(
-      new dex.HydrationDex(hydration, getPoolService()),
+      new dex.HydrationDex(hydration, poolService),
       new dex.AssethubDex(assethub),
       new dex.AssethubDex(assethubCex),
     )
@@ -63,7 +64,7 @@ function poolTypeToEnumPoolType(poolType: PoolType) {
 
 export const XcmPage = () => {
   const { createTransaction } = useTransactionsStore()
-  const { api, papi } = useRpcProvider()
+  const { api, papi, tradeRouter } = useRpcProvider()
 
   const wallet = useCrossChainWallet()
 
@@ -71,7 +72,7 @@ export const XcmPage = () => {
 
   const { mutate: swap, isPending: isSwapPending } = useMutation({
     mutationFn: async () => {
-      const trade = await getTradeRouter().getBestSell("0", "10", "5")
+      const trade = await tradeRouter.getBestSell("0", "10", "5")
 
       return createTransaction({
         title: "Swap Test",

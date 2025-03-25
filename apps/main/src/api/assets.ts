@@ -5,8 +5,6 @@ import { TProviderContext } from "@/providers/rpcProvider"
 import { useAssetRegistry } from "@/states/assetRegistry"
 import { getExternalId } from "@/utils/externalAssets"
 
-import { getTradeRouter } from "./provider"
-
 /**
  * Map of aTokens and their corresponding underlying asset ids
  */
@@ -110,13 +108,12 @@ const BASE_URL =
 const pathes = ["/assets-v2.json", "/chains-v2.json"] //, , "/metadata.json"
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { assetClient } = data
+  const { assetClient, tradeRouter, isApiLoaded } = data
 
   return queryOptions({
     queryKey: ["assets"],
     queryFn: assetClient
       ? async () => {
-          const tradeRouter = getTradeRouter()
           const metadataQueries = pathes.map((path) =>
             fetch(BASE_URL + path).then((d) => d.json()),
           )
@@ -276,7 +273,7 @@ export const assetsQuery = (data: TProviderContext) => {
           return []
         }
       : () => undefined,
-    enabled: !!assetClient,
+    enabled: isApiLoaded,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,

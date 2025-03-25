@@ -1,4 +1,4 @@
-import { PoolToken, PoolType } from "@galacticcouncil/sdk"
+import { PoolToken, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import {
   type QueryClient,
@@ -7,11 +7,9 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { useActiveQueries } from "@/hooks/useActiveQueries"
+import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID, QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
-
-import { getTradeRouter } from "./provider"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -23,28 +21,30 @@ export type TOmnipoolAssetsData = Array<{
   balance: string
 }>
 
-export const allPools = (queryClient: QueryClient) =>
+export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
   queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "allPools"],
     queryFn: async () => {
-      const pools = await getTradeRouter().getPools()
+      const pools = await tradeRouter.getPools()
 
       const stablePoolsData = pools.filter(
         (pool) => pool.type === PoolType.Stable,
       )
 
-      const omnipoolTokensData = (
-        pools.find((pool) => pool.type === PoolType.Omni)
-          ?.tokens as OmniPoolToken[]
-      ).map((token) => {
-        return {
-          ...token,
-          shares: token.shares?.toString(),
-          protocolShares: token.protocolShares?.toString(),
-          cap: token.cap?.toString(),
-          hubReserves: token.hubReserves?.toString(),
-        }
-      })
+      const omnipoolTokensData =
+        (
+          pools.find((pool) => pool.type === PoolType.Omni)?.tokens as
+            | OmniPoolToken[]
+            | undefined
+        )?.map((token) => {
+          return {
+            ...token,
+            shares: token.shares?.toString(),
+            protocolShares: token.protocolShares?.toString(),
+            cap: token.cap?.toString(),
+            hubReserves: token.hubReserves?.toString(),
+          }
+        }) ?? []
 
       const { tokens, hub } = omnipoolTokensData.reduce<{
         tokens: TOmnipoolAssetsData
@@ -92,14 +92,14 @@ export const allPools = (queryClient: QueryClient) =>
   })
 
 export const useAllPools = () => {
-  const { isApiLoaded } = useRpcProvider()
+  const { isApiLoaded, tradeRouter } = useRpcProvider()
   const queryClient = useQueryClient()
-  const activeQueriesAmount = useActiveQueries(["pools"])
+  const activeQueriesAmount = useIsActiveQueries(["pools"])
 
   return useQuery({
-    ...allPools(queryClient),
+    ...allPools(tradeRouter, queryClient),
     notifyOnChangeProps: [],
-    enabled: isApiLoaded && !!activeQueriesAmount,
+    enabled: isApiLoaded && activeQueriesAmount,
   })
 }
 

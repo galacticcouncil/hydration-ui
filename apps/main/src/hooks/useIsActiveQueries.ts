@@ -1,11 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useSyncExternalStore } from "react"
 
-export function useActiveQueries(queryKey: string[]) {
+export function useIsActiveQueries(queryKey: string[]) {
   const queryClient = useQueryClient()
 
   return useSyncExternalStore(
     queryClient.getQueryCache().subscribe,
-    () => queryClient.getQueriesData({ queryKey, type: "active" }).length,
+    () => queryClient.getQueriesData({ queryKey, type: "active" }).length > 0,
   )
 }

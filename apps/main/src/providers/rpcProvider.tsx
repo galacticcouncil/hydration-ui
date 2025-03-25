@@ -1,4 +1,4 @@
-import { AssetClient } from "@galacticcouncil/sdk"
+import { AssetClient, PoolService, TradeRouter } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -9,7 +9,6 @@ import { usePrevious } from "react-use"
 import {
   changeProvider,
   getProviderProps,
-  initializeServices,
   PROVIDER_URLS,
   providerQuery,
   TDataEnv,
@@ -31,6 +30,8 @@ export type TProviderContext = {
   assetClient: AssetClient
   endpoint: string
   dataEnv: TDataEnv
+  tradeRouter: TradeRouter
+  poolService: PoolService
 }
 
 const defaultData: TProviderContext = {
@@ -43,6 +44,8 @@ const defaultData: TProviderContext = {
   rpcUrlList: [],
   endpoint: "",
   dataEnv: "mainnet",
+  tradeRouter: {} as TradeRouter,
+  poolService: {} as PoolService,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -88,8 +91,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         stableCoinId: chainStableCoinId,
         update,
       } = displayAsset
-
-      initializeServices(data.api)
 
       let stableCoinId: string | undefined
 

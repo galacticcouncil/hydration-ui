@@ -93,6 +93,18 @@ const getProviderData = async (rpcUrlList: string[]) => {
   const balanceClient = new BalanceClient(api)
   const assetClient = new AssetClient(api)
 
+  const poolService = new PoolService(api)
+  const traderRoutes = [
+    PoolType.Omni,
+    PoolType.Stable,
+    PoolType.XYK,
+    PoolType.LBP,
+  ]
+
+  const tradeRouter = new TradeRouter(poolService, {
+    includeOnly: traderRoutes,
+  })
+
   return {
     api,
     papi,
@@ -101,6 +113,8 @@ const getProviderData = async (rpcUrlList: string[]) => {
     rpcUrlList,
     endpoint,
     dataEnv: PROVIDERS.find((p) => p.url === endpoint)?.dataEnv ?? "mainnet",
+    tradeRouter,
+    poolService,
     featureFlags: {
       dispatchPermit: !!isDispatchPermitEnabled,
     },
@@ -142,37 +156,4 @@ export async function changeProvider(prevUrl: string, nextUrl: string) {
   if (nextApi && !nextApi.isConnected) {
     await reconnectProvider(getProviderInstance(nextApi))
   }
-}
-
-let tradeRouter: TradeRouter | null = null
-let poolService: PoolService | null = null
-
-export const initializeServices = (api: ApiPromise) => {
-  if (!poolService) {
-    poolService = new PoolService(api)
-
-    tradeRouter = new TradeRouter(poolService, {
-      includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
-    })
-  }
-
-  return { poolService, tradeRouter }
-}
-
-export const getTradeRouter = () => {
-  if (!tradeRouter) {
-    throw new Error(
-      "TradeRouter has not been initialized. Call initializeServices(api) first.",
-    )
-  }
-  return tradeRouter
-}
-
-export const getPoolService = () => {
-  if (!poolService) {
-    throw new Error(
-      "PoolService has not been initialized. Call initializeServices(api) first.",
-    )
-  }
-  return poolService
 }

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { useAssetsPrice, useDisplayAssetStore } from "@/states/displayAsset"
+import { useAssetPrice, useDisplayAssetStore } from "@/states/displayAsset"
 
 type AssetPriceProps = {
   assetId: string
@@ -36,9 +36,8 @@ export const useDisplayAssetPrice = (
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )
-  const { getAssetPrice } = useAssetsPrice([assetId])
-  const { price, isLoading } = getAssetPrice(assetId)
 
+  const { price, isLoading } = useAssetPrice(assetId)
   const isDollar = isRealUSD || isStableCoin
 
   return [

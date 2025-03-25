@@ -6,7 +6,7 @@ import { millisecondsInHour } from "date-fns/constants"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
@@ -16,14 +16,16 @@ type UseNonceProps = {
   address?: string
 }
 
-type OmnipoolDeposit =
-  HydrationQueries["OmnipoolWarehouseLM"]["Deposit"]["Value"] & {
-    positionId: bigint
-    miningId: bigint
-  }
+type OmnipoolWarehouseLMDeposit =
+  HydrationQueries["OmnipoolWarehouseLM"]["Deposit"]["Value"]
+
+type OmnipoolDeposit = OmnipoolWarehouseLMDeposit & {
+  positionId: bigint
+  miningId: bigint
+}
 
 export type OmnipoolDepositFull = Omit<
-  HydrationQueries["OmnipoolWarehouseLM"]["Deposit"]["Value"],
+  OmnipoolWarehouseLMDeposit,
   "amm_pool_id"
 > &
   OmnipoolPosition & {
@@ -58,33 +60,35 @@ export const useNonce = ({ address }: UseNonceProps) => {
 
 export const useAccountBalance = () => {
   const address = useAccount().account?.address
-  const { papi } = useRpcProvider()
+  const { papi, isLoaded } = useRpcProvider()
   const { setBalance } = useAccountData(useShallow(pick(["setBalance"])))
 
   return useQuery({
-    enabled: !!address,
+    enabled: !!address && isLoaded,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "account", "balance", address],
     queryFn: async () => {
       if (!address) return null
 
-      const balancesRaw = await getAccountBalance(papi, address)
+      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address)
 
-      if (balancesRaw) {
-        const balances = balancesRaw.map(([assetId, balance]) => {
-          const free = balance.free
-          const reserved = balance.reserved
-          const total = free + reserved
-
-          return {
-            free,
-            total,
-            reserved,
-            assetId: assetId.toString(),
-          }
-        })
-
-        setBalance(balances)
+      if (!balancesRaw) {
+        return null
       }
+
+      const balances = balancesRaw.map(([assetId, balance]) => {
+        const free = balance.free
+        const reserved = balance.reserved
+        const total = free + reserved
+
+        return {
+          free,
+          total,
+          reserved,
+          assetId: assetId.toString(),
+        }
+      })
+
+      setBalance(balances)
 
       return null
     },
@@ -222,6 +226,3 @@ export const useAccountUniques = () => {
     staleTime: millisecondsInHour,
   })
 }
-
-export const getAccountBalance = async (papi: Papi, address: string) =>
-  await papi.apis.CurrenciesApi.accounts(address)
