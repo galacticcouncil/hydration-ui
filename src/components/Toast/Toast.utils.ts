@@ -371,7 +371,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
         }
 
         // move to unknown state
-        if (hoursDiff >= 1 || !toastData.txHash?.length) {
+        if (!toastData.txHash?.length) {
           toast.add("unknown", { ...toastData, hidden: true })
 
           return false
@@ -422,6 +422,13 @@ export const useProcessToasts = (toasts: ToastData[]) => {
           }
         }
 
+        // move to unknown state
+        if (hoursDiff >= 1) {
+          toast.add("unknown", { ...toastData, hidden: true })
+
+          return false
+        }
+
         return false
       },
       enabled: isLoaded,
@@ -465,12 +472,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
         const isEvm =
           link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
         const isHydrationSource = extractKeyFromURL(link, isEvm) === "hydration"
-
-        if (diffInMinutes > 45) {
-          toast.add("unknown", omit(["bridge"], toastData))
-
-          return false
-        }
 
         const pullSnowbridgeToast = (status: number, messageId: string) => {
           if (status === 2) {
@@ -624,6 +625,12 @@ export const useBridgeToast = (toasts: ToastData[]) => {
               })
             }
           } catch (error) {}
+        }
+
+        if (diffInMinutes > 59) {
+          toast.add("unknown", omit(["bridge"], toastData))
+
+          return false
         }
 
         return false
