@@ -90,6 +90,11 @@ const StatsOverview = lazy(async () => ({
     .StatsOverview,
 }))
 
+const StatsOmnipool = lazy(async () => ({
+  default: (await import("sections/stats/sections/omnipool/StatsOmnipool"))
+    .StatsOmnipool,
+}))
+
 const StatsPOL = lazy(async () => ({
   default: (await import("sections/stats/sections/POL/StatsPOL")).StatsPOL,
 }))
@@ -380,6 +385,14 @@ export const routes: Route[] = [
         element: (
           <Suspense fallback={<StatsPageSkeleton />}>
             <StatsOverview />
+          </Suspense>
+        ),
+      },
+      {
+        path: "omnipool",
+        element: (
+          <Suspense fallback={<StatsPageSkeleton />}>
+            <StatsOmnipool />
           </Suspense>
         ),
       },

@@ -1,96 +1,81 @@
-import { PieWrapper } from "./components/PieWrapper/PieWrapper"
-import { useMedia } from "react-use"
-import { theme } from "theme"
-import { RecentTradesTableWrapper } from "sections/stats/components/RecentTradesTable/RecentTradesTableWrapper"
-import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
-import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
-import { SContainerVertical } from "sections/stats/StatsPage.styled"
-import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
+import { DataValue } from "components/DataValue"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Spacer } from "components/Spacer/Spacer"
+import { useMedia } from "react-use"
 import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
-import { useRpcProvider } from "providers/rpcProvider"
+import { VerticalBarChart } from "sections/stats/sections/overview/components/VerticalBarChart/VerticalBarChart"
+import {
+  SStatsContainer,
+  SContainer,
+} from "sections/stats/sections/overview/StatsOverview.styled"
+import { theme } from "theme"
 
-export const StatsOverview = () => {
-  const { isLoaded } = useRpcProvider()
-  const isDesktop = useMedia(theme.viewport.gte.sm)
+export type StatsOverviewProps = {}
 
+const DATA = [
+  {
+    value: 30000000,
+    label: "Stablepool",
+    color: "#3DFDA4",
+  },
+
+  {
+    value: 40000000,
+    label: "Omnipool",
+    color: "#FF2982",
+  },
+  {
+    value: 15000000,
+    label: "Money Market",
+    color: "#05C5FF",
+  },
+  {
+    value: 20000000,
+    label: "Isolated pools",
+    color: "#564FB2",
+  },
+  {
+    value: 8000000,
+    label: "Treasury",
+    color: "#FFA629",
+  },
+]
+
+export const StatsOverview: React.FC<StatsOverviewProps> = () => {
+  const isSmallMedia = useMedia(theme.viewport.lt.md)
   return (
     <>
       <Spacer size={[20, 30]} />
       <StatsTabs />
       <Spacer size={30} />
-      <div sx={{ flex: "column", gap: [24, 50] }}>
-        {isLoaded ? (
-          <StatsOverviewData />
-        ) : (
-          <>
-            <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
-              <PieWrapper
-                data={[]}
-                isLoading
-                sx={{
-                  p: [20, 40],
-                  width: ["100%", 420],
-                  minWidth: 0,
-                }}
-              />
-              {isDesktop && (
-                <SContainerVertical
-                  sx={{
-                    p: 24,
-                    justify: "space-between",
-                    flexGrow: 1,
-                    minWidth: 0,
-                    gap: 20,
-                  }}
-                >
-                  <ChartWrapper />
-                </SContainerVertical>
-              )}
-            </div>
-            <OmnipoolAssetsTableWrapperData data={[]} isLoading />
-          </>
-        )}
-        <RecentTradesTableWrapper />
-      </div>
-    </>
-  )
-}
-
-export const StatsOverviewData = () => {
-  const isDesktop = useMedia(theme.viewport.gte.sm)
-  const omnipoolOverview = useOmnipoolAssetDetails()
-
-  return (
-    <>
-      <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
-        <PieWrapper
-          data={[...omnipoolOverview.data].reverse()}
-          isLoading={omnipoolOverview.isLoading}
-          sx={{
-            p: [20, 40],
-            width: ["100%", 420],
-            minWidth: 0,
-          }}
-        />
-        {isDesktop && (
-          <SContainerVertical
-            sx={{
-              p: 24,
-              justify: "space-between",
-              flexGrow: 1,
-              minWidth: 0,
-              gap: 20,
-            }}
+      <SContainer>
+        <DataValue
+          labelColor="brightBlue300"
+          label="Hydration TVL"
+          size="extra-large"
+        >
+          <DisplayValue value={1000000} isUSD />
+        </DataValue>
+        <VerticalBarChart data={DATA} />
+        <SStatsContainer columns={isSmallMedia ? 2 : 3}>
+          {DATA.map(({ value, label }) => (
+            <DataValue
+              labelColor="brightBlue300"
+              label={label}
+              size="extra-large"
+            >
+              <DisplayValue value={value} isUSD />
+            </DataValue>
+          ))}
+          <DataValue
+            labelColor="brightBlue300"
+            label="24h Volume"
+            size="extra-large"
           >
-            <ChartWrapper />
-          </SContainerVertical>
-        )}
-      </div>
-      <OmnipoolAssetsTableWrapperData
-        data={omnipoolOverview.data}
-        isLoading={omnipoolOverview.isLoading}
-      />
+            <DisplayValue value={13000000} isUSD />
+          </DataValue>
+        </SStatsContainer>
+      </SContainer>
     </>
   )
 }

@@ -56,7 +56,7 @@ const useSubheaderComponent = () => {
     return <WalletNavigation />
   }
 
-  if (matchRoute({ to: LINKS.statsOmnipool })) {
+  if (matchRoute({ to: LINKS.statsOmnipoolAsset })) {
     return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
   }
 

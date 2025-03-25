@@ -6,6 +6,7 @@ import { LINKS } from "utils/navigation"
 
 export const STATS_TABS = [
   { id: "overview", link: LINKS.statsOverview, icon: <ChartIcon /> },
+  { id: "omnipool", link: LINKS.statsOmnipool, icon: <ChartIcon /> },
   { id: "POL", link: LINKS.statsPOL, icon: <TreasuryIcon /> },
   // TODO: Not ready. Requested in #861n9ffe4
   // { id: "LRNA", link: LINKS.statsLRNA, icon: <LRNAIcon /> },

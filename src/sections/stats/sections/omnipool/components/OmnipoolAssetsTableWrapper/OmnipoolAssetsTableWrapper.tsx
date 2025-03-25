@@ -22,7 +22,7 @@ export const OmnipoolAssetsTableWrapperData = ({
 
   const handleRowSelect = (assetId: string) => {
     navigate({
-      to: LINKS.statsOmnipool,
+      to: LINKS.statsOmnipoolAsset,
       search: { id: assetId },
     })
   }
