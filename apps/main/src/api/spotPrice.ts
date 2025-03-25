@@ -5,7 +5,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { isNullish } from "remeda"
+import Big from "big.js"
+import { isNullish, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -14,16 +15,13 @@ import {
   useDisplaySpotPriceStore,
 } from "@/states/displayAsset"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { scaleHuman } from "@/utils/formatting"
 
 export const usePriceSubscriber = () => {
   const { isApiLoaded, tradeRouter } = useRpcProvider()
   const queryClient = useQueryClient()
-  const setAssets = useDisplaySpotPriceStore(
-    useShallow((state) => state.setAssets),
-  )
-  const stableCoinId = useDisplayAssetStore(
-    useShallow((state) => state.stableCoinId),
-  )
+  const setAssets = useDisplaySpotPriceStore(prop("setAssets"))
+  const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
 
   return useQuery({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "displayPrices", stableCoinId],
@@ -87,7 +85,7 @@ export const getSpotPrice =
       return { tokenIn, tokenOut, spotPrice: "1" }
 
     // error replies are valid in case token has no spot price
-    let spotPrice: string = "NaN"
+    let spotPrice: string | null = null
 
     try {
       const res = await tradeRouter.getBestSpotPrice(
@@ -96,10 +94,9 @@ export const getSpotPrice =
       )
 
       if (res) {
-        spotPrice = res.amount
-          .shiftedBy(-res.decimals)
-          .decimalPlaces(12)
-          .toString()
+        spotPrice = Big(
+          scaleHuman(res.amount.toString(), res.decimals),
+        ).toFixed(12)
       }
     } catch (e) {
       return { tokenIn, tokenOut, spotPrice }

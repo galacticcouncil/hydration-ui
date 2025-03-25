@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react"
+import { isNonNullish } from "remeda"
 import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
@@ -34,12 +35,12 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
   ),
 )
 
-type TStoredAssetPrice = Record<string, string>
-export type AssetPrice = { price: string; isLoading: boolean; isNaN: boolean }
+type TStoredAssetPrice = Record<string, string | null>
+export type AssetPrice = { price: string; isLoading: boolean; isValid: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
-  setAssets: (asset: { id: string; price: string }[]) => void
+  setAssets: (asset: { id: string; price: string | null }[]) => void
 }
 
 export const useDisplaySpotPriceStore = create<Store>(
@@ -59,10 +60,13 @@ export const useDisplaySpotPriceStore = create<Store>(
 export const useAssetsPrice = (assetIds: string[]) => {
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
-      assetIds.reduce<Record<string, string>>((acc, assetId) => {
-        acc[assetId] = state.assets[assetId] ?? ""
-        return acc
-      }, {}),
+      assetIds.reduce<Record<string, string | null | undefined>>(
+        (acc, assetId) => {
+          acc[assetId] = state.assets[assetId]
+          return acc
+        },
+        {},
+      ),
     ),
   )
 
@@ -76,9 +80,9 @@ export const useAssetsPrice = (assetIds: string[]) => {
           {
             ...prices,
             [key]: {
-              price,
-              isLoading: !price.length,
-              isNaN: price === "NaN",
+              price: price ?? "",
+              isLoading: price === undefined,
+              isValid: isNonNullish(price),
             },
           },
           isLoading || !price,
@@ -90,7 +94,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
 
   const getAssetPrice = useCallback(
     (assetId: string): AssetPrice => {
-      return prices[assetId] ?? { price: "NaN", isLoading: false, isNaN: true }
+      return prices[assetId] ?? { price: "", isLoading: false, isValid: false }
     },
     [prices],
   )
@@ -98,16 +102,15 @@ export const useAssetsPrice = (assetIds: string[]) => {
   return { prices, isLoading, getAssetPrice }
 }
 
-export const useAssetPrice = (assetId: string) => {
-  const price =
-    useDisplaySpotPriceStore(useShallow((state) => state.assets[assetId])) ?? ""
+export const useAssetPrice = (assetId?: string): AssetPrice => {
+  const price = useDisplaySpotPriceStore((state) => state.assets[assetId ?? ""])
 
   // subscribe to price changes by asset id
-  useSubscribedPriceKeys([assetId])
+  useSubscribedPriceKeys(assetId ? [assetId] : [])
 
   return {
-    price,
-    isLoading: !price,
-    isNaN: price === "NaN",
+    price: price ?? "",
+    isLoading: price === undefined,
+    isValid: isNonNullish(price),
   }
 }
