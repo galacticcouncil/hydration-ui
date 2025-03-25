@@ -9,12 +9,82 @@ import {
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { BN_0 } from "utils/constants"
 import { H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+export const useBorrowContractAddresses = () => {
+  const { isLoaded, evm } = useRpcProvider()
+
+  return useMemo(() => {
+    if (!isLoaded) return null
+    const isTestnet = isTestnetRpcUrl(evm.connection.url)
+    return isTestnet ? AaveV3HydrationTestnet : AaveV3HydrationMainnet
+  }, [evm, isLoaded])
+}
+
+export const useBorrowPoolDataContract = () => {
+  const { evm } = useRpcProvider()
+  const addresses = useBorrowContractAddresses()
+
+  return useMemo(() => {
+    if (!addresses) return null
+
+    return new UiPoolDataProvider({
+      uiPoolDataProviderAddress: addresses.UI_POOL_DATA_PROVIDER,
+      provider: evm,
+      chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
+    })
+  }, [addresses, evm])
+}
+
+export const useBorrowReserves = () => {
+  const { api } = useRpcProvider()
+  const poolDataContract = useBorrowPoolDataContract()
+  const addresses = useBorrowContractAddresses()
+
+  return useQuery(
+    QUERY_KEYS.borrowReserves,
+    async () => {
+      if (!poolDataContract || !addresses) return null
+
+      const [reserves, timestamp] = await Promise.all([
+        poolDataContract.getReservesHumanized({
+          lendingPoolAddressProvider: addresses.POOL_ADDRESSES_PROVIDER,
+        }),
+        api.query.timestamp.now(),
+      ])
+
+      const { baseCurrencyData, reservesData } = reserves
+      const currentTimestamp = timestamp.toNumber() / 1000
+
+      const formattedReserves = formatReserves({
+        currentTimestamp,
+        reserves: reservesData,
+        marketReferencePriceInUsd:
+          baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+        marketReferenceCurrencyDecimals:
+          baseCurrencyData.marketReferenceCurrencyDecimals,
+      })
+
+      return {
+        formattedReserves,
+        baseCurrencyData,
+      }
+    },
+    {
+      retry: false,
+      enabled: !!poolDataContract,
+    },
+  )
+}
+
 export const useUserBorrowSummary = (givenAddress?: string) => {
   const { account } = useAccount()
-  const { api, evm, isLoaded } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
+  const { data: reserves, isSuccess: isReservesSuccess } = useBorrowReserves()
+  const poolDataContract = useBorrowPoolDataContract()
+  const addresses = useBorrowContractAddresses()
 
   const address = givenAddress || account?.address
 
@@ -29,47 +99,25 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   return useQuery(
     QUERY_KEYS.borrowUserSummary(evmAddress),
     async () => {
-      const isTestnet = isTestnetRpcUrl(evm.connection.url)
+      if (!reserves || !poolDataContract || !addresses) return null
 
-      const contracts = isTestnet
-        ? AaveV3HydrationTestnet
-        : AaveV3HydrationMainnet
-
-      const poolDataContract = new UiPoolDataProvider({
-        uiPoolDataProviderAddress: contracts.UI_POOL_DATA_PROVIDER,
-        provider: evm,
-        chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
-      })
-
-      const [reserves, user, timestamp] = await Promise.all([
-        poolDataContract.getReservesHumanized({
-          lendingPoolAddressProvider: contracts.POOL_ADDRESSES_PROVIDER,
-        }),
+      const [user, timestamp] = await Promise.all([
         poolDataContract.getUserReservesHumanized({
-          lendingPoolAddressProvider: contracts.POOL_ADDRESSES_PROVIDER,
+          lendingPoolAddressProvider: addresses.POOL_ADDRESSES_PROVIDER,
           user: evmAddress,
         }),
         api.query.timestamp.now(),
       ])
 
-      const { baseCurrencyData, reservesData } = reserves
+      const { formattedReserves, baseCurrencyData } = reserves
       const { userEmodeCategoryId, userReserves } = user
 
       const currentTimestamp = timestamp.toNumber() / 1000
 
-      const formattedReserves = formatReserves({
-        currentTimestamp,
-        reserves: reservesData,
-        marketReferencePriceInUsd:
-          baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-        marketReferenceCurrencyDecimals:
-          baseCurrencyData.marketReferenceCurrencyDecimals,
-      })
-
       return formatUserSummary({
         currentTimestamp,
         marketReferencePriceInUsd:
-          baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+          reserves.baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
         userReserves,
@@ -79,7 +127,32 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
     },
     {
       retry: false,
-      enabled: isLoaded && !!evmAddress,
+      enabled: isLoaded && isReservesSuccess && !!evmAddress,
     },
   )
+}
+
+export const useBorrowMarketTotals = () => {
+  const { data: reserves, isLoading } = useBorrowReserves()
+
+  const borrowTotals = useMemo(() => {
+    const defaultValues = {
+      tvl: BN_0,
+      debt: BN_0,
+    }
+    if (!reserves) return defaultValues
+
+    return reserves.formattedReserves.reduce(
+      (acc, reserve) => ({
+        tvl: acc.tvl.plus(reserve.totalLiquidityUSD),
+        debt: acc.debt.plus(reserve.totalDebtUSD),
+      }),
+      defaultValues,
+    )
+  }, [reserves])
+
+  return {
+    ...borrowTotals,
+    isLoading,
+  }
 }

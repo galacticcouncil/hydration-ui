@@ -1,10 +1,9 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { usePools } from "sections/pools/PoolsPage.utils"
+import { calculatePoolsTotals, usePools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -71,21 +70,10 @@ const OmnipoolAndStablepoolData = () => {
 
   const pools = usePools()
 
-  const omnipoolTotals = useMemo(() => {
-    if (!pools.data) return { tvl: BN_0, volume: BN_0 }
-    return pools.data.reduce(
-      (acc, pool) => {
-        acc.tvl = acc.tvl.plus(
-          !pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0,
-        )
-        acc.volume = acc.volume.plus(pool.volume ?? 0)
-
-        return acc
-      },
-
-      { tvl: BN_0, volume: BN_0 },
-    )
-  }, [pools.data])
+  const omnipoolTotals = useMemo(
+    () => calculatePoolsTotals(pools.data),
+    [pools.data],
+  )
 
   const filteredPools =
     (search && pools.data

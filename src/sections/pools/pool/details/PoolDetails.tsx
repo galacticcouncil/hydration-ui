@@ -168,7 +168,7 @@ export const PoolDetails = () => {
 
               <SValue>
                 <Text color="basic400" fs={[12, 13]}>
-                  {t("24Volume")}
+                  {t("24hVolume")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   <DisplayValue value={BN(pool.volume ?? NaN)} type="token" />
