@@ -2582,10 +2582,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.0.tgz#1377809cf125941410eea6ad97b4da0ca1eabb6c"
   integrity sha512-f14ftbivheBK8kSnqd8hSQlMPuVLY9571S5yx0LPU6K6m78F3pDPl09OEuJ+dSKHOw8hWzmFxiv0wRMYvDkeKA==
 
-"@galacticcouncil/apps@^10.9.0":
-  version "10.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.9.0.tgz#d1baee808cc1602b054de535b53120db9c0ffa58"
-  integrity sha512-7zwvwQTu6jLUKOKNt9YzCWKREH8cd1AM4VHNUN2vRAnE8f1qok1ja51QJ9azrfkpwLypy+C8vJl2D7Iz1JuqZw==
+"@galacticcouncil/apps@^10.10.0":
+  version "10.10.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-10.10.0.tgz#a387229ba7740806c3ba5b8741cf1335ebeb4154"
+  integrity sha512-Q8nS8DiHbAnG6WJ52pz5Z2VoJFMI5qopHqt+NHLu0n/SfnYykN5CGUKRPyoOurdgoXQyQi10LBBlgC15xL7ddA==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2655,10 +2655,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-8.0.0.tgz#7ec6eda69ee98bf36a8cd5d83ee87b75bbd3458e"
-  integrity sha512-9iP7+UxEk/6nV6NKTbhrjjEogauO0nrZylhrv3nB8rGdG1yaDUFhSbE2Dr0DdLY02/NYGt8TiqqJlVG1Qc+zlQ==
+"@galacticcouncil/xcm-cfg@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-8.1.0.tgz#cb2ce6955467fd4d10ae9438a230bb2a4092029a"
+  integrity sha512-T1viEm1Gxf+xt8s5F81ekQGUQwzXeD/iZHY7CdtnmFCpvnW2RPdj8PlluHkkJzwk6Pz9vK5n3ddYnK/G9YhwKQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^7.0.0"
 
@@ -2678,10 +2678,10 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-9.1.0.tgz#429a00ac34c7f190cf052c69582c29588503efe8"
-  integrity sha512-9V2JoCFU4MTtCjwtlhHeLsK/Gulr2vVcJ9jO0MS1Jc9U5imOLNY3ttQp3qTW0jy6tU4WEp0QTIXesK2nXP9gAA==
+"@galacticcouncil/xcm-sdk@^9.1.1":
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-9.1.1.tgz#434a48facf3dbe4a6fa5827d3fa10a407e9dc180"
+  integrity sha512-x2RRTRBfwizQVD3GxqvL0NUsMDgxo3Wxzj/DEgE1h4mJoI1oxRJ1Ecnrzkw9FIk7k37FB0S+UA4GJfjdMyUeAQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^7.0.0"
 
