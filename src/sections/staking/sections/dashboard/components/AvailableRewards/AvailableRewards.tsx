@@ -285,11 +285,7 @@ export const AvailableRewards = () => {
           <Button
             size="small"
             variant="primary"
-            disabled={
-              !reward ||
-              reward.rewards.isZero() ||
-              account?.isExternalWalletConnected
-            }
+            disabled={!reward || reward.rewards.isZero()}
             onClick={onClaimRewards}
             sx={{ width: 130 }}
           >

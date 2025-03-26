@@ -12,7 +12,6 @@ import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetail
 import { ToastMessage } from "state/store"
 import { TOAST_MESSAGES } from "state/toasts"
 import { useFarmExitAllMutation } from "utils/farms/exit"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   isXYKDeposit,
   TDepositData,
@@ -42,7 +41,6 @@ function JoinedFarmsDetailsRedeposit(props: {
   const isXYK = isXYKDeposit(deposit)
 
   const { t } = useTranslation()
-  const { account } = useAccount()
 
   const availableFarms = farms.filter(
     (farm) => !isFarmJoined(props.depositNft, farm),
@@ -93,7 +91,6 @@ function JoinedFarmsDetailsRedeposit(props: {
                   depositId: props.depositNft.id,
                 })
           }
-          disabled={account?.isExternalWalletConnected}
         >
           {t("farms.modal.joinedFarms.button.joinAll.label")}
         </Button>
@@ -111,7 +108,6 @@ function JoinedFarmsDetailsPositions(props: {
   const { t } = useTranslation()
   const { pool } = usePoolData()
   const { meta, id: poolId, farms } = pool
-  const { account } = useAccount()
 
   const joinedFarms = farms.filter((farm) =>
     isFarmJoined(props.depositNft, farm),
@@ -175,7 +171,6 @@ function JoinedFarmsDetailsPositions(props: {
         css={{ alignSelf: "center" }}
         onClick={() => exit.mutate()}
         isLoading={exit.isLoading}
-        disabled={account?.isExternalWalletConnected}
       >
         {t("farms.modal.joinedFarms.button.exit.label")}
       </Button>

@@ -9,7 +9,6 @@ import ExitIcon from "assets/icons/Exit.svg?react"
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { ReactElement, useMemo } from "react"
 import { BN_0 } from "utils/constants"
@@ -22,7 +21,6 @@ import { usePoolData } from "sections/pools/pool/Pool"
 
 export const FarmingPositionWrapper = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { pool, isXYK } = usePoolData()
 
   const farms = pool.farms
@@ -163,12 +161,7 @@ export const FarmingPositionWrapper = () => {
           <Text color="brightBlue300">{t("farms.positions.header.title")}</Text>
         </div>
         {withAnimation ? (
-          <Button
-            variant="error"
-            size="compact"
-            onClick={() => exit.mutate()}
-            disabled={account?.isExternalWalletConnected}
-          >
+          <Button variant="error" size="compact" onClick={() => exit.mutate()}>
             <Icon size={12} icon={<ExitIcon />} />
             {t("liquidity.pool.farms.exitAll.btn")}
           </Button>

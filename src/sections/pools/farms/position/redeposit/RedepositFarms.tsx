@@ -2,7 +2,6 @@ import { Text } from "components/Typography/Text/Text"
 import { SContainer, SJoinButton } from "./RedepositFarms.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
 import { TFarmAprData } from "api/farms"
@@ -25,7 +24,7 @@ export const RedepositFarms = ({
   depositData,
 }: RedepositFarmsProps) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
+
   const [joinFarm, setJoinFarm] = useState(false)
 
   if (!availableYieldFarms.length) return null
@@ -45,10 +44,7 @@ export const RedepositFarms = ({
         />
       </div>
 
-      <SJoinButton
-        onClick={() => setJoinFarm(true)}
-        disabled={account?.isExternalWalletConnected}
-      >
+      <SJoinButton onClick={() => setJoinFarm(true)}>
         <Text fs={12} color="basic900" tTransform="uppercase" tAlign="center">
           {t("farms.positions.join.button.label")}
         </Text>

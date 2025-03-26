@@ -6,7 +6,6 @@ import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { useTranslation } from "react-i18next"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Button } from "components/Button/Button"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
@@ -28,16 +27,13 @@ export function LiquidityPositionRemoveLiquidity(props: {
   onRemovePosition: () => void
 }) {
   const { t } = useTranslation()
-  const { account } = useAccount()
 
   return (
     <Button
       variant="error"
       size="compact"
       onClick={props.onRemovePosition}
-      disabled={
-        account?.isExternalWalletConnected || !props.pool.canRemoveLiquidity
-      }
+      disabled={!props.pool.canRemoveLiquidity}
       css={{ flex: "1 0 0" }}
     >
       <div sx={{ flex: "row", align: "center", justify: "center" }}>

@@ -22,7 +22,7 @@ export const EmodeButton = () => {
       </Text>
       <Button
         size="micro"
-        disabled={!account || account.isExternalWalletConnected}
+        disabled={!account}
         onClick={() =>
           openEmode(
             isEModeDisabled ? EmodeModalType.ENABLE : EmodeModalType.SWITCH,
