@@ -7,11 +7,13 @@ import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/Deg
 import { useExternalAssetRegistry } from "./external"
 import { useSettingsStore } from "state/store"
 import { usePriceSubscriber } from "./spotPrice"
+import { useProviderMetadata } from "./provider"
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
   const { degenMode } = useSettingsStore()
   usePriceSubscriber()
+  useProviderMetadata()
 
   if (!isLoaded) return null
 

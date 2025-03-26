@@ -1,5 +1,5 @@
 diff --git a/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts b/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
-index 8b31722..6bcbd03 100644
+index c73fbe1..6ae63c0 100644
 --- a/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
 +++ b/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
 @@ -1,4 +1,4 @@

@@ -24,6 +24,8 @@ import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
+import { useIncreaseStake } from "./sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
+import { useShallow } from "hooks/useShallow"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -41,6 +43,8 @@ const blocksPerYear = 2628000
 /* constants that might be changed */
 const a = "20000000000000000"
 const b = "2000"
+
+const MIN_SLASH_POINTS = "5"
 
 export type TStakingData = NonNullable<ReturnType<typeof useStakeData>["data"]>
 
@@ -183,7 +187,6 @@ export const useStakeData = () => {
       circulatingSupply: circulatingSupplyData,
       positionId: stake.data?.positionId,
       stakeDollar,
-      minStake: stake.data?.minStake,
       stakePosition: stakePosition
         ? {
             ...stake.data?.stakePosition,
@@ -194,7 +197,6 @@ export const useStakeData = () => {
     availableBalance,
     circulatingSupply,
     isLoading,
-    stake.data?.minStake,
     stake.data?.positionId,
     stake.data?.stakePosition,
     stake.data?.totalStake,
@@ -208,7 +210,7 @@ export const useStakeData = () => {
   }
 }
 
-export const useStakeARP = (availableUserBalance: BN | undefined) => {
+export const useStakeARP = () => {
   const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -217,6 +219,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
   const stakingConsts = useStakingConsts()
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
+  const stakeValue = useIncreaseStake(useShallow((state) => state.stakeValue))
 
   const queries = [bestNumber, stake, stakingConsts, potBalance, stakingEvents]
 
@@ -312,7 +315,8 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
 
       return { apr }
     } else {
-      const totalToStake = stake.data.totalStake.plus(availableUserBalance ?? 0)
+      const totalToStake = stake.data.totalStake.plus(stakeValue ?? 0)
+
       const rpsNow = pendingRewards.div(totalToStake)
       let deltaBlocks = BN_0
       let rpsAvg = BN_0
@@ -346,7 +350,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
               .multipliedBy(event.args.totalStake)
           }
           deltaRpsAdjusted = deltaRpsAdjusted.plus(
-            re.div(BN(event.args.totalStake).plus(availableUserBalance ?? 0)),
+            re.div(BN(event.args.totalStake).plus(stakeValue ?? 0)),
           )
         })
 
@@ -385,7 +389,7 @@ export const useStakeARP = (availableUserBalance: BN | undefined) => {
       return { apr: BN_0 }
     }
   }, [
-    availableUserBalance,
+    stakeValue,
     bestNumber.data,
     potBalance.data,
     stake.data,
@@ -403,6 +407,11 @@ export const useClaimReward = () => {
   const stake = useStake(account?.address)
   const stakingConsts = useStakingConsts()
   const { data: openGovReferendas = [] } = useOpenGovReferendas()
+  const {
+    value: increaseStake,
+    diffDays: storedDiffDays,
+    update,
+  } = useIncreaseStake()
 
   const potAddress = getHydraAccountAddress(stakingConsts.data?.palletId)
   const potBalance = useTokenBalance(native.id, potAddress)
@@ -435,6 +444,7 @@ export const useClaimReward = () => {
       timePointsPerPeriod,
       timePointsWeight,
       actionPointsWeight,
+      stakeWeight,
     } = stakingConsts.data
 
     const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
@@ -482,6 +492,35 @@ export const useClaimReward = () => {
       stakePosition.accumulatedSlashPoints.toString(),
     )
 
+    let increasePayablePercentageHuman: string | undefined
+    if (increaseStake) {
+      const slashedPoints = wasm.calculate_slashed_points(
+        points,
+        stakePosition.stake.toString(),
+        increaseStake,
+        stakeWeight,
+        MIN_SLASH_POINTS,
+      )
+
+      const pointsAfterIncreasing = BigNumber.max(
+        BigNumber(points).minus(slashedPoints),
+        BN_0,
+      ).toString()
+
+      const increasePaylablePercentage = wasm.sigmoid(
+        pointsAfterIncreasing,
+        a,
+        b,
+      )
+
+      increasePayablePercentageHuman = scaleHuman(
+        increasePaylablePercentage,
+        "q",
+      )
+        .multipliedBy(100)
+        .toString()
+    }
+
     let extraPayablePercentageHuman: string | undefined
     if (openGovReferendas.length) {
       const extraPoints = wasm.calculate_points(
@@ -512,6 +551,9 @@ export const useClaimReward = () => {
       .plus(stakePosition.accumulatedUnpaidRewards)
       .plus(stakePosition.accumulatedLockedRewards)
 
+    let currentPointDays: number | undefined
+    let increasePointDays: number | undefined
+
     const chartValues = getChartValues(
       80,
       timePointsPerPeriod.toString(),
@@ -522,17 +564,45 @@ export const useClaimReward = () => {
         BN(payablePercentageHuman).gte(chartPoints.y) &&
         (arr[i + 1] ? BN(payablePercentageHuman).lt(arr[i + 1].y) : true)
 
+      if (current) currentPointDays = chartPoints.x
+
       // calculate payable percentage if vote ongoing referendas
       const currentSecondary = extraPayablePercentageHuman
         ? BN(extraPayablePercentageHuman).gte(chartPoints.y) &&
           (arr[i + 1] ? BN(extraPayablePercentageHuman).lt(arr[i + 1].y) : true)
         : undefined
 
-      return { ...chartPoints, current, currentSecondary }
+      const currentThird = increasePayablePercentageHuman
+        ? BN(increasePayablePercentageHuman).gte(chartPoints.y) &&
+          (arr[i + 1]
+            ? BN(increasePayablePercentageHuman).lt(arr[i + 1].y)
+            : true)
+        : undefined
+
+      if (currentThird) increasePointDays = chartPoints.x
+
+      return { ...chartPoints, current, currentSecondary, currentThird }
     })
 
     if (BN(currentPeriod).minus(enteredAt).lte(unclaimablePeriods)) {
       return { rewards: BN_0, unlockedRewards: BN_0, positionId, chartValues }
+    }
+
+    if (currentPointDays) {
+      if (!increasePointDays) {
+        if (storedDiffDays) {
+          update("diffDays", undefined)
+        }
+      } else {
+        const diffDays = BigNumber(increasePointDays)
+          .minus(currentPointDays)
+          .abs()
+          .toString()
+
+        if (diffDays !== storedDiffDays) {
+          update("diffDays", diffDays)
+        }
+      }
     }
 
     const userRewards = BN(
@@ -564,6 +634,9 @@ export const useClaimReward = () => {
     stake,
     stakingConsts,
     openGovReferendas,
+    increaseStake,
+    storedDiffDays,
+    update,
   ])
 
   return { data, isLoading }
@@ -592,15 +665,13 @@ const getChartValues = (
 
     const payablePercentage_ = wasm.sigmoid(points, a, b)
 
-    const y = scaleHuman(payablePercentage_, "q").multipliedBy(100).toNumber()
+    const y = scaleHuman(payablePercentage_, "q")
+      .multipliedBy(100)
+      .decimalPlaces(2)
+      .toNumber()
 
     const x = BN.max(
-      BN(periodLength)
-        .times(period)
-        .times(PARACHAIN_BLOCK_TIME)
-        .div(60)
-        .div(60)
-        .div(24),
+      BN(periodLength).times(period).times(PARACHAIN_BLOCK_TIME).div(86400),
       BN_0,
     ).toNumber()
 
