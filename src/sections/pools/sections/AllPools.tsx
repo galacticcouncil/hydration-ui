@@ -1,10 +1,14 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { usePools, useXYKPools } from "sections/pools/PoolsPage.utils"
+import {
+  calculatePoolsTotals,
+  calculateXykTotals,
+  usePools,
+  useXYKPools,
+} from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -17,7 +21,6 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
-import BigNumber from "bignumber.js"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -88,45 +91,15 @@ const AllPoolsData = () => {
   const pools = usePools()
   const xykPools = useXYKPools()
 
-  const omnipoolTotals = useMemo(() => {
-    if (!pools.data) return { tvl: BN_0, volume: BN_0 }
-    return pools.data.reduce(
-      (acc, pool) => {
-        acc.tvl = acc.tvl.plus(
-          !pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0,
-        )
-        acc.volume = acc.volume.plus(pool.volume ?? 0)
+  const omnipoolTotals = useMemo(
+    () => calculatePoolsTotals(pools.data),
+    [pools.data],
+  )
 
-        return acc
-      },
-
-      { tvl: BN_0, volume: BN_0 },
-    )
-  }, [pools.data])
-
-  const xykTotals = useMemo(() => {
-    if (xykPools.data) {
-      return xykPools.data.reduce(
-        (acc, xykPool) => {
-          if (!xykPool.isInvalid) {
-            acc.tvl = acc.tvl.plus(
-              !xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0,
-            )
-            acc.volume = acc.volume.plus(
-              xykPool.volume && !BigNumber(xykPool.volume).isNaN()
-                ? xykPool.volume
-                : 0,
-            )
-          }
-
-          return acc
-        },
-        { tvl: BN_0, volume: BN_0 },
-      )
-    }
-
-    return { tvl: BN_0, volume: BN_0 }
-  }, [xykPools.data])
+  const xykTotals = useMemo(
+    () => calculateXykTotals(xykPools.data),
+    [xykPools.data],
+  )
 
   const filteredPools =
     (search && pools.data
