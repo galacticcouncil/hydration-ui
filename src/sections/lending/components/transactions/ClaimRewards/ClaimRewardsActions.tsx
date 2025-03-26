@@ -4,6 +4,8 @@ import { useTransactionHandler } from "sections/lending/helpers/useTransactionHa
 import { useRootStore } from "sections/lending/store/root"
 
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
+import { createToastMessages } from "state/toasts"
+import { useTranslation } from "react-i18next"
 
 export type ClaimRewardsActionsProps = {
   isWrongNetwork?: boolean
@@ -16,6 +18,7 @@ export const ClaimRewardsActions = ({
   blocked,
   selectedReward,
 }: ClaimRewardsActionsProps) => {
+  const { t } = useTranslation()
   const claimRewards = useRootStore((state) => state.claimRewards)
 
   const { action, loadingTxns, mainTxState, requiresApproval } =
@@ -39,7 +42,18 @@ export const ClaimRewardsActions = ({
       blocked={blocked}
       preparingTransactions={loadingTxns}
       mainTxState={mainTxState}
-      handleAction={action}
+      handleAction={() =>
+        action(
+          createToastMessages("lending.claimRewards.toast", {
+            t,
+            tOptions: {
+              symbol: selectedReward.symbol,
+              value: selectedReward.balance,
+            },
+            components: ["span.highlight"],
+          }),
+        )
+      }
       actionText={
         selectedReward.symbol === "all" ? (
           <span>Claim all</span>
