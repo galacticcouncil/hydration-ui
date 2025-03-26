@@ -10,6 +10,7 @@ import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { BarChartData } from "components/VerticalBarChart/VerticalBarChart"
+import { useStakingTotal } from "api/staking"
 
 type TStatsOverviewTotals = ReturnType<typeof useStatsOverviewTotals>["totals"]
 
@@ -29,6 +30,11 @@ export const useStatsOverviewChartData = (
       color: "#FFA629",
     },
     {
+      value: totals?.stakingTotal ?? BN_0,
+      label: t("stats.overview.staking"),
+      color: "#ED6AFF",
+    },
+    {
       value: totals?.stablePoolsTotal ?? BN_0,
       label: t("stats.overview.stablepool"),
       color: "#3DFDA4",
@@ -43,7 +49,7 @@ export const useStatsOverviewChartData = (
       label: t("stats.overview.xyk"),
       color: "#564FB2",
     },
-  ]
+  ].sort((a, b) => b.value.comparedTo(a.value))
 }
 
 export const useStatsOverviewTotals = () => {
@@ -52,8 +58,10 @@ export const useStatsOverviewTotals = () => {
   const stablepools = useStablepoolsTotals()
   const treasury = useTreasuryAssets()
   const xyk = useXykTotals()
+  const { data: staking, isLoading: isStakingLoading } = useStakingTotal()
 
-  const hasTreasuryTotal = !!treasury.total
+  const hasTreasuryTotal = !!treasury?.total
+  const hasStakingTotal = !!staking?.totalStakeDisplay
 
   const isLoading =
     moneyMarket.isLoading ||
@@ -61,7 +69,9 @@ export const useStatsOverviewTotals = () => {
     stablepools.isLoading ||
     treasury.isLoading ||
     xyk.isLoading ||
-    !hasTreasuryTotal
+    isStakingLoading ||
+    !hasTreasuryTotal ||
+    !hasStakingTotal
 
   const totals = useMemo(() => {
     if (isLoading) return null
@@ -72,12 +82,14 @@ export const useStatsOverviewTotals = () => {
       .plus(omnipools.tvl)
       .plus(stablepools.tvl)
       .plus(xyk.tvl)
+      .plus(staking.totalStakeDisplay)
 
     return {
       moneyMarketTotal: moneyMarket.tvl,
       omnipoolsTotal: omnipools.tvl,
       stablePoolsTotal: stablepools.tvl,
       treasuryTotal: BN(treasury.total ?? "0"),
+      stakingTotal: BN(staking.totalStakeDisplay),
       xykTotal: xyk.tvl,
       hydrationTvl,
       volume24h,
@@ -88,6 +100,7 @@ export const useStatsOverviewTotals = () => {
     omnipools.tvl,
     omnipools.volume,
     stablepools.tvl,
+    staking?.totalStakeDisplay,
     treasury.total,
     xyk.tvl,
     xyk.volume,

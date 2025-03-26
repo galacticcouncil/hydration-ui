@@ -35,15 +35,13 @@ export const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
     }),
   )
 
-  const dataWithPercentage = data
-    .sort((a, b) => BN(b.value).comparedTo(a.value))
-    .map(({ value, ...rest }) => {
-      const bn = BN(value)
-      return {
-        ...rest,
-        percentage: bn.gt(0) ? bn.div(max).times(100).toNumber() : 0,
-      }
-    })
+  const dataWithPercentage = data.map(({ value, ...rest }) => {
+    const bn = BN(value)
+    return {
+      ...rest,
+      percentage: bn.gt(0) ? bn.div(max).times(100).toNumber() : 0,
+    }
+  })
 
   return (
     <SContainer isLoading={isLoading}>

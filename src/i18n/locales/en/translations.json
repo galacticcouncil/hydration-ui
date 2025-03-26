@@ -881,6 +881,7 @@
   "stats.overview.borrow": "Supply & Borrow",
   "stats.overview.treasury": "Treasury",
   "stats.overview.xyk": "Isolated pools",
+  "stats.overview.staking": "Staking",
   "stats.overview.hydrationTvl": "Hydration TVL",
   "staking.title": "Staking",
   "staking.tabs.dashboard": "Staking",
