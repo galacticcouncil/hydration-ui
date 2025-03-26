@@ -2,6 +2,7 @@ import BN from "bignumber.js"
 import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { VerticalBarChart } from "components/VerticalBarChart/VerticalBarChart"
+import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
   SContainer,
@@ -17,6 +18,7 @@ import { BN_BILL } from "utils/constants"
 export type StatsOverviewProps = {}
 
 export const StatsOverview: React.FC<StatsOverviewProps> = () => {
+  const { t } = useTranslation()
   const isSmallMedia = useMedia(theme.viewport.lt.md)
 
   const { isLoading, totals } = useStatsOverviewTotals()
@@ -28,7 +30,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
       <DataValue
         isLoading={isLoading}
         labelColor="brightBlue300"
-        label="Hydration TVL"
+        label={t("stats.overview.hydrationTvl")}
         size="extra-large"
       >
         <DisplayValue
@@ -52,7 +54,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
         <DataValue
           isLoading={isLoading}
           labelColor="brightBlue300"
-          label="24h Volume"
+          label={t("24Volume")}
           size="extra-large"
         >
           <DisplayValue value={totals?.volume24h} isUSD />

@@ -881,6 +881,7 @@
   "stats.overview.moneyMarket": "Money Market",
   "stats.overview.treasury": "Treasury",
   "stats.overview.xyk": "Isolated pools",
+  "stats.overview.hydrationTvl": "Hydration TVL",
   "staking.title": "Staking",
   "staking.tabs.dashboard": "Staking",
   "staking.tabs.governance": "Governance",
