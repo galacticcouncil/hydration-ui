@@ -13,6 +13,7 @@ import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkelet
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
 import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
+import { StatsOverviewSkeleton } from "sections/stats/skeleton/StatsOverviewSkeleton"
 import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
@@ -383,7 +384,7 @@ export const routes: Route[] = [
       {
         path: "overview",
         element: (
-          <Suspense fallback={<StatsPageSkeleton />}>
+          <Suspense fallback={<StatsOverviewSkeleton />}>
             <StatsOverview />
           </Suspense>
         ),

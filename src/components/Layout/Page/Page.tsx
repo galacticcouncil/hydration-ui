@@ -23,6 +23,7 @@ import {
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
 import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
+import { StatsNavigation } from "sections/stats/navigation/StatsNavigation"
 
 type Props = {
   className?: string
@@ -58,6 +59,10 @@ const useSubheaderComponent = () => {
 
   if (matchRoute({ to: LINKS.statsOmnipoolAsset })) {
     return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
+  }
+
+  if (matchRoute({ to: LINKS.stats, fuzzy: true })) {
+    return <StatsNavigation />
   }
 
   if (

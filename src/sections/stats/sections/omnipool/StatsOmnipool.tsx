@@ -6,8 +6,6 @@ import { ChartWrapper } from "sections/stats/components/ChartsWrapper/ChartsWrap
 import { OmnipoolAssetsTableWrapperData } from "./components/OmnipoolAssetsTableWrapper/OmnipoolAssetsTableWrapper"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
 import { useOmnipoolAssetDetails } from "sections/stats/StatsPage.utils"
-import { Spacer } from "components/Spacer/Spacer"
-import { StatsTabs } from "sections/stats/components/tabs/StatsTabs"
 import { useRpcProvider } from "providers/rpcProvider"
 
 export const StatsOmnipool = () => {
@@ -15,45 +13,40 @@ export const StatsOmnipool = () => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
-    <>
-      <Spacer size={[20, 30]} />
-      <StatsTabs />
-      <Spacer size={30} />
-      <div sx={{ flex: "column", gap: [24, 50] }}>
-        {isLoaded ? (
-          <StatsOverviewData />
-        ) : (
-          <>
-            <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
-              <PieWrapper
-                data={[]}
-                isLoading
+    <div sx={{ flex: "column", gap: [24, 50] }}>
+      {isLoaded ? (
+        <StatsOverviewData />
+      ) : (
+        <>
+          <div sx={{ flex: "row", gap: 20, height: ["auto", 690] }}>
+            <PieWrapper
+              data={[]}
+              isLoading
+              sx={{
+                p: [20, 40],
+                width: ["100%", 420],
+                minWidth: 0,
+              }}
+            />
+            {isDesktop && (
+              <SContainerVertical
                 sx={{
-                  p: [20, 40],
-                  width: ["100%", 420],
+                  p: 24,
+                  justify: "space-between",
+                  flexGrow: 1,
                   minWidth: 0,
+                  gap: 20,
                 }}
-              />
-              {isDesktop && (
-                <SContainerVertical
-                  sx={{
-                    p: 24,
-                    justify: "space-between",
-                    flexGrow: 1,
-                    minWidth: 0,
-                    gap: 20,
-                  }}
-                >
-                  <ChartWrapper />
-                </SContainerVertical>
-              )}
-            </div>
-            <OmnipoolAssetsTableWrapperData data={[]} isLoading />
-          </>
-        )}
-        <RecentTradesTableWrapper />
-      </div>
-    </>
+              >
+                <ChartWrapper />
+              </SContainerVertical>
+            )}
+          </div>
+          <OmnipoolAssetsTableWrapperData data={[]} isLoading />
+        </>
+      )}
+      <RecentTradesTableWrapper />
+    </div>
   )
 }
 

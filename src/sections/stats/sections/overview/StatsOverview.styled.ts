@@ -41,15 +41,15 @@ export const SStatsContainer = styled.div<{ columns: number }>(
         border-right: 1px solid rgba(${theme.rgbColors.white}, 0.06);
       }
 
-      &:nth-child(${columns}n):after {
+      &:nth-of-type(${columns}n):after {
         border-right: none;
       }
 
-      &:nth-child(-n + ${columns}) {
+      &:nth-of-type(-n + ${columns}) {
         border-top: none;
       }
 
-      &:nth-child(${columns}n + 1) {
+      &:nth-of-type(${columns}n + 1) {
         padding-left: 0;
       }
     }
