@@ -150,6 +150,10 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       const ethereumChain = findNestedKey(ethereum, "chainId")
       const ethereumAsset = findNestedKey(details.location, "key")
 
+      const ethereumAssetId = ethereumAsset
+        ? ethereumAsset.key
+        : "0x0000000000000000000000000000000000000000"
+
       return (
         <UigcAssetId
           css={{ "& uigc-logo-chain": { display: "none" } }}
@@ -160,7 +164,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
             el && el.setAttribute("fit", "")
           }}
           ecosystem="ethereum"
-          asset={ethereumAsset?.key}
+          asset={ethereumAssetId}
           chain={ethereumChain?.chainId}
           chainOrigin={ethereumChain?.chainId}
         >

@@ -47,12 +47,9 @@ export const ProviderItemLayout = ({
       />
     )
 
-  const isOffline = !blockNumber
-  const isDisabled = isLoading || isOffline
-
   return (
     <SItem
-      isDisabled={isDisabled}
+      isDisabled={isLoading}
       onClick={() => onClick?.(url)}
       className={className}
     >
