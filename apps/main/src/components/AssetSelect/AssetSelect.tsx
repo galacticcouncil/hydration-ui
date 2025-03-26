@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelectModal, Logo } from "@/components"
-import { useAssetsPrice } from "@/states/displayAsset"
+import { useAssetPrice } from "@/states/displayAsset"
 
 type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
   assets: TAssetData[]
@@ -60,15 +60,15 @@ export const AssetSelect = ({
 }: AssetSelectProps) => {
   const [openModal, setOpeModal] = useState(false)
 
-  const assetPrices = useAssetsPrice(selectedAsset ? [selectedAsset.id] : [])
-  const assetPrice = selectedAsset?.id ? assetPrices[selectedAsset?.id] : null
-  const assetPriceValue = assetPrice?.price || "0"
-  const assetPriceLoading = assetPrice?.isLoading
+  const {
+    price: assetPrice,
+    isLoading: assetPriceLoading,
+    isValid,
+  } = useAssetPrice(selectedAsset?.id)
 
-  const price =
-    assetPriceValue === "NaN"
-      ? "NaN"
-      : new Big(assetPriceValue).times(props.value || "0").toString()
+  const price = isValid
+    ? new Big(assetPrice).times(props.value || "0").toString()
+    : "NaN"
 
   return (
     <>

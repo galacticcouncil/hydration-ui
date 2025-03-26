@@ -108,172 +108,172 @@ const BASE_URL =
 const pathes = ["/assets-v2.json", "/chains-v2.json"] //, , "/metadata.json"
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { assetClient, tradeRouter } = data
+  const { assetClient, tradeRouter, isApiLoaded } = data
 
   return queryOptions({
     queryKey: ["assets"],
-    queryFn:
-      assetClient && tradeRouter
-        ? async () => {
-            const metadataQueries = pathes.map((path) =>
-              fetch(BASE_URL + path).then((d) => d.json()),
+    queryFn: assetClient
+      ? async () => {
+          const metadataQueries = pathes.map((path) =>
+            fetch(BASE_URL + path).then((d) => d.json()),
+          )
+          const { sync, syncMetadata } = useAssetRegistry.getState()
+
+          const [tradeAssets, assets, ...metadata] = await Promise.all([
+            tradeRouter.getAllAssets(),
+            assetClient.getOnChainAssets(true),
+            ...metadataQueries,
+          ])
+
+          const assetsMetadata: TAssetResouce = metadata[0]
+          const chainsMetadata: TAssetResouce = metadata[1]
+          const { cdn, path, repository, items } = assetsMetadata
+
+          const url = [cdn["jsDelivr"], repository + "@latest", path].join("/")
+
+          const syncData = assets.map((asset): TAssetData => {
+            const isTradable = tradeAssets.some(
+              (tradeAsset) => tradeAsset.id === asset.id,
             )
-            const { sync, syncMetadata } = useAssetRegistry.getState()
 
-            const [tradeAssets, assets, ...metadata] = await Promise.all([
-              tradeRouter.getAllAssets(),
-              assetClient.getOnChainAssets(true),
-              ...metadataQueries,
-            ])
+            let parachainId: string | undefined
+            let iconSrc: string | undefined
+            let ecosystem = AssetEcosystem.POLKADOT
 
-            const assetsMetadata: TAssetResouce = metadata[0]
-            const chainsMetadata: TAssetResouce = metadata[1]
-            const { cdn, path, repository, items } = assetsMetadata
+            const commonAssetData: TCommonAssetData = {
+              id: asset.id,
+              type: asset.type as AssetType,
+              existentialDeposit: asset.existentialDeposit,
+              symbol: asset.symbol ?? "",
+              decimals: asset.decimals ?? 0,
+              name: asset.name ?? "",
+              isTradable,
+              isSufficient: asset.isSufficient,
+            }
 
-            const url = [cdn["jsDelivr"], repository + "@latest", path].join(
-              "/",
-            )
+            if (asset.type === AssetType.TOKEN) {
+              parachainId = findNestedKey(
+                asset.location,
+                "parachain",
+              )?.parachain.toString()
 
-            const syncData = assets.map((asset): TAssetData => {
-              const isTradable = tradeAssets.some(
-                (tradeAsset) => tradeAsset.id === asset.id,
+              const ethereumNetworkEntry = findNestedKey(
+                asset.location,
+                "ethereum",
               )
 
-              let parachainId: string | undefined
-              let iconSrc: string | undefined
-              let ecosystem = AssetEcosystem.POLKADOT
+              if (ethereumNetworkEntry) {
+                const { ethereum } = ethereumNetworkEntry
+                ecosystem = AssetEcosystem.ETHEREUM
 
-              const commonAssetData: TCommonAssetData = {
-                id: asset.id,
-                type: asset.type as AssetType,
-                existentialDeposit: asset.existentialDeposit,
-                symbol: asset.symbol ?? "",
-                decimals: asset.decimals ?? 0,
-                name: asset.name ?? "",
-                isTradable,
-                isSufficient: asset.isSufficient,
-              }
-
-              if (asset.type === AssetType.TOKEN) {
                 parachainId = findNestedKey(
-                  asset.location,
-                  "parachain",
-                )?.parachain.toString()
-
-                const ethereumNetworkEntry = findNestedKey(
-                  asset.location,
-                  "ethereum",
+                  ethereum,
+                  "chainId",
+                )?.chainId.toString()
+                const assetId = findNestedKey(asset.location, "key")?.key
+                iconSrc = items.find((item) =>
+                  item.includes(`${parachainId}/assets/${assetId}`),
                 )
 
-                if (ethereumNetworkEntry) {
-                  const { ethereum } = ethereumNetworkEntry
-                  ecosystem = AssetEcosystem.ETHEREUM
-
-                  parachainId = findNestedKey(ethereum, "chainId")
-                  const assetId = findNestedKey(asset.location, "key")
-                  iconSrc = items.find((item) =>
-                    item.includes(`${parachainId}/assets/${assetId}`),
-                  )
-
-                  return {
-                    ...commonAssetData,
-                    ecosystem,
-                    ...(iconSrc ? { iconSrc } : {}),
-                    ...(parachainId ? { parachainId } : {}),
-                  }
-                } else {
-                  iconSrc = items.find((item) =>
-                    item.includes(
-                      `${HYDRADX_PARACHAIN_ID.toString()}/assets/${commonAssetData.id}`,
-                    ),
-                  )
-
-                  const assetData: TToken = {
-                    ...commonAssetData,
-                    ecosystem,
-                    ...(iconSrc ? { iconSrc } : {}),
-                    ...(parachainId ? { parachainId } : {}),
-                  }
-                  return assetData
-                }
-              } else if (asset.type === AssetType.ERC20) {
-                const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[asset.id]
-
-                const assetData: TErc20 = {
+                return {
                   ...commonAssetData,
-                  ...(underlyingAssetId ? { underlyingAssetId } : {}),
+                  ecosystem,
+                  ...(iconSrc ? { iconSrc } : {}),
+                  ...(parachainId ? { parachainId } : {}),
                 }
-
-                return assetData
-              } else if (asset.type === AssetType.BOND) {
-                const bondData = asset as Bond
-                const { underlyingAssetId, maturity } = bondData
-
-                const assetData: TBond = {
-                  ...commonAssetData,
-                  underlyingAssetId,
-                  maturity,
-                }
-
-                return assetData
-              } else if (asset.type === AssetType.STABLESWAP) {
-                const underlyingAssetId = asset?.meta
-                  ? Object.keys(asset.meta)
-                  : undefined
-
-                const assetData: TStableswap = {
-                  ...commonAssetData,
-                  underlyingAssetId,
-                }
-
-                return assetData
-              } else if (asset.type === AssetType.External) {
-                const externalId = getExternalId(asset)
-
-                const assetData: TExternal = {
-                  ...commonAssetData,
-                  ...(externalId ? { externalId } : {}),
-                }
-
-                return assetData
               } else {
-                return commonAssetData
+                iconSrc = items.find((item) =>
+                  item.includes(
+                    `${HYDRADX_PARACHAIN_ID.toString()}/assets/${commonAssetData.id}`,
+                  ),
+                )
+
+                const assetData: TToken = {
+                  ...commonAssetData,
+                  ecosystem,
+                  ...(iconSrc ? { iconSrc } : {}),
+                  ...(parachainId ? { parachainId } : {}),
+                }
+                return assetData
               }
-            })
-            console.log({ syncData })
-            syncMetadata({ url, chainsMetadata })
-            sync(syncData)
+            } else if (asset.type === AssetType.ERC20) {
+              const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[asset.id]
 
-            // const [shareToken, poolAssets] = await Promise.all([
-            //   api.query.xyk.shareToken.entries(),
-            //   api.query.xyk.poolAssets.entries(),
-            // ])
+              const assetData: TErc20 = {
+                ...commonAssetData,
+                ...(underlyingAssetId ? { underlyingAssetId } : {}),
+              }
 
-            // const shareTokens = shareToken
-            //   .map(([key, shareTokenIdRaw]) => {
-            //     const poolAddress = key.args[0].toString()
-            //     const shareTokenId = shareTokenIdRaw.toString()
+              return assetData
+            } else if (asset.type === AssetType.BOND) {
+              const bondData = asset as Bond
+              const { underlyingAssetId, maturity } = bondData
 
-            //     const xykAssets = poolAssets.find(
-            //       (xykPool) => xykPool[0].args[0].toString() === poolAddress,
-            //     )?.[1]
+              const assetData: TBond = {
+                ...commonAssetData,
+                underlyingAssetId,
+                maturity,
+              }
 
-            //     if (xykAssets)
-            //       return {
-            //         poolAddress,
-            //         shareTokenId,
-            //         assets: xykAssets.unwrap().map((asset) => asset.toString()),
-            //       }
+              return assetData
+            } else if (asset.type === AssetType.STABLESWAP) {
+              const underlyingAssetId = asset?.meta
+                ? Object.keys(asset.meta)
+                : undefined
 
-            //     return undefined
-            //   })
-            //   .filter(isNonNullish)
+              const assetData: TStableswap = {
+                ...commonAssetData,
+                underlyingAssetId,
+              }
 
-            // syncShareTokens(shareTokens)
-            return []
-          }
-        : () => undefined,
-    enabled: !!assetClient && !!tradeRouter,
+              return assetData
+            } else if (asset.type === AssetType.External) {
+              const externalId = getExternalId(asset)
+
+              const assetData: TExternal = {
+                ...commonAssetData,
+                ...(externalId ? { externalId } : {}),
+              }
+
+              return assetData
+            } else {
+              return commonAssetData
+            }
+          })
+          console.log({ syncData })
+          syncMetadata({ url, chainsMetadata })
+          sync(syncData)
+
+          // const [shareToken, poolAssets] = await Promise.all([
+          //   api.query.xyk.shareToken.entries(),
+          //   api.query.xyk.poolAssets.entries(),
+          // ])
+
+          // const shareTokens = shareToken
+          //   .map(([key, shareTokenIdRaw]) => {
+          //     const poolAddress = key.args[0].toString()
+          //     const shareTokenId = shareTokenIdRaw.toString()
+
+          //     const xykAssets = poolAssets.find(
+          //       (xykPool) => xykPool[0].args[0].toString() === poolAddress,
+          //     )?.[1]
+
+          //     if (xykAssets)
+          //       return {
+          //         poolAddress,
+          //         shareTokenId,
+          //         assets: xykAssets.unwrap().map((asset) => asset.toString()),
+          //       }
+
+          //     return undefined
+          //   })
+          //   .filter(isNonNullish)
+
+          // syncShareTokens(shareTokens)
+          return []
+        }
+      : () => undefined,
+    enabled: isApiLoaded,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,

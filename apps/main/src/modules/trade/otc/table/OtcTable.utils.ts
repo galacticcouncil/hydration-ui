@@ -9,7 +9,7 @@ import { Predicate } from "@/types/helpers"
 import { scaleHuman } from "@/utils/formatting"
 
 export const mapOtcOffersToTableData =
-  (assetPrices: AssetPrice) =>
+  (assetPrices: Record<string, AssetPrice>) =>
   (offer: OtcOffer): OtcOfferTabular => {
     const { assetIn, amountIn, assetOut, amountOut } = offer
     const usdPriceIn = assetPrices[assetIn.id]?.price

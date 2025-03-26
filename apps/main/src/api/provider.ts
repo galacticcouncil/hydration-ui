@@ -86,18 +86,12 @@ const getProviderData = async (rpcUrlList: string[]) => {
 
   const endpoint = provider.endpoint
 
-  api.registry.register({
-    XykLMDeposit: {
-      shares: "u128",
-      ammPoolId: "AccountId",
-      yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-    },
-    OmnipoolLMDeposit: {
-      shares: "u128",
-      ammPoolId: "u32",
-      yieldFarmEntries: "Vec<PalletLiquidityMiningYieldFarmEntry>",
-    },
-  })
+  const [isDispatchPermitEnabled] = await Promise.all([
+    api.tx.multiTransactionPayment.dispatchPermit,
+  ])
+
+  const balanceClient = new BalanceClient(api)
+  const assetClient = new AssetClient(api)
 
   const poolService = new PoolService(api)
   const traderRoutes = [
@@ -111,26 +105,16 @@ const getProviderData = async (rpcUrlList: string[]) => {
     includeOnly: traderRoutes,
   })
 
-  // await poolService.syncRegistry(externalTokens[dataEnv])
-
-  const [isDispatchPermitEnabled] = await Promise.all([
-    api.tx.multiTransactionPayment.dispatchPermit,
-    //tradeRouter.getPools(),
-  ])
-
-  const balanceClient = new BalanceClient(api)
-  const assetClient = new AssetClient(api)
-
   return {
     api,
     papi,
-    tradeRouter,
-    poolService,
     balanceClient,
     assetClient,
     rpcUrlList,
     endpoint,
     dataEnv: PROVIDERS.find((p) => p.url === endpoint)?.dataEnv ?? "mainnet",
+    tradeRouter,
+    poolService,
     featureFlags: {
       dispatchPermit: !!isDispatchPermitEnabled,
     },

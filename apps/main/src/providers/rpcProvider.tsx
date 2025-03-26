@@ -1,8 +1,4 @@
-import {
-  AssetClient,
-  type PoolService,
-  type TradeRouter,
-} from "@galacticcouncil/sdk"
+import { AssetClient, PoolService, TradeRouter } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -22,11 +18,11 @@ import { useAssetRegistry } from "@/states/assetRegistry"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
+export type Papi = TypedApi<typeof hydration>
+
 export type TProviderContext = {
   api: ApiPromise
-  papi: TypedApi<typeof hydration>
-  tradeRouter: TradeRouter
-  poolService: PoolService
+  papi: Papi
   isLoaded: boolean
   isApiLoaded: boolean
   featureFlags: TFeatureFlags
@@ -34,6 +30,8 @@ export type TProviderContext = {
   assetClient: AssetClient
   endpoint: string
   dataEnv: TDataEnv
+  tradeRouter: TradeRouter
+  poolService: PoolService
 }
 
 const defaultData: TProviderContext = {
@@ -41,13 +39,13 @@ const defaultData: TProviderContext = {
   isApiLoaded: false,
   api: {} as TProviderContext["api"],
   papi: {} as TProviderContext["papi"],
-  tradeRouter: {} as TradeRouter,
   featureFlags: { dispatchPermit: false } as TProviderContext["featureFlags"],
-  poolService: {} as TProviderContext["poolService"],
   assetClient: {} as TProviderContext["assetClient"],
   rpcUrlList: [],
   endpoint: "",
   dataEnv: "mainnet",
+  tradeRouter: {} as TradeRouter,
+  poolService: {} as PoolService,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)

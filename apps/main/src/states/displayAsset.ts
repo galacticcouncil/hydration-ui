@@ -1,14 +1,10 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query"
-import { useMemo } from "react"
-import { useMount } from "react-use"
-import { isNullish } from "remeda"
+import { useCallback, useMemo } from "react"
+import { isNonNullish } from "remeda"
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import { combine } from "zustand/middleware"
+import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
-import { spotPriceKey } from "@/api/spotPrice"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { useSubscribedPriceKeys } from "@/api/spotPrice"
 
 type TDisplayAsset = {
   id: string | undefined
@@ -39,12 +35,12 @@ export const useDisplayAssetStore = create<DisplayAssetStore>()(
   ),
 )
 
-type TStoredAssetPrice = Record<string, string>
-export type AssetPrice = Record<string, { price: string; isLoading: boolean }>
+type TStoredAssetPrice = Record<string, string | null>
+export type AssetPrice = { price: string; isLoading: boolean; isValid: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
-  setAssets: (asset: { id: string; price: string }[]) => void
+  setAssets: (asset: { id: string; price: string | null }[]) => void
 }
 
 export const useDisplaySpotPriceStore = create<Store>(
@@ -62,39 +58,59 @@ export const useDisplaySpotPriceStore = create<Store>(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
-  const queryClient = useQueryClient()
-
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
-      assetIds.reduce<Record<string, string>>((acc, assetId) => {
-        acc[assetId] = state.assets[assetId] ?? ""
-        return acc
-      }, {}),
+      assetIds.reduce<Record<string, string | null | undefined>>(
+        (acc, assetId) => {
+          acc[assetId] = state.assets[assetId]
+          return acc
+        },
+        {},
+      ),
     ),
   )
 
   // subscribe to price changes by asset id
-  useQueries({
-    queries: assetIds.map((assetId) => spotPriceKey(assetId)),
-  })
+  useSubscribedPriceKeys(assetIds)
 
-  // invalidate query to subscribe to new assets
-  useMount(() => {
-    queryClient.invalidateQueries({
-      queryKey: [QUERY_KEY_BLOCK_PREFIX, "displayPrices"],
-    })
-  })
+  const [prices, isLoading] = useMemo(
+    () =>
+      Object.entries(assets).reduce<[Record<string, AssetPrice>, boolean]>(
+        ([prices, isLoading], [key, price]) => [
+          {
+            ...prices,
+            [key]: {
+              price: price ?? "",
+              isLoading: price === undefined,
+              isValid: isNonNullish(price),
+            },
+          },
+          isLoading || !price,
+        ],
+        [{}, false],
+      ),
+    [assets],
+  )
 
-  return useMemo(() => {
-    const result: AssetPrice = {}
+  const getAssetPrice = useCallback(
+    (assetId: string): AssetPrice => {
+      return prices[assetId] ?? { price: "", isLoading: false, isValid: false }
+    },
+    [prices],
+  )
 
-    Object.entries(assets).forEach(([key, price]) => {
-      result[key] = {
-        price,
-        isLoading: isNullish(price),
-      }
-    })
+  return { prices, isLoading, getAssetPrice }
+}
 
-    return result
-  }, [assets])
+export const useAssetPrice = (assetId?: string): AssetPrice => {
+  const price = useDisplaySpotPriceStore((state) => state.assets[assetId ?? ""])
+
+  // subscribe to price changes by asset id
+  useSubscribedPriceKeys(assetId ? [assetId] : [])
+
+  return {
+    price: price ?? "",
+    isLoading: price === undefined,
+    isValid: isNonNullish(price),
+  }
 }

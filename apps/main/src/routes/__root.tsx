@@ -7,7 +7,9 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/router-devtools"
 import { lazy } from "react"
 
+import { useAccountBalance, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
+import { useAllPools } from "@/api/pools"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
@@ -35,7 +37,10 @@ const Web3ConnectModal = lazy(async () => ({
 const Subscriptions = () => {
   const rpcProvider = useRpcProvider()
 
+  useAccountBalance()
+  useAccountUniques()
   usePriceSubscriber()
+  useAllPools()
   useQuery(assetsQuery(rpcProvider))
 
   return null
