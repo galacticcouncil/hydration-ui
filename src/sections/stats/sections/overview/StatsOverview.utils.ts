@@ -53,12 +53,15 @@ export const useStatsOverviewTotals = () => {
   const treasury = useTreasuryAssets()
   const xyk = useXykTotals()
 
+  const hasTreasuryTotal = !!treasury.total
+
   const isLoading =
     moneyMarket.isLoading ||
     omnipools.isLoading ||
     stablepools.isLoading ||
     treasury.isLoading ||
-    xyk.isLoading
+    xyk.isLoading ||
+    !hasTreasuryTotal
 
   const totals = useMemo(() => {
     if (isLoading) return null
