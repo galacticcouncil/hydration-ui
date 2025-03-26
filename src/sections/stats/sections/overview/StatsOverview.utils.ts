@@ -1,5 +1,3 @@
-import { BarChartData } from "sections/stats/sections/overview/components/VerticalBarChart/VerticalBarChart"
-
 import BN from "bignumber.js"
 import { useBorrowMarketTotals } from "api/borrow"
 import {
@@ -11,6 +9,7 @@ import { useTreasuryAssets } from "sections/stats/StatsPage.utils"
 import { useMemo } from "react"
 import { BN_0 } from "utils/constants"
 import { useTranslation } from "react-i18next"
+import { BarChartData } from "components/VerticalBarChart/VerticalBarChart"
 
 type TStatsOverviewTotals = ReturnType<typeof useStatsOverviewTotals>["totals"]
 
