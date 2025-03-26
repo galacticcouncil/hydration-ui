@@ -21,6 +21,7 @@ import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import TreasuryIcon from "assets/icons/Treasury.svg?react"
+import BarChartDecreasingIcon from "assets/icons/BarChartDecreasingIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -249,7 +250,7 @@ export const MENU_ITEMS = [
       {
         key: "stats.overview",
         href: LINKS.statsOverview,
-        Icon: StatsIcon,
+        Icon: BarChartDecreasingIcon,
         enabled: true,
       },
       {
