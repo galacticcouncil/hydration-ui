@@ -129,4 +129,40 @@ export function getEvmChainById(chainId: number) {
   }
 }
 
+export const strip0x = (hex: string): string =>
+  hex.startsWith("0x") ? hex.slice(2) : hex
+
+export function getAssetIdFromAddress(address: string) {
+  if (!isEvmAddress(address)) return ""
+
+  try {
+    const addressBuffer = Buffer.from(strip0x(address), "hex")
+    const assetIdBuffer = addressBuffer.subarray(16)
+    return assetIdBuffer.readUIntBE(0, assetIdBuffer.length).toString()
+  } catch {
+    return ""
+  }
+}
+
+export function getAddressFromAssetId(assetId: string) {
+  try {
+    const tokenAddress = Buffer.from(
+      "0000000000000000000000000000000100000000",
+      "hex",
+    )
+    const assetIdBuffer = numToBuffer(+assetId)
+    assetIdBuffer.copy(tokenAddress, 16)
+
+    return "0x" + tokenAddress.toString("hex")
+  } catch {
+    return ""
+  }
+}
+
+function numToBuffer(num: number) {
+  const arr = new Uint8Array(4)
+  for (let i = 0; i < 4; i++) arr.set([num / 0x100 ** i], 3 - i)
+  return Buffer.from(arr)
+}
+
 export { getEvmAddress, isEvmAddress }

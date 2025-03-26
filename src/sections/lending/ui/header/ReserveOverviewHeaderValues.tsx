@@ -37,7 +37,7 @@ export const ReserveOverviewHeaderValues: FC<
       className={className}
     >
       <div sx={{ flex: "row", gap: 12, align: "center" }}>
-        <TokenIcon symbol={poolReserve.iconSymbol} size={38} />
+        <TokenIcon address={poolReserve.underlyingAsset} size={38} />
         <div>
           <Text fs={18} lh={24} font="GeistSemiBold">
             {poolReserve.symbol}
