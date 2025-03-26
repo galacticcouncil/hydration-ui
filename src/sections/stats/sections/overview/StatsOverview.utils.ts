@@ -35,7 +35,7 @@ export const useStatsOverviewChartData = (
     },
     {
       value: totals?.moneyMarketTotal ?? BN_0,
-      label: t("stats.overview.moneyMarket"),
+      label: t("stats.overview.borrow"),
       color: "#05C5FF",
     },
     {
