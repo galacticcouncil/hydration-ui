@@ -182,6 +182,7 @@ export const QUERY_KEYS = {
     "otcOrdersState",
     orderId?.toString(),
   ],
+  otcExistentialDepositMultiplier: ["otcExistentialDepositMultiplier"],
   provider: ["provider"],
   providerMetadata: ["providerMetadata"],
   math: ["@galacticcouncil/math"],
