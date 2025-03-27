@@ -14,6 +14,8 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   "1000041": "20",
   //avDOT
   "1005": "15",
+  //atBTC
+  "1006": "1000765",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
@@ -27,6 +29,8 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
   "1004": "19",
   //avDOT
   "1005": "15",
+  //atBTC
+  "1006": "1000765",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =
