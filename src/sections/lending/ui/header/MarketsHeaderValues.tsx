@@ -29,7 +29,6 @@ export const MarketsHeaderValues: FC<{
       sx={{ maxWidth: ["100%", 700] }}
     >
       <DataValue
-        size="large"
         isLoading={loading}
         labelColor="brightBlue300"
         label="Total market size"
@@ -37,7 +36,6 @@ export const MarketsHeaderValues: FC<{
         <DisplayValue isUSD compact value={aggregatedStats.totalLiquidity} />
       </DataValue>
       <DataValue
-        size="large"
         isLoading={loading}
         labelColor="brightBlue300"
         label="Total available"
@@ -51,7 +49,6 @@ export const MarketsHeaderValues: FC<{
         />
       </DataValue>
       <DataValue
-        size="large"
         isLoading={loading}
         labelColor="brightBlue300"
         label="Total borrows"

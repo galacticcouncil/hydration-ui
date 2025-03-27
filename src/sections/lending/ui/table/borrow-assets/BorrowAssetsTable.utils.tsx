@@ -7,7 +7,7 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Link } from "components/Link/Link"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import {
   ComputedReserveData,
@@ -21,6 +21,7 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import {
   assetCanBeBorrowedByUser,
   getMaxAmountAvailableToBorrow,
+  getMaxGhoMintAmount,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 
@@ -30,7 +31,9 @@ export type TBorrowAssetsRow = TBorrowAssetsTableData["data"][number]
 
 const { accessor, display } = createColumnHelper<TBorrowAssetsRow>()
 
-export const useBorrowAssetsTableColumns = () => {
+export const useBorrowAssetsTableColumns = ({
+  isGho,
+}: { isGho?: boolean } = {}) => {
   const { t } = useTranslation()
   const { openBorrow } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
@@ -78,7 +81,7 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
       accessor("variableBorrowRate", {
-        header: t("lending.apyVariable"),
+        header: isGho ? t("lending.apyBorrowRate") : t("lending.apyVariable"),
         meta: {
           sx: {
             textAlign: "center",
@@ -124,33 +127,40 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, openBorrow, t],
+    [currentMarket, isGho, openBorrow, t],
   )
 }
 
 export const useBorrowAssetsTableData = () => {
   const { currentNetworkConfig, currentMarket } = useProtocolDataContext()
-  const { user, reserves, marketReferencePriceInUsd, loading } =
+  const { user, reserves, marketReferencePriceInUsd, ghoReserveData, loading } =
     useAppDataContext()
-  const [displayGho] = useRootStore((store) => [store.displayGho])
-  const [account] = useRootStore((store) => [store.account])
+  const displayGho = useRootStore((store) => store.displayGho)
+  const account = useRootStore((store) => store.account)
 
   const { baseAssetSymbol } = currentNetworkConfig
-
   const sortedReserves = useMemo(() => {
     const tokensToBorrow = reserves
       .filter((reserve) => assetCanBeBorrowedByUser(reserve, user))
       .map((reserve: ComputedReserveData) => {
-        const availableBorrows =
-          user && account
-            ? Number(
-                getMaxAmountAvailableToBorrow(
-                  reserve,
-                  user,
-                  InterestRate.Variable,
-                ),
-              )
-            : 0
+        const isGho = displayGho({ symbol: reserve.symbol, currentMarket })
+        let availableBorrows = 0
+
+        if (!user && !account) {
+          availableBorrows = 0
+        } else if (isGho) {
+          const maxAmountUserCanMint = Number(
+            getMaxGhoMintAmount(user, reserve),
+          )
+          availableBorrows = Math.min(
+            maxAmountUserCanMint,
+            ghoReserveData.aaveFacilitatorRemainingCapacity,
+          )
+        } else {
+          availableBorrows = Number(
+            getMaxAmountAvailableToBorrow(reserve, user, InterestRate.Variable),
+          )
+        }
 
         const availableBorrowsInUSD = valueToBigNumber(availableBorrows)
           .multipliedBy(reserve.formattedPriceInMarketReferenceCurrency)
@@ -212,6 +222,7 @@ export const useBorrowAssetsTableData = () => {
     baseAssetSymbol,
     currentMarket,
     displayGho,
+    ghoReserveData.aaveFacilitatorRemainingCapacity,
     marketReferencePriceInUsd,
     reserves,
     user,

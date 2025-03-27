@@ -75,10 +75,11 @@ export const useAllowedXYKPoolAssets = () => {
 
   return useMemo(() => {
     return [...all.values()].filter((asset) => {
-      const isTradable = asset.isTradable
-      const hasBalance = BN(
-        data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
-      ).gt(0)
+      const isTradable = asset.isTradable || asset.id === "222"
+      const hasBalance =
+        BN(
+          data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
+        ).gt(0) || asset.id === "222"
 
       const isNotTradableWithBalance = !isTradable && hasBalance
 

@@ -12,7 +12,7 @@ import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircula
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
 

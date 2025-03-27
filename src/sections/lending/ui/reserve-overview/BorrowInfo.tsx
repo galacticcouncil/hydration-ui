@@ -11,7 +11,7 @@ import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import {
   MarketDataType,
   NetworkConfig,
