@@ -12,7 +12,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { CapType } from "sections/lending/components/caps/helper"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsHFLine,
@@ -91,7 +91,7 @@ export const BorrowModalContent = ({
   unwrap: borrowUnWrapped,
   setUnwrap: setBorrowUnWrapped,
   symbol,
-}: ModalWrapperProps & {
+}: ModalWrapperRenderProps & {
   unwrap: boolean
   setUnwrap: (unwrap: boolean) => void
 }) => {

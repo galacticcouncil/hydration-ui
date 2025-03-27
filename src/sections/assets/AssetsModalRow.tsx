@@ -12,7 +12,7 @@ type AssetsModalRowProps = {
   asset: TAsset
   balance: string
   displaValue: string
-  onClick?: (asset: NonNullable<TAsset>) => void
+  onClick?: (asset: NonNullable<TAsset>, balance?: string) => void
   isActive?: boolean
   isSelected?: boolean
 }
@@ -30,7 +30,10 @@ export const AssetsModalRow = ({
   if (!asset) return <AssetsModalRowSkeleton />
 
   return (
-    <SAssetRow onClick={() => onClick?.(asset)} isSelected={!!isSelected}>
+    <SAssetRow
+      onClick={() => onClick?.(asset, balance)}
+      isSelected={!!isSelected}
+    >
       <div sx={{ display: "flex", align: "center", gap: 10 }}>
         <MultipleAssetLogo size={30} iconId={asset.iconId} />
 

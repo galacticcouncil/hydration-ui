@@ -6,7 +6,7 @@ export interface TypographyProps {
   color?: ResponsiveValue<keyof typeof theme.colors>
   fs?: ResponsiveValue<number>
   fw?: ResponsiveValue<number>
-  lh?: ResponsiveValue<number>
+  lh?: ResponsiveValue<number | string>
   font?: ResponsiveValue<
     | "Geist"
     | "GeistMedium"

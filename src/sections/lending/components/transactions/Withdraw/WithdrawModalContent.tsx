@@ -8,7 +8,7 @@ import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 
 import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsHFLine,
@@ -36,7 +36,7 @@ export const WithdrawModalContent = ({
   setUnwrap: setWithdrawUnWrapped,
   symbol,
   isWrongNetwork,
-}: ModalWrapperProps & {
+}: ModalWrapperRenderProps & {
   unwrap: boolean
   setUnwrap: (unwrap: boolean) => void
 }) => {

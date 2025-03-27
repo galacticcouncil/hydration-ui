@@ -1,6 +1,7 @@
 import { useVestingTotalVestedAmount } from "api/vesting"
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
+import StrategyIcon from "assets/icons/StrategyIcon.svg?react"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 import {
   SubNavigation,
@@ -15,8 +16,9 @@ export const Navigation = () => {
   const { t } = useTranslation()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
 
-  const visibilityMap = {
+  const visibilityMap: Record<string, boolean> = {
     [LINKS.walletAssets]: true,
+    [LINKS.walletStrategy]: true,
     [LINKS.walletTransactions]: isDevelopment,
     [LINKS.walletVesting]: !!totalVestedAmount?.gt(0),
   }
@@ -31,6 +33,11 @@ export const Navigation = () => {
         to={LINKS.walletAssets}
         icon={<AssetsIcon width={15} height={15} />}
         label={t("header.wallet.yourAssets.title")}
+      />
+      <SubNavigationTabLink
+        to={LINKS.walletStrategy}
+        icon={<StrategyIcon width={18} height={18} />}
+        label={t("header.wallet.strategy.title")}
       />
       {visibilityMap[LINKS.walletTransactions] && (
         <SubNavigationTabLink

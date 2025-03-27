@@ -8,7 +8,7 @@ import { useAssetCaps } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
 
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsHFLine,
@@ -37,7 +37,7 @@ export const CollateralChangeModalContent = ({
   userReserve,
   isWrongNetwork,
   symbol,
-}: ModalWrapperProps) => {
+}: ModalWrapperRenderProps) => {
   const { mainTxState: collateralChangeTxState, txError } = useModalContext()
   const { user } = useAppDataContext()
   const { debtCeiling } = useAssetCaps()

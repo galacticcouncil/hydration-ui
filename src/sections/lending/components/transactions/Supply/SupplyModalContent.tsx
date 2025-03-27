@@ -8,7 +8,7 @@ import {
 import BigNumber from "bignumber.js"
 import React, { useMemo, useState } from "react"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsCollateralLine,
@@ -42,7 +42,7 @@ export const SupplyModalContent = React.memo(
     isWrongNetwork,
     nativeBalance,
     tokenBalance,
-  }: ModalWrapperProps) => {
+  }: ModalWrapperRenderProps) => {
     const { marketReferencePriceInUsd, user } = useAppDataContext()
     const { currentNetworkConfig } = useProtocolDataContext()
     const { mainTxState: supplyTxState, txError } = useModalContext()

@@ -5,7 +5,7 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 
 import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsIncentivesLine,
@@ -30,7 +30,7 @@ export const RateSwitchModalContent = ({
   isWrongNetwork,
   poolReserve,
   userReserve,
-}: ModalWrapperProps & { currentRateMode: InterestRate }) => {
+}: ModalWrapperRenderProps & { currentRateMode: InterestRate }) => {
   const { mainTxState: rateSwitchTxState, txError } = useModalContext()
 
   const rateModeAfterSwitch =

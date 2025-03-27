@@ -40,7 +40,6 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
         flex: ["column", "column", "row"],
         align: "start",
         gap: [10, 24, 100],
-        mb: [24, 40],
       }}
     >
       <DataValueList separated sx={{ flexGrow: 1, width: "100%" }}>
