@@ -1,13 +1,15 @@
 import { Text } from "components/Typography/Text/Text"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { safeConvertAddressSS58 } from "utils/formatting"
 import { SContainer, SHeader, SItems } from "./AddressBook.styled"
-import { getBlacklistedWallets, useAddressStore } from "./AddressBook.utils"
+import {
+  getBlacklistedWallets,
+  useAddressStore,
+  validateAddress,
+} from "./AddressBook.utils"
 import { AddressBookEmpty } from "./empty/AddressBookEmpty"
 import { AddressBookInput } from "./input/AddressBookInput"
 import { AddressBookItem } from "./item/AddressBookItem"
-import { safeConvertAddressH160 } from "utils/evm"
 import { arraySearch } from "utils/helpers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import {
@@ -43,11 +45,9 @@ export const AddressBook = ({
     [addresses, search],
   )
 
-  const isValidAddress =
-    safeConvertAddressSS58(search, 0) !== null ||
-    safeConvertAddressH160(search) !== null
+  const addressProvider = validateAddress(search)
 
-  const canAdd = !!search && !items.length && isValidAddress
+  const canAdd = !items.length && !!addressProvider
 
   return (
     <SContainer>
