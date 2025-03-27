@@ -1,6 +1,11 @@
+import { addr } from "@galacticcouncil/xcm-core"
+import { PublicKey } from "@solana/web3.js"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useQuery } from "@tanstack/react-query"
-import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
+import {
+  PROVIDERS_BY_WALLET_MODE,
+  WalletMode,
+} from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -23,11 +28,35 @@ export const useProviderAccounts = (
   )
 }
 
+function isSolanaAddress(address: string) {
+  const pubkey = new PublicKey(address)
+  return PublicKey.isOnCurve(pubkey.toBuffer())
+}
+
+export function validateAddress(address: string) {
+  if (addr.isH160(address)) {
+    return WalletMode.EVM
+  } else if (addr.isSs58(address)) {
+    return WalletMode.Substrate
+  } else if (addr.isSolana(address)) {
+    try {
+      if (isSolanaAddress(address)) {
+        return WalletMode.Solana
+      }
+    } catch (error) {
+      return null
+    }
+  }
+
+  return null
+}
+
 export type Address = {
   id?: string
   name: string
   address: string
   provider: WalletProviderType
+  isCustom?: boolean
 }
 export type AddressStore = {
   addresses: Address[]
@@ -49,7 +78,7 @@ export const useAddressStore = create<AddressStore>()(
             ({ address }) =>
               safeConvertAddressH160(address) ||
               safeConvertAddressSS58(address, 0) ||
-              "",
+              address,
             addresses,
             state.addresses,
           )
@@ -79,7 +108,35 @@ export const useAddressStore = create<AddressStore>()(
           addresses: state.addresses.filter((a) => a.id !== id),
         })),
     }),
-    { name: "address-book" },
+    {
+      name: "address-book",
+      version: 1,
+      migrate: (persistedState, version) => {
+        const state = persistedState as AddressStore
+
+        const { addresses } = state
+
+        try {
+          return {
+            ...state,
+            addresses: addresses.map((address) => {
+              if (address.provider === WalletProviderType.ExternalWallet) {
+                const addressMode = validateAddress(address.address)
+
+                if (!addressMode) return address
+
+                const provider = PROVIDERS_BY_WALLET_MODE[addressMode][0]
+
+                return { ...address, provider, isCustom: true }
+              }
+              return address
+            }),
+          }
+        } catch (error) {
+          return state
+        }
+      },
+    },
   ),
 )
 
