@@ -403,6 +403,7 @@ export const useProviderData = (
         PoolType.Stable,
         PoolType.XYK,
         PoolType.LBP,
+        PoolType.Aave,
       ]
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
