@@ -20,7 +20,7 @@ import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfi
 
 import { Alert } from "components/Alert"
 import { GasEstimationError } from "sections/lending/components/transactions/FlowCommons/GasEstimationError"
-import { ModalWrapperProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
+import { ModalWrapperRenderProps } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { TxSuccessView } from "sections/lending/components/transactions/FlowCommons/Success"
 import {
   DetailsHFLine,
@@ -42,7 +42,7 @@ export const RepayModalContent = ({
   nativeBalance,
   isWrongNetwork,
   debtType,
-}: ModalWrapperProps & { debtType: InterestRate }) => {
+}: ModalWrapperRenderProps & { debtType: InterestRate }) => {
   const { mainTxState: repayTxState, txError } = useModalContext()
   const { marketReferencePriceInUsd, user } = useAppDataContext()
   const { currentChainId, currentMarketData, currentMarket } =

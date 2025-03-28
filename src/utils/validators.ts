@@ -6,6 +6,11 @@ import { z } from "zod"
 
 export const required = z.string().trim().min(1, i18n.t("error.required"))
 
+export const requiredAny = [
+  (value: unknown) => !!value,
+  i18n.t("error.required"),
+] as const
+
 export const validNumber = z
   .string()
   .refine((value) => !BigNumber(value).isNaN(), i18n.t("error.validNumber"))
@@ -14,6 +19,8 @@ export const positive = z
   .string()
   .pipe(validNumber)
   .refine((value) => BigNumber(value).gt(0), i18n.t("error.positive"))
+
+export const maxBalanceError = i18n.t("error.maxBalance")
 
 export const maxBalance = (balance: string, decimals: number) => {
   return z

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 import { AllAssets, Assets } from "./WalletSections"
+import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategBanner"
 
 export const WalletAssets = () => {
   const { t } = useTranslation()
@@ -69,10 +70,11 @@ export const WalletAssets = () => {
   }
 
   return (
-    <>
+    <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
+      <WalletStrategyBanner />
       <WalletAssetsFilters />
       {section}
-    </>
+    </div>
   )
 }

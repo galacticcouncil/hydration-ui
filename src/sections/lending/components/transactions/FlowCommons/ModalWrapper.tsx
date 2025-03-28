@@ -13,8 +13,9 @@ import { useRootStore } from "sections/lending/store/root"
 import { isFeatureEnabled } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TxErrorView } from "./Error"
+import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
-export interface ModalWrapperProps {
+export interface ModalWrapperRenderProps {
   underlyingAsset: string
   poolReserve: ComputedReserveData
   userReserve: ComputedUserReserveData
@@ -25,17 +26,22 @@ export interface ModalWrapperProps {
   action?: string
 }
 
-export const ModalWrapper: React.FC<{
+type ModalWrapperProps = {
   underlyingAsset: string
-  title: string
   requiredChainId?: number
   // if true wETH will stay wETH otherwise wETH will be returned as ETH
   keepWrappedSymbol?: boolean
-  hideTitleSymbol?: boolean
   requiredPermission?: PERMISSION
-  children: (props: ModalWrapperProps) => React.ReactNode
   action?: string
-}> = ({
+}
+
+export const ModalWrapper: React.FC<
+  ModalWrapperProps & {
+    title: string
+    hideTitleSymbol?: boolean
+    children: (props: ModalWrapperRenderProps) => React.ReactNode
+  }
+> = ({
   hideTitleSymbol,
   underlyingAsset,
   children,
@@ -45,29 +51,79 @@ export const ModalWrapper: React.FC<{
   keepWrappedSymbol,
 }) => {
   const currentMarketData = useRootStore((store) => store.currentMarketData)
+  const { mainTxState, close } = useModalContext()
+
+  const result = useBorrowModalWrapper({
+    underlyingAsset,
+    requiredChainId: _requiredChainId,
+    requiredPermission,
+    keepWrappedSymbol,
+  })
+
+  /* const { isWrongNetwork, requiredChainId } =
+    useIsWrongNetwork(_requiredChainId) */
+
+  if (result.type === "error") {
+    return <TxErrorView txError={result.txError} />
+  }
+
+  if (result.permissionDenied && currentMarketData.permissionComponent) {
+    return <>{currentMarketData.permissionComponent}</>
+  }
+
+  const { poolReserve, symbol } = result.data
+
+  const modalTitle = !mainTxState.success ? title : ""
+  const fullModalTitle =
+    `${modalTitle}${hideTitleSymbol ? "" : ` ${symbol}`}`.toUpperCase()
+
+  return (
+    <AssetCapsProvider asset={poolReserve}>
+      <ModalContents
+        onClose={close}
+        sx={{ color: "white" }}
+        contents={[
+          {
+            title: fullModalTitle,
+            content: <>{children(result.data)}</>,
+          },
+        ]}
+      />
+    </AssetCapsProvider>
+  )
+}
+
+type Result =
+  | { type: "error"; txError: TxErrorType }
+  | {
+      type: "success"
+      permissionDenied: boolean
+      data: ModalWrapperRenderProps
+    }
+
+export const useBorrowModalWrapper = ({
+  underlyingAsset,
+  requiredChainId: _requiredChainId,
+  requiredPermission,
+  keepWrappedSymbol,
+}: ModalWrapperProps): Result => {
+  const currentMarketData = useRootStore((store) => store.currentMarketData)
   const currentNetworkConfig = useRootStore(
     (store) => store.currentNetworkConfig,
   )
   const { walletBalances } = useWalletBalances(currentMarketData)
   const { user, reserves } = useAppDataContext()
-  const { txError, mainTxState, close } = useModalContext()
+  const { txError } = useModalContext()
   const { permissions } = usePermissions()
 
-  /* const { isWrongNetwork, requiredChainId } =
-    useIsWrongNetwork(_requiredChainId) */
-
   if (txError && txError.blocking) {
-    return <TxErrorView txError={txError} />
+    return { type: "error", txError }
   }
 
-  if (
-    requiredPermission &&
-    isFeatureEnabled.permissions(currentMarketData) &&
-    !permissions.includes(requiredPermission) &&
-    currentMarketData.permissionComponent
-  ) {
-    return <>{currentMarketData.permissionComponent}</>
-  }
+  const permissionDenied =
+    !!requiredPermission &&
+    !!isFeatureEnabled.permissions(currentMarketData) &&
+    !permissions.includes(requiredPermission)
 
   const poolReserve = reserves.find((reserve) => {
     if (underlyingAsset?.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase())
@@ -86,38 +142,20 @@ export const ModalWrapper: React.FC<{
       ? currentNetworkConfig?.baseAssetSymbol
       : poolReserve?.symbol
 
-  const modalTitle = !mainTxState.success ? title : ""
-  const fullModalTitle =
-    `${modalTitle}${hideTitleSymbol ? "" : ` ${symbol}`}`.toUpperCase()
-
-  return (
-    <AssetCapsProvider asset={poolReserve}>
-      <ModalContents
-        onClose={close}
-        sx={{ color: "white" }}
-        contents={[
-          {
-            title: fullModalTitle,
-            content: (
-              <>
-                {children({
-                  isWrongNetwork: false,
-                  nativeBalance:
-                    walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]
-                      ?.amount || "0",
-                  tokenBalance:
-                    walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]
-                      ?.amount || "0",
-                  poolReserve,
-                  symbol,
-                  underlyingAsset,
-                  userReserve,
-                })}
-              </>
-            ),
-          },
-        ]}
-      />
-    </AssetCapsProvider>
-  )
+  return {
+    type: "success",
+    permissionDenied,
+    data: {
+      isWrongNetwork: false,
+      nativeBalance:
+        walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount || "0",
+      tokenBalance:
+        walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]?.amount ||
+        "0",
+      poolReserve,
+      symbol,
+      underlyingAsset,
+      userReserve,
+    },
+  }
 }

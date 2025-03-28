@@ -10,6 +10,8 @@ import {
   STopContent,
 } from "./Modal.styled"
 import { ModalContentProps, ModalContents } from "./contents/ModalContents"
+import { Separator } from "components/Separator/Separator"
+import { SxProps } from "jsx/jsx-sx-convert"
 
 type Props = {
   open: boolean
@@ -124,5 +126,17 @@ export const ModalScrollableContent = ({
       </div>
       {footer}
     </>
+  )
+}
+
+export const ModalHorizontalSeparator = (sx: SxProps) => {
+  return (
+    <Separator
+      sx={sx}
+      css={{
+        marginInline: "calc(-1 * var(--modal-header-padding-x))",
+        width: "calc(100% + 2 * var(--modal-header-padding-x))",
+      }}
+    />
   )
 }

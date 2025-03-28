@@ -369,6 +369,13 @@ export const QUERY_KEYS = {
     pagination.pageSize,
     pagination.pageIndex,
   ],
+  bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
+    QUERY_KEY_PREFIX,
+    "bestTradeSell",
+    assetInId,
+    assetOutId,
+    amountIn,
+  ],
 } as const
 
 export const WS_QUERY_KEYS = {

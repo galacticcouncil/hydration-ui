@@ -5,8 +5,13 @@ import {
   SText,
 } from "components/BoxSwitch/BoxSwitch.styled"
 
+export type BoxSwitchOption = {
+  label: string
+  value: number
+}
+
 type Props = {
-  options: { label: string; value: number }[]
+  options: ReadonlyArray<BoxSwitchOption>
   selected?: number
   onSelect: (value: number) => void
   disabled?: boolean

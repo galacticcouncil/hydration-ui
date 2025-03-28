@@ -19,7 +19,7 @@ import BN from "bignumber.js"
 
 type Props = {
   allowedAssets?: Maybe<u32 | string>[]
-  onSelect?: (asset: NonNullable<TAsset>) => void
+  onSelect?: (asset: NonNullable<TAsset>, balance?: string) => void
   hideInactiveAssets?: boolean
   allAssets?: boolean
   withBonds?: boolean
@@ -52,11 +52,11 @@ export const AssetsModalContent = ({
     allowedAssets,
   })
 
-  const onSelectHandler = (assetData: TAsset) => {
+  const onSelectHandler = (assetData: TAsset, balance?: string) => {
     if (confirmRequired) {
       setSelectedAssetId(assetData.id)
     } else {
-      onSelect?.(assetData)
+      onSelect?.(assetData, balance)
     }
   }
 
@@ -65,7 +65,7 @@ export const AssetsModalContent = ({
       (token) => token.meta.id === selectedAssetId,
     )
     if (asset) {
-      onSelect?.(asset.meta)
+      onSelect?.(asset.meta, asset.balance)
     }
   }
 
