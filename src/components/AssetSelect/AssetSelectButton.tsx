@@ -12,6 +12,7 @@ type Props = {
   onClick?: () => void
   assetId: string
   className?: string
+  fullWidth?: boolean
   disabled?: boolean
 }
 
@@ -19,6 +20,7 @@ export const AssetSelectButton = ({
   onClick,
   assetId,
   className,
+  fullWidth,
   disabled,
 }: Props) => {
   const { t } = useTranslation()
@@ -35,6 +37,7 @@ export const AssetSelectButton = ({
 
   return (
     <SSelectAssetButton
+      fullWidth={fullWidth}
       className={className}
       size="small"
       disabled={disabled}
@@ -72,7 +75,7 @@ export const AssetSelectButton = ({
         </Text>
       )}
 
-      {isSelectable && <Icon icon={<ChevronDown />} />}
+      {isSelectable && <Icon sx={{ ml: "auto" }} icon={<ChevronDown />} />}
     </SSelectAssetButton>
   )
 }

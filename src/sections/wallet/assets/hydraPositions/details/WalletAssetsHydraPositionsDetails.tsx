@@ -89,10 +89,10 @@ const LrnaValue = ({
   const { getAsset, hub } = useAssets()
 
   const meta = assetId ? getAsset(assetId.toString()) : undefined
-  const lrnaSpotPrice = useSpotPrice(hub.id, assetId)
+  const { data: lrnaSpotPrice } = useSpotPrice(hub.id, assetId)
 
   const lrnaPositionPrice =
-    lrna?.multipliedBy(lrnaSpotPrice.data?.spotPrice ?? BN_1) ?? BN_0
+    lrna?.multipliedBy(lrnaSpotPrice?.spotPrice ?? BN_1) ?? BN_0
   return (
     <div sx={{ flex: "row", gap: 4 }}>
       <Text fs={14} lh={14} fw={500} color="white">

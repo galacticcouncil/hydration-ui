@@ -1,36 +1,40 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useShallow } from "hooks/useShallow"
-import { pick, uniqBy } from "utils/rx"
+import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   AssetClient,
   BalanceClient,
-  PoolService,
+  CachingPoolService,
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useAssetRegistry, useSettingsStore } from "state/store"
-import { identity, undefinedNoop } from "utils/helpers"
-import { ExternalAssetCursor } from "@galacticcouncil/apps"
+import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
+import { undefinedNoop } from "utils/helpers"
+import {
+  ChainCursor,
+  Ecosystem,
+  ExternalAssetCursor,
+} from "@galacticcouncil/apps"
 import { getExternalId } from "utils/externalAssets"
-import { pingRpc } from "utils/rpc"
+import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 
-export type TEnv = "testnet" | "mainnet"
+export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
   name: string
   url: string
   indexerUrl: string
   squidUrl: string
   env: string | string[]
-  dataEnv: TEnv
+  dataEnv: TDataEnv
 }
 
 export type TFeatureFlags = {
@@ -39,49 +43,86 @@ export type TFeatureFlags = {
 
 export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
 
+const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
+  indexerUrl: "https://explorer.hydradx.cloud/graphql",
+  squidUrl:
+    "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
+  env: "production",
+  dataEnv: "mainnet",
+}
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
     url: "wss://rpc.hydradx.cloud",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
-    dataEnv: "mainnet",
+    ...defaultProvider,
   },
   {
     name: "Dwellir",
     url: "wss://hydration-rpc.n.dwellir.com",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
-    dataEnv: "mainnet",
+    ...defaultProvider,
   },
   {
     name: "Helikon",
     url: "wss://rpc.helikon.io/hydradx",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
-    dataEnv: "mainnet",
+    ...defaultProvider,
   },
   {
     name: "Dotters",
     url: "wss://hydration.dotters.network",
-    indexerUrl: "https://explorer.hydradx.cloud/graphql",
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
-    env: "production",
-    dataEnv: "mainnet",
+    ...defaultProvider,
+  },
+  {
+    name: "IBP",
+    url: "wss://hydration.ibp.network",
+    ...defaultProvider,
+  },
+  {
+    name: "cay",
+    url: "wss://rpc.cay.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "parm",
+    url: "wss://rpc.parm.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "roach",
+    url: "wss://rpc.roach.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "zipp",
+    url: "wss://rpc.zipp.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "sin",
+    url: "wss://rpc.sin.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "coke",
+    url: "wss://rpc.coke.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "3",
+    url: "wss://3.rpc.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "5",
+    url: "wss://5.rpc.hydration.cloud",
+    ...defaultProvider,
   },
   {
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
     squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql",
+      "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
     env: ["development"],
     dataEnv: "testnet",
   },
@@ -104,19 +145,54 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
-export const isTestnetRpcUrl = (url: string) =>
-  PROVIDERS.find((provider) => provider.url === url)?.dataEnv === "testnet"
+const getDefaultDataEnv = (): TDataEnv => {
+  const env = import.meta.env.VITE_ENV
+  if (env === "production") return "mainnet"
+  return "testnet"
+}
 
-export async function pingAllProvidersAndSort() {
-  const fastestRpc = await Promise.race(
-    PROVIDER_URLS.map(async (url) => {
-      const time = await pingRpc(url)
-      return { url, time }
-    }),
-  )
+export const getProviderDataEnv = (rpcUrl: string) => {
+  const provider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  return provider ? provider.dataEnv : getDefaultDataEnv()
+}
 
-  const sortedRpcList = uniqBy(identity, [fastestRpc.url, ...PROVIDER_URLS])
-  useProviderRpcUrlStore.getState().setRpcUrlList(sortedRpcList, Date.now())
+export const isTestnetRpcUrl = (rpcUrl: string) => {
+  const dataEnv = getProviderDataEnv(rpcUrl)
+  return dataEnv === "testnet"
+}
+
+export async function getBestProvider(): Promise<PingResponse[]> {
+  const controller = new AbortController()
+  const signal = controller.signal
+
+  const results: PingResponse[] = []
+
+  const promises = PROVIDER_URLS.map(async (url) => {
+    try {
+      const res = await pingRpc(url, 5000, signal)
+      if (res.ping === Infinity) return
+
+      results.push(res)
+      results.sort((a, b) => b.timestamp - a.timestamp)
+
+      // Wait for up to 3 results, then abort
+      if (results.length === 3 || results.length === PROVIDER_URLS.length) {
+        controller.abort()
+      }
+    } catch (error) {
+      if (!signal.aborted) {
+        console.error(`Error pinging RPC ${url}:`, error)
+      }
+    }
+  })
+
+  await Promise.all(promises)
+
+  if (results.length === 0) {
+    throw new Error("All RPC providers failed or timed out")
+  }
+
+  return results
 }
 
 export const useProviderRpcUrlStore = create(
@@ -127,7 +203,7 @@ export const useProviderRpcUrlStore = create(
     updatedAt: number
     setRpcUrl: (rpcUrl: string | undefined) => void
     setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
-    getDataEnv: () => TEnv
+    getDataEnv: () => TDataEnv
     setAutoMode: (state: boolean) => void
     _hasHydrated: boolean
     _setHasHydrated: (value: boolean) => void
@@ -142,10 +218,7 @@ export const useProviderRpcUrlStore = create(
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
-        return (
-          PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
-          "mainnet"
-        )
+        return getProviderDataEnv(rpcUrl)
       },
       _hasHydrated: false,
       _setHasHydrated: (state) => set({ _hasHydrated: state }),
@@ -161,26 +234,31 @@ export const useProviderRpcUrlStore = create(
 )
 
 export const useActiveRpcUrlList = () => {
-  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore(
+  const {
+    autoMode,
+    rpcUrl,
+    rpcUrlList: list,
+  } = useProviderRpcUrlStore(
     useShallow((state) => pick(state, ["autoMode", "rpcUrl", "rpcUrlList"])),
   )
-  return autoMode ? rpcUrlList : [rpcUrl]
-}
-
-export const useIsTestnet = () => {
-  const rpcUrlList = useActiveRpcUrlList()
-  return isTestnetRpcUrl(rpcUrlList[0])
+  const rpcUrlList = autoMode ? list : [rpcUrl]
+  const dataEnv = getProviderDataEnv(rpcUrlList[0])
+  return {
+    rpcUrlList,
+    rpcUrlListKey: rpcUrlList.join(","),
+    dataEnv: getProviderDataEnv(rpcUrlList[0]),
+    isTestnet: dataEnv === "testnet",
+  }
 }
 
 export const useProviderAssets = () => {
   const { data: provider } = useProviderData()
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return useQuery(
-    QUERY_KEYS.assets(rpcUrlList.join()),
+    [...QUERY_KEYS.assets(dataEnv), provider?.timestamp],
     provider
       ? async () => {
-          const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
           const degenMode = useSettingsStore.getState().degenMode
           const { tokens: externalTokens } = degenMode
             ? ExternalAssetCursor.deref().state
@@ -188,54 +266,156 @@ export const useProviderAssets = () => {
 
           const assetClient = new AssetClient(provider.api)
 
-          return await Promise.all([
+          const [tradeAssets, sdkAssets] = await Promise.all([
             provider.tradeRouter.getAllAssets(),
             assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
           ])
+
+          if (sdkAssets?.length && tradeAssets?.length) {
+            const { sync } = useAssetRegistry.getState()
+
+            sync(
+              sdkAssets.map((asset) => {
+                const isTradable = tradeAssets.some(
+                  (tradeAsset) => tradeAsset.id === asset.id,
+                )
+                return {
+                  ...asset,
+                  symbol: asset.symbol ?? "",
+                  decimals: asset.decimals ?? 0,
+                  name: asset.name ?? "",
+                  externalId: getExternalId(asset),
+                  isTradable,
+                }
+              }),
+            )
+          }
+
+          return []
         }
       : undefinedNoop,
     {
       enabled: !!provider,
+      notifyOnChangeProps: [],
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
-      onSuccess: (data) => {
-        const [tradeAssets, sdkAssets] = data ?? []
-        if (sdkAssets?.length && tradeAssets?.length) {
-          const { sync } = useAssetRegistry.getState()
-
-          sync(
-            sdkAssets.map((asset) => {
-              const isTradable = tradeAssets.some(
-                (tradeAsset) => tradeAsset.id === asset.id,
-              )
-              return {
-                ...asset,
-                symbol: asset.symbol ?? "",
-                decimals: asset.decimals ?? 0,
-                name: asset.name ?? "",
-                externalId: getExternalId(asset),
-                isTradable,
-              }
-            }),
-          )
-        }
-      },
     },
   )
 }
 
-export const useProviderData = () => {
-  const rpcUrlList = useActiveRpcUrlList()
-  const { setRpcUrl } = useProviderRpcUrlStore()
+const WHITELISTED_QUERIES_ON_PROVIDER_CHANGE = ["rpcStatus"]
+const RPC_CHANGE_QUERY_FILTER: QueryFilters = {
+  type: "active",
+  predicate: (query) =>
+    !WHITELISTED_QUERIES_ON_PROVIDER_CHANGE.includes(
+      query.queryKey[0] as string,
+    ),
+}
+
+export const useProviderMetadata = () => {
+  const { isLoaded, api } = useRpcProvider()
+  const { metadata: storedMetadata, setMetadata } = useApiMetadata()
 
   return useQuery(
-    QUERY_KEYS.provider(rpcUrlList.join()),
+    QUERY_KEYS.providerMetadata,
     async () => {
+      const [genesisHash, runtimeVersion] = await Promise.all([
+        api.genesisHash.toHex(),
+        api.runtimeVersion.specVersion.toNumber(),
+      ])
+
+      const metadataKey = `${genesisHash}-${runtimeVersion}`
+      const isStoredMetadata =
+        storedMetadata?.hasOwnProperty(metadataKey) ?? false
+
+      if (!isStoredMetadata) {
+        const metadataHex = await api.runtimeMetadata.toHex()
+        setMetadata(metadataKey, metadataHex)
+      }
+
+      return true
+    },
+    { enabled: isLoaded, staleTime: Infinity, notifyOnChangeProps: [] },
+  )
+}
+
+export const useProviderData = (
+  { shouldRefetchOnRpcChange } = { shouldRefetchOnRpcChange: false },
+) => {
+  const queryClient = useQueryClient()
+  const { metadata: storedMetadata } = useApiMetadata()
+  const [enabled, setEnabled] = useState(true)
+
+  useEffect(() => {
+    if (!shouldRefetchOnRpcChange) return
+    return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
+      const prevRpcUrl = prevState.rpcUrl
+      const nextRpcUrl = state.rpcUrl
+      const hasRpcUrlChanged = prevRpcUrl !== nextRpcUrl
+
+      if (!hasRpcUrlChanged) return
+
+      const prevDataEnv = getProviderDataEnv(prevRpcUrl)
+      const nextDataEnv = getProviderDataEnv(nextRpcUrl)
+
+      const hasDataEnvChanged = !nextDataEnv || prevDataEnv !== nextDataEnv
+
+      setEnabled(false)
+      queryClient.removeQueries(QUERY_KEYS.provider)
+
+      if (hasDataEnvChanged) {
+        queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
+        queryClient.removeQueries(QUERY_KEYS.providerMetadata)
+      } else {
+        queryClient.invalidateQueries(
+          {
+            ...RPC_CHANGE_QUERY_FILTER,
+            refetchType: "none",
+          },
+          { cancelRefetch: true },
+        )
+      }
+      await changeProvider(prevRpcUrl, nextRpcUrl)
+      setEnabled(true)
+    })
+  }, [queryClient, shouldRefetchOnRpcChange])
+
+  return useQuery(
+    QUERY_KEYS.provider,
+    async () => {
+      const currentRpcUrlState = useProviderRpcUrlStore.getState()
+      const rpcUrlList = currentRpcUrlState.autoMode
+        ? currentRpcUrlState.rpcUrlList
+        : [currentRpcUrlState.rpcUrl]
+
       const maxRetries = rpcUrlList.length * 5
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(rpcUrlList, maxRetries)
 
-      const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
+      const api = await apiPool.api(rpcUrlList, maxRetries, storedMetadata)
+
+      const provider = getProviderInstance(api)
+      const endpoint = provider.endpoint
+      const dataEnv = getProviderDataEnv(endpoint)
+
+      const poolService = new CachingPoolService(api)
+      const traderRoutes = [
+        PoolType.Omni,
+        PoolType.Stable,
+        PoolType.XYK,
+        PoolType.LBP,
+      ]
+      const tradeRouter = new TradeRouter(poolService, {
+        includeOnly: traderRoutes,
+      })
+
+      ChainCursor.reset({
+        api,
+        poolService,
+        router: tradeRouter,
+        ecosystem: Ecosystem.Polkadot,
+        isTestnet: isTestnetRpcUrl(endpoint),
+      })
+
       const degenMode = useSettingsStore.getState().degenMode
       const { tokens: externalTokens } = degenMode
         ? ExternalAssetCursor.deref().state
@@ -254,18 +434,7 @@ export const useProviderData = () => {
         },
       })
 
-      const poolService = new PoolService(api)
-      const traderRoutes = [
-        PoolType.Omni,
-        PoolType.Stable,
-        PoolType.XYK,
-        PoolType.LBP,
-      ]
       await poolService.syncRegistry(externalTokens[dataEnv])
-
-      const tradeRouter = new TradeRouter(poolService, {
-        includeOnly: traderRoutes,
-      })
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
@@ -276,38 +445,37 @@ export const useProviderData = () => {
 
       const evm = new PolkadotEvmRpcProvider(api)
 
+      const timestamp = new Date().toISOString()
+
       return {
         api,
         evm,
         tradeRouter,
         poolService,
         balanceClient,
+        endpoint,
+        dataEnv,
+        timestamp,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
         } as TFeatureFlags,
       }
     },
     {
-      enabled: rpcUrlList.length > 0,
+      enabled,
       refetchOnWindowFocus: false,
       retry: false,
-      onSettled: (data) => {
-        if (data?.api) {
-          const provider = getProviderInstance(data.api)
-          setRpcUrl(provider.endpoint)
-        }
-      },
     },
   )
 }
 
 export const useRefetchProviderData = () => {
   const queryClient = useQueryClient()
-  const rpcList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return () => {
-    queryClient.invalidateQueries(QUERY_KEYS.provider(rpcList.join()))
-    queryClient.invalidateQueries(QUERY_KEYS.assets(rpcList.join()))
+    queryClient.invalidateQueries(QUERY_KEYS.provider)
+    queryClient.invalidateQueries(QUERY_KEYS.assets(dataEnv))
   }
 }
 
@@ -344,8 +512,7 @@ export const useActiveProvider = (): ProviderProps => {
       indexerUrl: import.meta.env.VITE_INDEXER_URL,
       squidUrl: import.meta.env.VITE_SQUID_URL,
       env: import.meta.env.VITE_ENV,
-      dataEnv:
-        import.meta.env.VITE_ENV === "production" ? "mainnet" : "testnet",
+      dataEnv: getDefaultDataEnv(),
     }
   )
 }
@@ -356,13 +523,40 @@ export function getProviderInstance(api: ApiPromise) {
   return options?.provider as WsProvider
 }
 
-export const useProviderPing = (urls: string[], timeoutMs?: number) => {
-  return useQuery(["providerPing", urls], async () => {
-    return Promise.all(
-      urls.map(async (url) => {
-        const time = await pingRpc(url, timeoutMs)
-        return { url, time }
-      }),
-    )
+export async function reconnectProvider(provider: WsProvider) {
+  return new Promise((resolve, reject) => {
+    provider.connect()
+    if (provider.isConnected) {
+      resolve(provider)
+    } else {
+      provider.on("connected", () => {
+        resolve(provider)
+      })
+      provider.on("error", () =>
+        reject(new Error("Failed to reconnect provider")),
+      )
+    }
   })
+}
+
+export async function changeProvider(prevUrl: string, nextUrl: string) {
+  if (prevUrl === nextUrl) return
+
+  const apiPool = SubstrateApis.getInstance()
+  const prevApi = await apiPool.api(prevUrl)
+
+  const nextApi = await apiPool.api(nextUrl)
+  const nextProvider = getProviderInstance(nextApi)
+
+  if (nextProvider && !nextProvider.isConnected) {
+    await reconnectProvider(nextProvider)
+  }
+
+  if (nextApi && !nextApi.isConnected) {
+    await nextApi.connect()
+  }
+
+  if (prevApi && prevApi.isConnected) {
+    await prevApi.disconnect()
+  }
 }

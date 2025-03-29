@@ -4,9 +4,11 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { DepositPageSkeleton } from "sections/deposit/DepositPageSkeleton"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
 import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
 import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
+import { LendingHistorySkeleton } from "sections/lending/skeleton/LendingHistorySkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
@@ -132,9 +134,23 @@ const LendingMarketsPage = lazy(async () => ({
     .LendingMarketsPage,
 }))
 
+const LendingHistoryPage = lazy(async () => ({
+  default: (
+    await import("sections/lending/subsections/history/LendingHistoryPage")
+  ).LendingHistoryPage,
+}))
+
 const LendingReserveOverviewPage = lazy(async () => ({
   default: (await import("sections/lending/LendingReserveOverviewPage"))
     .LendingReserveOverviewPage,
+}))
+
+const DepositPage = lazy(async () => ({
+  default: (await import("sections/deposit/DepositPage")).DepositPage,
+}))
+
+const WithdrawPage = lazy(async () => ({
+  default: (await import("sections/deposit/WithdrawPage")).WithdrawPage,
 }))
 
 export const routes: Route[] = [
@@ -462,7 +478,31 @@ export const routes: Route[] = [
           },
         ],
       },
+      {
+        path: LINKS.borrowHistory.split("/").pop(),
+        element: (
+          <Suspense fallback={<LendingHistorySkeleton />}>
+            <LendingHistoryPage />
+          </Suspense>
+        ),
+      },
     ],
+  },
+  {
+    path: LINKS.deposit,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <DepositPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.withdraw,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <WithdrawPage />
+      </Suspense>
+    ),
   },
   {
     path: "*",

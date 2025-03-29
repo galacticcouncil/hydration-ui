@@ -5,6 +5,9 @@ import type EventEmitter from "events"
 import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { PROVIDER_URLS, useProviderRpcUrlStore } from "api/provider"
+import { wsToHttp } from "utils/formatting"
+import { HYDRATION_CHAIN_KEY } from "utils/constants"
 
 const METAMASK_LIKE_CHECKS = [
   "isTalisman",
@@ -42,20 +45,31 @@ export interface AddEvmChainParams {
 }
 
 const chainIconMap: { [key: string]: string[] } = {
-  hydradx: ["https://app.hydration.net/favicon/apple-touch-icon.png"],
+  [HYDRATION_CHAIN_KEY]: [
+    "https://app.hydration.net/favicon/apple-touch-icon.png",
+  ],
 }
 
-const getAddEvmChainParams = (chain: string): AddEvmChainParams => {
-  const chainProps = (chainsMap.get(chain) as EvmParachain).client.chain
+const getHydrationRprcUrlsByPriority = (priorityRpcUrl: string) => {
+  return Array.from(new Set([priorityRpcUrl, ...PROVIDER_URLS])).map(wsToHttp)
+}
+
+const getAddEvmChainParams = (chainKey: string): AddEvmChainParams => {
+  const chain = (chainsMap.get(chainKey) as EvmParachain).client.chain
+
+  const rpcUrls =
+    chainKey === HYDRATION_CHAIN_KEY
+      ? getHydrationRprcUrlsByPriority(useProviderRpcUrlStore.getState().rpcUrl)
+      : [...chain.rpcUrls.default.http]
 
   return {
-    chainId: "0x" + Number(chainProps.id).toString(16),
-    chainName: chainProps.name,
-    rpcUrls: chainProps.rpcUrls.default.http as string[],
-    iconUrls: chainIconMap[chain] || [],
-    nativeCurrency: chainProps.nativeCurrency,
-    blockExplorerUrls: chainProps.blockExplorers?.default
-      ? [chainProps.blockExplorers.default.url]
+    chainId: "0x" + Number(chain.id).toString(16),
+    chainName: chain.name,
+    rpcUrls,
+    iconUrls: chainIconMap[chainKey] || [],
+    nativeCurrency: chain.nativeCurrency,
+    blockExplorerUrls: chain.blockExplorers?.default
+      ? [chain.blockExplorers.default.url]
       : [],
   } satisfies AddEvmChainParams
 }
@@ -131,9 +145,17 @@ export async function requestNetworkSwitch(
 ) {
   if (!isEthereumProvider(provider)) return
 
-  const params = getAddEvmChainParams(options.chain ?? "hydration")
+  const params = getAddEvmChainParams(options.chain ?? HYDRATION_CHAIN_KEY)
 
   try {
+    if (options.chain === HYDRATION_CHAIN_KEY) {
+      // request to add chain first, wallet will skip this if the chain and rpc combination already exists
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [params],
+      })
+    }
+
     await provider
       .request({
         method: "wallet_switchEthereumChain",
@@ -192,7 +214,7 @@ export async function watchAsset(
     "hex",
   )
   const assetIdBuffer = numToBuffer(+assetId)
-  assetIdBuffer.copy(tokenAddress, 16)
+  assetIdBuffer.copy(new Uint8Array(tokenAddress), 16)
 
   const address = "0x" + tokenAddress.toString("hex")
 

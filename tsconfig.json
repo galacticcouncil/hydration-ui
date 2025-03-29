@@ -20,5 +20,6 @@
     "baseUrl": "src"
   },
   "include": ["src"],
+  "exclude": ["src/graphql/__generated__"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

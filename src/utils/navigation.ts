@@ -18,6 +18,8 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
+import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -53,8 +55,11 @@ export const LINKS = {
   borrow: "/borrow",
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
+  borrowHistory: "/borrow/history",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
 }
 
 export const MENU_ITEMS = [
@@ -107,6 +112,12 @@ export const MENU_ITEMS = [
         key: "borrow.markets",
         href: LINKS.borrowMarkets,
         Icon: AssetsIcon,
+        enabled: true,
+      },
+      {
+        key: "borrow.history",
+        href: LINKS.borrowHistory,
+        Icon: TransferIcon,
         enabled: true,
       },
     ],
@@ -183,12 +194,43 @@ export const MENU_ITEMS = [
     key: "xcm",
     href: LINKS.cross_chain,
     Icon: TransferIcon,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: false,
     mobOrder: 5,
+    asyncEnabled: false,
+    subItems: [
+      {
+        key: "xcm.xcm",
+        href: LINKS.cross_chain,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.deposit",
+        href: LINKS.deposit,
+        Icon: DownloadIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.withdraw",
+        href: LINKS.withdraw,
+        Icon: UploadIcon,
+        enabled: true,
+      },
+    ],
+  },
+  {
+    key: "staking",
+    href: LINKS.staking,
+    Icon: StakingIcon,
+    subItems: undefined,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 4,
     asyncEnabled: false,
   },
   {
@@ -201,18 +243,6 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 3,
-    asyncEnabled: false,
-  },
-  {
-    key: "staking",
-    href: LINKS.staking,
-    Icon: StakingIcon,
-    subItems: undefined,
-    enabled: true,
-    external: false,
-    mobVisible: false,
-    tabVisible: true,
-    mobOrder: 4,
     asyncEnabled: false,
   },
   {
@@ -244,7 +274,7 @@ export const MENU_ITEMS = [
 export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
-export type TabItemWithSubItems = TabItem & {
+export type TabItemWithSubItems = Omit<TabItem, "subItems"> & {
   subItems: NonNullable<TabSubItem>
 }
 

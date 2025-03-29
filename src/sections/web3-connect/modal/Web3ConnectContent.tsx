@@ -24,10 +24,12 @@ import { z } from "zod"
 import { validAddress } from "utils/validators"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { TFunction } from "i18next"
+import { Web3ConnectExternalAccount } from "sections/web3-connect/accounts/Web3ConnectExternalAccount"
 
-type Props = {
+type Web3ConnectContentProps = {
   page: number
   direction?: number
+  disableAnimation?: boolean
   onClose: () => void
   onBack: () => void
   onSelect: () => void
@@ -38,7 +40,7 @@ type Props = {
   onCloseAddressBook: () => void
 }
 
-export const Web3ConnectContent: React.FC<Props> = ({
+export const Web3ConnectContent: React.FC<Web3ConnectContentProps> = ({
   onSelect,
   onRetry,
   onSwitch,
@@ -55,13 +57,10 @@ export const Web3ConnectContent: React.FC<Props> = ({
     error,
     meta,
     getConnectedProviders,
+    account,
   } = useWeb3ConnectStore()
 
-  const {
-    data: accounts,
-    isLoading: isAccountsLoading,
-    isFetching: isAccountsFetching,
-  } = useWalletAccounts()
+  const { data: accounts, isLoading: isAccountsLoading } = useWalletAccounts()
 
   const providers = getConnectedProviders()
   const isProvidersConnecting = providers.some(
@@ -120,7 +119,7 @@ export const Web3ConnectContent: React.FC<Props> = ({
             meta?.description ?? t("walletConnect.accountSelect.description"),
           content: (
             <>
-              {isAccountsLoading || isProvidersConnecting ? (
+              {isProvidersConnecting ? (
                 <Web3ConnectProviderPending
                   provider={
                     isAccountsLoading
@@ -130,8 +129,8 @@ export const Web3ConnectContent: React.FC<Props> = ({
                 />
               ) : (
                 <Web3ConnectAccountList
-                  isLoading={isAccountsFetching}
                   accounts={accounts}
+                  isLoading={isAccountsLoading}
                 />
               )}
               <Web3ConnectFooter onSwitch={onSwitch} onLogout={onLogout} />
@@ -159,6 +158,21 @@ export const Web3ConnectContent: React.FC<Props> = ({
                   shouldValidate: true,
                 })
                 onCloseAddressBook?.()
+              }}
+              mode={WalletMode.SubstrateEVM}
+            />
+          ),
+        },
+        {
+          title: t("walletConnect.delegates.title"),
+          content: account ? (
+            <Web3ConnectExternalAccount {...account} />
+          ) : (
+            <Web3ConnectError
+              message="Wallet is not connected"
+              onRetry={() => {
+                disconnect(recentProvider || undefined)
+                onRetry?.()
               }}
             />
           ),

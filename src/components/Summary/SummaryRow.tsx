@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { ReactNode } from "react"
 
 export type RowModel = {
-  label: string
+  label: ReactNode | string
   content: ReactNode | string
   description?: string
 }
@@ -28,9 +28,15 @@ export const SummaryRow = ({
             gap: 6,
           }}
         >
-          <Text color="basic400" fs={14} tAlign="left">
-            {label}
-          </Text>
+          <div>
+            {typeof label === "string" ? (
+              <Text color="basic400" fs={14} tAlign="left">
+                {label}
+              </Text>
+            ) : (
+              label
+            )}
+          </div>
 
           {description && (
             <Text color="darkBlue300" fs={12} lh={15}>

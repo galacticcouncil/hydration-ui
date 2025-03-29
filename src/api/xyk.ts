@@ -6,28 +6,6 @@ import { isNotNil, undefinedNoop } from "utils/helpers"
 import { useAssetRegistry } from "state/store"
 import { useActiveRpcUrlList, useProviderData } from "./provider"
 import { PoolBase } from "@galacticcouncil/sdk"
-import { millisecondsInMinute } from "date-fns"
-
-const getAllXYKPools = (api: ApiPromise) => async () => {
-  const res = await api.query.xyk.poolAssets.entries()
-
-  const data = res.map(([key, data]) => {
-    const poolAddress = key.args[0].toString()
-    const assets = data.unwrap()?.map((el) => el.toString())
-    return { poolAddress, assets }
-  })
-
-  return data
-}
-
-export const useAllXykPools = () => {
-  const { api, isLoaded } = useRpcProvider()
-
-  return useQuery(QUERY_KEYS.allXykPools, getAllXYKPools(api), {
-    enabled: isLoaded,
-    staleTime: millisecondsInMinute,
-  })
-}
 
 export const useXYKSDKPools = () => {
   return useQuery<PoolBase[]>(QUERY_KEYS.xykPools, {
@@ -39,10 +17,10 @@ export const useXYKSDKPools = () => {
 export const useShareTokens = () => {
   const { data: provider } = useProviderData()
   const { syncShareTokens } = useAssetRegistry.getState()
-  const rpcUrlList = useActiveRpcUrlList()
+  const { dataEnv } = useActiveRpcUrlList()
 
   return useQuery(
-    QUERY_KEYS.shareTokens(rpcUrlList.join()),
+    QUERY_KEYS.shareTokens(dataEnv),
     provider
       ? async () => {
           const [shareToken, poolAssets] = await Promise.all([
@@ -73,13 +51,14 @@ export const useShareTokens = () => {
             syncShareTokens(data)
           }
 
-          return data
+          return []
         }
       : undefinedNoop,
     {
       enabled: !!provider,
       cacheTime: 1000 * 60 * 60 * 24,
       staleTime: 1000 * 60 * 60 * 1,
+      notifyOnChangeProps: [],
     },
   )
 }

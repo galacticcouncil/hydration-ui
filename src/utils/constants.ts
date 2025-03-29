@@ -21,6 +21,8 @@ export const DAY_IN_MILLISECONDS = new BN(86400000)
 // block time in seconds
 export const BLOCK_TIME = new BN(6)
 export const PARACHAIN_BLOCK_TIME = new BN(12)
+export const PARACHAIN_BLOCK_TIME_MS =
+  PARACHAIN_BLOCK_TIME.times(1000).toNumber()
 
 // ms until toast closes
 export const TOAST_CLOSE_TIME = 5000
@@ -49,5 +51,9 @@ export const QUINTILL = 18
 export const DOC_LINK = "https://docs.hydration.net"
 
 export const HYDRATION_PARACHAIN_ID = 2034
+export const HYDRATION_CHAIN_KEY = "hydration"
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
+
+export const UNIFIED_ADDRESS_FORMAT_ENABLED =
+  import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"

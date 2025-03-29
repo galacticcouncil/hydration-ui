@@ -6,7 +6,7 @@ import {
   useQuery,
 } from "@tanstack/react-query"
 import { useShallow } from "hooks/useShallow"
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { usePrevious } from "react-use"
 import {
   NamespaceType,
@@ -62,6 +62,7 @@ import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
+import { persist } from "zustand/middleware"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -94,7 +95,7 @@ export const useEvmAccount = () => {
   const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data
 
-  const evm = useQuery(
+  const { refetch, ...evm } = useQuery(
     QUERY_KEYS.evmChainInfo(address),
     async () => {
       const chainId = isEvmWalletExtension(wallet?.extension)
@@ -109,6 +110,16 @@ export const useEvmAccount = () => {
       enabled: !!address && !!wallet?.extension,
     },
   )
+
+  useEffect(() => {
+    if (wallet && isEvmWalletExtension(wallet?.extension)) {
+      // Refetch chainId on chainChanged event from wallet extension
+      wallet.extension.on("chainChanged", refetch)
+      return () => {
+        wallet.extension.off("chainChanged", refetch)
+      }
+    }
+  }, [refetch, wallet])
 
   if (!address) {
     return {
@@ -170,6 +181,19 @@ export const useWalletAccounts = (
   const mode = useWeb3ConnectStore(useShallow((state) => state.mode))
   const connectedProviders = useConnectedProviders()
 
+  const selectAccounts = useCallback(
+    (data: WalletAccount[]) => {
+      if (!data) return []
+      if (type) {
+        return data
+          .map(mapWalletAccount)
+          .filter(({ provider }) => provider === type)
+      }
+      return data.map(mapWalletAccount)
+    },
+    [type],
+  )
+
   return useQuery<WalletAccount[], unknown, Account[]>(
     QUERY_KEYS.providerAccounts(
       connectedProviders
@@ -193,18 +217,9 @@ export const useWalletAccounts = (
     },
     {
       enabled: connectedProviders.length > 0,
-      select: (data) => {
-        if (!data) return []
-        if (type) {
-          return data
-            .map(mapWalletAccount)
-            .filter(({ provider }) => provider === type)
-        }
-        return data.map(mapWalletAccount)
-      },
+      select: selectAccounts,
       cacheTime: 0,
       staleTime: 5000,
-      keepPreviousData: true,
       ...options,
     },
   )
@@ -541,7 +556,7 @@ function getProviderQueryKey(
   return type ?? ""
 }
 
-function mapWalletAccount({
+export function mapWalletAccount({
   address,
   name,
   wallet,
@@ -588,26 +603,38 @@ export function getWalletModeIcon(mode: WalletMode) {
   } catch (e) {}
 }
 
-export const useAccountBalanceMap = create<{
-  balanceMap: Map<string, string>
-  setBalanceMap: (address: string, balance: string) => void
-}>((set) => ({
-  balanceMap: new Map(),
-  setBalanceMap: (address, balance) => {
-    set(({ balanceMap }) => ({
-      balanceMap: new Map(balanceMap).set(address, balance),
-    }))
-  },
-}))
+export const useAccountBalanceMap = create(
+  persist<{
+    balanceMap: Record<string, string>
+    setBalanceMap: (address: string, balance: string) => void
+  }>(
+    (set) => ({
+      balanceMap: {},
+      setBalanceMap: (address, balance) => {
+        set(({ balanceMap }) => ({
+          balanceMap: {
+            ...balanceMap,
+            [address]: balance,
+          },
+        }))
+      },
+    }),
+    {
+      name: "account-balances",
+      version: 1,
+    },
+  ),
+)
 
 export const isHydrationIncompatibleAccount = (
   account: Account | null,
 ): account is Account => {
   if (!account) return false
 
-  const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
-    account.provider,
-  )
+  const notDelegate = !!account.isExternalWalletConnected && !account.delegate
+
+  const isIncompatibleProvider =
+    !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) && notDelegate
 
   const isIncompatibleH160Account =
     SUBSTRATE_H160_PROVIDERS.includes(account.provider) &&

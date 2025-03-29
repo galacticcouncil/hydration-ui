@@ -1,0 +1,10 @@
+diff --git a/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts b/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
+index c73fbe1..6ae63c0 100644
+--- a/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
++++ b/node_modules/@galacticcouncil/xcm-sdk/build/types/platforms/substrate/SubstrateService.d.ts
+@@ -1,4 +1,4 @@
+-import '@polkadot/api-augment';
++//import '@polkadot/api-augment';
+ import { AnyParachain, Asset, AssetAmount, ExtrinsicConfig } from '@galacticcouncil/xcm-core';
+ import { ApiPromise } from '@polkadot/api';
+ import { SubmittableExtrinsic } from '@polkadot/api/promise/types';

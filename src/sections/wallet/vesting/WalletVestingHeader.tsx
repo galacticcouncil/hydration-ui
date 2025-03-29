@@ -9,12 +9,12 @@ import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
-import { useDisplayPrice } from "utils/displayAsset"
 import { isApiLoaded } from "utils/helpers"
 import { BN_0, BN_10, DAY_IN_MILLISECONDS } from "utils/constants"
 import { SSeparator, STable } from "./WalletVestingHeader.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const WalletVestingHeader = () => {
   const { t } = useTranslation()
@@ -54,18 +54,17 @@ const WalletVestingHeaderContent = () => {
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const { data: vestingScheduleEnd } = useVestingScheduleEnd()
 
-  const spotPrice = useDisplayPrice(native.id)
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const price = getAssetPrice(native.id).price
 
   const totalVestedValue = totalVestedAmount ?? BN_0
 
   const totalVestedDisplay = useMemo(() => {
-    if (totalVestedValue && spotPrice.data) {
-      return totalVestedValue
-        .times(spotPrice.data.spotPrice)
-        .div(BN_10.pow(native.decimals))
+    if (totalVestedValue) {
+      return totalVestedValue.times(price).div(BN_10.pow(native.decimals))
     }
     return null
-  }, [totalVestedValue, spotPrice.data, native])
+  }, [totalVestedValue, price, native])
 
   return (
     <>

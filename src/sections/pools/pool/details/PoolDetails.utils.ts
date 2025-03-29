@@ -1,9 +1,9 @@
 import { useXYKSquidVolumes } from "api/volume"
 import { useMemo } from "react"
-import { useDisplayPrices } from "utils/displayAsset"
 import { TShareToken, useAssets } from "providers/assets"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
   const { getAssetWithFallback } = useAssets()
@@ -12,17 +12,17 @@ export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
     useXYKSquidVolumes(shareTokens.map((shareToken) => shareToken.poolAddress))
 
   const allAssetsInPools = [...new Set(volumes.map((volume) => volume.assetId))]
-  const spotPrices = useDisplayPrices(allAssetsInPools)
-  const isLoading = spotPrices.isInitialLoading || isVolumesLoading
+  const { getAssetPrice, isLoading: isLoadingPrices } =
+    useAssetsPrice(allAssetsInPools)
+
+  const isLoading = isLoadingPrices || isVolumesLoading
 
   const data = useMemo(() => {
-    if (!volumes.length || !spotPrices.data) return
+    if (!volumes.length || isLoading) return
 
     return volumes.map((value) => {
       const assetMeta = getAssetWithFallback(value.assetId)
-      const spotPrice = spotPrices.data?.find(
-        (spotPrice) => spotPrice?.tokenIn === value.assetId,
-      )?.spotPrice
+      const spotPrice = getAssetPrice(value.assetId).price
 
       const volume = BN(value.volume)
         .shiftedBy(-assetMeta.decimals)
@@ -31,7 +31,7 @@ export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
 
       return { volume, poolAddress: value.poolId, assetMeta }
     })
-  }, [getAssetWithFallback, spotPrices, volumes])
+  }, [getAssetWithFallback, volumes, getAssetPrice, isLoading])
 
   return { data, isLoading }
 }

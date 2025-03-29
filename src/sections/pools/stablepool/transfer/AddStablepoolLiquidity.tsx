@@ -12,7 +12,6 @@ import { FormValues } from "utils/helpers"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { useDisplayPrice } from "utils/displayAsset"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TAsset } from "providers/assets"
@@ -35,6 +34,7 @@ import { useAccountAssets } from "api/deposits"
 import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { useAssetsPrice } from "state/displayPrice"
 
 type Props = {
   asset: TAsset
@@ -111,7 +111,7 @@ export const AddStablepoolLiquidity = ({
     ),
   })
   const { formState } = form
-  const displayPrice = useDisplayPrice(asset.id)
+  const { getAssetPrice } = useAssetsPrice([asset.id])
 
   const shares = form.watch("amount")
 
@@ -308,7 +308,7 @@ export const AddStablepoolLiquidity = ({
                       firstCurrency: asset.symbol,
                     }}
                   >
-                    <DisplayValue value={displayPrice.data?.spotPrice} />
+                    <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
                   </Trans>
                 </Text>
               ),
