@@ -10,7 +10,7 @@ import {
 import { useStableSDKPools, useStableswapPool } from "api/stableswap"
 import { pool_account_name } from "@galacticcouncil/math-stableswap"
 import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
-import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
+import { HYDRADX_SS58_PREFIX, StableSwap, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useOmnipoolVolumes } from "api/volume"
 import BN from "bignumber.js"
@@ -58,6 +58,8 @@ const getTradeFee = (fee: string[]) => {
 export const usePools = () => {
   const { native, getAssetWithFallback } = useAssets()
   const { stableCoinId } = useDisplayAssetStore()
+  const { data: stablepools = [], isLoading: isStablepoolsLoading } =
+    useStableSDKPools()
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
@@ -69,6 +71,11 @@ export const usePools = () => {
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
 
+  const gigaDotPool = stablepools.find((stablepool) => stablepool.id === "69")
+  const gigaDotPriceIds = gigaDotPool
+    ? gigaDotPool.tokens.map((token) => token.id)
+    : []
+
   const { isLoading, getAssetPrice } = useAssetsPrice(
     stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
   )
@@ -79,7 +86,40 @@ export const usePools = () => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useOmnipoolVolumes(assetsId)
 
-  const isInitialLoading = omnipoolAssets.isLoading || isLoading
+  const isInitialLoading =
+    omnipoolAssets.isLoading || isLoading || isStablepoolsLoading
+
+  const gigaDotPoolData = useMemo(() => {
+    if (!gigaDotPool || !gigaDotPool.id) return []
+
+    const accountAsset = accountAssets?.accountAssetsMap.get(gigaDotPool.id)
+
+    const isPositions = !!accountAsset?.isPoolPositions
+    const meta = getAssetWithFallback(gigaDotPool.id)
+
+    return {
+      id: gigaDotPool.id,
+      name: "gigaDOT",
+      symbol: "GDOT",
+      iconId: "69",
+      meta: { ...meta, iconId: "69" },
+      tvlDisplay: BN((gigaDotPool as StableSwap).totalIssuance),
+      spotPrice: "1",
+      volume: "-",
+      isVolumeLoading: false,
+      farms: [],
+      allFarms: [],
+      fee: "-",
+      totalFee: "-",
+      isFeeLoading: false,
+      canAddLiquidity: true,
+      canRemoveLiquidity: true,
+      omnipoolPositions: [],
+      miningPositions: [],
+      balance: accountAsset?.balance,
+      isPositions,
+    }
+  }, [accountAssets?.accountAssetsMap, gigaDotPool, getAssetWithFallback])
 
   const data = useMemo(() => {
     if (!omnipoolAssets.data || isLoading) return undefined
@@ -184,7 +224,10 @@ export const usePools = () => {
     isFeeLoading,
   ])
 
-  return { data, isLoading: isInitialLoading }
+  return {
+    data: data ? [...data, gigaDotPoolData] : undefined,
+    isLoading: isInitialLoading,
+  }
 }
 
 export const usePoolDetails = (assetId: string) => {
@@ -195,9 +238,9 @@ export const usePoolDetails = (assetId: string) => {
   const omnipoolPositions = useOmnipoolPositionsData()
   const { data: stablePools, isLoading } = useStableSDKPools()
   const stablePoolBalance = isStablePool
-    ? stablePools
-        ?.find((stablePool) => stablePool.id === assetId)
-        ?.tokens.filter((token) => token.type === "Token")
+    ? (stablePools as StableSwap[])?.find(
+        (stablePool) => stablePool.id === assetId,
+      )?.tokens
     : undefined
 
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
