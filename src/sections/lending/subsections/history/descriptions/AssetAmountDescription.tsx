@@ -7,14 +7,14 @@ import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 
 type Props = {
-  readonly assetId: string | null
+  readonly assetId: string | null | undefined
   readonly amount: string
 }
 
 export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
   const { t } = useTranslation()
-  const { getAsset } = useAssets()
-  const asset = assetId ? getAsset(assetId) : null
+  const { getAssetWithFallback } = useAssets()
+  const asset = getAssetWithFallback(assetId ?? "")
 
   return (
     <div
@@ -30,10 +30,8 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
       <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
       <Text fs={14} css={{ whiteSpace: "nowrap" }}>
         {t("value.tokenWithSymbol", {
-          value: new BigNumber(amount)
-            .shiftedBy(-(asset?.decimals ?? 0))
-            .toString(),
-          symbol: asset?.symbol,
+          value: new BigNumber(amount).shiftedBy(-asset.decimals).toString(),
+          symbol: asset.symbol,
         })}
       </Text>
     </div>
