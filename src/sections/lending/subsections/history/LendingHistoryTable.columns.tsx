@@ -79,7 +79,7 @@ export const useLendingHistoryColumns = () => {
             return (
               event.supply && (
                 <AssetAmountDescription
-                  assetId={event.supply.assetId}
+                  assetId={event.supply.asset?.assetRegistryId}
                   amount={event.supply.amount}
                 />
               )
@@ -88,7 +88,7 @@ export const useLendingHistoryColumns = () => {
             return (
               event.borrow && (
                 <AssetAmountDescription
-                  assetId={event.borrow.assetId}
+                  assetId={event.borrow.asset?.assetRegistryId}
                   amount={event.borrow.amount}
                 />
               )
@@ -97,7 +97,7 @@ export const useLendingHistoryColumns = () => {
             return (
               event.repay && (
                 <AssetAmountDescription
-                  assetId={event.repay.assetId}
+                  assetId={event.repay.asset?.assetRegistryId}
                   amount={event.repay.amount}
                 />
               )
@@ -106,7 +106,7 @@ export const useLendingHistoryColumns = () => {
             return (
               event.withdraw && (
                 <AssetAmountDescription
-                  assetId={event.withdraw.assetId}
+                  assetId={event.withdraw.asset?.assetRegistryId}
                   amount={event.withdraw.amount}
                 />
               )
@@ -115,7 +115,9 @@ export const useLendingHistoryColumns = () => {
             return (
               event.reserveUsedAsCollateralEnabled && (
                 <CollateralDescription
-                  assetId={event.reserveUsedAsCollateralEnabled.assetId}
+                  assetId={
+                    event.reserveUsedAsCollateralEnabled.asset?.assetRegistryId
+                  }
                   enabled
                 />
               )
@@ -124,7 +126,9 @@ export const useLendingHistoryColumns = () => {
             return (
               event.reserveUsedAsCollateralDisabled && (
                 <CollateralDescription
-                  assetId={event.reserveUsedAsCollateralDisabled.assetId}
+                  assetId={
+                    event.reserveUsedAsCollateralDisabled.asset?.assetRegistryId
+                  }
                   enabled={false}
                 />
               )
@@ -133,7 +137,7 @@ export const useLendingHistoryColumns = () => {
             return (
               event.liquidationCall && (
                 <LiquidationCallDescription
-                  assetId={event.liquidationCall.assetId}
+                  assetId={event.liquidationCall.asset?.assetRegistryId}
                   amount={event.liquidationCall.amount}
                 />
               )
