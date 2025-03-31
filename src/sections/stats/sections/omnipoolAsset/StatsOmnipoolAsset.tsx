@@ -141,7 +141,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           data={{
             vlm: omnipoolAsset.volume,
             cap: omnipoolAsset.cap.multipliedBy(100),
-            pol: omnipoolAsset.pol,
+            pol: omnipoolAsset.polDisplay,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
             assetId,
             fee: omnipoolAsset.fee,
