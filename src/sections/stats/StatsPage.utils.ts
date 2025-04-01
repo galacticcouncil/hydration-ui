@@ -289,7 +289,7 @@ export const useOmnipoolAssetDetails = () => {
     useOmnipoolFarms(omnipoolAssetsIds)
 
   const { data: volumes = [], isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(omnipoolAssetsIds)
+    useOmnipoolVolumes()
 
   const { data: tvls, isLoading: isTvlsLoading } = useTVL("all")
   const { data: fees, isLoading: isFeesLoading } = useFee("all")

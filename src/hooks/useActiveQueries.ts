@@ -8,7 +8,7 @@ export function useActiveQueries(queryKey: string[]) {
     queryClient.getQueryCache().subscribe,
     () =>
       queryClient.getQueriesData({
-        queryKey: ["pools"],
+        queryKey,
         predicate: (q) => !!q.getObserversCount(),
       }).length,
   )

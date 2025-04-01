@@ -76,8 +76,7 @@ export const usePools = () => {
   const { data: fees, isLoading: isFeeLoading } = useFee("all")
   const { data: tvls } = useTVL("all")
 
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(assetsId)
+  const { data: volumes, isLoading: isVolumeLoading } = useOmnipoolVolumes()
 
   const isInitialLoading = omnipoolAssets.isLoading || isLoading
 

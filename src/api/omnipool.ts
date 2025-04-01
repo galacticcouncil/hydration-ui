@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { REFETCH_INTERVAL } from "utils/constants"
@@ -11,7 +11,11 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
+import { createClient } from "graphql-ws"
+import { useOmnipoolIds } from "state/store"
+import { useShallow } from "hooks/useShallow"
+import { OmnipoolVolume } from "./volume"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -154,4 +158,77 @@ export const getTradabilityFromBits = (bits: number) => {
   const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
 
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+}
+
+const squidWSClient = createClient({
+  webSocketImpl: WebSocket,
+  url: "wss://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
+})
+
+export const useOmnipoolVolumeSubscription = () => {
+  const ids = useOmnipoolIds(useShallow((state) => state.ids))
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined
+
+    if (ids) {
+      unsubscribe = squidWSClient.subscribe<{
+        omnipoolAssetHistoricalVolumeByPeriod: {
+          nodes: {
+            assetId: number
+            assetVolume: string
+          }[]
+        }
+      }>(
+        {
+          query: `
+            subscription {
+              omnipoolAssetHistoricalVolumeByPeriod(
+                filter: {assetIds: ${JSON.stringify(ids)}, period: _24H_}
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
+              }
+            }
+          `,
+        },
+        {
+          next: (data) => {
+            const changedVolumes =
+              data.data?.omnipoolAssetHistoricalVolumeByPeriod?.nodes.map(
+                (node) => ({
+                  assetId: node.assetId.toString(),
+                  assetVolume: node.assetVolume.toString(),
+                }),
+              )
+
+            const prevData = queryClient.getQueryData<OmnipoolVolume[]>(
+              QUERY_KEYS.omnipoolSquidVolumes,
+            )
+
+            const newData = prevData?.map((asset) => {
+              const changedVolume = changedVolumes?.find(
+                (changedVolume) => changedVolume.assetId === asset.assetId,
+              )
+
+              return changedVolume ?? asset
+            })
+
+            queryClient.setQueryData(QUERY_KEYS.omnipoolSquidVolumes, newData)
+          },
+          error: (error) => {
+            console.error("error", error)
+          },
+          complete: () => {},
+        },
+      )
+    }
+
+    return () => unsubscribe?.()
+  }, [ids, queryClient])
+
+  return null
 }

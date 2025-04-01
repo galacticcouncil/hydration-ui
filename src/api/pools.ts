@@ -10,6 +10,7 @@ import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
+import { setOmnipoolIds } from "state/store"
 
 export const useSDKPools = () => {
   const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
@@ -76,6 +77,8 @@ export const useSDKPools = () => {
       queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
+
+      setOmnipoolIds(tokens.map((token) => token.id))
 
       return false
     },

@@ -5,13 +5,15 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useIndexerUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { groupBy } from "utils/rx"
+import { useOmnipoolIds } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export type TradeType = {
   name:
@@ -52,6 +54,11 @@ export type StableswapType = {
   extrinsic: {
     hash: string
   }
+}
+
+export type OmnipoolVolume = {
+  assetId: string
+  assetVolume: string
 }
 
 export const isStableswapEvent = (
@@ -401,20 +408,16 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
   )
 }
 
-const omnipoolAddress =
-  "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
-
-export const useOmnipoolVolumes = (ids: string[]) => {
+export const useOmnipoolVolumes = () => {
   const { api, isLoaded } = useRpcProvider()
-  const url =
-    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+  const url = useSquidUrl()
+  const ids = useOmnipoolIds(useShallow((state) => state.ids))
 
   return useQuery(
-    QUERY_KEYS.omnipoolSquidVolumes(ids),
+    QUERY_KEYS.omnipoolSquidVolumes,
 
     async () => {
       const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-      const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
 
       const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
 
@@ -435,7 +438,7 @@ export const useOmnipoolVolumes = (ids: string[]) => {
           ) {
             omnipoolAssetHistoricalVolumesByPeriod(
               filter: {
-                omnipoolAssetIds: $omnipoolAssetIds
+                assetIds: $omnipoolAssetIds
                 startBlockNumber: $startBlockNumber
                 endBlockNumber: $endBlockNumber
               }
@@ -447,19 +450,20 @@ export const useOmnipoolVolumes = (ids: string[]) => {
             }
           }
         `,
-        { omnipoolAssetIds: omnipoolIds, startBlockNumber, endBlockNumber },
+        { omnipoolAssetIds: ids, startBlockNumber, endBlockNumber },
       )
 
       const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
 
-      return nodes.map((node) => ({
+      return nodes.map<OmnipoolVolume>((node) => ({
         assetId: node.assetId.toString(),
         assetVolume: node.assetVolume.toString(),
       }))
     },
 
     {
-      enabled: isLoaded && !!ids.length,
+      enabled: isLoaded && !!ids,
+      cacheTime: millisecondsInHour,
       staleTime: millisecondsInHour,
     },
   )
