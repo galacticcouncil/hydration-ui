@@ -2,6 +2,7 @@ import {
   calculate_amplification,
   calculate_liquidity_out_one_asset,
 } from "@galacticcouncil/math-stableswap"
+import { StableMath } from "@galacticcouncil/sdk"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
@@ -35,7 +36,8 @@ export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
 
   const getAssetOutValue = useCallback(
     (assetId: number, shares: string) => {
-      if (amplification && shareIssuance) {
+      if (amplification && shareIssuance && pool) {
+        const pegs = StableMath.defaultPegs(pool.assets.length)
         return calculate_liquidity_out_one_asset(
           JSON.stringify(reserves),
           shares,
@@ -43,12 +45,13 @@ export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
           amplification,
           shareIssuance,
           fee,
+          JSON.stringify(pegs),
         )
       }
 
       return "0"
     },
-    [amplification, fee, reserves, shareIssuance],
+    [pool, amplification, fee, reserves, shareIssuance],
   )
 
   return {
