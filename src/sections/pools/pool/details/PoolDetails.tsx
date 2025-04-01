@@ -50,7 +50,7 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        defaultPage={Page.OPTIONS}
+        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
       />
@@ -109,7 +109,7 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              !pool.canAddLiquidity ||
+              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
               account?.isExternalWalletConnected ||
               native.id === pool.id
             }

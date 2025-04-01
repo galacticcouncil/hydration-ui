@@ -2,17 +2,22 @@ import { useOmnipoolDataObserver } from "api/omnipool"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
-import { BN_0, BN_1, BN_MILL, BN_NAN } from "utils/constants"
+import {
+  BN_0,
+  BN_1,
+  BN_MILL,
+  BN_NAN,
+  gigaDOTId,
+  validStablepools,
+} from "utils/constants"
 import {
   useDisplayAssetStore,
   useDisplayShareTokenPrice,
 } from "utils/displayAsset"
 import { useStableSDKPools, useStableswapPool } from "api/stableswap"
-import { pool_account_name } from "@galacticcouncil/math-stableswap"
-import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
-import { HYDRADX_SS58_PREFIX, StableSwap, XykMath } from "@galacticcouncil/sdk"
+import { StableSwap, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
-import { useOmnipoolVolumes } from "api/volume"
+import { useOmnipoolVolumes, useStablepoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
@@ -40,11 +45,6 @@ export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]
 
-export const derivePoolAccount = (assetId: string) => {
-  const name = pool_account_name(Number(assetId))
-  return encodeAddress(blake2AsHex(name), HYDRADX_SS58_PREFIX)
-}
-
 const getTradeFee = (fee: string[]) => {
   if (fee?.length !== 2) return BN_NAN
 
@@ -55,14 +55,123 @@ const getTradeFee = (fee: string[]) => {
   return tradeFee.times(100)
 }
 
+const useStablepools = () => {
+  const { getAssetWithFallback } = useAssets()
+  const { data: accountAssets } = useAccountAssets()
+  const { data: stablepools = [], isLoading: isPoolsLoading } =
+    useStableSDKPools()
+
+  const filteredStablepools = useMemo(
+    () =>
+      stablepools.filter(
+        (stablepool) =>
+          stablepool.id && validStablepools.includes(stablepool.id),
+      ),
+    [stablepools],
+  )
+
+  const stableswapTokensId = [
+    ...new Set(
+      filteredStablepools.flatMap((stablepool) =>
+        stablepool.tokens.map((token) => token.id),
+      ),
+    ),
+  ]
+
+  const { isLoading: isLoadingPrices, getAssetPrice } =
+    useAssetsPrice(stableswapTokensId)
+
+  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes(
+    filteredStablepools.map((filteredStablepool) => filteredStablepool.id),
+  )
+
+  const isLoading = isPoolsLoading || isLoadingPrices
+
+  const data = useMemo(() => {
+    if (isLoading || !filteredStablepools.length) return []
+
+    return filteredStablepools.map((filteredStablepool) => {
+      const accountAsset = accountAssets?.accountAssetsMap.get(
+        filteredStablepool.id,
+      )
+
+      const isPositions = !!accountAsset?.isPoolPositions
+      const meta = getAssetWithFallback(filteredStablepool.id)
+
+      const volume =
+        volumes
+          ?.find((volume) => volume.poolId === filteredStablepool.id)
+          ?.volumes.reduce((acc, volume) => {
+            const price = getAssetPrice(volume.assetId).price
+            const meta = getAssetWithFallback(volume.assetId)
+            const volumeDisplay = BN(volume.assetVolume)
+              .shiftedBy(-meta.decimals)
+              .times(price)
+
+            return acc.plus(volumeDisplay)
+          }, BN_0)
+          .toString() ?? "0"
+
+      const tvlDisplay = filteredStablepool.tokens.reduce((acc, token) => {
+        if (token.type !== "Token" && token.type !== "Erc20") return acc
+
+        const price = getAssetPrice(token.id).price
+        const meta = getAssetWithFallback(token.id)
+
+        const tvlDisplay = BN(token.balance)
+          .shiftedBy(-meta.decimals)
+          .times(price)
+
+        return acc.plus(tvlDisplay)
+      }, BN_0)
+
+      return {
+        id: filteredStablepool.id,
+        name: gigaDOTId === meta.id ? "gigaDOT" : meta.name,
+        symbol: gigaDOTId === meta.id ? "GDOT" : meta.symbol,
+        meta:
+          gigaDOTId === meta.id
+            ? { ...meta, iconId: "69", name: "gigaDOT" }
+            : meta,
+        tvlDisplay,
+        spotPrice: "1",
+        volume,
+        isVolumeLoading,
+        farms: [],
+        allFarms: [],
+        fee: BN_NAN,
+        totalFee: BN_NAN,
+        isFeeLoading: false,
+        canAddLiquidity: false,
+        canRemoveLiquidity: true,
+        omnipoolPositions: [],
+        miningPositions: [],
+        balance: accountAsset?.balance,
+        isPositions,
+      }
+    })
+  }, [
+    isLoading,
+    filteredStablepools,
+    accountAssets?.accountAssetsMap,
+    getAssetWithFallback,
+    volumes,
+    isVolumeLoading,
+    getAssetPrice,
+  ])
+
+  return { data, isLoading }
+}
+
 export const usePools = () => {
   const { native, getAssetWithFallback } = useAssets()
   const { stableCoinId } = useDisplayAssetStore()
-  const { data: stablepools = [], isLoading: isStablepoolsLoading } =
-    useStableSDKPools()
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
+
+  const { data: stablepools, isLoading: isLoadingStablepools } =
+    useStablepools()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
@@ -70,11 +179,6 @@ export const usePools = () => {
   )
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
-
-  const gigaDotPool = stablepools.find((stablepool) => stablepool.id === "69")
-  const gigaDotPriceIds = gigaDotPool
-    ? gigaDotPool.tokens.map((token) => token.id)
-    : []
 
   const { isLoading, getAssetPrice } = useAssetsPrice(
     stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
@@ -87,39 +191,7 @@ export const usePools = () => {
     useOmnipoolVolumes(assetsId)
 
   const isInitialLoading =
-    omnipoolAssets.isLoading || isLoading || isStablepoolsLoading
-
-  const gigaDotPoolData = useMemo(() => {
-    if (!gigaDotPool || !gigaDotPool.id) return []
-
-    const accountAsset = accountAssets?.accountAssetsMap.get(gigaDotPool.id)
-
-    const isPositions = !!accountAsset?.isPoolPositions
-    const meta = getAssetWithFallback(gigaDotPool.id)
-
-    return {
-      id: gigaDotPool.id,
-      name: "gigaDOT",
-      symbol: "GDOT",
-      iconId: "69",
-      meta: { ...meta, iconId: "69" },
-      tvlDisplay: BN((gigaDotPool as StableSwap).totalIssuance),
-      spotPrice: "1",
-      volume: "-",
-      isVolumeLoading: false,
-      farms: [],
-      allFarms: [],
-      fee: "-",
-      totalFee: "-",
-      isFeeLoading: false,
-      canAddLiquidity: true,
-      canRemoveLiquidity: true,
-      omnipoolPositions: [],
-      miningPositions: [],
-      balance: accountAsset?.balance,
-      isPositions,
-    }
-  }, [accountAssets?.accountAssetsMap, gigaDotPool, getAssetWithFallback])
+    omnipoolAssets.isLoading || isLoading || isLoadingStablepools
 
   const data = useMemo(() => {
     if (!omnipoolAssets.data || isLoading) return undefined
@@ -174,7 +246,6 @@ export const usePools = () => {
         id: asset.id,
         name: meta.name,
         symbol: meta.symbol,
-        iconId: meta.iconId,
         meta,
         tvlDisplay,
         spotPrice: spotPrice,
@@ -225,7 +296,7 @@ export const usePools = () => {
   ])
 
   return {
-    data: data ? [...data, gigaDotPoolData] : undefined,
+    data: data ? [...data, ...stablepools] : undefined,
     isLoading: isInitialLoading,
   }
 }
@@ -238,9 +309,11 @@ export const usePoolDetails = (assetId: string) => {
   const omnipoolPositions = useOmnipoolPositionsData()
   const { data: stablePools, isLoading } = useStableSDKPools()
   const stablePoolBalance = isStablePool
-    ? (stablePools as StableSwap[])?.find(
-        (stablePool) => stablePool.id === assetId,
-      )?.tokens
+    ? (stablePools as StableSwap[])
+        ?.find((stablePool) => stablePool.id === assetId)
+        ?.tokens.filter(
+          (token) => token.type === "Token" || token.type === "Erc20",
+        )
     : undefined
 
   const stablepool = useStableswapPool(isStablePool ? assetId : undefined)

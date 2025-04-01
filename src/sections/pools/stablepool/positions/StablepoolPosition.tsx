@@ -3,7 +3,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, gigaDOTId, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
@@ -29,14 +29,11 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const pool = usePoolData().pool as TPoolFullData
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const { farms } = pool
+  const { farms, meta } = pool
 
   const [transferOpen, setTransferOpen] = useState<number | undefined>(
     undefined,
   )
-
-  const meta = pool.meta
-  const assets = Object.keys(meta.meta ?? {})
 
   const amountPrice = pool.spotPrice
     ? amount.shiftedBy(-meta.decimals).multipliedBy(pool.spotPrice)
@@ -71,7 +68,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
             <SContainer sx={{ height: ["auto", "auto"] }}>
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
-                  <MultipleAssetLogo iconId={assets} size={26} />
+                  <MultipleAssetLogo iconId={meta.iconId} size={26} />
                 </div>
                 <div
                   sx={{
@@ -155,17 +152,21 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                <SOmnipoolButton
-                  size="small"
-                  fullWidth
-                  onClick={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
-                  disabled={!pool.canAddLiquidity}
-                >
-                  <div sx={{ flex: "row", align: "center", justify: "center" }}>
-                    <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
-                    {t("liquidity.stablepool.addToOmnipool")}
-                  </div>
-                </SOmnipoolButton>
+                {pool.id !== gigaDOTId && (
+                  <SOmnipoolButton
+                    size="small"
+                    fullWidth
+                    onClick={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+                    disabled={!pool.canAddLiquidity}
+                  >
+                    <div
+                      sx={{ flex: "row", align: "center", justify: "center" }}
+                    >
+                      <Icon icon={<PlusIcon />} sx={{ mr: 8 }} />
+                      {t("liquidity.stablepool.addToOmnipool")}
+                    </div>
+                  </SOmnipoolButton>
+                )}
                 <RemoveLiquidityButton
                   onSuccess={() => {
                     refetchAccountAssets()

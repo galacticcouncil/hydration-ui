@@ -464,3 +464,81 @@ export const useOmnipoolVolumes = (ids: string[]) => {
     },
   )
 }
+
+export const useStablepoolVolumes = (ids: string[]) => {
+  const { api, isLoaded } = useRpcProvider()
+  const url =
+    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+
+  return useQuery(
+    QUERY_KEYS.stablepoolsSquidVolumes(ids),
+
+    async () => {
+      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
+
+      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
+
+      const { stablepoolHistoricalVolumesByPeriod } = await request<{
+        stablepoolHistoricalVolumesByPeriod: {
+          nodes: {
+            poolId: any
+            assetVolumes: Array<{
+              assetId: any
+              liqAddedVolume: any
+              liqRemovedVolume: any
+              routedLiqAddedVolume: any
+              routedLiqRemovedVolume: any
+            }>
+          }[]
+        }
+      }>(
+        url,
+        gql`
+          query StablepoolVolume(
+            $omnipoolAssetIds: [String!]!
+            $startBlockNumber: Int!
+            $endBlockNumber: Int!
+          ) {
+            stablepoolHistoricalVolumesByPeriod(
+              filter: {
+                poolIds: $omnipoolAssetIds
+                startBlockNumber: $startBlockNumber
+                endBlockNumber: $endBlockNumber
+              }
+            ) {
+              nodes {
+                poolId
+                assetVolumes {
+                  assetId
+                  liqAddedVolume
+                  liqRemovedVolume
+                  routedLiqAddedVolume
+                  routedLiqRemovedVolume
+                }
+              }
+            }
+          }
+        `,
+        { omnipoolAssetIds: ids, startBlockNumber, endBlockNumber },
+      )
+
+      const { nodes = [] } = stablepoolHistoricalVolumesByPeriod
+
+      return nodes.map((node) => {
+        const volumes = node.assetVolumes.map(
+          ({ assetId, routedLiqRemovedVolume }) => ({
+            assetId: assetId.toString(),
+            assetVolume: routedLiqRemovedVolume,
+          }),
+        )
+
+        return { poolId: node.poolId, volumes }
+      })
+    },
+
+    {
+      enabled: isLoaded && !!ids.length,
+      staleTime: millisecondsInHour,
+    },
+  )
+}
