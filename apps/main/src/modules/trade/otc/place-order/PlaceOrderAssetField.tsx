@@ -7,7 +7,7 @@ import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrder
 
 type Props = {
   readonly label: string
-  readonly maxBalance: string
+  readonly maxBalance?: string
   readonly assetFieldName: FieldPathByValue<
     PlaceOrderFormValues,
     TAssetData | null

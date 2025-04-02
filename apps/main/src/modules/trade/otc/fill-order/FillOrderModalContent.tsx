@@ -17,17 +17,23 @@ import { useSubmitFillOrder } from "@/modules/trade/otc/fill-order/FillOrderModa
 import { TokensConversion } from "@/modules/trade/otc/fill-order/TokensConversion"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
+import { useAccountData } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly otcOffer: OtcOfferTabular
   readonly onClose: () => void
 }
 
-// TODO asset in balance from account assets
-const assetInBalance = "30"
-
 export const FillOrderModalContent: FC<Props> = ({ otcOffer, onClose }) => {
   const { t } = useTranslation(["trade", "common"])
+
+  const balances = useAccountData((data) => data.balances)
+  const assetInBalance = scaleHuman(
+    balances[otcOffer.assetIn?.id ?? ""]?.total ?? 0n,
+    otcOffer.assetIn?.decimals ?? 12,
+  )
+
   const form = useFillOrderForm(otcOffer, assetInBalance)
   const submit = useSubmitFillOrder({
     otcOffer,

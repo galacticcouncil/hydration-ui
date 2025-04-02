@@ -33,17 +33,23 @@ export const positive = z
   .pipe(validNumber)
   .refine((value) => new Big(value).gt(0), i18n.t("error.positive"))
 
+export const maxBalanceError = i18n.t("error.maxBalance")
+
 export const maxBalance = (balance: bigint | string | number) =>
   z
     .string()
     .pipe(positive)
-    .refine(
-      (value) =>
-        new Big(value).lte(
-          typeof balance === "bigint" ? balance.toString() : balance,
-        ),
-      i18n.t("error.maxBalance"),
-    )
+    .refine((value) => validateMaxBalance(balance, value), maxBalanceError)
+
+export const validateMaxBalance = (
+  balance: bigint | string | number,
+  amount: string,
+): boolean =>
+  new Big(amount).lte(
+    typeof balance === "bigint" ? balance.toString() : balance,
+  )
+
+export const existentialDepositError = i18n.t("error.existentialDeposit")
 
 export const existentialDeposit = (
   asset: TAsset | undefined | null,
@@ -53,23 +59,17 @@ export const existentialDeposit = (
     .string()
     .pipe(positive)
     .refine(
-      (value) =>
-        !multiplier ||
-        !asset ||
-        new Big(scaleHuman(asset.existentialDeposit, asset.decimals))
-          .mul(multiplier)
-          .lte(value),
-      i18n.t("error.existentialDeposit"),
+      (value) => validateExistentialDeposit(asset, value, multiplier),
+      existentialDepositError,
     )
 
 export const validateExistentialDeposit = (
   asset: TAsset | undefined | null,
   amount: string,
   multiplier: number | undefined,
-): string | undefined => {
-  const result = existentialDeposit(asset, multiplier).safeParse(amount)
-
-  if (!result.success) {
-    return JSON.parse(result.error.message)[0]?.message
-  }
-}
+): boolean =>
+  !multiplier ||
+  !asset ||
+  new Big(scaleHuman(asset.existentialDeposit, asset.decimals))
+    .mul(multiplier)
+    .lte(amount)

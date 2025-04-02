@@ -9,23 +9,29 @@ import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountData } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 import {
-  maxBalance,
+  existentialDepositError,
+  maxBalanceError,
   required,
   requiredAny,
   validateExistentialDeposit,
+  validateMaxBalance,
 } from "@/utils/validators"
 
-const useSchema = (offerAmountBalance: string) => {
+const useSchema = () => {
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
     otcExistentialDepositorMultiplierQuery(rpc),
   )
 
+  const balances = useAccountData((data) => data.balances)
+
   return z
     .object({
       offerAsset: z.custom<TAsset | null>().refine(...requiredAny),
-      offerAmount: required.pipe(maxBalance(offerAmountBalance)),
+      offerAmount: required,
       buyAsset: z.custom<TAsset | null>().refine(...requiredAny),
       buyAmount: required,
       price: z.string(),
@@ -41,31 +47,47 @@ const useSchema = (offerAmountBalance: string) => {
       }
     })
     .superRefine(({ offerAsset, offerAmount }, ctx) => {
-      const errorMessage = validateExistentialDeposit(
+      const isValid = validateExistentialDeposit(
         offerAsset,
         offerAmount || "0",
         existentialDepositMultiplier,
       )
 
-      if (errorMessage) {
+      if (!isValid) {
         ctx.addIssue({
           code: "custom",
-          message: errorMessage,
+          message: existentialDepositError,
+          path: ["offerAmount" satisfies keyof PlaceOrderFormValues],
+        })
+      }
+    })
+    .superRefine(({ offerAsset, offerAmount }, ctx) => {
+      const balance = scaleHuman(
+        balances[offerAsset?.id ?? ""]?.total ?? 0n,
+        offerAsset?.decimals ?? 12,
+      )
+
+      const isValid = validateMaxBalance(balance, offerAmount || "0")
+
+      if (!isValid) {
+        ctx.addIssue({
+          code: "custom",
+          message: maxBalanceError,
           path: ["offerAmount" satisfies keyof PlaceOrderFormValues],
         })
       }
     })
     .superRefine(({ buyAsset, buyAmount }, ctx) => {
-      const errorMessage = validateExistentialDeposit(
+      const isValid = validateExistentialDeposit(
         buyAsset,
         buyAmount || "0",
         existentialDepositMultiplier,
       )
 
-      if (errorMessage) {
+      if (!isValid) {
         ctx.addIssue({
           code: "custom",
-          message: errorMessage,
+          message: existentialDepositError,
           path: ["buyAmount" satisfies keyof PlaceOrderFormValues],
         })
       }
@@ -74,7 +96,7 @@ const useSchema = (offerAmountBalance: string) => {
 
 export type PlaceOrderFormValues = z.infer<ReturnType<typeof useSchema>>
 
-export const usePlaceOrderForm = (offerAmountBalance: string) => {
+export const usePlaceOrderForm = () => {
   const defaultValues: PlaceOrderFormValues = {
     offerAsset: null,
     offerAmount: "",
@@ -86,7 +108,7 @@ export const usePlaceOrderForm = (offerAmountBalance: string) => {
 
   const form = useForm<PlaceOrderFormValues>({
     defaultValues,
-    resolver: zodResolver(useSchema(offerAmountBalance)),
+    resolver: zodResolver(useSchema()),
     mode: "onChange",
   })
 
