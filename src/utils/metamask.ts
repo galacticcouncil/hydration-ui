@@ -148,13 +148,17 @@ export async function requestNetworkSwitch(
   const params = getAddEvmChainParams(options.chain ?? HYDRATION_CHAIN_KEY)
 
   try {
-    if (options.chain === HYDRATION_CHAIN_KEY) {
+    /**
+     * MetaMask v12.14.2 introduced bug with switching networks, disabling this for now
+     * @see https://github.com/MetaMask/metamask-extension/issues/31464
+     */
+    /* if (options.chain === HYDRATION_CHAIN_KEY) {
       // request to add chain first, wallet will skip this if the chain and rpc combination already exists
       await provider.request({
         method: "wallet_addEthereumChain",
         params: [params],
       })
-    }
+    } */
 
     await provider
       .request({
