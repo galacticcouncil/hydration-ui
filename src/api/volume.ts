@@ -61,6 +61,15 @@ export type OmnipoolVolume = {
   assetVolume: string
 }
 
+export type OmnipoolQuery = {
+  omnipoolAssetHistoricalVolumesByPeriod: {
+    nodes: {
+      assetId: number
+      assetVolume: string
+    }[]
+  }
+}
+
 export const isStableswapEvent = (
   event: TradeType | StableswapType,
 ): event is StableswapType =>
@@ -409,7 +418,6 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
 }
 
 export const useOmnipoolVolumes = () => {
-  const { api, isLoaded } = useRpcProvider()
   const url = useSquidUrl()
   const ids = useOmnipoolIds(useShallow((state) => state.ids))
 
@@ -417,41 +425,23 @@ export const useOmnipoolVolumes = () => {
     QUERY_KEYS.omnipoolSquidVolumes,
 
     async () => {
-      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-
-      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
-
-      const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
-        omnipoolAssetHistoricalVolumesByPeriod: {
-          nodes: {
-            assetId: number
-            assetVolume: string
-          }[]
-        }
-      }>(
-        url,
-        gql`
-          query OmnipoolVolume(
-            $omnipoolAssetIds: [String!]!
-            $startBlockNumber: Int!
-            $endBlockNumber: Int!
-          ) {
-            omnipoolAssetHistoricalVolumesByPeriod(
-              filter: {
-                assetIds: $omnipoolAssetIds
-                startBlockNumber: $startBlockNumber
-                endBlockNumber: $endBlockNumber
-              }
-            ) {
-              nodes {
-                assetId
-                assetVolume
+      const { omnipoolAssetHistoricalVolumesByPeriod } =
+        await request<OmnipoolQuery>(
+          url,
+          gql`
+            query OmnipoolVolume($omnipoolAssetIds: [String!]!) {
+              omnipoolAssetHistoricalVolumesByPeriod(
+                filter: { assetIds: $omnipoolAssetIds, period: _24H_ }
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
               }
             }
-          }
-        `,
-        { omnipoolAssetIds: ids, startBlockNumber, endBlockNumber },
-      )
+          `,
+          { omnipoolAssetIds: ids },
+        )
 
       const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
 
@@ -462,7 +452,7 @@ export const useOmnipoolVolumes = () => {
     },
 
     {
-      enabled: isLoaded && !!ids,
+      enabled: !!ids,
       cacheTime: millisecondsInHour,
       staleTime: millisecondsInHour,
     },

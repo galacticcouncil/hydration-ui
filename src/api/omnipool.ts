@@ -15,7 +15,8 @@ import { useEffect, useMemo } from "react"
 import { createClient } from "graphql-ws"
 import { useOmnipoolIds } from "state/store"
 import { useShallow } from "hooks/useShallow"
-import { OmnipoolVolume } from "./volume"
+import { OmnipoolQuery, OmnipoolVolume } from "./volume"
+import { useSquidUrl } from "./provider"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -160,12 +161,17 @@ export const getTradabilityFromBits = (bits: number) => {
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
 }
 
-const squidWSClient = createClient({
-  webSocketImpl: WebSocket,
-  url: "wss://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
-})
+const useSquidWSClient = () => {
+  const url = useSquidUrl()
+
+  return createClient({
+    webSocketImpl: WebSocket,
+    url,
+  })
+}
 
 export const useOmnipoolVolumeSubscription = () => {
+  const squidWSClient = useSquidWSClient()
   const ids = useOmnipoolIds(useShallow((state) => state.ids))
   const queryClient = useQueryClient()
 
@@ -173,18 +179,11 @@ export const useOmnipoolVolumeSubscription = () => {
     let unsubscribe: (() => void) | undefined
 
     if (ids) {
-      unsubscribe = squidWSClient.subscribe<{
-        omnipoolAssetHistoricalVolumeByPeriod: {
-          nodes: {
-            assetId: number
-            assetVolume: string
-          }[]
-        }
-      }>(
+      unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
         {
           query: `
             subscription {
-              omnipoolAssetHistoricalVolumeByPeriod(
+              omnipoolAssetHistoricalVolumesByPeriod(
                 filter: {assetIds: ${JSON.stringify(ids)}, period: _24H_}
               ) {
                 nodes {
@@ -198,7 +197,7 @@ export const useOmnipoolVolumeSubscription = () => {
         {
           next: (data) => {
             const changedVolumes =
-              data.data?.omnipoolAssetHistoricalVolumeByPeriod?.nodes.map(
+              data.data?.omnipoolAssetHistoricalVolumesByPeriod?.nodes.map(
                 (node) => ({
                   assetId: node.assetId.toString(),
                   assetVolume: node.assetVolume.toString(),
@@ -228,7 +227,7 @@ export const useOmnipoolVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [ids, queryClient])
+  }, [ids, queryClient, squidWSClient])
 
   return null
 }
