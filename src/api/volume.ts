@@ -5,7 +5,7 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useIndexerUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -466,78 +466,56 @@ export const useOmnipoolVolumes = (ids: string[]) => {
 }
 
 export const useStablepoolVolumes = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
-  const url =
-    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+  const url = useSquidUrl()
 
   return useQuery(
     QUERY_KEYS.stablepoolsSquidVolumes(ids),
 
     async () => {
-      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-
-      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
-
-      const { stablepoolHistoricalVolumesByPeriod } = await request<{
-        stablepoolHistoricalVolumesByPeriod: {
+      const { stableswapHistoricalVolumesByPeriod } = await request<{
+        stableswapHistoricalVolumesByPeriod: {
           nodes: {
             poolId: any
             assetVolumes: Array<{
-              assetId: any
-              liqAddedVolume: any
-              liqRemovedVolume: any
-              routedLiqAddedVolume: any
-              routedLiqRemovedVolume: any
+              assetId: number
+              swapVolume: string
             }>
           }[]
         }
       }>(
         url,
         gql`
-          query StablepoolVolume(
-            $omnipoolAssetIds: [String!]!
-            $startBlockNumber: Int!
-            $endBlockNumber: Int!
-          ) {
-            stablepoolHistoricalVolumesByPeriod(
-              filter: {
-                poolIds: $omnipoolAssetIds
-                startBlockNumber: $startBlockNumber
-                endBlockNumber: $endBlockNumber
-              }
+          query StablepoolVolume($poolIds: [String!]!) {
+            stableswapHistoricalVolumesByPeriod(
+              filter: { poolIds: $poolIds, period: _24H_ }
             ) {
               nodes {
                 poolId
                 assetVolumes {
                   assetId
-                  liqAddedVolume
-                  liqRemovedVolume
-                  routedLiqAddedVolume
-                  routedLiqRemovedVolume
+                  swapVolume
                 }
               }
             }
           }
         `,
-        { omnipoolAssetIds: ids, startBlockNumber, endBlockNumber },
+        { poolIds: ids },
       )
 
-      const { nodes = [] } = stablepoolHistoricalVolumesByPeriod
+      const { nodes = [] } = stableswapHistoricalVolumesByPeriod
 
       return nodes.map((node) => {
-        const volumes = node.assetVolumes.map(
-          ({ assetId, routedLiqRemovedVolume }) => ({
-            assetId: assetId.toString(),
-            assetVolume: routedLiqRemovedVolume,
-          }),
-        )
+        const volumes = node.assetVolumes.map(({ assetId, swapVolume }) => ({
+          assetId: assetId.toString(),
+          assetVolume: swapVolume,
+        }))
 
         return { poolId: node.poolId, volumes }
       })
     },
 
     {
-      enabled: isLoaded && !!ids.length,
+      enabled: !!ids.length,
       staleTime: millisecondsInHour,
     },
   )
