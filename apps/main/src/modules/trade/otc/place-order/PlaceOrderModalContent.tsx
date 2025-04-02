@@ -18,14 +18,12 @@ import { useSubmitPlaceOrder } from "@/modules/trade/otc/place-order/PlaceOrderM
 import { PlaceOrderPrice } from "@/modules/trade/otc/place-order/PlaceOrderPrice"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
 import { useAssets } from "@/providers/assetsProvider"
+import { useAccountData } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly onClose: () => void
 }
-
-// TODO integrate from account assets
-const offerAmountBalance = "30"
-const buyAmountBalance = "5"
 
 export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const { t } = useTranslation(["trade", "common"])
@@ -39,13 +37,25 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
     [all, isExternal],
   )
 
-  const form = usePlaceOrderForm(offerAmountBalance)
+  const balances = useAccountData((data) => data.balances)
+
+  const ownedAssets = useMemo(() => {
+    const assetIds = new Set(Object.keys(balances))
+    return allAssets.filter((asset) => assetIds.has(asset.id))
+  }, [allAssets, balances])
+
+  const form = usePlaceOrderForm()
   const submit = useSubmitPlaceOrder({ onSubmit: onClose })
   const [offerAsset, offerAmount, buyAsset] = form.watch([
     "offerAsset",
     "offerAmount",
     "buyAsset",
   ])
+
+  const offerAmountBalance = scaleHuman(
+    balances[offerAsset?.id ?? ""]?.total ?? 0n,
+    offerAsset?.decimals ?? 12,
+  )
 
   const isSubmitEnabled = form.formState.isValid
 
@@ -61,10 +71,10 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
             <Box px={20}>
               <PlaceOrderAssetField
                 label={t("common:offer")}
-                maxBalance={offerAmountBalance}
+                maxBalance={offerAmountBalance.toString()}
                 assetFieldName="offerAsset"
                 assetAmountFieldName="offerAmount"
-                assets={allAssets}
+                assets={ownedAssets}
               />
               <ModalContentDivider />
               {offerAsset && buyAsset && (
@@ -78,7 +88,6 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
               )}
               <PlaceOrderAssetField
                 label={t("common:buy")}
-                maxBalance={buyAmountBalance}
                 assetFieldName="buyAsset"
                 assetAmountFieldName="buyAmount"
                 assets={allAssets}
