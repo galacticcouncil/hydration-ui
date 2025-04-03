@@ -62,7 +62,13 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
       return
     }
 
-    paginateTo(page - 1)
+    const nextPage = page - 1
+
+    if (nextPage === 0 && !canAddLiquidity) {
+      onClose()
+    }
+
+    paginateTo(nextPage)
   }
 
   const title = isOnlyStablepool
@@ -137,8 +143,8 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             noPadding: true,
             content: (
               <AssetsModalContent
-                hideInactiveAssets={true}
-                allAssets={true}
+                hideInactiveAssets
+                allAssets
                 allowedAssets={assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)

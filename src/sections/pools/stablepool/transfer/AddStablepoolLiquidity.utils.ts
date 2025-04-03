@@ -2,6 +2,7 @@ import {
   calculate_amplification,
   calculate_shares,
 } from "@galacticcouncil/math-stableswap"
+import { StableMath } from "@galacticcouncil/sdk"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
@@ -45,12 +46,15 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
       },
     ]
 
+    const pegs = StableMath.defaultPegs(pool.data.assets.length)
+
     const shares = calculate_shares(
       JSON.stringify(reserves),
       JSON.stringify(assets),
       amplification,
       shareIssuance.toString(),
       new BigNumber(pool.data.fee.toString()).div(BN_MILL).toString(),
+      JSON.stringify(pegs),
     )
 
     return BigNumber.maximum(

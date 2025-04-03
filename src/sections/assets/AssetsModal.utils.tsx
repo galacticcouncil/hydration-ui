@@ -150,6 +150,7 @@ export const useAssetsData = ({
     bonds: bondAssets,
     isBond,
     tokens: tokenAssets,
+    erc20,
   } = useAssets()
   const { data } = useAccountAssets()
 
@@ -170,6 +171,7 @@ export const useAssetsData = ({
           if (
             accountAsset.asset.isToken ||
             accountAsset.asset.isStableSwap ||
+            accountAsset.asset.isErc20 ||
             (withExternal
               ? accountAsset.asset.isExternal && !!accountAsset.asset.name
               : false)
@@ -225,7 +227,12 @@ export const useAssetsData = ({
 
     const tokens = allAssets
       ? getAssetBalances(
-          [...tokenAssets, ...stableswap, ...(withExternal ? external : [])],
+          [
+            ...tokenAssets,
+            ...stableswap,
+            ...(withExternal ? external : []),
+            ...erc20,
+          ],
           tokensData,
         )
       : tokensData
@@ -244,6 +251,7 @@ export const useAssetsData = ({
     withExternal,
     getAssetPrice,
     isLoading,
+    erc20,
   ])
 
   const bonds = useMemo(() => {
