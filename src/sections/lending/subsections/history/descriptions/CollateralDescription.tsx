@@ -6,14 +6,14 @@ import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 type Props = {
-  readonly assetId: string | null
+  readonly assetId: string | null | undefined
   readonly enabled: boolean
 }
 
 export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
   const { t } = useTranslation()
-  const { getAsset } = useAssets()
-  const asset = assetId ? getAsset(assetId) : null
+  const { getAssetWithFallback } = useAssets()
+  const asset = getAssetWithFallback(assetId ?? "")
 
   return (
     <Text
@@ -40,7 +40,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
           size={16}
           sx={{ mx: 2 }}
         />{" "}
-        {asset?.symbol}
+        {asset.symbol}
       </div>
     </Text>
   )

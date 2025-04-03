@@ -3,6 +3,7 @@ import {
   NotifyOnChangeProps,
   useQueries,
   useQuery,
+  UseQueryOptions,
 } from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -13,6 +14,13 @@ import BigNumber from "bignumber.js"
 import { millisecondsInMinute } from "date-fns"
 import { BN_0 } from "utils/constants"
 import { useExternalApi } from "./external"
+import {
+  AggregationTimeRange,
+  SwapAssetFeesByPeriodDocument,
+  SwapAssetFeesByPeriodQuery,
+} from "graphql/__generated__/squid/graphql"
+import { useSquidUrl } from "api/provider"
+import request from "graphql-request"
 
 export type StatsData = {
   timestamp: string
@@ -200,4 +208,26 @@ export const useTreasuryBalances = () => {
       : undefinedNoop,
     { staleTime: millisecondsInMinute, enabled: !!api },
   )
+}
+
+type UseAssetFeesTotalOptions = {
+  period: keyof typeof AggregationTimeRange
+}
+
+export const useSwapAssetFeesByPeriod = (
+  { period }: UseAssetFeesTotalOptions = { period: "24H" },
+  options: UseQueryOptions<SwapAssetFeesByPeriodQuery> = {},
+) => {
+  const squidUrl = useSquidUrl()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.swapAssetFees(period),
+    queryFn: () =>
+      request(squidUrl, SwapAssetFeesByPeriodDocument, {
+        filter: {
+          period: AggregationTimeRange[period],
+        },
+      }),
+    ...options,
+  })
 }

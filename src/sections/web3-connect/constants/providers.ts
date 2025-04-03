@@ -46,10 +46,10 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.PolkadotJS,
   WalletProviderType.Talisman,
   WalletProviderType.SubwalletJS,
   WalletProviderType.Enkrypt,
-  WalletProviderType.PolkadotJS,
   WalletProviderType.NovaWallet,
   // WalletProviderType.Nightly,
   WalletProviderType.MantaWallet,
