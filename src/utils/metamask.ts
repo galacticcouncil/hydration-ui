@@ -163,6 +163,17 @@ export async function requestNetworkSwitch(
       })
       .then(options?.onSwitch)
   } catch (error: any) {
+    /**
+     * MetaMask v12.14.2 introduced bug with switching networks.
+     * We catch this error and ignore it for now, other than that it seems to work.
+     * @see https://github.com/MetaMask/metamask-extension/issues/31464
+     */
+    if (
+      typeof error?.message === "string" &&
+      error.message.includes("is not a function")
+    ) {
+      return
+    }
     const errorType = normalizeChainSwitchError(provider, error)
 
     if (errorType === "CHAIN_NOT_FOUND") {

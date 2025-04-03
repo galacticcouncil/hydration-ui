@@ -13,7 +13,7 @@ import { encodeAddress, blake2AsHex } from "@polkadot/util-crypto"
 import { HYDRADX_SS58_PREFIX, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useOmnipoolVolumes } from "api/volume"
-import BN from "bignumber.js"
+import BN, { BigNumber } from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useFee } from "api/stats"
@@ -412,4 +412,126 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
   )
 
   return { priceA, priceB, assetA: metaA, assetB: metaB }
+}
+
+export const useOmnipoolsTotals = () => {
+  const pools = usePools()
+
+  const omnipoolTotals = useMemo(
+    () => calculatePoolsTotals(pools.data),
+    [pools.data],
+  )
+
+  return {
+    ...omnipoolTotals,
+    isLoading: pools.isLoading,
+  }
+}
+
+export const useXykTotals = () => {
+  const xykPools = useXYKPools()
+
+  const xykTotals = useMemo(
+    () => calculateXykTotals(xykPools.data),
+    [xykPools.data],
+  )
+  return {
+    ...xykTotals,
+    isLoading: xykPools.isInitialLoading,
+  }
+}
+
+export const useStablepoolsTotals = () => {
+  const { getAssetWithFallback } = useAssets()
+  const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
+
+  const totalBalances =
+    stablePools?.reduce<Record<string, BN>>((memo, stablePool) => {
+      stablePool.tokens.forEach((token) => {
+        const id = token.id
+        const free = token.balance
+
+        if (token.type === "Token") {
+          if (memo[id]) {
+            memo[id] = BN(memo[id]).plus(free)
+          } else {
+            memo[id] = BN(free)
+          }
+        }
+      })
+
+      return memo
+    }, {}) ?? {}
+
+  const { getAssetPrice, isLoading: isLoadingPrices } = useAssetsPrice(
+    Object.keys(totalBalances),
+  )
+
+  const isLoading = isPoolLoading || isLoadingPrices
+  const total = !isLoadingPrices
+    ? Object.entries(totalBalances).reduce((memo, totalBalance) => {
+        const [assetId, balance] = totalBalance
+
+        const spotPrice = getAssetPrice(assetId).price
+
+        const meta = getAssetWithFallback(assetId)
+
+        const balanceDisplay = balance
+          .shiftedBy(-meta.decimals)
+          .multipliedBy(spotPrice)
+
+        return memo.plus(balanceDisplay)
+      }, BN_0)
+    : BN_0
+
+  return {
+    tvl: total.toString(),
+    isLoading: isLoading,
+  }
+}
+
+export const calculatePoolsTotals = (
+  pools: ReturnType<typeof usePools>["data"],
+) => {
+  const defaultValues = {
+    tvl: "0",
+    volume: "0",
+  }
+  if (!pools) return defaultValues
+  return pools.reduce((acc, pool) => {
+    acc.tvl = BN(acc.tvl)
+      .plus(!pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0)
+      .toString()
+    acc.volume = BN(acc.volume)
+      .plus(pool.volume ?? 0)
+      .toString()
+
+    return acc
+  }, defaultValues)
+}
+
+export const calculateXykTotals = (
+  xyk: ReturnType<typeof useXYKPools>["data"],
+) => {
+  const defaultValues = {
+    tvl: "0",
+    volume: "0",
+  }
+  if (!xyk) return defaultValues
+  return xyk.reduce((acc, xykPool) => {
+    if (!xykPool.isInvalid) {
+      acc.tvl = BN(acc.tvl)
+        .plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        .toString()
+      acc.volume = BN(acc.volume)
+        .plus(
+          xykPool.volume && !BigNumber(xykPool.volume).isNaN()
+            ? xykPool.volume
+            : 0,
+        )
+        .toString()
+    }
+
+    return acc
+  }, defaultValues)
 }
