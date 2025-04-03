@@ -134,12 +134,12 @@ export const DashboardHeaderValues: FC<{
             <NoData />
           )}
         </DataValue>
-        <DataValue
-          labelColor="brightBlue300"
-          label="Available rewards"
-          isLoading={loading}
-        >
-          {currentAccount && claimableRewardsUsd > 0 ? (
+        {currentAccount && claimableRewardsUsd > 0 && (
+          <DataValue
+            labelColor="brightBlue300"
+            label="Available rewards"
+            isLoading={loading}
+          >
             <div sx={{ flex: "row", align: "center", gap: 10 }}>
               <span>
                 <DisplayValue value={claimableRewardsUsd} isUSD />
@@ -152,10 +152,8 @@ export const DashboardHeaderValues: FC<{
                 <span>Claim</span>
               </Button>
             </div>
-          ) : (
-            <NoData />
-          )}
-        </DataValue>
+          </DataValue>
+        )}
       </DataValueList>
       <LiquidationRiskParametresInfoModal
         open={open}
