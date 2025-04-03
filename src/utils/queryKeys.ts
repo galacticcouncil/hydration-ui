@@ -344,6 +344,10 @@ export const QUERY_KEYS = {
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
   borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  borrowReserves: (poolContractAddress: string) => [
+    "borrowReserves",
+    poolContractAddress,
+  ],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
@@ -369,6 +373,7 @@ export const QUERY_KEYS = {
     pagination.pageSize,
     pagination.pageIndex,
   ],
+  swapAssetFees: (period: string) => ["swapAssetFees", period],
 } as const
 
 export const WS_QUERY_KEYS = {
