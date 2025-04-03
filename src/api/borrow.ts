@@ -9,9 +9,9 @@ import {
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0 } from "utils/constants"
 import { H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
+import BN from "bignumber.js"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -44,7 +44,7 @@ export const useBorrowReserves = () => {
   const addresses = useBorrowContractAddresses()
 
   return useQuery(
-    QUERY_KEYS.borrowReserves,
+    QUERY_KEYS.borrowReserves(addresses?.POOL_ADDRESSES_PROVIDER ?? ""),
     async () => {
       if (!poolDataContract || !addresses) return null
 
@@ -74,7 +74,7 @@ export const useBorrowReserves = () => {
     },
     {
       retry: false,
-      enabled: !!poolDataContract,
+      enabled: !!addresses && !!poolDataContract,
     },
   )
 }
@@ -137,15 +137,15 @@ export const useBorrowMarketTotals = () => {
 
   const borrowTotals = useMemo(() => {
     const defaultValues = {
-      tvl: BN_0,
-      debt: BN_0,
+      tvl: "0",
+      debt: "0",
     }
     if (!reserves) return defaultValues
 
     return reserves.formattedReserves.reduce(
       (acc, reserve) => ({
-        tvl: acc.tvl.plus(reserve.totalLiquidityUSD),
-        debt: acc.debt.plus(reserve.totalDebtUSD),
+        tvl: BN(acc.tvl).plus(reserve.totalLiquidityUSD).toString(),
+        debt: BN(acc.debt).plus(reserve.totalDebtUSD).toString(),
       }),
       defaultValues,
     )

@@ -12,10 +12,8 @@ import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { undefinedNoop } from "utils/helpers"
-import { useSpotPrice } from "api/spotPrice"
-import { useDisplayAssetStore } from "utils/displayAsset"
-import { useShallow } from "hooks/useShallow"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 interface ISubscanData {
   code: number
@@ -96,31 +94,25 @@ export const useStakingTotal = () => {
   const { api, isLoaded } = useRpcProvider()
   const { native } = useAssets()
 
-  const stableCoinId = useDisplayAssetStore(
-    useShallow((state) => state.stableCoinId),
-  )
-
-  const { data: spot, isSuccess: isSpotSuccess } = useSpotPrice(
-    native.id,
-    stableCoinId,
-  )
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const { price } = getAssetPrice(native.id)
 
   return useQuery(
     QUERY_KEYS.staking,
     async () => {
       const res = await api.query.staking.staking()
-      if (!res || !spot) return null
+      if (!res || !price) return null
       const totalStake = res.totalStake.toBigNumber()
       return {
         totalStake: totalStake.toString(),
         totalStakeDisplay: totalStake
           .shiftedBy(-native.decimals)
-          .multipliedBy(spot.spotPrice)
+          .multipliedBy(price)
           .toString(),
       }
     },
     {
-      enabled: isLoaded && isSpotSuccess,
+      enabled: isLoaded && !!price,
     },
   )
 }

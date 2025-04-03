@@ -13,7 +13,7 @@ import {
 } from "sections/pools/PoolsPage.utils"
 import { useTreasuryAssets } from "sections/stats/StatsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { isNotNil } from "utils/helpers"
 import { prop } from "utils/rx"
 
@@ -37,16 +37,16 @@ export const useSwapAssetFees24hTotal = () => {
     useAssetsPrice(assetIds)
 
   const swapFees24h = useMemo(() => {
-    if (isAssetsPriceLoading) return BN_NAN
+    if (isAssetsPriceLoading) return "0"
     return assets.reduce((prev, curr) => {
       const asset = getAsset(curr.assetId)
       if (!asset) return prev
 
       const { price } = getAssetPrice(asset.id)
 
-      const amountFmt = BN(curr.amount).shiftedBy(-asset.decimals).times(price)
-      return amountFmt.isNaN() ? prev : prev.plus(amountFmt)
-    }, BN_0)
+      const amount = BN(curr.amount).shiftedBy(-asset.decimals).times(price)
+      return amount.isNaN() ? prev : BN(prev).plus(amount).toString()
+    }, "0")
   }, [assets, getAsset, isAssetsPriceLoading, getAssetPrice])
 
   return {
@@ -90,7 +90,7 @@ export const useStatsOverviewChartData = (
       label: t("stats.overview.xyk"),
       color: "#564FB2",
     },
-  ].sort((a, b) => b.value.comparedTo(a.value))
+  ].sort((a, b) => BN(b.value).comparedTo(a.value))
 }
 
 const useStableswapTotalTvl = () => {
@@ -120,8 +120,8 @@ export const useStatsOverviewTotals = () => {
 
   const { data: staking, isLoading: isStakingLoading } = useStakingTotal()
   const stakeTotal = staking?.totalStakeDisplay ?? "0"
-
-  const hasTreasuryTotal = !!treasury?.total
+  const treasuryTotal = treasury.total ?? "0"
+  const hasTreasuryTotal = treasuryTotal !== "0"
 
   const isLoading =
     moneyMarket.isLoading ||
@@ -137,21 +137,24 @@ export const useStatsOverviewTotals = () => {
   const totals = useMemo(() => {
     if (isLoading) return null
 
-    const volume24h = xyk.volume.plus(omnipools.volume.div(2))
+    const volume24h = BN(xyk.volume)
+      .plus(BN(omnipools.volume).div(2))
+      .toString()
 
-    const hydrationTvl = omnipools.tvl
+    const hydrationTvl = BN(omnipools.tvl)
       .plus(stablepools.tvl)
       .plus(xyk.tvl)
       .plus(moneyMarket.tvl)
       .plus(stakeTotal)
       .minus(stableswapTvl.tvl)
+      .toString()
 
     return {
       moneyMarketTotal: moneyMarket.tvl,
       omnipoolsTotal: omnipools.tvl,
       stablePoolsTotal: stablepools.tvl,
-      treasuryTotal: BN(treasury.total ?? "0"),
-      stakingTotal: BN(stakeTotal),
+      treasuryTotal: treasury.total ?? "0",
+      stakingTotal: stakeTotal,
       xykTotal: xyk.tvl,
       hydrationTvl,
       volume24h,

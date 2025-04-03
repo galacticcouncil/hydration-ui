@@ -21,6 +21,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import BN from "bignumber.js"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -136,7 +137,7 @@ const AllPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.tvl}
+                value={BN(omnipoolTotals.tvl)}
                 fontSize={[19, 24]}
               />
             ),
@@ -151,7 +152,7 @@ const AllPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={xykPools.isInitialLoading}
-                value={xykTotals.tvl}
+                value={BN(xykTotals.tvl)}
                 fontSize={[19, 24]}
               />
             ),
@@ -163,7 +164,9 @@ const AllPoolsData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading || xykPools.isInitialLoading}
-                value={xykTotals.volume.plus(omnipoolTotals.volume.div(2))}
+                value={BN(xykTotals.volume).plus(
+                  BN(omnipoolTotals.volume).div(2),
+                )}
                 fontSize={[19, 24]}
               />
             ),

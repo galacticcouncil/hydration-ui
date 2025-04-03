@@ -38,7 +38,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
           size="extra-large"
         >
           <DisplayValue
-            value={totals?.hydrationTvl}
+            value={BN(totals?.hydrationTvl ?? "0")}
             isUSD
             compact={BN(totals?.hydrationTvl ?? "0").gt(BN_BILL)}
           />
@@ -49,7 +49,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
           label={t("24hVolume")}
           size="extra-large"
         >
-          <DisplayValue value={totals?.volume24h} isUSD />
+          <DisplayValue value={BN(totals?.volume24h ?? "0")} isUSD />
         </DataValue>
         <DataValue
           isLoading={isLoadingSwapFees}
@@ -57,7 +57,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
           label={t("24hSwapFees")}
           size="extra-large"
         >
-          <DisplayValue value={swapFees24h} isUSD />
+          <DisplayValue value={BN(swapFees24h)} isUSD />
         </DataValue>
       </DataValueList>
       <VerticalBarChart isLoading={isLoadingTotals} data={data} slanted />
@@ -70,7 +70,11 @@ export const StatsOverview: React.FC<StatsOverviewProps> = () => {
             label={label}
             size="extra-large"
           >
-            <DisplayValue value={value} isUSD compact={BN(value).gt(BN_BILL)} />
+            <DisplayValue
+              value={BN(value)}
+              isUSD
+              compact={BN(value).gt(BN_BILL)}
+            />
           </DataValue>
         ))}
       </SStatsContainer>

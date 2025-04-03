@@ -344,7 +344,10 @@ export const QUERY_KEYS = {
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
   borrowUserSummary: (address: string) => ["borrowUserSummary", address],
-  borrowReserves: ["borrowReserves"],
+  borrowReserves: (poolContractAddress: string) => [
+    "borrowReserves",
+    poolContractAddress,
+  ],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",

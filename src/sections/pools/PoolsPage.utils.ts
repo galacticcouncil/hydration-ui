@@ -485,7 +485,7 @@ export const useStablepoolsTotals = () => {
     : BN_0
 
   return {
-    tvl: total,
+    tvl: total.toString(),
     isLoading: isLoading,
   }
 }
@@ -493,38 +493,45 @@ export const useStablepoolsTotals = () => {
 export const calculatePoolsTotals = (
   pools: ReturnType<typeof usePools>["data"],
 ) => {
-  if (!pools) return { tvl: BN_0, volume: BN_0 }
-  return pools.reduce(
-    (acc, pool) => {
-      acc.tvl = acc.tvl.plus(!pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0)
-      acc.volume = acc.volume.plus(pool.volume ?? 0)
+  const defaultValues = {
+    tvl: "0",
+    volume: "0",
+  }
+  if (!pools) return defaultValues
+  return pools.reduce((acc, pool) => {
+    acc.tvl = BN(acc.tvl)
+      .plus(!pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0)
+      .toString()
+    acc.volume = BN(acc.volume)
+      .plus(pool.volume ?? 0)
+      .toString()
 
-      return acc
-    },
-
-    { tvl: BN_0, volume: BN_0 },
-  )
+    return acc
+  }, defaultValues)
 }
 
 export const calculateXykTotals = (
   xyk: ReturnType<typeof useXYKPools>["data"],
 ) => {
-  if (!xyk) return { tvl: BN_0, volume: BN_0 }
-  return xyk.reduce(
-    (acc, xykPool) => {
-      if (!xykPool.isInvalid) {
-        acc.tvl = acc.tvl.plus(
-          !xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0,
-        )
-        acc.volume = acc.volume.plus(
+  const defaultValues = {
+    tvl: "0",
+    volume: "0",
+  }
+  if (!xyk) return defaultValues
+  return xyk.reduce((acc, xykPool) => {
+    if (!xykPool.isInvalid) {
+      acc.tvl = BN(acc.tvl)
+        .plus(!xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0)
+        .toString()
+      acc.volume = BN(acc.volume)
+        .plus(
           xykPool.volume && !BigNumber(xykPool.volume).isNaN()
             ? xykPool.volume
             : 0,
         )
-      }
+        .toString()
+    }
 
-      return acc
-    },
-    { tvl: BN_0, volume: BN_0 },
-  )
+    return acc
+  }, defaultValues)
 }

@@ -15,6 +15,7 @@ import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
+import BN from "bignumber.js"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -101,7 +102,7 @@ const OmnipoolAndStablepoolData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.tvl}
+                value={BN(omnipoolTotals.tvl)}
                 fontSize={[19, 24]}
               />
             ),
@@ -116,7 +117,7 @@ const OmnipoolAndStablepoolData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.volume.div(2)}
+                value={BN(omnipoolTotals.volume).div(2)}
                 fontSize={[19, 24]}
               />
             ),
