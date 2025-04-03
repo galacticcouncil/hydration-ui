@@ -10,7 +10,6 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Separator } from "components/Separator/Separator"
 import { theme } from "theme"
 import Skeleton from "react-loading-skeleton"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { useAssets } from "providers/assets"
 import {
@@ -23,7 +22,6 @@ type Props = { onClose: () => void }
 
 export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
   ({ onClose }, ref) => {
-    const { account } = useAccount()
     const { t } = useTranslation()
     const { getAssetWithFallback } = useAssets()
 
@@ -108,11 +106,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
             </Text>
 
             <SClaimButton
-              disabled={
-                !claimableValues ||
-                BigNumber(claimableTotal).isZero() ||
-                account?.isExternalWalletConnected
-              }
+              disabled={!claimableValues || BigNumber(claimableTotal).isZero()}
               onClick={claim}
             >
               <Text fs={13} tTransform="uppercase" tAlign="center">

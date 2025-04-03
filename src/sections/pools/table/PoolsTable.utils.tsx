@@ -28,7 +28,6 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
 import { BN_0, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -142,7 +141,6 @@ const AddLiquidityButton: React.FC<{
 }> = ({ pool }) => {
   const { t } = useTranslation()
   const { native } = useAssets()
-  const { account } = useAccount()
   const [open, setOpen] = useState(false)
   const farms = pool.farms
 
@@ -168,13 +166,7 @@ const AddLiquidityButton: React.FC<{
   return (
     <>
       {farms.length > 0 ? (
-        <Button
-          variant="primary"
-          size="small"
-          css={styles}
-          disabled={account?.isExternalWalletConnected}
-          onClick={onClick}
-        >
+        <Button variant="primary" size="small" css={styles} onClick={onClick}>
           {t("liquidity.asset.actions.joinFarms")}
         </Button>
       ) : (
@@ -187,7 +179,6 @@ const AddLiquidityButton: React.FC<{
               borderColor: `rgba(${theme.rgbColors.brightBlue300}, 0.4)`,
             },
           ]}
-          disabled={account?.isExternalWalletConnected}
           onClick={onClick}
         >
           {t("liquidity.asset.actions.joinPool")}
