@@ -166,7 +166,7 @@ const viewport = {
 } as const
 
 // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-const hexToRgb = (hex: string) => {
+export const hexToRgb = (hex: string) => {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
   const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
 

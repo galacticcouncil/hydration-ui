@@ -105,7 +105,7 @@ export const StatsOmnipoolAsset = () => {
   const assetId = search.id?.toString() as string
   const location = useLocation()
 
-  if (!assetId && location.current.pathname === LINKS.statsOmnipool) {
+  if (!assetId && location.current.pathname === LINKS.statsOmnipoolAsset) {
     return <Navigate to="/stats" />
   }
 
@@ -141,7 +141,7 @@ const StatsOmnipoolAssetData = ({ assetId }: { assetId: string }) => {
           data={{
             vlm: omnipoolAsset.volume,
             cap: omnipoolAsset.cap.multipliedBy(100),
-            pol: omnipoolAsset.pol,
+            pol: omnipoolAsset.polDisplay,
             share: omnipoolAsset.tvl.div(omnipollTvl).multipliedBy(100),
             assetId,
             fee: omnipoolAsset.fee,

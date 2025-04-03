@@ -12,6 +12,8 @@ import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { undefinedNoop } from "utils/helpers"
+import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 interface ISubscanData {
   code: number
@@ -86,6 +88,33 @@ const getUniques = async (
   })
 
   return data
+}
+
+export const useStakingTotal = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { native } = useAssets()
+
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const { price } = getAssetPrice(native.id)
+
+  return useQuery(
+    QUERY_KEYS.staking,
+    async () => {
+      const res = await api.query.staking.staking()
+      if (!res || !price) return null
+      const totalStake = res.totalStake.toBigNumber()
+      return {
+        totalStake: totalStake.toString(),
+        totalStakeDisplay: totalStake
+          .shiftedBy(-native.decimals)
+          .multipliedBy(price)
+          .toString(),
+      }
+    },
+    {
+      enabled: isLoaded && !!price,
+    },
+  )
 }
 
 export const useStake = (address: string | undefined) => {
