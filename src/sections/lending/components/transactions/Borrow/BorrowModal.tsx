@@ -8,13 +8,18 @@ import {
   useModalContext,
 } from "sections/lending/hooks/useModal"
 import { BorrowModalContent } from "./BorrowModalContent"
+import { useRootStore } from "sections/lending/store/root"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { GhoBorrowModalContent } from "sections/lending/components/transactions/Borrow/GhoBorrowModalContent"
 
 export const BorrowModal = () => {
+  const displayGho = useRootStore((store) => store.displayGho)
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
 
   const [borrowUnWrapped, setBorrowUnWrapped] = useState(false)
+  const { currentMarket } = useProtocolDataContext()
 
   const handleBorrowUnwrapped = (borrowUnWrapped: boolean) => {
     setBorrowUnWrapped(borrowUnWrapped)
@@ -29,13 +34,17 @@ export const BorrowModal = () => {
         keepWrappedSymbol={!borrowUnWrapped}
         requiredPermission={PERMISSION.BORROWER}
       >
-        {(params) => (
-          <BorrowModalContent
-            {...params}
-            unwrap={borrowUnWrapped}
-            setUnwrap={handleBorrowUnwrapped}
-          />
-        )}
+        {(params) =>
+          displayGho({ symbol: params.symbol, currentMarket }) ? (
+            <GhoBorrowModalContent {...params} />
+          ) : (
+            <BorrowModalContent
+              {...params}
+              unwrap={borrowUnWrapped}
+              setUnwrap={handleBorrowUnwrapped}
+            />
+          )
+        }
       </ModalWrapper>
     </BasicModal>
   )

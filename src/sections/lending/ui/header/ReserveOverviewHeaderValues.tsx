@@ -10,6 +10,9 @@ import {
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { theme } from "theme"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { useRootStore } from "sections/lending/store/root"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useTranslation } from "react-i18next"
 
 export type ReserveOverviewHeaderValuesProps = {
   className?: string
@@ -19,13 +22,18 @@ export type ReserveOverviewHeaderValuesProps = {
 export const ReserveOverviewHeaderValues: FC<
   ReserveOverviewHeaderValuesProps
 > = ({ underlyingAsset, className }) => {
+  const { t } = useTranslation()
   const { reserves, loading } = useAppDataContext()
+  const { currentMarket } = useProtocolDataContext()
+  const displayGho = useRootStore((store) => store.displayGho)
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const poolReserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,
   ) as ComputedReserveData
+
+  const isGho = displayGho({ symbol: poolReserve.symbol, currentMarket })
 
   return (
     <div
@@ -52,7 +60,7 @@ export const ReserveOverviewHeaderValues: FC<
           size="medium"
           isLoading={loading}
           labelColor="brightBlue300"
-          label="Reserve size"
+          label={t("lending.reserve.reserveSize")}
         >
           <DisplayValue
             isUSD
@@ -60,36 +68,66 @@ export const ReserveOverviewHeaderValues: FC<
             value={Math.max(Number(poolReserve?.totalLiquidityUSD), 0)}
           />
         </DataValue>
-        <DataValue
-          size="medium"
-          isLoading={loading}
-          labelColor="brightBlue300"
-          label="Available liquidity"
-        >
-          <DisplayValue
-            isUSD
-            compact
-            value={Math.max(Number(poolReserve?.availableLiquidityUSD), 0)}
-          />
-        </DataValue>
-        <DataValue
-          size="medium"
-          isLoading={loading}
-          labelColor="brightBlue300"
-          label="Utilization rate"
-        >
-          <PercentageValue
-            value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
-          />
-        </DataValue>
-        <DataValue
-          size="medium"
-          isLoading={loading}
-          labelColor="brightBlue300"
-          label="Oracle price"
-        >
-          <DisplayValue isUSD value={Number(poolReserve?.priceInUSD ?? 0)} />
-        </DataValue>
+        {isGho ? (
+          <>
+            <DataValue
+              size="medium"
+              isLoading={loading}
+              labelColor="brightBlue300"
+              label={t("lending.reserve.maxToBorrow")}
+            >
+              <DisplayValue
+                isUSD
+                compact
+                value={Math.max(Number(poolReserve.borrowCap), 0)}
+              />
+            </DataValue>
+            <DataValue
+              size="medium"
+              isLoading={loading}
+              labelColor="brightBlue300"
+              label={t("price")}
+            >
+              <DisplayValue isUSD value={1} />
+            </DataValue>
+          </>
+        ) : (
+          <>
+            <DataValue
+              size="medium"
+              isLoading={loading}
+              labelColor="brightBlue300"
+              label={t("lending.reserve.availableLiq")}
+            >
+              <DisplayValue
+                isUSD
+                compact
+                value={Math.max(Number(poolReserve?.availableLiquidityUSD), 0)}
+              />
+            </DataValue>
+            <DataValue
+              size="medium"
+              isLoading={loading}
+              labelColor="brightBlue300"
+              label={t("lending.reserve.utilRate")}
+            >
+              <PercentageValue
+                value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
+              />
+            </DataValue>
+            <DataValue
+              size="medium"
+              isLoading={loading}
+              labelColor="brightBlue300"
+              label={t("lending.reserve.oraclePrice")}
+            >
+              <DisplayValue
+                isUSD
+                value={Number(poolReserve?.priceInUSD ?? 0)}
+              />
+            </DataValue>
+          </>
+        )}
       </DataValueList>
     </div>
   )
