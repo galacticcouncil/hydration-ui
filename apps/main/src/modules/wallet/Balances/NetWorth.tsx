@@ -1,14 +1,29 @@
-import { Flex, ValueStats } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { AreaChart, Flex, ValueStats } from "@galacticcouncil/ui/components"
+import { MOCK_TIME_DATA } from "@galacticcouncil/ui/components/Chart/utils"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components"
+import { ChartState } from "@/components/ChartState"
 
 export const NetWorth: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const [netWorth] = useDisplayAssetPrice("10", 10301874)
+  const [crosshair, setCrosshair] = useState<
+    (typeof MOCK_TIME_DATA)[number] | null
+  >(null)
+
+  const lastDataPoint = last(MOCK_TIME_DATA)
+  const value = crosshair?.value ?? lastDataPoint?.value ?? 0
+
+  const [netWorth] = useDisplayAssetPrice("10", value)
+
+  // mock fetch status for now
+  const isSuccess = false
+  const isError = false
+  const isLoading = false
+  const isEmpty = false
 
   return (
     <Flex
@@ -23,16 +38,39 @@ export const NetWorth: FC = () => {
         value={netWorth}
       />
       <Flex
-        borderWidth={1}
-        borderStyle="solid"
-        borderColor={getToken("details.borders")}
         align="center"
         justify="center"
         sx={{ textAlign: "center" }}
         height="100%"
         width="100%"
       >
-        Graph placeholder
+        <ChartState
+          isSuccess={isSuccess}
+          isError={isError}
+          isLoading={isLoading}
+          isEmpty={isEmpty}
+        >
+          <AreaChart
+            data={MOCK_TIME_DATA}
+            xAxisHidden
+            yAxisHidden
+            verticalGridHidden
+            curveType="linear"
+            onCrosshairMove={setCrosshair}
+            config={{
+              xAxisKey: "timestamp",
+              xAxisType: "time",
+              yAxisFormatter: (value) => t("common:currency", { value }),
+              tooltipType: "timeBottom",
+              series: [
+                {
+                  label: t("balances.header.netWorth"),
+                  key: "value",
+                },
+              ],
+            }}
+          />
+        </ChartState>
       </Flex>
     </Flex>
   )

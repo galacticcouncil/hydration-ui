@@ -45,7 +45,7 @@ export const useCrossChainWallet = () => {
     )
 
     return wallet
-  }, [])
+  }, [poolService])
 }
 
 // @TODO remove when migrated to sdk-next

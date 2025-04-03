@@ -1,11 +1,10 @@
 import { forwardRef } from "react"
 
 import { ChartCrosshair } from "@/components"
+import { dateFormatter, timeFormatter } from "@/components/Chart/utils"
 import {
   CrosshairCallbackData,
-  dateFormatter,
   parseTradingViewTime,
-  timeFormatter,
 } from "@/components/TradingViewChart/utils"
 
 export const Crosshair = forwardRef<

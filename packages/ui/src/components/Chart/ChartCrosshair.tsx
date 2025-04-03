@@ -12,10 +12,22 @@ export const ChartCrosshair: React.FC<ChartCrosshairProps> = ({
 }) => {
   return (
     <Box>
-      <Text align="center" fs="p5" color={getToken("text.low")} fw={500}>
+      <Text
+        align="center"
+        fs="p5"
+        color={getToken("text.low")}
+        fw={500}
+        whiteSpace="nowrap"
+      >
         {date}
       </Text>
-      <Text align="center" fs="p3" color={getToken("text.medium")} fw={500}>
+      <Text
+        align="center"
+        fs="p3"
+        color={getToken("text.medium")}
+        fw={500}
+        whiteSpace="nowrap"
+      >
         {time}
       </Text>
     </Box>
