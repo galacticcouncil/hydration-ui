@@ -1,5 +1,5 @@
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
-import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
+import { PieTotalValue } from "sections/stats/sections/omnipool/components/PieTotalValue/PieTotalValue"
 import { PieSkeleton } from "sections/stats/components/PieChart/components/Skeleton/Skeleton"
 import { ChartSwitchMobile } from "sections/stats/components/ChartSwitchMobile/ChartSwitchMobile"
 import { useMedia } from "react-use"

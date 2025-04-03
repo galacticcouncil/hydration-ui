@@ -105,7 +105,7 @@ export const StatsOmnipoolAsset = () => {
   const assetId = search.id?.toString() as string
   const location = useLocation()
 
-  if (!assetId && location.current.pathname === LINKS.statsOmnipool) {
+  if (!assetId && location.current.pathname === LINKS.statsOmnipoolAsset) {
     return <Navigate to="/stats" />
   }
 
