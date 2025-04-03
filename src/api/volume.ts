@@ -344,12 +344,8 @@ const getVolumeDaily = async (assetId?: string) => {
   return data
 }
 
-const VOLUME_BLOCK_COUNT = 7200 //24 hours
-
 export const useXYKSquidVolumes = (addresses: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
-  const url =
-    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+  const url = useSquidUrl()
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
@@ -359,11 +355,8 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
         u8aToHex(decodeAddress(address)),
       )
 
-      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
-
-      const { xykPoolHistoricalVolumesByPeriod } = await request<{
-        xykPoolHistoricalVolumesByPeriod: {
+      const { xykpoolHistoricalVolumesByPeriod } = await request<{
+        xykpoolHistoricalVolumesByPeriod: {
           nodes: {
             poolId: string
             assetAId: number
@@ -375,17 +368,9 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       }>(
         url,
         gql`
-          query XykVolume(
-            $poolIds: [String!]!
-            $startBlockNumber: Int!
-            $endBlockNumber: Int!
-          ) {
-            xykPoolHistoricalVolumesByPeriod(
-              filter: {
-                poolIds: $poolIds
-                startBlockNumber: $startBlockNumber
-                endBlockNumber: $endBlockNumber
-              }
+          query XykVolume($poolIds: [String!]!) {
+            xykpoolHistoricalVolumesByPeriod(
+              filter: { poolIds: $poolIds, period: _24H_ }
             ) {
               nodes {
                 poolId
@@ -397,10 +382,10 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
             }
           }
         `,
-        { poolIds: hexAddresses, startBlockNumber, endBlockNumber },
+        { poolIds: hexAddresses },
       )
 
-      const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+      const { nodes = [] } = xykpoolHistoricalVolumesByPeriod
 
       return nodes.map((node) => ({
         poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
@@ -410,7 +395,7 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       }))
     },
     {
-      enabled: isLoaded && !!addresses.length,
+      enabled: !!addresses.length,
       staleTime: millisecondsInHour,
       refetchInterval: millisecondsInMinute,
     },
