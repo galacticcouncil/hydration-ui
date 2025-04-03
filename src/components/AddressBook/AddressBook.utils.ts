@@ -1,5 +1,4 @@
 import { addr } from "@galacticcouncil/xcm-core"
-import { PublicKey } from "@solana/web3.js"
 import { getWalletBySource } from "@talismn/connect-wallets"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -11,6 +10,7 @@ import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { diffBy } from "utils/rx"
+import { isSolanaAddress } from "utils/solana"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -28,24 +28,13 @@ export const useProviderAccounts = (
   )
 }
 
-function isSolanaAddress(address: string) {
-  const pubkey = new PublicKey(address)
-  return PublicKey.isOnCurve(pubkey.toBuffer())
-}
-
 export function validateAddress(address: string) {
   if (addr.isH160(address)) {
     return WalletMode.EVM
   } else if (addr.isSs58(address)) {
     return WalletMode.Substrate
-  } else if (addr.isSolana(address)) {
-    try {
-      if (isSolanaAddress(address)) {
-        return WalletMode.Solana
-      }
-    } catch (error) {
-      return null
-    }
+  } else if (addr.isSolana(address) || isSolanaAddress(address)) {
+    return WalletMode.Solana
   }
 
   return null

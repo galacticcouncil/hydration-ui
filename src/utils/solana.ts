@@ -56,19 +56,11 @@ export function getSolanaTxLink(hash: string) {
   return `${chain.explorer}/tx/${hash}`
 }
 
-export function validateSolana(solanaAddr: string) {
-  const re = /^[1-9A-HJ-NP-Za-km-z1-9]{32,44}$/
-  if (!re.test(solanaAddr)) {
-    throw new Error("Invalid solana address provided!")
-  }
-}
-
-export function isSolanaAddress(address?: string) {
-  if (!address) return false
+export function isSolanaAddress(address: string) {
   try {
-    validateSolana(address)
-    return true
-  } catch {
+    const pubkey = new PublicKey(address)
+    return PublicKey.isOnCurve(pubkey.toBuffer())
+  } catch (error) {
     return false
   }
 }
