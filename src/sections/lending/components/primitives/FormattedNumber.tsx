@@ -1,67 +1,4 @@
-import { normalizeBN, valueToBigNumber } from "@aave/math-utils"
-
-interface CompactNumberProps {
-  value: string | number
-  visibleDecimals?: number
-  roundDown?: boolean
-  compactThreshold?: number
-}
-
-const POSTFIXES = ["", "K", "M", "B", "T", "P", "E", "Z", "Y"]
-
-export const compactNumber = ({
-  value,
-  visibleDecimals = 2,
-  roundDown,
-  compactThreshold,
-}: CompactNumberProps) => {
-  const bnValue = valueToBigNumber(value)
-
-  let integerPlaces = bnValue.toFixed(0).length
-  if (compactThreshold && Number(value) <= compactThreshold) {
-    integerPlaces = 0
-  }
-  const significantDigitsGroup = Math.min(
-    Math.floor(integerPlaces ? (integerPlaces - 1) / 3 : 0),
-    POSTFIXES.length - 1,
-  )
-  const postfix = POSTFIXES[significantDigitsGroup]
-  let formattedValue = normalizeBN(
-    bnValue,
-    3 * significantDigitsGroup,
-  ).toNumber()
-  if (roundDown) {
-    // Truncates decimals after the visible decimal point, i.e. 10.237 with 2 decimals becomes 10.23
-    formattedValue =
-      Math.trunc(Number(formattedValue) * 10 ** visibleDecimals) /
-      10 ** visibleDecimals
-  }
-  const prefix = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: visibleDecimals,
-    minimumFractionDigits: visibleDecimals,
-  }).format(formattedValue)
-
-  return { prefix, postfix }
-}
-
-function CompactNumber({
-  value,
-  visibleDecimals,
-  roundDown,
-}: CompactNumberProps) {
-  const { prefix, postfix } = compactNumber({
-    value,
-    visibleDecimals,
-    roundDown,
-  })
-
-  return (
-    <>
-      {prefix}
-      {postfix}
-    </>
-  )
-}
+import { useTranslation } from "react-i18next"
 
 export type FormattedNumberProps = {
   value: string | number
@@ -70,7 +7,6 @@ export type FormattedNumberProps = {
   compact?: boolean
   percent?: boolean
   roundDown?: boolean
-  compactThreshold?: number
   className?: string
 }
 
@@ -81,9 +17,9 @@ export function FormattedNumber({
   compact,
   percent,
   roundDown,
-  compactThreshold,
   className,
 }: FormattedNumberProps) {
+  const { t } = useTranslation()
   const number = percent ? Number(value) * 100 : Number(value)
 
   let decimals: number = visibleDecimals ?? 0
@@ -121,19 +57,9 @@ export function FormattedNumber({
         <span sx={{ mr: 2, color: "basic300" }}>$</span>
       )}
 
-      {!forceCompact ? (
-        new Intl.NumberFormat("en-US", {
-          maximumFractionDigits: decimals,
-          minimumFractionDigits: decimals,
-        }).format(formattedNumber)
-      ) : (
-        <CompactNumber
-          value={formattedNumber}
-          visibleDecimals={decimals}
-          roundDown={roundDown}
-          compactThreshold={compactThreshold}
-        />
-      )}
+      {!forceCompact
+        ? t("value", { value: formattedNumber, decimalPlaces: decimals })
+        : t("value.compact", { value: formattedNumber })}
 
       {percent && <span sx={{ ml: 2, color: "basic300" }}>%</span>}
       {symbol?.toLowerCase() !== "usd" && typeof symbol !== "undefined" && (

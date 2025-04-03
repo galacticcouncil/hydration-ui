@@ -1,4 +1,8 @@
-import { valueToBigNumber } from "@aave/math-utils"
+import {
+  normalize,
+  UserIncentiveData,
+  valueToBigNumber,
+} from "@aave/math-utils"
 import { DataValue, DataValueList } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PercentageValue } from "components/PercentageValue"
@@ -11,6 +15,8 @@ import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-par
 import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { useBifrostVDotApy } from "api/external/bifrost"
+import { useModalContext } from "sections/lending/hooks/useModal"
+import { Button } from "components/Button/Button"
 
 export const DashboardHeaderValues: FC<{
   className?: string
@@ -19,9 +25,9 @@ export const DashboardHeaderValues: FC<{
   const { user, loading } = useAppDataContext()
   const { currentAccount } = useWeb3Context()
   const [open, setOpen] = useState(false)
-  //const { openClaimRewards } = useModalContext()
+  const { openClaimRewards } = useModalContext()
 
-  /* const { claimableRewardsUsd } = Object.keys(
+  const { claimableRewardsUsd } = Object.keys(
     user.calculatedUserIncentives,
   ).reduce(
     (acc, rewardTokenAddress) => {
@@ -32,25 +38,7 @@ export const DashboardHeaderValues: FC<{
         incentive.rewardTokenDecimals,
       )
 
-      let tokenPrice = 0
-      // getting price from reserves for the native rewards for v2 markets
-      if (!currentMarketData.v3 && Number(rewardBalance) > 0) {
-        if (currentMarketData.chainId === ChainId.mainnet) {
-          const aave = reserves.find((reserve) => reserve.symbol === "AAVE")
-          tokenPrice = aave ? Number(aave.priceInUSD) : 0
-        } else {
-          reserves.forEach((reserve) => {
-            if (
-              reserve.symbol === currentNetworkConfig.wrappedBaseAssetSymbol
-            ) {
-              tokenPrice = Number(reserve.priceInUSD)
-            }
-          })
-        }
-      } else {
-        tokenPrice = Number(incentive.rewardPriceFeed)
-      }
-
+      const tokenPrice = Number(incentive.rewardPriceFeed)
       const rewardBalanceUsd = Number(rewardBalance) * tokenPrice
 
       if (rewardBalanceUsd > 0) {
@@ -67,7 +55,7 @@ export const DashboardHeaderValues: FC<{
       claimableRewardsUsd: number
       assets: string[]
     },
-  ) */
+  )
 
   const loanToValue =
     user?.totalCollateralMarketReferenceCurrency === "0"
@@ -86,81 +74,89 @@ export const DashboardHeaderValues: FC<{
     enabled: vDotSuppliedOrBorrowed,
   })
 
+  const shouldRenderVdotApy = vDotSuppliedOrBorrowed && !!vDotApy
+
   return (
     <>
-      <div sx={{ maxWidth: ["100%", 1000] }} className={className}>
-        <DataValueList separated>
-          <DataValue
-            labelColor="brightBlue300"
-            label={t("lending.header.networth.title")}
-            isLoading={loading}
-          >
-            {currentAccount ? (
-              <DisplayValue value={Number(user?.netWorthUSD || 0)} isUSD />
-            ) : (
-              <NoData />
-            )}
-          </DataValue>
-          <DataValue
-            labelColor="brightBlue300"
-            label={t("lending.header.netAPY.title")}
-            tooltip={t("lending.header.netAPY.tooltip")}
-            isLoading={loading}
-          >
-            {currentAccount && Number(user?.netWorthUSD) > 0 ? (
-              <PercentageValue value={Number(user.netAPY) * 100} />
-            ) : (
-              <NoData />
-            )}
-          </DataValue>
-          {vDotSuppliedOrBorrowed && vDotApy && (
-            <DataValue
-              labelColor="brightBlue300"
-              label={t("lending.header.vdotAPY.title")}
-              isLoading={loading || isVDotApyLoading}
-            >
-              <PercentageValue value={Number(vDotApy.apy)} />
-            </DataValue>
+      <DataValueList
+        separated
+        className={className}
+        sx={{
+          maxWidth: ["100%", shouldRenderVdotApy ? "100%" : 1000],
+        }}
+      >
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.networth.title")}
+          isLoading={loading}
+        >
+          {currentAccount ? (
+            <DisplayValue value={Number(user?.netWorthUSD || 0)} isUSD />
+          ) : (
+            <NoData />
           )}
+        </DataValue>
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.netAPY.title")}
+          tooltip={t("lending.header.netAPY.tooltip")}
+          isLoading={loading}
+        >
+          {currentAccount && Number(user?.netWorthUSD) > 0 ? (
+            <PercentageValue value={Number(user.netAPY) * 100} />
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
+        {shouldRenderVdotApy && (
           <DataValue
             labelColor="brightBlue300"
-            label={t("lending.header.healthfactor.title")}
-            isLoading={loading}
+            label={t("lending.header.vdotAPY.title")}
+            isLoading={loading || isVDotApyLoading}
           >
-            {currentAccount && user?.healthFactor !== "-1" ? (
-              <HealthFactorNumber
-                fontSize={19}
-                value={user?.healthFactor || "-1"}
-                onInfoClick={() => {
-                  setOpen(true)
-                }}
-              />
-            ) : (
-              <NoData />
-            )}
+            <PercentageValue value={Number(vDotApy.apy)} />
           </DataValue>
-          {/* <DataValue
-            labelColor="brightBlue300"
-            label="Available rewards"
-            isLoading={loading}
-          >
-            {currentAccount && claimableRewardsUsd > 0 ? (
-              <div sx={{ flex: "row", gap: 10 }}>
+        )}
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("lending.header.healthfactor.title")}
+          isLoading={loading}
+        >
+          {currentAccount && user?.healthFactor !== "-1" ? (
+            <HealthFactorNumber
+              fontSize={19}
+              value={user?.healthFactor || "-1"}
+              onInfoClick={() => {
+                setOpen(true)
+              }}
+            />
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
+        <DataValue
+          labelColor="brightBlue300"
+          label="Available rewards"
+          isLoading={loading}
+        >
+          {currentAccount && claimableRewardsUsd > 0 ? (
+            <div sx={{ flex: "row", align: "center", gap: 10 }}>
+              <span>
                 <DisplayValue value={claimableRewardsUsd} isUSD />
-                <Button
-                  variant="primary"
-                  size="micro"
-                  onClick={() => openClaimRewards()}
-                >
-                  <span>Claim</span>
-                </Button>
-              </div>
-            ) : (
-              <NoData />
-            )}
-          </DataValue> */}
-        </DataValueList>
-      </div>
+              </span>
+              <Button
+                variant="primary"
+                size="micro"
+                onClick={() => openClaimRewards()}
+              >
+                <span>Claim</span>
+              </Button>
+            </div>
+          ) : (
+            <NoData />
+          )}
+        </DataValue>
+      </DataValueList>
       <LiquidationRiskParametresInfoModal
         open={open}
         setOpen={setOpen}

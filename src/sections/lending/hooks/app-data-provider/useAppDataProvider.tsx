@@ -83,6 +83,7 @@ export interface AppDataContextType {
   ghoReserveData: FormattedGhoReserveData
   ghoUserData: FormattedGhoUserData
   ghoLoadingData: boolean
+  ghoEnabled: boolean
 }
 
 const AppDataContext = React.createContext<AppDataContextType>(
@@ -316,6 +317,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
         },
         ghoUserData: formattedGhoUserData,
         ghoLoadingData: !ghoReserveDataFetched,
+        ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
       }}
     >
       {children}

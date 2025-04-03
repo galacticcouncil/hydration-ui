@@ -6,15 +6,12 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { BorrowInfo } from "sections/lending/ui/reserve-overview/BorrowInfo"
 import { EModeInfo } from "sections/lending/ui/reserve-overview/EModeInfo"
 import { InterestRateModelInfo } from "sections/lending/ui/reserve-overview/InterestRateModelInfo"
+import { ReserveSectionDivider } from "sections/lending/ui/reserve-overview/ReserveSectionDivider"
 import { SupplyInfo } from "sections/lending/ui/reserve-overview/SupplyInfo"
 
 type ReserveConfigurationProps = {
   reserve: ComputedReserveData
 }
-
-const Divider = () => (
-  <div sx={{ bg: "bg", height: 4, mx: [-20, -30], my: [20, 40] }} />
-)
 
 export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
   reserve,
@@ -53,7 +50,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 
       {shouldRenderBorrowInfo && (
         <>
-          <Divider />
+          <ReserveSectionDivider />
           <Text color="pink500" fs={14} sx={{ mb: 30 }}>
             Borrow info
           </Text>
@@ -65,7 +62,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
             showBorrowCapStatus={showBorrowCapStatus}
             borrowCap={borrowCap}
           />
-          <Divider />
+          <ReserveSectionDivider />
           <Text color="brightBlue700" fs={14} sx={{ mb: 30 }}>
             Interest rate model
           </Text>
@@ -78,7 +75,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 
       {shouldRenderEModeInfo && (
         <>
-          <Divider />
+          <ReserveSectionDivider />
           <Text fs={14} sx={{ mb: 30 }}>
             E-Mode info
           </Text>
