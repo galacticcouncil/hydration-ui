@@ -15,6 +15,7 @@ export type TextProps = BoxProps & {
   align?: ThemeUICSSProperties["textAlign"]
   transform?: ThemeUICSSProperties["textTransform"]
   decoration?: ThemeUICSSProperties["textDecoration"]
+  whiteSpace?: ThemeUICSSProperties["whiteSpace"]
 }
 
 export const getFontSizeProps = (fs: TextProps["fs"]) => {
@@ -34,6 +35,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
       align,
       transform,
       decoration,
+      whiteSpace,
       font = "secondary",
       ...props
     },
@@ -50,6 +52,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
           textTransform: transform,
           textDecoration: decoration,
           lineHeight: lh,
+          whiteSpace,
           ...getFontSizeProps(fs),
         }}
         {...props}

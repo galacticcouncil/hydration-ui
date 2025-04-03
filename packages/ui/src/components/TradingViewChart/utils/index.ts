@@ -26,22 +26,6 @@ export type ChartDataExtended =
 
 export type SeriesType = ChartDataExtended["type"]
 
-export const dateFormatter = new Intl.DateTimeFormat("en", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-})
-export const yearFormatter = new Intl.DateTimeFormat("en", { year: "numeric" })
-export const monthFormatter = new Intl.DateTimeFormat("en", {
-  month: "short",
-  day: "numeric",
-})
-export const timeFormatter = new Intl.DateTimeFormat("en", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-})
-
 export const parseTradingViewTime = (time: Time): number => {
   if (typeof time === "number") {
     return time * 1000
@@ -189,6 +173,7 @@ export const subscribeCrosshairMove = (
 
   crosshairElement.style.top = "10px"
   priceIndicatorElement.style.left = "0px"
+  priceIndicatorElement.style.opacity = "0"
 
   chart.subscribeCrosshairMove((param) => {
     if (!param || !param.time || param.point === undefined) {
