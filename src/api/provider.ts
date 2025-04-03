@@ -51,6 +51,8 @@ const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   dataEnv: "mainnet",
 }
 
+const AAVE_AMM_ENABLED = import.meta.env.VITE_FF_AAVE_AMM_ENABLED === "true"
+
 export const PROVIDERS: ProviderProps[] = [
   {
     name: "GalacticCouncil",
@@ -403,8 +405,12 @@ export const useProviderData = (
         PoolType.Stable,
         PoolType.XYK,
         PoolType.LBP,
-        PoolType.Aave,
       ]
+
+      if (AAVE_AMM_ENABLED) {
+        traderRoutes.push(PoolType.Aave)
+      }
+
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
