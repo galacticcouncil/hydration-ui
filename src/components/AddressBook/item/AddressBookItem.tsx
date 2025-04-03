@@ -25,6 +25,7 @@ export const AddressBookItem = ({
   provider,
   onSelect,
   id,
+  isCustom,
 }: Props) => {
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -49,7 +50,7 @@ export const AddressBookItem = ({
         </SNameContainer>
         <SAddressContainer>
           <SAddress>{address}</SAddress>
-          {provider === "external" && (
+          {!!isCustom && (
             <div sx={{ flex: "row" }}>
               <SButton
                 onClick={(e) => {
