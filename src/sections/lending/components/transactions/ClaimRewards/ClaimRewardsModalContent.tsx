@@ -26,7 +26,7 @@ export enum ErrorType {
 
 export const ClaimRewardsModalContent = () => {
   const { t } = useTranslation()
-  const { mainTxState: claimRewardsTxState, txError } = useModalContext()
+  const { mainTxState: claimRewardsTxState, txError, args } = useModalContext()
   const { user, reserves } = useAppDataContext()
   const { currentMarketData } = useProtocolDataContext()
   const [claimableUsd, setClaimableUsd] = useState("0")
@@ -41,52 +41,60 @@ export const ClaimRewardsModalContent = () => {
       ? allReward
       : rewards.find((r) => r.symbol === selectedRewardSymbol)
 
+  const underlyingAssetLower = args?.underlyingAsset?.toLocaleLowerCase()
+
   // get all rewards
   useEffect(() => {
     const userIncentives: Reward[] = []
     let totalClaimableUsd = Number(claimableUsd)
     const allAssets: string[] = []
-    Object.keys(user.calculatedUserIncentives).forEach((rewardTokenAddress) => {
-      const incentive: UserIncentiveData =
-        user.calculatedUserIncentives[rewardTokenAddress]
-      const rewardBalance = normalize(
-        incentive.claimableRewards,
-        incentive.rewardTokenDecimals,
+    Object.keys(user.calculatedUserIncentives)
+      .filter(
+        (rewardTokenAddress) =>
+          !underlyingAssetLower ||
+          rewardTokenAddress.toLocaleLowerCase() === underlyingAssetLower,
       )
+      .forEach((rewardTokenAddress) => {
+        const incentive: UserIncentiveData =
+          user.calculatedUserIncentives[rewardTokenAddress]
+        const rewardBalance = normalize(
+          incentive.claimableRewards,
+          incentive.rewardTokenDecimals,
+        )
 
-      let tokenPrice = 0
-      // getting price from reserves for the native rewards for v2 markets
-      if (!currentMarketData.v3 && Number(rewardBalance) > 0) {
-        reserves.forEach((reserve) => {
-          if (reserve.isWrappedBaseAsset) {
-            tokenPrice = Number(reserve.priceInUSD)
-          }
-        })
-      } else {
-        tokenPrice = Number(incentive.rewardPriceFeed)
-      }
+        let tokenPrice = 0
+        // getting price from reserves for the native rewards for v2 markets
+        if (!currentMarketData.v3 && Number(rewardBalance) > 0) {
+          reserves.forEach((reserve) => {
+            if (reserve.isWrappedBaseAsset) {
+              tokenPrice = Number(reserve.priceInUSD)
+            }
+          })
+        } else {
+          tokenPrice = Number(incentive.rewardPriceFeed)
+        }
 
-      const rewardBalanceUsd = Number(rewardBalance) * tokenPrice
+        const rewardBalanceUsd = Number(rewardBalance) * tokenPrice
 
-      if (rewardBalanceUsd > 0) {
-        incentive.assets.forEach((asset) => {
-          if (allAssets.indexOf(asset) === -1) {
-            allAssets.push(asset)
-          }
-        })
+        if (rewardBalanceUsd > 0) {
+          incentive.assets.forEach((asset) => {
+            if (allAssets.indexOf(asset) === -1) {
+              allAssets.push(asset)
+            }
+          })
 
-        userIncentives.push({
-          assets: incentive.assets,
-          incentiveControllerAddress: incentive.incentiveControllerAddress,
-          symbol: incentive.rewardTokenSymbol,
-          balance: rewardBalance,
-          balanceUsd: rewardBalanceUsd.toString(),
-          rewardTokenAddress,
-        })
+          userIncentives.push({
+            assets: incentive.assets,
+            incentiveControllerAddress: incentive.incentiveControllerAddress,
+            symbol: incentive.rewardTokenSymbol,
+            balance: rewardBalance,
+            balanceUsd: rewardBalanceUsd.toString(),
+            rewardTokenAddress,
+          })
 
-        totalClaimableUsd = totalClaimableUsd + Number(rewardBalanceUsd)
-      }
-    })
+          totalClaimableUsd = totalClaimableUsd + Number(rewardBalanceUsd)
+        }
+      })
 
     if (userIncentives.length === 1) {
       setSelectedRewardSymbol(userIncentives[0].symbol)
@@ -141,7 +149,6 @@ export const ClaimRewardsModalContent = () => {
       {blockingError !== undefined && (
         <Text color="red400">{handleBlocked()}</Text>
       )}
-
       {rewards.length > 1 && (
         <>
           <RewardsSelect
@@ -152,7 +159,6 @@ export const ClaimRewardsModalContent = () => {
           <Separator sx={{ my: 20 }} />
         </>
       )}
-
       {selectedReward && (
         <TxModalDetails>
           {selectedRewardSymbol === "all" && (
@@ -202,9 +208,7 @@ export const ClaimRewardsModalContent = () => {
           )}
         </TxModalDetails>
       )}
-
       {txError && <GasEstimationError txError={txError} />}
-
       <ClaimRewardsActions
         selectedReward={selectedReward ?? ({} as Reward)}
         blocked={blockingError !== undefined}

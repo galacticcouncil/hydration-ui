@@ -10,6 +10,7 @@ import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
+import StrategyIcon from "assets/icons/StrategyIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
@@ -36,6 +37,7 @@ export const LINKS = {
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
+  walletStrategy: "/wallet/strategy",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
   bridge: "/bridge",
@@ -177,6 +179,12 @@ export const MENU_ITEMS = [
         key: "wallet.yourAssets",
         href: LINKS.walletAssets,
         Icon: AssetsIcon,
+        enabled: true,
+      },
+      {
+        key: "wallet.strategy",
+        href: LINKS.walletStrategy,
+        Icon: StrategyIcon,
         enabled: true,
       },
       {
