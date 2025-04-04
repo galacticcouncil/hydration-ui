@@ -33,17 +33,21 @@ export const positive = z
   .pipe(validNumber)
   .refine((value) => new Big(value).gt(0), i18n.t("error.positive"))
 
+export const maxBalanceError = i18n.t("error.maxBalance")
+
 export const maxBalance = (balance: bigint | string | number) =>
   z
     .string()
     .pipe(positive)
-    .refine(
-      (value) =>
-        new Big(value).lte(
-          typeof balance === "bigint" ? balance.toString() : balance,
-        ),
-      i18n.t("error.maxBalance"),
-    )
+    .refine((value) => validateMaxBalance(balance, value), maxBalanceError)
+
+export const validateMaxBalance = (
+  balance: bigint | string | number,
+  amount: string,
+): boolean =>
+  new Big(amount).lte(
+    typeof balance === "bigint" ? balance.toString() : balance,
+  )
 
 export const existentialDeposit = (
   asset: TAsset | undefined | null,

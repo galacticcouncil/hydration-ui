@@ -1,19 +1,24 @@
 import { ExclamationMark } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Text } from "@galacticcouncil/ui/components"
+import { Button, Flex, Modal, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
+import { InvalidAssetModal } from "@/modules/wallet/Invalid/InvalidAssetModal"
 import { useAssets } from "@/providers/assetsProvider"
+
 type Props = {
   readonly assetId: string
+  readonly origin: string
 }
 
-export const InvalidAssetRow: FC<Props> = ({ assetId }) => {
+export const InvalidAssetRow: FC<Props> = ({ assetId, origin }) => {
   const { t } = useTranslation("wallet")
   const { isMobile } = useBreakpoints()
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { getAsset } = useAssets()
   const asset = getAsset(assetId)
@@ -33,12 +38,20 @@ export const InvalidAssetRow: FC<Props> = ({ assetId }) => {
           fw={500}
           color={getToken("colors.utility.warningSecondary.400")}
         >
-          {t("myAssets.asset.invalid.description")}
+          {t("invalidAsset.description")}
         </Text>
       )}
-      <Button variant="danger" outline iconStart={ExclamationMark}>
-        {t("myAssets.asset.invalid.cta")}
+      <Button
+        variant="danger"
+        outline
+        iconStart={ExclamationMark}
+        onClick={() => setIsModalOpen(true)}
+      >
+        {t("invalidAsset.cta")}
       </Button>
+      <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <InvalidAssetModal assetId={assetId} origin={origin} />
+      </Modal>
     </Flex>
   )
 }

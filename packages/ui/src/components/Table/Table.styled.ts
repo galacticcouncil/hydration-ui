@@ -35,8 +35,7 @@ const columnSizeStyles = createVariants((theme) => ({
 }))
 
 export const SExpandedTableRowHorizontalSeparator = styled(Separator)`
-  margin: 0 calc(0px - var(--table-column-padding-x));
-  width: calc(100% + calc(2 * var(--table-column-padding-x)));
+  margin-inline: calc(-1 * var(--table-column-padding-x));
 `
 
 const headSizeStyles = createVariants((theme) => ({

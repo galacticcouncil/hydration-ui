@@ -16,7 +16,7 @@ type Props = {
 }
 
 export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation(["wallet", "common"])
 
   const lockedInStaking = 2855
   const [lockedInStakingDisplayPrice] = useDisplayAssetPrice(
@@ -49,7 +49,9 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
       <Flex px={50} justify="space-around">
         <Amount
           label={t("myAssets.expandedNative.lockedInStaking")}
-          value={lockedInStaking}
+          value={t("common:number", {
+            value: lockedInStaking,
+          })}
           displayValue={lockedInStakingDisplayPrice}
           // align on flexbox does not work with separators with height auto
           sx={{ alignSelf: "center" }}
@@ -58,7 +60,9 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
         <Flex direction="column" gap={8}>
           <Amount
             label={t("myAssets.expandedNative.lockedInDemocracy")}
-            value={lockedInDemocracy}
+            value={t("common:number", {
+              value: lockedInDemocracy,
+            })}
             displayValue={lockedInDemocracyDisplayPrice}
           />
           <LockExpiration>
@@ -72,7 +76,9 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
           <Flex direction="column" gap={8}>
             <Amount
               label={t("myAssets.expandedNative.unlockable")}
-              value={unlockable}
+              value={t("common:number", {
+                value: unlockable,
+              })}
               displayValue={unlockableDisplayPrice}
             />
             <LockExpiration>
@@ -88,13 +94,17 @@ export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
       <Flex px={50} justify="space-around">
         <Amount
           label={t("myAssets.expandedNative.reserved")}
-          value={reserved}
+          value={t("common:number", {
+            value: reserved,
+          })}
           displayValue={reservedDisplayPrice}
         />
         <Separator orientation="vertical" />
         <Amount
           label={t("myAssets.expandedNative.lockedInVesting")}
-          value={lockedInVesting}
+          value={t("common:number", {
+            value: lockedInVesting,
+          })}
           displayValue={lockedInVestingDisplayPrice}
         />
       </Flex>
