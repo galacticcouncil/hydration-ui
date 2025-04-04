@@ -17,7 +17,11 @@ import {
 } from "sections/lending/ui-config/networksConfig"
 import { RotationProvider } from "./rotationProvider"
 import { ProviderWithSend, wssToHttps } from "sections/lending/utils/utils"
-import { isTestnetRpcUrl, useProviderRpcUrlStore } from "api/provider"
+import {
+  isPaseoRpcUrl,
+  isTestnetRpcUrl,
+  useProviderRpcUrlStore,
+} from "api/provider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useEffect } from "react"
 
@@ -69,7 +73,13 @@ export const availableMarkets = Object.keys(marketsData).filter((key) =>
 ) as CustomMarket[]
 
 export const getInitialMarket = () => {
-  const isTestnet = isTestnetRpcUrl(getRpcUrls()[0])
+  const bestRpcUrl = getRpcUrls()[0]
+
+  if (isPaseoRpcUrl(bestRpcUrl)) {
+    return CustomMarket.hydration_v3
+  }
+
+  const isTestnet = isTestnetRpcUrl(bestRpcUrl)
   return isTestnet
     ? CustomMarket.hydration_testnet_v3
     : CustomMarket.hydration_v3

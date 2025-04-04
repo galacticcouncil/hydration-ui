@@ -1,7 +1,7 @@
 import { UiPoolDataProvider } from "@aave/contract-helpers"
 import { formatReserves, formatUserSummary } from "@aave/math-utils"
 import { useQuery } from "@tanstack/react-query"
-import { isTestnetRpcUrl } from "api/provider"
+import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import {
@@ -18,6 +18,9 @@ export const useBorrowContractAddresses = () => {
 
   return useMemo(() => {
     if (!isLoaded) return null
+    if (isPaseoRpcUrl(evm.connection.url)) {
+      return AaveV3HydrationMainnet
+    }
     const isTestnet = isTestnetRpcUrl(evm.connection.url)
     return isTestnet ? AaveV3HydrationTestnet : AaveV3HydrationMainnet
   }, [evm, isLoaded])
