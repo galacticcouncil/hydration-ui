@@ -1,7 +1,7 @@
 import { createFileRoute, useMatch } from "@tanstack/react-router"
 
 import { SubpageLayout } from "@/modules/layout/SubpageLayout"
-import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/WalletAssetsSubpageLayoutActions"
+import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/assets/WalletAssetsSubpageLayoutActions"
 
 const WalletSubpageLayout = () => {
   const isAssetsPage = useMatch({
@@ -9,8 +9,15 @@ const WalletSubpageLayout = () => {
     shouldThrow: false,
   })
 
+  const isTransactionsPage = useMatch({
+    from: "/_wallet/wallet/transactions",
+    shouldThrow: false,
+  })
+
   const actions = (() => {
-    return isAssetsPage ? <WalletAssetsSubpageLayoutActions /> : null
+    return isAssetsPage || isTransactionsPage ? (
+      <WalletAssetsSubpageLayoutActions />
+    ) : null
   })()
 
   return <SubpageLayout actions={actions} />
