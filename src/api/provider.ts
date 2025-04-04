@@ -41,7 +41,7 @@ export type TFeatureFlags = {
   dispatchPermit: boolean
 } & { [key: string]: boolean }
 
-export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
 
 const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   indexerUrl: "https://explorer.hydradx.cloud/graphql",
@@ -130,7 +130,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Paseo",
-    url: `wss://${PASEO_WS_URL}`,
+    url: PASEO_WS_URL,
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
@@ -162,6 +162,8 @@ export const isTestnetRpcUrl = (rpcUrl: string) => {
   const dataEnv = getProviderDataEnv(rpcUrl)
   return dataEnv === "testnet"
 }
+
+export const isPaseoRpcUrl = (rpcUrl: string) => rpcUrl === PASEO_WS_URL
 
 export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
