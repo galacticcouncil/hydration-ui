@@ -184,7 +184,7 @@ export const RepayModalContent = ({
         BigNumber.min(aTokenBalance, debt).toString(10),
       )
       repayTokens.push({
-        address: poolReserve.aTokenAddress,
+        address: poolReserve.underlyingAsset,
         symbol: `a${poolReserve.symbol}`,
         iconSymbol: poolReserve.iconSymbol,
         aToken: true,
