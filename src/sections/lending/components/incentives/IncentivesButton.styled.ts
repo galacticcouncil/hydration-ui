@@ -8,13 +8,14 @@ export const SContainer = styled.div`
   padding: 2px 4px;
 
   font-size: 12px;
+  line-height: 1;
 
-  border: 1px solid ${theme.colors.basic800};
+  border: 1px solid rgba(${theme.rgbColors.basic300}, 0.2);
   border-radius: ${theme.borderRadius.default}px;
+  background-color: rgba(${theme.rgbColors.basic300}, 0.1);
 
   cursor: pointer;
 
-  background-color: transparent;
   &:hover {
     background-color: rgba(${theme.rgbColors.basic300}, 0.2);
     border-color: rgba(${theme.rgbColors.basic300}, 0.2);

@@ -41,9 +41,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
-
   const { wallet } = useWallet()
-
   const navigate = useNavigate()
 
   const { hiddenElementsKeys, observe } = useVisibleElements<HTMLDivElement>()

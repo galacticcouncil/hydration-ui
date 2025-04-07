@@ -119,7 +119,7 @@ export function safeConvertAddressH160(value: string): string | null {
   }
 }
 
-export function getEvmChainById(chainId: number) {
+export function getEvmChainById(chainId: number): EvmParachain | undefined {
   const chain = Array.from(chainsMap.values()).find(
     (chain) => isAnyEvmChain(chain) && chain.client.chainId === chainId,
   ) as EvmParachain
@@ -129,10 +129,11 @@ export function getEvmChainById(chainId: number) {
   }
 }
 
-export const strip0x = (hex: string): string =>
-  hex.startsWith("0x") ? hex.slice(2) : hex
+export function strip0x(hex: string): string {
+  return hex.startsWith("0x") ? hex.slice(2) : hex
+}
 
-export function getAssetIdFromAddress(address: string) {
+export function getAssetIdFromAddress(address: string): string {
   if (!isEvmAddress(address)) return ""
 
   try {
@@ -144,7 +145,7 @@ export function getAssetIdFromAddress(address: string) {
   }
 }
 
-export function getAddressFromAssetId(assetId: string) {
+export function getAddressFromAssetId(assetId: string): string {
   try {
     const tokenAddress = Buffer.from(
       "0000000000000000000000000000000100000000",
@@ -159,7 +160,7 @@ export function getAddressFromAssetId(assetId: string) {
   }
 }
 
-function numToBuffer(num: number) {
+function numToBuffer(num: number): Buffer {
   const arr = new Uint8Array(4)
   for (let i = 0; i < 4; i++) arr.set([num / 0x100 ** i], 3 - i)
   return Buffer.from(arr)

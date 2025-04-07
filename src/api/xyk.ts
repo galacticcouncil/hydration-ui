@@ -64,9 +64,11 @@ export const useShareTokens = () => {
 }
 
 export const useXYKConsts = () => {
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
-  return useQuery(QUERY_KEYS.xykConsts, getXYKConsts(api))
+  return useQuery(QUERY_KEYS.xykConsts, getXYKConsts(api), {
+    enabled: isLoaded,
+  })
 }
 
 const getXYKConsts = (api: ApiPromise) => async () => {
