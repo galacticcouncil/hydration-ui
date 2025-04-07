@@ -19,7 +19,11 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import {
+  BN_0,
+  gigaDOTStableswapId,
+  STABLEPOOL_TOKEN_DECIMALS,
+} from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import {
@@ -40,7 +44,6 @@ type Props = {
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
-  onCancel: () => void
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   isStablepoolOnly: boolean
@@ -59,7 +62,6 @@ export const AddStablepoolLiquidity = ({
   onAssetOpen,
   onSubmitted,
   onClose,
-  onCancel,
   isStablepoolOnly,
   isJoinFarms,
   setIsJoinFarms,
@@ -79,6 +81,7 @@ export const AddStablepoolLiquidity = ({
   const walletBalance = accountBalances.data?.accountAssetsMap.get(
     asset.id,
   )?.balance
+  const isGigaDot = poolId === gigaDOTStableswapId
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -290,7 +293,9 @@ export const AddStablepoolLiquidity = ({
         <Summary
           rows={[
             {
-              label: t("liquidity.add.modal.shareTokens"),
+              label: isGigaDot
+                ? t("liquidity.stablepool.add.minimalReceived")
+                : t("liquidity.add.modal.shareTokens"),
               content: t("value", {
                 value: shares,
                 type: "token",

@@ -14,6 +14,7 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
+import { gigaDOTStableswapId } from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -71,8 +72,12 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
     paginateTo(nextPage)
   }
 
+  const isGigaDOT = poolId === gigaDOTStableswapId
+
   const title = isOnlyStablepool
-    ? t("liquidity.stablepool.transfer.stablepool")
+    ? t(
+        `liquidity.stablepool.transfer.stablepool${isGigaDOT ? ".gigadot" : ""}`,
+      )
     : t(
         `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
       )
@@ -114,7 +119,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             content: (
               <AddStablepoolLiquidity
                 isStablepoolOnly={isOnlyStablepool}
-                onCancel={onClose}
                 onClose={onClose}
                 onSubmitted={onClose}
                 onSuccess={refetch}

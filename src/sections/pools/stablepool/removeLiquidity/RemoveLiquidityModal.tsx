@@ -15,6 +15,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
+import { gigaDOTStableswapId } from "utils/constants"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -84,6 +85,7 @@ export const RemoveLiquidityModal = ({
 
   const canGoBack =
     isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
+  const isGigaDot = pool.id === gigaDOTStableswapId
 
   if (!assetId || !pool.stablepoolFee || !assets.length) return null
 
@@ -199,7 +201,9 @@ export const RemoveLiquidityModal = ({
             ),
           },
           {
-            title: t("liquidity.remove.modal.title"),
+            title: isGigaDot
+              ? t("liquidity.remove.modal.gigadot.title")
+              : t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
             content: (
               <RemoveStablepoolLiquidityForm
