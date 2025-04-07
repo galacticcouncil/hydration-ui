@@ -242,10 +242,10 @@ export const useAssetsData = ({
   }, [
     allAssets,
     allowedAssets,
-    tokenAssets,
     external,
     search,
     stableswap,
+    tokenAssets,
     tokensWithBalance,
     withExternal,
     getAssetPrice,

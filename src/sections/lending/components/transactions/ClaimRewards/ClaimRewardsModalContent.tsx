@@ -177,7 +177,10 @@ export const ClaimRewardsModalContent = () => {
                         fs={14}
                         sx={{ flex: "row", align: "center", gap: 8 }}
                       >
-                        <TokenIcon symbol={reward.symbol} size={14} />
+                        <TokenIcon
+                          address={reward.rewardTokenAddress}
+                          size={14}
+                        />
                         {t("value.tokenWithSymbol", {
                           value: reward.balance,
                           symbol: reward.symbol,
@@ -200,7 +203,7 @@ export const ClaimRewardsModalContent = () => {
           {selectedRewardSymbol !== "all" && (
             <DetailsNumberLineWithSub
               symbol={selectedReward.symbol}
-              tokenIcon={selectedReward.symbol}
+              iconAddress={selectedReward.rewardTokenAddress}
               futureValue={selectedReward.balance}
               futureValueUSD={selectedReward.balanceUsd}
               description={<span>{selectedReward.symbol} Balance</span>}

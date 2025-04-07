@@ -17,6 +17,7 @@ import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
+  useHealthFactorChangeFromTx,
   usePolkadotJSTxUrl,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
@@ -44,6 +45,8 @@ import { assethub } from "@polkadot-api/descriptors"
 import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { CheckBox } from "components/CheckBox/CheckBox"
+import { Alert } from "components/Alert"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -102,6 +105,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     permitNonce,
     pendingPermit,
   } = transactionValues.data
+
+  const healthFactorChange = useHealthFactorChangeFromTx(tx)
+
+  const isHealthFactorChanged =
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
 
   const isPermitTxPending = !!pendingPermit
 
@@ -261,6 +274,14 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
+  const isSubmitDisabled =
+    isPermitTxPending ||
+    !isWalletReady ||
+    !account ||
+    isLoading ||
+    (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
+    (!!isHealthFactorChanged && !healthFactorRiskAccepted)
+
   return (
     <>
       <ModalScrollableContent
@@ -291,8 +312,25 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   isCustomNonceEnabled ? setCustomNonce : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
+                currentHealthFactor={healthFactorChange?.currentHealthFactor}
+                futureHealthFactor={healthFactorChange?.futureHealthFactor}
               />
             </div>
+            {isHealthFactorChanged && (
+              <>
+                <Alert variant="error" sx={{ mb: 10 }}>
+                  {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
+                </Alert>
+                <Text fs={14}>
+                  <CheckBox
+                    checked={healthFactorRiskAccepted}
+                    onChange={(checked) => setHealthFactorRiskAccepted(checked)}
+                    label="I acknowledge the risks involved."
+                    sx={{ flex: "row", align: "center" }}
+                  />
+                </Text>
+              </>
+            )}
             <div
               sx={{
                 mt: ["auto", 24],
@@ -318,13 +356,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                     text={btnText}
                     variant="primary"
                     isLoading={isPermitTxPending || isLoading}
-                    disabled={
-                      isPermitTxPending ||
-                      !isWalletReady ||
-                      !account ||
-                      isLoading ||
-                      (!isEnoughPaymentBalance && !hasMultipleFeeAssets)
-                    }
+                    disabled={isSubmitDisabled}
                     onClick={onConfirmClick}
                   />
                 )}

@@ -218,7 +218,9 @@ export const BorrowInfo = ({
                     <a
                       target="_blank"
                       css={{ textDecoration: "underline" }}
-                      href={currentMarketData.addresses.COLLECTOR}
+                      href={currentNetworkConfig.explorerLinkBuilder({
+                        address: currentMarketData.addresses.COLLECTOR,
+                      })}
                       rel="noreferrer"
                     >
                       &nbsp;
