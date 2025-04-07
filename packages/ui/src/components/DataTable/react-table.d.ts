@@ -8,7 +8,7 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta {
     readonly className?: string
     readonly sx?: ThemeUIStyleObject
-    readonly visibility?: ScreenType[]
+    readonly visibility?: ScreenType[] | boolean
     readonly gteBp?: ScreenBreakpoint
   }
   interface TableMeta {

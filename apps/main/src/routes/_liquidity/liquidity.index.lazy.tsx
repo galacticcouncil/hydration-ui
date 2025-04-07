@@ -1,7 +1,7 @@
-import { createLazyFileRoute } from "@tanstack/react-router"
+import { createLazyFileRoute, Navigate } from "@tanstack/react-router"
 
-import { LiquidityPage } from "@/modules/liquidity/LiquidityPage"
+import { LINKS } from "@/config/navigation"
 
 export const Route = createLazyFileRoute("/_liquidity/liquidity/")({
-  component: LiquidityPage,
+  component: () => Navigate({ to: LINKS.pools }),
 })

@@ -56,10 +56,12 @@ export const useDataTable = <TData extends RowData>({
         if (!id) return prev
         const visibility = curr.meta?.visibility
         const gteBp = curr.meta?.gteBp
-        if (visibility) {
+        if (visibility !== undefined) {
           return {
             ...prev,
-            [id]: visibility.includes(screen),
+            [id]: Array.isArray(visibility)
+              ? visibility.includes(screen)
+              : visibility,
           }
         } else if (gteBp) {
           return {
@@ -87,6 +89,7 @@ export const useDataTable = <TData extends RowData>({
       isLoading
         ? options.columns.map((column) => ({
             ...column,
+            enableSorting: false,
             cell: () => (
               <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
             ),
@@ -115,6 +118,7 @@ export const useDataTable = <TData extends RowData>({
     meta: {
       isLoading,
     },
+    autoResetPageIndex: false,
   })
 }
 

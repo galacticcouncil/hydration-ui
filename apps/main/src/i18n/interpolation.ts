@@ -15,7 +15,7 @@ const getMaxSignificantDigits = (
   options: Intl.NumberFormatOptions,
 ) => {
   if (options.notation === "compact") {
-    return
+    return 2
   }
 
   if (value <= 1) {

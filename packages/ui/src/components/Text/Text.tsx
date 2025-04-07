@@ -8,7 +8,7 @@ import { getToken } from "@/utils"
 type TextSize = keyof ThemeProps["typography"]["text"]["size"]
 
 export type TextProps = BoxProps & {
-  fw?: ResponsiveStyleValue<400 | 500 | 600>
+  fw?: ResponsiveStyleValue<400 | 500 | 600 | 700>
   lh?: ResponsiveStyleValue<number | string>
   fs?: TextSize | ResponsiveStyleValue<number>
   font?: ThemeFont

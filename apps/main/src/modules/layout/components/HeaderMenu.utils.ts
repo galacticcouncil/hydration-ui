@@ -28,6 +28,10 @@ export const useMenuTranslations = () => {
           title: t("navigation.myLiquidity.title"),
           description: "",
         },
+        pools: {
+          title: t("navigation.pools.title"),
+          description: "",
+        },
         allPools: {
           title: t("navigation.allPools.title"),
           description: "",
