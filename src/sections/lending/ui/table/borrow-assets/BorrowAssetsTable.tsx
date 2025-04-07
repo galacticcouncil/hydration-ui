@@ -24,6 +24,7 @@ import {
 } from "sections/lending/ui/table/borrow-assets/BorrowAssetsTable.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
+import { groupBy } from "utils/rx"
 
 export const BorrowAssetsTable = () => {
   const { t } = useTranslation()
@@ -35,7 +36,7 @@ export const BorrowAssetsTable = () => {
   const { account } = useAccount()
 
   const { hollar = [], assets = [] } = useMemo(() => {
-    return Object.groupBy(data, (reserve) =>
+    return groupBy(data, (reserve) =>
       displayGho({ symbol: reserve.symbol, currentMarket })
         ? "hollar"
         : "assets",
