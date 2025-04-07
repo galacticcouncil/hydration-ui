@@ -7,7 +7,7 @@ import {
   BN_1,
   BN_MILL,
   BN_NAN,
-  gigaDOTId,
+  gigaDOTStableswapId,
   validStablepools,
 } from "utils/constants"
 import {
@@ -127,11 +127,11 @@ const useStablepools = () => {
 
       return {
         id: filteredStablepool.id,
-        name: gigaDOTId === meta.id ? "gigaDOT" : meta.name,
-        symbol: gigaDOTId === meta.id ? "GDOT" : meta.symbol,
+        name: gigaDOTStableswapId === meta.id ? "" : meta.name,
+        symbol: gigaDOTStableswapId === meta.id ? "GigaDOT" : meta.symbol,
         meta:
-          gigaDOTId === meta.id
-            ? { ...meta, iconId: "69", name: "gigaDOT" }
+          gigaDOTStableswapId === meta.id
+            ? { ...meta, iconId: "69", name: "", symbol: "GigaDOT" }
             : meta,
         tvlDisplay,
         spotPrice: "1",

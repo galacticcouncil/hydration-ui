@@ -3,7 +3,11 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
-import { BN_0, gigaDOTId, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import {
+  BN_0,
+  gigaDOTStableswapId,
+  STABLEPOOL_TOKEN_DECIMALS,
+} from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
@@ -152,7 +156,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                {pool.id !== gigaDOTId && (
+                {pool.id !== gigaDOTStableswapId && (
                   <SOmnipoolButton
                     size="small"
                     fullWidth
