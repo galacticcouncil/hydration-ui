@@ -14,7 +14,7 @@ export const BorrowCapMaxedTooltip = ({
   return (
     <InfoTooltip
       text={
-        <Text>
+        <Text fs={12}>
           Protocol borrow cap at 100% for this asset. Further borrowing
           unavailable.
         </Text>

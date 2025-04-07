@@ -14,7 +14,7 @@ export const DebtCeilingMaxedTooltip = ({
   return (
     <InfoTooltip
       text={
-        <Text>
+        <Text fs={12}>
           Protocol debt ceiling is at 100% for this asset. Futher borrowing
           against this asset is unavailable.
         </Text>

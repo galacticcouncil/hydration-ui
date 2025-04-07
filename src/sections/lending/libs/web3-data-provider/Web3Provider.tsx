@@ -34,6 +34,8 @@ import {
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
 import { isEvmWalletExtension } from "utils/evm"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src/incentive-controller-v2/typechain/IAaveIncentivesControllerV2__factory"
+
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { decodeEvmCall } from "sections/transaction/ReviewTransactionData.utils"
@@ -141,11 +143,14 @@ const getTransactionMeta = (
       toasProps: undefined,
     }
   }
+
+  const factory =
+    action === ProtocolAction.claimRewards
+      ? IAaveIncentivesControllerV2__factory
+      : IPool__factory
+
   const abi = action
-    ? getFunctionDefsFromAbi(
-        IPool__factory.abi,
-        getAbiMethodByProtocolAction(action),
-      )
+    ? getFunctionDefsFromAbi(factory.abi, getAbiMethodByProtocolAction(action))
     : undefined
 
   const toastProps =
@@ -242,6 +247,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           null,
           [],
         )
+
         createTransaction(
           {
             tx,

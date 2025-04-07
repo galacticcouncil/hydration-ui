@@ -1,0 +1,9 @@
+query SwapAssetFeesByPeriod($filter: SwapAssetFeesByPeriodFilter!) {
+  swapAssetFeesByPeriod(filter: $filter) {
+    nodes {
+      assetId
+      amount
+    }
+    totalCount
+  }
+}

@@ -1,4 +1,5 @@
 import { OpenGovReferendum, TAccountVote } from "api/democracy"
+import { groupBy } from "utils/rx"
 
 type OpenGovReferendumWithVoted = OpenGovReferendum & {
   readonly hasVoted: boolean
@@ -16,7 +17,7 @@ export const splitReferendaByVoted = (
     },
   )
 
-  const openGovGroup = Object.groupBy(openGovWithVoted, (referendum) =>
+  const openGovGroup = groupBy(openGovWithVoted, (referendum) =>
     String(referendum.hasVoted),
   )
 

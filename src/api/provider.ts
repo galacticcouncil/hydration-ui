@@ -41,7 +41,7 @@ export type TFeatureFlags = {
   dispatchPermit: boolean
 } & { [key: string]: boolean }
 
-export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
 
 const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   indexerUrl: "https://explorer.hydradx.cloud/graphql",
@@ -50,6 +50,8 @@ const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   env: "production",
   dataEnv: "mainnet",
 }
+
+const AAVE_AMM_ENABLED = import.meta.env.VITE_FF_AAVE_AMM_ENABLED === "true"
 
 export const PROVIDERS: ProviderProps[] = [
   {
@@ -128,7 +130,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Paseo",
-    url: `wss://${PASEO_WS_URL}`,
+    url: PASEO_WS_URL,
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
@@ -160,6 +162,8 @@ export const isTestnetRpcUrl = (rpcUrl: string) => {
   const dataEnv = getProviderDataEnv(rpcUrl)
   return dataEnv === "testnet"
 }
+
+export const isPaseoRpcUrl = (rpcUrl: string) => rpcUrl === PASEO_WS_URL
 
 export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
@@ -403,8 +407,12 @@ export const useProviderData = (
         PoolType.Stable,
         PoolType.XYK,
         PoolType.LBP,
-        PoolType.Aave,
       ]
+
+      if (AAVE_AMM_ENABLED) {
+        traderRoutes.push(PoolType.Aave)
+      }
+
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })

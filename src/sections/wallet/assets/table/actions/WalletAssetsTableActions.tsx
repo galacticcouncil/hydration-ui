@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { isNotNil } from "utils/helpers"
 import { useSetAsFeePayment } from "api/payments"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { isMetaMask, watchAsset } from "utils/metamask"
 import { NATIVE_EVM_ASSET_SYMBOL, isEvmAccount } from "utils/evm"
 import { useVisibleElements } from "hooks/useVisibleElements"
@@ -41,7 +41,7 @@ export const WalletAssetsTableActions = (props: Props) => {
   const { account } = useAccount()
   const { featureFlags } = useRpcProvider()
   const [assetCheckModalOpen, setAssetCheckModalOpen] = useState(false)
-
+  const { wallet } = useWallet()
   const navigate = useNavigate()
 
   const { hiddenElementsKeys, observe } = useVisibleElements<HTMLDivElement>()
@@ -58,8 +58,10 @@ export const WalletAssetsTableActions = (props: Props) => {
   const hasRugCheckData = !!rugCheckData
   const hasRugCheckWarnings = !!rugCheckData?.warnings?.length
 
+  const metamask = isMetaMask(wallet?.extension) ? wallet?.extension : null
+
   const couldWatchMetaMaskAsset =
-    isMetaMask(window?.ethereum) &&
+    !!metamask &&
     isEvmAccount(account?.address) &&
     symbol !== NATIVE_EVM_ASSET_SYMBOL
 
@@ -107,7 +109,7 @@ export const WalletAssetsTableActions = (props: Props) => {
           icon: <MetamaskLogo width={18} height={18} />,
           label: t("wallet.assets.table.actions.watch"),
           onSelect: () =>
-            watchAsset(window?.ethereum, id, {
+            watchAsset(metamask, id, {
               symbol: symbol,
               decimals: meta.decimals,
             }),

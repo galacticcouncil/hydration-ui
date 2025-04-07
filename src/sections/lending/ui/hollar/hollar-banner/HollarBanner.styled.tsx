@@ -26,12 +26,6 @@ export const SInnerContainer = styled(Link)`
   border: 1px solid rgba(124, 175, 255, 0.4);
   border-radius: ${theme.borderRadius.medium}px;
 
-  background: linear-gradient(
-    90deg,
-    rgba(0, 87, 159, 0.66) 25%,
-    rgba(110, 42, 255, 0) 100%
-  );
-
   @media ${theme.viewport.gte.sm} {
     height: 89px;
   }
@@ -40,14 +34,21 @@ export const SInnerContainer = styled(Link)`
     content: "";
     position: absolute;
     inset: -1px;
-    opacity: 0.6;
     overflow: hidden;
     border-radius: ${theme.borderRadius.medium}px;
-    background: radial-gradient(
-      75% 200% at 6.95% 26.97%,
-      rgba(172, 66, 255, 0.85) 0%,
-      rgba(58, 113, 255, 0) 100%
+    transform: rotate(180deg);
+    opacity: 0.5;
+    background: linear-gradient(
+      90deg,
+      #b3cf92 0%,
+      #6c9f2f 25%,
+      rgba(179, 207, 146, 0) 75%
     );
+
+    @media ${theme.viewport.gte.sm} {
+      transform: rotate(0);
+      opacity: 1;
+    }
   }
 
   &:after {
@@ -56,13 +57,13 @@ export const SInnerContainer = styled(Link)`
     inset: -1px;
     background: center left url(${LinesSvg}) no-repeat;
     background-size: 120% 100%;
-    transform: rotate(-15deg) scale(1.5) translateX(-20%);
-    opacity: 0.5;
+    opacity: 0.3;
+    transform: rotate(160deg) scale(1.5) translate(-20%, -20%);
 
     @media ${theme.viewport.gte.sm} {
       background-size: auto;
-      transform: none;
       opacity: 1;
+      transform: none;
     }
   }
 `
@@ -86,18 +87,20 @@ export const SContent = styled.div`
 `
 
 export const SValuesContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 
   margin-top: 20px;
 
   @media ${theme.viewport.gte.sm} {
-    gap: 60px;
-
+    grid-template-columns: 1fr 1fr auto;
     margin-left: auto;
     margin-top: 0;
+  }
+
+  @media ${theme.viewport.gte.md} {
+    gap: 60px;
   }
 `
 

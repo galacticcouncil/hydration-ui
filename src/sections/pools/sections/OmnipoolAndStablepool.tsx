@@ -1,10 +1,9 @@
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { usePools } from "sections/pools/PoolsPage.utils"
+import { calculatePoolsTotals, usePools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
-import { BN_0 } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -16,6 +15,7 @@ import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
+import BN from "bignumber.js"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -71,21 +71,10 @@ const OmnipoolAndStablepoolData = () => {
 
   const pools = usePools()
 
-  const omnipoolTotals = useMemo(() => {
-    if (!pools.data) return { tvl: BN_0, volume: BN_0 }
-    return pools.data.reduce(
-      (acc, pool) => {
-        acc.tvl = acc.tvl.plus(
-          !pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0,
-        )
-        acc.volume = acc.volume.plus(pool.volume ?? 0)
-
-        return acc
-      },
-
-      { tvl: BN_0, volume: BN_0 },
-    )
-  }, [pools.data])
+  const omnipoolTotals = useMemo(
+    () => calculatePoolsTotals(pools.data),
+    [pools.data],
+  )
 
   const filteredPools =
     (search && pools.data
@@ -113,7 +102,7 @@ const OmnipoolAndStablepoolData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.tvl}
+                value={BN(omnipoolTotals.tvl)}
                 fontSize={[19, 24]}
               />
             ),
@@ -128,7 +117,7 @@ const OmnipoolAndStablepoolData = () => {
             content: (
               <HeaderTotalData
                 isLoading={pools.isLoading}
-                value={omnipoolTotals.volume.div(2)}
+                value={BN(omnipoolTotals.volume).div(2)}
                 fontSize={[19, 24]}
               />
             ),
