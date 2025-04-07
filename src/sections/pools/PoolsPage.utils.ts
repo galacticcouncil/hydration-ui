@@ -7,6 +7,7 @@ import {
   BN_1,
   BN_MILL,
   BN_NAN,
+  gigaDOTErc20Id,
   gigaDOTStableswapId,
   validStablepools,
 } from "utils/constants"
@@ -31,6 +32,7 @@ import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useTranslation } from "react-i18next"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -56,6 +58,7 @@ const getTradeFee = (fee: string[]) => {
 }
 
 const useStablepools = () => {
+  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const { data: accountAssets } = useAccountAssets()
   const { data: stablepools = [], isLoading: isPoolsLoading } =
@@ -92,10 +95,14 @@ const useStablepools = () => {
 
     return filteredStablepools.map((filteredStablepool) => {
       const accountAsset = accountAssets?.accountAssetsMap.get(
-        filteredStablepool.id,
+        filteredStablepool.id === gigaDOTStableswapId
+          ? gigaDOTErc20Id
+          : filteredStablepool.id,
       )
 
-      const isPositions = !!accountAsset?.isPoolPositions
+      const isPositions =
+        !!accountAsset?.isPoolPositions ||
+        BN(accountAsset?.balance?.balance ?? 0).gt(0)
       const meta = getAssetWithFallback(filteredStablepool.id)
 
       const volume =
@@ -128,10 +135,10 @@ const useStablepools = () => {
       return {
         id: filteredStablepool.id,
         name: gigaDOTStableswapId === meta.id ? "" : meta.name,
-        symbol: gigaDOTStableswapId === meta.id ? "GigaDOT" : meta.symbol,
+        symbol: gigaDOTStableswapId === meta.id ? t("gigaDOT") : meta.symbol,
         meta:
           gigaDOTStableswapId === meta.id
-            ? { ...meta, iconId: "69", name: "", symbol: "GigaDOT" }
+            ? { ...meta, iconId: "69", name: "", symbol: t("gigaDOT") }
             : meta,
         tvlDisplay,
         spotPrice: "1",
@@ -158,6 +165,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
+    t,
   ])
 
   return { data, isLoading }

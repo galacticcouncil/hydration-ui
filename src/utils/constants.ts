@@ -59,4 +59,5 @@ export const UNIFIED_ADDRESS_FORMAT_ENABLED =
   import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"
 
 export const gigaDOTStableswapId = "690"
+export const gigaDOTErc20Id = "69"
 export const validStablepools = [gigaDOTStableswapId]

@@ -9,6 +9,8 @@ import { useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import {
   BN_100,
+  gigaDOTErc20Id,
+  gigaDOTStableswapId,
   SLIPPAGE_LIMIT,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
@@ -23,6 +25,10 @@ import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
 import { Switch } from "components/Switch/Switch"
+import { Summary } from "components/Summary/Summary"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { useHealthFactorChange } from "api/borrow"
+import { SummaryRow } from "components/Summary/SummaryRow"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -61,6 +67,7 @@ export const RemoveStablepoolLiquidityForm = ({
   const { createTransaction } = useStore()
 
   const value = form.watch("value")
+  const isGigaDot = assetId === gigaDOTStableswapId
 
   const removeSharesValue = useMemo(() => {
     return position.amount.div(100).times(value).dp(0).toString()
@@ -266,18 +273,41 @@ export const RemoveStablepoolLiquidityForm = ({
         </STradingPairContainer>
       </div>
       <Spacer size={17} />
-      <div sx={{ flex: "row", justify: "space-between" }}>
-        <Text color="basic400">
-          {t("liquidity.remove.modal.tokenFee.label")}
-        </Text>
-        <Text color="white">
-          {t("value.percentage", { value: feeDisplay })}
-        </Text>
-      </div>
+
+      <Summary
+        rows={[
+          {
+            label: t("liquidity.remove.modal.tokenFee.label"),
+            content: t("value.percentage", { value: feeDisplay }),
+          },
+        ]}
+      />
+
+      {isGigaDot && <GigaDotHealthFactor amount={value.toString()} />}
+
       <Spacer size={20} />
       <Button fullWidth variant="primary" disabled={removeSharesValue === "0"}>
         {t("liquidity.stablepool.remove.confirm")}
       </Button>
     </form>
+  )
+}
+
+const GigaDotHealthFactor = ({ amount }: { amount: string }) => {
+  const { t } = useTranslation()
+  const healthFactorChange = useHealthFactorChange(gigaDOTErc20Id, amount)
+
+  if (!healthFactorChange) return null
+
+  return (
+    <SummaryRow
+      label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
+      content={
+        <HealthFactorChange
+          healthFactor={healthFactorChange.currentHealthFactor}
+          futureHealthFactor={healthFactorChange.futureHealthFactor}
+        />
+      }
+    />
   )
 }
