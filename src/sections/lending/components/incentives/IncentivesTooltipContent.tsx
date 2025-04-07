@@ -57,7 +57,7 @@ export const IncentivesTooltipContent = ({
             caption={
               <div sx={{ flex: "row", align: "center" }}>
                 <TokenIcon
-                  symbol={incentive.rewardTokenSymbol}
+                  address={incentive.rewardTokenAddress}
                   size={20}
                   sx={{ mr: 8 }}
                 />

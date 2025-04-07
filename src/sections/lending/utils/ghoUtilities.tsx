@@ -1,6 +1,7 @@
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export const GHO_SYMBOL = "HOLLAR"
+export const GHO_ASSET_ID = "222"
 
 /**
  * Determines if GHO is available for borrowing (minting) on the provided network, also based off the token symbol being borrowed
