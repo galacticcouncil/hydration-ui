@@ -13,13 +13,13 @@ import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
+import { useAssets } from "providers/assets"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -166,7 +166,8 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 }
 
 export const useHealthFactorChange = (assetId: string, amount: string) => {
-  const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+  const { getErc20 } = useAssets()
+  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
 
   const { data: user } = useUserBorrowSummary()
 
