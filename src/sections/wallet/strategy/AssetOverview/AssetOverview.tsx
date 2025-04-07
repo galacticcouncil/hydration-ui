@@ -40,7 +40,7 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
         <AssetOverviewSeparator />
         <AssetOverviewTile
           label={`${t("apr")}:`}
-          value={t("value.APRshort", { apr })}
+          value={apr === Infinity ? "∞" : t("value.APRshort", { apr })}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
