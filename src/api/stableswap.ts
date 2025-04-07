@@ -3,7 +3,7 @@ import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
 import { undefinedNoop } from "utils/helpers"
-import { PoolBase } from "@galacticcouncil/sdk"
+import { StableSwap } from "@galacticcouncil/sdk"
 
 export const useStableswapPool = (poolId?: string) => {
   const { api } = useRpcProvider()
@@ -21,7 +21,7 @@ export const getStableswapPool =
   }
 
 export const useStableSDKPools = () => {
-  return useQuery<PoolBase[]>(QUERY_KEYS.stablePools, {
+  return useQuery<StableSwap[]>(QUERY_KEYS.stablePools, {
     enabled: false,
     staleTime: Infinity,
   })

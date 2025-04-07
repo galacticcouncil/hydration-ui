@@ -171,6 +171,7 @@ export const useAssetsData = ({
           if (
             accountAsset.asset.isToken ||
             accountAsset.asset.isStableSwap ||
+            accountAsset.asset.isErc20 ||
             (withExternal
               ? accountAsset.asset.isExternal && !!accountAsset.asset.name
               : false)
