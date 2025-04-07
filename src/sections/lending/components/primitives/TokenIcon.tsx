@@ -16,6 +16,15 @@ const REVERSE_A_TOKEN_UNDERLYING_ID_MAP = Object.fromEntries(
   Object.entries(A_TOKEN_UNDERLYING_ID_MAP).map(([key, value]) => [value, key]),
 )
 
+const ICON_ASSET_ID_REPLACEMENT_MAP: Record<string, string> = {
+  "690": "69",
+}
+
+const getIconAssetId = (address: string) => {
+  const assetId = getAssetIdFromAddress(address)
+  return ICON_ASSET_ID_REPLACEMENT_MAP[assetId] || assetId
+}
+
 export function TokenIcon({
   address,
   aToken,
@@ -28,7 +37,7 @@ export function TokenIcon({
     currentMarketData.addresses.GHO_TOKEN_ADDRESS?.toLowerCase() ===
     address.toLowerCase()
 
-  const assetId = isGho ? GHO_ASSET_ID : getAssetIdFromAddress(address)
+  const assetId = isGho ? GHO_ASSET_ID : getIconAssetId(address)
 
   return (
     <Icon

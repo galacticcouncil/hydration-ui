@@ -1,6 +1,7 @@
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
 import { normalize, valueToBigNumber } from "@aave/math-utils"
+// import { useAssets } from "providers/assets"
 
 export type StrategyRiskLevel = "low" | "moderate" | "high"
 
@@ -14,15 +15,25 @@ export const useAssetOverviewData = (
   assetId: string,
   riskLevel: StrategyRiskLevel,
 ): AssetOverviewData => {
-  const { user } = useAppDataContext()
-  const { userReservesData } = user
+  // const { getAsset } = useAssets()
+  const { reserves } = useAppDataContext()
 
-  const underlyingAssetId = getAddressFromAssetId(assetId)
-  const assetSupply = userReservesData.find(
-    (reserve) => reserve.underlyingAsset === underlyingAssetId,
+  // const asset = getAsset(assetId)
+
+  const assetReserve = reserves.find(
+    ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(assetId),
   )
 
-  const incentives = assetSupply?.reserve.aIncentivesData ?? []
+  // TODO: calculate APR based on stableswap assets
+  /* const underlyingAssetIds =
+    asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId]
+
+  const underlyingAssetId = getAddressFromAssetId(assetId)
+  const underlyingReserves = reserves.filter((reserve) =>
+    underlyingAssetIds.includes(reserve.underlyingAsset),
+  ) */
+
+  const incentives = assetReserve?.aIncentivesData ?? []
 
   const isIncentivesInfinity = incentives.some(
     (incentive) => incentive.incentiveAPR === "Infinity",
@@ -42,7 +53,7 @@ export const useAssetOverviewData = (
 
   return {
     riskLevel,
-    tvl: assetSupply?.underlyingBalanceUSD || "0",
+    tvl: assetReserve?.totalLiquidityUSD || "0",
     // TODO 1075 new APR calculation
     apr: incentivesNetAPR === Infinity ? Infinity : incentivesNetAPR * 100,
   }

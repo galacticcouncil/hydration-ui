@@ -16,6 +16,7 @@ const GigadotAnswers = lazy(async () => ({
 }))
 
 export const WalletStrategy: FC = () => {
+  const { dataEnv } = useRpcProvider()
   const isMobile = useMedia(theme.viewport.lt.sm)
   const { isLoaded } = useRpcProvider()
 
@@ -25,11 +26,8 @@ export const WalletStrategy: FC = () => {
     return <WalletStrategySkeleton />
   }
 
-  // TODO 1075 Temporary until its possible to swap gigadot via trade router
   const [assetId, underlyingAssetId, rewardAssetId] =
-    import.meta.env.VITE_ENV === "production"
-      ? ["690", "69", "69"]
-      : ["5", "1000037", "15"]
+    dataEnv === "mainnet" ? ["690", "69", "69"] : ["69", "690", "690"]
 
   return (
     <WalletStrategyProviders>
