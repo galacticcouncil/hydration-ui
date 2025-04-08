@@ -4,8 +4,7 @@ import { normalize, valueToBigNumber } from "@aave/math-utils"
 import { useAssets } from "providers/assets"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import BN from "bignumber.js"
-
-const VDOT_ASSET_ID = "15"
+import { VDOT_ASSET_ID } from "utils/constants"
 
 export type StrategyRiskLevel = "low" | "moderate" | "high"
 
@@ -17,7 +16,6 @@ export type AssetOverviewData = {
 
 export const useAssetOverviewData = (
   assetId: string,
-
   riskLevel: StrategyRiskLevel,
 ): AssetOverviewData => {
   const { getAsset, getErc20 } = useAssets()
