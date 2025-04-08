@@ -49,6 +49,7 @@ export const useAssetOverviewData = (
   const isIncentivesInfinity = incentives.some(
     (incentive) => incentive.incentiveAPR === "Infinity",
   )
+
   const incentivesAPRSum = isIncentivesInfinity
     ? Infinity
     : incentives.reduce(
@@ -67,7 +68,7 @@ export const useAssetOverviewData = (
       reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
 
     const supplyAPY = isVdot
-      ? BN(vDotApy?.apy ?? 0).div(100)
+      ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
       : BN(reserve.supplyAPY)
     return supplyAPY.div(underlyingReserves.length).toNumber()
   })

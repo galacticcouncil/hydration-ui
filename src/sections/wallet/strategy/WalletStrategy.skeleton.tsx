@@ -1,7 +1,5 @@
 import { FC, lazy } from "react"
-import { useMedia } from "react-use"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
-import { theme } from "theme"
 import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHeader"
 import {
   StrategyTileSeparator,
@@ -16,8 +14,6 @@ const GigadotAnswers = lazy(async () => ({
 }))
 
 export const WalletStrategySkeleton: FC = () => {
-  const isMobile = useMedia(theme.viewport.lt.sm)
-
   return (
     <SWalletStrategy>
       <WalletStrategyHeader />
@@ -48,7 +44,7 @@ export const WalletStrategySkeleton: FC = () => {
           <Skeleton css={{ height: "100%" }} />
         </div>
       </SStrategyTile>
-      {!isMobile && <GigadotAnswers />}
+      <GigadotAnswers />
     </SWalletStrategy>
   )
 }
