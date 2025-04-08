@@ -16,6 +16,7 @@ import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
+import { gigaDOTErc20Id } from "utils/constants"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -240,7 +241,11 @@ export const RemoveLiquidityModal = ({
                 allAssets
                 hideInactiveAssets
                 allowedAssets={
-                  pool.isGigaDOT ? tradable.map((asset) => asset.id) : assets
+                  pool.isGigaDOT
+                    ? tradable
+                        .map((asset) => asset.id)
+                        .filter((assetId) => assetId !== gigaDOTErc20Id)
+                    : assets
                 }
                 onSelect={(asset) => {
                   setAssetId(asset.id)
