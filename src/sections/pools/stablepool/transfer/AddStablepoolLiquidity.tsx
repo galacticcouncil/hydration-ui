@@ -14,14 +14,14 @@ import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
   BN_0,
-  gigaDOTStableswapId,
+  gigaDOTErc20Id,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
@@ -39,6 +39,8 @@ import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
+import { useBestTradeSell } from "api/trade"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
 
 type Props = {
   asset: TAsset
@@ -68,20 +70,20 @@ export const AddStablepoolLiquidity = ({
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { getAsset } = useAssets()
   const accountBalances = useAccountAssets()
   const {
     reserves,
     stablepoolFee: fee = BN_0,
     farms,
+    isGigaDOT,
     id: poolId,
   } = usePoolData().pool as TPoolFullData
 
   const { t } = useTranslation()
 
-  const walletBalance = accountBalances.data?.accountAssetsMap.get(
-    asset.id,
-  )?.balance
-  const isGigaDot = poolId === gigaDOTStableswapId
+  const walletBalance = accountBalances.data?.accountAssetsMap.get(asset.id)
+    ?.balance?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -94,7 +96,7 @@ export const AddStablepoolLiquidity = ({
 
   const estimatedFees = useEstimatedFees(estimationTxs)
 
-  const balance = walletBalance?.balance ?? "0"
+  const balance = walletBalance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === asset.id
       ? BN(balance)
@@ -117,6 +119,17 @@ export const AddStablepoolLiquidity = ({
   const { getAssetPrice } = useAssetsPrice([asset.id])
 
   const shares = form.watch("amount")
+  const value = form.watch("value")
+
+  const [debouncedValue] = useDebouncedValue(value, 300)
+
+  const { minAmountOut, swapTx } = useBestTradeSell(
+    asset.id,
+    isGigaDOT ? gigaDOTErc20Id : "",
+    debouncedValue ?? "0",
+  )
+
+  const gigaDotMeta = getAsset(gigaDOTErc20Id)
 
   const getShares = useStablepoolShares({
     poolId,
@@ -172,7 +185,7 @@ export const AddStablepoolLiquidity = ({
 
     return await createTransaction(
       {
-        tx,
+        tx: isGigaDOT ? swapTx : tx,
       },
       {
         onSuccess: (result) =>
@@ -292,15 +305,24 @@ export const AddStablepoolLiquidity = ({
         </Text>
         <Summary
           rows={[
-            {
-              label: isGigaDot
-                ? t("liquidity.stablepool.add.minimalReceived")
-                : t("liquidity.add.modal.shareTokens"),
-              content: t("value", {
-                value: shares,
-                type: "token",
-              }),
-            },
+            isGigaDOT
+              ? {
+                  label: t("liquidity.stablepool.add.minimalReceived"),
+                  content: t("value.tokenWithSymbol", {
+                    value: BN(minAmountOut).shiftedBy(
+                      -(gigaDotMeta?.decimals ?? 0),
+                    ),
+                    type: "token",
+                    symbol: gigaDotMeta?.name ?? "gigaDOT",
+                  }),
+                }
+              : {
+                  label: t("liquidity.add.modal.shareTokens"),
+                  content: t("value", {
+                    value: shares,
+                    type: "token",
+                  }),
+                },
             {
               label: t("liquidity.remove.modal.price"),
               content: (

@@ -33,7 +33,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const pool = usePoolData().pool as TPoolFullData
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const { farms, meta } = pool
+  const { farms, meta, isGigaDOT } = pool
 
   const [transferOpen, setTransferOpen] = useState<number | undefined>(
     undefined,
@@ -65,7 +65,9 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
               icon={<DropletIcon />}
             />
             <Text fs={[16, 16]} color="vibrantBlue200">
-              {t("liquidity.stablepool.asset.positions.title")}
+              {isGigaDOT
+                ? t("liquidity.stablepool.gigadot.positions.title")
+                : t("liquidity.stablepool.asset.positions.title")}
             </Text>
           </div>
           <div sx={{ flex: "column", gap: 16 }}>

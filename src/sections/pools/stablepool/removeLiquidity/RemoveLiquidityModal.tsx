@@ -15,7 +15,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
-import { gigaDOTStableswapId } from "utils/constants"
+import { useAssets } from "providers/assets"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -43,6 +43,7 @@ export const RemoveLiquidityModal = ({
   const stableSwapMeta = pool.meta
   const assets = Object.keys(stableSwapMeta.meta ?? {})
   const refetch = useRefetchAccountAssets()
+  const { tradable } = useAssets()
 
   const isRemovingOmnipoolPosition = !!position
 
@@ -61,7 +62,7 @@ export const RemoveLiquidityModal = ({
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [removeAll, setRemoveAll] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [splitRemove, setSplitRemove] = useState(true)
+  const [splitRemove, setSplitRemove] = useState(!pool.isGigaDOT)
 
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
@@ -85,7 +86,6 @@ export const RemoveLiquidityModal = ({
 
   const canGoBack =
     isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
-  const isGigaDot = pool.id === gigaDOTStableswapId
 
   if (!assetId || !pool.stablepoolFee || !assets.length) return null
 
@@ -201,7 +201,7 @@ export const RemoveLiquidityModal = ({
             ),
           },
           {
-            title: isGigaDot
+            title: pool.isGigaDOT
               ? t("liquidity.remove.modal.gigadot.title")
               : t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
@@ -234,11 +234,14 @@ export const RemoveLiquidityModal = ({
           {
             title: t("selectAsset.title"),
             headerVariant: "gradient",
+            noPadding: true,
             content: (
               <AssetsModalContent
-                allAssets={true}
-                hideInactiveAssets={true}
-                allowedAssets={assets}
+                allAssets
+                hideInactiveAssets
+                allowedAssets={
+                  pool.isGigaDOT ? tradable.map((asset) => asset.id) : assets
+                }
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()

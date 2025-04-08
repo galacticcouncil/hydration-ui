@@ -16,6 +16,8 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   "1005": "15",
   //atBTC
   "1006": "1000765",
+  //gigaDOT
+  "69": "690",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {

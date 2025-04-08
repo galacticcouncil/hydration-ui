@@ -379,6 +379,15 @@ export const QUERY_KEYS = {
     pagination.pageIndex,
   ],
   swapAssetFees: (period: string) => ["swapAssetFees", period],
+  bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
+    QUERY_KEY_PREFIX,
+    "trade",
+    "bestTradeSell",
+    assetInId,
+    assetOutId,
+    amountIn,
+  ],
+  tradeSlippage: [QUERY_KEY_PREFIX, "trade", "slippage"],
 } as const
 
 export const WS_QUERY_KEYS = {
