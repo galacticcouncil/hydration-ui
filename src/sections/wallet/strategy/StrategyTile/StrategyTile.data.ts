@@ -1,7 +1,11 @@
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
 import { normalize, valueToBigNumber } from "@aave/math-utils"
-// import { useAssets } from "providers/assets"
+import { useAssets } from "providers/assets"
+import { useBifrostVDotApy } from "api/external/bifrost"
+import BN from "bignumber.js"
+
+const VDOT_ASSET_ID = "15"
 
 export type StrategyRiskLevel = "low" | "moderate" | "high"
 
@@ -13,25 +17,34 @@ export type AssetOverviewData = {
 
 export const useAssetOverviewData = (
   assetId: string,
+
   riskLevel: StrategyRiskLevel,
 ): AssetOverviewData => {
-  // const { getAsset } = useAssets()
+  const { getAsset, getErc20 } = useAssets()
   const { reserves } = useAppDataContext()
 
-  // const asset = getAsset(assetId)
+  const asset = getAsset(assetId)
 
   const assetReserve = reserves.find(
     ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(assetId),
   )
 
-  // TODO: calculate APR based on stableswap assets
-  /* const underlyingAssetIds =
+  const assetIds =
     asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId]
 
-  const underlyingAssetId = getAddressFromAssetId(assetId)
-  const underlyingReserves = reserves.filter((reserve) =>
-    underlyingAssetIds.includes(reserve.underlyingAsset),
-  ) */
+  const { data: vDotApy } = useBifrostVDotApy({
+    enabled: assetIds.includes(VDOT_ASSET_ID),
+  })
+
+  const underlyingAssetIds = assetIds.map((assetId) => {
+    return getErc20(assetId)?.underlyingAssetId ?? assetId
+  })
+
+  const underlyingReserves = reserves.filter((reserve) => {
+    return underlyingAssetIds
+      .map(getAddressFromAssetId)
+      .includes(reserve.underlyingAsset)
+  })
 
   const incentives = assetReserve?.aIncentivesData ?? []
 
@@ -51,11 +64,26 @@ export const useAssetOverviewData = (
       ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
       : Infinity
 
+  const suppliesAPY = underlyingReserves.map((reserve) => {
+    const isVdot =
+      reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+
+    const supplyAPY = isVdot
+      ? BN(vDotApy?.apy ?? 0).div(100)
+      : BN(reserve.supplyAPY)
+    return supplyAPY.div(underlyingReserves.length).toNumber()
+  })
+
+  const supplyAPYSum = suppliesAPY.reduce((a, b) => a + b, 0)
+
+  const totalAPR = isIncentivesInfinity
+    ? Infinity
+    : supplyAPYSum + incentivesNetAPR
+
   return {
     riskLevel,
     tvl: assetReserve?.totalLiquidityUSD || "0",
-    // TODO 1075 new APR calculation
-    apr: incentivesNetAPR === Infinity ? Infinity : incentivesNetAPR * 100,
+    apr: totalAPR === Infinity ? Infinity : totalAPR * 100,
   }
 }
 
