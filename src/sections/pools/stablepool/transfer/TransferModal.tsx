@@ -14,7 +14,7 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import { gigaDOTStableswapId } from "utils/constants"
+import { gigaDOTErc20Id } from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -31,13 +31,13 @@ type Props = {
 }
 
 export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, tradable } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
 
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
-  const { id: poolId, canAddLiquidity } = pool as TPoolFullData
+  const { id: poolId, canAddLiquidity, isGigaDOT } = pool as TPoolFullData
 
   const assets = Object.keys(pool.meta.meta ?? {})
 
@@ -71,8 +71,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
 
     paginateTo(nextPage)
   }
-
-  const isGigaDOT = poolId === gigaDOTStableswapId
 
   const title = isOnlyStablepool
     ? t(
@@ -149,7 +147,13 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
               <AssetsModalContent
                 hideInactiveAssets
                 allAssets
-                allowedAssets={assets}
+                allowedAssets={
+                  isGigaDOT
+                    ? tradable
+                        .map((asset) => asset.id)
+                        .filter((assetId) => assetId !== gigaDOTErc20Id)
+                    : assets
+                }
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

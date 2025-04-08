@@ -26,6 +26,11 @@ export const MyPositions = () => {
   const stablepoolAmount = pool.balance?.freeBalance ?? "0"
   const isPositions = pool.isPositions
 
+  if (pool.isGigaDOT)
+    return pool.isStablePool ? (
+      <StablepoolPosition amount={BN(stablepoolAmount)} />
+    ) : null
+
   return (
     <>
       {isPositions && (
