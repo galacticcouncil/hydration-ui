@@ -32,7 +32,6 @@ export const useMarketAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),

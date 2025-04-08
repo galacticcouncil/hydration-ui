@@ -263,6 +263,7 @@ export const GhoBorrowModalContent = ({
             balance: maxAmountToBorrow,
             symbol,
             iconSymbol,
+            address: poolReserve.underlyingAsset,
           },
         ]}
         symbol={symbol}
@@ -383,18 +384,13 @@ const BorrowAPY = ({
 
   if (!hasGhoBorrowPositions && borrowAmount !== "") {
     return (
-      <GhoIncentivesCard
-        withTokenIcon={discountAvailable}
-        value={futureBorrowAPY}
-        {...sharedIncentiveProps}
-      />
+      <GhoIncentivesCard value={futureBorrowAPY} {...sharedIncentiveProps} />
     )
   }
 
   if (hasGhoBorrowPositions && borrowAmount === "") {
     return (
       <GhoIncentivesCard
-        withTokenIcon={discountAvailable}
         value={currentBorrowAPY}
         onMoreDetailsClick={onDetailsClick}
         {...sharedIncentiveProps}
@@ -416,7 +412,6 @@ const BorrowAPY = ({
     return (
       <>
         <GhoIncentivesCard
-          withTokenIcon
           value={currentBorrowAPY}
           onMoreDetailsClick={onDetailsClick}
           {...sharedIncentiveProps}

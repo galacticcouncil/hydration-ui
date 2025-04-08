@@ -3,7 +3,6 @@ import { Text } from "components/Typography/Text/Text"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { Link } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
-import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { HollarBorrowApyRange } from "sections/lending/ui/hollar/hollar-banner/HollarBorrowApyRange"
 
@@ -15,7 +14,6 @@ export interface GhoIncentivesCardProps {
   ghoRoute: string
   userQualifiesForDiscount: boolean
   onMoreDetailsClick?: () => void
-  withTokenIcon?: boolean
   forceShowTooltip?: boolean
 }
 
@@ -27,7 +25,6 @@ export const GhoIncentivesCard = ({
   stkAaveBalance,
   userQualifiesForDiscount,
   onMoreDetailsClick,
-  withTokenIcon = false,
   forceShowTooltip = false,
 }: GhoIncentivesCardProps) => {
   const { ghoReserveData } = useAppDataContext()
@@ -78,12 +75,6 @@ export const GhoIncentivesCard = ({
       {value.toString() !== "-1" ? (
         <InfoTooltip text={toolTipContent}>
           <div sx={{ flex: "row", align: "center" }}>
-            {withTokenIcon && (
-              <TokenIcon
-                symbol="stkAAVE"
-                sx={{ height: 14, width: 14, mr: 1 }}
-              />
-            )}
             {useApyRange ? (
               <HollarBorrowApyRange
                 minVal={Math.min(...rangeValues)}

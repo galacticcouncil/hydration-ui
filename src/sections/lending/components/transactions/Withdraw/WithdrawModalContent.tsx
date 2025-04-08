@@ -130,6 +130,7 @@ export const WithdrawModalContent = ({
               withdrawUnWrapped && poolReserve.isWrappedBaseAsset
                 ? currentNetworkConfig.baseAssetSymbol
                 : poolReserve.iconSymbol,
+            address: poolReserve.underlyingAsset,
           },
         ]}
         usdValue={usdValue.toString(10)}

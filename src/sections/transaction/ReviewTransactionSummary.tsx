@@ -16,6 +16,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
@@ -26,9 +27,12 @@ type ReviewTransactionSummaryProps = {
   onTipChange?: (amount: BN) => void
   onNonceChange?: (nonce: string) => void
   referralCode?: string
+  currentHealthFactor?: string
+  futureHealthFactor?: string
 }
 
 export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
+  tx,
   transactionValues,
   xcallMeta,
   editFeePaymentAssetEnabled,
@@ -36,6 +40,8 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
   onTipChange,
   onNonceChange,
   referralCode,
+  currentHealthFactor,
+  futureHealthFactor,
 }) => {
   const { t } = useTranslation()
   const {
@@ -170,6 +176,21 @@ export const ReviewTransactionSummary: FC<ReviewTransactionSummaryProps> = ({
                       onChange={onTipChange}
                       feePaymentValue={feePaymentValue}
                       feePaymentAssetId={feePaymentMeta?.id}
+                    />
+                  ),
+                },
+              ]
+            : []),
+          ...(currentHealthFactor && futureHealthFactor
+            ? [
+                {
+                  label: t(
+                    "liquidity.reviewTransaction.modal.detail.healthfactor",
+                  ),
+                  content: (
+                    <HealthFactorChange
+                      healthFactor={currentHealthFactor}
+                      futureHealthFactor={futureHealthFactor}
                     />
                   ),
                 },

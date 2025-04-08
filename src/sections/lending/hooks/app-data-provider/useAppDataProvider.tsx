@@ -97,7 +97,7 @@ const AppDataContext = React.createContext<AppDataContextType>(
 export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const currentTimestamp = useCurrentTimestamp(5)
+  const currentTimestamp = useCurrentTimestamp(60)
   const { currentAccount } = useWeb3Context()
   const { currentMarket } = useProtocolDataContext()
   const [
