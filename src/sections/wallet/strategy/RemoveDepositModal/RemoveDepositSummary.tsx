@@ -1,5 +1,4 @@
 import { UseHealthFactorChangeResult } from "api/borrow"
-import { Separator } from "components/Separator/Separator"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
 import { TAsset } from "providers/assets"
@@ -21,9 +20,10 @@ export const RemoveDepositSummary: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <>
+    <div>
       <SummaryRow
         label={t("wallet.strategy.deposit.minReceived")}
+        withSeparator={!!hfChange}
         content={
           <Text fw={500} fs={14} lh="1" color="white">
             ≈ {minReceived} {assetReceived?.symbol}
@@ -31,19 +31,16 @@ export const RemoveDepositSummary: FC<Props> = ({
         }
       />
       {hfChange && (
-        <>
-          <Separator color="darkBlue401" />
-          <SummaryRow
-            label={t("healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={hfChange.currentHealthFactor}
-                futureHealthFactor={hfChange.futureHealthFactor}
-              />
-            }
-          />
-        </>
+        <SummaryRow
+          label={t("healthFactor")}
+          content={
+            <HealthFactorChange
+              healthFactor={hfChange.currentHealthFactor}
+              futureHealthFactor={hfChange.futureHealthFactor}
+            />
+          }
+        />
       )}
-    </>
+    </div>
   )
 }
