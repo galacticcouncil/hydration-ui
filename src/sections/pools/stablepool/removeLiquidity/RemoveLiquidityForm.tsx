@@ -315,7 +315,14 @@ export const RemoveStablepoolLiquidityForm = ({
         />
       )}
 
-      {isGigaDot && <GigaDotHealthFactor amount={removeSharesValue} />}
+      {isGigaDot && (
+        <GigaDotHealthFactor
+          amount={scaleHuman(
+            removeSharesValue,
+            gigaDotMeta.decimals,
+          ).toString()}
+        />
+      )}
 
       <Spacer size={20} />
       <Button fullWidth variant="primary" disabled={removeSharesValue === "0"}>
