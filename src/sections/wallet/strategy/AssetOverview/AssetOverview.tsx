@@ -1,8 +1,8 @@
-import { AssetTableName } from "components/AssetTableName/AssetTableName"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+import { AssetOverviewLogo } from "sections/wallet/strategy/AssetOverview/AssetOverviewLogo"
 import { AssetOverviewTile } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
 import { useAssetOverviewData } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 
@@ -17,7 +17,7 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
       <div sx={{ display: ["initial", "none"] }}>
-        <AssetTableName id={assetId} />
+        <AssetOverviewLogo assetId={assetId} />
       </div>
       <div
         sx={{
@@ -28,7 +28,7 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
         }}
       >
         <div sx={{ display: ["none", "contents"] }}>
-          <AssetTableName id={assetId} />
+          <AssetOverviewLogo assetId={assetId} />
           <AssetOverviewSeparator />
         </div>
         <AssetOverviewTile
