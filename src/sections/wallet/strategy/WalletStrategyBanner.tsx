@@ -1,7 +1,7 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { FC } from "react"
-import { SWalletStrategBanner } from "sections/wallet/strategy/WalletStrategBanner.styled"
+import { SWalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBanner.styled"
 import { Button } from "components/Button/Button"
 import GigaDOTCan from "assets/icons/GigaDOTCan.svg?react"
 import { Link } from "@tanstack/react-location"
@@ -11,7 +11,7 @@ export const WalletStrategyBanner: FC = () => {
   const { t } = useTranslation()
 
   return (
-    <SWalletStrategBanner>
+    <SWalletStrategyBanner>
       <div sx={{ flex: "row", gap: 30, align: "center" }}>
         <GigaDOTCan />
         <div sx={{ flex: "column", gap: 6 }}>
@@ -28,6 +28,6 @@ export const WalletStrategyBanner: FC = () => {
           {t("wallet.strategy.banner.cta")}
         </Button>
       </Link>
-    </SWalletStrategBanner>
+    </SWalletStrategyBanner>
   )
 }

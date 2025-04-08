@@ -165,7 +165,15 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   )
 }
 
-export const useHealthFactorChange = (assetId: string, amount: string) => {
+export type UseHealthFactorChangeResult = {
+  currentHealthFactor: string
+  futureHealthFactor: string
+} | null
+
+export const useHealthFactorChange = (
+  assetId: string,
+  amount: string,
+): UseHealthFactorChangeResult => {
   const { getErc20 } = useAssets()
   const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
 

@@ -12,6 +12,7 @@ import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
+import { useHealthFactorChange } from "api/borrow"
 
 type Props = {
   readonly assetId: string
@@ -45,6 +46,9 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const { page, direction, paginateTo } = useModalPagination()
 
+  const hfChange = useHealthFactorChange(assetId, balanceToSell)
+  console.log({ hfChange })
+
   return (
     <ModalContents
       page={page}
@@ -73,6 +77,7 @@ export const RemoveDepositModal: FC<Props> = ({
                     />
                   </div>
                   <RemoveDepositSummary
+                    hfChange={hfChange}
                     minReceived={new BigNumber(minAmountOut)
                       .shiftedBy(-(assetReceived?.decimals ?? 0))
                       .toString()}

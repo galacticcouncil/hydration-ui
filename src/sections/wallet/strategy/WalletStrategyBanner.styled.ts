@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
-export const SWalletStrategBanner = styled.div`
+
+export const SWalletStrategyBanner = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;

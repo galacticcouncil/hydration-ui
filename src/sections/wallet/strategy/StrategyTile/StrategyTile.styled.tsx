@@ -4,7 +4,7 @@ import { FC } from "react"
 import { theme } from "theme"
 
 export const SStrategyTile = styled.div`
-  --strategy-tile-padding-block: 60px;
+  --strategy-tile-padding-block: 40px;
 
   position: relative;
   overflow: hidden;
@@ -72,11 +72,13 @@ export const StrategyTileSeparator: FC = () => {
     <>
       <SStrategyTileSeparator
         orientation="vertical"
-        sx={{ display: ["none", "initial"] }}
+        color="white"
+        sx={{ display: ["none", "initial"], opacity: 0.06 }}
       />
       <SStrategyTileSeparator
         orientation="horizontal"
-        sx={{ display: ["initial", "none"] }}
+        color="white"
+        sx={{ display: ["initial", "none"], opacity: 0.06 }}
       />
     </>
   )
