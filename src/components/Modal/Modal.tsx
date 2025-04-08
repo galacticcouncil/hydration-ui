@@ -133,6 +133,7 @@ export const ModalHorizontalSeparator = (sx: SxProps) => {
   return (
     <Separator
       sx={sx}
+      color="darkBlue401"
       css={{
         marginInline: "calc(-1 * var(--modal-header-padding-x))",
         width: "calc(100% + 2 * var(--modal-header-padding-x))",

@@ -57,3 +57,5 @@ export const HYDRATION_PARACHAIN_ADDRESS =
 
 export const UNIFIED_ADDRESS_FORMAT_ENABLED =
   import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"
+
+export const GDOT_STABLESWAP_ASSET_ID = "690"

@@ -11,7 +11,5 @@ export const SCurrentDeposit = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-
-    max-width: 450px;
   }
 `

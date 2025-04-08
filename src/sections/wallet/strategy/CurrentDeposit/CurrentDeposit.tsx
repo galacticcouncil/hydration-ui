@@ -61,6 +61,8 @@ export const CurrentDeposit: FC<Props> = ({
       />
       <Button
         size="small"
+        variant="outline"
+        css={{ borderColor: "rgba(255,255,255,0.2)" }}
         disabled={new BigNumber(depositData.depositBalance).lte(0)}
         onClick={() => setIsRemoveModalOpen(true)}
       >
@@ -103,11 +105,13 @@ const CurrentDepositSeparator: FC = () => {
     <>
       <Separator
         orientation="vertical"
-        sx={{ height: "100%", display: ["none", "initial"] }}
+        color="white"
+        sx={{ height: "100%", display: ["none", "initial"], opacity: 0.06 }}
       />
       <Separator
         sx={{ display: ["initial", "none"] }}
-        css={{ gridColumn: "1/-1" }}
+        color="white"
+        css={{ gridColumn: "1/-1", opacity: 0.06 }}
       />
     </>
   )

@@ -684,7 +684,6 @@
   "wallet.strategy.remove.confirm": "Confirm removal",
   "wallet.strategy.remove.shareTokenAmount": "Share token amount",
   "wallet.strategy.remove.assetToReceive": "Asset to receive",
-  "wallet.strategy.remove.liquidationAt": "Liquidation at <{{ value }}",
   "wallet.addToken.header.addCustom": "Add custom asset",
   "wallet.addToken.header.availableAssets": "Available assets",
   "wallet.addToken.button.customAsset": "Add Custom Asset",

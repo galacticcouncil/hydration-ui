@@ -11,12 +11,12 @@ import {
   CurrentDepositData,
 } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit"
 import { Separator } from "components/Separator/Separator"
-import { CurrentDepositReadMore } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositReadMore"
 import { CurrentDepositEmptyState } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositEmptyState"
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { useAssetRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   readonly assetId: string
@@ -29,6 +29,7 @@ export const StrategyTile: FC<Props> = ({
   underlyingAssetId,
   rewardAssetId,
 }) => {
+  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
 
@@ -41,8 +42,9 @@ export const StrategyTile: FC<Props> = ({
 
   const rewardsBalance = new BigNumber(useAssetRewards(rewardAssetId) || "0")
 
+  const hasBalance = depositBalance.gt(0) || rewardsBalance.gt(0)
   const depositData: CurrentDepositData | null =
-    depositBalance.gt(0) || rewardsBalance.gt(0)
+    account && hasBalance
       ? {
           depositBalance: depositBalance.toString(),
           rewardsBalance: rewardsBalance.toString(),
@@ -52,21 +54,15 @@ export const StrategyTile: FC<Props> = ({
   return (
     <SStrategyTile>
       <StrategyTileBackgroundEffect />
-      <div sx={{ flex: "column", gap: [20, 30] }}>
+      <div sx={{ flex: "column", gap: [20, 35] }}>
         <AssetOverview assetId={assetId} />
-        <Separator />
+        <Separator color="white" sx={{ opacity: 0.06 }} />
         {depositData ? (
-          <>
-            <CurrentDeposit
-              assetId={underlyingAssetId}
-              rewardAssetId={rewardAssetId}
-              depositData={depositData}
-            />
-            <div sx={{ display: ["none", "contents"] }}>
-              <Separator />
-              <CurrentDepositReadMore />
-            </div>
-          </>
+          <CurrentDeposit
+            assetId={underlyingAssetId}
+            rewardAssetId={rewardAssetId}
+            depositData={depositData}
+          />
         ) : (
           <CurrentDepositEmptyState />
         )}

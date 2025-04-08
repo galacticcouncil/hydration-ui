@@ -53,5 +53,11 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
 }
 
 const AssetOverviewSeparator: FC = () => {
-  return <Separator orientation="vertical" sx={{ height: "100%" }} />
+  return (
+    <Separator
+      orientation="vertical"
+      color="white"
+      sx={{ height: "100%", opacity: 0.06 }}
+    />
+  )
 }

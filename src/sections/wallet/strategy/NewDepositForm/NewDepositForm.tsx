@@ -11,6 +11,8 @@ import { NewDepositSummary } from "sections/wallet/strategy/NewDepositForm/NewDe
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 
 type Props = {
   readonly assetId: string
@@ -19,6 +21,7 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
@@ -50,9 +53,13 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
             {t("wallet.strategy.deposit.yourDeposit")}
           </Text>
           <NewDepositAssetField selectedAssetBalance={selectedAssetBalance} />
-          <Button type="submit" variant="primary">
-            {depositData ? t("add") : t("wallet.strategy.deposit.cta")}
-          </Button>
+          {account && (
+            <Button type="submit" variant="primary">
+              {depositData ? t("add") : t("wallet.strategy.deposit.cta")}
+            </Button>
+          )}
+          {!account && <Web3ConnectModalButton />}
+
           <NewDepositSummary
             asset={asset}
             minReceived={new BigNumber(minReceived || "0")
