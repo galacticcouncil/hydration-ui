@@ -59,7 +59,6 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
             </Button>
           )}
           {!account && <Web3ConnectModalButton />}
-
           <NewDepositSummary
             asset={asset}
             minReceived={new BigNumber(minReceived || "0")

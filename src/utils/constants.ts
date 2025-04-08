@@ -63,3 +63,5 @@ export const gigaDOTErc20Id = "69"
 export const validStablepools = [gigaDOTStableswapId]
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
+export const VDOT_ASSET_ID = "15"
+export const DOT_ASSET_ID = "5"

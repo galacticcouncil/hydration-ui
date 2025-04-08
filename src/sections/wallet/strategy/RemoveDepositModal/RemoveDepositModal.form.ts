@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { requiredAny } from "utils/validators"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { DOT_ASSET_ID } from "utils/constants"
 
 const schema = z.object({
   assetReceived: z.custom<TAsset | null>().refine(...requiredAny),
@@ -13,8 +14,9 @@ const schema = z.object({
 export type RemoveDepositFormValues = z.infer<typeof schema>
 
 export const useRemoveDepositForm = () => {
+  const { getAsset } = useAssets()
   const defaultValues: RemoveDepositFormValues = {
-    assetReceived: null,
+    assetReceived: getAsset(DOT_ASSET_ID) ?? null,
     percentage: 0,
     customPercentageInput: "",
   }

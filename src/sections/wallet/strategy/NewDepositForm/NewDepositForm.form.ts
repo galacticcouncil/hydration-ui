@@ -1,4 +1,4 @@
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import {
   maxBalanceError,
   positive,
@@ -10,6 +10,7 @@ import * as z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useAccountAssets } from "api/deposits"
+import { DOT_ASSET_ID } from "utils/constants"
 
 const useSchema = () => {
   const { data: accountAssets } = useAccountAssets()
@@ -41,8 +42,9 @@ const useSchema = () => {
 export type NewDepositFormValues = z.infer<ReturnType<typeof useSchema>>
 
 export const useNewDepositForm = () => {
+  const { getAsset } = useAssets()
   const defaultValues: NewDepositFormValues = {
-    asset: null,
+    asset: getAsset(DOT_ASSET_ID) ?? null,
     amount: "",
   }
 
