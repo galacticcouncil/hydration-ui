@@ -47,7 +47,6 @@ export const RemoveDepositModal: FC<Props> = ({
   const { page, direction, paginateTo } = useModalPagination()
 
   const hfChange = useHealthFactorChange(assetId, balanceToSell)
-  console.log({ hfChange })
 
   return (
     <ModalContents
