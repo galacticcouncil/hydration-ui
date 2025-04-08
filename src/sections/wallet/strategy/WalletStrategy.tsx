@@ -5,8 +5,6 @@ import { WalletStrategyProviders } from "sections/wallet/strategy/WalletStrategy
 import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
 import { StrategyTile } from "sections/wallet/strategy/StrategyTile/StrategyTile"
 import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
-import { useMedia } from "react-use"
-import { theme } from "theme"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
 
 const GigadotAnswers = lazy(async () => ({
@@ -17,7 +15,6 @@ const GigadotAnswers = lazy(async () => ({
 
 export const WalletStrategy: FC = () => {
   const { dataEnv } = useRpcProvider()
-  const isMobile = useMedia(theme.viewport.lt.sm)
   const { isLoaded } = useRpcProvider()
 
   useMarketChangeSubscription()
@@ -38,7 +35,7 @@ export const WalletStrategy: FC = () => {
           underlyingAssetId={underlyingAssetId}
           rewardAssetId={rewardAssetId}
         />
-        {!isMobile && <GigadotAnswers />}
+        <GigadotAnswers />
       </SWalletStrategy>
     </WalletStrategyProviders>
   )

@@ -670,7 +670,7 @@
   "wallet.strategy.title": "Earn with hydrated stretegies.",
   "wallet.strategy.risk.tooltip": "TODO 1075",
   "wallet.strategy.gigadot.emptyState": "gigaDOT combines vDOT (yield-bearing staked DOT) and aDOT (rebasing lent DOT) in a Stablepool, allowing holders to earn composite yield from staking, lending, and incentives.",
-  "wallet.strategy.gigadot.whatIs": "What is GigaDOT",
+  "wallet.strategy.gigadot.whatIs": "What is GigaDOT?",
   "wallet.strategy.gigadot.whatIs.answer": "TODO 1075",
   "wallet.strategy.gigadot.howItWorks": "How it works?",
   "wallet.strategy.gigadot.howItWorks.answer": "TODO 1075",
