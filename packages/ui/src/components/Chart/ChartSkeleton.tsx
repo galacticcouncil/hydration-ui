@@ -16,7 +16,11 @@ export const ChartSkeleton: React.FC<ChartSkeletonProps> = ({
   color,
 }) => {
   return (
-    <Flex align="end" justify="center" sx={{ position: "relative", height }}>
+    <Flex
+      align="end"
+      justify="center"
+      sx={{ position: "relative", height, width: "100%" }}
+    >
       <LineChartSkeleton
         width="95%"
         height="80%"

@@ -11,10 +11,10 @@ import {
 
 import {
   monthFormatter,
-  parseTradingViewTime,
   timeFormatter,
   yearFormatter,
-} from "@/components/TradingViewChart/utils"
+} from "@/components/Chart/utils"
+import { parseTradingViewTime } from "@/components/TradingViewChart/utils"
 import { ThemeProps } from "@/theme"
 
 export const layout = (theme: ThemeProps): Partial<LayoutOptions> => ({
