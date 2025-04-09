@@ -33,7 +33,7 @@ const defaulStyles = createStyles(
     font-weight: 500;
     white-space: nowrap;
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: 32px;
 
     cursor: pointer;
 
@@ -193,17 +193,17 @@ const sizes = createVariants((theme) => ({
   small: css`
     line-height: 1.2;
     font-size: ${theme.paragraphSize.p6};
-    padding: ${theme.buttons.paddings.quart}px ${theme.scales.paddings.m}px;
+    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   medium: css`
     line-height: 1.2;
-    font-size: ${theme.paragraphSize.p5};
-    padding: ${theme.buttons.paddings.tertiary}px ${theme.scales.paddings.xl}px;
+    font-size: 13px;
+    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   large: css`
     line-height: 1;
-    font-size: ${theme.paragraphSize.p2};
-    padding: ${theme.buttons.paddings.primary}px 30px;
+    font-size: 14px;
+    padding: ${theme.buttons.paddings.primary}px ${theme.scales.paddings.xl}px;
   `,
 }))
 
