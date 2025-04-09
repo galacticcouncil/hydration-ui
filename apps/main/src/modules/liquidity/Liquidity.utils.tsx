@@ -10,6 +10,7 @@ import { useFee, useOmnipoolAssetsData, useTVL } from "@/api/omnipool"
 import { xykPools } from "@/api/pools"
 import { AssetLabelFull, AssetLabelXYK, AssetPrice } from "@/components"
 import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
+import { useAccountPositions } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import {
   setOmnipoolAssets,
@@ -26,6 +27,8 @@ export type OmnipoolAssetTable = {
   fee?: string
   isFeeLoading: boolean
   isNative: boolean
+  isPositions: boolean
+  positionsAmount: number
 }
 
 export type IsolatedPoolTable = {
@@ -33,6 +36,7 @@ export type IsolatedPoolTable = {
   tokens: PoolToken[]
   tvlDisplay: string
   meta: XYKPoolMeta
+  isPositions: boolean
 }
 
 const columnHelper = createColumnHelper<OmnipoolAssetTable>()
@@ -41,6 +45,8 @@ const isolatedColumnHelper = createColumnHelper<IsolatedPoolTable>()
 export const useOmnipools = () => {
   const { getAssetWithFallback, native } = useAssets()
   const { ids: omnipoolIds = [] } = useOmnipoolIds()
+
+  const { getPositions } = useAccountPositions()
 
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(omnipoolIds)
@@ -67,6 +73,12 @@ export const useOmnipools = () => {
             ?.find((fee) => fee?.asset_id === Number(omnipoolId))
             ?.projected_apr_perc.toString()
 
+      const { omnipoolPositions, omnipoolMiningPositions } =
+        getPositions(omnipoolId)
+      const positionsAmount =
+        omnipoolPositions.length + omnipoolMiningPositions.length
+      const isPositions = positionsAmount > 0
+
       return {
         id: omnipoolId,
         meta,
@@ -75,6 +87,8 @@ export const useOmnipools = () => {
         fee,
         isFeeLoading,
         isNative,
+        isPositions,
+        positionsAmount,
       }
     })
 
@@ -88,6 +102,7 @@ export const useOmnipools = () => {
     native.id,
     isFeeLoading,
     isLoading,
+    getPositions,
   ])
 
   useEffect(() => {
@@ -98,6 +113,7 @@ export const useOmnipools = () => {
 export const useIsolatedPools = () => {
   const { data: pools = [], isLoading: isPoolsLoading } = useQuery(xykPools)
   const { getMetaFromXYKPoolTokens } = useAssets()
+  const { getPositions } = useAccountPositions()
 
   const { ids: pricesIds, poolsData } = useMemo(() => {
     return pools.reduce<{
@@ -148,6 +164,7 @@ export const useIsolatedPools = () => {
         const tvlDisplay = Big(tvl).times(price).toString()
 
         const meta = getMetaFromXYKPoolTokens(pool.tokens)
+        const { xykMiningPositions } = getPositions(pool.address)
 
         if (!meta) return acc
 
@@ -156,13 +173,20 @@ export const useIsolatedPools = () => {
           tokens: pool.tokens,
           meta,
           tvlDisplay,
+          isPositions: xykMiningPositions.length > 0,
         })
 
         return acc
       },
       [],
     )
-  }, [poolsData, getAssetPrice, getMetaFromXYKPoolTokens, isPriceLoading])
+  }, [
+    poolsData,
+    getAssetPrice,
+    getMetaFromXYKPoolTokens,
+    isPriceLoading,
+    getPositions,
+  ])
 
   const isLoading = isPriceLoading || isPoolsLoading
 

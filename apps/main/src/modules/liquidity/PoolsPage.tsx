@@ -9,14 +9,13 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useRouter, useSearch } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SubpageMenu } from "@/components/SubpageMenu/SubpageMenu"
 import { PoolType } from "@/routes/_liquidity/liquidity.pools"
 import { useOmnipoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { PoolsHeader } from "./components"
+import { PoolsHeader, PoolTypeTabs } from "./components"
 import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.utils"
 import { PoolDetails } from "./PoolDetails"
 
@@ -39,19 +38,7 @@ export const PoolsPage = () => {
         gap={20}
         sx={{ pt: 30, pb: getTokenPx("containers.paddings.secondary") }}
       >
-        <SubpageMenu
-          items={[
-            { to: "/liquidity/pools?type=all", title: t("tab.allPools") },
-            {
-              to: "/liquidity/pools?type=omnipool&stablepool",
-              title: t("tab.omnipoolStablepool"),
-            },
-            {
-              to: "/liquidity/pools?type=isolated",
-              title: t("tab.isolatedPools"),
-            },
-          ]}
-        />
+        <PoolTypeTabs />
         <Input
           placeholder={t("common:search.placeholder")}
           iconStart={Search}
@@ -71,18 +58,24 @@ export const PoolsPage = () => {
   )
 }
 
-const OmnipoolAndStablepoolTable = ({
+export const OmnipoolAndStablepoolTable = ({
   search,
   type,
+  withPositions,
 }: {
   search: string
   type: PoolType
+  withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useOmnipoolAssets()
   const columns = usePoolColumns()
 
   const router = useRouter()
+
+  const filteredData = useMemo(() => {
+    return withPositions ? data?.filter((asset) => asset.isPositions) : data
+  }, [data, withPositions])
 
   return (
     <>
@@ -91,12 +84,12 @@ const OmnipoolAndStablepoolTable = ({
         <DataTable
           isLoading={isLoading}
           globalFilter={search}
-          data={data ?? []}
+          data={filteredData ?? []}
           columns={columns}
           initialSorting={[{ id: "id", desc: true }]}
           onRowClick={(asset) =>
             router.navigate({
-              to: "/liquidity/pools",
+              to: router.state.location.pathname,
               search: { type, id: asset.id },
               resetScroll: false,
             })
@@ -107,12 +100,14 @@ const OmnipoolAndStablepoolTable = ({
   )
 }
 
-const IsolatedPoolsTable = ({
+export const IsolatedPoolsTable = ({
   search,
   type,
+  withPositions,
 }: {
   search: string
   type: PoolType
+  withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useXYKPools()
@@ -120,12 +115,16 @@ const IsolatedPoolsTable = ({
 
   const router = useRouter()
 
+  const filteredData = useMemo(() => {
+    return withPositions ? data?.filter((asset) => asset.isPositions) : data
+  }, [data, withPositions])
+
   return (
     <>
       <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
-          data={data ?? []}
+          data={filteredData ?? []}
           globalFilter={search}
           columns={columns}
           isLoading={isLoading}
@@ -134,7 +133,7 @@ const IsolatedPoolsTable = ({
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
           onRowClick={(asset) =>
             router.navigate({
-              to: "/liquidity/pools",
+              to: router.state.location.pathname,
               search: { type, id: asset.id },
               resetScroll: false,
             })

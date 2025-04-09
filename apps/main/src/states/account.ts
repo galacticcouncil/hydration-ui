@@ -1,8 +1,7 @@
 import Big from "big.js"
-import { useMemo } from "react"
-import { isDeepEqual, pick } from "remeda"
+import { useCallback, useMemo } from "react"
+import { isDeepEqual, prop } from "remeda"
 import { create, StateCreator } from "zustand"
-import { useShallow } from "zustand/shallow"
 
 import {
   OmnipoolDepositFull,
@@ -102,8 +101,45 @@ export const useAccountData = create<
   ...createAccountsUniques(...a),
 }))
 
+export const useAccountBalances = () => {
+  const balances = useAccountData(prop("balances"))
+
+  const getBalance = useCallback(
+    (assetId: string) => balances[assetId],
+    [balances],
+  )
+
+  return { balances, getBalance }
+}
+
+export const useAccountPositions = () => {
+  const positions = useAccountData(prop("positions"))
+  const { omnipool, omnipoolMining, xykMining } = positions
+  const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
+
+  const getPositions = useCallback(
+    (id: string) => {
+      const omnipoolPositions = omnipool.filter(
+        (position) => position.assetId === id,
+      )
+      const omnipoolMiningPositions = omnipoolMining.filter(
+        (position) => position.assetId === id,
+      )
+      const xykMiningPositions = xykMining.filter(
+        (position) => position.amm_pool_id === id,
+      )
+
+      return { omnipoolPositions, omnipoolMiningPositions, xykMiningPositions }
+    },
+
+    [omnipool, omnipoolMining, xykMining],
+  )
+
+  return { positions, isPositions, getPositions }
+}
+
 export const useAccountOmnipoolPositionsData = () => {
-  const { positions } = useAccountData(useShallow(pick(["positions"])))
+  const positions = useAccountData(prop("positions"))
   const { omnipool, omnipoolMining } = positions
   const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
 
