@@ -680,6 +680,7 @@
   "wallet.strategy.gigadot.whenWithdraw": "When should I withdraw?",
   "wallet.strategy.gigadot.whenWithdraw.answer": "TODO 1075",
   "wallet.strategy.deposit.yourDeposit": "Your deposit",
+  "wallet.strategy.deposit.depositAsset": "Deposit asset",
   "wallet.strategy.deposit.myDeposit": "My deposit:",
   "wallet.strategy.deposit.myRewards": "My rewards:",
   "wallet.strategy.deposit.cta": "Join strategy",

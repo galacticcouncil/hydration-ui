@@ -1,11 +1,15 @@
+import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { Modal } from "components/Modal/Modal"
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { NewDepositFormValues } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.form"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { prop } from "utils/rx"
 
 type Props = {
   readonly selectedAssetBalance: string
@@ -27,6 +31,20 @@ export const NewDepositAssetField: FC<Props> = ({ selectedAssetBalance }) => {
     name: "amount",
   })
 
+  const { account } = useAccount()
+  const { data: accountAssets } = useAccountAssets()
+
+  const allowedAssets = useMemo<string[]>(() => {
+    return account && accountAssets?.balances
+      ? accountAssets.balances
+          .map(prop("assetId"))
+          .filter(
+            (id) =>
+              ![GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID].includes(id),
+          )
+      : []
+  }, [account, accountAssets?.balances])
+
   return (
     <>
       <AssetSelect
@@ -36,11 +54,13 @@ export const NewDepositAssetField: FC<Props> = ({ selectedAssetBalance }) => {
         error={
           assetFieldState.error?.message ?? amountFieldState.error?.message
         }
-        title={t("wallet.strategy.deposit.yourDeposit")}
+        title={t("wallet.strategy.deposit.depositAsset")}
         onChange={amountField.onChange}
         balance={new BigNumber(selectedAssetBalance)}
         balanceLabel={t("balance")}
-        onSelectAssetClick={() => setIsAssetSelectOpen(true)}
+        onSelectAssetClick={
+          allowedAssets.length ? () => setIsAssetSelectOpen(true) : undefined
+        }
       />
       <Modal
         open={isAssetSelectOpen}
@@ -49,6 +69,7 @@ export const NewDepositAssetField: FC<Props> = ({ selectedAssetBalance }) => {
         noPadding
       >
         <AssetsModalContent
+          allowedAssets={allowedAssets}
           allAssets
           hideInactiveAssets
           onSelect={(asset) => {
