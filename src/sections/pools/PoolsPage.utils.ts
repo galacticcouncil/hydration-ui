@@ -32,7 +32,6 @@ import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useTranslation } from "react-i18next"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -57,7 +56,6 @@ const getTradeFee = (fee: string[]) => {
 }
 
 const useStablepools = () => {
-  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const { data: accountAssets } = useAccountAssets()
   const { data: stablepools = [], isLoading: isPoolsLoading } =
@@ -137,16 +135,19 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
+      const symbol = isGigaDOT
+        ? getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol
+        : meta.symbol
+
       return {
         id: filteredStablepool.id,
-        name: isGigaDOT ? "" : meta.name,
-        symbol: isGigaDOT ? t("gigaDOT") : meta.symbol,
+        name: meta.name,
+        symbol,
         meta: isGigaDOT
           ? {
               ...meta,
               iconId: GDOT_STABLESWAP_ASSET_ID,
-              name: "",
-              symbol: t("gigaDOT"),
+              symbol,
             }
           : meta,
         tvlDisplay,
@@ -175,7 +176,6 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    t,
   ])
 
   return { data, isLoading }
