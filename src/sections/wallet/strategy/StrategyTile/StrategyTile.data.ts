@@ -1,10 +1,11 @@
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
-import { normalize, valueToBigNumber } from "@aave/math-utils"
+import { normalize } from "@aave/math-utils"
 import { useAssets } from "providers/assets"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import BN from "bignumber.js"
 import { VDOT_ASSET_ID } from "utils/constants"
+import { useMemo } from "react"
 
 export type StrategyRiskLevel = "low" | "moderate" | "high"
 
@@ -27,57 +28,65 @@ export const useAssetOverviewData = (
     ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(assetId),
   )
 
-  const assetIds =
-    asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId]
+  const assetIds = useMemo(
+    () =>
+      asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId],
+    [asset, assetId],
+  )
 
   const { data: vDotApy } = useBifrostVDotApy({
     enabled: assetIds.includes(VDOT_ASSET_ID),
   })
 
-  const underlyingAssetIds = assetIds.map((assetId) => {
-    return getErc20(assetId)?.underlyingAssetId ?? assetId
-  })
+  const totalAPR = useMemo(() => {
+    const underlyingAssetIds = assetIds.map((assetId) => {
+      return getErc20(assetId)?.underlyingAssetId ?? assetId
+    })
 
-  const underlyingReserves = reserves.filter((reserve) => {
-    return underlyingAssetIds
-      .map(getAddressFromAssetId)
-      .includes(reserve.underlyingAsset)
-  })
+    const underlyingReserves = reserves.filter((reserve) => {
+      return underlyingAssetIds
+        .map(getAddressFromAssetId)
+        .includes(reserve.underlyingAsset)
+    })
 
-  const incentives = assetReserve?.aIncentivesData ?? []
+    const incentives = assetReserve?.aIncentivesData ?? []
 
-  const isIncentivesInfinity = incentives.some(
-    (incentive) => incentive.incentiveAPR === "Infinity",
-  )
+    const isIncentivesInfinity = incentives.some(
+      (incentive) => incentive.incentiveAPR === "Infinity",
+    )
 
-  const incentivesAPRSum = isIncentivesInfinity
-    ? Infinity
-    : incentives.reduce(
-        (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
-        0,
-      )
+    const incentivesAPRSum = isIncentivesInfinity
+      ? Infinity
+      : incentives.reduce(
+          (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
+          0,
+        )
 
-  const incentivesNetAPR = isIncentivesInfinity
-    ? Infinity
-    : incentivesAPRSum !== Infinity
-      ? valueToBigNumber(incentivesAPRSum || 0).toNumber()
-      : Infinity
+    const incentivesNetAPR = isIncentivesInfinity
+      ? Infinity
+      : incentivesAPRSum !== Infinity
+        ? incentivesAPRSum || 0
+        : Infinity
 
-  const suppliesAPY = underlyingReserves.map((reserve) => {
-    const isVdot =
-      reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+    const suppliesAPY = underlyingReserves.map((reserve) => {
+      const isVdot =
+        reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
 
-    const supplyAPY = isVdot
-      ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
-      : BN(reserve.supplyAPY)
-    return supplyAPY.div(underlyingReserves.length).toNumber()
-  })
+      const supplyAPY = isVdot
+        ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.supplyAPY)
+      return supplyAPY.div(underlyingReserves.length).toNumber()
+    })
 
-  const supplyAPYSum = suppliesAPY.reduce((a, b) => a + b, 0)
-
-  const totalAPR = isIncentivesInfinity
-    ? Infinity
-    : supplyAPYSum + incentivesNetAPR
+    const supplyAPYSum = suppliesAPY.reduce((a, b) => a + b, 0)
+    return isIncentivesInfinity ? Infinity : supplyAPYSum + incentivesNetAPR
+  }, [
+    assetIds,
+    assetReserve?.aIncentivesData,
+    getErc20,
+    reserves,
+    vDotApy?.apy,
+  ])
 
   return {
     riskLevel,

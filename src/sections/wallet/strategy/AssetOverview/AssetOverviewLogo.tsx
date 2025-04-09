@@ -3,10 +3,12 @@ import { useAssets } from "providers/assets"
 import { Text } from "components/Typography/Text/Text"
 
 export type AssetOverviewLogoProps = {
+  className?: string
   assetId: string
 }
 
 export const AssetOverviewLogo: React.FC<AssetOverviewLogoProps> = ({
+  className,
   assetId,
 }) => {
   const { getAssetWithFallback } = useAssets()
@@ -16,7 +18,7 @@ export const AssetOverviewLogo: React.FC<AssetOverviewLogoProps> = ({
   const name = asset.name || asset.symbol
 
   return (
-    <div sx={{ flex: "row", gap: 8, align: "center" }}>
+    <div className={className} sx={{ flex: "row", gap: 8, align: "center" }}>
       <MultipleAssetLogo size={[40, 50]} iconId={asset.iconId} />
       <div sx={{ flex: "column", width: "100%", gap: [0, 2] }}>
         <Text fs={[14, 16]} font="GeistMedium" color="white">

@@ -26,7 +26,10 @@ export const RemoveDepositSummary: FC<Props> = ({
         withSeparator={!!hfChange}
         content={
           <Text fw={500} fs={14} lh="1" color="white">
-            ≈ {minReceived} {assetReceived?.symbol}
+            {t("value.tokenApproxWithSymbol", {
+              value: minReceived,
+              symbol: assetReceived?.symbol,
+            })}
           </Text>
         }
       />

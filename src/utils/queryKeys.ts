@@ -382,7 +382,6 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
-  tradeSlippage: [QUERY_KEY_PREFIX, "trade", "slippage"],
 } as const
 
 export const WS_QUERY_KEYS = {
