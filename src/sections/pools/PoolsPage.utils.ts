@@ -9,7 +9,7 @@ import {
   BN_NAN,
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
-  validStablepools,
+  VALID_STABLEPOOLS,
 } from "utils/constants"
 import {
   useDisplayAssetStore,
@@ -65,7 +65,7 @@ const useStablepools = () => {
     () =>
       stablepools.filter(
         (stablepool) =>
-          stablepool.id && validStablepools.includes(stablepool.id),
+          stablepool.id && VALID_STABLEPOOLS.includes(stablepool.id),
       ),
     [stablepools],
   )
@@ -146,7 +146,6 @@ const useStablepools = () => {
         meta: isGigaDOT
           ? {
               ...meta,
-              iconId: GDOT_STABLESWAP_ASSET_ID,
               symbol,
             }
           : meta,
