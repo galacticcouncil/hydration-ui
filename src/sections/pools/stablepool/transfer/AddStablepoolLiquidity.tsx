@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
   BN_0,
-  gigaDOTErc20Id,
+  GDOT_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
@@ -125,11 +125,11 @@ export const AddStablepoolLiquidity = ({
 
   const { minAmountOut, swapTx } = useBestTradeSell(
     asset.id,
-    isGigaDOT ? gigaDOTErc20Id : "",
+    isGigaDOT ? GDOT_ERC20_ASSET_ID : "",
     debouncedValue ?? "0",
   )
 
-  const gigaDotMeta = getAsset(gigaDOTErc20Id)
+  const gigaDotMeta = getAsset(GDOT_ERC20_ASSET_ID)
 
   const getShares = useStablepoolShares({
     poolId,

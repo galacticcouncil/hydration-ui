@@ -15,8 +15,6 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
-import { useAssets } from "providers/assets"
-import { gigaDOTErc20Id } from "utils/constants"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -44,7 +42,6 @@ export const RemoveLiquidityModal = ({
   const stableSwapMeta = pool.meta
   const assets = Object.keys(stableSwapMeta.meta ?? {})
   const refetch = useRefetchAccountAssets()
-  const { tradable } = useAssets()
 
   const isRemovingOmnipoolPosition = !!position
 
@@ -63,7 +60,7 @@ export const RemoveLiquidityModal = ({
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [removeAll, setRemoveAll] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [splitRemove, setSplitRemove] = useState(!pool.isGigaDOT)
+  const [splitRemove, setSplitRemove] = useState(true)
 
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
@@ -202,9 +199,7 @@ export const RemoveLiquidityModal = ({
             ),
           },
           {
-            title: pool.isGigaDOT
-              ? t("liquidity.remove.modal.gigadot.title")
-              : t("liquidity.remove.modal.title"),
+            title: t("liquidity.remove.modal.title"),
             headerVariant: "gradient",
             content: (
               <RemoveStablepoolLiquidityForm
@@ -235,18 +230,11 @@ export const RemoveLiquidityModal = ({
           {
             title: t("selectAsset.title"),
             headerVariant: "gradient",
-            noPadding: true,
             content: (
               <AssetsModalContent
-                allAssets
-                hideInactiveAssets
-                allowedAssets={
-                  pool.isGigaDOT
-                    ? tradable
-                        .map((asset) => asset.id)
-                        .filter((assetId) => assetId !== gigaDOTErc20Id)
-                    : assets
-                }
+                allAssets={true}
+                hideInactiveAssets={true}
+                allowedAssets={assets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   handleBack()

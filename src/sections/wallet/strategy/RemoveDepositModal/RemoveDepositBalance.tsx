@@ -16,7 +16,7 @@ export const RemoveDepositBalance: FC<Props> = ({
   return (
     <div sx={{ flex: "column", align: "flex-end" }}>
       <Text fw={600} fs={24} lh="1" color="white">
-        {t("value", {
+        {t("value.token", {
           value: balanceToSell,
         })}
       </Text>

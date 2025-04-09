@@ -26,7 +26,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN, gigaDOTStableswapId } from "utils/constants"
+import { BN_0, BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
@@ -113,7 +113,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           )}
         </div>
 
-        {asset?.isStableSwap && asset.id !== gigaDOTStableswapId && (
+        {asset?.isStableSwap && asset.id !== GDOT_STABLESWAP_ASSET_ID && (
           <Text
             fs={11}
             color="white"

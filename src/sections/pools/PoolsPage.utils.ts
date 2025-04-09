@@ -7,8 +7,8 @@ import {
   BN_1,
   BN_MILL,
   BN_NAN,
-  gigaDOTErc20Id,
-  gigaDOTStableswapId,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
   validStablepools,
 } from "utils/constants"
 import {
@@ -98,8 +98,8 @@ const useStablepools = () => {
 
     return filteredStablepools.map((filteredStablepool) => {
       const accountAsset = accountAssets?.accountAssetsMap.get(
-        filteredStablepool.id === gigaDOTStableswapId
-          ? gigaDOTErc20Id
+        filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
+          ? GDOT_ERC20_ASSET_ID
           : filteredStablepool.id,
       )
 
@@ -108,7 +108,7 @@ const useStablepools = () => {
         BN(accountAsset?.balance?.balance ?? 0).gt(0)
       const meta = getAssetWithFallback(filteredStablepool.id)
       const price = getAssetPrice(filteredStablepool.id).price
-      const isGigaDOT = gigaDOTStableswapId === meta.id
+      const isGigaDOT = GDOT_STABLESWAP_ASSET_ID === meta.id
 
       const volume =
         volumes
@@ -144,7 +144,7 @@ const useStablepools = () => {
         meta: isGigaDOT
           ? {
               ...meta,
-              iconId: gigaDOTStableswapId,
+              iconId: GDOT_STABLESWAP_ASSET_ID,
               name: "",
               symbol: t("gigaDOT"),
             }
