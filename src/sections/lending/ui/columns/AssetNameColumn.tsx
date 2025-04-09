@@ -7,20 +7,18 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 type AssetNameColumnProps = {
   detailsAddress: string
   symbol: string
-  iconSymbol?: string
 }
 
 export const AssetNameColumn: FC<AssetNameColumnProps> = ({
   detailsAddress,
   symbol,
-  iconSymbol,
 }) => {
   const { currentMarket } = useProtocolDataContext()
 
   return (
     <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
       <span sx={{ flex: "row", align: "center", gap: 8 }}>
-        {iconSymbol && <TokenIcon symbol={iconSymbol} />}
+        <TokenIcon address={detailsAddress} />
         {symbol}
       </span>
     </Link>
