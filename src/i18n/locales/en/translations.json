@@ -215,6 +215,7 @@
   "value.token": "{{ value, bignumber(type: 'token') }}",
   "value.tokenWithSymbol": "{{ value, bignumber(type: 'token') }} {{symbol}}",
   "value.tokenWithHub": "{{ value, bignumber(type: 'token') }} {{ symbol }} + {{ hub, bignumber(type: 'token') }} {{hubSymbol}}",
+  "value.tokenApproxWithSymbol": "≈ {{ value, bignumber(type: 'token') }} {{symbol}}",
   "liquidity.search.placeholder": "Search by pool name, token name or symbol",
   "liquidity.reserves": "Currency reserves",
   "liquidity.stablepool": "Stablepool",

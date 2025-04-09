@@ -25,12 +25,6 @@ export const useBestTrade = (
   const { api, tradeRouter, isLoaded } = useRpcProvider()
   const { createTransaction } = useStore()
 
-  const { data: slippageData } = useQuery({
-    queryKey: QUERY_KEYS.tradeSlippage,
-    queryFn: () => TradeConfigCursor.deref().slippage,
-    enabled: isLoaded,
-  })
-
   const { data: tradeData } = useQuery({
     queryKey: QUERY_KEYS.bestTradeSell(assetInId, assetOutId, amountIn),
     queryFn: () => tradeRouter.getBestSell(assetInId, assetOutId, amountIn),
@@ -38,7 +32,8 @@ export const useBestTrade = (
   })
 
   const amountOut = tradeData?.amountOut.toString() || "0"
-  const minAmountOut = getMinAmountOut(amountOut, slippageData || "0")
+  const slippage = TradeConfigCursor.deref().slippage || "0"
+  const minAmountOut = getMinAmountOut(amountOut, slippage)
 
   const swapMutation = useMutation(async () => {
     if (!tradeData) {
