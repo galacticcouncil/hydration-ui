@@ -95,8 +95,8 @@ const fallbackAsset: TAsset = {
 const getAdjustedAssetProps = (assetRaw: TAssetStored) => {
   if (assetRaw.id === GDOT_STABLESWAP_ASSET_ID) {
     return {
-      name: "",
-      symbol: "gigaDOT",
+      name: "gigaDOT",
+      symbol: "GDOT",
       iconId: assetRaw.id,
     }
   }
