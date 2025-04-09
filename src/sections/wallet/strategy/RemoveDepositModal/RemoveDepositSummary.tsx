@@ -40,7 +40,7 @@ export const RemoveDepositSummary: FC<Props> = ({
         }
       />
       <SummaryRow
-        label={t("wallet.strategy.deposit.minReceived")}
+        label={t("price")}
         withSeparator={!!hfChange}
         content={
           <Text fs={14} color="white" tAlign="right">
