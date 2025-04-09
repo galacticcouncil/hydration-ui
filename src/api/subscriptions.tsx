@@ -2,12 +2,14 @@ import { useEffect, useRef } from "react"
 import { useSDKPools } from "./pools"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEY_PREFIX } from "utils/queryKeys"
+import { QUERY_KEY_PREFIX, QUERY_KEYS } from "utils/queryKeys"
 import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
 import { useExternalAssetRegistry } from "./external"
 import { useSettingsStore } from "state/store"
 import { usePriceSubscriber } from "./spotPrice"
 import { useProviderMetadata } from "./provider"
+import { useOmnipoolVolumeSubscription } from "./omnipool"
+import { useActiveQueries } from "hooks/useActiveQueries"
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
@@ -23,6 +25,7 @@ export const QuerySubscriptions = () => {
       <InvalidateOnBlockSubscription />
       <OmnipoolAssetsSubscription />
       <ExternalAssetsMetadata />
+      <OmnipoolVolumes />
     </>
   )
 }
@@ -67,5 +70,18 @@ const DegenMode = () => {
 const ExternalAssetsMetadata = () => {
   useExternalAssetRegistry()
 
+  return null
+}
+
+const OmnipoolVolumes = () => {
+  const activeQueriesAmount = useActiveQueries([
+    ...QUERY_KEYS.omnipoolSquidVolumes,
+  ])
+
+  return activeQueriesAmount > 0 ? <OmnipoolVolumeSubscription /> : null
+}
+
+const OmnipoolVolumeSubscription = () => {
+  useOmnipoolVolumeSubscription()
   return null
 }

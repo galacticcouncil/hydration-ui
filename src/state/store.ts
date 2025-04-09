@@ -432,3 +432,10 @@ export const useApiMetadata = create(
     { name: "api-metadata", storage: createJSONStorage(() => metadataStorage) },
   ),
 )
+
+export const useOmnipoolIds = create<{ ids?: string[] }>(() => ({
+  ids: undefined,
+}))
+
+export const setOmnipoolIds = (ids: string[]) =>
+  useOmnipoolIds.setState({ ids })

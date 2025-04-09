@@ -5,13 +5,15 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useIndexerUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { groupBy } from "utils/rx"
+import { useOmnipoolIds } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export type TradeType = {
   name:
@@ -51,6 +53,20 @@ export type StableswapType = {
   }
   extrinsic: {
     hash: string
+  }
+}
+
+export type OmnipoolVolume = {
+  assetId: string
+  assetVolume: string
+}
+
+export type OmnipoolQuery = {
+  omnipoolAssetHistoricalVolumesByPeriod: {
+    nodes: {
+      assetId: number
+      assetVolume: string
+    }[]
   }
 }
 
@@ -328,12 +344,8 @@ const getVolumeDaily = async (assetId?: string) => {
   return data
 }
 
-const VOLUME_BLOCK_COUNT = 7200 //24 hours
-
 export const useXYKSquidVolumes = (addresses: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
-  const url =
-    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+  const url = useSquidUrl()
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
@@ -343,11 +355,8 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
         u8aToHex(decodeAddress(address)),
       )
 
-      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
-
-      const { xykPoolHistoricalVolumesByPeriod } = await request<{
-        xykPoolHistoricalVolumesByPeriod: {
+      const { xykpoolHistoricalVolumesByPeriod } = await request<{
+        xykpoolHistoricalVolumesByPeriod: {
           nodes: {
             poolId: string
             assetAId: number
@@ -359,17 +368,9 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       }>(
         url,
         gql`
-          query XykVolume(
-            $poolIds: [String!]!
-            $startBlockNumber: Int!
-            $endBlockNumber: Int!
-          ) {
-            xykPoolHistoricalVolumesByPeriod(
-              filter: {
-                poolIds: $poolIds
-                startBlockNumber: $startBlockNumber
-                endBlockNumber: $endBlockNumber
-              }
+          query XykVolume($poolIds: [String!]!) {
+            xykpoolHistoricalVolumesByPeriod(
+              filter: { poolIds: $poolIds, period: _24H_ }
             ) {
               nodes {
                 poolId
@@ -381,10 +382,10 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
             }
           }
         `,
-        { poolIds: hexAddresses, startBlockNumber, endBlockNumber },
+        { poolIds: hexAddresses },
       )
 
-      const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
+      const { nodes = [] } = xykpoolHistoricalVolumesByPeriod
 
       return nodes.map((node) => ({
         poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
@@ -394,72 +395,50 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       }))
     },
     {
-      enabled: isLoaded && !!addresses.length,
+      enabled: !!addresses.length,
       staleTime: millisecondsInHour,
       refetchInterval: millisecondsInMinute,
     },
   )
 }
 
-const omnipoolAddress =
-  "0x6d6f646c6f6d6e69706f6f6c0000000000000000000000000000000000000000"
-
-export const useOmnipoolVolumes = (ids: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
-  const url =
-    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
+export const useOmnipoolVolumes = () => {
+  const url = useSquidUrl()
+  const ids = useOmnipoolIds(useShallow((state) => state.ids))
 
   return useQuery(
-    QUERY_KEYS.omnipoolSquidVolumes(ids),
+    QUERY_KEYS.omnipoolSquidVolumes,
 
     async () => {
-      const endBlockNumber = (await api.derive.chain.bestNumber()).toNumber()
-      const omnipoolIds = ids.map((id) => `${omnipoolAddress}-${id}`)
-
-      const startBlockNumber = endBlockNumber - VOLUME_BLOCK_COUNT
-
-      const { omnipoolAssetHistoricalVolumesByPeriod } = await request<{
-        omnipoolAssetHistoricalVolumesByPeriod: {
-          nodes: {
-            assetId: number
-            assetVolume: string
-          }[]
-        }
-      }>(
-        url,
-        gql`
-          query OmnipoolVolume(
-            $omnipoolAssetIds: [String!]!
-            $startBlockNumber: Int!
-            $endBlockNumber: Int!
-          ) {
-            omnipoolAssetHistoricalVolumesByPeriod(
-              filter: {
-                omnipoolAssetIds: $omnipoolAssetIds
-                startBlockNumber: $startBlockNumber
-                endBlockNumber: $endBlockNumber
-              }
-            ) {
-              nodes {
-                assetId
-                assetVolume
+      const { omnipoolAssetHistoricalVolumesByPeriod } =
+        await request<OmnipoolQuery>(
+          url,
+          gql`
+            query OmnipoolVolume($omnipoolAssetIds: [String!]!) {
+              omnipoolAssetHistoricalVolumesByPeriod(
+                filter: { assetIds: $omnipoolAssetIds, period: _24H_ }
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
               }
             }
-          }
-        `,
-        { omnipoolAssetIds: omnipoolIds, startBlockNumber, endBlockNumber },
-      )
+          `,
+          { omnipoolAssetIds: ids },
+        )
 
       const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
 
-      return nodes.map((node) => ({
+      return nodes.map<OmnipoolVolume>((node) => ({
         assetId: node.assetId.toString(),
         assetVolume: node.assetVolume.toString(),
       }))
     },
 
     {
-      enabled: isLoaded && !!ids.length,
+      enabled: !!ids,
+      cacheTime: millisecondsInHour,
       staleTime: millisecondsInHour,
     },
   )
