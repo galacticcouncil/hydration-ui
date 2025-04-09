@@ -14,7 +14,7 @@ type Props = {
 
 export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
   const { control, setValue, watch } = useFormContext<RemoveDepositFormValues>()
-  const [isFucisingCustomValue, setIsFocusingCustomValue] = useState(false)
+  const [isFocusingCustomInput, setIsFocusingCustomInput] = useState(false)
 
   const customValue = watch("customValueInput")
 
@@ -46,11 +46,11 @@ export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
                   value={customValue > 0 ? customValue : balanceToSell}
                   onFocus={(e: React.FocusEvent<HTMLInputElement, Element>) => {
                     e.target.select()
-                    setIsFocusingCustomValue(true)
+                    setIsFocusingCustomInput(true)
                   }}
-                  onBlur={() => setIsFocusingCustomValue(false)}
+                  onBlur={() => setIsFocusingCustomInput(false)}
                   onValueChange={({ floatValue }) => {
-                    if (!isFucisingCustomValue) return
+                    if (!isFocusingCustomInput) return
                     const value = floatValue || 0
 
                     setValue(
