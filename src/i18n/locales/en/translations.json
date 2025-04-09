@@ -666,7 +666,7 @@
   "wallet.assets.farmingPositions.header.value": "Current value",
   "wallet.assets.farmingPositions.data.date": "{{ date, dd/MM/yyyy }}",
   "wallet.strategy.banner.title": "GigaDOT Triple Yield",
-  "wallet.strategy.banner.description": "TODO 1075",
+  "wallet.strategy.banner.description": "GDOT is a blah blah some text here gugu gaga",
   "wallet.strategy.banner.cta": "Jump in",
   "wallet.strategy.title": "Earn with hydrated stretegies.",
   "wallet.strategy.risk.tooltip": "TODO 1075",
