@@ -7,7 +7,6 @@ import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { useBestTrade } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.api"
 import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal.form"
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
@@ -16,6 +15,8 @@ import { useHealthFactorChange } from "api/borrow"
 import { useAssets } from "providers/assets"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
+import { useBestTradeSell } from "api/trade"
+import { useStore } from "state/store"
 
 type Props = {
   readonly assetId: string
@@ -28,6 +29,7 @@ export const RemoveDepositModal: FC<Props> = ({
   balance,
   onClose,
 }) => {
+  const { createTransaction } = useStore()
   const { tradable } = useAssets()
   const { t } = useTranslation()
   const form = useRemoveDepositForm()
@@ -44,7 +46,7 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const [debouncedBalance] = useDebouncedValue(balanceToSell, 300)
 
-  const [minAmountOut, removeMutation, amountOut] = useBestTrade(
+  const { minAmountOut, swapTx, amountOut } = useBestTradeSell(
     assetId,
     assetReceived?.id ?? "",
     debouncedBalance,
@@ -53,6 +55,10 @@ export const RemoveDepositModal: FC<Props> = ({
   const { page, direction, paginateTo } = useModalPagination()
 
   const hfChange = useHealthFactorChange(assetId, balanceToSell)
+
+  const onSubmit = () => {
+    createTransaction({ tx: swapTx })
+  }
 
   return (
     <ModalContents
@@ -67,7 +73,7 @@ export const RemoveDepositModal: FC<Props> = ({
             <FormProvider {...form}>
               <form
                 sx={{ display: "grid" }}
-                onSubmit={form.handleSubmit(() => removeMutation.mutate())}
+                onSubmit={form.handleSubmit(onSubmit)}
               >
                 <div sx={{ flex: "column", gap: 8 }}>
                   <div sx={{ flex: "column", gap: 16 }}>
