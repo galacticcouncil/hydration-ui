@@ -135,20 +135,11 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
-      const symbol = isGigaDOT
-        ? getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol
-        : meta.symbol
-
       return {
         id: filteredStablepool.id,
         name: meta.name,
-        symbol,
-        meta: isGigaDOT
-          ? {
-              ...meta,
-              symbol,
-            }
-          : meta,
+        symbol: meta.symbol,
+        meta,
         tvlDisplay,
         spotPrice: price,
         volume,
