@@ -4,31 +4,18 @@ import { RemoveDepositFormValues } from "sections/wallet/strategy/RemoveDepositM
 import { BigNumber } from "bignumber.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { useBestTrade } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.api"
 
 type Props = {
-  readonly assetId: string
-  readonly balance: string
   readonly amountOut: string
   readonly onSelectorOpen: () => void
 }
 
 export const RemoveDepositAsset: FC<Props> = ({
-  assetId,
-  balance,
   amountOut,
   onSelectorOpen,
 }) => {
   const { t } = useTranslation()
-  const { control, watch } = useFormContext<RemoveDepositFormValues>()
-
-  const assetReceived = watch("assetReceived")
-
-  const [, , maxAssetReceived] = useBestTrade(
-    assetId,
-    assetReceived?.id ?? "",
-    balance,
-  )
+  const { control } = useFormContext<RemoveDepositFormValues>()
 
   return (
     <Controller
@@ -40,11 +27,13 @@ export const RemoveDepositAsset: FC<Props> = ({
           id={field.value?.id ?? ""}
           value={amountOut}
           title={field.value?.symbol}
-          balance={new BigNumber(maxAssetReceived)}
+          balance={new BigNumber(0)}
           balanceLabel={t("balance")}
           onChange={() => {}}
           error={fieldState.error?.message}
           onSelectAssetClick={onSelectorOpen}
+          disabled
+          withoutMaxValue
         />
       )}
     />

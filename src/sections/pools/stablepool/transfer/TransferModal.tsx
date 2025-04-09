@@ -14,7 +14,7 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import { gigaDOTErc20Id } from "utils/constants"
+import { DOT_ASSET_ID, GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -121,7 +121,9 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 onSubmitted={onClose}
                 onSuccess={refetch}
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={getAssetWithFallback(assetId ?? poolId)}
+                asset={getAssetWithFallback(
+                  isGigaDOT ? DOT_ASSET_ID : assetId ?? poolId,
+                )}
                 isJoinFarms={isJoinFarms && !isOnlyStablepool}
                 setIsJoinFarms={setIsJoinFarms}
               />
@@ -151,7 +153,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                   isGigaDOT
                     ? tradable
                         .map((asset) => asset.id)
-                        .filter((assetId) => assetId !== gigaDOTErc20Id)
+                        .filter((assetId) => assetId !== GDOT_ERC20_ASSET_ID)
                     : assets
                 }
                 onSelect={(asset) => {

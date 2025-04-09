@@ -40,7 +40,7 @@ export const ShareTokenAmount: FC<Props> = ({
             {t("balance")}
           </Text>
           <Text fw={500} fs={11} lh="1.4" color="white">
-            {t("value", { value: balance })}
+            {t("value.token", { value: balance })}
           </Text>
         </div>
       </div>

@@ -9,9 +9,8 @@ import { useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
 import {
   BN_100,
-  gigaDOTErc20Id,
-  gigaDOTStableswapId,
   SLIPPAGE_LIMIT,
+  STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
@@ -24,12 +23,6 @@ import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
 import { Switch } from "components/Switch/Switch"
-import { Summary } from "components/Summary/Summary"
-import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
-import { useHealthFactorChange } from "api/borrow"
-import { SummaryRow } from "components/Summary/SummaryRow"
-import { useBestTradeSell } from "api/trade"
-import { SubmittableExtrinsic } from "@polkadot/api/types"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -64,13 +57,10 @@ export const RemoveStablepoolLiquidityForm = ({
   const { api } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
-  const poolMeta = getAssetWithFallback(position.poolId)
-  const gigaDotMeta = getAssetWithFallback(gigaDOTErc20Id)
 
   const { createTransaction } = useStore()
 
   const value = form.watch("value")
-  const isGigaDot = position.poolId === gigaDOTStableswapId
 
   const removeSharesValue = useMemo(() => {
     return position.amount.div(100).times(value).dp(0).toString()
@@ -82,12 +72,6 @@ export const RemoveStablepoolLiquidityForm = ({
     fee: position.fee.toString(),
   })
 
-  const { minAmountOut, swapTx } = useBestTradeSell(
-    isGigaDot ? gigaDOTErc20Id : "",
-    asset.id,
-    scaleHuman(removeSharesValue, gigaDotMeta.decimals).toString(),
-  )
-
   const feeDisplay = useMemo(
     () => position.fee.times(BN_100).toString(),
     [position.fee],
@@ -95,17 +79,6 @@ export const RemoveStablepoolLiquidityForm = ({
 
   const minAssetsOut = useMemo(() => {
     const reservesAmount = position.reserves.length
-
-    const meta = getAssetWithFallback(assetId)
-
-    if (isGigaDot)
-      return [
-        {
-          meta,
-          assetOutValue: minAmountOut,
-          minValue: minAmountOut,
-        },
-      ]
 
     if (splitRemove) {
       return position.reserves.map((reserve) => {
@@ -125,6 +98,7 @@ export const RemoveStablepoolLiquidityForm = ({
       })
     }
 
+    const meta = getAssetWithFallback(assetId)
     const assetOutValue = getAssetOutValue(Number(assetId), removeSharesValue)
     const minValue = BigNumber(assetOutValue)
       .minus(SLIPPAGE_LIMIT.plus(feeDisplay).times(assetOutValue).div(100))
@@ -140,35 +114,26 @@ export const RemoveStablepoolLiquidityForm = ({
     removeSharesValue,
     feeDisplay,
     splitRemove,
-    isGigaDot,
-    minAmountOut,
   ])
 
   const handleSubmit = async () => {
-    let tx: SubmittableExtrinsic<"promise"> | undefined
-
-    if (splitRemove) {
-      tx = api.tx.stableswap.removeLiquidity(
-        position.poolId,
-        removeSharesValue,
-        minAssetsOut.map((minAssetOut) => ({
-          assetId: minAssetOut.meta.id,
-          amount: minAssetOut.minValue,
-        })),
-      )
-    } else if (isGigaDot) {
-      tx = swapTx
-    } else {
-      tx = api.tx.stableswap.removeLiquidityOneAsset(
-        position.poolId,
-        assetId,
-        removeSharesValue,
-        minAssetsOut[0].minValue,
-      )
-    }
     await createTransaction(
       {
-        tx,
+        tx: splitRemove
+          ? api.tx.stableswap.removeLiquidity(
+              position.poolId,
+              removeSharesValue,
+              minAssetsOut.map((minAssetOut) => ({
+                assetId: minAssetOut.meta.id,
+                amount: minAssetOut.minValue,
+              })),
+            )
+          : api.tx.stableswap.removeLiquidityOneAsset(
+              position.poolId,
+              assetId,
+              removeSharesValue,
+              minAssetsOut[0].minValue,
+            ),
       },
       {
         onSuccess,
@@ -181,7 +146,7 @@ export const RemoveStablepoolLiquidityForm = ({
         toast: createToastMessages("liquidity.stablepool.remove", {
           t,
           tOptions: {
-            out: scaleHuman(removeSharesValue, poolMeta.decimals)
+            out: scaleHuman(removeSharesValue, STABLEPOOL_TOKEN_DECIMALS)
               .dp(4)
               .toString(),
             symbol: asset?.symbol,
@@ -203,33 +168,31 @@ export const RemoveStablepoolLiquidityForm = ({
       }}
     >
       <div>
-        {!isGigaDot && (
-          <div
-            sx={{
-              flex: "row",
-              justify: "space-between",
-              align: "center",
-              mx: -24,
-              mb: 16,
-              px: 24,
-              py: 8,
-            }}
-            css={{
-              borderTop: "1px solid #1C2038",
-              borderBottom: "1px solid #1C2038",
-            }}
-          >
-            <Text fs={14} color="brightBlue300">
-              {t("liquidity.remove.modal.split")}
-            </Text>
-            <Switch
-              value={splitRemove}
-              onCheckedChange={setSplitRemove}
-              label={t("yes")}
-              name={t("liquidity.remove.modal.split")}
-            />
-          </div>
-        )}
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+            mx: -24,
+            mb: 16,
+            px: 24,
+            py: 8,
+          }}
+          css={{
+            borderTop: "1px solid #1C2038",
+            borderBottom: "1px solid #1C2038",
+          }}
+        >
+          <Text fs={14} color="brightBlue300">
+            {t("liquidity.remove.modal.split")}
+          </Text>
+          <Switch
+            value={splitRemove}
+            onCheckedChange={setSplitRemove}
+            label={t("yes")}
+            name={t("liquidity.remove.modal.split")}
+          />
+        </div>
 
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div>
@@ -237,9 +200,9 @@ export const RemoveStablepoolLiquidityForm = ({
               fs={13}
               lh={13}
               sx={{ mb: 15 }}
-              tTransform="uppercase"
               css={{
                 whiteSpace: "nowrap",
+                textTransform: "uppercase",
                 color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
               }}
             >
@@ -256,7 +219,7 @@ export const RemoveStablepoolLiquidityForm = ({
               {t("liquidity.remove.modal.value", {
                 value: getFloatingPointAmount(
                   removeSharesValue,
-                  poolMeta.decimals,
+                  STABLEPOOL_TOKEN_DECIMALS,
                 ),
               })}
             </Text>
@@ -275,7 +238,7 @@ export const RemoveStablepoolLiquidityForm = ({
               balance={t("value.token", {
                 value: getFloatingPointAmount(
                   position.amount,
-                  poolMeta.decimals,
+                  STABLEPOOL_TOKEN_DECIMALS,
                 ),
               })}
             />
@@ -303,50 +266,18 @@ export const RemoveStablepoolLiquidityForm = ({
         </STradingPairContainer>
       </div>
       <Spacer size={17} />
-
-      {!isGigaDot && (
-        <Summary
-          rows={[
-            {
-              label: t("liquidity.remove.modal.tokenFee.label"),
-              content: t("value.percentage", { value: feeDisplay }),
-            },
-          ]}
-        />
-      )}
-
-      {isGigaDot && (
-        <GigaDotHealthFactor
-          amount={scaleHuman(
-            removeSharesValue,
-            gigaDotMeta.decimals,
-          ).toString()}
-        />
-      )}
-
+      <div sx={{ flex: "row", justify: "space-between" }}>
+        <Text color="basic400">
+          {t("liquidity.remove.modal.tokenFee.label")}
+        </Text>
+        <Text color="white">
+          {t("value.percentage", { value: feeDisplay })}
+        </Text>
+      </div>
       <Spacer size={20} />
       <Button fullWidth variant="primary" disabled={removeSharesValue === "0"}>
         {t("liquidity.stablepool.remove.confirm")}
       </Button>
     </form>
-  )
-}
-
-const GigaDotHealthFactor = ({ amount }: { amount: string }) => {
-  const { t } = useTranslation()
-  const healthFactorChange = useHealthFactorChange(gigaDOTErc20Id, amount)
-
-  if (!healthFactorChange) return null
-
-  return (
-    <SummaryRow
-      label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
-      content={
-        <HealthFactorChange
-          healthFactor={healthFactorChange.currentHealthFactor}
-          futureHealthFactor={healthFactorChange.futureHealthFactor}
-        />
-      }
-    />
   )
 }

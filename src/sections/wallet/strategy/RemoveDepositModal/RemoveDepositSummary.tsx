@@ -1,10 +1,12 @@
 import { UseHealthFactorChangeResult } from "api/borrow"
+import { useSpotPrice } from "api/spotPrice"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Text } from "components/Typography/Text/Text"
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 type Props = {
   readonly hfChange: UseHealthFactorChangeResult
@@ -18,6 +20,10 @@ export const RemoveDepositSummary: FC<Props> = ({
   assetReceived,
 }) => {
   const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
+
+  const gigaDotMeta = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
+  const { data } = useSpotPrice(assetReceived?.id, GDOT_ERC20_ASSET_ID)
 
   return (
     <div>
@@ -30,6 +36,27 @@ export const RemoveDepositSummary: FC<Props> = ({
               value: minReceived,
               symbol: assetReceived?.symbol,
             })}
+          </Text>
+        }
+      />
+      <SummaryRow
+        label={t("price")}
+        withSeparator={!!hfChange}
+        content={
+          <Text fs={14} color="white" tAlign="right">
+            <Trans
+              t={t}
+              i18nKey="liquidity.add.modal.row.spotPrice"
+              tOptions={{
+                firstAmount: 1,
+                firstCurrency: assetReceived?.symbol,
+              }}
+            >
+              {t("value.tokenWithSymbol", {
+                value: data?.spotPrice.toString(),
+                symbol: gigaDotMeta.symbol,
+              })}
+            </Trans>
           </Text>
         }
       />

@@ -7,9 +7,9 @@ import {
   BN_1,
   BN_MILL,
   BN_NAN,
-  gigaDOTErc20Id,
-  gigaDOTStableswapId,
-  validStablepools,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VALID_STABLEPOOLS,
 } from "utils/constants"
 import {
   useDisplayAssetStore,
@@ -32,7 +32,6 @@ import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useTranslation } from "react-i18next"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -57,7 +56,6 @@ const getTradeFee = (fee: string[]) => {
 }
 
 const useStablepools = () => {
-  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const { data: accountAssets } = useAccountAssets()
   const { data: stablepools = [], isLoading: isPoolsLoading } =
@@ -67,7 +65,7 @@ const useStablepools = () => {
     () =>
       stablepools.filter(
         (stablepool) =>
-          stablepool.id && validStablepools.includes(stablepool.id),
+          stablepool.id && VALID_STABLEPOOLS.includes(stablepool.id),
       ),
     [stablepools],
   )
@@ -98,8 +96,8 @@ const useStablepools = () => {
 
     return filteredStablepools.map((filteredStablepool) => {
       const accountAsset = accountAssets?.accountAssetsMap.get(
-        filteredStablepool.id === gigaDOTStableswapId
-          ? gigaDOTErc20Id
+        filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
+          ? GDOT_ERC20_ASSET_ID
           : filteredStablepool.id,
       )
 
@@ -108,7 +106,7 @@ const useStablepools = () => {
         BN(accountAsset?.balance?.balance ?? 0).gt(0)
       const meta = getAssetWithFallback(filteredStablepool.id)
       const price = getAssetPrice(filteredStablepool.id).price
-      const isGigaDOT = gigaDOTStableswapId === meta.id
+      const isGigaDOT = GDOT_STABLESWAP_ASSET_ID === meta.id
 
       const volume =
         volumes
@@ -137,16 +135,18 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
+      const symbol = isGigaDOT
+        ? getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol
+        : meta.symbol
+
       return {
         id: filteredStablepool.id,
-        name: isGigaDOT ? "" : meta.name,
-        symbol: isGigaDOT ? t("gigaDOT") : meta.symbol,
+        name: meta.name,
+        symbol,
         meta: isGigaDOT
           ? {
               ...meta,
-              iconId: gigaDOTStableswapId,
-              name: "",
-              symbol: t("gigaDOT"),
+              symbol,
             }
           : meta,
         tvlDisplay,
@@ -175,7 +175,6 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    t,
   ])
 
   return { data, isLoading }

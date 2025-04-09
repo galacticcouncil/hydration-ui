@@ -13,6 +13,9 @@ import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
 import { useHealthFactorChange } from "api/borrow"
+import { useAssets } from "providers/assets"
+import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
 
 type Props = {
   readonly assetId: string
@@ -25,6 +28,7 @@ export const RemoveDepositModal: FC<Props> = ({
   balance,
   onClose,
 }) => {
+  const { tradable } = useAssets()
   const { t } = useTranslation()
   const form = useRemoveDepositForm()
 
@@ -38,10 +42,12 @@ export const RemoveDepositModal: FC<Props> = ({
     .div(100)
     .toString()
 
+  const [debouncedBalance] = useDebouncedValue(balanceToSell, 300)
+
   const [minAmountOut, removeMutation, amountOut] = useBestTrade(
     assetId,
     assetReceived?.id ?? "",
-    balanceToSell,
+    debouncedBalance,
   )
 
   const { page, direction, paginateTo } = useModalPagination()
@@ -67,8 +73,6 @@ export const RemoveDepositModal: FC<Props> = ({
                   <div sx={{ flex: "column", gap: 16 }}>
                     <RemoveDepositAmount assetId={assetId} balance={balance} />
                     <RemoveDepositAsset
-                      assetId={assetId}
-                      balance={balance}
                       amountOut={new BigNumber(amountOut)
                         .shiftedBy(-(assetReceived?.decimals ?? 0))
                         .toString()}
@@ -98,6 +102,13 @@ export const RemoveDepositModal: FC<Props> = ({
             <AssetsModalContent
               allAssets
               hideInactiveAssets
+              allowedAssets={tradable
+                .map((asset) => asset.id)
+                .filter(
+                  (assetId) =>
+                    assetId !== GDOT_ERC20_ASSET_ID &&
+                    assetId !== GDOT_STABLESWAP_ASSET_ID,
+                )}
               onSelect={(asset) => {
                 form.setValue("assetReceived", asset, { shouldValidate: true })
                 paginateTo(0)

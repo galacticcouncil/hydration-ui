@@ -58,10 +58,8 @@ export const HYDRATION_PARACHAIN_ADDRESS =
 export const UNIFIED_ADDRESS_FORMAT_ENABLED =
   import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"
 
-export const gigaDOTStableswapId = "690"
-export const gigaDOTErc20Id = "69"
-export const validStablepools = [gigaDOTStableswapId]
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const VDOT_ASSET_ID = "15"
 export const DOT_ASSET_ID = "5"
+export const VALID_STABLEPOOLS = [GDOT_STABLESWAP_ASSET_ID]

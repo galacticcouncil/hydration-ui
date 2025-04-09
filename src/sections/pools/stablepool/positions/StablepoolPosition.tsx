@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
 import {
   BN_0,
-  gigaDOTStableswapId,
+  GDOT_STABLESWAP_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
@@ -158,7 +158,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                {pool.id !== gigaDOTStableswapId && (
+                {pool.id !== GDOT_STABLESWAP_ASSET_ID && (
                   <SOmnipoolButton
                     size="small"
                     fullWidth
