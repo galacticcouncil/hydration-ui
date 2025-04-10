@@ -14,7 +14,12 @@ export const RemoveDepositCustomInput: React.FC<
   const { t } = useTranslation()
   return (
     <div sx={{ flex: "column", justify: "flex-end" }}>
-      <NumberFormat customInput={SCustomInput} decimalScale={4} {...props} />
+      <NumberFormat
+        customInput={SCustomInput}
+        decimalScale={4}
+        allowEmptyFormatting
+        {...props}
+      />
       <Text fw={126} fs={16} lh={"1.3"} color="pink500" tAlign="right">
         {t("value.percentage", {
           value: percentage,

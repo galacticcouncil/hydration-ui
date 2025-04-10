@@ -15,7 +15,7 @@ import { CurrentDepositEmptyState } from "sections/wallet/strategy/CurrentDeposi
 import { useAccountAssets } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
-import { useAssetRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
@@ -40,14 +40,15 @@ export const StrategyTile: FC<Props> = ({
       "0",
   ).shiftedBy(-(underlyingAsset.decimals ?? 0))
 
-  const rewardsBalance = new BigNumber(useAssetRewards(rewardAssetId) || "0")
+  const reward = useAssetReward(rewardAssetId)
+  const rewardBalance = new BigNumber(reward.balance)
 
-  const hasBalance = depositBalance.gt(0) || rewardsBalance.gt(0)
+  const hasBalance = depositBalance.gt(0) || rewardBalance.gt(0)
   const depositData: CurrentDepositData | null =
     account && hasBalance
       ? {
           depositBalance: depositBalance.toString(),
-          rewardsBalance: rewardsBalance.toString(),
+          reward,
         }
       : null
 

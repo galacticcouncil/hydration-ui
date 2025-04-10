@@ -6,6 +6,8 @@ import { useBifrostVDotApy } from "api/external/bifrost"
 import BN from "bignumber.js"
 import { VDOT_ASSET_ID } from "utils/constants"
 import { useMemo } from "react"
+import { useAssetsPrice } from "state/displayPrice"
+import { Reward } from "sections/lending/helpers/types"
 
 export type StrategyRiskLevel = "low" | "moderate" | "high"
 
@@ -95,21 +97,56 @@ export const useAssetOverviewData = (
   }
 }
 
-export const useAssetRewards = (assetId: string): string => {
+export const useAssetReward = (assetId: string): Reward => {
   const { user } = useAppDataContext()
+  const { getAssetWithFallback } = useAssets()
+  const { getAssetPrice } = useAssetsPrice([assetId])
+  const spotPrice = getAssetPrice(assetId).price || "0"
+  const asset = getAssetWithFallback(assetId)
 
-  const underlyingAssetIdLower =
-    getAddressFromAssetId(assetId).toLocaleLowerCase()
+  const assetErc20Address = getAddressFromAssetId(assetId)
+  const underlyingAssetIdLower = assetErc20Address.toLocaleLowerCase()
 
-  const [, incentive] =
-    Object.entries(user.calculatedUserIncentives).find(
-      ([rewardTokenAddress]) =>
-        rewardTokenAddress.toLocaleLowerCase() === underlyingAssetIdLower,
-    ) ?? []
+  return useMemo(() => {
+    const [rewardTokenAddress, incentive] =
+      Object.entries(user.calculatedUserIncentives).find(
+        ([rewardTokenAddress]) =>
+          rewardTokenAddress.toLocaleLowerCase() === underlyingAssetIdLower,
+      ) ?? []
 
-  if (!incentive) {
-    return "0"
-  }
+    if (!incentive || !rewardTokenAddress) {
+      return {
+        assets: [],
+        incentiveControllerAddress: "",
+        symbol: asset.symbol,
+        balance: "0",
+        balanceUsd: "0",
+        rewardTokenAddress: assetErc20Address,
+      }
+    }
 
-  return normalize(incentive.claimableRewards, incentive.rewardTokenDecimals)
+    const rewardBalance = normalize(
+      incentive.claimableRewards,
+      incentive.rewardTokenDecimals,
+    )
+
+    const rewardBalanceUsd = new BN(spotPrice)
+      .times(rewardBalance || "0")
+      .toString()
+
+    return {
+      assets: incentive.assets,
+      incentiveControllerAddress: incentive.incentiveControllerAddress,
+      symbol: incentive.rewardTokenSymbol,
+      balance: rewardBalance,
+      balanceUsd: rewardBalanceUsd.toString(),
+      rewardTokenAddress,
+    }
+  }, [
+    asset.symbol,
+    assetErc20Address,
+    spotPrice,
+    underlyingAssetIdLower,
+    user.calculatedUserIncentives,
+  ])
 }
