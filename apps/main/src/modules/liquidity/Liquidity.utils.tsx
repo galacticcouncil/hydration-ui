@@ -222,7 +222,7 @@ export const useIsolatedPoolsColumns = () => {
         sortingFn: (a, b) =>
           new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
       }),
-      columnHelper.accessor("meta.symbol", {
+      isolatedColumnHelper.accessor("meta.symbol", {
         meta: { visibility: false },
       }),
     ],
