@@ -42,7 +42,9 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   const assets = Object.keys(pool.meta.meta ?? {})
 
   const { t } = useTranslation()
-  const [assetId, setAssetId] = useState<string | undefined>(assets[0])
+  const [assetId, setAssetId] = useState<string | undefined>(
+    isGigaDOT ? DOT_ASSET_ID : assets[0],
+  )
 
   const { page, direction, paginateTo } = useModalPagination(defaultPage)
 
@@ -121,9 +123,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
                 onSubmitted={onClose}
                 onSuccess={refetch}
                 onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={getAssetWithFallback(
-                  isGigaDOT ? DOT_ASSET_ID : assetId ?? poolId,
-                )}
+                asset={getAssetWithFallback(assetId ?? poolId)}
                 isJoinFarms={isJoinFarms && !isOnlyStablepool}
                 setIsJoinFarms={setIsJoinFarms}
               />
