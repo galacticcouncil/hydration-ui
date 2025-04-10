@@ -80,8 +80,7 @@ export const TxSuccessView = ({
             }}
           >
             <TokenIcon
-              symbol={addToken.symbol}
-              aToken={addToken && addToken.aToken ? true : false}
+              address={addToken.address}
               size={32}
               sx={{ mt: 12, mb: 8 }}
             />

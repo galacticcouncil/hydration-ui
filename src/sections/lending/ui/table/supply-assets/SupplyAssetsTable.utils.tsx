@@ -41,7 +41,6 @@ export const useSupplyAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.detailsAddress}
             symbol={row.original.symbol}
-            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),

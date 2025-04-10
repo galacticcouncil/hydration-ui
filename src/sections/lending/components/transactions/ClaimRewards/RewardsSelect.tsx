@@ -53,7 +53,7 @@ export const RewardsSelect = ({
               ) : (
                 <div sx={{ flex: "row", align: "center" }}>
                   <TokenIcon
-                    symbol={selected.symbol}
+                    address={selected.rewardTokenAddress}
                     size={16}
                     sx={{ mr: 8 }}
                   />

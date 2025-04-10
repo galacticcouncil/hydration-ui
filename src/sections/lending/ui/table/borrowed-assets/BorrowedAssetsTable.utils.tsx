@@ -33,7 +33,6 @@ export const useBorrowedAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
-            iconSymbol={row.original.reserve.iconSymbol}
           />
         ),
       }),
