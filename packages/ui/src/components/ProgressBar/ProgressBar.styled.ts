@@ -1,6 +1,9 @@
 import styled from "@emotion/styled"
 
-import { ProgressBarSize } from "@/components/ProgressBar/ProgressBar"
+import {
+  ProgressBarOrientation,
+  ProgressBarSize,
+} from "@/components/ProgressBar/ProgressBar"
 import { createVariants, css } from "@/utils"
 
 const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
@@ -39,16 +42,19 @@ const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
   `,
 }))
 
-export const SContainer = styled.div<{ readonly size: ProgressBarSize }>(
-  ({ size }) => [
-    css`
-      display: grid;
-      align-items: center;
-      grid-template-columns: 1fr auto;
-    `,
-    containerSizes(size),
-  ],
-)
+export const SContainer = styled.div<{
+  readonly size: ProgressBarSize
+  readonly orientation?: ProgressBarOrientation
+}>(({ size, orientation = "horizontal" }) => [
+  css`
+    display: grid;
+    align-items: center;
+    ${orientation === "horizontal"
+      ? "grid-template-columns: 1fr auto;"
+      : "grid-template-rows: 1fr auto; grid-template-columns: 1fr; gap: 8px;"}
+  `,
+  containerSizes(size),
+])
 
 export const SProgressBar = styled.div(
   ({ theme }) => css`

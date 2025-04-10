@@ -10,7 +10,7 @@ export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
   myLiquidity: "/liquidity/my-liquidity",
-  allPools: "/liquidity/all-pools",
+  pools: "/liquidity/pools",
   omnipool: "/liquidity/omnipool-stablepools",
   isolated: "/liquidity/isolated",
   lbp: "/liquidity/lbp",
@@ -70,10 +70,7 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.liquidity,
     children: [
       { key: "myLiquidity", to: LINKS.myLiquidity },
-      { key: "allPools", to: LINKS.allPools },
-      { key: "omnipool", to: LINKS.omnipool },
-      { key: "isolated", to: LINKS.isolated },
-      { key: "lbp", to: LINKS.lbp },
+      { key: "pools", to: LINKS.pools },
     ],
   },
   {

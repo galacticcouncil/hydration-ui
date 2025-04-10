@@ -23,6 +23,14 @@
 }
 
 @font-face {
+    font-family: 'Geist';
+    src: url('GeistBold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
     font-family: 'GeistMono';
     src: url('GeistMonoRegular.woff2') format('woff2');
     font-weight: 400;
@@ -67,6 +75,14 @@
     font-family: 'Gazpacho';
     src: url('GazpachoBold.woff2') format('woff2');
     font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gazpacho';
+    src: url('GazpachoBlack.woff2') format('woff2');
+    font-weight: 700;
     font-style: normal;
     font-display: swap;
 }

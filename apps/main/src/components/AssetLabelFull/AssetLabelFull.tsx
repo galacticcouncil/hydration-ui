@@ -23,6 +23,25 @@ export const AssetLabelFull = ({
   )
 }
 
+export const AssetLabelXYK = ({
+  iconIds,
+  symbol,
+  name,
+  size,
+}: {
+  iconIds: string[]
+  symbol: string
+  name?: string
+  size?: AssetLabelProps["size"]
+}) => {
+  return (
+    <AssetLabelFullContainer>
+      <Logo id={iconIds} />
+      <AssetLabel symbol={symbol} name={name} size={size} />
+    </AssetLabelFullContainer>
+  )
+}
+
 export const AssetLabelFullMobile = ({
   asset,
   size,

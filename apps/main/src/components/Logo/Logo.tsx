@@ -3,9 +3,9 @@ import {
   AssetLogoSize,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
-import { useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssetRegistry } from "@/states/assetRegistry"
 
 type LogoMetadata = {
@@ -24,23 +24,35 @@ export const Logo = ({
   id,
   size = "medium",
 }: {
-  id: string
+  id: string | string[]
   size?: AssetLogoSize
 }) => {
-  const { getAssetWithFallback, isToken, isErc20, isBond, isStableSwap } =
-    useAssets()
+  const {
+    getAssetWithFallback,
+    isToken,
+    isErc20,
+    isBond,
+    isStableSwap,
+    getAssets,
+    getAsset,
+  } = useAssets()
   const {
     metadata: { url, chainsMetadata },
   } = useAssetRegistry()
 
-  const logoMetadata = useMemo(() => {
-    if (chainsMetadata && url) {
+  const getLogoMetadata = useCallback(
+    (asset?: TAsset) => {
+      if (!chainsMetadata || !url || !asset)
+        return {
+          assetSrc: undefined,
+          chainSrc: undefined,
+          alt: "",
+        }
+
       let metadata: LogoMetadata | LogoMetadata[] | undefined
 
       const { cdn, repository, path } = chainsMetadata
       const chainUrl = [cdn["jsDelivr"], repository + "@latest", path].join("/")
-
-      const asset = getAssetWithFallback(id)
 
       if (isToken(asset)) {
         metadata = {
@@ -89,19 +101,25 @@ export const Logo = ({
             chainSrc: getSrcLink(chainUrl, metadata?.chainSrc),
             alt: metadata?.alt,
           }
-    }
+    },
+    [
+      chainsMetadata,
+      getAssetWithFallback,
+      isBond,
+      isErc20,
+      isStableSwap,
+      isToken,
+      url,
+    ],
+  )
 
-    return { assetSrc: undefined, chainSrc: undefined, assetId: "" }
-  }, [
-    id,
-    chainsMetadata,
-    url,
-    getAssetWithFallback,
-    isToken,
-    isErc20,
-    isBond,
-    isStableSwap,
-  ])
+  const logoMetadata = useMemo(() => {
+    if (Array.isArray(id)) {
+      return getAssets(id).flatMap((asset) => getLogoMetadata(asset))
+    } else {
+      return getLogoMetadata(getAsset(id))
+    }
+  }, [id, getAssets, getAsset, getLogoMetadata])
 
   if (Array.isArray(logoMetadata)) {
     return (

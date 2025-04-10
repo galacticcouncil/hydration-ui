@@ -10,15 +10,16 @@ export type SubpageItem = {
 
 type Props = {
   readonly items: ReadonlyArray<SubpageItem>
+  readonly className?: string
 }
 
-export const SubpageMenu: FC<Props> = ({ items }) => {
+export const SubpageMenu: FC<Props> = ({ items, className }) => {
   const path = useLocation({
     select: (state) => state.href,
   })
 
   return (
-    <Flex gap={20} sx={{ overflowX: "auto" }}>
+    <Flex gap={20} sx={{ overflowX: "auto" }} className={className}>
       {items.map(({ to, title, icon: IconComponent }) => (
         <Button
           key={to}

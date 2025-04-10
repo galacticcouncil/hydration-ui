@@ -1,4 +1,9 @@
-import { PoolToken, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import {
+  PoolBase,
+  PoolToken,
+  PoolType,
+  TradeRouter,
+} from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import {
   type QueryClient,
@@ -9,6 +14,7 @@ import {
 
 import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { setOmnipoolIds } from "@/states/liquidity"
 import { HUB_ID, QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export type TOmnipoolAssetsData = Array<{
@@ -19,6 +25,9 @@ export type TOmnipoolAssetsData = Array<{
   shares: string
   bits: number
   balance: string
+  symbol: string
+  decimals: number
+  name: string
 }>
 
 export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
@@ -62,6 +71,9 @@ export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
               shares,
               tradeable,
               balance,
+              symbol,
+              decimals,
+              name,
             } = token
 
             acc.tokens.push({
@@ -72,6 +84,9 @@ export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
               shares,
               bits: tradeable,
               balance,
+              symbol,
+              decimals,
+              name,
             } as TOmnipoolAssetsData[number])
           }
 
@@ -103,7 +118,7 @@ export const useAllPools = () => {
   })
 }
 
-export const xykPools = queryOptions({
+export const xykPools = queryOptions<PoolBase[]>({
   queryKey: ["pools", "xyk"],
   staleTime: Infinity,
 })
@@ -113,12 +128,31 @@ export const stablePools = queryOptions({
   staleTime: Infinity,
 })
 
-export const hubToken = queryOptions({
+export const hubToken = queryOptions<PoolToken>({
   queryKey: ["pools", "hub"],
   staleTime: Infinity,
 })
 
-export const omnipoolTokens = queryOptions({
+export const omnipoolTokens = queryOptions<TOmnipoolAssetsData>({
   queryKey: ["pools", "omnipool"],
   staleTime: Infinity,
 })
+
+export const useOmnipoolIds = () => {
+  const { isApiLoaded, papi } = useRpcProvider()
+
+  useQuery({
+    queryKey: ["omnipoolIds"],
+    queryFn: async () => {
+      const assets = await papi.query.Omnipool.Assets.getEntries()
+      const ids = assets.map(({ keyArgs }) => keyArgs[0].toString())
+
+      setOmnipoolIds(ids)
+
+      return null
+    },
+    staleTime: Infinity,
+    enabled: isApiLoaded,
+    notifyOnChangeProps: [],
+  })
+}

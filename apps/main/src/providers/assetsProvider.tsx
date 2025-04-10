@@ -1,3 +1,4 @@
+import { PoolToken } from "@galacticcouncil/sdk"
 import {
   createContext,
   ReactNode,
@@ -24,17 +25,16 @@ const bannedAssets = ["1000042"]
 type TAssetsContext = {
   all: Map<string, TAsset>
   tokens: TAsset[]
-  stableswap: TAsset[]
+  stableswap: TStableswap[]
   bonds: TBond[]
   external: TExternal[]
   externalInvalid: TExternal[]
   erc20: TAsset[]
   tradable: TAsset[]
-  shareTokens: TShareToken[]
   native: TAsset
   hub: TAsset
-  getAsset: (id: string) => TAsset | TShareToken | TErc20 | undefined
-  getAssets: (ids: string[]) => (TAsset | TShareToken | undefined)[]
+  getAsset: (id: string) => TAsset | undefined
+  getAssets: (ids: string[]) => (TAsset | undefined)[]
   getBond: (id: string) => TBond | undefined
   getAssetWithFallback: (id: string) => TAsset
   getExternalByExternalId: (externalId: string) => TExternal | undefined
@@ -44,6 +44,12 @@ type TAssetsContext = {
   isBond: (asset: TAsset) => asset is TBond
   isErc20: (asset: TAsset) => asset is TErc20
   isStableSwap: (asset: TAsset) => asset is TStableswap
+  getMetaFromXYKPoolTokens: (tokens: PoolToken[]) => {
+    symbol: string
+    name: string
+    iconId: string[]
+    decimals: number
+  } | null
 }
 
 const AssetsContext = createContext<TAssetsContext>({} as TAssetsContext)
@@ -80,9 +86,15 @@ export type TShareToken = TAsset & {
   assets: TAsset[]
 }
 
+export type XYKPoolMeta = {
+  symbol: string
+  name: string
+  iconId: string[]
+  decimals: number
+}
+
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets, shareTokens: shareTokensRaw, metadata } = useAssetRegistry()
-  //const { assets, shareTokens: shareTokensRaw } = useAssetRegistry.getState()
+  const { assets, metadata } = useAssetRegistry()
   //const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
   //const degenMode = useSettingsStore.getState().degenMode
   //   const { tokens: externalTokens } =
@@ -107,7 +119,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
       all: Map<string, TAsset>
       tradable: TAsset[]
       tokens: TAsset[]
-      stableswap: TAsset[]
+      stableswap: TStableswap[]
       bonds: TBond[]
       external: TExternal[]
       externalInvalid: TExternal[]
@@ -137,7 +149,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         } else if (isStableSwap(asset)) {
           acc.stableswap.push(asset)
         } else if (isBond(asset)) {
-          acc.bonds.push(asset as TBond)
+          acc.bonds.push(asset)
         } else if (isExternal(asset)) {
           //   const externalId = externalTokens[dataEnv].find(
           //     (token) => token.internalId === asset.id,
@@ -185,56 +197,35 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     )
   }, [assets, metadata])
 
-  // const isShareToken = (asset: TAsset | undefined): asset is TShareToken =>
-  //   asset ? asset.isShareToken : false
+  const getMetaFromXYKPoolTokens = useCallback(
+    (tokens: PoolToken[]): XYKPoolMeta | null => {
+      const assetA = all.get(tokens[0]?.id ?? "")
+      const assetB = all.get(tokens[1]?.id ?? "")
 
-  // mb get rid of shareTokens at all nad use sdkPools inastead
-  const { shareTokens, shareTokensMap } = shareTokensRaw.reduce<{
-    shareTokens: TShareToken[]
-    shareTokensMap: Map<string, TShareToken>
-  }>(
-    (acc, token) => {
-      const assetA = all.get(token.assets[0] ?? "")
-      const assetB = all.get(token.assets[1] ?? "")
+      if (!assetA || !assetB) return null
 
-      if (assetA && assetB && assetA.symbol && assetB.symbol) {
-        const assetDecimal =
-          Number(assetA.id) > Number(assetB.id) ? assetB : assetA
-        const decimals = assetDecimal.decimals
-        const symbol = `${assetA.symbol}/${assetB.symbol}`
-        const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
-        const iconId = [
-          isBond(assetA) ? assetA.underlyingAssetId : assetA.id,
-          isBond(assetB) ? assetB.underlyingAssetId : assetB.id,
-        ]
+      const decimals =
+        Number(assetA.id) > Number(assetB.id)
+          ? assetB.decimals
+          : assetA.decimals
+      const symbol = `${assetA.symbol}/${assetB.symbol}`
+      const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+      const iconId = [
+        isBond(assetA) ? assetA.underlyingAssetId : assetA.id,
+        isBond(assetB) ? assetB.underlyingAssetId : assetB.id,
+      ]
 
-        const tokenFull = {
-          ...fallbackAsset,
-          id: token.shareTokenId,
-          poolAddress: token.poolAddress,
-          assets: [assetA, assetB],
-          isShareToken: true,
-          decimals,
-          symbol,
-          name,
-          iconId,
-        }
-        acc.shareTokens.push(tokenFull)
-        acc.shareTokensMap.set(tokenFull.id, tokenFull)
+      return {
+        symbol,
+        name,
+        iconId,
+        decimals,
       }
-
-      return acc
     },
-    { shareTokens: [], shareTokensMap: new Map([]) },
+    [all],
   )
 
-  const getAsset = useCallback(
-    (id: string) =>
-      new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap]).get(
-        id,
-      ),
-    [all, shareTokensMap],
-  )
+  const getAsset = useCallback((id: string) => all.get(id), [all])
   const getAssetWithFallback = useCallback(
     (id: string) => getAsset(id) ?? fallbackAsset,
     [getAsset],
@@ -272,7 +263,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         externalInvalid,
         erc20,
         tradable,
-        shareTokens,
         native,
         hub,
         getAsset,
@@ -280,6 +270,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         getBond,
         getAssetWithFallback,
         getExternalByExternalId,
+        getMetaFromXYKPoolTokens,
         isToken,
         getErc20,
         isExternal,

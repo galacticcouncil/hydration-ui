@@ -6,13 +6,14 @@ import { SubpageMenu } from "@/modules/layout/components/SubpageMenu"
 
 type Props = {
   readonly actions?: ReactNode
+  subpageMenu?: ReactNode
 }
 
-export const SubpageLayout: FC<Props> = ({ actions }) => {
+export const SubpageLayout: FC<Props> = ({ actions, subpageMenu }) => {
   return (
     <Flex direction="column" gap={20}>
       <Flex justify="space-between" align="center">
-        <SubpageMenu />
+        {subpageMenu ?? <SubpageMenu />}
         {actions}
       </Flex>
       <Outlet />

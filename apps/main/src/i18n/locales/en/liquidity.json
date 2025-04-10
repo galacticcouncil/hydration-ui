@@ -1,3 +1,22 @@
 {
-  "title": "Liquidity Page"
+  "header.totalLiquidity": "Total Liquidity",
+  "header.volume": "24h Volume",
+  "header.valueInOmnipool": "Value in Omnipool",
+  "header.valueInStablepool": "Value in Stablepool",
+  "header.valueInIsolatedPools": "Value in Isolated Pools",
+  "tab.allPools": "All pools",
+  "tab.omnipoolStablepool": "Omnipool & stablepool",
+  "tab.isolatedPools": "Isolated",
+  "section.omnipoolStablepool": "Omnipool + stablepool",
+  "section.isolatedPools": "Isolated pools",
+  "details.section.availableFarms": "Available farms",
+  "details.section.yourPositions": "Your positions",
+  "details.values.liquidityLimit": "Estimated pool liquidity limit",
+  "details.values.volume": "24h Volume",
+  "details.values.tvl": "Total value locked",
+  "details.values.feeFarmApr": "Fee + Farm APR",
+  "details.values.omnipoolShare": "% of Omnipool",
+  "details.header.swap": "Swap",
+  "details.header.addJoinFarms": "Add & Join farms",
+  "details.header.apr": "UP TO {{ value, percent }}% APR"
 }

@@ -54,22 +54,27 @@ export const useDataTable = <TData extends RowData>({
           ? (curr.id ?? curr.accessorKey)
           : curr.id
         if (!id) return prev
+
+        const visibilityKey = typeof id === "string" ? id.replace(".", "_") : id
+
         const visibility = curr.meta?.visibility
         const gteBp = curr.meta?.gteBp
-        if (visibility) {
+        if (visibility !== undefined) {
           return {
             ...prev,
-            [id]: visibility.includes(screen),
+            [visibilityKey]: Array.isArray(visibility)
+              ? visibility.includes(screen)
+              : visibility,
           }
         } else if (gteBp) {
           return {
             ...prev,
-            [id]: gte(gteBp),
+            [visibilityKey]: gte(gteBp),
           }
         } else {
           return {
             ...prev,
-            [id]: true,
+            [visibilityKey]: true,
           }
         }
       },
@@ -87,6 +92,7 @@ export const useDataTable = <TData extends RowData>({
       isLoading
         ? options.columns.map((column) => ({
             ...column,
+            enableSorting: false,
             cell: () => (
               <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
             ),
@@ -115,6 +121,7 @@ export const useDataTable = <TData extends RowData>({
     meta: {
       isLoading,
     },
+    autoResetPageIndex: false,
   })
 }
 

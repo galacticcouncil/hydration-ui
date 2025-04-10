@@ -46,7 +46,6 @@
   "error.existentialDeposit": "Too low amount.",
   "chart.error": "Error displaying the chart, try loading it again.",
   "chart.empty": "Not enough data to display this chart.",
-  "navigation.allPools.title": "All Pools",
   "navigation.bond.title": "Bond",
   "navigation.bonds.description": "Help Hydration accumulate POL",
   "navigation.bonds.title": "Bonds",
@@ -62,6 +61,7 @@
   "navigation.liquidity.title": "Liquidity",
   "navigation.memepad.title": "Memepad",
   "navigation.myLiquidity.title": "My Liquidity",
+  "navigation.pools.title": "Pools",
   "navigation.omnipool.title": "Omnipool",
   "navigation.otc.description": "Trade directly with other users",
   "navigation.otc.title": "Trade OTC",
@@ -131,5 +131,6 @@
   "transaction.status.submitted.description": "Your transaction is being submitted...",
   "transaction.summary.cost": "Transaction cost",
   "transaction.summary.nonce": "Nonce",
-  "transaction.summary.destFee": "Destination fee"
+  "transaction.summary.destFee": "Destination fee",
+  "search.placeholder": "Search..."
 }
