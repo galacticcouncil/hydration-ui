@@ -1,7 +1,7 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions, Option } from "./TransferOptions"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
@@ -14,7 +14,11 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import { DOT_ASSET_ID, GDOT_ERC20_ASSET_ID } from "utils/constants"
+import {
+  DOT_ASSET_ID,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+} from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -53,6 +57,20 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   )
 
   const isOnlyStablepool = selectedOption === "STABLEPOOL"
+
+  const selectableAssets = useMemo(
+    () =>
+      isGigaDOT
+        ? tradable
+            .map((asset) => asset.id)
+            .filter(
+              (assetId) =>
+                assetId !== GDOT_ERC20_ASSET_ID &&
+                assetId !== GDOT_STABLESWAP_ASSET_ID,
+            )
+        : assets,
+    [assets, isGigaDOT, tradable],
+  )
 
   const goBack = () => {
     if (page === Page.ASSETS) {
@@ -149,13 +167,7 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
               <AssetsModalContent
                 hideInactiveAssets
                 allAssets
-                allowedAssets={
-                  isGigaDOT
-                    ? tradable
-                        .map((asset) => asset.id)
-                        .filter((assetId) => assetId !== GDOT_ERC20_ASSET_ID)
-                    : assets
-                }
+                allowedAssets={selectableAssets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)
