@@ -200,7 +200,7 @@ export const useIsolatedPoolsColumns = () => {
 
   return useMemo(
     () => [
-      isolatedColumnHelper.accessor("tokens", {
+      isolatedColumnHelper.accessor("meta.name", {
         header: "Pool asset",
         cell: ({ row }) => {
           const { meta } = row.original
@@ -222,9 +222,11 @@ export const useIsolatedPoolsColumns = () => {
         sortingFn: (a, b) =>
           new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
       }),
+      columnHelper.accessor("meta.symbol", {
+        meta: { visibility: false },
+      }),
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [t],
   )
 }
 
@@ -233,7 +235,7 @@ export const usePoolColumns = () => {
 
   return useMemo(
     () => [
-      columnHelper.accessor("meta", {
+      columnHelper.accessor("meta.name", {
         header: "Pool asset",
         cell: ({ row }) => <AssetLabelFull asset={row.original.meta} />,
         sortingFn: (a, b) =>
@@ -273,9 +275,12 @@ export const usePoolColumns = () => {
             : -1
         },
       }),
+      columnHelper.accessor("meta.symbol", {
+        meta: { visibility: false },
+      }),
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+
+    [t],
   )
 }
 

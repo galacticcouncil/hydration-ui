@@ -46,7 +46,6 @@
   "error.existentialDeposit": "Too low amount.",
   "chart.error": "Error displaying the chart, try loading it again.",
   "chart.empty": "Not enough data to display this chart.",
-  "navigation.allPools.title": "All Pools",
   "navigation.bond.title": "Bond",
   "navigation.bonds.description": "Help Hydration accumulate POL",
   "navigation.bonds.title": "Bonds",

@@ -54,24 +54,27 @@ export const useDataTable = <TData extends RowData>({
           ? (curr.id ?? curr.accessorKey)
           : curr.id
         if (!id) return prev
+
+        const visibilityKey = typeof id === "string" ? id.replace(".", "_") : id
+
         const visibility = curr.meta?.visibility
         const gteBp = curr.meta?.gteBp
         if (visibility !== undefined) {
           return {
             ...prev,
-            [id]: Array.isArray(visibility)
+            [visibilityKey]: Array.isArray(visibility)
               ? visibility.includes(screen)
               : visibility,
           }
         } else if (gteBp) {
           return {
             ...prev,
-            [id]: gte(gteBp),
+            [visibilityKey]: gte(gteBp),
           }
         } else {
           return {
             ...prev,
-            [id]: true,
+            [visibilityKey]: true,
           }
         }
       },

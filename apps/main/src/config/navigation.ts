@@ -11,7 +11,6 @@ export const LINKS = {
   liquidity: "/liquidity",
   myLiquidity: "/liquidity/my-liquidity",
   pools: "/liquidity/pools",
-  allPools: "/liquidity/all-pools",
   omnipool: "/liquidity/omnipool-stablepools",
   isolated: "/liquidity/isolated",
   lbp: "/liquidity/lbp",

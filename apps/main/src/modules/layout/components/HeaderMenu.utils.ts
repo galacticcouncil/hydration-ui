@@ -32,10 +32,6 @@ export const useMenuTranslations = () => {
           title: t("navigation.pools.title"),
           description: "",
         },
-        allPools: {
-          title: t("navigation.allPools.title"),
-          description: "",
-        },
         omnipool: {
           title: t("navigation.omnipool.title"),
           description: "",

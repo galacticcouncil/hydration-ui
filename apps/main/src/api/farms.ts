@@ -72,35 +72,32 @@ const getActiveFarms =
 const getStoppedFarms = (
   deposits: OmnipoolDepositFull[],
   activeFarms: TFarmIds[],
-) =>
-  deposits.reduce<TFarmIds[]>((result, deposit) => {
-    const missingEntries = deposit.yield_farm_entries.filter((entry) => {
-      const isActive = activeFarms.some(
-        (activeFarm) =>
-          activeFarm.poolId === deposit.assetId &&
-          activeFarm.yieldFarmId === entry.yield_farm_id.toString() &&
-          activeFarm.globalFarmId === entry.global_farm_id.toString(),
-      )
-      return !isActive
-    })
+) => {
+  const activeFarmSet = new Set(
+    activeFarms.map(
+      (farm) => `${farm.poolId}-${farm.yieldFarmId}-${farm.globalFarmId}`,
+    ),
+  )
 
-    missingEntries.forEach((entry) => {
-      const isAlreadyInResult = result.some(
-        (item) =>
-          item.yieldFarmId === entry.yield_farm_id.toString() &&
-          item.poolId === deposit.assetId.toString() &&
-          item.globalFarmId === entry.global_farm_id.toString(),
-      )
+  const resultMap = new Map<string, TFarmIds>()
 
-      if (!isAlreadyInResult) {
-        result.push({
-          yieldFarmId: entry.yield_farm_id.toString(),
+  deposits.forEach((deposit) => {
+    deposit.yield_farm_entries.forEach((entry) => {
+      const yieldFarmIdStr = entry.yield_farm_id.toString()
+      const globalFarmIdStr = entry.global_farm_id.toString()
+      const key = `${deposit.assetId}-${yieldFarmIdStr}-${globalFarmIdStr}`
+
+      if (!activeFarmSet.has(key) && !resultMap.has(key)) {
+        const farmEntry = {
+          yieldFarmId: yieldFarmIdStr,
           poolId: deposit.assetId,
-          globalFarmId: entry.global_farm_id.toString(),
+          globalFarmId: globalFarmIdStr,
           isActive: false,
-        })
+        }
+        resultMap.set(key, farmEntry)
       }
     })
+  })
 
-    return result
-  }, [])
+  return Array.from(resultMap.values())
+}
