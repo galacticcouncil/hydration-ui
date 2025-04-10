@@ -56,15 +56,15 @@ const AssetsContext = createContext<TAssetsContext>({} as TAssetsContext)
 
 export const useAssets = () => useContext(AssetsContext)
 
-const isToken = (asset: TAssetStored): asset is TToken =>
+export const isToken = (asset: TAssetStored): asset is TToken =>
   asset.type === AssetType.TOKEN
-const isExternal = (asset: TAssetStored): asset is TExternal =>
+export const isExternal = (asset: TAssetStored): asset is TExternal =>
   asset.type === AssetType.External
-const isBond = (asset: TAssetStored): asset is TBond =>
+export const isBond = (asset: TAssetStored): asset is TBond =>
   asset.type === AssetType.BOND
-const isErc20 = (asset: TAssetStored): asset is TErc20 =>
+export const isErc20 = (asset: TAssetStored): asset is TErc20 =>
   asset.type === AssetType.ERC20
-const isStableSwap = (asset: TAssetStored): asset is TStableswap =>
+export const isStableSwap = (asset: TAssetStored): asset is TStableswap =>
   asset.type === AssetType.STABLESWAP
 
 const fallbackAsset: TAsset = {

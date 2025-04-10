@@ -12,7 +12,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFullMobile, useDisplayAssetPrice } from "@/components"
+import { AssetLabelFull, useDisplayAssetPrice } from "@/components"
 import { LiquidityFarms } from "@/modules/wallet/MyLiquidity/LiquidityFarms"
 import { LiquidityPositionActions } from "@/modules/wallet/MyLiquidity/LiquidityPositionActions"
 import { WalletLiquidityPosition } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
@@ -56,7 +56,7 @@ export const LiquidityPositionMobile: FC<Props> = ({ assetId, position }) => {
         justify="space-between"
         align="center"
       >
-        {asset && <AssetLabelFullMobile asset={asset} />}
+        {asset && <AssetLabelFull asset={asset} withName={false} />}
         <LiquidityFarms assetId={assetId} rewards={position.rewards} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

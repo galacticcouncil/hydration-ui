@@ -1,5 +1,5 @@
 import { Button, Flex } from "@galacticcouncil/ui/components"
-import { Link, useLocation, useSearch } from "@tanstack/react-router"
+import { Link, useLocation, useMatchRoute } from "@tanstack/react-router"
 import { useMemo } from "react"
 
 import { SubpageItem } from "@/components/SubpageMenu/SubpageMenu"
@@ -14,9 +14,9 @@ export const LiquiditySubpageMenu = () => {
     select: (state) => [state.href, state.pathname],
   })
 
-  const { id } = useSearch({
-    strict: false,
-  })
+  const matchRoute = useMatchRoute()
+  const isPoolsPage = matchRoute({ to: "/liquidity/pools" })
+  const isMyLiquidityPage = matchRoute({ to: "/liquidity/my-liquidity" })
 
   const items = useMemo(
     () =>
@@ -30,7 +30,7 @@ export const LiquiditySubpageMenu = () => {
     [pathname, translations],
   )
 
-  if (id !== undefined) return null
+  if (!isPoolsPage && !isMyLiquidityPage) return null
 
   return (
     <Flex gap={20}>

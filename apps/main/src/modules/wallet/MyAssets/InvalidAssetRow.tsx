@@ -5,7 +5,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
+import { AssetLabelFull } from "@/components"
 import { useAssets } from "@/providers/assetsProvider"
 type Props = {
   readonly assetId: string
@@ -20,12 +20,7 @@ export const InvalidAssetRow: FC<Props> = ({ assetId }) => {
 
   return (
     <Flex justify="space-between" align="center" height="100%">
-      {asset &&
-        (isMobile ? (
-          <AssetLabelFullMobile asset={asset} />
-        ) : (
-          <AssetLabelFull asset={asset} />
-        ))}
+      {asset && <AssetLabelFull asset={asset} withName={!isMobile} />}
       {!isMobile && (
         <Text
           fs="p4"
