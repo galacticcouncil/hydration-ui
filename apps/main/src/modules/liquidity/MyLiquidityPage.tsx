@@ -6,18 +6,15 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PoolsHeader, PoolTypeTabs } from "./components"
-import { PoolDetails } from "./PoolDetails"
 import { IsolatedPoolsTable, OmnipoolAndStablepoolTable } from "./PoolsPage"
 
 export const MyLiquidityPage = () => {
   const { t } = useTranslation(["liquidity", "common"])
   const [search, setSearch] = useState("")
 
-  const { type, id } = useSearch({
+  const { type } = useSearch({
     from: "/_liquidity/liquidity/my-liquidity",
   })
-
-  if (id !== undefined) return <PoolDetails id={id.toString()} />
 
   return (
     <div>
@@ -39,10 +36,10 @@ export const MyLiquidityPage = () => {
       </Flex>
 
       {(type === "omnipoolStablepool" || type === "all") && (
-        <OmnipoolAndStablepoolTable search={search} type={type} withPositions />
+        <OmnipoolAndStablepoolTable search={search} withPositions />
       )}
       {(type === "isolated" || type === "all") && (
-        <IsolatedPoolsTable search={search} type={type} withPositions />
+        <IsolatedPoolsTable search={search} withPositions />
       )}
     </div>
   )

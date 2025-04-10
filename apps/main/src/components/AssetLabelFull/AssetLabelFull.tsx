@@ -11,14 +11,20 @@ import { Logo } from "@/components/Logo"
 export const AssetLabelFull = ({
   asset,
   size,
+  withName = true,
 }: {
   asset: TAssetData
   size?: AssetLabelProps["size"]
+  withName?: boolean
 }) => {
   return (
     <AssetLabelFullContainer>
       <Logo id={asset.id} />
-      <AssetLabel symbol={asset.symbol} name={asset.name} size={size} />
+      <AssetLabel
+        symbol={asset.symbol}
+        name={withName ? asset.name : undefined}
+        size={size}
+      />
     </AssetLabelFullContainer>
   )
 }
@@ -38,21 +44,6 @@ export const AssetLabelXYK = ({
     <AssetLabelFullContainer>
       <Logo id={iconIds} />
       <AssetLabel symbol={symbol} name={name} size={size} />
-    </AssetLabelFullContainer>
-  )
-}
-
-export const AssetLabelFullMobile = ({
-  asset,
-  size,
-}: {
-  asset: TAssetData
-  size?: AssetLabelProps["size"]
-}) => {
-  return (
-    <AssetLabelFullContainer>
-      <Logo id={asset.id} />
-      <AssetLabel symbol={asset.symbol} size={size} />
     </AssetLabelFullContainer>
   )
 }

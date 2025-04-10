@@ -16,7 +16,7 @@ export const PoolTypeTabs = () => {
           title: t("tab.allPools"),
         },
         {
-          to: `${router.state.location.pathname}?type=omnipool&stablepool`,
+          to: `${router.state.location.pathname}?type=omnipoolStablepool`,
           title: t("tab.omnipoolStablepool"),
         },
         {
