@@ -1,11 +1,11 @@
 import { AssetTableName } from "components/AssetTableName/AssetTableName"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { RemoveDepositFormValues } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal.form"
-import { RemoveDepositBalance } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositBalance"
 import { Slider } from "components/Slider/Slider"
 import { ShareTokenAmount } from "sections/wallet/strategy/RemoveDepositModal/ShareTokenAmount"
 import { BigNumber } from "bignumber.js"
+import { RemoveDepositCustomInput } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositCustomInput"
 
 type Props = {
   readonly assetId: string
@@ -13,7 +13,10 @@ type Props = {
 }
 
 export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
-  const { control, setValue } = useFormContext<RemoveDepositFormValues>()
+  const { control, setValue, watch } = useFormContext<RemoveDepositFormValues>()
+  const [isFocusingCustomInput, setIsFocusingCustomInput] = useState(false)
+
+  const customValue = watch("customValueInput")
 
   return (
     <Controller
@@ -38,9 +41,31 @@ export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
                 }}
               >
                 <AssetTableName id={assetId} />
-                <RemoveDepositBalance
-                  balanceToSell={balanceToSell}
+                <RemoveDepositCustomInput
                   percentage={field.value}
+                  value={customValue > 0 ? customValue : balanceToSell}
+                  onFocus={(e: React.FocusEvent<HTMLInputElement, Element>) => {
+                    e.target.select()
+                    setIsFocusingCustomInput(true)
+                  }}
+                  onBlur={() => setIsFocusingCustomInput(false)}
+                  onValueChange={({ floatValue }) => {
+                    if (!isFocusingCustomInput) return
+                    const value = floatValue || 0
+
+                    setValue(
+                      "customValueInput",
+                      Math.min(value, Number(balance)),
+                    )
+
+                    const newPercentage = new BigNumber(value)
+                      .div(balance)
+                      .times(100)
+                      .toString()
+
+                    field.onChange(newPercentage)
+                    setValue("customPercentageInput", "")
+                  }}
                 />
               </div>
               <Slider
@@ -51,13 +76,17 @@ export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
                 onChange={(value) => {
                   field.onChange(value[0])
                   setValue("customPercentageInput", "")
+                  setValue("customValueInput", 0)
                 }}
               />
             </div>
             <ShareTokenAmount
               balance={balance}
               percentage={field.value}
-              onPercentageChange={field.onChange}
+              onPercentageChange={(value) => {
+                field.onChange(value)
+                setValue("customValueInput", 0)
+              }}
             />
           </div>
         )

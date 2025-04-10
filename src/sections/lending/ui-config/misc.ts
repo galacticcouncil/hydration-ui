@@ -1,2 +1,6 @@
-export const MONEY_MARKET_REFERENDUM_INDEX = "192"
-export const MONEY_MARKET_LAUNCH_BLOCK_NUMBER = 6468408
+import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { getAddressFromAssetId } from "utils/evm"
+
+export const MONEY_MARKET_SUPPLY_BLACKLIST = [
+  getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+]

@@ -50,6 +50,7 @@ export const AssetInput = forwardRef<HTMLInputElement, AssetInputProps>(
               type={props.type}
               placeholder={props.placeholder}
               disabled={props.disabled}
+              autoComplete="off"
             />
 
             {props.unit && <SUnit>{props.unit}</SUnit>}
