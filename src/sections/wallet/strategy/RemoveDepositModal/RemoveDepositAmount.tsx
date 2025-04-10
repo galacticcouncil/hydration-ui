@@ -50,15 +50,16 @@ export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
                   }}
                   onBlur={() => setIsFocusingCustomInput(false)}
                   onValueChange={({ floatValue }) => {
-                    if (!isFocusingCustomInput) return
-                    const value = floatValue || 0
+                    if (!isFocusingCustomInput || floatValue === undefined) {
+                      return
+                    }
 
                     setValue(
                       "customValueInput",
-                      Math.min(value, Number(balance)),
+                      Math.min(floatValue, Number(balance)),
                     )
 
-                    const newPercentage = new BigNumber(value)
+                    const newPercentage = new BigNumber(floatValue)
                       .div(balance)
                       .times(100)
                       .toString()

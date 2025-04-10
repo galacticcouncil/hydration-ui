@@ -3,7 +3,7 @@ import { Button } from "components/Button/Button"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { ModalHorizontalSeparator } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -11,12 +11,13 @@ import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
-import { useHealthFactorChange } from "api/borrow"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
 import { useAssets } from "providers/assets"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
 import { useStore } from "state/store"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 type Props = {
   readonly assetId: string
@@ -33,16 +34,23 @@ export const RemoveDepositModal: FC<Props> = ({
   const { tradable } = useAssets()
   const { t } = useTranslation()
   const form = useRemoveDepositForm()
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
 
   const [assetReceived, percentage] = form.watch([
     "assetReceived",
     "percentage",
   ])
 
-  const balanceToSell = new BigNumber(balance)
+  const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
+  const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
+
+  const balanceToSell = new BigNumber(maxBalance)
     .times(percentage)
     .div(100)
     .toString()
+
+  const hfChange = useHealthFactorChange(assetId, balanceToSell)
 
   const [debouncedBalance] = useDebouncedValue(balanceToSell, 300)
 
@@ -54,11 +62,17 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const { page, direction, paginateTo } = useModalPagination()
 
-  const hfChange = useHealthFactorChange(assetId, balanceToSell)
-
   const onSubmit = () => {
     createTransaction({ tx: swapTx })
   }
+
+  const displayRiskCheckbox = hfChange
+    ? BigNumber(hfChange.futureHealthFactor).lt(1.5)
+    : false
+
+  const isSubmitDisabled = displayRiskCheckbox
+    ? !healthFactorRiskAccepted
+    : false
 
   return (
     <ModalContents
@@ -77,7 +91,10 @@ export const RemoveDepositModal: FC<Props> = ({
               >
                 <div sx={{ flex: "column", gap: 8 }}>
                   <div sx={{ flex: "column", gap: 16 }}>
-                    <RemoveDepositAmount assetId={assetId} balance={balance} />
+                    <RemoveDepositAmount
+                      assetId={assetId}
+                      balance={maxBalance}
+                    />
                     <RemoveDepositAsset
                       amountOut={new BigNumber(amountOut)
                         .shiftedBy(-(assetReceived?.decimals ?? 0))
@@ -94,7 +111,20 @@ export const RemoveDepositModal: FC<Props> = ({
                   />
                 </div>
                 <ModalHorizontalSeparator my={16} />
-                <Button variant="primary" type="submit">
+                {displayRiskCheckbox && (
+                  <>
+                    <HealthFactorRiskWarning
+                      accepted={healthFactorRiskAccepted}
+                      onAcceptedChange={setHealthFactorRiskAccepted}
+                    />
+                    <ModalHorizontalSeparator my={16} />
+                  </>
+                )}
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={isSubmitDisabled}
+                >
                   {t("wallet.strategy.remove.confirm")}
                 </Button>
               </form>

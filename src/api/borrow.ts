@@ -20,6 +20,7 @@ import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
+import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -76,6 +77,7 @@ export const useBorrowReserves = () => {
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
+        // @TODO: fetch incentives when we need to access them outside of MoneyMarket
         reserveIncentives: [],
       })
         .map((r) => ({
@@ -142,6 +144,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         userReserves,
         formattedReserves,
         userEmodeCategoryId,
+        // @TODO: fetch incentives when we need to access them outside of MoneyMarket
         reserveIncentives: [],
         userIncentives: [],
       })
@@ -151,6 +154,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         isInEmode: userEmodeCategoryId !== 0,
         userEmodeCategoryId,
         calculatedUserIncentives: {},
+        // @TODO: calculate correct user APYs when we need to access them outside of MoneyMarket
         earnedAPY: 0,
         debtAPY: 0,
         netAPY: 0,
@@ -228,4 +232,30 @@ export const useBorrowMarketTotals = () => {
     ...borrowTotals,
     isLoading,
   }
+}
+
+export const useMaxWithdrawAmount = (assetId: string) => {
+  const { getErc20 } = useAssets()
+  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
+
+  const { data: user } = useUserBorrowSummary()
+
+  return useMemo(() => {
+    if (!underlyingAssetId || !user) return "0"
+
+    const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+    const userReserve = user.userReservesData.find(
+      ({ reserve }) => reserve.underlyingAsset === reserveAddress,
+    )
+
+    if (!userReserve) return "0"
+
+    const maxAmountToWithdraw = calculateMaxWithdrawAmount(
+      user,
+      userReserve,
+      userReserve.reserve,
+    ).toString()
+
+    return maxAmountToWithdraw
+  }, [underlyingAssetId, user])
 }

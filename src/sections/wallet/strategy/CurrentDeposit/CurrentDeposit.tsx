@@ -5,16 +5,18 @@ import { Separator } from "components/Separator/Separator"
 import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Reward } from "sections/lending/helpers/types"
 import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
-import { useAssetsPrice } from "state/displayPrice"
+import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
+import { CurrentDepositClaimReward } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositClaimReward"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
-import { getAddressFromAssetId } from "utils/evm"
-import { useModalContext } from "sections/lending/hooks/useModal"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useAssetsPrice } from "state/displayPrice"
 
 export type CurrentDepositData = {
   readonly depositBalance: string
-  readonly rewardsBalance: string
+  readonly reward: Reward
 }
 
 type Props = {
@@ -29,25 +31,21 @@ export const CurrentDeposit: FC<Props> = ({
   depositData,
 }) => {
   const { t } = useTranslation()
-  const { openClaimRewards } = useModalContext()
+  const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
 
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
-  const rewardAsset = getAssetWithFallback(rewardAssetId)
 
   const { getAssetPrice } = useAssetsPrice([assetId, rewardAssetId])
   const spotPrice = getAssetPrice(assetId).price || "0"
-  const rewardSpotPrice = getAssetPrice(rewardAssetId).price || "0"
 
   const depositValue = new BigNumber(spotPrice)
     .times(depositData.depositBalance || "0")
     .toString()
 
-  const rewardsValue = new BigNumber(rewardSpotPrice)
-    .times(depositData.rewardsBalance || "0")
-    .toString()
+  const isAccountBindingRequired = !isLoadingEvmAccount && !isBound
 
   return (
     <SCurrentDeposit>
@@ -69,23 +67,11 @@ export const CurrentDeposit: FC<Props> = ({
         {t("remove")}
       </Button>
       <CurrentDepositSeparator />
-      <CurrentDepositBalance
-        variant="highlight"
-        label={t("wallet.strategy.deposit.myRewards")}
-        balance={t("value.tokenWithSymbol", {
-          value: depositData.rewardsBalance,
-          symbol: rewardAsset.symbol,
-        })}
-        value={t("value.usd", { amount: rewardsValue })}
-      />
-      <Button
-        variant="primary"
-        size="small"
-        disabled={new BigNumber(depositData.rewardsBalance).lte(0)}
-        onClick={() => openClaimRewards(getAddressFromAssetId(rewardAssetId))}
-      >
-        {t("claim")}
-      </Button>
+      {isAccountBindingRequired ? (
+        <CurrentDepositBindAccount />
+      ) : (
+        <CurrentDepositClaimReward reward={depositData.reward} />
+      )}
       <Modal
         open={isRemoveModalOpen}
         onClose={() => setIsRemoveModalOpen(false)}
