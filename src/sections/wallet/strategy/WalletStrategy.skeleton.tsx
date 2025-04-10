@@ -6,6 +6,8 @@ import {
   SStrategyTile,
 } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
 import Skeleton from "react-loading-skeleton"
+import { AssetInputSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
+import { Separator } from "components/Separator/Separator"
 
 const GigadotAnswers = lazy(async () => ({
   default: (
@@ -17,31 +19,27 @@ export const WalletStrategySkeleton: FC = () => {
   return (
     <SWalletStrategy>
       <WalletStrategyHeader />
-      <SStrategyTile>
-        <div
-          sx={{
-            height: 250,
-            display: "grid",
-            gap: 20,
-          }}
-        >
-          <Skeleton sx={{ height: "100%" }} />
-          <Skeleton sx={{ height: "100%" }} />
-          <Skeleton sx={{ height: "100%" }} />
+      <SStrategyTile sx={{ height: [400, 300] }}>
+        <div sx={{ flex: "column", justify: "space-between", gap: 20 }}>
+          <div sx={{ flex: "row", gap: [20, 40], flexWrap: "wrap" }}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} css={{ flex: 1 }}>
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="50%" height={18} sx={{ mt: 4 }} />
+              </div>
+            ))}
+          </div>
+          <Separator color="white" sx={{ opacity: 0.06 }} />
+          <div sx={{ pb: [0, 30] }}>
+            <Skeleton width="100%" height={20} />
+            <Skeleton width="70%" height={20} sx={{ mt: 4 }} />
+          </div>
         </div>
         <StrategyTileSeparator />
-        <div
-          sx={{
-            height: 250,
-            display: "grid",
-            gap: 20,
-          }}
-          css={{
-            gridTemplateRows: "3fr 2fr",
-          }}
-        >
-          <Skeleton css={{ height: "100%" }} />
-          <Skeleton css={{ height: "100%" }} />
+        <div sx={{ flex: "column", justify: "space-between", gap: 20 }}>
+          <Skeleton width="30%" height={20} />
+          <AssetInputSkeleton />
+          <Skeleton height={44} />
         </div>
       </SStrategyTile>
       <GigadotAnswers />

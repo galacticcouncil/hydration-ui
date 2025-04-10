@@ -2,15 +2,15 @@ import { AssetSkeleton } from "components/Skeleton/AssetSkeleton"
 import React from "react"
 import Skeleton from "react-loading-skeleton"
 
-const AssetInputSkeleton: React.FC<{ className?: string }> = ({
+export const AssetInputSkeleton: React.FC<{ className?: string }> = ({
   className,
 }) => (
   <div className={className}>
-    <div sx={{ flex: "row", justify: "space-between", mb: 15 }}>
+    <div sx={{ flex: "row", justify: "space-between", mb: 15, gap: 10 }}>
       <Skeleton width={120} />
       <Skeleton width={200} />
     </div>
-    <div sx={{ flex: "row", justify: "space-between", mb: 30 }}>
+    <div sx={{ flex: "row", justify: "space-between", mb: 30, gap: 10 }}>
       <AssetSkeleton />
       <Skeleton width={26} height={26} />
     </div>

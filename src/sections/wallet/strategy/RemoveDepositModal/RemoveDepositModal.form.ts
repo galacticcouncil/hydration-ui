@@ -4,28 +4,32 @@ import { requiredAny } from "utils/validators"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { DOT_ASSET_ID } from "utils/constants"
+import { maxBalance } from "utils/validators"
 
-const schema = z.object({
-  assetReceived: z.custom<TAsset | null>().refine(...requiredAny),
-  percentage: z.number(),
-  customPercentageInput: z.string(),
-  customValueInput: z.number(),
-})
+type SchemaOptions = {
+  maxBalance: string
+}
 
-export type RemoveDepositFormValues = z.infer<typeof schema>
+const createSchema = (options: SchemaOptions) => {
+  return z.object({
+    assetReceived: z.custom<TAsset | null>().refine(...requiredAny),
+    amount: maxBalance(options.maxBalance, 0),
+  })
+}
 
-export const useRemoveDepositForm = () => {
+export type RemoveDepositFormValues = z.infer<ReturnType<typeof createSchema>>
+
+export const useRemoveDepositForm = (options: SchemaOptions) => {
   const { getAsset } = useAssets()
   const defaultValues: RemoveDepositFormValues = {
     assetReceived: getAsset(DOT_ASSET_ID) ?? null,
-    percentage: 0,
-    customPercentageInput: "",
-    customValueInput: 0,
+    amount: "",
   }
 
   const form = useForm<RemoveDepositFormValues>({
+    mode: "onChange",
     defaultValues,
-    resolver: zodResolver(schema),
+    resolver: zodResolver(createSchema(options)),
   })
 
   return form
