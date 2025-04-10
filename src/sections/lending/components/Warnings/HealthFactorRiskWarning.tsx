@@ -18,17 +18,16 @@ export const HealthFactorRiskWarning: React.FC<
       <Alert variant="error">
         {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
       </Alert>
-      <div sx={{ flex: "row", align: "center", mt: 10 }}>
-        <CheckBox
-          label={
-            <Text fs={14} lh={28}>
-              {t("liquidity.reviewTransaction.modal.healthfactor.accept")}
-            </Text>
-          }
-          checked={accepted}
-          onChange={onAcceptedChange}
-        />
-      </div>
+      <CheckBox
+        sx={{ mt: 10 }}
+        label={
+          <Text fs={14} lh={28}>
+            {t("liquidity.reviewTransaction.modal.healthfactor.accept")}
+          </Text>
+        }
+        checked={accepted}
+        onChange={onAcceptedChange}
+      />
     </div>
   )
 }
