@@ -144,7 +144,7 @@ const useStablepools = () => {
 
       const fee =
         filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
-          ? BN(borrow.apr)
+          ? BN(borrow.apy)
           : BN_NAN
 
       return {
@@ -178,7 +178,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    borrow.apr,
+    borrow.apy,
   ])
 
   return { data, isLoading }

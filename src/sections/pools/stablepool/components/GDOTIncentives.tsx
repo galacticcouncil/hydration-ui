@@ -41,7 +41,7 @@ export const GDOTIncentives = () => {
 export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { apr, lpAPY, incentivesNetAPR, suppliesAPY } = useBorrowAssetApy(
+  const { apy, lpAPY, incentivesAPY, underlyingAssetsAPY } = useBorrowAssetApy(
     GDOT_STABLESWAP_ASSET_ID,
   )
 
@@ -52,7 +52,7 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
           withLabel
             ? "liquidity.stablepool.incetives.value"
             : "value.percentage",
-          { value: apr },
+          { value: apy },
         )}
       </Text>
       <InfoTooltip
@@ -60,7 +60,7 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
         text={
           <>
             <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
-            {BN(apr).gt(0) && (
+            {BN(apy).gt(0) && (
               <div
                 sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
               >
@@ -73,8 +73,8 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
               </div>
             )}
             {[
-              ...suppliesAPY,
-              { apy: incentivesNetAPR, id: GDOT_STABLESWAP_ASSET_ID },
+              ...underlyingAssetsAPY,
+              { apy: incentivesAPY, id: GDOT_STABLESWAP_ASSET_ID },
             ].map(({ id, apy }) => {
               return (
                 <div
