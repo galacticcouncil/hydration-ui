@@ -16,6 +16,12 @@ import { PoolReserve } from "./poolSlice"
 import { RootStore } from "./root"
 import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 import { produce } from "immer"
+import { getAddressFromAssetId } from "utils/evm"
+import {
+  DOT_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VDOT_ASSET_ID,
+} from "utils/constants"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -172,7 +178,37 @@ export const selectFormattedReserves = (
     }))
     .sort(reserveSortFn)
 
-  return formattedPoolReserves
+  return produce(formattedPoolReserves, (draft) => {
+    const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
+
+    if (vDotReserve) {
+      const vDotApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
+        state.vDotApy,
+      )
+
+      vDotReserve.supplyAPY = vDotApy.toString()
+
+      const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
+      const gDotReserve = reserveMap.get(
+        getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+      )
+
+      if (gDotReserve && dotReserve) {
+        const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
+        const vdotApyHalf = vDotApy.div(2)
+
+        // @TODO: Add GDOT LP Fee when available
+        const gdotLpFee = "0"
+
+        gDotReserve.supplyAPY = vdotApyHalf
+          .plus(dotApyHalf)
+          .plus(gdotLpFee)
+          .toString()
+      }
+    }
+  })
 }
 
 export const selectUserSummaryAndIncentives = (

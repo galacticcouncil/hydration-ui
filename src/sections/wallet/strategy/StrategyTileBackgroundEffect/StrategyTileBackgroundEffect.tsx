@@ -36,7 +36,7 @@ const StrategyTileBackgroundMobile2 = lazy(async () => ({
 }))
 
 export const StrategyTileBackgroundEffect: FC = () => {
-  const isMobile = useMedia(theme.viewport.lt.sm)
+  const isMobile = useMedia(theme.viewport.lt.md)
 
   return isMobile ? (
     <>
