@@ -21,6 +21,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
+import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -172,6 +173,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 export type UseHealthFactorChangeResult = {
   currentHealthFactor: string
   futureHealthFactor: string
+  isHealthFactorBelowThreshold: boolean
 } | null
 
 export const useHealthFactorChange = (
@@ -202,7 +204,13 @@ export const useHealthFactorChange = (
       withdrawAmount: amount || "0",
     }).toString()
 
+    const isHealthFactorBelowThreshold =
+      currentHealthFactor !== "-1" &&
+      futureHealthFactor !== "-1" &&
+      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
+
     return {
+      isHealthFactorBelowThreshold,
       currentHealthFactor,
       futureHealthFactor,
     }

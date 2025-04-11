@@ -59,9 +59,7 @@ export const RemoveDepositModal: FC<Props> = ({
     createTransaction({ tx: swapTx })
   }
 
-  const displayRiskCheckbox = hfChange
-    ? BigNumber(hfChange.futureHealthFactor).lt(1.5)
-    : false
+  const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
 
   const isSubmitDisabled = displayRiskCheckbox
     ? !healthFactorRiskAccepted
@@ -109,6 +107,7 @@ export const RemoveDepositModal: FC<Props> = ({
                   <HealthFactorRiskWarning
                     accepted={healthFactorRiskAccepted}
                     onAcceptedChange={setHealthFactorRiskAccepted}
+                    sx={{ mb: 16 }}
                   />
                 )}
                 <ModalHorizontalSeparator mb={16} />
