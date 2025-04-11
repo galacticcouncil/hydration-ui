@@ -51,6 +51,7 @@ export const QUERY_KEYS = {
   allPools: [QUERY_KEY_PREFIX, "allPools"],
   omnipoolTokens: ["pools", "omnipoolTokens"],
   stablePools: ["pools", "stable"],
+  stablepoolFees: (ids: string[]) => ["pools", "stable", "fees", ids.join(",")],
   xykPools: ["pools", "xykPool"],
   hubToken: ["pools", "hubToken"],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [

@@ -14,7 +14,7 @@ type Props = {
 
 export const AssetOverview: FC<Props> = ({ assetId, riskLevel }) => {
   const { t } = useTranslation()
-  const { apr, tvl } = useBorrowAssetApy(assetId)
+  const { apy, tvl } = useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -40,7 +40,7 @@ export const AssetOverview: FC<Props> = ({ assetId, riskLevel }) => {
         <AssetOverviewSeparator />
         <AssetOverviewTile
           label={`${t("apy")}:`}
-          value={apr === Infinity ? "∞" : t("value.APRshort", { apr })}
+          value={apy === Infinity ? "∞" : t("value.APRshort", { apr: apy })}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile

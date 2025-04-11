@@ -32,6 +32,7 @@ import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
+import { useBorrowAssetApy } from "api/borrow"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -85,6 +86,12 @@ const useStablepools = () => {
     ...stablepoolIds,
   ])
 
+  const borrow = useBorrowAssetApy(
+    filteredStablepools.some((pool) => pool.id === GDOT_STABLESWAP_ASSET_ID)
+      ? GDOT_STABLESWAP_ASSET_ID
+      : "",
+  )
+
   const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes(
     filteredStablepools.map((filteredStablepool) => filteredStablepool.id),
   )
@@ -135,6 +142,11 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
+      const fee =
+        filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
+          ? BN(borrow.apy)
+          : BN_NAN
+
       return {
         id: filteredStablepool.id,
         name: meta.name,
@@ -147,7 +159,7 @@ const useStablepools = () => {
         farms: [],
         allFarms: [],
         fee: BN_NAN,
-        totalFee: BN_NAN,
+        totalFee: fee,
         isFeeLoading: false,
         canAddLiquidity: false,
         canRemoveLiquidity: true,
@@ -166,6 +178,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
+    borrow.apy,
   ])
 
   return { data, isLoading }
@@ -276,17 +289,7 @@ export const usePools = () => {
       }
     })
 
-    return rows.sort((poolA, poolB) => {
-      if (poolA.id === NATIVE_ASSET_ID) {
-        return -1
-      }
-
-      if (poolB.id === NATIVE_ASSET_ID) {
-        return 1
-      }
-
-      return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
-    })
+    return rows
   }, [
     omnipoolAssets.data,
     tvls,
@@ -304,8 +307,32 @@ export const usePools = () => {
     isFeeLoading,
   ])
 
+  const sortedData = useMemo(() => {
+    return data
+      ? [...data, ...stablepools].sort((poolA, poolB) => {
+          if (poolA.id === NATIVE_ASSET_ID) {
+            return -1
+          }
+
+          if (poolB.id === NATIVE_ASSET_ID) {
+            return 1
+          }
+
+          if (poolA.id === GDOT_STABLESWAP_ASSET_ID) {
+            return -1
+          }
+
+          if (poolB.id === GDOT_STABLESWAP_ASSET_ID) {
+            return 1
+          }
+
+          return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
+        })
+      : undefined
+  }, [data, stablepools])
+
   return {
-    data: data ? [...data, ...stablepools] : undefined,
+    data: sortedData,
     isLoading: isInitialLoading,
   }
 }

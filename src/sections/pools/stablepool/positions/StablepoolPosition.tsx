@@ -47,34 +47,35 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
     <>
       {amount.isZero() ? null : (
         <SPoolDetailsContainer
-          sx={{ height: ["auto", "auto"] }}
+          sx={{ height: ["auto", "auto"], p: [12, 20] }}
           css={{ background: "transparent" }}
         >
-          <div
-            sx={{
-              flex: "row",
-              align: "center",
-              gap: 8,
-              mb: [5, 20],
-              mt: [5, 0],
-            }}
-          >
-            <Icon
-              size={15}
-              sx={{ color: "vibrantBlue200" }}
-              icon={<DropletIcon />}
-            />
-            <Text fs={[16, 16]} color="vibrantBlue200">
-              {isGigaDOT
-                ? t("liquidity.stablepool.gigadot.positions.title")
-                : t("liquidity.stablepool.asset.positions.title")}
-            </Text>
-          </div>
+          {!isGigaDOT && (
+            <div
+              sx={{
+                flex: "row",
+                align: "center",
+                gap: 8,
+                mb: [5, 0],
+                mt: [5, 0],
+              }}
+            >
+              <Icon
+                size={15}
+                sx={{ color: "vibrantBlue200" }}
+                icon={<DropletIcon />}
+              />
+              <Text fs={[16, 16]} color="vibrantBlue200">
+                {t("liquidity.stablepool.asset.positions.title")}
+              </Text>
+            </div>
+          )}
           <div sx={{ flex: "column", gap: 16 }}>
             <SContainer sx={{ height: ["auto", "auto"] }}>
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
                   <MultipleAssetLogo iconId={meta.iconId} size={26} />
+                  {isGigaDOT && <Text>{meta.symbol}</Text>}
                 </div>
                 <div
                   sx={{
