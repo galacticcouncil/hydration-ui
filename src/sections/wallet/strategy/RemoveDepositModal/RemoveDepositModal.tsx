@@ -89,6 +89,7 @@ export const RemoveDepositModal: FC<Props> = ({
                       balance={maxBalance}
                     />
                     <RemoveDepositAsset
+                      assetId={assetReceived?.id ?? ""}
                       amountOut={new BigNumber(amountOut)
                         .shiftedBy(-(assetReceived?.decimals ?? 0))
                         .toString()}

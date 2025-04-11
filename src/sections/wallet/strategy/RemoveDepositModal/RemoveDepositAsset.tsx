@@ -1,4 +1,5 @@
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
@@ -9,18 +10,26 @@ import {
   SContainer,
 } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset.styled"
 import { RemoveDepositFormValues } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal.form"
+import { useAssetsPrice } from "state/displayPrice"
+import BN from "bignumber.js"
 
 type Props = {
+  readonly assetId: string
   readonly amountOut: string
   readonly onSelectorOpen: () => void
 }
 
 export const RemoveDepositAsset: FC<Props> = ({
+  assetId,
   amountOut,
   onSelectorOpen,
 }) => {
   const { t } = useTranslation()
   const { control } = useFormContext<RemoveDepositFormValues>()
+
+  const { getAssetPrice } = useAssetsPrice([assetId])
+  const spotPrice = getAssetPrice(assetId).price || "0"
+  const amountOutDisplay = new BN(spotPrice).times(amountOut || "0")
 
   return (
     <Controller
@@ -36,9 +45,14 @@ export const RemoveDepositAsset: FC<Props> = ({
               assetId={field.value?.id ?? ""}
               onClick={onSelectorOpen}
             />
-            <Text fs={[16, 20]} lh={26} fw={[500, 700]}>
-              {amountOut}
-            </Text>
+            <div sx={{ flex: "column", align: "flex-end" }}>
+              <Text fs={[16, 20]} lh={26} fw={[500, 700]}>
+                {amountOut}
+              </Text>
+              <Text color="basic400" fs={11}>
+                <DisplayValue value={amountOutDisplay} />
+              </Text>
+            </div>
           </SAssetContainer>
         </SContainer>
       )}
