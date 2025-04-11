@@ -33,26 +33,19 @@ export const RemoveDepositModal: FC<Props> = ({
   const { createTransaction } = useStore()
   const { tradable } = useAssets()
   const { t } = useTranslation()
-  const form = useRemoveDepositForm()
+
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
-
-  const [assetReceived, percentage] = form.watch([
-    "assetReceived",
-    "percentage",
-  ])
 
   const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
   const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
 
-  const balanceToSell = new BigNumber(maxBalance)
-    .times(percentage)
-    .div(100)
-    .toString()
+  const form = useRemoveDepositForm({ maxBalance })
+  const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
 
-  const hfChange = useHealthFactorChange(assetId, balanceToSell)
+  const hfChange = useHealthFactorChange(assetId, balanceAmount)
 
-  const [debouncedBalance] = useDebouncedValue(balanceToSell, 300)
+  const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
 
   const { minAmountOut, swapTx, amountOut } = useBestTradeSell(
     assetId,
@@ -103,6 +96,7 @@ export const RemoveDepositModal: FC<Props> = ({
                     />
                   </div>
                   <RemoveDepositSummary
+                    assetId={assetId}
                     hfChange={hfChange}
                     minReceived={new BigNumber(minAmountOut)
                       .shiftedBy(-(assetReceived?.decimals ?? 0))
@@ -110,16 +104,13 @@ export const RemoveDepositModal: FC<Props> = ({
                     assetReceived={assetReceived}
                   />
                 </div>
-                <ModalHorizontalSeparator my={16} />
                 {displayRiskCheckbox && (
-                  <>
-                    <HealthFactorRiskWarning
-                      accepted={healthFactorRiskAccepted}
-                      onAcceptedChange={setHealthFactorRiskAccepted}
-                    />
-                    <ModalHorizontalSeparator my={16} />
-                  </>
+                  <HealthFactorRiskWarning
+                    accepted={healthFactorRiskAccepted}
+                    onAcceptedChange={setHealthFactorRiskAccepted}
+                  />
                 )}
+                <ModalHorizontalSeparator mb={16} />
                 <Button
                   variant="primary"
                   type="submit"

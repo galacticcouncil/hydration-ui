@@ -16,10 +16,7 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
-      <AssetOverviewLogo
-        assetId={assetId}
-        sx={{ display: ["initial", "none"] }}
-      />
+      <AssetOverviewLogo assetId={assetId} sx={{ display: ["flex", "none"] }} />
       <div
         sx={{
           flex: "row",
