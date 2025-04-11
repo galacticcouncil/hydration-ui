@@ -46,7 +46,13 @@ export const CurrencyReserves = ({ reserves }: Props) => {
 
   return (
     <>
-      <Heading color="white" fs={15} sx={{ mb: 5 }}>
+      <Heading
+        color="white"
+        fs={15}
+        sx={{ mb: 5 }}
+        tTransform="uppercase"
+        font="GeistMono"
+      >
         {t("liquidity.stablepool.reserves")}
       </Heading>
       {assets.map(({ id, symbol, balance, value }) => (
