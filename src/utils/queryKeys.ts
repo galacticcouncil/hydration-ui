@@ -353,6 +353,10 @@ export const QUERY_KEYS = {
     "borrowReserves",
     poolContractAddress,
   ],
+  borrowIncentives: (
+    incentivesContractAddress: string,
+    accounntAddress?: string,
+  ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
