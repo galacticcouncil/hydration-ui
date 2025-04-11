@@ -86,7 +86,11 @@ const useStablepools = () => {
     ...stablepoolIds,
   ])
 
-  const borrow = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
+  const borrow = useBorrowAssetApy(
+    filteredStablepools.some((pool) => pool.id === GDOT_STABLESWAP_ASSET_ID)
+      ? GDOT_STABLESWAP_ASSET_ID
+      : "",
+  )
 
   const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes(
     filteredStablepools.map((filteredStablepool) => filteredStablepool.id),
