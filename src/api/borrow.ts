@@ -1,4 +1,7 @@
-import { UiPoolDataProvider } from "@aave/contract-helpers"
+import {
+  UiIncentiveDataProvider,
+  UiPoolDataProvider,
+} from "@aave/contract-helpers"
 import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
@@ -16,12 +19,14 @@ import {
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { getAddressFromAssetId, H160, isEvmAccount } from "utils/evm"
+import { getAddressFromAssetId, H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
+import { VDOT_ASSET_ID } from "utils/constants"
+import { useBifrostVDotApy } from "api/external/bifrost"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -51,19 +56,90 @@ export const useBorrowPoolDataContract = () => {
   }, [addresses, evm])
 }
 
+export const useBorrowIncentivesContract = () => {
+  const { evm } = useRpcProvider()
+  const addresses = useBorrowContractAddresses()
+
+  return useMemo(() => {
+    if (!addresses) return null
+
+    return new UiIncentiveDataProvider({
+      uiIncentiveDataProviderAddress: addresses.UI_INCENTIVE_DATA_PROVIDER,
+      provider: evm,
+      chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
+    })
+  }, [addresses, evm])
+}
+
+export const useBorrowIncentives = () => {
+  const incentivesContract = useBorrowIncentivesContract()
+  const addresses = useBorrowContractAddresses()
+
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
+
+  return useQuery(
+    QUERY_KEYS.borrowIncentives(lendingPoolAddressProvider),
+    async () => {
+      if (!incentivesContract || !addresses) return null
+
+      return incentivesContract.getReservesIncentivesDataHumanized({
+        lendingPoolAddressProvider,
+      })
+    },
+    {
+      retry: false,
+      enabled: !!lendingPoolAddressProvider && !!incentivesContract,
+    },
+  )
+}
+
+export const useBorrowUserIncentives = (givenAddress?: string) => {
+  const incentivesContract = useBorrowIncentivesContract()
+  const addresses = useBorrowContractAddresses()
+  const { account } = useAccount()
+
+  const address = givenAddress || account?.address || ""
+
+  const evmAddress = H160.fromAny(address)
+
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
+
+  return useQuery(
+    QUERY_KEYS.borrowIncentives(lendingPoolAddressProvider, evmAddress),
+    async () => {
+      if (!incentivesContract || !evmAddress) return null
+
+      return incentivesContract.getUserReservesIncentivesDataHumanized({
+        lendingPoolAddressProvider,
+        user: evmAddress,
+      })
+    },
+    {
+      retry: false,
+      enabled:
+        !!evmAddress && !!lendingPoolAddressProvider && !!incentivesContract,
+    },
+  )
+}
+
 export const useBorrowReserves = () => {
   const { api } = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const addresses = useBorrowContractAddresses()
 
+  const { data: reserveIncentives, isSuccess: isIncentivesSuccess } =
+    useBorrowIncentives()
+
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
+
   return useQuery(
-    QUERY_KEYS.borrowReserves(addresses?.POOL_ADDRESSES_PROVIDER ?? ""),
+    QUERY_KEYS.borrowReserves(lendingPoolAddressProvider),
     async () => {
-      if (!poolDataContract || !addresses) return null
+      if (!poolDataContract) return null
 
       const [reserves, timestamp] = await Promise.all([
         poolDataContract.getReservesHumanized({
-          lendingPoolAddressProvider: addresses.POOL_ADDRESSES_PROVIDER,
+          lendingPoolAddressProvider,
         }),
         api.query.timestamp.now(),
       ])
@@ -78,8 +154,7 @@ export const useBorrowReserves = () => {
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
-        // @TODO: fetch incentives when we need to access them outside of MoneyMarket
-        reserveIncentives: [],
+        reserveIncentives: reserveIncentives ?? [],
       })
         .map((r) => ({
           ...r,
@@ -96,7 +171,10 @@ export const useBorrowReserves = () => {
     },
     {
       retry: false,
-      enabled: !!addresses && !!poolDataContract,
+      enabled:
+        !!lendingPoolAddressProvider &&
+        !!poolDataContract &&
+        isIncentivesSuccess,
     },
   )
 }
@@ -105,27 +183,26 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
   const { data: reserves, isSuccess: isReservesSuccess } = useBorrowReserves()
+  const { data: reserveIncentives, isSuccess: isIncentivesSuccess } =
+    useBorrowIncentives()
+  const { data: userIncentives } = useBorrowUserIncentives()
+
   const poolDataContract = useBorrowPoolDataContract()
   const addresses = useBorrowContractAddresses()
 
-  const address = givenAddress || account?.address
+  const address = givenAddress || account?.address || ""
+  const evmAddress = H160.fromAny(address)
 
-  const isEvm = isEvmAccount(address)
-
-  const evmAddress = useMemo(() => {
-    if (!address) return ""
-    if (isEvm) return H160.fromAccount(address)
-    return H160.fromSS58(address)
-  }, [isEvm, address])
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
 
   return useQuery(
     QUERY_KEYS.borrowUserSummary(evmAddress),
     async () => {
-      if (!reserves || !poolDataContract || !addresses) return null
+      if (!reserves || !poolDataContract) return null
 
       const [user, timestamp] = await Promise.all([
         poolDataContract.getUserReservesHumanized({
-          lendingPoolAddressProvider: addresses.POOL_ADDRESSES_PROVIDER,
+          lendingPoolAddressProvider,
           user: evmAddress,
         }),
         api.query.timestamp.now(),
@@ -145,16 +222,14 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
         userReserves,
         formattedReserves,
         userEmodeCategoryId,
-        // @TODO: fetch incentives when we need to access them outside of MoneyMarket
-        reserveIncentives: [],
-        userIncentives: [],
+        reserveIncentives: reserveIncentives ?? [],
+        userIncentives: userIncentives ?? [],
       })
 
       const extendedUser: ExtendedFormattedUser = {
         ...summary,
         isInEmode: userEmodeCategoryId !== 0,
         userEmodeCategoryId,
-        calculatedUserIncentives: {},
         // @TODO: calculate correct user APYs when we need to access them outside of MoneyMarket
         earnedAPY: 0,
         debtAPY: 0,
@@ -165,7 +240,12 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
     },
     {
       retry: false,
-      enabled: isLoaded && isReservesSuccess && !!evmAddress,
+      enabled:
+        isLoaded &&
+        isReservesSuccess &&
+        isIncentivesSuccess &&
+        !!lendingPoolAddressProvider &&
+        !!evmAddress,
     },
   )
 }
@@ -266,4 +346,87 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 
     return maxAmountToWithdraw
   }, [underlyingAssetId, user])
+}
+
+export type BorrowAssetApyData = {
+  tvl: string
+  apr: number
+}
+
+export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
+  const { getAsset, getErc20 } = useAssets()
+  const { data } = useBorrowReserves()
+
+  const reserves = useMemo(() => data?.formattedReserves ?? [], [data])
+
+  const asset = getAsset(assetId)
+
+  const assetReserve = reserves.find(
+    ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(assetId),
+  )
+
+  const assetIds = useMemo(
+    () =>
+      asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId],
+    [asset, assetId],
+  )
+
+  const { data: vDotApy } = useBifrostVDotApy({
+    enabled: assetIds.includes(VDOT_ASSET_ID),
+  })
+
+  const totalAPR = useMemo(() => {
+    const underlyingAssetIds = assetIds.map((assetId) => {
+      return getErc20(assetId)?.underlyingAssetId ?? assetId
+    })
+
+    const underlyingReserves = reserves.filter((reserve) => {
+      return underlyingAssetIds
+        .map(getAddressFromAssetId)
+        .includes(reserve.underlyingAsset)
+    })
+
+    const incentives = assetReserve?.aIncentivesData ?? []
+
+    const isIncentivesInfinity = incentives.some(
+      (incentive) => incentive.incentiveAPR === "Infinity",
+    )
+
+    const incentivesAPRSum = isIncentivesInfinity
+      ? Infinity
+      : incentives.reduce(
+          (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
+          0,
+        )
+
+    const incentivesNetAPR = isIncentivesInfinity
+      ? Infinity
+      : incentivesAPRSum !== Infinity
+        ? incentivesAPRSum || 0
+        : Infinity
+
+    const suppliesAPY = underlyingReserves.map((reserve) => {
+      const isVdot =
+        reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+
+      const supplyAPY = isVdot
+        ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.supplyAPY)
+      return supplyAPY.div(underlyingReserves.length).toNumber()
+    })
+
+    const supplyAPYSum = suppliesAPY.reduce((a, b) => a + b, 0)
+    return isIncentivesInfinity ? Infinity : supplyAPYSum + incentivesNetAPR
+  }, [
+    assetIds,
+    assetReserve?.aIncentivesData,
+    getErc20,
+    reserves,
+    vDotApy?.apy,
+  ])
+
+  return {
+    tvl: assetReserve?.totalLiquidityUSD || "0",
+    apr: totalAPR === Infinity ? Infinity : totalAPR * 100,
+  }
 }

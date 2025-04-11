@@ -8,7 +8,7 @@ import {
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { addr, EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
@@ -73,6 +73,22 @@ export class H160 {
     const decodedBytes = decodeAddress(address)
     const slicedBytes = decodedBytes.slice(0, 20)
     return u8aToHex(slicedBytes)
+  }
+
+  static fromAny = (address: string) => {
+    if (isEvmAddress(address)) {
+      return address
+    }
+
+    if (isEvmAccount(address)) {
+      return H160.fromAccount(address)
+    }
+
+    if (addr.isSs58(address)) {
+      return H160.fromSS58(address)
+    }
+
+    return ""
   }
 }
 

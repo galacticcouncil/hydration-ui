@@ -33,7 +33,7 @@ import {
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
-import { H160, isEvmAccount, isEvmWalletExtension } from "utils/evm"
+import { H160, isEvmWalletExtension } from "utils/evm"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src/incentive-controller-v2/typechain/IAaveIncentivesControllerV2__factory"
 
@@ -185,13 +185,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
     useBackgroundDataProvider()
 
   const accountAddress = account?.address ?? ""
-  const isEvm = isEvmAccount(accountAddress)
 
-  const address = useMemo(() => {
-    if (!accountAddress) return ""
-    if (isEvm) return H160.fromAccount(accountAddress)
-    return H160.fromSS58(accountAddress)
-  }, [isEvm, accountAddress])
+  const address = H160.fromAny(accountAddress)
 
   const chainId = evm?.account?.chainId || null
   const active = !!account

@@ -1,18 +1,20 @@
+import { useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetOverviewLogo } from "sections/wallet/strategy/AssetOverview/AssetOverviewLogo"
 import { AssetOverviewTile } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
-import { useAssetOverviewData } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 
 type Props = {
   readonly assetId: string
+  readonly riskLevel: StrategyRiskLevel
 }
 
-export const AssetOverview: FC<Props> = ({ assetId }) => {
+export const AssetOverview: FC<Props> = ({ assetId, riskLevel }) => {
   const { t } = useTranslation()
-  const { riskLevel, apr, tvl } = useAssetOverviewData(assetId, "low")
+  const { apr, tvl } = useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -37,7 +39,7 @@ export const AssetOverview: FC<Props> = ({ assetId }) => {
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
-          label={`${t("apr")}:`}
+          label={`${t("apy")}:`}
           value={apr === Infinity ? "∞" : t("value.APRshort", { apr })}
         />
         <AssetOverviewSeparator />
