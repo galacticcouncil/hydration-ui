@@ -29,7 +29,12 @@ export const HealthFactorNumber = ({
       }}
     >
       {value === "-1" ? (
-        <Text fs={20} lh={20} color="green400">
+        <Text
+          fs={fontSize}
+          lh={fontSize}
+          color="green400"
+          css={{ scale: "1.3" }}
+        >
           ∞
         </Text>
       ) : (

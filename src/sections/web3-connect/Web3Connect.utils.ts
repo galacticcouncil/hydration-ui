@@ -86,11 +86,7 @@ export const useEvmAccount = () => {
 
   const isEvm = isEvmAccount(address)
 
-  const evmAddress = useMemo(() => {
-    if (!address) return ""
-    if (isEvm) return H160.fromAccount(address)
-    return H160.fromSS58(address)
-  }, [isEvm, address])
+  const evmAddress = H160.fromAny(address)
 
   const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data

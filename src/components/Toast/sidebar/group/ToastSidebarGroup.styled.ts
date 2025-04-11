@@ -15,13 +15,6 @@ export const SSide = styled.div`
   gap: 12px;
 `
 
-export const SHide = styled.div`
-  display: flex;
-  align-items: center;
-
-  color: ${theme.colors.darkBlue300};
-`
-
 export const SToggle = styled(ButtonTransparent)<{ isOpen: boolean }>`
   display: flex;
   justify-content: space-between;

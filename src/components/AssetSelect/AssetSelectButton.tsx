@@ -50,7 +50,7 @@ export const AssetSelectButton = ({
 
       {isAssetFound && (
         <div sx={{ flex: "column", justify: "space-between", minWidth: 0 }}>
-          <Text fw={700} font="GeistMedium" lh={16} color="white">
+          <Text fw={700} font="GeistSemiBold" lh={16} color="white">
             {symbol}
           </Text>
           <Text

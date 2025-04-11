@@ -32,6 +32,7 @@ import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarm
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
+import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -50,7 +51,7 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        defaultPage={Page.OPTIONS}
+        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
       />
@@ -109,7 +110,7 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              !pool.canAddLiquidity ||
+              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
               account?.isExternalWalletConnected ||
               native.id === pool.id
             }
@@ -255,6 +256,18 @@ export const PoolDetails = () => {
             />
 
             <CurrencyReserves reserves={pool.reserves} />
+
+            {pool.isGigaDOT && (
+              <>
+                <Separator
+                  color="white"
+                  opacity={0.06}
+                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
+                />
+
+                <GDOTIncentives />
+              </>
+            )}
           </>
         ) : null}
 

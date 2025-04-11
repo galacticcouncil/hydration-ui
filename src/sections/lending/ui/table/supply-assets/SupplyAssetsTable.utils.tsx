@@ -21,6 +21,7 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
+import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -189,6 +190,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     const tokensToSupply = reserves
       .filter(
         (reserve: ComputedReserveData) =>
+          !MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset) &&
           !displayGho({ currentMarket, symbol: reserve.symbol }) &&
           !(reserve.isFrozen || reserve.isPaused),
       )

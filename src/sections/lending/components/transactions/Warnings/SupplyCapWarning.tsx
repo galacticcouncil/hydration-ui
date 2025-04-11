@@ -1,5 +1,6 @@
 import { AssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { Alert } from "components/Alert"
+import { Text } from "components/Typography/Text/Text"
 
 type SupplyCapWarningProps = {
   supplyCap: AssetCapData
@@ -18,20 +19,20 @@ export const SupplyCapWarning = ({
 
   const renderText = () => {
     return supplyCap.isMaxed ? (
-      <span>
+      <Text fs={13}>
         Protocol supply cap is at 100% for this asset. Further supply
         unavailable.
-      </span>
+      </Text>
     ) : (
-      <span>
+      <Text fs={13}>
         Maximum amount available to supply is limited because protocol supply
         cap is at {supplyCap.percentUsed.toFixed(2)}%.
-      </span>
+      </Text>
     )
   }
 
   return (
-    <Alert variant={severity} {...rest}>
+    <Alert variant={severity} sx={{ mt: 16 }} {...rest}>
       {renderText()}
     </Alert>
   )

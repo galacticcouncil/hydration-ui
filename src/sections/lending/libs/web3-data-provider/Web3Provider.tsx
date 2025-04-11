@@ -27,12 +27,13 @@ import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provi
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import {
+  useAccount,
   useEnableWallet,
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
-import { isEvmWalletExtension } from "utils/evm"
+import { H160, isEvmWalletExtension } from "utils/evm"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src/incentive-controller-v2/typechain/IAaveIncentivesControllerV2__factory"
 
@@ -173,7 +174,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const { t } = useTranslation()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const evmAccount = useEvmAccount()
+  const { account } = useAccount()
+  const evm = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
   const { error } = useWeb3React<providers.Web3Provider>()
@@ -182,8 +184,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
     useBackgroundDataProvider()
 
-  const account = evmAccount?.account?.address || ""
-  const chainId = evmAccount?.account?.chainId || null
+  const accountAddress = account?.address ?? ""
+
+  const address = H160.fromAny(accountAddress)
+
+  const chainId = evm?.account?.chainId || null
   const active = !!account
 
   const extension = wallet?.extension
@@ -389,8 +394,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
   // inject account into zustand as long as aave itnerface is using old web3 providers
   useEffect(() => {
-    setAccount(account?.toLowerCase())
-  }, [account, setAccount])
+    setAccount(address?.toLowerCase())
+  }, [address, setAccount])
 
   useEffect(() => {
     setAccountLoading(loading)
@@ -409,13 +414,13 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           getTxError,
           sendTx,
           signTxData,
-          currentAccount: account?.toLowerCase() || "",
+          currentAccount: address?.toLowerCase() || "",
           addERC20Token,
           error,
           switchNetworkError,
           setSwitchNetworkError,
           readOnlyModeAddress: readOnlyMode
-            ? account?.toLowerCase()
+            ? address?.toLowerCase()
             : undefined,
           readOnlyMode,
         },
