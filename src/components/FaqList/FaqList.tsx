@@ -8,7 +8,7 @@ import { HideShow } from "components/HideShow"
 import { Text } from "components/Typography/Text/Text"
 import { useToggle } from "react-use"
 
-type FaqListItemProps = { question: string; answer: string }
+type FaqListItemProps = { question: string; answer: React.ReactNode }
 
 export type FaqListProps = {
   items: FaqListItemProps[]

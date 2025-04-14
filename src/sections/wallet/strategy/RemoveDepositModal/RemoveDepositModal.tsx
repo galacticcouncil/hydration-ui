@@ -18,6 +18,7 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
 import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { createToastMessages } from "state/toasts"
 
 type Props = {
   readonly assetId: string
@@ -31,8 +32,10 @@ export const RemoveDepositModal: FC<Props> = ({
   onClose,
 }) => {
   const { createTransaction } = useStore()
-  const { tradable } = useAssets()
+  const { tradable, getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
+
+  const asset = getAssetWithFallback(assetId)
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -55,8 +58,29 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const { page, direction, paginateTo } = useModalPagination()
 
+  const amountOutFormatted = new BigNumber(amountOut)
+    .shiftedBy(-(assetReceived?.decimals ?? 0))
+    .toString()
+
+  const minAmountOutFormatted = new BigNumber(minAmountOut)
+    .shiftedBy(-(assetReceived?.decimals ?? 0))
+    .toString()
+
   const onSubmit = () => {
-    createTransaction({ tx: swapTx })
+    createTransaction(
+      { tx: swapTx },
+      {
+        toast: createToastMessages("wallet.strategy.remove.toast", {
+          t,
+          tOptions: {
+            strategy: asset.name,
+            amount: amountOutFormatted,
+            symbol: assetReceived?.symbol,
+          },
+          components: ["span.highlight"],
+        }),
+      },
+    )
   }
 
   const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
@@ -88,18 +112,14 @@ export const RemoveDepositModal: FC<Props> = ({
                     />
                     <RemoveDepositAsset
                       assetId={assetReceived?.id ?? ""}
-                      amountOut={new BigNumber(amountOut)
-                        .shiftedBy(-(assetReceived?.decimals ?? 0))
-                        .toString()}
+                      amountOut={amountOutFormatted}
                       onSelectorOpen={() => paginateTo(1)}
                     />
                   </div>
                   <RemoveDepositSummary
                     assetId={assetId}
                     hfChange={hfChange}
-                    minReceived={new BigNumber(minAmountOut)
-                      .shiftedBy(-(assetReceived?.decimals ?? 0))
-                      .toString()}
+                    minReceived={minAmountOutFormatted}
                     assetReceived={assetReceived}
                   />
                 </div>

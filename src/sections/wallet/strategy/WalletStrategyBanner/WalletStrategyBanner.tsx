@@ -18,7 +18,7 @@ export const WalletStrategyBanner: FC = () => {
   return (
     <SWalletStrategyBanner>
       <SCansImage src={cansImageSrc} alt="Hydration" />
-      <div sx={{ flex: "column", gap: 6 }}>
+      <div sx={{ flex: "column", gap: 6 }} css={{ flex: 1 }}>
         <GigadotTitle
           sx={{ color: "white" }}
           aria-label={t("wallet.strategy.banner.title")}

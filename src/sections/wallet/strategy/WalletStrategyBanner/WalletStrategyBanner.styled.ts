@@ -14,31 +14,32 @@ export const SWalletStrategyBanner = styled.div`
   gap: 8px;
 
   padding-block: 12px;
-  padding-left: 110px;
+  padding-left: 90px;
   padding-right: 12px;
 
   border: 1px solid ${theme.colors.darkBlue400};
   border-radius: 8px;
 
+  background: linear-gradient(180deg, #ff268b 0, rgba(196, 6, 85, 0) 70%);
+
   @media ${theme.viewport.gte.sm} {
     height: 89px;
-    padding-block: 25px;
     padding-left: 125px;
     padding-right: 40px;
-  }
 
-  background: linear-gradient(
-    89.8deg,
-    #ff268b 0.05%,
-    rgba(196, 6, 85, 0) 74.93%
-  );
+    background: linear-gradient(
+      89.8deg,
+      #ff268b 0.05%,
+      rgba(196, 6, 85, 0) 74.93%
+    );
 
-  &:before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: center left url(${background}) no-repeat;
-    pointer-events: none;
+    &:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: center left url(${background}) no-repeat;
+      pointer-events: none;
+    }
   }
 `
 
@@ -48,11 +49,10 @@ export const SCansImage = styled.img`
   top: -12px;
   left: -10px;
 
-  width: 120px;
+  width: 90px;
   height: auto;
 
   @media ${theme.viewport.gte.sm} {
     left: 20px;
-    width: 90px;
   }
 `
