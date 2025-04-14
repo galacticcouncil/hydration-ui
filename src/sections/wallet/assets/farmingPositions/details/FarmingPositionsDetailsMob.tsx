@@ -11,7 +11,6 @@ import {
   isXYKPosition,
 } from "sections/wallet/assets/farmingPositions/WalletFarmingPositions.utils"
 import { Button } from "components/Button/Button"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 
 type Props = {
@@ -28,7 +27,6 @@ export const FarmingPositionsDetailsMob = ({
   const { t } = useTranslation()
   const position = row.position
   const isXYK = isXYKPosition(position)
-  const { account } = useAccount()
 
   const { symbol, date } = row
 
@@ -135,7 +133,6 @@ export const FarmingPositionsDetailsMob = ({
           <Button
             sx={{ width: "100%", mt: 8 }}
             size="small"
-            disabled={account?.isExternalWalletConnected}
             onClick={() => onTransfer(row)}
           >
             <TransferIcon />

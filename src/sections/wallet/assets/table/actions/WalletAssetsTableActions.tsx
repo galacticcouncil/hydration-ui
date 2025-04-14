@@ -79,14 +79,13 @@ export const WalletAssetsTableActions = (props: Props) => {
               search: canBuy ? { assetOut: id } : { assetIn: id },
             })
         : undefined,
-      disabled: !inTradeRouter || account?.isExternalWalletConnected,
+      disabled: !inTradeRouter,
     },
     {
       key: "transfer",
       icon: <TransferIcon />,
       label: t("wallet.assets.table.actions.transfer"),
       onSelect: () => props.onTransferClick(),
-      disabled: account?.isExternalWalletConnected,
     },
   ]
 
@@ -167,18 +166,13 @@ export const WalletAssetsTableActions = (props: Props) => {
         <Dropdown
           align="end"
           disabled={feePayment.isLoading}
-          items={
-            account?.isExternalWalletConnected
-              ? []
-              : [
-                  ...buttons.filter(
-                    (button) =>
-                      hiddenElementsKeys.includes(button.key) &&
-                      !button.disabled,
-                  ),
-                  ...actionItems,
-                ]
-          }
+          items={[
+            ...buttons.filter(
+              (button) =>
+                hiddenElementsKeys.includes(button.key) && !button.disabled,
+            ),
+            ...actionItems,
+          ]}
           onSelect={(item) => item.onSelect?.()}
         >
           {!feePayment.isLoading ? <MoreIcon /> : <Spinner size={15} />}
@@ -216,7 +210,6 @@ export const UpdateTokenDataAction = ({
   className?: string
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const [modalOpen, setModalOpen] = useState(false)
   return (
     <>
@@ -226,7 +219,6 @@ export const UpdateTokenDataAction = ({
         onClick={() => {
           setModalOpen(true)
         }}
-        disabled={account?.isExternalWalletConnected}
         className={className}
       >
         {t("wallet.assets.table.actions.update")}
@@ -256,7 +248,6 @@ export const AddTokenAction = ({
   onClose?: () => void
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const [addTokenModalOpen, setAddTokenModalOpen] = useState(false)
   const getExternalMeta = useExternalTokenMeta()
 
@@ -270,7 +261,7 @@ export const AddTokenAction = ({
           setAddTokenModalOpen(true)
           onClick?.()
         }}
-        disabled={account?.isExternalWalletConnected || !assetMeta}
+        disabled={!assetMeta}
         className={className}
       >
         {t("wallet.assets.table.actions.add")}

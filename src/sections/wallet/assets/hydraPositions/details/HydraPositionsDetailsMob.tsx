@@ -12,7 +12,6 @@ import {
 import { TLPData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { Button } from "components/Button/Button"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
 
 type Props = {
@@ -27,7 +26,6 @@ export const HydraPositionsDetailsMob = ({
   onTransfer,
 }: Props) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
 
   const { getAsset } = useAssets()
 
@@ -167,7 +165,6 @@ export const HydraPositionsDetailsMob = ({
           <Button
             sx={{ width: "100%", mt: 8 }}
             size="small"
-            disabled={account?.isExternalWalletConnected}
             onClick={() => onTransfer(row)}
           >
             <TransferIcon />

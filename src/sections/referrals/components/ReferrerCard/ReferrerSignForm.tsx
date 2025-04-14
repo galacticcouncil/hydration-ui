@@ -145,9 +145,7 @@ export const ReferrerSignForm = () => {
               <div css={{ flex: 1, minWidth: 120, flexBasis: "60%" }}>
                 <SInput
                   autoComplete="off"
-                  disabled={
-                    !account?.address || account.isExternalWalletConnected
-                  }
+                  disabled={!account?.address}
                   hasError={!!error}
                   sx={{ height: 38 }}
                   placeholder={t("referrals.signForm.placeholder")}
@@ -168,7 +166,7 @@ export const ReferrerSignForm = () => {
             variant="blue"
             css={{ whiteSpace: "nowrap", flex: 1 }}
             size="small"
-            disabled={!account?.address || account.isExternalWalletConnected}
+            disabled={!account?.address}
           >
             {t("referrals.signForm.btn")}
           </Button>

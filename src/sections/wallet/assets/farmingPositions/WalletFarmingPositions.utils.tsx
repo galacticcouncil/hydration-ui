@@ -30,7 +30,6 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import { TLPData } from "utils/omnipool"
 import { TableAction } from "components/Table/Table"
 import TransferIcon from "assets/icons/TransferIcon.svg?react"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
 
 export const useFarmingPositionsTable = (
@@ -38,7 +37,6 @@ export const useFarmingPositionsTable = (
   actions: { onTransfer: (position: FarmingTablePosition) => void },
 ) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { accessor, display } = createColumnHelper<FarmingTablePosition>()
   const [sorting, onSortingChange] = useState<SortingState>([])
 
@@ -154,7 +152,6 @@ export const useFarmingPositionsTable = (
             icon={<TransferIcon />}
             onClick={() => actions.onTransfer(row.original)}
             sx={{ mr: 16 }}
-            disabled={account?.isExternalWalletConnected}
           >
             {t("transfer")}
           </TableAction>
