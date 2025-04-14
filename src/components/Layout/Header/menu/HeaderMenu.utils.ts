@@ -19,6 +19,10 @@ export const useActiveMenuItems = () => {
         ({
           ...item,
           subItems: item.subItems?.filter((subItem) => {
+            if (subItem.key === "wallet.strategy") {
+              return featureFlags.gigaDot
+            }
+
             if (subItem.key === "liquidity.myLiquidity") {
               return isPositions
             }

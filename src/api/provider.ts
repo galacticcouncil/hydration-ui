@@ -26,6 +26,7 @@ import {
 import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
+import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -39,6 +40,7 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
+  gigaDot: boolean
 } & { [key: string]: boolean }
 
 export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
@@ -50,8 +52,6 @@ const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   env: "production",
   dataEnv: "mainnet",
 }
-
-const AAVE_AMM_ENABLED = import.meta.env.VITE_FF_AAVE_AMM_ENABLED === "true"
 
 export const PROVIDERS: ProviderProps[] = [
   {
@@ -409,7 +409,12 @@ export const useProviderData = (
         PoolType.LBP,
       ]
 
-      if (AAVE_AMM_ENABLED) {
+      const stablebools = await poolService.getPools([PoolType.Stable])
+      const isGigaDotEnabled = stablebools.some(
+        ({ id }) => id === GDOT_STABLESWAP_ASSET_ID,
+      )
+
+      if (isGigaDotEnabled) {
         traderRoutes.push(PoolType.Aave)
       }
 
@@ -447,7 +452,6 @@ export const useProviderData = (
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
-        tradeRouter.getPools(),
       ])
 
       const balanceClient = new BalanceClient(api)
@@ -467,6 +471,7 @@ export const useProviderData = (
         timestamp,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
+          gigaDot: isGigaDotEnabled,
         } as TFeatureFlags,
       }
     },
