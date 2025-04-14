@@ -13,7 +13,6 @@ import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
 import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
-import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 
 const bannedAssets = ["1000042"]
 
@@ -93,20 +92,21 @@ const fallbackAsset: TAsset = {
 }
 
 const getAdjustedAssetProps = (assetRaw: TAssetStored) => {
-  if (assetRaw.id === GDOT_STABLESWAP_ASSET_ID) {
+  if (assetRaw.type === "Bond") {
+    const bond = assetRaw as TBond
     return {
-      name: "gigaDOT",
-      symbol: "GDOT",
-      iconId: assetRaw.id,
+      iconId: bond.underlyingAssetId,
     }
   }
+
+  if (assetRaw.meta) {
+    return {
+      iconId: Object.keys(assetRaw.meta),
+    }
+  }
+
   return {
-    iconId:
-      assetRaw.type === "Bond"
-        ? (assetRaw as TBond).underlyingAssetId
-        : assetRaw.meta
-          ? Object.keys(assetRaw.meta)
-          : assetRaw.id,
+    iconId: assetRaw.id,
   }
 }
 

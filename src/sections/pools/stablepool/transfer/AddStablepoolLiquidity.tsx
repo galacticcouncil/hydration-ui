@@ -388,7 +388,7 @@ const GigaDotSummary = ({
           content: t("value.tokenWithSymbol", {
             value: BN(minAmountOut).shiftedBy(-gigaDotMeta.decimals),
             type: "token",
-            symbol: gigaDotMeta?.name ?? "gigaDOT",
+            symbol: gigaDotMeta?.name ?? "GIGADOT",
           }),
         },
         {
