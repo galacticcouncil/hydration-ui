@@ -166,7 +166,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             content: (
               <AssetsModalContent
                 hideInactiveAssets
-                allAssets
                 allowedAssets={selectableAssets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
