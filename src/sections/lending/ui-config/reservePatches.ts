@@ -14,7 +14,7 @@ interface IconMapInterface {
 
 const underlyingAssetMap: Record<string, IconMapInterface> = {
   "0x00000000000000000000000000000001000002b2": {
-    name: "gigaDOT",
+    name: "GIGADOT",
     symbol: "GDOT",
     iconSymbol: "GDOT",
   },

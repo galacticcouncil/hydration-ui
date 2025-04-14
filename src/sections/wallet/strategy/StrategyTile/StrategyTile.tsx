@@ -56,7 +56,11 @@ export const StrategyTile: FC<Props> = ({
     <SStrategyTile>
       <StrategyTileBackgroundEffect />
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
-        <AssetOverview assetId={assetId} riskLevel="low" />
+        <AssetOverview
+          assetId={assetId}
+          rewardAssetId={rewardAssetId}
+          riskLevel="low"
+        />
         <Separator color="white" sx={{ opacity: 0.06 }} />
         {depositData ? (
           <CurrentDeposit

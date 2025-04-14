@@ -9,16 +9,24 @@ import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/Strateg
 
 type Props = {
   readonly assetId: string
+  readonly rewardAssetId: string
   readonly riskLevel: StrategyRiskLevel
 }
 
-export const AssetOverview: FC<Props> = ({ assetId, riskLevel }) => {
+export const AssetOverview: FC<Props> = ({
+  assetId,
+  rewardAssetId,
+  riskLevel,
+}) => {
   const { t } = useTranslation()
   const { apy, tvl } = useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
-      <AssetOverviewLogo assetId={assetId} sx={{ display: ["flex", "none"] }} />
+      <AssetOverviewLogo
+        assetId={rewardAssetId}
+        sx={{ display: ["flex", "none"] }}
+      />
       <div
         sx={{
           flex: "row",
@@ -28,7 +36,7 @@ export const AssetOverview: FC<Props> = ({ assetId, riskLevel }) => {
         }}
       >
         <div sx={{ display: ["none", "contents"] }}>
-          <AssetOverviewLogo assetId={assetId} />
+          <AssetOverviewLogo assetId={rewardAssetId} />
           <AssetOverviewSeparator />
         </div>
         <AssetOverviewTile

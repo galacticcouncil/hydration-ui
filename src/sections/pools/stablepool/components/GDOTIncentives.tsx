@@ -4,7 +4,7 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
-import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -26,10 +26,10 @@ export const GDOTIncentives = () => {
         {t("liquidity.stablepool.incetives")}
       </Heading>
       <SContainer sx={{ flex: "row", gap: 6, justify: "space-between" }}>
-        <div sx={{ flex: "row", gap: 6 }}>
-          <Icon size={20} icon={<AssetLogo id={GDOT_STABLESWAP_ASSET_ID} />} />
-          <Text fs={16} fw={600} color="basic100">
-            {getAssetWithFallback(GDOT_STABLESWAP_ASSET_ID).symbol}
+        <div sx={{ flex: "row", align: "center", gap: 6 }}>
+          <Icon size={20} icon={<AssetLogo id={GDOT_ERC20_ASSET_ID} />} />
+          <Text fs={16} fw={600} font="GeistSemiBold" color="basic100">
+            {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
           </Text>
         </div>
         <GDOTAPY withLabel />
@@ -74,7 +74,7 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
             )}
             {[
               ...underlyingAssetsAPY,
-              { apy: incentivesAPY, id: GDOT_STABLESWAP_ASSET_ID },
+              { apy: incentivesAPY, id: GDOT_ERC20_ASSET_ID },
             ].map(({ id, apy }) => {
               return (
                 <div

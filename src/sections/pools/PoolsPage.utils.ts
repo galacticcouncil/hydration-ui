@@ -102,18 +102,21 @@ const useStablepools = () => {
     if (isLoading || !filteredStablepools.length) return []
 
     return filteredStablepools.map((filteredStablepool) => {
+      const isGigaDOT = GDOT_STABLESWAP_ASSET_ID === filteredStablepool.id
+      const meta = getAssetWithFallback(filteredStablepool.id)
+      const metaOverride = isGigaDOT
+        ? getAssetWithFallback(GDOT_ERC20_ASSET_ID)
+        : undefined
+
       const accountAsset = accountAssets?.accountAssetsMap.get(
-        filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
-          ? GDOT_ERC20_ASSET_ID
-          : filteredStablepool.id,
+        isGigaDOT ? GDOT_ERC20_ASSET_ID : filteredStablepool.id,
       )
 
       const isPositions =
         !!accountAsset?.isPoolPositions ||
         BN(accountAsset?.balance?.balance ?? 0).gt(0)
-      const meta = getAssetWithFallback(filteredStablepool.id)
+
       const price = getAssetPrice(filteredStablepool.id).price
-      const isGigaDOT = GDOT_STABLESWAP_ASSET_ID === meta.id
 
       const volume =
         volumes
@@ -142,16 +145,22 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
-      const fee =
-        filteredStablepool.id === GDOT_STABLESWAP_ASSET_ID
-          ? BN(borrow.apy)
-          : BN_NAN
+      const fee = isGigaDOT ? BN(borrow.apy) : BN_NAN
+
+      const name = metaOverride?.name || meta.name
+      const symbol = metaOverride?.symbol || meta.symbol
+      const iconId = metaOverride?.iconId || meta.iconId
 
       return {
         id: filteredStablepool.id,
-        name: meta.name,
-        symbol: meta.symbol,
-        meta,
+        name,
+        symbol,
+        meta: {
+          ...meta,
+          name,
+          symbol,
+          iconId,
+        },
         tvlDisplay,
         spotPrice: price,
         volume,
