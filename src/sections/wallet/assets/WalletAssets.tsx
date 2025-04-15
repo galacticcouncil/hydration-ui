@@ -72,7 +72,7 @@ export const WalletAssets = () => {
   return (
     <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      {featureFlags.gigaDot && <WalletStrategyBanner />}
+      {featureFlags.strategies && <WalletStrategyBanner />}
       <div sx={{ flex: "column", gap: [16, 20] }}>
         <WalletAssetsFilters />
         {section}

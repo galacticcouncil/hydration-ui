@@ -37,7 +37,6 @@ export const LINKS = {
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
-  walletStrategy: "/wallet/strategy",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
   bridge: "/bridge",
@@ -65,6 +64,8 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
   deposit: "/deposit",
   withdraw: "/withdraw",
+  strategies: "/strategies",
+  gigadotStrategies: "/strategies/gigadot",
 }
 
 export const MENU_ITEMS = [
@@ -128,6 +129,18 @@ export const MENU_ITEMS = [
     ],
   },
   {
+    key: "strategies",
+    href: LINKS.strategies,
+    Icon: StrategyIcon,
+    subItems: undefined,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 8,
+    asyncEnabled: true,
+  },
+  {
     key: "liquidity",
     href: LINKS.allPools,
     Icon: PoolsAndFarmsIcon,
@@ -179,12 +192,6 @@ export const MENU_ITEMS = [
         key: "wallet.yourAssets",
         href: LINKS.walletAssets,
         Icon: AssetsIcon,
-        enabled: true,
-      },
-      {
-        key: "wallet.strategy",
-        href: LINKS.walletStrategy,
-        Icon: StrategyIcon,
         enabled: true,
       },
       {

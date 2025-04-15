@@ -40,7 +40,7 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
-  gigaDot: boolean
+  strategies: boolean
 } & { [key: string]: boolean }
 
 export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
@@ -471,7 +471,7 @@ export const useProviderData = (
         timestamp,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
-          gigaDot: isGigaDotEnabled,
+          strategies: isGigaDotEnabled,
         } as TFeatureFlags,
       }
     },

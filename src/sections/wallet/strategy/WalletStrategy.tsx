@@ -20,7 +20,7 @@ export const WalletStrategy: FC = () => {
 
   useMarketChangeSubscription()
 
-  if (!featureFlags.gigaDot) return null
+  if (!featureFlags.strategies) return null
 
   if (!isLoaded) {
     return <WalletStrategySkeleton />
