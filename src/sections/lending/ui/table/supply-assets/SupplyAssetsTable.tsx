@@ -64,7 +64,7 @@ export const SupplyAssetsTable = () => {
     <TableContainer background={supplyAssetsTableBackground}>
       <TableTitleContainer
         spacing={supplyAssetsTableSpacing}
-        customContainer={featureFlags.gigaDot}
+        customContainer={featureFlags.strategies}
       >
         <TableTitle>{t("lending.supply.table.title")}</TableTitle>
         {hasAvailableDeposits && (
@@ -81,12 +81,12 @@ export const SupplyAssetsTable = () => {
           </TableAction>
         )}
       </TableTitleContainer>
-      {featureFlags.gigaDot && (
+      {featureFlags.strategies && (
         <SupplyGigadotRow isLoading={isLoading} onOpenSupply={setSupplyModal} />
       )}
       <DataTable
         css={
-          !featureFlags.gigaDot || !isDesktop
+          !featureFlags.strategies || !isDesktop
             ? { "&": { borderTop: "none" } }
             : undefined
         }

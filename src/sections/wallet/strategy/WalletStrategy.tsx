@@ -24,7 +24,7 @@ export const WalletStrategy: FC = () => {
     return <WalletStrategySkeleton />
   }
 
-  if (!featureFlags.gigaDot) return null
+  if (!featureFlags.strategies) return null
 
   return (
     <WalletStrategyProviders>

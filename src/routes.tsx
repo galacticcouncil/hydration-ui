@@ -258,14 +258,6 @@ export const routes: Route[] = [
         ),
       },
       {
-        path: "strategy",
-        element: (
-          <Suspense fallback={<WalletStrategySkeleton />}>
-            <WalletStrategy />
-          </Suspense>
-        ),
-      },
-      {
         path: "vesting",
         element: (
           <Suspense
@@ -531,6 +523,23 @@ export const routes: Route[] = [
         <WithdrawPage />
       </Suspense>
     ),
+  },
+  {
+    path: LINKS.strategies,
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="gigadot" />,
+      },
+      {
+        path: "gigadot",
+        element: (
+          <Suspense fallback={<WalletStrategySkeleton />}>
+            <WalletStrategy />
+          </Suspense>
+        ),
+      },
+    ],
   },
   {
     path: "*",

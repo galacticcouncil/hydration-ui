@@ -30,7 +30,7 @@ export const WalletStrategyBanner: FC = () => {
       <Button
         size="small"
         sx={{ width: ["100%", 120], ml: "auto" }}
-        as={(props) => <Link to={LINKS.walletStrategy} {...props} />}
+        as={(props) => <Link to={LINKS.gigadotStrategies} {...props} />}
       >
         {t("wallet.strategy.banner.cta")}
       </Button>
