@@ -1,7 +1,7 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions, Option } from "./TransferOptions"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
@@ -14,6 +14,11 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
+import {
+  DOT_ASSET_ID,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+} from "utils/constants"
 
 export enum Page {
   OPTIONS,
@@ -30,18 +35,20 @@ type Props = {
 }
 
 export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, tradable } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
 
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
-  const { id: poolId, canAddLiquidity } = pool as TPoolFullData
+  const { id: poolId, canAddLiquidity, isGigaDOT } = pool as TPoolFullData
 
   const assets = Object.keys(pool.meta.meta ?? {})
 
   const { t } = useTranslation()
-  const [assetId, setAssetId] = useState<string | undefined>(assets[0])
+  const [assetId, setAssetId] = useState<string | undefined>(
+    isGigaDOT ? DOT_ASSET_ID : assets[0],
+  )
 
   const { page, direction, paginateTo } = useModalPagination(defaultPage)
 
@@ -50,6 +57,20 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   )
 
   const isOnlyStablepool = selectedOption === "STABLEPOOL"
+
+  const selectableAssets = useMemo(
+    () =>
+      isGigaDOT
+        ? tradable
+            .map((asset) => asset.id)
+            .filter(
+              (assetId) =>
+                assetId !== GDOT_ERC20_ASSET_ID &&
+                assetId !== GDOT_STABLESWAP_ASSET_ID,
+            )
+        : assets,
+    [assets, isGigaDOT, tradable],
+  )
 
   const goBack = () => {
     if (page === Page.ASSETS) {
@@ -62,11 +83,19 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
       return
     }
 
-    paginateTo(page - 1)
+    const nextPage = page - 1
+
+    if (nextPage === 0 && !canAddLiquidity) {
+      onClose()
+    }
+
+    paginateTo(nextPage)
   }
 
   const title = isOnlyStablepool
-    ? t("liquidity.stablepool.transfer.stablepool")
+    ? t(
+        `liquidity.stablepool.transfer.stablepool${isGigaDOT ? ".gigadot" : ""}`,
+      )
     : t(
         `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
       )
@@ -108,7 +137,6 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             content: (
               <AddStablepoolLiquidity
                 isStablepoolOnly={isOnlyStablepool}
-                onCancel={onClose}
                 onClose={onClose}
                 onSubmitted={onClose}
                 onSuccess={refetch}
@@ -137,9 +165,8 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
             noPadding: true,
             content: (
               <AssetsModalContent
-                hideInactiveAssets={true}
-                allAssets={true}
-                allowedAssets={assets}
+                hideInactiveAssets
+                allowedAssets={selectableAssets}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

@@ -45,8 +45,7 @@ import { assethub } from "@polkadot-api/descriptors"
 import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { CheckBox } from "components/CheckBox/CheckBox"
-import { Alert } from "components/Alert"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -317,19 +316,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               />
             </div>
             {isHealthFactorChanged && (
-              <>
-                <Alert variant="error" sx={{ mb: 10 }}>
-                  {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
-                </Alert>
-                <Text fs={14}>
-                  <CheckBox
-                    checked={healthFactorRiskAccepted}
-                    onChange={(checked) => setHealthFactorRiskAccepted(checked)}
-                    label="I acknowledge the risks involved."
-                    sx={{ flex: "row", align: "center" }}
-                  />
-                </Text>
-              </>
+              <HealthFactorRiskWarning
+                accepted={healthFactorRiskAccepted}
+                onAcceptedChange={setHealthFactorRiskAccepted}
+              />
             )}
             <div
               sx={{

@@ -7,19 +7,17 @@ type BifrostAPY = {
   apyReward: string
 }
 
+export const fetchBifrostVDotApy = async () => {
+  const res = await fetch("https://dapi.bifrost.io/api/site")
+  const data = await res.json()
+  return data["vDOT"] as BifrostAPY
+}
+
 export const useBifrostVDotApy = (
   options: UseQueryOptions<BifrostAPY> = {},
 ) => {
-  return useQuery<BifrostAPY>(
-    QUERY_KEYS.bifrostVDotApy,
-    async () => {
-      const res = await fetch("https://dapi.bifrost.io/api/site")
-      const data = await res.json()
-      return data["vDOT"] as BifrostAPY
-    },
-    {
-      refetchOnWindowFocus: false,
-      ...options,
-    },
-  )
+  return useQuery<BifrostAPY>(QUERY_KEYS.bifrostVDotApy, fetchBifrostVDotApy, {
+    refetchOnWindowFocus: false,
+    ...options,
+  })
 }
