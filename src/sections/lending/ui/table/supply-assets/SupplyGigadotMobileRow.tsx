@@ -10,6 +10,7 @@ import { NoData } from "sections/lending/components/primitives/NoData"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { SupplyGigadotRowData } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow"
 import { getSupplyGigadotRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow.styled"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { getAddressFromAssetId } from "utils/evm"
 
@@ -22,6 +23,7 @@ type Props = {
 
 export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
 
   const asset = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
@@ -69,7 +71,12 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
       cells={row.getVisibleCells()}
       cellIds={["supplyAPY"]}
       footer={
-        <Button onClick={onOpenSupply} fullWidth size="small">
+        <Button
+          onClick={onOpenSupply}
+          fullWidth
+          size="small"
+          disabled={!account}
+        >
           {t("lending.buy")}
         </Button>
       }

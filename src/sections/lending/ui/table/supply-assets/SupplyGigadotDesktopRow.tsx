@@ -18,6 +18,7 @@ import { getAddressFromAssetId } from "utils/evm"
 import { createPortal } from "react-dom"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
   readonly data: SupplyGigadotRowData
@@ -33,6 +34,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { currentMarket } = useProtocolDataContext()
+  const { account } = useAccount()
 
   const [supplyButtonWidth, setSupplyButtonWidth] = useState(0)
   const [supplyButtonHeight, setSupplyButtonHeight] = useState(0)
@@ -99,6 +101,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
                   onOpenSupply()
                 }}
                 size="micro"
+                disabled={!account}
               >
                 {t("lending.buy")}
               </Button>

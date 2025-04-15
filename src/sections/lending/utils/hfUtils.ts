@@ -234,3 +234,54 @@ export const calculateHFAfterWithdraw = ({
 
   return healthFactorAfterWithdraw
 }
+
+interface CalculateHFAfterSupplyProps {
+  user: ExtendedFormattedUser
+  poolReserve: ComputedReserveData
+  supplyAmount: string
+}
+
+export const calculateHFAfterSupply = ({
+  user,
+  poolReserve,
+  supplyAmount,
+}: CalculateHFAfterSupplyProps) => {
+  let healthFactorAfterDeposit = user
+    ? valueToBigNumber(user.healthFactor)
+    : "-1"
+
+  const totalCollateralMarketReferenceCurrencyAfter = user
+    ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency).plus(
+        supplyAmount,
+      )
+    : "-1"
+
+  const liquidationThresholdAfter = user
+    ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency)
+        .multipliedBy(user.currentLiquidationThreshold)
+        .plus(
+          valueToBigNumber(supplyAmount).multipliedBy(
+            poolReserve.formattedReserveLiquidationThreshold,
+          ),
+        )
+        .dividedBy(totalCollateralMarketReferenceCurrencyAfter)
+    : "-1"
+
+  if (
+    user &&
+    ((!user.isInIsolationMode && !poolReserve.isIsolated) ||
+      (user.isInIsolationMode &&
+        user.isolatedReserve?.underlyingAsset === poolReserve.underlyingAsset))
+  ) {
+    healthFactorAfterDeposit = calculateHealthFactorFromBalancesBigUnits({
+      collateralBalanceMarketReferenceCurrency:
+        totalCollateralMarketReferenceCurrencyAfter,
+      borrowBalanceMarketReferenceCurrency: valueToBigNumber(
+        user.totalBorrowsMarketReferenceCurrency,
+      ),
+      currentLiquidationThreshold: liquidationThresholdAfter,
+    })
+  }
+
+  return healthFactorAfterDeposit
+}

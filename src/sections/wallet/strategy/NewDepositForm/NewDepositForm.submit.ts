@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { createToastMessages } from "state/toasts"
 import { useStore } from "state/store"
 import { useTranslation } from "react-i18next"
@@ -10,24 +10,40 @@ import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provi
 import { useQueryClient } from "@tanstack/react-query"
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { useOnNextNetworkUpdate } from "sections/lending/hooks/app-data-provider/useOnNextNetworkUpdate"
+import { useHealthFactorChange } from "api/borrow"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getAddressFromAssetId } from "utils/evm"
 
 export const useSubmitNewDepositForm = (assetId: string) => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { createTransaction } = useStore()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getErc20 } = useAssets()
   const asset = getAssetWithFallback(assetId)
+  const { reserves } = useAppDataContext()
   const { refetchPoolData, refetchIncentiveData } = useBackgroundDataProvider()
   const onNextNetworkUpdate = useOnNextNetworkUpdate()
 
   const { watch } = useFormContext<NewDepositFormValues>()
   const [selectedAsset, amount] = watch(["asset", "amount"])
 
-  const { minAmountOut, swapTx } = useBestTradeSell(
+  const { amountOut, minAmountOut, swapTx } = useBestTradeSell(
     selectedAsset?.id ?? "",
     assetId,
     amount,
   )
+
+  const healthFactorChange = useHealthFactorChange(assetId, amountOut, "supply")
+
+  const underlyingReserve = useMemo(() => {
+    const erc20 = getErc20(assetId)
+    if (!erc20) return undefined
+
+    return reserves.find(
+      (r) =>
+        r.underlyingAsset === getAddressFromAssetId(erc20.underlyingAssetId),
+    )
+  }, [assetId, getErc20, reserves])
 
   const submit = useCallback(
     () =>
@@ -66,5 +82,5 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     ],
   )
 
-  return { minAmountOut, submit }
+  return { minAmountOut, submit, healthFactorChange, underlyingReserve }
 }

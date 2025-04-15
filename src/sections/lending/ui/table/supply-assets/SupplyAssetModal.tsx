@@ -42,7 +42,8 @@ export const SupplyAssetModal: FC<Props> = ({
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
-  const { minAmountOut, submit } = useSubmitNewDepositForm(assetId)
+  const { minAmountOut, submit, healthFactorChange, underlyingReserve } =
+    useSubmitNewDepositForm(assetId)
 
   const onSubmit = (): void => {
     submit()
@@ -67,12 +68,16 @@ export const SupplyAssetModal: FC<Props> = ({
                   selectedAssetBalance={selectedAssetBalance}
                   onSelectAssetClick={allowedAssets.length ? next : noop}
                 />
-                <NewDepositSummary
-                  asset={asset}
-                  minReceived={new BigNumber(minAmountOut || "0")
-                    .shiftedBy(-asset.decimals)
-                    .toString()}
-                />
+                {underlyingReserve && (
+                  <NewDepositSummary
+                    asset={asset}
+                    reserve={underlyingReserve}
+                    minReceived={new BigNumber(minAmountOut || "0")
+                      .shiftedBy(-asset.decimals)
+                      .toString()}
+                    hfChange={healthFactorChange}
+                  />
+                )}
                 {account && (
                   <Button type="submit" variant="primary">
                     {t("lending.supply.modal.cta", { symbol: asset.symbol })}
