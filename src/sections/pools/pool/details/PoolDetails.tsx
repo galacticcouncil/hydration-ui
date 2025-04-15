@@ -26,7 +26,7 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1 } from "utils/constants"
+import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
@@ -59,6 +59,9 @@ export const PoolDetails = () => {
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
+
+  const shouldRenderPoolCap =
+    !isXYKPoolType || pool.id !== GDOT_STABLESWAP_ASSET_ID
 
   return (
     <>
@@ -133,7 +136,7 @@ export const PoolDetails = () => {
         </div>
 
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
-          {!ixXYKPool && (
+          {shouldRenderPoolCap && (
             <>
               <Separator
                 color="white"
