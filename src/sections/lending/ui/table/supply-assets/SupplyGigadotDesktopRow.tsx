@@ -5,7 +5,7 @@ import { TableCell } from "components/DataTable"
 import { Text } from "components/Typography/Text/Text"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { TAsset } from "providers/assets"
-import { FC, useCallback, useState } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { ROUTES } from "sections/lending/components/primitives/Link"
@@ -15,7 +15,6 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { SSupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow.styled"
 import { SupplyGigadotRowData } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow"
 import { getAddressFromAssetId } from "utils/evm"
-import { createPortal } from "react-dom"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -49,7 +48,11 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             })
           }
         >
-          <TableCell css={{ flex: 1, maxWidth: 235 }}>
+          <TableCell
+            sx={{
+              flexBasis: ["44%", "44%", "41%"],
+            }}
+          >
             <AssetNameColumn
               detailsAddress={getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)}
               symbol={gigadot.symbol}
