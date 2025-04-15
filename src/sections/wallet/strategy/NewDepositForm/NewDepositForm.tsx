@@ -69,7 +69,7 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
           <NewDepositAssetField selectedAssetBalance={selectedAssetBalance} />
           {account && (
             <Button type="submit" variant="primary">
-              {depositData ? t("add") : t("wallet.strategy.deposit.cta")}
+              {depositData ? t("add") : t("wallet.strategy.gigadot.deposit.cta")}
             </Button>
           )}
           {!account && <Web3ConnectModalButton />}

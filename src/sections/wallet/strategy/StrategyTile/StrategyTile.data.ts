@@ -7,7 +7,7 @@ import { useAssetsPrice } from "state/displayPrice"
 import { Reward } from "sections/lending/helpers/types"
 import { useUserBorrowSummary } from "api/borrow"
 
-export type StrategyRiskLevel = "low" | "moderate" | "high"
+export type StrategyRiskLevel = "lower" | "medium" | "higher"
 
 export type AssetOverviewData = {
   readonly tvl: string

@@ -59,7 +59,7 @@ export const StrategyTile: FC<Props> = ({
         <AssetOverview
           assetId={assetId}
           rewardAssetId={rewardAssetId}
-          riskLevel="low"
+          riskLevel="lower"
         />
         <Separator color="white" sx={{ opacity: 0.06 }} />
         {depositData ? (
