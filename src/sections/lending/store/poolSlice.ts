@@ -67,6 +67,8 @@ import {
   selectFormattedReserves,
 } from "./poolSelectors"
 import { RootStore } from "./root"
+import { fetchBifrostVDotApy } from "api/external/bifrost"
+import BN from "bignumber.js"
 
 // TODO: what is the better name for this type?
 export type PoolReserve = {
@@ -95,6 +97,7 @@ type GenerateSignatureRequestOpts = {
 
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
+  vDotApy: string
   data: Map<number, Map<string, PoolReserve>>
   refreshPoolData: (marketData?: MarketDataType) => Promise<void>
   refreshPoolV3Data: () => Promise<void>
@@ -213,6 +216,7 @@ export const createPoolSlice: StateCreator<
   }
   return {
     data: new Map(),
+    vDotApy: "0",
     getCorrectPoolBundle() {
       const currentMarketData = get().currentMarketData
       const provider = get().jsonRpcProvider()
@@ -354,6 +358,15 @@ export const createPoolSlice: StateCreator<
               ),
           )
         }
+
+        promises.push(
+          fetchBifrostVDotApy().then((vDotApy) => {
+            set({
+              vDotApy: BN(vDotApy.apy).div(100).toString(),
+            })
+          }),
+        )
+
         await Promise.all(promises)
       } catch (e) {
         console.log("error fetching pool data", e)

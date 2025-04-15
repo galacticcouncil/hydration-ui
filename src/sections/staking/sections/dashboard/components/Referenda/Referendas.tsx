@@ -7,7 +7,6 @@ import {
 } from "api/democracy"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { useHDXSupplyFromSubscan } from "api/staking"
 import {
   Dropdown,
   DropdownTriggerContent,
@@ -17,6 +16,7 @@ import { OpenGovReferenda } from "components/ReferendumCard/Referenda"
 import { NoReferenda } from "components/ReferendumCard/NoReferenda"
 import { ReferendaSkeleton } from "components/ReferendumCard/ReferendaSkeleton"
 import { ReferendaDeprecated } from "components/ReferendumCard/ReferendaDeprecated"
+import { useHDXIssuance } from "api/balances"
 
 const defaultFilter = { key: "all", label: "ALL" }
 
@@ -27,8 +27,8 @@ export const OpenGovReferendas = () => {
   const { data: referendas, isLoading: isLoadingReferendas } =
     useOpenGovReferendas()
   const tracks = useReferendaTracks()
-  const { data: hdxSupply, isLoading: isSupplyLoading } =
-    useHDXSupplyFromSubscan()
+  const { data: HDXIssuance, isLoading: isHDXIssuanceLoading } =
+    useHDXIssuance()
   const { data: referendums = [], isLoading: IsReferendumsLoading } =
     useReferendums("ongoing")
   const [filter, setFilter] = useState(defaultFilter.key)
@@ -61,7 +61,7 @@ export const OpenGovReferendas = () => {
 
   const isLoading =
     isLoadingReferendas ||
-    isSupplyLoading ||
+    isHDXIssuanceLoading ||
     tracks.isLoading ||
     isLoadingAccountVotes ||
     IsReferendumsLoading
@@ -104,7 +104,7 @@ export const OpenGovReferendas = () => {
                   id={referendum.id}
                   referenda={referendum.referendum}
                   track={track}
-                  totalIssuance={hdxSupply?.totalIssuance}
+                  totalIssuance={HDXIssuance}
                   voted={accountVotes.some((vote) => vote.id === referendum.id)}
                 />
               )
