@@ -1,7 +1,11 @@
 import { TBalance, useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import {
+  BN_NAN,
+  GDOT_STABLESWAP_ASSET_ID,
+  PARACHAIN_BLOCK_TIME,
+} from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -56,8 +60,12 @@ export const useAssetsData = ({
       }>(
         (acc, balance) => {
           const meta = getAsset(balance.assetId)
+          const isVisible =
+            meta && meta.id === GDOT_STABLESWAP_ASSET_ID
+              ? BigNumber(balance.total).shiftedBy(-meta.decimals).gt(1)
+              : true
 
-          if (meta) {
+          if (meta && isVisible) {
             if (
               meta.isToken ||
               meta.isStableSwap ||
@@ -174,7 +182,7 @@ export const useAssetsData = ({
             const { id, symbol, name, isExternal } = meta
             const isWithBalance = rowsWithBalance.some((row) => row.id === id)
 
-            if (!isWithBalance) {
+            if (!isWithBalance && id !== GDOT_STABLESWAP_ASSET_ID) {
               const inTradeRouter = tradable.some(
                 (tradeAsset) => tradeAsset.id === id,
               )
