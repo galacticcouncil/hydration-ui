@@ -1,7 +1,8 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
+import { css } from "@emotion/react"
 
-const SPACING = {
+export const DATA_TABLE_SPACING = {
   small: `
     height: 40px;
     padding: 0 16px;
@@ -69,7 +70,7 @@ const TITLE_SPACING = {
   `,
 }
 
-const SIZE = {
+export const DATA_TABLE_SIZE = {
   small: `
     font-size: 12px;
   `,
@@ -81,26 +82,35 @@ const SIZE = {
   `,
 }
 
-export type TableColumnSpacing = keyof typeof SPACING
-export type TableSize = keyof typeof SIZE
+export const DEFAULT_DATA_TABLE_BACKGROUND = "darkBlue700"
+
+export type TableColumnSpacing = keyof typeof DATA_TABLE_SPACING
+export type TableSize = keyof typeof DATA_TABLE_SIZE
 export type TableProps = {
   striped?: boolean
   hoverable?: boolean
   borderless?: boolean
+  customContainer?: boolean
   spacing?: TableColumnSpacing
   size?: TableSize
   fixedLayout?: boolean
   background?: keyof typeof theme.colors | "transparent"
 }
 
-export const TableContainer = styled.div<Pick<TableProps, "background">>`
+export const TableContainer = styled.div<
+  Pick<TableProps, "background" | "customContainer">
+>`
   --border-color: rgba(152, 176, 214, 0.27);
   container-type: inline-size;
 
   overflow-x: auto;
   position: relative;
 
-  margin: 0 -12px;
+  ${({ customContainer }) =>
+    !customContainer &&
+    css`
+      margin: 0 -12px;
+    `}
 
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
@@ -116,12 +126,25 @@ export const TableContainer = styled.div<Pick<TableProps, "background">>`
     border: 1px solid var(--border-color);
     border-radius: ${theme.borderRadius.medium}px;
 
-    margin: unset;
+    ${({ customContainer }) =>
+      !customContainer &&
+      css`
+        margin: unset;
+      `}
+
+    ${({ customContainer }) =>
+      customContainer &&
+      css`
+        border-inline: none;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      `}
   }
 `
 
 export const TableTitleContainer = styled.div<{
   spacing?: TableColumnSpacing
+  customContainer?: boolean
 }>`
   display: flex;
   align-items: center;
@@ -129,6 +152,14 @@ export const TableTitleContainer = styled.div<{
   justify-content: space-between;
 
   ${({ spacing = "medium" }) => TITLE_SPACING[spacing]}
+
+  @media ${theme.viewport.gte.sm} {
+    ${({ customContainer }) =>
+      customContainer &&
+      css`
+        border-bottom: 1px solid var(--border-color);
+      `}
+  }
 `
 
 export const TableTitle = styled.div`
@@ -140,6 +171,10 @@ export const TableTitle = styled.div`
   @media ${theme.viewport.gte.sm} {
     font-size: 16px;
   }
+`
+
+export const TableAction = styled.div`
+  margin-inline: auto;
 `
 
 export const TableAddons = styled.div<{
@@ -230,8 +265,8 @@ function getColumnStyles(spacing: TableColumnSpacing, size: TableSize) {
     tbody td,
     thead th {
       white-space: nowrap;
-      ${SPACING[spacing]}
-      ${SIZE[size]}
+      ${DATA_TABLE_SPACING[spacing]}
+      ${DATA_TABLE_SIZE[size]}
     }
 
     thead th {

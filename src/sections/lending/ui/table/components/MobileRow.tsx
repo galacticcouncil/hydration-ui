@@ -16,6 +16,7 @@ export type MobileRowProps<T> = {
   cellIds?: string[]
   cells?: Cell<T, unknown>[]
   footer?: React.ReactNode
+  className?: string
 }
 
 export function MobileRow<T>({
@@ -26,6 +27,7 @@ export function MobileRow<T>({
   cellIds = [],
   cells = [],
   footer,
+  className,
 }: MobileRowProps<T>) {
   const { currentMarket } = useProtocolDataContext()
 
@@ -36,7 +38,7 @@ export function MobileRow<T>({
   }, [cellIds, cells])
 
   return (
-    <SContainer>
+    <SContainer className={className}>
       <Link to={ROUTES.reserveOverview(detailsAddress, currentMarket)}>
         <div sx={{ flex: "row", align: "center", gap: 8 }}>
           {detailsAddress && <TokenIcon address={detailsAddress} size={28} />}

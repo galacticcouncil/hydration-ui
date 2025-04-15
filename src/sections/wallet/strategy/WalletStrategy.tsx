@@ -6,7 +6,7 @@ import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.
 import { StrategyTile } from "sections/wallet/strategy/StrategyTile/StrategyTile"
 import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.utils"
 
 const GigadotAnswers = lazy(async () => ({
   default: (
@@ -15,7 +15,8 @@ const GigadotAnswers = lazy(async () => ({
 }))
 
 export const WalletStrategy: FC = () => {
-  const { dataEnv, isLoaded, featureFlags } = useRpcProvider()
+  const { assetId, underlyingAssetId } = useGigadotAssetIds()
+  const { isLoaded, featureFlags } = useRpcProvider()
 
   useMarketChangeSubscription()
 
@@ -25,25 +26,11 @@ export const WalletStrategy: FC = () => {
     return <WalletStrategySkeleton />
   }
 
-  const [assetId, underlyingAssetId, rewardAssetId] =
-    dataEnv === "mainnet"
-      ? [GDOT_STABLESWAP_ASSET_ID, GDOT_ERC20_ASSET_ID, GDOT_ERC20_ASSET_ID]
-      : // erc20 and stableswap asset IDs are flipped on testnet
-        [
-          GDOT_ERC20_ASSET_ID,
-          GDOT_STABLESWAP_ASSET_ID,
-          GDOT_STABLESWAP_ASSET_ID,
-        ]
-
   return (
     <WalletStrategyProviders>
       <SWalletStrategy>
         <WalletStrategyHeader />
-        <StrategyTile
-          assetId={assetId}
-          underlyingAssetId={underlyingAssetId}
-          rewardAssetId={rewardAssetId}
-        />
+        <StrategyTile assetId={assetId} underlyingAssetId={underlyingAssetId} />
         <GigadotAnswers />
       </SWalletStrategy>
     </WalletStrategyProviders>

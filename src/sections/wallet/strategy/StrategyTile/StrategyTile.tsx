@@ -17,18 +17,14 @@ import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 
 type Props = {
   readonly assetId: string
   readonly underlyingAssetId: string
-  readonly rewardAssetId: string
 }
 
-export const StrategyTile: FC<Props> = ({
-  assetId,
-  underlyingAssetId,
-  rewardAssetId,
-}) => {
+export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
@@ -40,7 +36,7 @@ export const StrategyTile: FC<Props> = ({
       "0",
   ).shiftedBy(-(underlyingAsset.decimals ?? 0))
 
-  const reward = useAssetReward(rewardAssetId)
+  const reward = useAssetReward(underlyingAssetId)
   const rewardBalance = new BigNumber(reward.balance)
 
   const hasBalance = depositBalance.gt(0) || rewardBalance.gt(0)
@@ -58,14 +54,13 @@ export const StrategyTile: FC<Props> = ({
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
         <AssetOverview
           assetId={assetId}
-          rewardAssetId={rewardAssetId}
+          underlyingAssetId={underlyingAssetId}
           riskLevel="lower"
         />
         <Separator color="white" sx={{ opacity: 0.06 }} />
         {depositData ? (
           <CurrentDeposit
             assetId={underlyingAssetId}
-            rewardAssetId={rewardAssetId}
             depositData={depositData}
           />
         ) : (
@@ -73,7 +68,9 @@ export const StrategyTile: FC<Props> = ({
         )}
       </div>
       <StrategyTileSeparator />
-      <NewDepositForm assetId={underlyingAssetId} depositData={depositData} />
+      <NewDepositFormWrapper>
+        <NewDepositForm assetId={underlyingAssetId} depositData={depositData} />
+      </NewDepositFormWrapper>
     </SStrategyTile>
   )
 }

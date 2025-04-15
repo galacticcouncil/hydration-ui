@@ -33,11 +33,11 @@ export const AssetOverviewTile: FC<Props> = ({
         css={{ textTransform: "capitalize" }}
         color={(() => {
           switch (variant) {
-            case "risk:low":
+            case "risk:lower":
               return "brightBlue300"
-            case `risk:moderate`:
+            case `risk:medium`:
               return "warningYellow300"
-            case "risk:high":
+            case "risk:higher":
               return "red500"
             default:
               return "white"
