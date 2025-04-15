@@ -17,7 +17,6 @@ export const getSupplyGigadotRowGradient = (rotation: number) => css`
 
 export const SSupplyGigadotDesktopRow = styled.tr`
   display: flex;
-  justify-content: space-between;
   align-items: center;
 
   cursor: pointer;

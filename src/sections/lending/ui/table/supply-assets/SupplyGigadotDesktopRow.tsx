@@ -36,17 +36,6 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
   const { currentMarket } = useProtocolDataContext()
   const { account } = useAccount()
 
-  const [supplyButtonWidth, setSupplyButtonWidth] = useState(0)
-  const [supplyButtonHeight, setSupplyButtonHeight] = useState(0)
-
-  const handleSupplyButtonWidth = useCallback((e: HTMLElement | null) => {
-    setSupplyButtonWidth(e?.getBoundingClientRect().width ?? 0)
-  }, [])
-
-  const handleSupplyButtonHeight = useCallback((e: HTMLElement | null) => {
-    setSupplyButtonHeight(e?.getBoundingClientRect().height ?? 0)
-  }, [])
-
   return (
     <table sx={{ display: "block" }}>
       <tbody sx={{ display: "block" }}>
@@ -60,22 +49,24 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             })
           }
         >
-          <TableCell>
+          <TableCell css={{ flex: 1, maxWidth: 235 }}>
             <AssetNameColumn
               detailsAddress={getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)}
               symbol={gigadot.symbol}
             />
           </TableCell>
           <TableCell>
-            <Text fw={500} fs={10} lh="1.4" color="whiteish500">
+            <Text fw={500} fs={11} lh="1.4" tAlign="center" color="whiteish500">
               {t("lending.apy")}
             </Text>
-            <div sx={{ flex: "row", align: "center", gap: 1 }}>
+            <div
+              sx={{ flex: "row", align: "center", justify: "center", gap: 1 }}
+            >
               {data.supplyAPY.toString() === "-1" ? (
                 <NoData />
               ) : (
-                <div sx={{ flex: "column", gap: 2 }}>
-                  <Text fw={500} fs={13} lh="1" color="white">
+                <div sx={{ flex: "column", align: "center", gap: 2 }}>
+                  <Text fw={500} fs={14} lh="1" color="white">
                     <FormattedNumber
                       percent
                       value={new BigNumber(data.supplyAPY).toString()}
@@ -89,13 +80,10 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
               )}
             </div>
           </TableCell>
-          <TableCell css={{ alignSelf: "flex-center" }}>
+          <TableCell sx={{ ml: "auto" }}>
             <div sx={{ flex: "row", align: "center" }}>
               <Button
-                sx={{
-                  height: supplyButtonHeight,
-                  width: supplyButtonWidth,
-                }}
+                sx={{ py: 4 }}
                 onClick={(e) => {
                   e.stopPropagation()
                   onOpenSupply()
@@ -103,7 +91,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
                 size="micro"
                 disabled={!account}
               >
-                {t("lending.buy")}
+                {t("lending.supply")}
               </Button>
               <Link
                 to={ROUTES.reserveOverview(
@@ -116,25 +104,6 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             </div>
           </TableCell>
         </SSupplyGigadotDesktopRow>
-        {createPortal(
-          <div
-            ref={handleSupplyButtonHeight}
-            sx={{ flex: "row", align: "center" }}
-            css={{
-              position: "absolute",
-              visibility: "hidden",
-              height: "max-content",
-            }}
-          >
-            <Button ref={handleSupplyButtonWidth} size="micro">
-              {t("lending.supply")}
-            </Button>
-            <Link>
-              <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
-            </Link>
-          </div>,
-          document.body!,
-        )}
       </tbody>
     </table>
   )
