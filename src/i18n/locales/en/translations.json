@@ -674,7 +674,7 @@
   "wallet.strategy.banner.description": "Get GIGADOT and start accumulating yield from 3 sources: vDOT, aDOT, and incentives. No lock-up periods, withdraw at any time.",
   "wallet.strategy.banner.cta": "Jump in",
   "wallet.strategy.gigadot.title": "Stretegy: GIGADOT",
-  "wallet.strategy.risk.lower.tooltip": "This strategy has a relatively lower risk",
+  "wallet.strategy.risk.gigadot.tooltip": "Entering GIGADOT involves exposure to price fluctuations of the underlying assets. If you're using GIGADOT as collateral, ensure your risk tolerance aligns with the health factor of your Supply & Borrow position.",
   "wallet.strategy.gigadot.emptyState": "DOT but on steroids. GDOT tracks the price of DOT while earning yield from multiple sources. You can buy GDOT using any asset. No lock-up periods, withdraw at any time.",
   "wallet.strategy.gigadot.whatIs": "What is GIGADOT?",
   "wallet.strategy.gigadot.whatIs.answer": "GIGADOT (GDOT) is a composite token that allows users to hold DOT while accumulating yield from up to four revenue streams:<br/>1. staking yield from vDOT (DOT LST by Bifrost)<br/>2. lending yield from aDOT (DOT provided as collateral on Hydration Lending)<br/>3. trading fees between vDOT and aDOT<br/>4. additional liquidity incentives<br/><br>Learn more in our docs.",

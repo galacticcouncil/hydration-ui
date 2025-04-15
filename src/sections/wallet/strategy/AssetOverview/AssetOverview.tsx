@@ -43,7 +43,7 @@ export const AssetOverview: FC<Props> = ({
           variant={`risk:${riskLevel}`}
           label={`${t("risk")}:`}
           value={riskLevel}
-          icon={<InfoTooltip text={t("wallet.strategy.risk.lower.tooltip")} />}
+          icon={<InfoTooltip text={t("wallet.strategy.risk.gigadot.tooltip")} />}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
