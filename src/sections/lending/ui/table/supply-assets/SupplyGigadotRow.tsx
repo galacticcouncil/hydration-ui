@@ -1,14 +1,20 @@
 import { FC, useMemo } from "react"
 import { getAddressFromAssetId } from "utils/evm"
 import { useAssets } from "providers/assets"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  ComputedReserveData,
+  useAppDataContext,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SupplyGigadotMobileRow } from "sections/lending/ui/table/supply-assets/SupplyGigadotMobileRow"
 import { SupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigadotDesktopRow"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 
-export type SupplyGigadotRowData = { readonly supplyAPY: string }
+export type SupplyGigadotRowData = Pick<
+  ComputedReserveData,
+  "supplyAPY" | "aIncentivesData" | "symbol"
+>
 
 type Props = {
   // TODO skeleton
@@ -20,14 +26,20 @@ export const SupplyGigadotRow: FC<Props> = ({ onOpenSupply }) => {
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
 
-  const { user } = useAppDataContext()
+  const { reserves } = useAppDataContext()
   const underlyingAssetAddress = getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)
-  const supplyAPY =
-    user.userReservesData.find(
-      (userReserves) => userReserves.underlyingAsset === underlyingAssetAddress,
-    )?.reserve.supplyAPY ?? "-1"
 
-  const data = useMemo(() => ({ supplyAPY }), [supplyAPY])
+  const data = useMemo<SupplyGigadotRowData>(() => {
+    const reserve = reserves.find(
+      (reserve) => reserve.underlyingAsset === underlyingAssetAddress,
+    )
+    return {
+      supplyAPY: reserve?.supplyAPY ?? "-1",
+      aIncentivesData: reserve?.aIncentivesData ?? [],
+      symbol: reserve?.symbol ?? "",
+    }
+  }, [reserves, underlyingAssetAddress])
+
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   if (!isDesktop) {

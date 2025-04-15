@@ -17,6 +17,7 @@ import { SupplyGigadotRowData } from "sections/lending/ui/table/supply-assets/Su
 import { getAddressFromAssetId } from "utils/evm"
 import { createPortal } from "react-dom"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 
 type Props = {
   readonly data: SupplyGigadotRowData
@@ -71,18 +72,18 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
               {data.supplyAPY.toString() === "-1" ? (
                 <NoData />
               ) : (
-                <>
+                <div sx={{ flex: "column", gap: 2 }}>
                   <Text fw={500} fs={13} lh="1" color="white">
                     <FormattedNumber
-                      value={new BigNumber(data.supplyAPY)
-                        .times(100)
-                        .toString()}
+                      percent
+                      value={new BigNumber(data.supplyAPY).toString()}
                     />
                   </Text>
-                  <Text fw={500} fs={16} lh="1" color="darkBlue200">
-                    %
-                  </Text>
-                </>
+                  <IncentivesButton
+                    incentives={data.aIncentivesData}
+                    symbol={data.symbol}
+                  />
+                </div>
               )}
             </div>
           </TableCell>
