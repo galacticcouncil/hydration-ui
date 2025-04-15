@@ -248,13 +248,13 @@ export const calculateHFAfterSupply = ({
 }: CalculateHFAfterSupplyProps) => {
   let healthFactorAfterDeposit = user
     ? valueToBigNumber(user.healthFactor)
-    : "-1"
+    : valueToBigNumber("-1")
 
   const totalCollateralMarketReferenceCurrencyAfter = user
     ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency).plus(
         supplyAmount,
       )
-    : "-1"
+    : valueToBigNumber("-1")
 
   const liquidationThresholdAfter = user
     ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency)
@@ -265,7 +265,7 @@ export const calculateHFAfterSupply = ({
           ),
         )
         .dividedBy(totalCollateralMarketReferenceCurrencyAfter)
-    : "-1"
+    : valueToBigNumber("-1")
 
   if (
     user &&
