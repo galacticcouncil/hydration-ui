@@ -7,6 +7,7 @@ import {
   SubNavigation,
   SubNavigationTabLink,
 } from "components/Layout/SubNavigation/SubNavigation"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { LINKS } from "utils/navigation"
 
@@ -15,10 +16,11 @@ const isDevelopment = import.meta.env.VITE_ENV === "development"
 export const Navigation = () => {
   const { t } = useTranslation()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
+  const { featureFlags } = useRpcProvider()
 
   const visibilityMap: Record<string, boolean> = {
     [LINKS.walletAssets]: true,
-    [LINKS.walletStrategy]: true,
+    [LINKS.walletStrategy]: featureFlags.gigaDot,
     [LINKS.walletTransactions]: isDevelopment,
     [LINKS.walletVesting]: !!totalVestedAmount?.gt(0),
   }

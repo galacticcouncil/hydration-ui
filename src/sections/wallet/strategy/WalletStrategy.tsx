@@ -15,10 +15,11 @@ const GigadotAnswers = lazy(async () => ({
 }))
 
 export const WalletStrategy: FC = () => {
-  const { dataEnv } = useRpcProvider()
-  const { isLoaded } = useRpcProvider()
+  const { dataEnv, isLoaded, featureFlags } = useRpcProvider()
 
   useMarketChangeSubscription()
+
+  if (!featureFlags.gigaDot) return null
 
   if (!isLoaded) {
     return <WalletStrategySkeleton />

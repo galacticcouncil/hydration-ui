@@ -17,7 +17,7 @@ import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBan
 export const WalletAssets = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { isLoaded } = useRpcProvider()
+  const { isLoaded, featureFlags } = useRpcProvider()
 
   const { category } = useWalletAssetsFilters()
 
@@ -72,7 +72,7 @@ export const WalletAssets = () => {
   return (
     <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      <WalletStrategyBanner />
+      {featureFlags.gigaDot && <WalletStrategyBanner />}
       <div sx={{ flex: "column", gap: [16, 20] }}>
         <WalletAssetsFilters />
         {section}
