@@ -2628,10 +2628,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-6.0.0.tgz#94a8d451ad1d7aed87b3965bb65653b0af2ab5d3"
-  integrity sha512-SYkKMmc99GzwYf5tMaanOGtP5dedcIP1xrv+bs6TDTP0pzxUeyzSDeffopDKNDuokzT0UtWpv8AGf1vqApA7OQ==
+"@galacticcouncil/sdk@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-6.1.0.tgz#2eebdad339c2b0607d3852bae13a155daa1a5128"
+  integrity sha512-YyRKysPeUXM98AE6GHSbG5ZsoTcGdKOkC0ZYCGbyUfcx7HXiEyGv4HLHVWlxeZqzfbAaelLNPyv4laIcrVEI+A==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
