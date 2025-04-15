@@ -474,6 +474,7 @@
   "otc.order.fill.getTitle": "You get",
   "otc.order.fill.confirm": "Fill order",
   "otc.order.fill.validation.notEnoughBalance": "Insufficient balance.",
+  "otc.order.fill.validation.orderTooLow": "Amount for OTC order is too low.",
   "otc.order.fill.validation.orderTooBig": "The amount exceeds the size of the order.",
   "otc.order.fill.toast.onLoading": "<0>Filling an OTC order for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",
   "otc.order.fill.toast.onSuccess": "<0>OTC order filled for </0><1>{{ amount, bignumber }} {{ symbol }}</1>.",

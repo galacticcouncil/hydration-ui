@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
 import i18n from "i18next"
+import { TAsset } from "providers/assets"
 import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { z } from "zod"
@@ -39,6 +40,42 @@ export const validateMaxBalance = (
 ): boolean =>
   Number.isFinite(decimals) &&
   BigNumber(value).lte(BigNumber(balance).shiftedBy(-decimals))
+export const otcExistentialDeposit = (
+  asset: TAsset | undefined,
+  multiplier: number | undefined,
+) => {
+  return z
+    .string()
+    .pipe(positive)
+    .refine(
+      (value) =>
+        asset &&
+        multiplier !== undefined &&
+        Number.isFinite(asset.decimals) &&
+        BigNumber(value).gte(
+          BigNumber(asset.existentialDeposit)
+            .shiftedBy(-asset.decimals)
+            .multipliedBy(multiplier),
+        ),
+      i18n.t("otc.order.fill.validation.orderTooLow"),
+    )
+}
+
+export const validateOtcExistentialDeposit = (
+  asset: TAsset | undefined,
+  multiplier: number | undefined,
+  amount: string,
+): string | undefined =>
+  !asset ||
+  !Number.isFinite(asset.decimals) ||
+  multiplier === undefined ||
+  BigNumber(amount).gte(
+    BigNumber(asset.existentialDeposit)
+      .shiftedBy(-asset.decimals)
+      .multipliedBy(multiplier),
+  )
+    ? undefined
+    : i18n.t("otc.order.fill.validation.orderTooLow")
 
 export const noWhitespace = z
   .string()
