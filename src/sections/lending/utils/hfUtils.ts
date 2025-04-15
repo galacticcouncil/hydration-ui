@@ -246,13 +246,17 @@ export const calculateHFAfterSupply = ({
   poolReserve,
   supplyAmount,
 }: CalculateHFAfterSupplyProps) => {
+  const supplyAmountInEth = valueToBigNumber(supplyAmount).multipliedBy(
+    poolReserve.formattedPriceInMarketReferenceCurrency,
+  )
+
   let healthFactorAfterDeposit = user
     ? valueToBigNumber(user.healthFactor)
     : valueToBigNumber("-1")
 
   const totalCollateralMarketReferenceCurrencyAfter = user
     ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency).plus(
-        supplyAmount,
+        supplyAmountInEth,
       )
     : valueToBigNumber("-1")
 
@@ -260,7 +264,7 @@ export const calculateHFAfterSupply = ({
     ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency)
         .multipliedBy(user.currentLiquidationThreshold)
         .plus(
-          valueToBigNumber(supplyAmount).multipliedBy(
+          supplyAmountInEth.multipliedBy(
             poolReserve.formattedReserveLiquidationThreshold,
           ),
         )

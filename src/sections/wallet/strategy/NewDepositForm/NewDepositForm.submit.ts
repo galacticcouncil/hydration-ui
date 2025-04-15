@@ -13,6 +13,7 @@ import { useOnNextNetworkUpdate } from "sections/lending/hooks/app-data-provider
 import { useHealthFactorChange } from "api/borrow"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
+import BN from "bignumber.js"
 
 export const useSubmitNewDepositForm = (assetId: string) => {
   const { t } = useTranslation()
@@ -33,7 +34,11 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     amount,
   )
 
-  const healthFactorChange = useHealthFactorChange(assetId, amountOut, "supply")
+  const healthFactorChange = useHealthFactorChange(
+    assetId,
+    BN(amountOut).shiftedBy(-asset.decimals).toString(),
+    "supply",
+  )
 
   const underlyingReserve = useMemo(() => {
     const erc20 = getErc20(assetId)
