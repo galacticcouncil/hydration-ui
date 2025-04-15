@@ -17,7 +17,10 @@ import {
   AaveV3HydrationTestnet,
 } from "sections/lending/ui-config/addresses"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
-import { calculateHFAfterWithdraw } from "sections/lending/utils/hfUtils"
+import {
+  calculateHFAfterSupply,
+  calculateHFAfterWithdraw,
+} from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAddressFromAssetId, getAssetIdFromAddress, H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -260,6 +263,7 @@ export type UseHealthFactorChangeResult = {
 export const useHealthFactorChange = (
   assetId: string,
   amount: string,
+  action: "withdraw" | "supply" = "withdraw",
 ): UseHealthFactorChangeResult => {
   const { getErc20 } = useAssets()
   const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
@@ -278,12 +282,19 @@ export const useHealthFactorChange = (
     if (!userReserve) return null
 
     const currentHealthFactor = user.healthFactor
-    const futureHealthFactor = calculateHFAfterWithdraw({
-      user: user,
-      userReserve: userReserve,
-      poolReserve: userReserve.reserve,
-      withdrawAmount: amount || "0",
-    }).toString()
+    const futureHealthFactor =
+      action === "withdraw"
+        ? calculateHFAfterWithdraw({
+            user: user,
+            userReserve: userReserve,
+            poolReserve: userReserve.reserve,
+            withdrawAmount: amount || "0",
+          }).toString()
+        : calculateHFAfterSupply({
+            user,
+            poolReserve: userReserve.reserve,
+            supplyAmount: amount || "0",
+          }).toString()
 
     const isHealthFactorBelowThreshold =
       currentHealthFactor !== "-1" &&
@@ -295,7 +306,7 @@ export const useHealthFactorChange = (
       currentHealthFactor,
       futureHealthFactor,
     }
-  }, [amount, underlyingAssetId, user])
+  }, [action, amount, underlyingAssetId, user])
 }
 
 export const useBorrowMarketTotals = () => {

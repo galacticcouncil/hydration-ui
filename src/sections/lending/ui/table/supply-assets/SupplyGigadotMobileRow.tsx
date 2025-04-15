@@ -4,11 +4,13 @@ import { useReactTable } from "hooks/useReactTable"
 import { useAssets } from "providers/assets"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { SupplyGigadotRowData } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow"
 import { getSupplyGigadotRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow.styled"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { getAddressFromAssetId } from "utils/evm"
 
@@ -21,12 +23,13 @@ type Props = {
 
 export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
 
   const asset = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
 
   const table = useReactTable({
-    data: useMemo(() => [{ supplyAPY: data.supplyAPY }], [data.supplyAPY]),
+    data: useMemo(() => [data], [data]),
     columns: useMemo(
       () => [
         columnHelper.accessor("supplyAPY", {
@@ -37,10 +40,16 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
             },
           },
           cell: ({ row }) => {
-            const { supplyAPY } = row.original
+            const { supplyAPY, aIncentivesData, symbol } = row.original
 
             return supplyAPY.toString() !== "-1" ? (
-              <FormattedNumber value={supplyAPY} percent />
+              <>
+                <FormattedNumber value={supplyAPY} percent />
+                <IncentivesButton
+                  incentives={aIncentivesData}
+                  symbol={symbol}
+                />
+              </>
             ) : (
               <NoData />
             )
@@ -62,7 +71,12 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
       cells={row.getVisibleCells()}
       cellIds={["supplyAPY"]}
       footer={
-        <Button onClick={onOpenSupply} fullWidth size="small">
+        <Button
+          onClick={onOpenSupply}
+          fullWidth
+          size="small"
+          disabled={!account}
+        >
           {t("lending.buy")}
         </Button>
       }
