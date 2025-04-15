@@ -6,7 +6,9 @@ import {
 import { Fragment, ReactNode } from "react"
 import { TableSortHead } from "./components/TableSortHead"
 import {
+  DEFAULT_DATA_TABLE_BACKGROUND,
   Table,
+  TableAction,
   TableAddons,
   TableBody,
   TableCell,
@@ -38,10 +40,11 @@ export function DataTable<T extends Record<string, any>>({
   fixedLayout = false,
   spacing = "medium",
   size = "medium",
-  background = "darkBlue700",
+  background = DEFAULT_DATA_TABLE_BACKGROUND,
   borderless,
   striped,
   hoverable,
+  customContainer,
   onRowClick,
   emptyFallback,
   renderRow,
@@ -71,11 +74,18 @@ export function DataTable<T extends Record<string, any>>({
   const shouldRenderTable = !shouldRenderRows
 
   return (
-    <TableContainer className={className} background={background}>
+    <TableContainer
+      className={className}
+      background={background}
+      customContainer={customContainer}
+    >
       {(title || action) && (
-        <TableTitleContainer spacing={spacing}>
+        <TableTitleContainer
+          spacing={spacing}
+          customContainer={customContainer}
+        >
           {title && <TableTitle>{title}</TableTitle>}
-          <div sx={{ ml: "auto" }}>{action}</div>
+          <TableAction>{action}</TableAction>
         </TableTitleContainer>
       )}
 

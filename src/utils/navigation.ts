@@ -10,6 +10,7 @@ import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
+import StrategyIcon from "assets/icons/StrategyIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
@@ -63,6 +64,8 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
   deposit: "/deposit",
   withdraw: "/withdraw",
+  strategies: "/strategies",
+  gigadotStrategies: "/strategies/gigadot",
 }
 
 export const MENU_ITEMS = [
@@ -124,6 +127,18 @@ export const MENU_ITEMS = [
         enabled: true,
       },
     ],
+  },
+  {
+    key: "strategies",
+    href: LINKS.strategies,
+    Icon: StrategyIcon,
+    subItems: undefined,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 8,
+    asyncEnabled: true,
   },
   {
     key: "liquidity",

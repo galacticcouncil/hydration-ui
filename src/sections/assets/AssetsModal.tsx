@@ -114,7 +114,7 @@ export const AssetsModalContent = ({
 
       <ModalScrollableContent
         sx={{
-          maxHeight: ["100%", 600],
+          maxHeight: ["100%", "min(calc(90vh - 250px), 600px)"],
           pr: 0,
           width: "100%",
         }}

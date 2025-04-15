@@ -46,6 +46,7 @@ export const SMaxButton = styled(Button)`
   color: ${theme.colors.white};
 
   font-weight: 700;
+  font-family: GeistSemiBold;
   font-size: 11px;
 
   border-color: transparent;

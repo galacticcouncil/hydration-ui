@@ -26,12 +26,13 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1 } from "utils/constants"
+import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
+import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -50,7 +51,7 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        defaultPage={Page.OPTIONS}
+        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
       />
@@ -58,6 +59,9 @@ export const PoolDetails = () => {
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
+
+  const shouldRenderPoolCap =
+    !isXYKPoolType || pool.id !== GDOT_STABLESWAP_ASSET_ID
 
   return (
     <>
@@ -109,7 +113,7 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              !pool.canAddLiquidity ||
+              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
               account?.isExternalWalletConnected ||
               native.id === pool.id
             }
@@ -132,7 +136,7 @@ export const PoolDetails = () => {
         </div>
 
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
-          {!ixXYKPool && (
+          {shouldRenderPoolCap && (
             <>
               <Separator
                 color="white"
@@ -255,6 +259,18 @@ export const PoolDetails = () => {
             />
 
             <CurrencyReserves reserves={pool.reserves} />
+
+            {pool.isGigaDOT && (
+              <>
+                <Separator
+                  color="white"
+                  opacity={0.06}
+                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
+                />
+
+                <GDOTIncentives />
+              </>
+            )}
           </>
         ) : null}
 

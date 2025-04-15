@@ -50,7 +50,7 @@ export const WalletAssetsFilters = () => {
   )
 
   return (
-    <div sx={{ flex: "column", gap: [16, 30], mb: [16, 20] }}>
+    <div sx={{ flex: "column", gap: [24, 40] }}>
       <Search
         value={searchVal}
         onChange={setSearchVal}
