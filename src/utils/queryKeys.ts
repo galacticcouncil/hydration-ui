@@ -12,6 +12,7 @@ import { EventName } from "sections/lending/subsections/history/types"
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
+  hdxIssuance: ["hdxIssuance"],
   assets: (rpc: string) => ["assets", rpc],
   bondsAssets: ["bondsAssets"],
   providerAccounts: (provider: string | undefined) => [
@@ -182,6 +183,7 @@ export const QUERY_KEYS = {
     "otcOrdersState",
     orderId?.toString(),
   ],
+  otcExistentialDepositMultiplier: ["otcExistentialDepositMultiplier"],
   provider: ["provider"],
   providerMetadata: ["providerMetadata"],
   math: ["@galacticcouncil/math"],
