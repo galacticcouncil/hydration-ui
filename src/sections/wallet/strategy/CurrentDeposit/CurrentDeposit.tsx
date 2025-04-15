@@ -21,15 +21,10 @@ export type CurrentDepositData = {
 
 type Props = {
   readonly assetId: string
-  readonly rewardAssetId: string
   readonly depositData: CurrentDepositData
 }
 
-export const CurrentDeposit: FC<Props> = ({
-  assetId,
-  rewardAssetId,
-  depositData,
-}) => {
+export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
   const { t } = useTranslation()
   const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
 
@@ -38,7 +33,7 @@ export const CurrentDeposit: FC<Props> = ({
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
-  const { getAssetPrice } = useAssetsPrice([assetId, rewardAssetId])
+  const { getAssetPrice } = useAssetsPrice([assetId])
   const spotPrice = getAssetPrice(assetId).price || "0"
 
   const depositValue = new BigNumber(spotPrice)

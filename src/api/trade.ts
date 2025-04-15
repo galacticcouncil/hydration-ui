@@ -2,6 +2,7 @@ import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { useQuery } from "@tanstack/react-query"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useMemo } from "react"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 const calculateSlippage = (amount: string, slippagePct: string): string => {
@@ -34,9 +35,11 @@ export const useBestTradeSell = (
   const amountOut = tradeData?.amountOut.toString() || "0"
   const minAmountOut = getMinAmountOut(amountOut, slippageData || "0")
 
-  const swapTx = tradeData
-    ? api.tx(tradeData.toTx(BN(minAmountOut)).hex)
-    : undefined
+  const swapTx = useMemo(
+    () =>
+      tradeData ? api.tx(tradeData.toTx(BN(minAmountOut)).hex) : undefined,
+    [api, minAmountOut, tradeData],
+  )
 
   return { minAmountOut, swapTx, amountOut, isLoading: isInitialLoading }
 }

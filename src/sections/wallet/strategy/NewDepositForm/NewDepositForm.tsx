@@ -1,7 +1,7 @@
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNewDepositForm } from "./NewDepositForm.form"
-import { FormProvider } from "react-hook-form"
+import { NewDepositFormValues } from "./NewDepositForm.form"
+import { FormProvider, useFormContext } from "react-hook-form"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { CurrentDepositData } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit"
@@ -12,9 +12,14 @@ import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
-import { useStore } from "state/store"
-import { useBestTradeSell } from "api/trade"
-import { createToastMessages } from "state/toasts"
+import { Modal } from "components/Modal/Modal"
+import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
+import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import { noop } from "utils/helpers"
+import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
+
+const assetsBlacklist = [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
 
 type Props = {
   readonly assetId: string
@@ -23,53 +28,42 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
   const { t } = useTranslation()
+  const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
+
   const { account } = useAccount()
+
   const { getAssetWithFallback } = useAssets()
-  const { createTransaction } = useStore()
   const asset = getAssetWithFallback(assetId)
 
   const { data: accountAssets } = useAccountAssets()
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
-  const form = useNewDepositForm()
-  const [selectedAsset, amount] = form.watch(["asset", "amount"])
+  const form = useFormContext<NewDepositFormValues>()
+  const selectedAsset = form.watch("asset")
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
-  const { minAmountOut, swapTx } = useBestTradeSell(
-    selectedAsset?.id ?? "",
-    assetId,
-    amount,
-  )
-
-  const onSubmit = () => {
-    createTransaction(
-      { tx: swapTx },
-      {
-        toast: createToastMessages("wallet.strategy.deposit.toast", {
-          t,
-          tOptions: {
-            strategy: asset.name,
-            amount: amount,
-            symbol: selectedAsset?.symbol,
-          },
-          components: ["span.highlight"],
-        }),
-      },
-    )
-  }
+  const allowedAssets = useNewDepositAssets(assetsBlacklist)
+  const { minAmountOut, submit } = useSubmitNewDepositForm(assetId)
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(submit)}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fw={[126, 600]} fs={[14, 17.5]} lh="1.2" color="white">
             {t("wallet.strategy.deposit.yourDeposit")}
           </Text>
-          <NewDepositAssetField selectedAssetBalance={selectedAssetBalance} />
+          <NewDepositAssetField
+            selectedAssetBalance={selectedAssetBalance}
+            onSelectAssetClick={
+              allowedAssets.length ? () => setIsAssetSelectOpen(true) : noop
+            }
+          />
           {account && (
             <Button type="submit" variant="primary">
-              {depositData ? t("add") : t("wallet.strategy.gigadot.deposit.cta")}
+              {depositData
+                ? t("add")
+                : t("wallet.strategy.gigadot.deposit.cta")}
             </Button>
           )}
           {!account && <Web3ConnectModalButton />}
@@ -81,6 +75,17 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
           />
         </div>
       </form>
+      <Modal
+        open={isAssetSelectOpen}
+        onClose={() => setIsAssetSelectOpen(false)}
+        title={t("selectAsset.title")}
+        noPadding
+      >
+        <NewDepositAssetSelector
+          allowedAssets={allowedAssets}
+          onClose={() => setIsAssetSelectOpen(false)}
+        />
+      </Modal>
     </FormProvider>
   )
 }

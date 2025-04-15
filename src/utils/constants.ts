@@ -63,3 +63,8 @@ export const GDOT_ERC20_ASSET_ID = "69"
 export const VDOT_ASSET_ID = "15"
 export const DOT_ASSET_ID = "5"
 export const VALID_STABLEPOOLS = [GDOT_STABLESWAP_ASSET_ID]
+
+export const CUSTOM_SUPPLY_MODAL_ASSETS = [
+  GDOT_STABLESWAP_ASSET_ID,
+  GDOT_ERC20_ASSET_ID,
+]
