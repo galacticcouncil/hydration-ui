@@ -10,11 +10,11 @@ import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm
 import { NewDepositAssetField } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetField"
 import { Button } from "components/Button/Button"
 import BigNumber from "bignumber.js"
-import { NewDepositSummary } from "sections/wallet/strategy/NewDepositForm/NewDepositSummary"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
+import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
 
 type Props = {
   readonly assetId: string
@@ -42,7 +42,8 @@ export const SupplyAssetModal: FC<Props> = ({
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
-  const { minAmountOut, submit } = useSubmitNewDepositForm(assetId)
+  const { minAmountOut, submit, healthFactorChange, underlyingReserve } =
+    useSubmitNewDepositForm(assetId)
 
   const onSubmit = (): void => {
     submit()
@@ -67,12 +68,16 @@ export const SupplyAssetModal: FC<Props> = ({
                   selectedAssetBalance={selectedAssetBalance}
                   onSelectAssetClick={allowedAssets.length ? next : noop}
                 />
-                <NewDepositSummary
-                  asset={asset}
-                  minReceived={new BigNumber(minAmountOut || "0")
-                    .shiftedBy(-asset.decimals)
-                    .toString()}
-                />
+                {underlyingReserve && (
+                  <SupplyAssetSummary
+                    asset={asset}
+                    reserve={underlyingReserve}
+                    minReceived={new BigNumber(minAmountOut || "0")
+                      .shiftedBy(-asset.decimals)
+                      .toString()}
+                    hfChange={healthFactorChange}
+                  />
+                )}
                 {account && (
                   <Button type="submit" variant="primary">
                     {t("lending.supply.modal.cta", { symbol: asset.symbol })}

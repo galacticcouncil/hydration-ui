@@ -14,7 +14,7 @@ export const NewDepositSummary: FC<Props> = ({ asset, minReceived }) => {
   return (
     <div sx={{ flex: "row", justify: "space-between" }}>
       <Text fw={500} fs={[12, 14]} color="basic400">
-        {t("wallet.strategy.deposit.minReceived")}
+        {t("wallet.strategy.deposit.minReceived")}:
       </Text>
       <Text fw={500} fs={[12, 14]} color="white">
         {"≈ "}
