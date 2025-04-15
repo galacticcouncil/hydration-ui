@@ -38,9 +38,6 @@ const commitHash = child
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   return {
-    server: {
-      port: 5174,
-    },
     define: {
       "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
     },

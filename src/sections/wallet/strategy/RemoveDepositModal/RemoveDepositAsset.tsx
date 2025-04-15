@@ -46,8 +46,8 @@ export const RemoveDepositAsset: FC<Props> = ({
               onClick={onSelectorOpen}
             />
             <div sx={{ flex: "column", align: "flex-end" }}>
-              <Text fs={[16, 20]} lh={26} fw={[500, 700]}>
-                {amountOut}
+              <Text fs={[16, 18]} fw={[500, 700]}>
+                {t("value.token", { value: amountOut })}
               </Text>
               <Text color="basic400" fs={11}>
                 <DisplayValue value={amountOutDisplay} />
