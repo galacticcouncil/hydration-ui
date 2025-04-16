@@ -20,18 +20,23 @@ export const LendingPageIndex = () => {
   return <Navigate to={LINKS.borrowDashboard} />
 }
 
-export const LendingPage = () => {
-  useMarketChangeSubscription()
-
+export const LendingPageOutlet = () => {
   const { isLoaded } = useRpcProvider()
+  const { loading } = useAppDataContext()
 
-  if (!isLoaded) {
+  if (loading || !isLoaded) {
     return <LendingDashboardSkeleton />
   }
 
+  return <Outlet />
+}
+
+export const LendingPage = () => {
+  useMarketChangeSubscription()
+
   return (
     <LendingPageProviders>
-      <Outlet />
+      <LendingPageOutlet />
     </LendingPageProviders>
   )
 }
