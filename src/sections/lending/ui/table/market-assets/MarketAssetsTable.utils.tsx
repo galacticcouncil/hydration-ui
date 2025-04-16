@@ -5,14 +5,13 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
+import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
-import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { arraySearch } from "utils/helpers"
 
 export type TSupplyAssetsTableData = ReturnType<typeof useAppDataContext>
@@ -33,7 +32,6 @@ export const useMarketAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),
@@ -191,29 +189,20 @@ export const useMarketAssetsTableColumns = () => {
 export const useMarketAssetsTableData = ({
   search,
 }: { search?: string } = {}) => {
+  const displayGho = useRootStore((state) => state.displayGho)
   const { reserves, loading } = useAppDataContext()
-  const { currentNetworkConfig } = useProtocolDataContext()
+  const { currentMarket } = useProtocolDataContext()
 
   const data = useMemo(() => {
-    const data = reserves
-      // Filter out any non-active reserves
-      .filter((res) => res.isActive)
-      // Transform the object for list to consume it
-      .map((reserve) => ({
-        ...reserve,
-        ...(reserve.isWrappedBaseAsset
-          ? fetchIconSymbolAndName({
-              symbol: currentNetworkConfig.baseAssetSymbol,
-              underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-            })
-          : {}),
-      }))
-      .filter((r) => !r.isFrozen && !r.isPaused)
+    const data = reserves.filter((r) => {
+      const isGho = displayGho({ symbol: r.symbol, currentMarket })
+      return !isGho && r.isActive && !r.isFrozen && !r.isPaused
+    })
 
     return search
       ? arraySearch(data, search, ["name", "symbol", "underlyingAsset"])
       : data
-  }, [currentNetworkConfig.baseAssetSymbol, reserves, search])
+  }, [currentMarket, displayGho, reserves, search])
 
   return {
     data,

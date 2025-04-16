@@ -68,7 +68,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
     }, [props.value, spotPrice])
 
     return (
-      <>
+      <div sx={{ flex: "column" }}>
         <SContainer
           className={props.className}
           htmlFor={props.name}
@@ -172,7 +172,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
           </div>
         </SContainer>
         {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
-      </>
+      </div>
     )
   },
 )

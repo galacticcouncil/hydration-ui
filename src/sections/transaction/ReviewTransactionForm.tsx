@@ -17,6 +17,7 @@ import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
+  useHealthFactorChangeFromTx,
   usePolkadotJSTxUrl,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
@@ -44,6 +45,7 @@ import { assethub } from "@polkadot-api/descriptors"
 import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -102,6 +104,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     permitNonce,
     pendingPermit,
   } = transactionValues.data
+
+  const healthFactorChange = useHealthFactorChangeFromTx(tx)
+
+  const isHealthFactorChanged =
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
 
   const isPermitTxPending = !!pendingPermit
 
@@ -261,6 +273,14 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
+  const isSubmitDisabled =
+    isPermitTxPending ||
+    !isWalletReady ||
+    !account ||
+    isLoading ||
+    (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
+    (!!isHealthFactorChanged && !healthFactorRiskAccepted)
+
   return (
     <>
       <ModalScrollableContent
@@ -291,8 +311,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   isCustomNonceEnabled ? setCustomNonce : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
+                currentHealthFactor={healthFactorChange?.currentHealthFactor}
+                futureHealthFactor={healthFactorChange?.futureHealthFactor}
               />
             </div>
+            {isHealthFactorChanged && (
+              <HealthFactorRiskWarning
+                accepted={healthFactorRiskAccepted}
+                onAcceptedChange={setHealthFactorRiskAccepted}
+              />
+            )}
             <div
               sx={{
                 mt: ["auto", 24],
@@ -318,13 +346,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                     text={btnText}
                     variant="primary"
                     isLoading={isPermitTxPending || isLoading}
-                    disabled={
-                      isPermitTxPending ||
-                      !isWalletReady ||
-                      !account ||
-                      isLoading ||
-                      (!isEnoughPaymentBalance && !hasMultipleFeeAssets)
-                    }
+                    disabled={isSubmitDisabled}
                     onClick={onConfirmClick}
                   />
                 )}

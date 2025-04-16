@@ -8,7 +8,7 @@ import {
   getAddress as getEvmAddress,
 } from "@ethersproject/address"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { addr, EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
@@ -74,6 +74,22 @@ export class H160 {
     const slicedBytes = decodedBytes.slice(0, 20)
     return u8aToHex(slicedBytes)
   }
+
+  static fromAny = (address: string) => {
+    if (isEvmAddress(address)) {
+      return address
+    }
+
+    if (isEvmAccount(address)) {
+      return H160.fromAccount(address)
+    }
+
+    if (addr.isSs58(address)) {
+      return H160.fromSS58(address)
+    }
+
+    return ""
+  }
 }
 
 export function getEvmTxLink(
@@ -119,7 +135,7 @@ export function safeConvertAddressH160(value: string): string | null {
   }
 }
 
-export function getEvmChainById(chainId: number) {
+export function getEvmChainById(chainId: number): EvmParachain | undefined {
   const chain = Array.from(chainsMap.values()).find(
     (chain) => isAnyEvmChain(chain) && chain.client.chainId === chainId,
   ) as EvmParachain
@@ -127,6 +143,43 @@ export function getEvmChainById(chainId: number) {
   if (chain) {
     return chain
   }
+}
+
+export function strip0x(hex: string): string {
+  return hex.startsWith("0x") ? hex.slice(2) : hex
+}
+
+export function getAssetIdFromAddress(address: string): string {
+  if (!isEvmAddress(address)) return ""
+
+  try {
+    const addressBuffer = Buffer.from(strip0x(address), "hex")
+    const assetIdBuffer = addressBuffer.subarray(16)
+    return assetIdBuffer.readUIntBE(0, assetIdBuffer.length).toString()
+  } catch {
+    return ""
+  }
+}
+
+export function getAddressFromAssetId(assetId: string): string {
+  try {
+    const tokenAddress = Buffer.from(
+      "0000000000000000000000000000000100000000",
+      "hex",
+    )
+    const assetIdBuffer = numToBuffer(+assetId)
+    assetIdBuffer.copy(tokenAddress, 16)
+
+    return "0x" + tokenAddress.toString("hex")
+  } catch {
+    return ""
+  }
+}
+
+function numToBuffer(num: number): Buffer {
+  const arr = new Uint8Array(4)
+  for (let i = 0; i < 4; i++) arr.set([num / 0x100 ** i], 3 - i)
+  return Buffer.from(arr)
 }
 
 export { getEvmAddress, isEvmAddress }

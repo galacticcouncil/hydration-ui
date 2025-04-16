@@ -26,6 +26,7 @@ import {
 import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
+import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -39,9 +40,10 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
+  strategies: boolean
 } & { [key: string]: boolean }
 
-export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
 
 const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   indexerUrl: "https://explorer.hydradx.cloud/graphql",
@@ -128,7 +130,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Paseo",
-    url: `wss://${PASEO_WS_URL}`,
+    url: PASEO_WS_URL,
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
@@ -160,6 +162,8 @@ export const isTestnetRpcUrl = (rpcUrl: string) => {
   const dataEnv = getProviderDataEnv(rpcUrl)
   return dataEnv === "testnet"
 }
+
+export const isPaseoRpcUrl = (rpcUrl: string) => rpcUrl === PASEO_WS_URL
 
 export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
@@ -404,6 +408,16 @@ export const useProviderData = (
         PoolType.XYK,
         PoolType.LBP,
       ]
+
+      const stablebools = await poolService.getPools([PoolType.Stable])
+      const isGigaDotEnabled = stablebools.some(
+        ({ id }) => id === GDOT_STABLESWAP_ASSET_ID,
+      )
+
+      if (isGigaDotEnabled) {
+        traderRoutes.push(PoolType.Aave)
+      }
+
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
@@ -438,7 +452,6 @@ export const useProviderData = (
 
       const [isDispatchPermitEnabled] = await Promise.all([
         api.tx.multiTransactionPayment.dispatchPermit,
-        tradeRouter.getPools(),
       ])
 
       const balanceClient = new BalanceClient(api)
@@ -458,6 +471,7 @@ export const useProviderData = (
         timestamp,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
+          strategies: isGigaDotEnabled,
         } as TFeatureFlags,
       }
     },

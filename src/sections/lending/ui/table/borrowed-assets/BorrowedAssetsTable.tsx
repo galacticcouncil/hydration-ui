@@ -53,7 +53,12 @@ export const BorrowedAssetsTable = () => {
           {t("lending.borrowed.table.empty")}
         </Text>
       }
-      action={<EmodeButton />}
+      action={
+        <EmodeButton
+          css={{ position: "absolute" }}
+          sx={{ right: [10, 20], top: 20 }}
+        />
+      }
     />
   )
 }

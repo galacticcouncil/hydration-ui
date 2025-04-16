@@ -46,20 +46,18 @@ export const AssetSelectButton = ({
         onClick?.()
       }}
     >
-      <MultipleAssetLogo size={30} iconId={asset?.iconId} />
+      <MultipleAssetLogo size={[24, 30]} iconId={asset?.iconId} />
 
       {isAssetFound && (
         <div sx={{ flex: "column", justify: "space-between", minWidth: 0 }}>
-          <Text fw={700} font="GeistMedium" lh={16} color="white">
+          <Text fw={700} font="GeistSemiBold" lh={16} color="white">
             {symbol}
           </Text>
           <Text
             fs={13}
             lh={13}
+            truncate={120}
             css={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
               color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
               display: isTablet ? "block" : "none",
             }}

@@ -83,6 +83,7 @@ export interface AppDataContextType {
   ghoReserveData: FormattedGhoReserveData
   ghoUserData: FormattedGhoUserData
   ghoLoadingData: boolean
+  ghoEnabled: boolean
 }
 
 const AppDataContext = React.createContext<AppDataContextType>(
@@ -96,7 +97,7 @@ const AppDataContext = React.createContext<AppDataContextType>(
 export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const currentTimestamp = useCurrentTimestamp(5)
+  const currentTimestamp = useCurrentTimestamp(60)
   const { currentAccount } = useWeb3Context()
   const { currentMarket } = useProtocolDataContext()
   const [
@@ -316,6 +317,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
         },
         ghoUserData: formattedGhoUserData,
         ghoLoadingData: !ghoReserveDataFetched,
+        ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
       }}
     >
       {children}

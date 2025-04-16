@@ -11,9 +11,8 @@ import {
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
-import { APYTypeButtonColumn } from "sections/lending/ui/columns/APYTypeButtonColumn"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData
@@ -24,9 +23,7 @@ const { accessor, display } = createColumnHelper<TBorrowedAssetsRow>()
 
 export const useBorrowedAssetsTableColumns = () => {
   const { t } = useTranslation()
-  const { openRepay, openRateSwitch } = useModalContext()
-
-  const { currentMarket } = useProtocolDataContext()
+  const { openRepay } = useModalContext()
 
   return useMemo(
     () => [
@@ -36,7 +33,6 @@ export const useBorrowedAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
-            iconSymbol={row.original.reserve.iconSymbol}
           />
         ),
       }),
@@ -84,40 +80,6 @@ export const useBorrowedAssetsTableColumns = () => {
           )
         },
       }),
-      accessor("borrowRateMode", {
-        header: t("lending.apyType"),
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
-        cell: ({ row }) => {
-          const { reserve, borrowRateMode } = row.original
-          const {
-            isActive,
-            isFrozen,
-            isPaused,
-            stableBorrowRateEnabled,
-            stableBorrowAPY,
-            variableBorrowAPY,
-            underlyingAsset,
-          } = reserve
-          const disabled =
-            !stableBorrowRateEnabled || isFrozen || !isActive || isPaused
-          return (
-            <APYTypeButtonColumn
-              stableBorrowRateEnabled={stableBorrowRateEnabled}
-              borrowRateMode={borrowRateMode}
-              disabled={disabled}
-              onClick={() => openRateSwitch(underlyingAsset, borrowRateMode)}
-              stableBorrowAPY={stableBorrowAPY}
-              variableBorrowAPY={variableBorrowAPY}
-              underlyingAsset={underlyingAsset}
-              currentMarket={currentMarket}
-            />
-          )
-        },
-      }),
       display({
         id: "actions",
         meta: {
@@ -144,7 +106,7 @@ export const useBorrowedAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, openRateSwitch, openRepay, t],
+    [openRepay, t],
   )
 }
 

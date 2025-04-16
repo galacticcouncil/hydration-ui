@@ -2,6 +2,8 @@ import { ReserveDataHumanized } from "@aave/contract-helpers"
 import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
+  valueToBigNumber,
+  WEI_DECIMALS,
 } from "@aave/math-utils"
 import { EmodeCategory } from "sections/lending/helpers/types"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
@@ -12,6 +14,14 @@ import {
 
 import { PoolReserve } from "./poolSlice"
 import { RootStore } from "./root"
+import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
+import { produce } from "immer"
+import { getAddressFromAssetId } from "utils/evm"
+import {
+  DOT_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VDOT_ASSET_ID,
+} from "utils/constants"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -114,17 +124,16 @@ export const selectCurrentBaseCurrencyData = (state: RootStore) => {
 }
 
 export const reserveSortFn = (
-  a: { totalLiquidityUSD: string },
-  b: { totalLiquidityUSD: string },
+  a: { totalLiquidityUSD: string; symbol: string },
+  b: { totalLiquidityUSD: string; symbol: string },
 ) => {
+  if (a.symbol === GHO_SYMBOL) return -1
+  if (b.symbol === GHO_SYMBOL) return 1
   const numA = parseFloat(a.totalLiquidityUSD)
   const numB = parseFloat(b.totalLiquidityUSD)
 
   return numB > numA ? 1 : -1
 }
-
-// TODO move formatUserSummaryAndIncentives
-// export const selectSortedCurrentUserReservesData = (state: RootStore) => {};
 
 export const selectFormattedReserves = (
   state: RootStore,
@@ -134,6 +143,22 @@ export const selectFormattedReserves = (
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
   const currentNetworkConfig = state.currentNetworkConfig
 
+  const defaultReserveIncentives = state.reserveIncentiveData || []
+  const reserveIncentives = defaultReserveIncentives.map((incentive) => {
+    if (!incentive.aIncentiveData.rewardsTokenInformation.length) {
+      return incentive
+    }
+
+    return produce(incentive, (draft) => {
+      draft.aIncentiveData.rewardsTokenInformation.forEach((reward) => {
+        // emissionPerSecond is expected to be in WEI, so we need to convert it to the correct decimals
+        reward.emissionPerSecond = valueToBigNumber(reward.emissionPerSecond)
+          .shiftedBy(WEI_DECIMALS - reward.rewardTokenDecimals)
+          .toString()
+      })
+    })
+  })
+
   const formattedPoolReserves = formatReservesAndIncentives({
     reserves,
     currentTimestamp,
@@ -141,7 +166,7 @@ export const selectFormattedReserves = (
       baseCurrencyData.marketReferenceCurrencyDecimals,
     marketReferencePriceInUsd:
       baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-    reserveIncentives: state.reserveIncentiveData || [],
+    reserveIncentives: reserveIncentives,
   })
     .map((r) => ({
       ...r,
@@ -153,7 +178,37 @@ export const selectFormattedReserves = (
     }))
     .sort(reserveSortFn)
 
-  return formattedPoolReserves
+  return produce(formattedPoolReserves, (draft) => {
+    const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
+
+    if (vDotReserve) {
+      const vDotApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
+        state.vDotApy,
+      )
+
+      vDotReserve.supplyAPY = vDotApy.toString()
+
+      const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
+      const gDotReserve = reserveMap.get(
+        getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+      )
+
+      if (gDotReserve && dotReserve) {
+        const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
+        const vdotApyHalf = vDotApy.div(2)
+
+        // @TODO: Add GDOT LP Fee when available
+        const gdotLpFee = "0"
+
+        gDotReserve.supplyAPY = vdotApyHalf
+          .plus(dotApyHalf)
+          .plus(gdotLpFee)
+          .toString()
+      }
+    }
+  })
 }
 
 export const selectUserSummaryAndIncentives = (
@@ -167,7 +222,6 @@ export const selectUserSummaryAndIncentives = (
   const reserveIncentiveData = state.reserveIncentiveData
   const userIncentiveData = state.userIncentiveData
 
-  // TODO: why <any>
   return formatUserSummaryAndIncentives({
     currentTimestamp,
     marketReferencePriceInUsd:

@@ -23,19 +23,21 @@ export const IncentivesTooltipContent = ({
     incentiveAPR: "Infinity" | number | string
   }) => {
     return (
-      <div css={{ display: "inline-flex", alignItems: "center" }}>
+      <div sx={{ display: "flex", align: "center" }}>
         {incentiveAPR !== "Infinity" ? (
           <>
-            <FormattedNumber value={+incentiveAPR} percent />
-            <Text sx={{ ml: 4 }}>
-              <span>APR</span>
+            <Text fs={14}>
+              <FormattedNumber value={+incentiveAPR} percent />
+            </Text>
+            <Text fs={14} sx={{ ml: 4 }}>
+              APR
             </Text>
           </>
         ) : (
           <>
             <Text>∞ %</Text>
-            <Text sx={{ ml: 4 }}>
-              <span>APR</span>
+            <Text fs={14} sx={{ ml: 4 }}>
+              APR
             </Text>
           </>
         )}
@@ -45,29 +47,21 @@ export const IncentivesTooltipContent = ({
 
   return (
     <div sx={{ flex: "column", justify: "center", align: "center" }}>
-      <Text color="basic400" sx={{ mb: 4 }}>
-        <span>
-          Participating in this {symbol} reserve gives annualized rewards.
-        </span>
+      <Text fs={14} color="basic400" sx={{ mb: 4 }}>
+        Participating in this {symbol} reserve gives annualized rewards.
       </Text>
-
       <div sx={{ width: "100%" }}>
         {incentives.map((incentive) => (
           <Row
+            sx={{ mt: 4, align: "center" }}
             caption={
-              <div
-                sx={{
-                  flex: "row",
-                  align: "center",
-                  mb: incentives.length > 1 ? 2 : 0,
-                }}
-              >
+              <div sx={{ flex: "row", align: "center" }}>
                 <TokenIcon
-                  symbol={incentive.rewardTokenSymbol}
+                  address={incentive.rewardTokenAddress}
                   size={20}
-                  sx={{ mr: 16 }}
+                  sx={{ mr: 8 }}
                 />
-                <Text>{incentive.rewardTokenSymbol}</Text>
+                <Text fs={14}>{incentive.rewardTokenSymbol}</Text>
               </div>
             }
             key={incentive.rewardTokenAddress}
@@ -75,16 +69,12 @@ export const IncentivesTooltipContent = ({
             <Number incentiveAPR={incentive.incentiveAPR} />
           </Row>
         ))}
-
         {incentives.length > 1 && (
           <div
-            css={{ border: `1px solid ${theme.colors.basic400}` }}
-            sx={{
-              pt: 4,
-              mt: 4,
-            }}
+            css={{ borderTop: `1px solid ${theme.colors.basic700}` }}
+            sx={{ pt: 8, mt: 8 }}
           >
-            <Row caption={<span>Net APR</span>}>
+            <Row caption={<Text fs={14}>Net APR</Text>}>
               <Number incentiveAPR={incentivesNetAPR} />
             </Row>
           </div>

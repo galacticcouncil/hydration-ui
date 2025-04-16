@@ -11,7 +11,7 @@ import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import {
   MarketDataType,
   NetworkConfig,
@@ -218,7 +218,9 @@ export const BorrowInfo = ({
                     <a
                       target="_blank"
                       css={{ textDecoration: "underline" }}
-                      href={currentMarketData.addresses.COLLECTOR}
+                      href={currentNetworkConfig.explorerLinkBuilder({
+                        address: currentMarketData.addresses.COLLECTOR,
+                      })}
                       rel="noreferrer"
                     >
                       &nbsp;
