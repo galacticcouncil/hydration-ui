@@ -15,6 +15,14 @@ const GigadotAnswers = lazy(async () => ({
   ).GigadotAnswers,
 }))
 
+export const WalletStrategyFormSkeleton = () => (
+  <div sx={{ flex: "column", justify: "space-between", gap: 20 }}>
+    <Skeleton width="30%" height={20} />
+    <AssetInputSkeleton />
+    <Skeleton height={44} />
+  </div>
+)
+
 export const WalletStrategySkeleton: FC = () => {
   return (
     <SWalletStrategy>
@@ -36,11 +44,7 @@ export const WalletStrategySkeleton: FC = () => {
           </div>
         </div>
         <StrategyTileSeparator />
-        <div sx={{ flex: "column", justify: "space-between", gap: 20 }}>
-          <Skeleton width="30%" height={20} />
-          <AssetInputSkeleton />
-          <Skeleton height={44} />
-        </div>
+        <WalletStrategyFormSkeleton />
       </SStrategyTile>
       <GigadotAnswers />
     </SWalletStrategy>

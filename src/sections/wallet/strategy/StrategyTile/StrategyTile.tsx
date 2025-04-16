@@ -18,6 +18,8 @@ import { useAssets } from "providers/assets"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
+import { WalletStrategyFormSkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
+import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 type Props = {
   readonly assetId: string
@@ -28,7 +30,7 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
-
+  const defaultAssetId = useNewDepositDefaultAssetId()
   const { data: accountAssets } = useAccountAssets()
 
   const depositBalance = new BigNumber(
@@ -68,9 +70,16 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
         )}
       </div>
       <StrategyTileSeparator />
-      <NewDepositFormWrapper>
-        <NewDepositForm assetId={underlyingAssetId} depositData={depositData} />
-      </NewDepositFormWrapper>
+      {defaultAssetId ? (
+        <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
+          <NewDepositForm
+            assetId={underlyingAssetId}
+            depositData={depositData}
+          />
+        </NewDepositFormWrapper>
+      ) : (
+        <WalletStrategyFormSkeleton />
+      )}
     </SStrategyTile>
   )
 }
