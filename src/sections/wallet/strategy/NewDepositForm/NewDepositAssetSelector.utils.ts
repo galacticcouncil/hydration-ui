@@ -22,10 +22,13 @@ export const useNewDepositAssets = (
 }
 
 export const useNewDepositDefaultAssetId = () => {
-  const { data: accountAssets } = useAccountAssets()
+  const { account } = useAccount()
+  const { data: accountAssets, isSuccess } = useAccountAssets()
   const { getAsset } = useAssets()
 
   return useMemo(() => {
+    if (!account) return DOT_ASSET_ID
+
     if (!accountAssets) return
 
     const hasDotBalance = new BigNumber(
@@ -44,5 +47,5 @@ export const useNewDepositDefaultAssetId = () => {
     )
 
     return assetWithBalance?.assetId ?? DOT_ASSET_ID
-  }, [accountAssets, getAsset])
+  }, [account, accountAssets, getAsset])
 }
