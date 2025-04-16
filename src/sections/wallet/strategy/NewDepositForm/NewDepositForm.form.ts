@@ -10,7 +10,6 @@ import * as z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useAccountAssets } from "api/deposits"
-import { DOT_ASSET_ID } from "utils/constants"
 
 const useSchema = () => {
   const { data: accountAssets } = useAccountAssets()
@@ -40,11 +39,17 @@ const useSchema = () => {
 }
 
 export type NewDepositFormValues = z.infer<ReturnType<typeof useSchema>>
+export type NewDepositFormOptions = {
+  defaultAssetId: string
+}
 
-export const useNewDepositForm = () => {
+export const useNewDepositForm = ({
+  defaultAssetId,
+}: NewDepositFormOptions) => {
   const { getAsset } = useAssets()
+
   const defaultValues: NewDepositFormValues = {
-    asset: getAsset(DOT_ASSET_ID) ?? null,
+    asset: getAsset(defaultAssetId) ?? null,
     amount: "",
   }
 
