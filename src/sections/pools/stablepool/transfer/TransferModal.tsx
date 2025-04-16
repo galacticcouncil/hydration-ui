@@ -14,11 +14,8 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import {
-  DOT_ASSET_ID,
-  GDOT_ERC20_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-} from "utils/constants"
+import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 export enum Page {
   OPTIONS,
@@ -44,10 +41,11 @@ export const TransferModal = ({ onClose, defaultPage, farms }: Props) => {
   const { id: poolId, canAddLiquidity, isGigaDOT } = pool as TPoolFullData
 
   const assets = Object.keys(pool.meta.meta ?? {})
+  const defaultAssetId = useNewDepositDefaultAssetId()
 
   const { t } = useTranslation()
   const [assetId, setAssetId] = useState<string | undefined>(
-    isGigaDOT ? DOT_ASSET_ID : assets[0],
+    isGigaDOT && defaultAssetId ? defaultAssetId : assets[0],
   )
 
   const { page, direction, paginateTo } = useModalPagination(defaultPage)

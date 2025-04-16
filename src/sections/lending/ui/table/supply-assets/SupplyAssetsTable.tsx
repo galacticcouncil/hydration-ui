@@ -32,6 +32,7 @@ import { SupplyGigadotRow } from "sections/lending/ui/table/supply-assets/Supply
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
@@ -59,6 +60,8 @@ export const SupplyAssetsTable = () => {
     data.filter((reserve) => reserve.availableToDepositUSD !== "0")?.length >= 1
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
+
+  const defaultAssetId = useNewDepositDefaultAssetId()
 
   return (
     <TableContainer background={supplyAssetsTableBackground}>
@@ -106,15 +109,17 @@ export const SupplyAssetsTable = () => {
           })
         }}
       />
-      <Modal open={!!supplyModal} onClose={() => setSupplyModal("")}>
-        <NewDepositFormWrapper>
-          <SupplyAssetModal
-            assetId={supplyModal}
-            assetsBlacklist={assetsBlacklist[supplyModal] ?? []}
-            onClose={() => setSupplyModal("")}
-          />
-        </NewDepositFormWrapper>
-      </Modal>
+      {defaultAssetId && (
+        <Modal open={!!supplyModal} onClose={() => setSupplyModal("")}>
+          <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
+            <SupplyAssetModal
+              assetId={supplyModal}
+              assetsBlacklist={assetsBlacklist[supplyModal] ?? []}
+              onClose={() => setSupplyModal("")}
+            />
+          </NewDepositFormWrapper>
+        </Modal>
+      )}
     </TableContainer>
   )
 }
