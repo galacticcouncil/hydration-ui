@@ -1,3 +1,4 @@
+import { FC } from "react"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -8,7 +9,11 @@ import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useA
 import { getEmodeMessage } from "./EmodeNaming"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
-export const EmodeButton = () => {
+type EmodeButtonProps = {
+  className?: string
+}
+
+export const EmodeButton: FC<EmodeButtonProps> = ({ className }) => {
   const { openEmode } = useModalContext()
   const { account } = useAccount()
   const { user, eModes } = useAppDataContext()
@@ -16,7 +21,7 @@ export const EmodeButton = () => {
   const isEModeDisabled = user.userEmodeCategoryId === 0
 
   return (
-    <div sx={{ flex: "row", align: "center", gap: 8 }}>
+    <div className={className} sx={{ flex: "row", align: "center", gap: 8 }}>
       <Text fs={12} lh={12} color="basic300">
         E-Mode
       </Text>
