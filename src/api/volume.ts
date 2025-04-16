@@ -477,7 +477,7 @@ export const useStablepoolVolumes = (ids: string[]) => {
           nodes: {
             poolId: any
             assetVolumes: Array<{
-              assetId: number
+              assetRegistryId: string
               swapVolume: string
             }>
           }[]
@@ -492,7 +492,7 @@ export const useStablepoolVolumes = (ids: string[]) => {
               nodes {
                 poolId
                 assetVolumes {
-                  assetId
+                  assetRegistryId
                   swapVolume
                 }
               }
@@ -505,10 +505,12 @@ export const useStablepoolVolumes = (ids: string[]) => {
       const { nodes = [] } = stableswapHistoricalVolumesByPeriod
 
       return nodes.map((node) => {
-        const volumes = node.assetVolumes.map(({ assetId, swapVolume }) => ({
-          assetId: assetId.toString(),
-          assetVolume: swapVolume,
-        }))
+        const volumes = node.assetVolumes.map(
+          ({ assetRegistryId, swapVolume }) => ({
+            assetId: assetRegistryId,
+            assetVolume: swapVolume,
+          }),
+        )
 
         return { poolId: node.poolId, volumes }
       })
