@@ -1,4 +1,5 @@
 import {
+  ProtocolAction,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@aave/contract-helpers"
@@ -19,6 +20,7 @@ import {
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import {
   calculateHFAfterSupply,
+  calculateHFAfterSwap,
   calculateHFAfterWithdraw,
 } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -260,53 +262,145 @@ export type UseHealthFactorChangeResult = {
   isHealthFactorBelowThreshold: boolean
 } | null
 
-export const useHealthFactorChange = (
-  assetId: string,
-  amount: string,
-  action: "withdraw" | "supply" = "withdraw",
-): UseHealthFactorChangeResult => {
-  const { getErc20 } = useAssets()
-  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
+export type UseHealthFactorChangeParams = {
+  assetId: string
+  amount: string
+  action: ProtocolAction.supply | ProtocolAction.withdraw
+  swapAsset?: {
+    assetId: string
+    amount: string
+  }
+}
 
+export const useHealthFactorChange = ({
+  assetId,
+  amount,
+  action,
+  swapAsset,
+}: UseHealthFactorChangeParams): UseHealthFactorChangeResult => {
+  const { getErc20 } = useAssets()
   const { data: user } = useUserBorrowSummary()
 
   return useMemo(() => {
-    if (!underlyingAssetId || !user) return null
+    if (!user) return null
 
-    const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+    const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
 
-    const userReserve = user.userReservesData.find(
-      ({ reserve }) => reserve.underlyingAsset === reserveAddress,
-    )
+    if (!underlyingAssetId) return null
 
-    if (!userReserve) return null
+    if (swapAsset) {
+      const swapUnderlyingAssetId = getErc20(
+        swapAsset.assetId,
+      )?.underlyingAssetId
 
-    const currentHealthFactor = user.healthFactor
-    const futureHealthFactor =
-      action === "withdraw"
-        ? calculateHFAfterWithdraw({
-            user: user,
-            userReserve: userReserve,
-            poolReserve: userReserve.reserve,
-            withdrawAmount: amount || "0",
-          }).toString()
-        : calculateHFAfterSupply({
-            user,
-            poolReserve: userReserve.reserve,
-            supplyAmount: amount || "0",
-          }).toString()
+      if (swapUnderlyingAssetId) {
+        const isWithdrawPrimary = action === ProtocolAction.withdraw
 
-    const isHealthFactorBelowThreshold =
-      currentHealthFactor !== "-1" &&
-      futureHealthFactor !== "-1" &&
-      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
+        const withdrawAmount = isWithdrawPrimary ? amount : swapAsset.amount
+        const withdrawAssetUnderlyingId = isWithdrawPrimary
+          ? underlyingAssetId
+          : swapUnderlyingAssetId
 
-    return {
-      isHealthFactorBelowThreshold,
-      currentHealthFactor,
-      futureHealthFactor,
+        const supplyAmount = isWithdrawPrimary ? swapAsset.amount : amount
+        const supplyAssetUnderlyingId = isWithdrawPrimary
+          ? swapUnderlyingAssetId
+          : underlyingAssetId
+
+        return getHealthFactorChangeAfterSwap(
+          user,
+          withdrawAmount,
+          withdrawAssetUnderlyingId,
+          supplyAmount,
+          supplyAssetUnderlyingId,
+        )
+      }
     }
-  }, [action, amount, underlyingAssetId, user])
+
+    return getHealthFactorChange(user, underlyingAssetId, amount, action)
+  }, [action, amount, assetId, getErc20, swapAsset, user])
+}
+
+const getHealthFactorChange = (
+  user: ExtendedFormattedUser,
+  underlyingAssetId: string,
+  amount: string,
+  action: "withdraw" | "supply",
+): UseHealthFactorChangeResult => {
+  const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+  const userReserve = user.userReservesData.find(
+    ({ reserve }) => reserve.underlyingAsset === reserveAddress,
+  )
+
+  if (!userReserve) return null
+
+  const currentHealthFactor = user.healthFactor
+  const result =
+    action === "withdraw"
+      ? calculateHFAfterWithdraw({
+          user,
+          userReserve,
+          poolReserve: userReserve.reserve,
+          withdrawAmount: amount || "0",
+        })
+      : calculateHFAfterSupply({
+          user,
+          poolReserve: userReserve.reserve,
+          supplyAmount: amount || "0",
+        })
+
+  const futureHealthFactor = result.toString()
+
+  const isHealthFactorBelowThreshold =
+    currentHealthFactor !== "-1" &&
+    futureHealthFactor !== "-1" &&
+    Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
+
+  return {
+    isHealthFactorBelowThreshold,
+    currentHealthFactor,
+    futureHealthFactor,
+  }
+}
+
+export const getHealthFactorChangeAfterSwap = (
+  user: ExtendedFormattedUser,
+  fromAmount: string,
+  fromAssetUnderlyingId: string,
+  toAmount: string,
+  toAssetUnderlyingId: string,
+): UseHealthFactorChangeResult => {
+  const fromAssetUserData = user.userReservesData.find(
+    ({ reserve }) =>
+      reserve.underlyingAsset === getAddressFromAssetId(fromAssetUnderlyingId),
+  )
+
+  const toAssetData = user.userReservesData.find(
+    ({ reserve }) =>
+      reserve.underlyingAsset === getAddressFromAssetId(toAssetUnderlyingId),
+  )
+
+  if (!fromAssetUserData || !toAssetData) return null
+
+  const result = calculateHFAfterSwap({
+    user,
+    fromAmount: fromAmount,
+    fromAssetData: fromAssetUserData.reserve,
+    fromAssetUserData: fromAssetUserData,
+    toAmountAfterSlippage: toAmount,
+    toAssetData: toAssetData.reserve,
+  })
+
+  const futureHealthFactor = result.hfAfterSwap.isNaN()
+    ? user.healthFactor
+    : result.hfAfterSwap.toString()
+
+  return {
+    isHealthFactorBelowThreshold:
+      futureHealthFactor !== "-1" &&
+      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD,
+    currentHealthFactor: user.healthFactor,
+    futureHealthFactor,
+  }
 }
 
 export const useBorrowMarketTotals = () => {
