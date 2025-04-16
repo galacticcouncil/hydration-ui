@@ -1,4 +1,4 @@
-import { FC, lazy } from "react"
+import { FC } from "react"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
 import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHeader"
 import {
@@ -8,12 +8,6 @@ import {
 import Skeleton from "react-loading-skeleton"
 import { AssetInputSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { Separator } from "components/Separator/Separator"
-
-const GigadotAnswers = lazy(async () => ({
-  default: (
-    await import("sections/wallet/strategy/GigadotAnswers/GigadotAnswers")
-  ).GigadotAnswers,
-}))
 
 export const WalletStrategySkeleton: FC = () => {
   return (
@@ -42,7 +36,6 @@ export const WalletStrategySkeleton: FC = () => {
           <Skeleton height={44} />
         </div>
       </SStrategyTile>
-      <GigadotAnswers />
     </SWalletStrategy>
   )
 }
