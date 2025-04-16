@@ -77,7 +77,7 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
           size="small"
           disabled={!account}
         >
-          {t("lending.buy")}
+          {t("lending.supply")}
         </Button>
       }
     />
