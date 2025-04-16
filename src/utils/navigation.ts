@@ -130,7 +130,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "strategies",
-    href: LINKS.strategies,
+    href: LINKS.gigadotStrategies,
     Icon: StrategyIcon,
     subItems: undefined,
     enabled: true,
@@ -138,7 +138,7 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 8,
-    asyncEnabled: true,
+    asyncEnabled: false,
   },
   {
     key: "liquidity",
