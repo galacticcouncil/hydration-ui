@@ -150,11 +150,7 @@ export const QUERY_KEYS = {
     "xykSquidVolumes",
     addresses.join(","),
   ],
-  omnipoolSquidVolumes: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolSquidVolumes",
-    ids.join(","),
-  ],
+  omnipoolSquidVolumes: ["omnipoolSquidVolumes"],
   stablepoolsSquidVolumes: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "stablepoolsSquidVolumes",
