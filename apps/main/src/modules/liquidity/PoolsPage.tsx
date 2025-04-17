@@ -21,8 +21,8 @@ export const PoolsPage = () => {
   const { t } = useTranslation(["liquidity", "common"])
   const [search, setSearch] = useState("")
 
-  const { type } = useSearch({
-    from: "/_liquidity/liquidity/pools",
+  const { type, myLiquidity } = useSearch({
+    from: "/liquidity/",
   })
 
   return (
@@ -45,10 +45,13 @@ export const PoolsPage = () => {
       </Flex>
 
       {(type === "omnipoolStablepool" || type === "all") && (
-        <OmnipoolAndStablepoolTable search={search} />
+        <OmnipoolAndStablepoolTable
+          search={search}
+          withPositions={myLiquidity}
+        />
       )}
       {(type === "isolated" || type === "all") && (
-        <IsolatedPoolsTable search={search} />
+        <IsolatedPoolsTable search={search} withPositions={myLiquidity} />
       )}
     </div>
   )
@@ -85,7 +88,6 @@ export const OmnipoolAndStablepoolTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              resetScroll: false,
             })
           }}
         />
@@ -127,7 +129,6 @@ export const IsolatedPoolsTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              resetScroll: false,
             })
           }
         />

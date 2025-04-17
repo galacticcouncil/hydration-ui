@@ -1,26 +1,26 @@
-import { useRouter } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { SubpageMenu } from "@/components/SubpageMenu"
-
+import { LINKS } from "@/config/navigation"
 export const PoolTypeTabs = () => {
   const { t } = useTranslation("liquidity")
-
-  const router = useRouter()
 
   return (
     <SubpageMenu
       items={[
         {
-          to: `${router.state.location.pathname}?type=all`,
+          to: LINKS.liquidity,
+          search: { type: "all" },
           title: t("tab.allPools"),
         },
         {
-          to: `${router.state.location.pathname}?type=omnipoolStablepool`,
+          to: LINKS.liquidity,
+          search: { type: "omnipoolStablepool" },
           title: t("tab.omnipoolStablepool"),
         },
         {
-          to: `${router.state.location.pathname}?type=isolated`,
+          to: LINKS.liquidity,
+          search: { type: "isolated" },
           title: t("tab.isolatedPools"),
         },
       ]}

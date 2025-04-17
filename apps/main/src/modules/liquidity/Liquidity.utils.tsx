@@ -320,8 +320,9 @@ export const usePoolColumns = () => {
               outline
               onClick={() =>
                 navigate({
-                  to: "/liquidity/$id/$action",
-                  params: { id: row.original.id, action: "join" },
+                  from: "/liquidity",
+                  to: "/liquidity/$id/add",
+                  params: { id: row.original.id },
                   resetScroll: false,
                 })
               }

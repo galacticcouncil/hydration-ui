@@ -22,6 +22,7 @@ export const SubpageMenu = () => {
         to: nav.to,
         title: translations[nav.key].title,
         icon: nav.icon,
+        search: nav.search,
       })) || [],
     [pathname, translations],
   )
