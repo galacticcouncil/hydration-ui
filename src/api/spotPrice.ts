@@ -13,7 +13,6 @@ import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { useDisplaySpotPriceStore } from "state/displayPrice"
 import { useShallow } from "hooks/useShallow"
 import { useDisplayAssetStore } from "utils/displayAsset"
-import { BN_1 } from "utils/constants"
 
 const TRACKED_PROPS: NotifyOnChangeProps = ["data", "isLoading"]
 
@@ -103,8 +102,8 @@ const getSpotPrice =
       )
 
       if (res) {
-        spotPrice = BN_1.shiftedBy(res.decimals)
-          .div(res.amount)
+        spotPrice = spotPrice = res.amount
+          .shiftedBy(-res.decimals)
           .decimalPlaces(10)
           .toString()
       }
