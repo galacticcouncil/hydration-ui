@@ -14,6 +14,7 @@ import { useHealthFactorChange } from "api/borrow"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
 import BN from "bignumber.js"
+import { getSupplyCapData } from "sections/lending/hooks/useAssetCaps"
 
 export const useSubmitNewDepositForm = (assetId: string) => {
   const { t } = useTranslation()
@@ -49,6 +50,12 @@ export const useSubmitNewDepositForm = (assetId: string) => {
         r.underlyingAsset === getAddressFromAssetId(erc20.underlyingAssetId),
     )
   }, [assetId, getErc20, reserves])
+
+  const supplyCapReached = useMemo(() => {
+    if (!underlyingReserve) return false
+    const supplyCap = getSupplyCapData(underlyingReserve)
+    return !!supplyCap?.supplyCapReached
+  }, [underlyingReserve])
 
   const submit = useCallback(
     () =>
@@ -87,5 +94,11 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     ],
   )
 
-  return { minAmountOut, submit, healthFactorChange, underlyingReserve }
+  return {
+    minAmountOut,
+    submit,
+    healthFactorChange,
+    underlyingReserve,
+    supplyCapReached,
+  }
 }
