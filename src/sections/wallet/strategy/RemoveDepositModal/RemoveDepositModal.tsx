@@ -134,10 +134,11 @@ export const RemoveDepositModal: FC<Props> = ({
                     assetReceived={assetReceived}
                   />
                 </div>
-                {displayRiskCheckbox && (
+                {hfChange && (
                   <HealthFactorRiskWarning
                     accepted={healthFactorRiskAccepted}
                     onAcceptedChange={setHealthFactorRiskAccepted}
+                    isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
                     sx={{ mb: 16 }}
                   />
                 )}
