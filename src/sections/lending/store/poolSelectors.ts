@@ -184,11 +184,16 @@ export const selectFormattedReserves = (
     const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
 
     if (vDotReserve) {
-      const vDotApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
+      const vDotSupplyApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
         state.vDotApy,
       )
 
-      vDotReserve.supplyAPY = vDotApy.toString()
+      const vDotBorrowApy = valueToBigNumber(
+        vDotReserve.variableBorrowAPY,
+      ).plus(state.vDotApy)
+
+      vDotReserve.supplyAPY = vDotSupplyApy.toString()
+      vDotReserve.variableBorrowAPY = vDotBorrowApy.toString()
 
       const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
       const gDotReserve = reserveMap.get(
@@ -197,7 +202,7 @@ export const selectFormattedReserves = (
 
       if (gDotReserve && dotReserve) {
         const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
-        const vdotApyHalf = vDotApy.div(2)
+        const vdotApyHalf = vDotSupplyApy.div(2)
 
         // @TODO: Add GDOT LP Fee when available
         const gdotLpFee = "0"

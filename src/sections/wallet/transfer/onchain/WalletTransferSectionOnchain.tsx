@@ -43,6 +43,7 @@ import { Switch } from "components/Switch/Switch"
 import { useState } from "react"
 import { useHealthFactorChange } from "api/borrow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -177,10 +178,11 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
-  const healthFactorChange = useHealthFactorChange(
-    assetMeta.id,
-    debouncedAmount,
-  )
+  const healthFactorChange = useHealthFactorChange({
+    assetId: assetMeta.id,
+    amount: debouncedAmount,
+    action: ProtocolAction.withdraw,
+  })
 
   const isHealthFactorChanged =
     amount.gt(0) &&

@@ -18,6 +18,7 @@ import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/New
 import { noop } from "utils/helpers"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
+import { Alert } from "components/Alert/Alert"
 
 const assetsBlacklist = [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
 
@@ -44,7 +45,8 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
-  const { minAmountOut, submit } = useSubmitNewDepositForm(assetId)
+  const { minAmountOut, submit, supplyCapReached } =
+    useSubmitNewDepositForm(assetId)
 
   return (
     <FormProvider {...form}>
@@ -60,17 +62,25 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
             }
           />
           {account && (
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" disabled={supplyCapReached}>
               {t("wallet.strategy.gigadot.deposit.cta")}
             </Button>
           )}
           {!account && <Web3ConnectModalButton />}
-          <NewDepositSummary
-            asset={asset}
-            minReceived={new BigNumber(minAmountOut || "0")
-              .shiftedBy(-asset.decimals)
-              .toString()}
-          />
+          {supplyCapReached ? (
+            <Alert variant="warning">
+              {t("lending.tooltip.supplyCapMaxed", {
+                symbol: asset.symbol,
+              })}
+            </Alert>
+          ) : (
+            <NewDepositSummary
+              asset={asset}
+              minReceived={new BigNumber(minAmountOut || "0")
+                .shiftedBy(-asset.decimals)
+                .toString()}
+            />
+          )}
         </div>
       </form>
       <Modal
