@@ -19,6 +19,7 @@ import { useBestTradeSell } from "api/trade"
 import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 type Props = {
   readonly assetId: string
@@ -45,8 +46,6 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const form = useRemoveDepositForm({ maxBalance })
   const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
-
-  const hfChange = useHealthFactorChange(assetId, balanceAmount)
 
   const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
 
@@ -82,6 +81,18 @@ export const RemoveDepositModal: FC<Props> = ({
       },
     )
   }
+
+  const hfChange = useHealthFactorChange({
+    assetId,
+    amount: balanceAmount,
+    action: ProtocolAction.withdraw,
+    swapAsset: assetReceived
+      ? {
+          assetId: assetReceived.id,
+          amount: amountOutFormatted,
+        }
+      : undefined,
+  })
 
   const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
 
@@ -123,10 +134,11 @@ export const RemoveDepositModal: FC<Props> = ({
                     assetReceived={assetReceived}
                   />
                 </div>
-                {displayRiskCheckbox && (
+                {hfChange && (
                   <HealthFactorRiskWarning
                     accepted={healthFactorRiskAccepted}
                     onAcceptedChange={setHealthFactorRiskAccepted}
+                    isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
                     sx={{ mb: 16 }}
                   />
                 )}
