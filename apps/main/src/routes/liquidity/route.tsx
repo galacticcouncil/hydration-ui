@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { SubpageLayout } from "@/modules/layout/SubpageLayout"
-import { LiquiditySubpageMenu } from "@/modules/liquidity/components"
+import { LiquiditySubpageMenu } from "@/modules/liquidity/components/LiquiditySubpageMenu"
 import {
   useIsolatedPools,
   useOmnipools,
@@ -33,6 +33,6 @@ const Liquidity = () => {
   )
 }
 
-export const Route = createFileRoute("/_liquidity/liquidity")({
+export const Route = createFileRoute("/liquidity")({
   component: Liquidity,
 })

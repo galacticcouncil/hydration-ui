@@ -12,6 +12,7 @@ type DetailedLinkOwnProps = {
   title: string
   description?: string
   icon?: React.ComponentType
+  search?: Record<string, string | boolean>
 }
 
 export type DetailedLinkProps = BoxProps &
@@ -23,10 +24,11 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
   title,
   description,
   icon: IconComponent,
+  search,
   ...props
 }) => (
   <SDetailedLink asChild {...props}>
-    <Link to={to}>
+    <Link to={to} search={search}>
       {IconComponent && (
         <Icon size={20} component={IconComponent} color="skyBlue.500" />
       )}

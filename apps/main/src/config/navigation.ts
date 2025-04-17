@@ -9,8 +9,8 @@ import {
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
-  myLiquidity: "/liquidity/my-liquidity",
-  pools: "/liquidity/pools",
+  myLiquidity: "/liquidity",
+  pools: "/liquidity",
   omnipool: "/liquidity/omnipool-stablepools",
   isolated: "/liquidity/isolated",
   lbp: "/liquidity/lbp",
@@ -47,6 +47,7 @@ export type NavigationItem = {
   icon?: React.ComponentType
   enabled?: boolean
   children?: NavigationItem[]
+  search?: Record<string, string | boolean>
 }
 
 export const NAVIGATION: NavigationItem[] = [
@@ -69,8 +70,12 @@ export const NAVIGATION: NavigationItem[] = [
     key: "liquidity",
     to: LINKS.liquidity,
     children: [
-      { key: "myLiquidity", to: LINKS.myLiquidity },
-      { key: "pools", to: LINKS.pools },
+      {
+        key: "myLiquidity",
+        to: LINKS.liquidity,
+        search: { myLiquidity: true },
+      },
+      { key: "pools", to: LINKS.liquidity, search: { myLiquidity: false } },
     ],
   },
   {

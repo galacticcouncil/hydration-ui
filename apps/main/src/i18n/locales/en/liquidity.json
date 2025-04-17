@@ -18,5 +18,10 @@
   "details.values.omnipoolShare": "% of Omnipool",
   "details.header.swap": "Swap",
   "details.header.addJoinFarms": "Add & Join farms",
-  "details.header.apr": "UP TO {{ value, percent }}% APR"
+  "details.header.apr": "UP TO {{ value, percent }}% APR",
+  "pools": "Pools",
+  "omnipool": "Omnipool",
+  "liquidity.breadcrumb.add": "Add Liquidity",
+  "liquidity.breadcrumb.remove": "Remove Liquidity",
+  "liquidity.breadcrumb.join": "Join Farms"
 }

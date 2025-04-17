@@ -28,7 +28,7 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
 
   return (
     <SHeaderMenu ref={observe} {...props}>
-      {items.map(({ key, to, children }) => {
+      {items.map(({ key, to, children, search }) => {
         const isMoreButton = key === moreButtonKey
         const subItems = isMoreButton ? hiddenItems : children
 
@@ -42,7 +42,9 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
                 isHidden={isMoreButton || !visibleItemKeys.includes(key)}
                 asChild
               >
-                <Link to={to}>{translations[key].title}</Link>
+                <Link to={to} search={search}>
+                  {translations[key].title}
+                </Link>
               </SHeaderMenuItem>
               {isMoreButton && (
                 <SHeaderMoreMenuItem>
@@ -57,10 +59,11 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
                 sideOffset={10}
                 alignOffset={-40}
               >
-                {subItems.map(({ key, to, icon }) => (
+                {subItems.map(({ key, to, icon, search }) => (
                   <DetailedLink
                     key={key}
                     to={to}
+                    search={search}
                     title={translations[key].title}
                     description={translations[key].description}
                     icon={icon}

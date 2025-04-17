@@ -1,5 +1,6 @@
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { useNavigate } from "@tanstack/react-router"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -9,7 +10,6 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
-
 export const PoolDetailsHeader = ({
   data,
 }: {
@@ -17,6 +17,8 @@ export const PoolDetailsHeader = ({
 }) => {
   const isOmnipool = !isIsolatedPool(data)
   const { t } = useTranslation("liquidity")
+
+  const navigate = useNavigate()
 
   return (
     <Flex
@@ -47,7 +49,15 @@ export const PoolDetailsHeader = ({
         </Flex>
       </Flex>
       <Flex align="center" gap={getTokenPx("containers.paddings.tertiary")}>
-        <Button>
+        <Button
+          onClick={() =>
+            navigate({
+              to: "/liquidity/$id/add",
+              params: { id: data.id },
+              resetScroll: false,
+            })
+          }
+        >
           <Icon size={14} component={Plus} />
           {t("details.header.addJoinFarms")}
         </Button>
