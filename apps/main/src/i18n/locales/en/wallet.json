@@ -6,7 +6,6 @@
   "balances.header.liquidity": "Liquidity balance",
   "balances.header.farms": "Farms balance",
   "balances.header.supplyBorrow": "Total supply/borrow",
-  "feePaymentAssets": "Fee payment assets",
   "searchAssets": "Search assets",
   "rewards.title": "Rewards",
   "rewards.allocated": "Allocated staking rewards",
