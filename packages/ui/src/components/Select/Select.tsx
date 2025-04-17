@@ -7,32 +7,33 @@ import { Icon } from "../Icon"
 import { Text } from "../Text"
 import { SContent, SelectTrigger, SItem, SViewport } from "./Select.styled"
 
-type SelectPropsCustom = {
+export type SelectItem<TKey extends string> = {
+  key: TKey
+  label: string
+}
+
+type SelectPropsCustom<TKey extends string> = Omit<
+  SelectProps,
+  "onValueChange"
+> & {
   label?: string
   placeholder?: string
-  items: { key: string; label: string }[]
-} & SelectProps
+  items: ReadonlyArray<SelectItem<TKey>>
+  onValueChange: (value: TKey) => void
+}
 
-export const Select = ({
+export const Select = <TKey extends string = string>({
   label,
   placeholder,
   items,
   ...props
-}: SelectPropsCustom) => {
+}: SelectPropsCustom<TKey>) => {
   return (
     <Root {...props}>
       <SelectTrigger>
-        {label && (
-          <Text fs={12} fw={600} color={getToken("text.medium")}>
-            {label}
-          </Text>
-        )}
+        {label && <SelectLabel>{label}</SelectLabel>}
         <Value placeholder={placeholder} />
-        <Icon
-          size={8}
-          component={CaretDown}
-          color={getToken("colors.greys.400")}
-        />
+        <SelectCaret />
       </SelectTrigger>
 
       <SContent sideOffset={6} align="center" position="popper">
@@ -47,3 +48,17 @@ export const Select = ({
     </Root>
   )
 }
+
+type SelectLabelProps = {
+  readonly children: React.ReactNode
+}
+
+export const SelectLabel = ({ children }: SelectLabelProps) => (
+  <Text fs={12} fw={600} color={getToken("text.medium")}>
+    {children}
+  </Text>
+)
+
+export const SelectCaret = () => (
+  <Icon size={8} component={CaretDown} color={getToken("colors.greys.400")} />
+)

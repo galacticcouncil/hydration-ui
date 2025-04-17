@@ -38,9 +38,11 @@ export type DataTableProps<TData extends RowData> = TableProps &
     initialSorting?: SortingState
     data: TData[]
     noResultsMessage?: string
-    columns: {
-      [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
-    }[keyof TData][]
+    columns:
+      | {
+          [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
+        }[keyof TData][]
+      | ColumnDef<TData>[]
     className?: string
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
