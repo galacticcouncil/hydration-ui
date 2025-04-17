@@ -15,6 +15,7 @@ import { useModalPagination } from "components/Modal/Modal.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
 import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
+import { Alert } from "components/Alert/Alert"
 
 type Props = {
   readonly assetId: string
@@ -42,8 +43,13 @@ export const SupplyAssetModal: FC<Props> = ({
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
-  const { minAmountOut, submit, healthFactorChange, underlyingReserve } =
-    useSubmitNewDepositForm(assetId)
+  const {
+    minAmountOut,
+    submit,
+    healthFactorChange,
+    underlyingReserve,
+    supplyCapReached,
+  } = useSubmitNewDepositForm(assetId)
 
   const onSubmit = (): void => {
     submit()
@@ -78,8 +84,19 @@ export const SupplyAssetModal: FC<Props> = ({
                     hfChange={healthFactorChange}
                   />
                 )}
+                {supplyCapReached && (
+                  <Alert variant="warning">
+                    {t("lending.tooltip.supplyCapMaxed", {
+                      symbol: asset.symbol,
+                    })}
+                  </Alert>
+                )}
                 {account && (
-                  <Button type="submit" variant="primary">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={supplyCapReached}
+                  >
                     {t("lending.supply.modal.cta", { symbol: asset.symbol })}
                   </Button>
                 )}
