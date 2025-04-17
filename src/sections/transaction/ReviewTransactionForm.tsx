@@ -108,7 +108,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const healthFactorChange = useHealthFactorChangeFromTx(tx)
 
   const isHealthFactorChanged =
-    healthFactorChange &&
+    !!healthFactorChange &&
     healthFactorChange.currentHealthFactor !==
       healthFactorChange.futureHealthFactor
 
