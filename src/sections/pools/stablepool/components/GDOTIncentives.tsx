@@ -1,14 +1,22 @@
-import { useBorrowAssetApy } from "api/borrow"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
+import i18n from "i18next"
+import {
+  DOT_ASSET_ID,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VDOT_ASSET_ID,
+  VDOT_ERC20_ASSET_ID,
+} from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer } from "./GDOTIncentives.styled"
+import { ReactNode } from "react"
+import { useBorrowAssetApy } from "api/borrow"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 export const GDOTIncentives = () => {
   const { t } = useTranslation()
@@ -38,12 +46,25 @@ export const GDOTIncentives = () => {
   )
 }
 
-export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
+type ApySummary = Record<string, string>
+
+type IncentivesApyProps = {
+  readonly assetId: string
+  readonly summary: ApySummary
+  readonly incentivesAPYAssetId?: string
+  readonly withLabel?: boolean
+}
+
+const IncentivesApy = ({
+  assetId,
+  summary,
+  withLabel,
+  incentivesAPYAssetId,
+}: IncentivesApyProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { apy, lpAPY, incentivesAPY, underlyingAssetsAPY } = useBorrowAssetApy(
-    GDOT_STABLESWAP_ASSET_ID,
-  )
+  const { apy, lpAPY, incentivesAPY, underlyingAssetsAPY } =
+    useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -74,7 +95,9 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
             )}
             {[
               ...underlyingAssetsAPY,
-              { apy: incentivesAPY, id: GDOT_ERC20_ASSET_ID },
+              ...(incentivesAPYAssetId
+                ? [{ apy: incentivesAPY, id: incentivesAPYAssetId }]
+                : []),
             ].map(({ id, apy }) => {
               return (
                 <div
@@ -89,6 +112,9 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
                   <div sx={{ flex: "row", gap: 4, align: "center" }}>
                     <Icon size={14} icon={<AssetLogo id={id} />} />
                     <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+                    <Text fs={11} lh={15} color="basic400">
+                      {summary[id]}
+                    </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
                     {t("value.percentage", { value: apy })}
@@ -101,4 +127,52 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
       />
     </div>
   )
+}
+
+const gDotSummary: ApySummary = {
+  [GDOT_ERC20_ASSET_ID]: i18n.t("incentivesApy"),
+  [DOT_ASSET_ID]: i18n.t("supplyApy"),
+  [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
+}
+
+const vDotSummary: ApySummary = {
+  [VDOT_ASSET_ID]: i18n.t("supplyApy"),
+  [VDOT_ERC20_ASSET_ID]: i18n.t("stakeApy"),
+}
+
+export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
+  return (
+    <IncentivesApy
+      assetId={GDOT_STABLESWAP_ASSET_ID}
+      incentivesAPYAssetId={GDOT_ERC20_ASSET_ID}
+      summary={gDotSummary}
+      withLabel={withLabel}
+    />
+  )
+}
+
+export const VDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
+  return (
+    <IncentivesApy
+      assetId={VDOT_ASSET_ID}
+      incentivesAPYAssetId={VDOT_ERC20_ASSET_ID}
+      summary={vDotSummary}
+      withLabel={withLabel}
+    />
+  )
+}
+
+type OverrideApyProps = Omit<IncentivesApyProps, "summary"> & {
+  readonly children: ReactNode
+}
+
+export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
+  switch (props.assetId) {
+    case GDOT_STABLESWAP_ASSET_ID:
+      return <GDOTAPY {...props} />
+    case VDOT_ASSET_ID:
+      return <VDOTAPY {...props} />
+    default:
+      return children
+  }
 }

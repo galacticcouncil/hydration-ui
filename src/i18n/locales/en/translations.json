@@ -1494,5 +1494,10 @@
   "toast.pending": "Submitting transaction...",
   "toast.success": "Transaction successful.",
   "toast.error": "Transaction failed.",
-  "toast.unknown": "Transaction status unknown."
+  "toast.unknown": "Transaction status unknown.",
+  "supplyApy": "Supply APY",
+  "borrowApy": "Borrow APY",
+  "supplyAndStakeApy": "Supply + Stake APY",
+  "stakeApy": "Stake APY",
+  "incentivesApy": "Incentives APY"
 }

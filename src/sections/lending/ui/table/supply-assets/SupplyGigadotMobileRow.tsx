@@ -4,24 +4,20 @@ import { useReactTable } from "hooks/useReactTable"
 import { useAssets } from "providers/assets"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { NoData } from "sections/lending/components/primitives/NoData"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
-import { SupplyGigadotRowData } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow"
 import { getSupplyGigadotRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow.styled"
+import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { getAddressFromAssetId } from "utils/evm"
 
-const columnHelper = createColumnHelper<SupplyGigadotRowData>()
+const columnHelper = createColumnHelper<{}>()
 
 type Props = {
-  readonly data: SupplyGigadotRowData
   readonly onOpenSupply: () => void
 }
 
-export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
+export const SupplyGigadotMobileRow: FC<Props> = ({ onOpenSupply }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
@@ -29,30 +25,18 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ data, onOpenSupply }) => {
   const asset = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
 
   const table = useReactTable({
-    data: useMemo(() => [data], [data]),
+    data: useMemo(() => [{}], []),
     columns: useMemo(
       () => [
-        columnHelper.accessor("supplyAPY", {
+        columnHelper.display({
           header: t("lending.apy"),
           meta: {
             sx: {
               textAlign: "center",
             },
           },
-          cell: ({ row }) => {
-            const { supplyAPY, aIncentivesData, symbol } = row.original
-
-            return supplyAPY.toString() !== "-1" ? (
-              <>
-                <FormattedNumber value={supplyAPY} percent />
-                <IncentivesButton
-                  incentives={aIncentivesData}
-                  symbol={symbol}
-                />
-              </>
-            ) : (
-              <NoData />
-            )
+          cell: () => {
+            return <GDOTAPY />
           },
         }),
       ],

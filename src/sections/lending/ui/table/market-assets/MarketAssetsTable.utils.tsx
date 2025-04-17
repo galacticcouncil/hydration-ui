@@ -12,6 +12,8 @@ import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useA
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 import { arraySearch } from "utils/helpers"
 
 export type TSupplyAssetsTableData = ReturnType<typeof useAppDataContext>
@@ -75,11 +77,15 @@ export const useMarketAssetsTableColumns = () => {
           const { supplyAPY, aIncentivesData, symbol } = row.original
 
           return (
-            <IncentivesCard
-              value={supplyAPY}
-              incentives={aIncentivesData}
-              symbol={symbol}
-            />
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+            >
+              <IncentivesCard
+                value={supplyAPY}
+                incentives={aIncentivesData}
+                symbol={symbol}
+              />
+            </OverrideApy>
           )
         },
       }),

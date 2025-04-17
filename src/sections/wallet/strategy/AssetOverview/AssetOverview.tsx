@@ -4,8 +4,12 @@ import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetOverviewLogo } from "sections/wallet/strategy/AssetOverview/AssetOverviewLogo"
-import { AssetOverviewTile } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
+import {
+  AssetOverviewTile,
+  AssetOverviewTileValue,
+} from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
 
 type Props = {
   readonly assetId: string
@@ -50,7 +54,13 @@ export const AssetOverview: FC<Props> = ({
         <AssetOverviewSeparator />
         <AssetOverviewTile
           label={`${t("apy")}:`}
-          value={apy === Infinity ? "∞" : t("value.APRshort", { apr: apy })}
+          customValue={
+            <OverrideApy assetId={assetId}>
+              <AssetOverviewTileValue>
+                {apy === Infinity ? "∞" : t("value.APRshort", { apr: apy })}
+              </AssetOverviewTileValue>
+            </OverrideApy>
+          }
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
