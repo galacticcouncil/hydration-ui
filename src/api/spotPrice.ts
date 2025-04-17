@@ -97,12 +97,12 @@ const getSpotPrice =
 
     try {
       const res = await tradeRouter.getBestSpotPrice(
-        tokenOutParam,
         tokenInParam,
+        tokenOutParam,
       )
 
       if (res) {
-        spotPrice = spotPrice = res.amount
+        spotPrice = res.amount
           .shiftedBy(-res.decimals)
           .decimalPlaces(10)
           .toString()
