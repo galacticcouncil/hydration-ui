@@ -661,7 +661,11 @@ export const calculatePoolsTotals = (
   if (!pools) return defaultValues
   return pools.reduce((acc, pool) => {
     acc.tvl = BN(acc.tvl)
-      .plus(!pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0)
+      .plus(
+        pool.tvlDisplay.isNaN() || pool.id === GDOT_STABLESWAP_ASSET_ID
+          ? BN_0
+          : pool.tvlDisplay,
+      )
       .toString()
     acc.volume = BN(acc.volume)
       .plus(pool.volume ?? 0)
