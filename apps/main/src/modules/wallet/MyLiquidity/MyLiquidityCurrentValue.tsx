@@ -1,5 +1,6 @@
 import { Amount } from "@galacticcouncil/ui/components"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
 import { WalletLiquidityCurrentValue } from "@/modules/wallet/MyLiquidity/MyLiquidityTable.columns"
@@ -12,6 +13,8 @@ type Props = {
 }
 
 export const MyLiquidityCurrentValue: FC<Props> = ({ label, currentValue }) => {
+  const { t } = useTranslation()
+
   const [displayPrice] = useDisplayAssetPrice(
     currentValue.asset1Id,
     currentValue.balance,
@@ -35,7 +38,13 @@ export const MyLiquidityCurrentValue: FC<Props> = ({ label, currentValue }) => {
   return (
     <Amount
       label={label}
-      value={`${asset1Amount} ${asset1Symbol} | ${asset2Amount} ${asset2Symbol}`}
+      value={`${t("currency", {
+        value: asset1Amount,
+        symbol: asset1Symbol,
+      })} | ${t("currency", {
+        value: asset2Amount,
+        symbol: asset2Symbol,
+      })}`}
       displayValue={displayPrice}
     />
   )
