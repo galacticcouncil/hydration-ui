@@ -15,6 +15,7 @@ import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useA
 import { getAddressFromAssetId } from "utils/evm"
 import BN from "bignumber.js"
 import { getSupplyCapData } from "sections/lending/hooks/useAssetCaps"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 export const useSubmitNewDepositForm = (assetId: string) => {
   const { t } = useTranslation()
@@ -35,11 +36,17 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     amount,
   )
 
-  const healthFactorChange = useHealthFactorChange(
+  const healthFactorChange = useHealthFactorChange({
     assetId,
-    BN(amountOut).shiftedBy(-asset.decimals).toString(),
-    "supply",
-  )
+    action: ProtocolAction.supply,
+    amount: BN(amountOut).shiftedBy(-asset.decimals).toString(),
+    swapAsset: selectedAsset
+      ? {
+          assetId: selectedAsset.id,
+          amount: amount,
+        }
+      : undefined,
+  })
 
   const underlyingReserve = useMemo(() => {
     const erc20 = getErc20(assetId)

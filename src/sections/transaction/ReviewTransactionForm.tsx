@@ -108,9 +108,12 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const healthFactorChange = useHealthFactorChangeFromTx(tx)
 
   const isHealthFactorChanged =
-    healthFactorChange &&
+    !!healthFactorChange &&
     healthFactorChange.currentHealthFactor !==
       healthFactorChange.futureHealthFactor
+
+  const displayRiskCheckbox =
+    isHealthFactorChanged && !!healthFactorChange?.isHealthFactorBelowThreshold
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -279,7 +282,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     !account ||
     isLoading ||
     (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
-    (!!isHealthFactorChanged && !healthFactorRiskAccepted)
+    (displayRiskCheckbox && !healthFactorRiskAccepted)
 
   return (
     <>
@@ -319,6 +322,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               <HealthFactorRiskWarning
                 accepted={healthFactorRiskAccepted}
                 onAcceptedChange={setHealthFactorRiskAccepted}
+                isBelowThreshold={
+                  healthFactorChange?.isHealthFactorBelowThreshold
+                }
               />
             )}
             <div
