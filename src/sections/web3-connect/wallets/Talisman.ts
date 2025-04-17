@@ -25,7 +25,7 @@ export class Talisman extends TalismanWallet {
       .filter(({ type }) =>
         walletMode === WalletMode.SubstrateH160
           ? type === "ethereum"
-          : type === "sr25519",
+          : type === "sr25519" || type === "ed25519",
       )
       .map((account) => {
         return {
