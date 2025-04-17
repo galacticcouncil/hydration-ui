@@ -324,7 +324,7 @@ const getHealthFactorChange = (
   user: ExtendedFormattedUser,
   underlyingAssetId: string,
   amount: string,
-  action: "withdraw" | "supply",
+  action: ProtocolAction.supply | ProtocolAction.withdraw,
 ): UseHealthFactorChangeResult => {
   const reserveAddress = getAddressFromAssetId(underlyingAssetId)
   const userReserve = user.userReservesData.find(
@@ -335,7 +335,7 @@ const getHealthFactorChange = (
 
   const currentHealthFactor = user.healthFactor
   const result =
-    action === "withdraw"
+    action === ProtocolAction.withdraw
       ? calculateHFAfterWithdraw({
           user,
           userReserve,
