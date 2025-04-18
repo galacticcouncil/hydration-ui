@@ -16,6 +16,8 @@ import { SContainer } from "./GDOTIncentives.styled"
 import { ReactNode } from "react"
 import { useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { ResponsiveValue } from "utils/responsive"
+import { theme } from "theme"
 
 export const GDOTIncentives = () => {
   const { t } = useTranslation()
@@ -85,21 +87,19 @@ const APYRow = ({
 
 type ApySummary = Record<string, string>
 
-type IncentivesApyProps = {
-  readonly assetId: string
-  readonly summary: ApySummary
-  readonly incentivesAPYAssetId?: string
+type APYProps = {
   readonly withLabel?: boolean
   readonly isSupply?: boolean
+  readonly size?: ResponsiveValue<number>
+  readonly color?: ResponsiveValue<keyof typeof theme.colors>
 }
 
-const IncentivesApy = ({
-  assetId,
-  summary,
+export const GDOTAPY = ({
   withLabel,
-  incentivesAPYAssetId,
   isSupply = true,
-}: IncentivesApyProps) => {
+  color,
+  size,
+}: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const {
@@ -108,13 +108,17 @@ const IncentivesApy = ({
     lpAPY,
     incentivesAPY,
     underlyingAssetsAPY,
-  } = useBorrowAssetApy(assetId)
+  } = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
 
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <Text color="white" fs={14} tTransform={withLabel ? "uppercase" : "none"}>
+      <Text
+        color={color ?? "white"}
+        fs={size ?? 14}
+        tTransform={withLabel ? "uppercase" : "none"}
+      >
         {t(
           withLabel
             ? "liquidity.stablepool.incetives.value"
@@ -141,15 +145,13 @@ const IncentivesApy = ({
             )}
             {[
               ...underlyingAssetsAPY,
-              ...(incentivesAPYAssetId
-                ? [
-                    {
-                      borrowApy: incentivesAPY,
-                      supplyApy: incentivesAPY,
-                      id: incentivesAPYAssetId,
-                    },
-                  ]
-                : []),
+              ...[
+                {
+                  borrowApy: incentivesAPY,
+                  supplyApy: incentivesAPY,
+                  id: GDOT_ERC20_ASSET_ID,
+                },
+              ],
             ].map(({ id, borrowApy, supplyApy }) => {
               return (
                 <div
@@ -165,7 +167,7 @@ const IncentivesApy = ({
                     <Icon size={14} icon={<AssetLogo id={id} />} />
                     <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
                     <Text fs={11} lh={15} color="basic400">
-                      {summary[id]}
+                      {gDotSummary[id]}
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
@@ -189,24 +191,12 @@ const gDotSummary: ApySummary = {
   [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
 }
 
-export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
-  return (
-    <IncentivesApy
-      assetId={GDOT_STABLESWAP_ASSET_ID}
-      incentivesAPYAssetId={GDOT_ERC20_ASSET_ID}
-      summary={gDotSummary}
-      withLabel={withLabel}
-    />
-  )
-}
-
 export const VDOTAPY = ({
   withLabel,
   isSupply = true,
-}: {
-  withLabel?: boolean
-  isSupply?: boolean
-}) => {
+  size,
+  color,
+}: APYProps) => {
   const { t } = useTranslation()
   const { totalSupplyApy, totalBorrowApy, underlyingAssetsAPY, vDotApy } =
     useBorrowAssetApy(VDOT_ASSET_ID)
@@ -215,7 +205,11 @@ export const VDOTAPY = ({
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <Text color="white" fs={14} tTransform={withLabel ? "uppercase" : "none"}>
+      <Text
+        color={color ?? "white"}
+        fs={size ?? 14}
+        tTransform={withLabel ? "uppercase" : "none"}
+      >
         {t(
           withLabel
             ? "liquidity.stablepool.incetives.value"
@@ -247,9 +241,9 @@ export const VDOTAPY = ({
   )
 }
 
-type OverrideApyProps = Omit<IncentivesApyProps, "summary"> & {
+type OverrideApyProps = APYProps & {
   readonly children: ReactNode
-  readonly isSupply?: boolean
+  readonly assetId: string
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
