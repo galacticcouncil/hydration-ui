@@ -7,7 +7,8 @@ type Variant = "default" | `risk:${StrategyRiskLevel}`
 
 type Props = {
   readonly label: string
-  readonly value: string
+  readonly value?: string
+  readonly customValue?: ReactNode
   readonly icon?: ReactNode
   readonly variant?: Variant
 }
@@ -15,6 +16,7 @@ type Props = {
 export const AssetOverviewTile: FC<Props> = ({
   label,
   value,
+  customValue,
   icon,
   variant,
 }) => {
@@ -26,26 +28,44 @@ export const AssetOverviewTile: FC<Props> = ({
         </Text>
         {icon && <Icon icon={icon} size={14} />}
       </div>
-      <Text
-        fw={500}
-        fs={16}
-        lh="1"
-        css={{ textTransform: "capitalize" }}
-        color={(() => {
-          switch (variant) {
-            case "risk:lower":
-              return "brightBlue300"
-            case `risk:medium`:
-              return "warningYellow300"
-            case "risk:higher":
-              return "red500"
-            default:
-              return "white"
-          }
-        })()}
-      >
-        {value}
-      </Text>
+      {customValue ?? (
+        <AssetOverviewTileValue variant={variant}>
+          {value}
+        </AssetOverviewTileValue>
+      )}
     </div>
+  )
+}
+
+type AssetOverviewTileValueProps = {
+  readonly variant?: Variant
+  readonly children: ReactNode
+}
+
+export const AssetOverviewTileValue = ({
+  variant,
+  children,
+}: AssetOverviewTileValueProps) => {
+  return (
+    <Text
+      fw={500}
+      fs={16}
+      lh="1"
+      css={{ textTransform: "capitalize" }}
+      color={(() => {
+        switch (variant) {
+          case "risk:lower":
+            return "brightBlue300"
+          case `risk:medium`:
+            return "warningYellow300"
+          case "risk:higher":
+            return "red500"
+          default:
+            return "white"
+        }
+      })()}
+    >
+      {children}
+    </Text>
   )
 }

@@ -145,7 +145,7 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
-      const fee = isGigaDOT ? BN(borrow.apy) : BN_NAN
+      const fee = isGigaDOT ? BN(borrow.totalSupplyApy) : BN_NAN
 
       const name = metaOverride?.name || meta.name
       const symbol = metaOverride?.symbol || meta.symbol
@@ -187,7 +187,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    borrow.apy,
+    borrow.totalSupplyApy,
   ])
 
   return { data, isLoading }

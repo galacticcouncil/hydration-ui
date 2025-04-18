@@ -456,10 +456,12 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 
 export type BorrowAssetApyData = {
   tvl: string
-  apy: number
+  vDotApy?: string
+  totalSupplyApy: number
+  totalBorrowApy: number
   lpAPY: number
   incentivesAPY: number
-  underlyingAssetsAPY: { apy: number; id: string }[]
+  underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
 }
 
 export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
@@ -490,75 +492,103 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
 
   const stablepoolFee = stablepoolFees?.find((fee) => fee.poolId === assetId)
 
-  const { totalAPY, lpAPY, incentivesAPY, underlyingAssetsAPY } =
-    useMemo(() => {
-      const underlyingAssetIds = assetIds.map((assetId) => {
-        return getErc20(assetId)?.underlyingAssetId ?? assetId
-      })
-
-      const underlyingReserves = reserves.filter((reserve) => {
-        return underlyingAssetIds
-          .map(getAddressFromAssetId)
-          .includes(reserve.underlyingAsset)
-      })
-
-      const incentives = assetReserve?.aIncentivesData ?? []
-
-      const isIncentivesInfinity = incentives.some(
-        (incentive) => incentive.incentiveAPR === "Infinity",
-      )
-
-      const incentivesAPRSum = isIncentivesInfinity
-        ? Infinity
-        : incentives.reduce(
-            (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
-            0,
-          ) * 100
-
-      const incentivesAPY = isIncentivesInfinity
-        ? Infinity
-        : incentivesAPRSum !== Infinity
-          ? incentivesAPRSum || 0
-          : Infinity
-
-      const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
-        const isVdot =
-          reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
-
-        const supplyAPY = isVdot
-          ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
-          : BN(reserve.supplyAPY)
-        return {
-          apy: supplyAPY.div(underlyingReserves.length).times(100).toNumber(),
-          id: getAssetIdFromAddress(reserve.underlyingAsset),
-        }
-      })
-
-      const supplyAPYSum = underlyingAssetsAPY.reduce((a, b) => a + b.apy, 0)
-      const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
-
-      return {
-        totalAPY: isIncentivesInfinity
-          ? Infinity
-          : supplyAPYSum + incentivesAPY + lpAPY,
-        lpAPY: lpAPY,
-        underlyingAssetsAPY,
-        incentivesAPY,
-      }
-    }, [
-      assetIds,
-      assetReserve?.aIncentivesData,
-      getErc20,
-      reserves,
-      vDotApy?.apy,
-      stablepoolFee,
-    ])
-
-  return {
-    tvl: assetReserve?.totalLiquidityUSD || "0",
-    apy: totalAPY,
+  const {
+    totalSupplyApy,
     lpAPY,
     incentivesAPY,
     underlyingAssetsAPY,
+    totalBorrowApy,
+  } = useMemo(() => {
+    const underlyingAssetIds = assetIds.map((assetId) => {
+      return getErc20(assetId)?.underlyingAssetId ?? assetId
+    })
+
+    const underlyingReserves = reserves.filter((reserve) => {
+      return underlyingAssetIds
+        .map(getAddressFromAssetId)
+        .includes(reserve.underlyingAsset)
+    })
+
+    const incentives = assetReserve?.aIncentivesData ?? []
+
+    const isIncentivesInfinity = incentives.some(
+      (incentive) => incentive.incentiveAPR === "Infinity",
+    )
+
+    const incentivesAPRSum = isIncentivesInfinity
+      ? Infinity
+      : incentives.reduce(
+          (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
+          0,
+        ) * 100
+
+    const incentivesAPY = isIncentivesInfinity
+      ? Infinity
+      : incentivesAPRSum !== Infinity
+        ? incentivesAPRSum || 0
+        : Infinity
+
+    const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
+      const isVdot =
+        reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+
+      const supplyAPY = isVdot
+        ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.supplyAPY)
+
+      const borrowAPY = isVdot
+        ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.variableBorrowAPY)
+
+      return {
+        supplyApy: supplyAPY
+          .div(underlyingReserves.length)
+          .times(100)
+          .toNumber(),
+        borrowApy: borrowAPY
+          .div(underlyingReserves.length)
+          .times(100)
+          .toNumber(),
+        id: getAssetIdFromAddress(reserve.underlyingAsset),
+      }
+    })
+
+    const supplyAPYSum = underlyingAssetsAPY.reduce(
+      (a, b) => a + b.supplyApy,
+      0,
+    )
+
+    const borrowAPYSum = underlyingAssetsAPY.reduce(
+      (a, b) => a + b.borrowApy,
+      0,
+    )
+    const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
+
+    return {
+      totalSupplyApy: isIncentivesInfinity
+        ? Infinity
+        : supplyAPYSum + incentivesAPY + lpAPY,
+      totalBorrowApy: borrowAPYSum + incentivesAPY + lpAPY,
+      lpAPY: lpAPY,
+      underlyingAssetsAPY,
+      incentivesAPY,
+    }
+  }, [
+    assetIds,
+    assetReserve?.aIncentivesData,
+    getErc20,
+    reserves,
+    vDotApy?.apy,
+    stablepoolFee,
+  ])
+
+  return {
+    tvl: assetReserve?.totalLiquidityUSD || "0",
+    totalSupplyApy,
+    totalBorrowApy,
+    lpAPY,
+    incentivesAPY,
+    underlyingAssetsAPY,
+    vDotApy: vDotApy?.apy,
   }
 }
