@@ -53,6 +53,7 @@ type IncentivesApyProps = {
   readonly summary: ApySummary
   readonly incentivesAPYAssetId?: string
   readonly withLabel?: boolean
+  readonly isSupply?: boolean
 }
 
 const IncentivesApy = ({
@@ -60,11 +61,19 @@ const IncentivesApy = ({
   summary,
   withLabel,
   incentivesAPYAssetId,
+  isSupply = true,
 }: IncentivesApyProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { apy, lpAPY, incentivesAPY, underlyingAssetsAPY } =
-    useBorrowAssetApy(assetId)
+  const {
+    totalSupplyApy,
+    totalBorrowApy,
+    lpAPY,
+    incentivesAPY,
+    underlyingAssetsAPY,
+  } = useBorrowAssetApy(assetId)
+
+  const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -96,9 +105,15 @@ const IncentivesApy = ({
             {[
               ...underlyingAssetsAPY,
               ...(incentivesAPYAssetId
-                ? [{ apy: incentivesAPY, id: incentivesAPYAssetId }]
+                ? [
+                    {
+                      borrowApy: incentivesAPY,
+                      supplyApy: incentivesAPY,
+                      id: incentivesAPYAssetId,
+                    },
+                  ]
                 : []),
-            ].map(({ id, apy }) => {
+            ].map(({ id, borrowApy, supplyApy }) => {
               return (
                 <div
                   key={id}
@@ -117,7 +132,9 @@ const IncentivesApy = ({
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
-                    {t("value.percentage", { value: apy })}
+                    {t("value.percentage", {
+                      value: isSupply ? supplyApy : borrowApy,
+                    })}
                   </Text>
                 </div>
               )
@@ -135,10 +152,10 @@ const gDotSummary: ApySummary = {
   [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
 }
 
-const vDotSummary: ApySummary = {
-  [VDOT_ASSET_ID]: i18n.t("supplyApy"),
-  [VDOT_ERC20_ASSET_ID]: i18n.t("stakeApy"),
-}
+const getVDotSummary = (isSupply: boolean | undefined = true): ApySummary => ({
+  [VDOT_ASSET_ID]: i18n.t("stakeApy"),
+  [VDOT_ERC20_ASSET_ID]: i18n.t(isSupply ? "supplyApy" : "borrowApy"),
+})
 
 export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
   return (
@@ -151,19 +168,27 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
   )
 }
 
-export const VDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
+export const VDOTAPY = ({
+  withLabel,
+  isSupply,
+}: {
+  withLabel?: boolean
+  isSupply?: boolean
+}) => {
   return (
     <IncentivesApy
       assetId={VDOT_ASSET_ID}
       incentivesAPYAssetId={VDOT_ERC20_ASSET_ID}
-      summary={vDotSummary}
+      summary={getVDotSummary(isSupply)}
       withLabel={withLabel}
+      isSupply={isSupply}
     />
   )
 }
 
 type OverrideApyProps = Omit<IncentivesApyProps, "summary"> & {
   readonly children: ReactNode
+  readonly isSupply?: boolean
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {

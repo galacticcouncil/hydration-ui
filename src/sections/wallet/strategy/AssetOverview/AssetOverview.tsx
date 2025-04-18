@@ -23,7 +23,7 @@ export const AssetOverview: FC<Props> = ({
   riskLevel,
 }) => {
   const { t } = useTranslation()
-  const { apy, tvl } = useBorrowAssetApy(assetId)
+  const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -57,7 +57,9 @@ export const AssetOverview: FC<Props> = ({
           customValue={
             <OverrideApy assetId={assetId}>
               <AssetOverviewTileValue>
-                {apy === Infinity ? "∞" : t("value.APRshort", { apr: apy })}
+                {totalSupplyApy === Infinity
+                  ? "∞"
+                  : t("value.APRshort", { apr: totalSupplyApy })}
               </AssetOverviewTileValue>
             </OverrideApy>
           }

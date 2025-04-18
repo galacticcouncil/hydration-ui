@@ -495,8 +495,8 @@ export const usePoolTable = (
               ),
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
-                  <OverrideApy assetId={row.original.id}>
-                    <NonClickableContainer>
+                  <NonClickableContainer>
+                    <OverrideApy assetId={row.original.id}>
                       <APY
                         assetId={row.original.id}
                         fee={row.original.fee}
@@ -504,8 +504,8 @@ export const usePoolTable = (
                         totalFee={row.original.totalFee}
                         farms={row.original.farms}
                       />
-                    </NonClickableContainer>
-                  </OverrideApy>
+                    </OverrideApy>
+                  </NonClickableContainer>
                 ) : null,
             }),
           ]
