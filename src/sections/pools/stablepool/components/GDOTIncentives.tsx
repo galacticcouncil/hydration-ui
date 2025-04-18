@@ -94,7 +94,12 @@ type APYProps = {
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
 }
 
-const GDOTAPY = ({ withLabel, isSupply = true, color, size }: APYProps) => {
+export const GDOTAPY = ({
+  withLabel,
+  isSupply = true,
+  color,
+  size,
+}: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const {
