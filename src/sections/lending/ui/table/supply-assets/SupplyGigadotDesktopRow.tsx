@@ -44,7 +44,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
         >
           <TableCell
             sx={{
-              flexBasis: ["44%", "44%", "41%"],
+              flexBasis: ["44%", "44%", "41.5%"],
             }}
           >
             <AssetNameColumn

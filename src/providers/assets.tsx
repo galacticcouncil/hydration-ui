@@ -275,12 +275,13 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     { shareTokens: [], shareTokensMap: new Map([]) },
   )
 
+  const allWithShareTokensMap = useMemo(() => {
+    return new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap])
+  }, [all, shareTokensMap])
+
   const getAsset = useCallback(
-    (id: string) =>
-      new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap]).get(
-        id,
-      ),
-    [all, shareTokensMap],
+    (id: string) => allWithShareTokensMap.get(id),
+    [allWithShareTokensMap],
   )
   const getAssetWithFallback = useCallback(
     (id: string) => getAsset(id) ?? fallbackAsset,

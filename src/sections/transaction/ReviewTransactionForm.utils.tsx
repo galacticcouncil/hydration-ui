@@ -30,6 +30,7 @@ import {
 import { useAccountAssets } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -281,16 +282,37 @@ export const useHealthFactorChangeFromTx = (
   tx: SubmittableExtrinsic<"promise">,
 ) => {
   const { getAsset } = useAssets()
-  const assetInTx = getAssetFromTx(tx)
-  const asset = assetInTx?.assetId ? getAsset(assetInTx.assetId) : null
+  const assetFromTx = getAssetFromTx(tx)
+  const assetIn = assetFromTx?.assetInId
+    ? getAsset(assetFromTx.assetInId)
+    : null
 
-  const assetId = asset ? asset.id : ""
-  const amount =
-    asset && assetInTx?.amount
-      ? BN(assetInTx.amount).shiftedBy(-asset.decimals).toString()
+  const assetInId = assetIn ? assetIn.id : ""
+  const amountIn =
+    assetIn && assetFromTx?.amountIn
+      ? BN(assetFromTx.amountIn).shiftedBy(-assetIn.decimals).toString()
       : ""
 
-  return useHealthFactorChange(assetId, amount)
+  const assetOut = assetFromTx?.assetOutId
+    ? getAsset(assetFromTx.assetOutId)
+    : null
+
+  const assetOutId = assetOut ? assetOut.id : ""
+
+  const amountOut =
+    assetOut && assetFromTx?.amountOut
+      ? BN(assetFromTx.amountOut).shiftedBy(-assetOut.decimals).toString()
+      : ""
+
+  return useHealthFactorChange({
+    assetId: assetInId,
+    amount: amountIn,
+    action: ProtocolAction.withdraw,
+    swapAsset:
+      assetOutId && amountOut
+        ? { assetId: assetOutId, amount: amountOut }
+        : undefined,
+  })
 }
 
 export const createPolkadotJSTxUrl = (
@@ -322,8 +344,10 @@ const normalizeHumanizedString = (str: string) => str.replace(/,/g, "")
 export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
   if (!tx) return null
 
-  let assetId = null
-  let amount = null
+  let assetInId = null
+  let amountIn = null
+  let assetOutId = null
+  let amountOut = null
   try {
     const json: any = tx.method.toHuman()
     const isSwapCall =
@@ -336,28 +360,44 @@ export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
     const isDcaCall = json.method === "schedule" && json.section === "dca"
 
     if (isSwapCall) {
-      const amountArg = json.args.amount || json.args.amount_in
-      assetId = normalizeHumanizedString(json.args.asset_in)
-      amount = normalizeHumanizedString(amountArg)
+      const amountInArg =
+        json.args?.amount ||
+        json.args?.amount_in ||
+        json.args?.max_amount_in ||
+        "0"
+
+      const amountOutArg =
+        json.args?.amount_out || json.args?.min_amount_out || "0"
+
+      assetInId = normalizeHumanizedString(json.args.asset_in)
+      amountIn = normalizeHumanizedString(amountInArg)
+      assetOutId = normalizeHumanizedString(json.args.asset_out)
+      amountOut = normalizeHumanizedString(amountOutArg)
     }
 
     if (isTransferCall) {
-      assetId = normalizeHumanizedString(json.args.currency_id)
-      amount = normalizeHumanizedString(json.args.amount)
+      assetInId = normalizeHumanizedString(json.args.currency_id)
+      amountIn = normalizeHumanizedString(json.args.amount)
     }
     if (isDcaCall) {
-      assetId = normalizeHumanizedString(json.args.schedule.order.Sell.assetIn)
-      amount = normalizeHumanizedString(json.args.schedule.totalAmount)
+      assetInId = normalizeHumanizedString(
+        json.args.schedule.order.Sell.assetIn,
+      )
+      amountIn = normalizeHumanizedString(json.args.schedule.totalAmount)
     }
   } catch {
     return {
-      assetId,
-      amount,
+      assetInId,
+      amountIn,
+      assetOutId,
+      amountOut,
     }
   }
 
   return {
-    assetId,
-    amount,
+    assetInId,
+    amountIn,
+    assetOutId,
+    amountOut,
   }
 }
