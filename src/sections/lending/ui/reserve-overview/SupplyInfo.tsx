@@ -12,7 +12,6 @@ import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircula
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
 import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
@@ -142,13 +141,6 @@ export const SupplyInfo = ({
               >
                 <PercentageValue value={Number(reserve.supplyAPY) * 100} />
               </OverrideApy>
-
-              <div sx={{ mt: 2 }}>
-                <IncentivesButton
-                  symbol={reserve.symbol}
-                  incentives={reserve.aIncentivesData}
-                />
-              </div>
             </DataValue>
             {hasUnbacked && (
               <DataValue
