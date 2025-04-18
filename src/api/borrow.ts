@@ -456,6 +456,7 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 
 export type BorrowAssetApyData = {
   tvl: string
+  vDotApy?: string
   totalSupplyApy: number
   totalBorrowApy: number
   lpAPY: number
@@ -567,7 +568,7 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
       totalSupplyApy: isIncentivesInfinity
         ? Infinity
         : supplyAPYSum + incentivesAPY + lpAPY,
-      totalBorrowApy: borrowAPYSum + lpAPY,
+      totalBorrowApy: borrowAPYSum + incentivesAPY + lpAPY,
       lpAPY: lpAPY,
       underlyingAssetsAPY,
       incentivesAPY,
@@ -588,5 +589,6 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     lpAPY,
     incentivesAPY,
     underlyingAssetsAPY,
+    vDotApy: vDotApy?.apy,
   }
 }

@@ -9,7 +9,6 @@ import {
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   VDOT_ASSET_ID,
-  VDOT_ERC20_ASSET_ID,
 } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
@@ -43,6 +42,44 @@ export const GDOTIncentives = () => {
         <GDOTAPY withLabel />
       </SContainer>
     </>
+  )
+}
+
+const APYRow = ({
+  id,
+  value,
+  label,
+}: {
+  id: string
+  value?: string | number
+  label: string
+}) => {
+  const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
+
+  return (
+    <div
+      key={id}
+      sx={{
+        flex: "row",
+        gap: 4,
+        justify: "space-between",
+        mt: 6,
+      }}
+    >
+      <div sx={{ flex: "row", gap: 4, align: "center" }}>
+        <Icon size={14} icon={<AssetLogo id={id} />} />
+        <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+        <Text fs={11} lh={15} color="basic400">
+          {label}
+        </Text>
+      </div>
+      <Text fs={12} font="GeistSemiBold">
+        {t("value.percentage", {
+          value,
+        })}
+      </Text>
+    </div>
   )
 }
 
@@ -152,11 +189,6 @@ const gDotSummary: ApySummary = {
   [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
 }
 
-const getVDotSummary = (isSupply: boolean | undefined = true): ApySummary => ({
-  [VDOT_ASSET_ID]: i18n.t("stakeApy"),
-  [VDOT_ERC20_ASSET_ID]: i18n.t(isSupply ? "supplyApy" : "borrowApy"),
-})
-
 export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
   return (
     <IncentivesApy
@@ -170,19 +202,48 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
 
 export const VDOTAPY = ({
   withLabel,
-  isSupply,
+  isSupply = true,
 }: {
   withLabel?: boolean
   isSupply?: boolean
 }) => {
+  const { t } = useTranslation()
+  const { totalSupplyApy, totalBorrowApy, underlyingAssetsAPY, vDotApy } =
+    useBorrowAssetApy(VDOT_ASSET_ID)
+
+  const apy = isSupply ? totalSupplyApy : totalBorrowApy
+
   return (
-    <IncentivesApy
-      assetId={VDOT_ASSET_ID}
-      incentivesAPYAssetId={VDOT_ERC20_ASSET_ID}
-      summary={getVDotSummary(isSupply)}
-      withLabel={withLabel}
-      isSupply={isSupply}
-    />
+    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+      <Text color="white" fs={14} tTransform={withLabel ? "uppercase" : "none"}>
+        {t(
+          withLabel
+            ? "liquidity.stablepool.incetives.value"
+            : "value.percentage",
+          { value: apy },
+        )}
+      </Text>
+      <InfoTooltip
+        preventDefault
+        text={
+          <>
+            <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
+            <APYRow id={VDOT_ASSET_ID} label={t("stakeApy")} value={vDotApy} />
+            {[...underlyingAssetsAPY].map(({ id, borrowApy, supplyApy }) => {
+              return (
+                <APYRow
+                  id={id}
+                  label={isSupply ? t("supplyApy") : t("borrowApy")}
+                  value={BN(isSupply ? supplyApy : borrowApy)
+                    .minus(id === VDOT_ASSET_ID ? vDotApy ?? 0 : 0)
+                    .toString()}
+                />
+              )
+            })}
+          </>
+        }
+      />
+    </div>
   )
 }
 
