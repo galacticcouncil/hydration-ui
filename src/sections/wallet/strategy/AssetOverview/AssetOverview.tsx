@@ -4,8 +4,12 @@ import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { AssetOverviewLogo } from "sections/wallet/strategy/AssetOverview/AssetOverviewLogo"
-import { AssetOverviewTile } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
+import {
+  AssetOverviewTile,
+  AssetOverviewTileValue,
+} from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
 
 type Props = {
   readonly assetId: string
@@ -19,7 +23,7 @@ export const AssetOverview: FC<Props> = ({
   riskLevel,
 }) => {
   const { t } = useTranslation()
-  const { apy, tvl } = useBorrowAssetApy(assetId)
+  const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -50,7 +54,15 @@ export const AssetOverview: FC<Props> = ({
         <AssetOverviewSeparator />
         <AssetOverviewTile
           label={`${t("apy")}:`}
-          value={apy === Infinity ? "∞" : t("value.APRshort", { apr: apy })}
+          customValue={
+            <OverrideApy assetId={assetId}>
+              <AssetOverviewTileValue>
+                {totalSupplyApy === Infinity
+                  ? "∞"
+                  : t("value.APRshort", { apr: totalSupplyApy })}
+              </AssetOverviewTileValue>
+            </OverrideApy>
+          }
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile

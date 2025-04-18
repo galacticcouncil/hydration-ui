@@ -1,14 +1,23 @@
-import { useBorrowAssetApy } from "api/borrow"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
+import i18n from "i18next"
+import {
+  DOT_ASSET_ID,
+  GDOT_ERC20_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VDOT_ASSET_ID,
+} from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer } from "./GDOTIncentives.styled"
+import { ReactNode } from "react"
+import { useBorrowAssetApy } from "api/borrow"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { ResponsiveValue } from "utils/responsive"
+import { theme } from "theme"
 
 export const GDOTIncentives = () => {
   const { t } = useTranslation()
@@ -38,16 +47,78 @@ export const GDOTIncentives = () => {
   )
 }
 
-export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
+const APYRow = ({
+  id,
+  value,
+  label,
+}: {
+  id: string
+  value?: string | number
+  label: string
+}) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { apy, lpAPY, incentivesAPY, underlyingAssetsAPY } = useBorrowAssetApy(
-    GDOT_STABLESWAP_ASSET_ID,
+
+  return (
+    <div
+      key={id}
+      sx={{
+        flex: "row",
+        gap: 4,
+        justify: "space-between",
+        mt: 6,
+      }}
+    >
+      <div sx={{ flex: "row", gap: 4, align: "center" }}>
+        <Icon size={14} icon={<AssetLogo id={id} />} />
+        <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+        <Text fs={11} lh={15} color="basic400">
+          {label}
+        </Text>
+      </div>
+      <Text fs={12} font="GeistSemiBold">
+        {t("value.percentage", {
+          value,
+        })}
+      </Text>
+    </div>
   )
+}
+
+type ApySummary = Record<string, string>
+
+type APYProps = {
+  readonly withLabel?: boolean
+  readonly isSupply?: boolean
+  readonly size?: ResponsiveValue<number>
+  readonly color?: ResponsiveValue<keyof typeof theme.colors>
+}
+
+export const GDOTAPY = ({
+  withLabel,
+  isSupply = true,
+  color,
+  size,
+}: APYProps) => {
+  const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
+  const {
+    totalSupplyApy,
+    totalBorrowApy,
+    lpAPY,
+    incentivesAPY,
+    underlyingAssetsAPY,
+  } = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
+
+  const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <Text color="white" fs={14} tTransform={withLabel ? "uppercase" : "none"}>
+      <Text
+        color={color ?? "white"}
+        fs={size ?? 14}
+        tTransform={withLabel ? "uppercase" : "none"}
+      >
         {t(
           withLabel
             ? "liquidity.stablepool.incetives.value"
@@ -74,8 +145,14 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
             )}
             {[
               ...underlyingAssetsAPY,
-              { apy: incentivesAPY, id: GDOT_ERC20_ASSET_ID },
-            ].map(({ id, apy }) => {
+              ...[
+                {
+                  borrowApy: incentivesAPY,
+                  supplyApy: incentivesAPY,
+                  id: GDOT_ERC20_ASSET_ID,
+                },
+              ],
+            ].map(({ id, borrowApy, supplyApy }) => {
               return (
                 <div
                   key={id}
@@ -89,9 +166,14 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
                   <div sx={{ flex: "row", gap: 4, align: "center" }}>
                     <Icon size={14} icon={<AssetLogo id={id} />} />
                     <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+                    <Text fs={11} lh={15} color="basic400">
+                      {gDotSummary[id]}
+                    </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
-                    {t("value.percentage", { value: apy })}
+                    {t("value.percentage", {
+                      value: isSupply ? supplyApy : borrowApy,
+                    })}
                   </Text>
                 </div>
               )
@@ -101,4 +183,76 @@ export const GDOTAPY = ({ withLabel }: { withLabel?: boolean }) => {
       />
     </div>
   )
+}
+
+const gDotSummary: ApySummary = {
+  [GDOT_ERC20_ASSET_ID]: i18n.t("incentivesApy"),
+  [DOT_ASSET_ID]: i18n.t("supplyApy"),
+  [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
+}
+
+export const VDOTAPY = ({
+  withLabel,
+  isSupply = true,
+  size,
+  color,
+}: APYProps) => {
+  const { t } = useTranslation()
+  const { totalSupplyApy, totalBorrowApy, underlyingAssetsAPY, vDotApy } =
+    useBorrowAssetApy(VDOT_ASSET_ID)
+
+  const apy = isSupply ? totalSupplyApy : totalBorrowApy
+
+  return (
+    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+      <Text
+        color={color ?? "white"}
+        fs={size ?? 14}
+        tTransform={withLabel ? "uppercase" : "none"}
+      >
+        {t(
+          withLabel
+            ? "liquidity.stablepool.incetives.value"
+            : "value.percentage",
+          { value: apy },
+        )}
+      </Text>
+      <InfoTooltip
+        preventDefault
+        text={
+          <>
+            <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
+            <APYRow id={VDOT_ASSET_ID} label={t("stakeApy")} value={vDotApy} />
+            {[...underlyingAssetsAPY].map(({ id, borrowApy, supplyApy }) => {
+              return (
+                <APYRow
+                  id={id}
+                  label={isSupply ? t("supplyApy") : t("borrowApy")}
+                  value={BN(isSupply ? supplyApy : borrowApy)
+                    .minus(id === VDOT_ASSET_ID ? vDotApy ?? 0 : 0)
+                    .toString()}
+                />
+              )
+            })}
+          </>
+        }
+      />
+    </div>
+  )
+}
+
+type OverrideApyProps = APYProps & {
+  readonly children: ReactNode
+  readonly assetId: string
+}
+
+export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
+  switch (props.assetId) {
+    case GDOT_STABLESWAP_ASSET_ID:
+      return <GDOTAPY {...props} />
+    case VDOT_ASSET_ID:
+      return <VDOTAPY {...props} />
+    default:
+      return children
+  }
 }

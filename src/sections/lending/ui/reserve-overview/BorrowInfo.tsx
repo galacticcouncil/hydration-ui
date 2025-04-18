@@ -17,6 +17,8 @@ import {
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 interface BorrowInfoProps {
   reserve: ComputedReserveData
@@ -153,9 +155,17 @@ export const BorrowInfo = ({
               labelColor="basic400"
               font="GeistSemiBold"
             >
-              <PercentageValue
-                value={Number(reserve.variableBorrowAPY) * 100}
-              />
+              <OverrideApy
+                assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
+                color="basic100"
+                size={19}
+                isSupply={false}
+              >
+                <PercentageValue
+                  value={Number(reserve.variableBorrowAPY) * 100}
+                />
+              </OverrideApy>
+
               <div sx={{ mt: 2 }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
