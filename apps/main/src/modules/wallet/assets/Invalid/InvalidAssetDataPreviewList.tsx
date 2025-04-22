@@ -34,17 +34,14 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
       />
       <ModalContentDivider />
       <TransactionListItem
+        variant="success"
         customLabel={
           <TransactionListItemLabel>
             <HelpIcon />
             {t("invalidAsset.modal.hydraRegistered")}
           </TransactionListItemLabel>
         }
-        customValue={
-          <TransactionListItemValue variant="success">
-            {t("common:yes")}
-          </TransactionListItemValue>
-        }
+        value={t("common:yes")}
       />
       <ModalContentDivider />
       <TransactionListItem
@@ -73,12 +70,9 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
       />
       <ModalContentDivider />
       <TransactionListItem
+        variant="success"
         label={t("invalidAsset.modal.isolatedPoolCreated")}
-        customValue={
-          <TransactionListItemValue variant="success">
-            {t("common:yes")}
-          </TransactionListItemValue>
-        }
+        value={t("common:yes")}
       />
       <ModalContentDivider />
       <TransactionListItem

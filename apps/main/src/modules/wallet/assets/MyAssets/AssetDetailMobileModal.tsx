@@ -3,10 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import {
-  AssetDetailMobileAction,
-  AssetDetailMobileActions,
-} from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
+import { AssetDetailMobileActions } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import {
   SAssetDetailMobileSeparator,
   SAssetDetailModalBody,
@@ -14,14 +11,17 @@ import {
 import { AssetDetailMobileModalBalances } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalances"
 import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalancesHeader"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
-import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import {
+  AssetDetailModal,
+  MyAsset,
+} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
   readonly asset: MyAsset
-  readonly onActionOpen: (action: AssetDetailMobileAction) => void
+  readonly onModalOpen: (action: AssetDetailModal) => void
 }
 
-export const AssetDetailMobileModal: FC<Props> = ({ asset, onActionOpen }) => {
+export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const [totalDisplayPrice] = useDisplayAssetPrice(asset.id, asset.total)
@@ -45,7 +45,10 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onActionOpen }) => {
             />
             <AssetDetailStaking asset={asset} />
           </Flex>
-          <AssetDetailMobileActions onActionOpen={onActionOpen} />
+          <AssetDetailMobileActions
+            assetId={asset.id}
+            onModalOpen={onModalOpen}
+          />
           <div>
             <SAssetDetailMobileSeparator />
             <AssetDetailMobileModalBalancesHeader />

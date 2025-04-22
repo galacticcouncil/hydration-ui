@@ -6,7 +6,6 @@ import {
   ModalContentDivider,
   ModalHeader,
   ModalRoot,
-  ModalTitle,
   ModalTrigger,
 } from "@galacticcouncil/ui/components"
 import { FC } from "react"
@@ -32,14 +31,7 @@ export const Settings: FC = () => {
         </ButtonIcon>
       </ModalTrigger>
       <ModalContent>
-        <ModalHeader
-          title={t("settings")}
-          customTitle={
-            <ModalTitle sx={{ textAlign: "center" }}>
-              {t("settings")}
-            </ModalTitle>
-          }
-        />
+        <ModalHeader title={t("settings")} align="center" />
         <ModalBody sx={{ padding: 0 }}>
           <SSettingsContentDesktop>
             <SSettingsSection>

@@ -1,4 +1,5 @@
 {
+  "all": "All",
   "add": "Add",
   "cancel": "Cancel",
   "close": "Close",
@@ -9,6 +10,7 @@
   "sell": "Sell",
   "buy": "Buy",
   "hide": "Hide",
+  "chain": "Chain",
   "more": "More",
   "back": "Back",
   "confirm": "Confirm",
@@ -38,6 +40,7 @@
   "send": "Send",
   "trade": "Trade",
   "asset": "Asset",
+  "balance": "Balance",
   "initialValue": "Initial value",
   "currentValue": "Current value",
   "withdraw": "Withdraw",
@@ -146,5 +149,10 @@
   "transaction.summary.cost": "Transaction cost",
   "transaction.summary.nonce": "Nonce",
   "transaction.summary.destFee": "Destination fee",
-  "search.placeholder": "Search..."
+  "search.placeholder": "Search...",
+  "addressBook.placeholder": "Paste address here...",
+  "addressBook.myContacts": "My contacts",
+  "addressBook.label": "Destination address",
+  "addressBook.modal.title": "Select account to use",
+  "addressBook.modal.placeholder": "Search or paste address to add"
 }

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
-import { TAsset } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 import {
@@ -39,16 +39,29 @@ const useSchema = () => {
 
 export type TransferPositionFormValues = z.infer<ReturnType<typeof useSchema>>
 
-export const useTransferPositionForm = () => {
+export type TransferPosition = {
+  readonly assetId: string
+  readonly amount: string
+}
+
+type Props = {
+  readonly position?: TransferPosition
+}
+
+export const useTransferPositionForm = (props?: Props) => {
+  const { getAsset } = useAssets()
+  const asset = props?.position?.assetId && getAsset(props?.position?.assetId)
+
   const defaultValues: TransferPositionFormValues = {
     address: "",
-    asset: null,
-    amount: "",
+    asset: asset || null,
+    amount: props?.position?.amount || "",
   }
 
   return useForm<TransferPositionFormValues>({
     mode: "onChange",
     defaultValues,
     resolver: zodResolver(useSchema()),
+    disabled: !!props?.position,
   })
 }

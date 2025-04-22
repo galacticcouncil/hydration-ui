@@ -38,14 +38,16 @@ export const useDisplayAssetPrice = (
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )
 
-  const { price, isLoading } = useAssetPrice(assetId)
+  const { price, isLoading, isValid } = useAssetPrice(assetId)
   const isDollar = isRealUSD || isStableCoin
 
   return [
-    t(compact ? "currency.compact" : "currency", {
-      value: new Big(value || "0").times(price || "0").toString(),
-      ...(isDollar ? {} : { currency: symbol }),
-    }),
+    isValid
+      ? t(compact ? "currency.compact" : "currency", {
+          value: new Big(value || "0").times(price || "0").toString(),
+          ...(isDollar ? {} : { currency: symbol }),
+        })
+      : price,
     { isLoading },
   ] as const
 }

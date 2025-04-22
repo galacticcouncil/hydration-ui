@@ -16,6 +16,7 @@ import { DynamicFee } from "@/components"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { Summary } from "@/components/Summary"
 import { useAssets } from "@/providers/assetsProvider"
+import { Route } from "@/routes/_trade/trade.swap.market"
 
 import { AssetSwitcher, TradeOption, TradeRoutes } from "./components"
 import { useMarketValidation } from "./Market.utils"
@@ -34,12 +35,18 @@ const range = { low: 1, middle: 1.5, high: 2 }
 
 export const Market = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { tradable } = useAssets()
+  const { tradable, getAsset } = useAssets()
 
   const { account } = useAccount()
+  const { assetOut } = Route.useSearch()
 
   const form = useForm<FormValues>({
-    defaultValues: { sell: "", buy: "", type: "swap" },
+    defaultValues: {
+      sell: "",
+      buy: "",
+      type: "swap",
+      buyAsset: assetOut ? getAsset(assetOut) : undefined,
+    },
     mode: "onChange",
     resolver: zodResolver(useMarketValidation()),
   })

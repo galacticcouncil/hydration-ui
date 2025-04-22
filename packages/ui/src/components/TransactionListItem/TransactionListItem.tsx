@@ -61,6 +61,8 @@ type Props = {
   readonly customLabel?: ReactNode
   readonly value?: string | number
   readonly customValue?: ReactNode
+  readonly variant?: TransactionListItemVariant
+  readonly className?: string
 }
 
 export const TransactionListItem: FC<Props> = ({
@@ -68,14 +70,18 @@ export const TransactionListItem: FC<Props> = ({
   customLabel,
   value,
   customValue,
+  variant = "default",
+  className,
 }) => {
   return (
-    <STransactionListItem>
+    <STransactionListItem className={className}>
       {customLabel ?? (
         <TransactionListItemLabel>{label}</TransactionListItemLabel>
       )}
       {customValue ?? (
-        <TransactionListItemValue>{value}</TransactionListItemValue>
+        <TransactionListItemValue variant={variant}>
+          {value}
+        </TransactionListItemValue>
       )}
     </STransactionListItem>
   )

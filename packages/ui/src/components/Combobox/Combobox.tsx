@@ -47,7 +47,7 @@ export const Combobox = <TKey extends string>({
               .join(", ")}
         <SelectCaret />
       </ComboboxTrigger>
-      <ComboboxContent sx={{ width: "var(--radix-popover-trigger-width)" }}>
+      <ComboboxContent sx={{ minWidth: "var(--radix-popover-trigger-width)" }}>
         <Command>
           <Command.List>
             <ComboboxGroup>

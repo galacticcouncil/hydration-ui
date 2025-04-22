@@ -1,6 +1,6 @@
-import { css, styled } from "@/utils"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SAddressField = styled.div(
+export const SAddressBook = styled.div(
   ({ theme }) => css`
     padding-block: ${theme.containers.paddings.primary}px;
 
