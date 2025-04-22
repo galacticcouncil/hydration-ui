@@ -46,6 +46,7 @@ export const AssetLabel = ({
           fs={isMedium ? "p6" : "p5"}
           fw={400}
           lh={1}
+          truncate={100}
         >
           {name}
         </Text>

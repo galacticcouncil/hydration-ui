@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { ColumnPinningPosition } from "@tanstack/react-table"
 
 import { Box } from "@/components/Box"
 import { Separator } from "@/components/Separator"
@@ -31,6 +32,17 @@ const columnSizeStyles = createVariants((theme) => ({
     height: 68px;
     padding: 0 var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p3};
+  `,
+}))
+
+const pinnedColumnStyles = createVariants((theme) => ({
+  left: css`
+    background: ${theme.surfaces.containers.high.primary};
+    left: 0;
+  `,
+  right: css`
+    background: ${theme.surfaces.containers.high.primary};
+    right: 0;
   `,
 }))
 
@@ -130,7 +142,7 @@ export const TableRow = styled.tr<{
   ({ theme, isClickable, isExpandable, hasOverride }) => css`
     &[data-expanded="true"],
     &[data-expanded="true"] + tr {
-      background: ${theme.surfaces.containers.dim.dimOnBg};
+      background: ${theme.surfaces.containers.high.primary};
     }
 
     ${isClickable &&
@@ -151,15 +163,41 @@ export const TableRow = styled.tr<{
     `}
   `,
 )
-export const TableCell = styled.td()
+export const TableCell = styled.td<{
+  isPinned?: ColumnPinningPosition
+}>(({ theme, isPinned }) => {
+  if (isPinned) {
+    return [
+      pinnedColumnStyles(isPinned)({ theme }),
+      css`
+        position: sticky;
+        z-index: 1;
+        background: ${theme.surfaces.containers.high.primary};
+      `,
+    ]
+  }
+})
 
-export const TableHead = styled.th<{ canSort?: boolean }>`
-  text-align: start;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text.low};
+export const TableHead = styled.th<{
+  canSort?: boolean
+  isPinned: ColumnPinningPosition
+}>(
+  ({ theme, canSort, isPinned }) => css`
+    text-align: start;
+    font-weight: 500;
 
-  ${({ canSort }) => canSort && "cursor:pointer;"}
-`
+    ${canSort && "cursor:pointer;"}
+
+    ${isPinned && [
+      pinnedColumnStyles(isPinned)({ theme }),
+      css`
+        position: sticky;
+        z-index: 1;
+        background: ${theme.surfaces.containers.high.primary};
+      `,
+    ]}
+  `,
+)
 
 export const TableHeadSortIndicator = styled.div`
   display: inline-block;

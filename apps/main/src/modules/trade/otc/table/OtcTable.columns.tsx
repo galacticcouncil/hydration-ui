@@ -1,4 +1,4 @@
-import { Add } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Modal,
@@ -156,7 +156,7 @@ export const useOtcTableColums = () => {
                 variant="accent"
                 outline
                 disabled={!isConnected}
-                iconStart={Add}
+                iconStart={Plus}
               >
                 {t("otc.fillOrder.cta")}
               </Button>

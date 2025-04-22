@@ -93,6 +93,7 @@ export const IconsWrapper = styled.div<{
     position: relative;
 
     display: flex;
+    flex-shrink: 0;
 
     & > span {
       width: var(--logo-size);

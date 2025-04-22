@@ -1,4 +1,4 @@
-import { Add, Minus } from "@galacticcouncil/ui/assets/icons"
+import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useTranslation } from "react-i18next"
@@ -19,7 +19,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
       <Button variant="emphasis" outline iconStart={Minus}>
         {t("withdraw")}
       </Button>
-      <Button variant="emphasis" outline iconStart={Add}>
+      <Button variant="emphasis" outline iconStart={Plus}>
         {t("deposit")}
       </Button>
     </Flex>

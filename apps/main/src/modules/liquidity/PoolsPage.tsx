@@ -1,7 +1,9 @@
-import { Search } from "@galacticcouncil/ui/assets/icons"
+import { Plus, Search } from "@galacticcouncil/ui/assets/icons"
 import {
+  Button,
   DataTable,
   Flex,
+  Icon,
   Input,
   Paper,
   SectionHeader,
@@ -79,6 +81,9 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
+          columnPinning={{
+            left: ["meta_name"],
+          }}
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
@@ -115,7 +120,12 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+      <Flex justify="space-between" align="center" gap={20}>
+        <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+        <Button iconStart={() => <Icon component={Plus} size={14} />}>
+          Create Isolated Pool
+        </Button>
+      </Flex>
       <TableContainer as={Paper}>
         <DataTable
           data={filteredData ?? []}

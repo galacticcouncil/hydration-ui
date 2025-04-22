@@ -1,5 +1,6 @@
 import {
   ColumnDef,
+  ColumnPinningState,
   flexRender,
   RowData,
   SortingState,
@@ -42,6 +43,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
       [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
     }[keyof TData][]
     className?: string
+    columnPinning?: ColumnPinningState | undefined
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
@@ -64,6 +66,7 @@ export function DataTable<TData>({
   globalFilter,
   initialSorting,
   noResultsMessage,
+  columnPinning,
   getIsExpandable,
   renderSubComponent,
   renderOverride,
@@ -92,6 +95,7 @@ export function DataTable<TData>({
     },
     state: {
       globalFilter,
+      columnPinning: columnPinning ?? {},
     },
   })
 
@@ -103,6 +107,7 @@ export function DataTable<TData>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const { meta } = header.getContext().column.columnDef
+                const isPinned = header.getContext().column.getIsPinned()
                 return (
                   <TableHead
                     key={header.id}
@@ -111,6 +116,7 @@ export function DataTable<TData>({
                     onSort={header.column.getToggleSortingHandler()}
                     className={meta?.className}
                     sx={meta?.sx}
+                    isPinned={isPinned}
                   >
                     {header.isPlaceholder
                       ? null
@@ -152,11 +158,15 @@ export function DataTable<TData>({
                   >
                     {row.getVisibleCells().map((cell) => {
                       const { meta } = cell.getContext().cell.column.columnDef
+                      const isPinned = cell
+                        .getContext()
+                        .cell.column.getIsPinned()
                       return (
                         <TableCell
                           key={cell.id}
                           className={meta?.className}
                           sx={meta?.sx}
+                          isPinned={isPinned}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,

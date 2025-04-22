@@ -1,4 +1,4 @@
-import { Add } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
@@ -16,7 +16,7 @@ export const MyAssetsActions: FC = () => {
 
   return (
     <Flex gap={16} align="center">
-      <Button size="medium" iconStart={Add}>
+      <Button size="medium" iconStart={Plus}>
         {t("myAssets.header.cta")}
       </Button>
       <ToggleRoot>
