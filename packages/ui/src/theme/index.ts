@@ -38,6 +38,7 @@ const base = makeTheme({
   zIndices: {
     header: 5,
     modal: 10,
+    popover: 1000,
     tooltip: 9999,
   },
   typography: {

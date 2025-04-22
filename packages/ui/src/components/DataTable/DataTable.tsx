@@ -1,6 +1,7 @@
 import {
   ColumnDef,
   flexRender,
+  OnChangeFn,
   RowData,
   SortingState,
   Table as TableDef,
@@ -44,16 +45,22 @@ export type DataTableProps<TData extends RowData> = TableProps &
     pageSize?: number
     globalFilter?: string
     initialSorting?: SortingState
+    sorting?: SortingState
+    manualSorting?: boolean
+    enableSortingRemoval?: boolean
     data: TData[]
     noResultsMessage?: string
-    columns: {
-      [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
-    }[keyof TData][]
+    columns:
+      | {
+          [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
+        }[keyof TData][]
+      | ColumnDef<TData>[]
     className?: string
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
+    onSortingChange?: OnChangeFn<SortingState>
   }
 
 export type DataTableRef = {
@@ -77,11 +84,15 @@ const DataTable = forwardRef(
       skeletonRowCount,
       globalFilter,
       initialSorting,
+      sorting,
+      manualSorting,
+      enableSortingRemoval,
       noResultsMessage,
       getIsExpandable,
       renderSubComponent,
       renderOverride,
       onRowClick,
+      onSortingChange,
     }: DataTableProps<TData>,
     ref: ForwardedRef<DataTableRef>,
   ) => {
@@ -99,6 +110,8 @@ const DataTable = forwardRef(
       paginated,
       expandable,
       skeletonRowCount,
+      manualSorting,
+      enableSortingRemoval,
       initialState: {
         pagination: {
           pageIndex: 0,
@@ -108,7 +121,9 @@ const DataTable = forwardRef(
       },
       state: {
         globalFilter,
+        sorting,
       },
+      onSortingChange,
     })
 
     useImperativeHandle(ref, () => ({

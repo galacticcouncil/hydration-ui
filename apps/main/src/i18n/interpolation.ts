@@ -93,14 +93,14 @@ const formatters = {
     return parts.map(formatNumberParts).join("")
   },
 
-  date: (value: Date | number, options: Record<string, string> = {}) => {
+  date: (value: Date | number, options: Record<string, string>) => {
     const date = new Date(value)
     if (!isDate(date)) {
       return ""
     }
 
     try {
-      return formatDate(date, options.format!)
+      return formatDate(date, options.format ?? "yyyy-MM-dd")
     } catch (error) {
       console.error(error)
     }

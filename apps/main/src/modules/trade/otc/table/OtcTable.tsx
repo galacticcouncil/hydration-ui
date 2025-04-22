@@ -33,7 +33,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const userAddress = useHydraAccountAddress()
 
   const filteredOffers = useMemo(
-    () => data.filter(getOtcOfferFilter(offersType, userAddress)),
+    () => data?.filter(getOtcOfferFilter(offersType, userAddress)) ?? [],
     [data, offersType, userAddress],
   )
 
