@@ -1,4 +1,5 @@
 import { Button, Separator, ValueStats } from "@galacticcouncil/ui/components"
+import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,6 +12,8 @@ import {
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
   const [totalRewards] = useDisplayAssetPrice("10", 14143000)
+
+  const navigate = useNavigate()
 
   return (
     <SWalletRewardsSection>
@@ -28,7 +31,11 @@ export const WalletRewardsSection: FC = () => {
           label={t("rewards.claimable")}
           value={`${t("common:number", { value: 15000 })} HDX`}
         />
-        <Button size="medium" variant="tertiary">
+        <Button
+          size="medium"
+          variant="tertiary"
+          onClick={() => navigate({ to: "/staking" })}
+        >
           {t("rewards.goToStaking")}
         </Button>
       </SWalletRewardsActionItem>

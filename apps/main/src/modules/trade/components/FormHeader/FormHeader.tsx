@@ -5,10 +5,19 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SettingsModal } from "@/modules/trade/components"
+import { FileRouteTypes } from "@/routeTree.gen"
 
 import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
 
-export const swapTabs = ["market", "dca", "cross-chain"] as const
+type GetTradeSwapTab<T> = T extends `/trade/swap/${infer Tab}` ? Tab : never
+type ToRoute = FileRouteTypes["to"]
+type TradeSwapTab = GetTradeSwapTab<ToRoute>
+
+export const swapTabs: ReadonlyArray<TradeSwapTab> = [
+  "market",
+  "dca",
+  "cross-chain",
+] as const
 
 export const FormHeader = () => {
   const { t } = useTranslation("trade")
@@ -19,14 +28,7 @@ export const FormHeader = () => {
       <Flex>
         {swapTabs.map((tab) => (
           <SHeaderTab key={tab} asChild>
-            <Link
-              to="/trade/swap/$section"
-              params={{
-                section: tab,
-              }}
-            >
-              {t(`swap.header.${tab}`)}
-            </Link>
+            <Link to={`/trade/swap/${tab}`}>{t(`swap.header.${tab}`)}</Link>
           </SHeaderTab>
         ))}
       </Flex>

@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
+  TransferPosition,
   TransferPositionFormValues,
   useTransferPositionForm,
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
@@ -21,14 +22,15 @@ import { useAccountData } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
+  readonly position?: TransferPosition
   readonly onClose: () => void
 }
 
-export const TransferPositionModal: FC<Props> = ({ onClose }) => {
+export const TransferPositionModal: FC<Props> = ({ position, onClose }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { tradable } = useAssets()
 
-  const form = useTransferPositionForm()
+  const form = useTransferPositionForm({ position })
 
   const balances = useAccountData((data) => data.balances)
   const asset = form.watch("asset")
@@ -39,7 +41,11 @@ export const TransferPositionModal: FC<Props> = ({ onClose }) => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(() => {})}>
+      <form
+        onSubmit={form.handleSubmit((v) => {
+          console.log("transfer position TODO", v)
+        })}
+      >
         <ModalHeader title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
           <ModalContentDivider />
@@ -64,6 +70,7 @@ export const TransferPositionModal: FC<Props> = ({ onClose }) => {
             amountFieldName="amount"
             assets={tradable}
             maxBalance={balance.toString()}
+            disabled={!!position}
           />
           <ModalContentDivider />
         </ModalBody>

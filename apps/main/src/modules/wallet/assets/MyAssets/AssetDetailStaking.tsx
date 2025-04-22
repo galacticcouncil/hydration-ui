@@ -17,7 +17,15 @@ export const AssetDetailStaking: FC<Props> = ({ asset }) => {
   }
 
   return (
-    <Button type="button" variant="emphasis" outline iconStart={StylizedAdd}>
+    <Button
+      type="button"
+      variant="emphasis"
+      outline
+      iconStart={StylizedAdd}
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+    >
       {t("myAssets.actions.staking", {
         symbol: asset.symbol,
       })}

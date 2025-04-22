@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next"
 
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 
-type Actions = "send" | "withdraw" | "deposit"
+type Modal = "send" | "withdraw" | "deposit"
 
 export const WalletAssetsSubpageLayoutActions = () => {
   const { t } = useTranslation()
   const { isMobile } = useBreakpoints()
 
-  const [action, setAction] = useState<Actions | null>(null)
+  const [modal, setModal] = useState<Modal | null>(null)
 
   if (isMobile) {
     return null
@@ -20,14 +20,14 @@ export const WalletAssetsSubpageLayoutActions = () => {
 
   return (
     <Flex gap={12}>
-      <Button variant="accent" outline onClick={() => setAction("send")}>
+      <Button variant="accent" outline onClick={() => setModal("send")}>
         {t("send")}
       </Button>
       <Button
         variant="emphasis"
         outline
         iconStart={Minus}
-        onClick={() => setAction("withdraw")}
+        onClick={() => setModal("withdraw")}
       >
         {t("withdraw")}
       </Button>
@@ -35,12 +35,14 @@ export const WalletAssetsSubpageLayoutActions = () => {
         variant="emphasis"
         outline
         iconStart={Plus}
-        onClick={() => setAction("deposit")}
+        onClick={() => setModal("deposit")}
       >
         {t("deposit")}
       </Button>
-      <Modal open={action === "send"} onOpenChange={() => setAction(null)}>
-        <TransferPositionModal onClose={() => setAction(null)} />
+      <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
+        {modal === "send" && (
+          <TransferPositionModal onClose={() => setModal(null)} />
+        )}
       </Modal>
     </Flex>
   )
