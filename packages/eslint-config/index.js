@@ -28,6 +28,10 @@ module.exports = {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+  ],
     "react/no-unknown-property": ["error", { "ignore": ["css", "sx"] }],
     "no-restricted-imports": [
       "error",
