@@ -1,21 +1,24 @@
 import { Modal, ModalBody, Separator } from "@galacticcouncil/ui/components"
 import { styled } from "@galacticcouncil/ui/utils"
 
-export const AssetDetailModal = styled(Modal)`
+export const SAssetDetailModal = styled(Modal)`
   --modal-content-padding: 16px;
 `
 
-export const AssetDetailModalBody = styled(ModalBody)`
+export const SAssetDetailModalBody = styled(ModalBody)`
   --modal-body-padding: 16px;
   padding: var(--modal-body-padding);
   padding-top: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
   &&&& {
     border-top: none;
   }
 `
 
-export const AssetDetailMobileSeparator = styled(Separator)`
-  margin: 0 calc(0px - var(--modal-body-padding));
-  width: calc(100% + calc(2 * var(--modal-body-padding)));
+export const SAssetDetailMobileSeparator = styled(Separator)`
+  margin-inline: calc(-1 * var(--modal-body-padding));
 `

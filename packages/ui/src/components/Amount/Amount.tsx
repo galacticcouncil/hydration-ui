@@ -8,8 +8,7 @@ type AmountVariant = "default" | "horizontalLabel" | "tokenLabel" | "small"
 
 type AmountProps = {
   readonly label?: string
-  readonly value: string | number
-  readonly valueSymbol?: string
+  readonly value: string
   readonly displayValue?: string
   readonly variant?: AmountVariant
   readonly className?: string
@@ -18,7 +17,6 @@ type AmountProps = {
 export const Amount: FC<AmountProps> = ({
   label,
   value,
-  valueSymbol,
   displayValue,
   variant = "default",
   className,
@@ -36,9 +34,7 @@ export const Amount: FC<AmountProps> = ({
         gap={2}
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
-        <AmountValue variant={variant}>
-          {value} {valueSymbol}
-        </AmountValue>
+        <AmountValue variant={variant}>{value}</AmountValue>
         {displayValue && (
           <AmountDisplayValue variant={variant}>
             {displayValue}

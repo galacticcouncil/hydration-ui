@@ -15,7 +15,7 @@ import { TAssetData } from "@/api/assets"
 import { AssetSelectModal, Logo } from "@/components"
 import { useAssetPrice } from "@/states/displayAsset"
 
-type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
+export type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
   assets: TAssetData[]
   selectedAsset: TAssetData | undefined | null
   setSelectedAsset?: (asset: TAssetData) => void

@@ -1,68 +1,100 @@
 import {
   DataTable,
+  DataTableRef,
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, useMemo } from "react"
+import { ForwardedRef, forwardRef, useMemo } from "react"
 
+import { InvalidAssetRow } from "@/modules/wallet/Invalid/InvalidAssetRow"
 import { AssetDetailExpanded } from "@/modules/wallet/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/MyAssets/ExpandedNativeRow"
-import { InvalidAssetRow } from "@/modules/wallet/MyAssets/InvalidAssetRow"
 import {
   MyAsset,
+  MyAssetsTableColumn,
   useMyAssetsColumns,
 } from "@/modules/wallet/MyAssets/MyAssetsTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
+import { useAccountData } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly searchPhrase: string
+  readonly showAllAssets: boolean
 }
 
-export const MyAssetsTable: FC<Props> = ({ searchPhrase }) => {
-  const { isMobile } = useBreakpoints()
-  const { tokens, stableswap, bonds, erc20, native, isExternal } = useAssets()
-  const columns = useMyAssetsColumns()
+export const MyAssetsTable = forwardRef(
+  ({ searchPhrase, showAllAssets }: Props, ref: ForwardedRef<DataTableRef>) => {
+    const { isMobile } = useBreakpoints()
 
-  const filteredTokens = useMemo(
-    () =>
-      [...tokens, ...stableswap, ...bonds, ...erc20].filter(
-        (asset) => asset.isTradable && !isExternal(asset),
-      ),
-    [tokens, stableswap, bonds, erc20, isExternal],
-  )
+    const { native, all, isExternal } = useAssets()
+    const balances = useAccountData((data) => data.balances)
 
-  // TODO integrate
-  const assets = useMemo(() => {
-    return filteredTokens.map<MyAsset>((asset) => ({
-      ...asset,
-      total: 12345678,
-      transferable: 12345678,
-      canStake: asset.symbol === "USDC",
-    }))
-  }, [filteredTokens])
+    const tableAssets = useMemo(() => {
+      const assetsWithBalance = showAllAssets
+        ? Array.from(all.values()).map((asset) => ({
+            ...asset,
+            balance: balances[asset.id],
+          }))
+        : Object.entries(balances)
+            .map(([assetId, balance]) => {
+              const asset = all.get(assetId)
 
-  return (
-    <TableContainer as={Paper}>
-      <DataTable
-        paginated
-        pageSize={10}
-        globalFilter={searchPhrase}
-        data={assets}
-        columns={columns}
-        expandable={!isMobile}
-        renderSubComponent={(asset) =>
-          asset.id === native.id ? (
-            <ExpandedNativeRow assetId={asset.id} />
-          ) : (
-            <AssetDetailExpanded assetId={asset.id} />
-          )
-        }
-        renderOverride={(asset) =>
-          // TODO rug check
-          asset.id === "10" ? <InvalidAssetRow assetId={asset.id} /> : undefined
-        }
-      />
-    </TableContainer>
-  )
-}
+              if (!asset) {
+                return null
+              }
+
+              return {
+                ...asset,
+                balance,
+              }
+            })
+            .filter((asset) => !!asset)
+
+      return assetsWithBalance
+        .filter((asset) => !isExternal(asset) || !!asset.name)
+        .map<MyAsset>((asset) => ({
+          ...asset,
+          total: scaleHuman(balances[asset.id]?.total ?? 0n, asset.decimals),
+          transferable: scaleHuman(
+            balances[asset.id]?.free ?? 0n,
+            asset.decimals,
+          ),
+          canStake: asset.id === native.id,
+        }))
+    }, [all, native.id, balances, showAllAssets, isExternal])
+
+    const columns = useMyAssetsColumns()
+
+    return (
+      <TableContainer as={Paper}>
+        <DataTable
+          ref={ref}
+          paginated
+          pageSize={10}
+          globalFilter={searchPhrase}
+          data={tableAssets}
+          columns={columns}
+          expandable={!isMobile}
+          initialSorting={[{ id: MyAssetsTableColumn.Total, desc: true }]}
+          renderSubComponent={(asset) =>
+            asset.id === native.id ? (
+              <ExpandedNativeRow assetId={asset.id} />
+            ) : (
+              <AssetDetailExpanded assetId={asset.id} />
+            )
+          }
+          renderOverride={(asset) =>
+            // TODO 1071 rug check
+            asset.id === "10" ? (
+              <InvalidAssetRow assetId={asset.id} origin="Assethub" />
+            ) : undefined
+          }
+        />
+      </TableContainer>
+    )
+  },
+)
+
+MyAssetsTable.displayName = "MyAssetsTable"

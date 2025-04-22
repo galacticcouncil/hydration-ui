@@ -3,6 +3,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { X } from "lucide-react"
 import { createContext, FC, forwardRef, ReactNode, useContext } from "react"
 
+import { BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { useBreakpoints } from "@/theme"
@@ -131,7 +132,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
 }
 ModalHeader.displayName = "ModalHeader"
 
-const ModalBody = (props: FlexProps) => (
+const ModalBody = (props: BoxProps) => (
   <SModalBody {...props}>{props.children}</SModalBody>
 )
 ModalBody.displayName = "ModalBody"
