@@ -243,7 +243,7 @@ export const VDOTAPY = ({
 
 type OverrideApyProps = APYProps & {
   readonly children: ReactNode
-  readonly assetId: string
+  readonly assetId?: string
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {

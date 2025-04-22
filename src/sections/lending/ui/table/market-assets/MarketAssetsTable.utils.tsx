@@ -13,6 +13,7 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { useRootStore } from "sections/lending/store/root"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
 import { arraySearch } from "utils/helpers"
 
@@ -141,17 +142,28 @@ export const useMarketAssetsTableColumns = () => {
             vIncentivesData,
             borrowingEnabled,
             isFrozen,
+            underlyingAsset,
           } = row.original
+
+          const assetId = getAssetIdFromAddress(underlyingAsset)
 
           return (
             <>
-              <IncentivesCard
-                value={
-                  Number(totalVariableDebtUSD) > 0 ? variableBorrowAPY : "-1"
+              <OverrideApy
+                assetId={
+                  assetId === GDOT_STABLESWAP_ASSET_ID ? undefined : assetId
                 }
-                incentives={vIncentivesData || []}
-                symbol={symbol}
-              />
+                isSupply={false}
+              >
+                <IncentivesCard
+                  value={
+                    Number(totalVariableDebtUSD) > 0 ? variableBorrowAPY : "-1"
+                  }
+                  incentives={vIncentivesData || []}
+                  symbol={symbol}
+                />
+              </OverrideApy>
+
               {!borrowingEnabled &&
                 Number(totalVariableDebt) > 0 &&
                 !isFrozen && (
