@@ -2,12 +2,21 @@ import {
   ColumnDef,
   ColumnPinningState,
   flexRender,
+  OnChangeFn,
   RowData,
   SortingState,
   Table as TableDef,
 } from "@tanstack/react-table"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { Fragment, useCallback, useMemo } from "react"
+import {
+  ForwardedRef,
+  forwardRef,
+  Fragment,
+  Ref,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+} from "react"
 
 import { Box } from "@/components/Box"
 import { Button } from "@/components/Button"
@@ -37,194 +46,227 @@ export type DataTableProps<TData extends RowData> = TableProps &
     pageSize?: number
     globalFilter?: string
     initialSorting?: SortingState
+    sorting?: SortingState
+    manualSorting?: boolean
+    enableSortingRemoval?: boolean
     data: TData[]
     noResultsMessage?: string
-    columns: {
-      [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
-    }[keyof TData][]
+    columns:
+      | {
+          [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
+        }[keyof TData][]
+      | ColumnDef<TData>[]
     className?: string
     columnPinning?: ColumnPinningState | undefined
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
+    onSortingChange?: OnChangeFn<SortingState>
   }
 
-export function DataTable<TData>({
-  data,
-  columns,
-  className,
-  size = "medium",
-  fixedLayout = false,
-  paginated = false,
-  expandable = false,
-  pageSize = 20,
-  borderless,
-  hoverable,
-  isLoading,
-  skeletonRowCount,
-  globalFilter,
-  initialSorting,
-  noResultsMessage,
-  columnPinning,
-  getIsExpandable,
-  renderSubComponent,
-  renderOverride,
-  onRowClick,
-}: DataTableProps<TData>) {
-  const tableProps = {
-    fixedLayout,
-    size,
-    borderless,
-    hoverable,
-  }
+export type DataTableRef = {
+  readonly onPaginationReset: () => void
+}
 
-  const table = useDataTable({
-    data,
-    columns,
-    isLoading,
-    paginated,
-    expandable,
-    skeletonRowCount,
-    initialState: {
-      pagination: {
-        pageIndex: 0,
-        pageSize,
-      },
-      sorting: initialSorting,
-    },
-    state: {
+const DataTable = forwardRef(
+  <TData,>(
+    {
+      data,
+      columns,
+      className,
+      size = "medium",
+      fixedLayout = false,
+      paginated = false,
+      expandable = false,
+      pageSize = 20,
+      borderless,
+      hoverable,
+      isLoading,
+      skeletonRowCount,
       globalFilter,
-      columnPinning: columnPinning ?? {},
-    },
-  })
+      initialSorting,
+      sorting,
+      manualSorting,
+      enableSortingRemoval,
+      noResultsMessage,
+      columnPinning,
+      getIsExpandable,
+      renderSubComponent,
+      renderOverride,
+      onRowClick,
+      onSortingChange,
+    }: DataTableProps<TData>,
+    ref: ForwardedRef<DataTableRef>,
+  ) => {
+    const tableProps = {
+      fixedLayout,
+      size,
+      borderless,
+      hoverable,
+    }
 
-  return (
-    <>
-      <Table {...tableProps} className={className}>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                const { meta } = header.getContext().column.columnDef
-                const isPinned = header.getContext().column.getIsPinned()
-                return (
-                  <TableHead
-                    key={header.id}
-                    canSort={header.column.getCanSort()}
-                    sortDirection={header.column.getIsSorted()}
-                    onSort={header.column.getToggleSortingHandler()}
-                    className={meta?.className}
-                    sx={meta?.sx}
-                    isPinned={isPinned}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => {
-              const override = renderOverride?.(row.original)
-              const isRowExpandable =
-                expandable &&
-                !override &&
-                (getIsExpandable?.(row.original) ?? true)
+    const table = useDataTable({
+      data,
+      columns,
+      isLoading,
+      paginated,
+      expandable,
+      skeletonRowCount,
+      manualSorting,
+      enableSortingRemoval,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize,
+        },
+        sorting: initialSorting,
+      },
+      state: {
+        globalFilter,
+        sorting,
+        columnPinning: columnPinning ?? {},
+      },
+      onSortingChange,
+    })
 
-              return (
-                <Fragment key={row.id}>
-                  <TableRow
-                    data-expanded={
-                      isRowExpandable ? row.getIsExpanded() : undefined
-                    }
-                    data-selected={row.getIsSelected()}
-                    onClick={() => {
-                      if (isRowExpandable) {
-                        row.toggleExpanded()
-                      }
-                      onRowClick?.(row.original)
-                    }}
-                    isExpandable={isRowExpandable}
-                    hasOverride={!!override}
-                    isClickable={!!onRowClick}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const { meta } = cell.getContext().cell.column.columnDef
-                      const isPinned = cell
-                        .getContext()
-                        .cell.column.getIsPinned()
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          className={meta?.className}
-                          sx={meta?.sx}
-                          isPinned={isPinned}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
+    useImperativeHandle(ref, () => ({
+      onPaginationReset: () => table.resetPagination(),
+    }))
+
+    return (
+      <>
+        <Table {...tableProps} className={className}>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const { meta } = header.getContext().column.columnDef
+                  const isPinned = header.getContext().column.getIsPinned()
+
+                  return (
+                    <TableHead
+                      key={header.id}
+                      canSort={header.column.getCanSort()}
+                      sortDirection={header.column.getIsSorted()}
+                      onSort={header.column.getToggleSortingHandler()}
+                      className={meta?.className}
+                      sx={meta?.sx}
+                      isPinned={isPinned}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
                           )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => {
+                const override = renderOverride?.(row.original)
+                const isRowExpandable =
+                  expandable &&
+                  !override &&
+                  (getIsExpandable?.(row.original) ?? true)
+
+                return (
+                  <Fragment key={row.id}>
+                    <TableRow
+                      data-expanded={
+                        isRowExpandable ? row.getIsExpanded() : undefined
+                      }
+                      data-selected={row.getIsSelected()}
+                      onClick={() => {
+                        if (isRowExpandable) {
+                          row.toggleExpanded()
+                        }
+                        onRowClick?.(row.original)
+                      }}
+                      isExpandable={isRowExpandable}
+                      hasOverride={!!override}
+                      isClickable={!!onRowClick}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        const { meta } = cell.getContext().cell.column.columnDef
+                        const isPinned = cell
+                          .getContext()
+                          .cell.column.getIsPinned()
+
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            className={meta?.className}
+                            sx={meta?.sx}
+                            isPinned={isPinned}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        )
+                      })}
+                      {isRowExpandable && (
+                        <TableCell>
+                          <Flex justify="center" align="center">
+                            <Icon
+                              size={18}
+                              color={getToken("icons.onSurface")}
+                              component={
+                                row.getIsExpanded() ? ChevronDown : ChevronUp
+                              }
+                            />
+                          </Flex>
                         </TableCell>
-                      )
-                    })}
-                    {isRowExpandable && (
-                      <TableCell>
-                        <Flex justify="center" align="center">
-                          <Icon
-                            size={18}
-                            color={getToken("icons.onSurface")}
-                            component={
-                              row.getIsExpanded() ? ChevronDown : ChevronUp
-                            }
-                          />
-                        </Flex>
-                      </TableCell>
-                    )}
-                    {override && (
-                      <TableRowOverride
-                        colSpan={table.getVisibleLeafColumns().length + 1}
-                      >
-                        {override}
-                      </TableRowOverride>
-                    )}
-                  </TableRow>
-                  {isRowExpandable &&
-                    renderSubComponent &&
-                    row.getIsExpanded() && (
-                      <TableRow>
-                        <TableCell
+                      )}
+                      {override && (
+                        <TableRowOverride
                           colSpan={table.getVisibleLeafColumns().length + 1}
                         >
-                          <Box py={16}>{renderSubComponent(row.original)}</Box>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                </Fragment>
-              )
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length}>
-                {noResultsMessage ?? "No results."}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-      {!isLoading && paginated && table.getPageCount() > 1 && (
-        <DataTablePagination table={table} />
-      )}
-    </>
-  )
-}
+                          {override}
+                        </TableRowOverride>
+                      )}
+                    </TableRow>
+                    {isRowExpandable &&
+                      renderSubComponent &&
+                      row.getIsExpanded() && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={table.getVisibleLeafColumns().length + 1}
+                          >
+                            <Box py={16}>
+                              {renderSubComponent(row.original)}
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                  </Fragment>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length}>
+                  {noResultsMessage ?? "No results."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        {!isLoading && paginated && table.getPageCount() > 1 && (
+          <DataTablePagination table={table} />
+        )}
+      </>
+    )
+  },
+)
+
+DataTable.displayName = "DataTable"
 
 type DataTablePaginationProps<T> = {
   table: TableDef<T>
@@ -289,3 +331,13 @@ export const DataTablePagination = <T,>({
     </Flex>
   )
 }
+
+type DataTableComponent = {
+  <TData>(
+    props: DataTableProps<TData> & { readonly ref?: Ref<DataTableRef> },
+  ): JSX.Element
+}
+
+const DataTableWithType = DataTable as unknown as DataTableComponent
+
+export { DataTableWithType as DataTable }

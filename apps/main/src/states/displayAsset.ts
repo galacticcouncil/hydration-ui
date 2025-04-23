@@ -85,7 +85,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
               isValid: isNonNullish(price),
             },
           },
-          isLoading || !price,
+          isLoading || price === undefined,
         ],
         [{}, false],
       ),

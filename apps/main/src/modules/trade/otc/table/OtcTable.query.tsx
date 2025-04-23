@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export type OtcOffer = {
   readonly id: string | undefined
@@ -13,7 +14,12 @@ export type OtcOffer = {
   readonly isPartiallyFillable: boolean
 }
 
-export const otcOffersQueryKey = ["trade", "otc", "offers"]
+export const otcOffersQueryKey = [
+  QUERY_KEY_BLOCK_PREFIX,
+  "trade",
+  "otc",
+  "offers",
+]
 
 export const useOtcOffersQuery = () => {
   const { papi, isLoaded: isRpcReady } = useRpcProvider()
@@ -52,7 +58,6 @@ export const useOtcOffersQuery = () => {
         .filter((offer) => !!offer)
     },
     enabled: isRpcReady,
-    initialData: [],
   })
 
   return {

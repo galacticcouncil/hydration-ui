@@ -38,5 +38,11 @@
   "otc.fillOrder.validation.orderTooBig": "The amount exceeds the size of the order.",
   "otc.fillOrder.conversion.price": "Price: 1 {{ symbol }} = ",
   "otc.fillOrder.partiallyFillable.title": "Partially fillable",
-  "otc.fillOrder.partiallyFillable.description": "Allow users to fill smaller parts of this offer"
+  "otc.fillOrder.partiallyFillable.description": "Allow users to fill smaller parts of this offer",
+  "otc.cancelOrder.title": "Sure you want to stop your trade?",
+  "otc.cancelOrder.recap": "Are you sure you want to close this trade? You've sold {{ sold }} of {{ total }}",
+  "otc.cancelOrder.cta": "Cancel order",
+  "otc.cancelOrder.loading": "Cancelling an OTC order for {{ amount }} {{ symbol }}.",
+  "otc.cancelOrder.success": "OTC order cancelled for {{ amount }} {{ symbol }}.",
+  "otc.cancelOrder.error": "Failed to cancel OTC order for {{ amount }} {{ symbol }}."
 }

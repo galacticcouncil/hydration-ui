@@ -17,6 +17,7 @@ import { ComponentProps, FC } from "react"
 
 import { Button, ButtonTransparent } from "@/components/Button"
 import { Flex } from "@/components/Flex"
+import { getToken } from "@/utils"
 
 import {
   SExpandedTableRowHorizontalSeparator,
@@ -39,15 +40,22 @@ export const TableHead: React.FC<TableHeadProps> = ({
   children,
   ...props
 }) => {
-  const asc = sortDirection === "asc" || sortDirection === false ? 1 : 0
-  const desc = sortDirection === "desc" || sortDirection === false ? 1 : 0
+  const ascColor =
+    sortDirection === "asc"
+      ? getToken("controls.solid.activeHover")
+      : getToken("controls.solid.base")
+  const descColor =
+    sortDirection === "desc"
+      ? getToken("controls.solid.activeHover")
+      : getToken("controls.solid.base")
+
   return (
     <TableHeadPrimitive {...props} canSort={canSort} onClick={onSort}>
       {children}
       {canSort && (
         <TableHeadSortIndicator>
-          <CaretDown css={{ opacity: desc }} />
-          <CaretDown css={{ opacity: asc }} />
+          <CaretDown sx={{ color: descColor }} />
+          <CaretDown sx={{ color: ascColor }} />
         </TableHeadSortIndicator>
       )}
     </TableHeadPrimitive>

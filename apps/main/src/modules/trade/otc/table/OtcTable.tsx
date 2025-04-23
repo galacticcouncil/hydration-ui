@@ -28,12 +28,12 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { offers: offersType } = Route.useSearch()
 
   const { data, isLoading } = useOtcOffersQuery()
-  const columns = useOtcTableColums()
+  const columns = useOtcTableColums(offersType)
 
   const userAddress = useHydraAccountAddress()
 
   const filteredOffers = useMemo(
-    () => data.filter(getOtcOfferFilter(offersType, userAddress)),
+    () => data?.filter(getOtcOfferFilter(offersType, userAddress)) ?? [],
     [data, offersType, userAddress],
   )
 

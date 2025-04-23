@@ -2,6 +2,7 @@ import { forwardRef } from "react"
 
 import { Text } from "../Text"
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
+
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
   CustomInputProps & {
     iconStart?: React.ComponentType

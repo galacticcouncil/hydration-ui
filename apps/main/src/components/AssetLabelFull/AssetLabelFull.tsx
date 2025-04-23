@@ -19,7 +19,7 @@ export const AssetLabelFull = ({
 }) => {
   return (
     <AssetLabelFullContainer>
-      <Logo id={asset.id} />
+      <Logo id={asset.id} size={size} />
       <AssetLabel
         symbol={asset.symbol}
         name={withName ? asset.name : undefined}
