@@ -1,0 +1,15 @@
+{
+    "extends": "@galacticcouncil/typescript-config/base.json",
+    "include": ["src"],
+    "compilerOptions": {
+      "composite": true,
+      "outDir": "./build",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "./src/*"
+        ]
+      }
+    }
+  }
+  

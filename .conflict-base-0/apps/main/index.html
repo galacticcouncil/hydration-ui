@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hydration</title>
+    <script>(function(){const htmlElement=document.documentElement;function addClass(name){htmlElement.classList.add(name.toLowerCase().replace(/\s+/g,'-'))}const ua=navigator.userAgent.toLowerCase();if(ua.includes('windows')){addClass('windows')}else if(ua.includes('mac')){addClass('mac')}else if(ua.includes('linux')){addClass('linux')}else if(ua.includes('android')){addClass('android')}else if(ua.includes('iphone')||ua.includes('ipad')){addClass('ios')}if(ua.includes('chrome')){addClass('chrome')}else if(ua.includes('firefox')){addClass('firefox')}else if(ua.includes('safari')&&!ua.includes('chrome')){addClass('safari')}else if(ua.includes('edge')){addClass('edge')}else if(ua.includes('opera')||ua.includes('opr')){addClass('opera')}})();</script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>

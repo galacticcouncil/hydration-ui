@@ -1,0 +1,41 @@
+import { css, SerializedStyles, Theme as EmotionTheme } from "@emotion/react"
+import { SxProp } from "@theme-ui/core"
+import { get, Theme as ThemeUI, ThemeUICSSObject } from "@theme-ui/css"
+
+import { ThemeToken } from "@/theme"
+
+export const px = (n: number | string) => (typeof n === "number" ? n + "px" : n)
+
+export const getToken =
+  (token: ThemeToken | ThemeToken[]) =>
+  (theme: ThemeUI): ThemeUICSSObject =>
+    Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
+
+export const getTokenPx =
+  (token: ThemeToken | ThemeToken[]) => (theme: ThemeUI) =>
+    Array.isArray(token)
+      ? token.map((t) => `${get(theme, t)}px`)
+      : `${get(theme, token)}px`
+
+export function createStyles<T extends SerializedStyles>(
+  callback: (theme: EmotionTheme) => T,
+) {
+  return () =>
+    ({ theme }: { theme: EmotionTheme }) =>
+      callback(theme)
+}
+
+type ExtractString<T> = T extends string ? T : never
+
+export function createVariants<TKey = string>(
+  callback: (
+    theme: EmotionTheme,
+  ) => Record<ExtractString<TKey>, SerializedStyles>,
+) {
+  return (key: ExtractString<TKey>) =>
+    ({ theme }: { theme: EmotionTheme }) =>
+      callback(theme)[key]
+}
+
+export { css, type SxProp }
+export { default as styled } from "@emotion/styled"

@@ -1,0 +1,3 @@
+# generated
+style-dictionary/tokens/**/*.json
+src/theme/tokens/*.json

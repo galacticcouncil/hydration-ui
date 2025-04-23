@@ -1,0 +1,228 @@
+import { isSS58Address } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { HydrationQueries } from "@polkadot-api/descriptors"
+import { useQuery } from "@tanstack/react-query"
+import { millisecondsInHour } from "date-fns/constants"
+import { pick, prop } from "remeda"
+import { useShallow } from "zustand/shallow"
+
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountData } from "@/states/account"
+import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+
+import { uniquesIds } from "./constants"
+
+type UseNonceProps = {
+  address?: string
+}
+
+type OmnipoolWarehouseLMDeposit =
+  HydrationQueries["OmnipoolWarehouseLM"]["Deposit"]["Value"]
+
+type OmnipoolDeposit = OmnipoolWarehouseLMDeposit & {
+  positionId: bigint
+  miningId: bigint
+}
+
+export type OmnipoolDepositFull = Omit<
+  OmnipoolWarehouseLMDeposit,
+  "amm_pool_id"
+> &
+  OmnipoolPosition & {
+    miningId: string
+  }
+
+export type XykDeposit =
+  HydrationQueries["XYKWarehouseLM"]["Deposit"]["Value"] & {
+    id: string
+  }
+
+export type OmnipoolPosition = Omit<
+  HydrationQueries["Omnipool"]["Positions"]["Value"],
+  "asset_id"
+> & {
+  positionId: string
+  assetId: string
+}
+
+export const useNonce = ({ address }: UseNonceProps) => {
+  const { papi } = useRpcProvider()
+  return useQuery({
+    enabled: isSS58Address(address),
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "nonce", address],
+    queryFn: async () => {
+      if (!isSS58Address(address)) throw new Error("Invalid address format")
+      const res = await papi.query.System.Account.getValue(address)
+      return res.nonce
+    },
+  })
+}
+
+export const useAccountBalance = () => {
+  const address = useAccount().account?.address
+  const { papi, isLoaded } = useRpcProvider()
+  const setBalance = useAccountData(prop("setBalance"))
+
+  return useQuery({
+    enabled: !!address && isLoaded,
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "account", "balance", address],
+    queryFn: async () => {
+      if (!address) return null
+
+      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address)
+
+      if (!balancesRaw) {
+        return null
+      }
+
+      const balances = balancesRaw.map(([assetId, balance]) => {
+        const free = balance.free
+        const reserved = balance.reserved
+        const total = free + reserved
+
+        return {
+          free,
+          total,
+          reserved,
+          assetId: assetId.toString(),
+        }
+      })
+
+      setBalance(balances)
+
+      return null
+    },
+    notifyOnChangeProps: [],
+    staleTime: millisecondsInHour,
+  })
+}
+
+export const useAccountUniques = () => {
+  const address = useAccount().account?.address
+  const provider = useRpcProvider()
+  const { papi } = provider
+
+  const { data: nftIds } = useQuery(uniquesIds(provider))
+  const { positions, setPositions } = useAccountData(
+    useShallow(pick(["positions", "setPositions"])),
+  )
+
+  return useQuery({
+    enabled: !!address && !!nftIds,
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "account", "uniques", address],
+    queryFn: async () => {
+      if (!address || !nftIds) return null
+      const { omnipoolNftId, miningNftId, xykMiningNftId } = nftIds
+
+      const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
+        await Promise.all([
+          papi.query.Uniques.Account.getEntries(address, omnipoolNftId),
+          papi.query.Uniques.Account.getEntries(address, miningNftId),
+          papi.query.Uniques.Account.getEntries(address, xykMiningNftId),
+        ])
+
+      const isSame =
+        positions.omnipool.length === omnipoolNftsRaw.length &&
+        positions.omnipoolMining.length === miningNftsRaw.length &&
+        positions.xykMining.length === xykMiningNftsRaw.length
+
+      if (!isSame) {
+        const [
+          omnipoolPositions,
+          omnipoolDepositPositionIds,
+          omnipoolDeposits,
+          xykDeposits,
+        ] = await Promise.all([
+          papi.query.Omnipool.Positions.getValues(
+            omnipoolNftsRaw.map(({ keyArgs }) => [keyArgs[2]]),
+          ),
+          papi.query.OmnipoolLiquidityMining.OmniPositionId.getValues(
+            miningNftsRaw.map(({ keyArgs }) => [keyArgs[2]]),
+          ),
+          papi.query.OmnipoolWarehouseLM.Deposit.getValues(
+            miningNftsRaw.map(({ keyArgs }) => [keyArgs[2]]),
+          ),
+          papi.query.XYKWarehouseLM.Deposit.getValues(
+            xykMiningNftsRaw.map(({ keyArgs }) => [keyArgs[2]]),
+          ),
+        ])
+
+        const validOmnipoolDeposits = omnipoolDepositPositionIds.reduce<
+          Array<OmnipoolDeposit>
+        >((acc, positionId, i) => {
+          const miningNft = miningNftsRaw[i]
+          const data = omnipoolDeposits[i]
+
+          if (positionId && miningNft && data) {
+            acc.push({ miningId: miningNft.keyArgs[2], positionId, ...data })
+          }
+
+          return acc
+        }, [])
+
+        const omnipoolDepositPositions =
+          await papi.query.Omnipool.Positions.getValues(
+            validOmnipoolDeposits.map(({ positionId }) => [positionId]),
+          )
+
+        const positions = {
+          omnipool: omnipoolNftsRaw.reduce<OmnipoolPosition[]>(
+            (acc, { keyArgs }, i) => {
+              const position = omnipoolPositions[i]
+
+              if (position) {
+                acc.push({
+                  positionId: keyArgs[2].toString(),
+                  assetId: position?.asset_id.toString(),
+                  shares: position?.shares,
+                  price: position?.price,
+                  amount: position?.amount,
+                })
+              }
+
+              return acc
+            },
+            [],
+          ),
+          omnipoolMining: omnipoolDepositPositions.reduce<
+            OmnipoolDepositFull[]
+          >((acc, depositPosition, i) => {
+            const data = validOmnipoolDeposits[i]
+
+            if (data && depositPosition) {
+              acc.push({
+                miningId: data.miningId.toString(),
+                positionId: data.positionId.toString(),
+                yield_farm_entries: data.yield_farm_entries,
+                shares: data.shares,
+                assetId: depositPosition.asset_id.toString(),
+                amount: depositPosition.amount,
+                price: depositPosition.price,
+              })
+            }
+
+            return acc
+          }, []),
+          xykMining: xykMiningNftsRaw.reduce<XykDeposit[]>(
+            (acc, { keyArgs }, i) => {
+              const data = xykDeposits[i]
+
+              if (data) {
+                acc.push({ ...data, id: keyArgs[2].toString() })
+              }
+
+              return acc
+            },
+            [],
+          ),
+        }
+
+        setPositions(positions)
+      }
+
+      return null
+    },
+    notifyOnChangeProps: [],
+    staleTime: millisecondsInHour,
+  })
+}

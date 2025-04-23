@@ -1,0 +1,16 @@
+{
+  "extends": "@galacticcouncil/typescript-config/base.json",
+  "include": ["src", "vite-env.d.ts", "src/**/*.json"],
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./build",
+    "jsxImportSource": "@galacticcouncil/ui/jsx",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}

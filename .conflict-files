@@ -1,0 +1,3 @@
+ancestorEntries = ["apps/main/src/i18n/locales/en/common.json", "apps/main/src/modules/wallet/assets/Transfer/TransferPositionModal.tsx", "packages/ui/src/components/index.ts"]
+ourEntries = ["apps/main/src/i18n/locales/en/common.json", "apps/main/src/modules/wallet/assets/Transfer/TransferPositionModal.tsx", "packages/ui/src/components/AccountTile/AccountTile.stories.tsx", "packages/ui/src/components/AccountTile/AccountTile.tsx", "packages/ui/src/components/index.ts"]
+theirEntries = ["apps/main/src/i18n/locales/en/common.json", "apps/main/src/modules/wallet/assets/Transfer/TransferPositionModal.tsx", "packages/ui/src/components/AccountTile/AccountTile.stories.tsx", "packages/ui/src/components/AccountTile/AccountTile.tsx", "packages/ui/src/components/index.ts"]

@@ -1,0 +1,60 @@
+{
+  "name": "hydration-ui",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "preview": "turbo preview",
+    "lint": "turbo lint",
+    "i18n": "turbo i18n"
+  },
+  "resolutions": {
+    "@polkadot/api": "14.0.1",
+    "@polkadot/api-augment": "14.0.1",
+    "@polkadot/api-derive": "14.0.1",
+    "@polkadot/api-base": "14.0.1",
+    "@polkadot/rpc-augment": "14.0.1",
+    "@polkadot/rpc-core": "14.0.1",
+    "@polkadot/rpc-provider": "14.0.1",
+    "@polkadot/types": "14.0.1",
+    "@polkadot/types-augment": "14.0.1",
+    "@polkadot/types-codec": "14.0.1",
+    "@polkadot/types-create": "14.0.1",
+    "@polkadot/types-known": "14.0.1",
+    "@polkadot/keyring": "^13.1.1",
+    "@polkadot/util": "^13.1.1",
+    "@polkadot/util-crypto": "^13.1.1",
+    "@polkadot/ui-shared": "^3.1.4"
+  },
+  "dependencies": {
+    "@galacticcouncil/math-liquidity-mining": "1.0.0",
+    "@galacticcouncil/math-omnipool": "1.0.0",
+    "@galacticcouncil/math-stableswap": "1.0.0",
+    "@galacticcouncil/math-staking": "1.0.0",
+    "@galacticcouncil/math-xyk": "1.0.0",
+    "@galacticcouncil/sdk": "5.5.0",
+    "@galacticcouncil/xcm-cfg": "7.5.2",
+    "@galacticcouncil/xcm-core": "6.3.0",
+    "@galacticcouncil/xcm-sdk": "8.4.0",
+    "@polkadot/api": "14.0.1",
+    "@polkadot/apps-config": "^0.132.1",
+    "@polkadot/networks": "^13.2.3",
+    "@polkadot/ui-shared": "^3.1.4",
+    "react-use": "^17.6.0",
+    "remeda": "^2.19.0",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@galacticcouncil/api-augment": "^0.3.0",
+    "eslint": "8.57.0",
+    "prettier": "3.3.3",
+    "turbo": "^2.0.3",
+    "typescript": "5.7.3",
+    "vite-plugin-svgr": "^4.3.0"
+  },
+  "packageManager": "yarn@1.22.22"
+}
