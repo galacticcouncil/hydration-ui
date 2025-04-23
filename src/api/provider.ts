@@ -55,11 +55,6 @@ const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
 
 export const PROVIDERS: ProviderProps[] = [
   {
-    name: "GalacticCouncil",
-    url: "wss://rpc.hydradx.cloud",
-    ...defaultProvider,
-  },
-  {
     name: "Dwellir",
     url: "wss://hydration-rpc.n.dwellir.com",
     ...defaultProvider,
