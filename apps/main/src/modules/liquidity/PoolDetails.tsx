@@ -1,6 +1,6 @@
 import { Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { Outlet, useMatches, useParams } from "@tanstack/react-router"
+import { Outlet, useParams } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
@@ -16,9 +16,6 @@ export const PoolDetails = () => {
 
   const data = omnipool || xykData
 
-  const matches = useMatches()
-
-  console.log(matches)
   if (!data) return null
 
   return (
