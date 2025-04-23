@@ -179,7 +179,7 @@ export const TableCell = styled.td<{
 
 export const TableHead = styled.th<{
   canSort?: boolean
-  isPinned: ColumnPinningPosition
+  isPinned?: ColumnPinningPosition
 }>(
   ({ theme, canSort, isPinned }) => css`
     text-align: start;
