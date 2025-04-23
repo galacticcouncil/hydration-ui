@@ -54,10 +54,7 @@ export const TransferPositionModal: FC<Props> = ({ position, onClose }) => {
             name="address"
             render={({ field, fieldState }) => (
               <AddressField
-                label={t("transfer.modal.address.label")}
-                actionLabel={t("transfer.modal.actions.myContacts")}
                 address={field.value}
-                addressPlaceholder={t("transfer.modal.address.placeholder")}
                 isError={!!fieldState.error?.message}
                 actionIcon={BookOpen}
                 onAddressChange={field.onChange}

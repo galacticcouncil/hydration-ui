@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
+import { WithdrawModalContainer } from "@/modules/wallet/assets/Withdraw/WithdrawModalContainer"
 
 type Modal = "send" | "withdraw" | "deposit"
 
@@ -43,6 +44,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
         {modal === "send" && (
           <TransferPositionModal onClose={() => setModal(null)} />
         )}
+        {modal === "withdraw" && <WithdrawModalContainer />}
       </Modal>
     </Flex>
   )

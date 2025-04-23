@@ -1,4 +1,7 @@
 {
+  "transferFee": "Transfer fee",
+  "fromChain": "From <0></0> <1>{{ chain }}</1>",
+  "all": "All",
   "add": "Add",
   "cancel": "Cancel",
   "close": "Close",
@@ -9,6 +12,7 @@
   "sell": "Sell",
   "buy": "Buy",
   "hide": "Hide",
+  "chain": "Chain",
   "more": "More",
   "back": "Back",
   "confirm": "Confirm",
@@ -38,6 +42,7 @@
   "send": "Send",
   "trade": "Trade",
   "asset": "Asset",
+  "balance": "Balance",
   "initialValue": "Initial value",
   "currentValue": "Current value",
   "withdraw": "Withdraw",
@@ -146,5 +151,8 @@
   "transaction.summary.cost": "Transaction cost",
   "transaction.summary.nonce": "Nonce",
   "transaction.summary.destFee": "Destination fee",
-  "search.placeholder": "Search..."
+  "search.placeholder": "Search...",
+  "addressField.placeholder": "Paste address here...",
+  "addressField.myContacts": "My contacts",
+  "addressField.label": "Destination address"
 }

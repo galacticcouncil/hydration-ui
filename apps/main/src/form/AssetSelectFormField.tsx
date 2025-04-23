@@ -13,7 +13,7 @@ import { TAsset } from "@/providers/assetsProvider"
 
 type Props<TFormValues extends FieldValues> = Omit<
   AssetSelectProps,
-  "selectedAsset" | "setSelectedAsset" | "value" | "onChange"
+  "selectedAsset" | "setSelectedAsset" | "value" | "onChange" | "error"
 > & {
   readonly assetFieldName: FieldPathByValue<TFormValues, TAsset | null>
   readonly amountFieldName: FieldPathByValue<TFormValues, string>
