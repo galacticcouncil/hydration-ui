@@ -47,15 +47,15 @@ export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
         toasts: {
           submitted: t("otc.fillOrder.loading", {
             symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: form.buyAmount,
           }),
           success: t("otc.fillOrder.success", {
             symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: form.buyAmount,
           }),
           error: t("otc.fillOrder.error", {
             symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: form.buyAmount,
           }),
         },
       })

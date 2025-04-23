@@ -37,20 +37,23 @@ export type FillOrderFormValues = Infer<ReturnType<typeof useSchema>>
 export const useFillOrderForm = (
   otcOffer: OtcOfferTabular,
   assetInBalance: string,
+  isUsersOffer: boolean,
 ) => {
-  const defaultValues: FillOrderFormValues = otcOffer.isPartiallyFillable
-    ? {
-        sellAmount: "",
-        buyAmount: "",
-      }
-    : {
-        sellAmount: otcOffer.assetAmountIn,
-        buyAmount: otcOffer.assetAmountOut,
-      }
+  const defaultValues: FillOrderFormValues =
+    !isUsersOffer && otcOffer.isPartiallyFillable
+      ? {
+          sellAmount: "",
+          buyAmount: "",
+        }
+      : {
+          sellAmount: otcOffer.assetAmountIn,
+          buyAmount: otcOffer.assetAmountOut,
+        }
 
+  const schema = useSchema(otcOffer, assetInBalance)
   const form = useForm<FillOrderFormValues>({
     defaultValues,
-    resolver: zodResolver(useSchema(otcOffer, assetInBalance)),
+    resolver: isUsersOffer ? undefined : zodResolver(schema),
     mode: "onChange",
   })
 

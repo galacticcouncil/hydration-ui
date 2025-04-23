@@ -1,10 +1,10 @@
 import { ProgressBar, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
 
-import { otcOrderStatusQuery } from "@/api/otc"
 import { scaleHuman } from "@/utils/formatting"
+
+import { useInitialOtcOfferAmount } from "./OfferStatusColumn.utils"
 
 type Props = {
   readonly offerId: string | undefined
@@ -19,22 +19,18 @@ export const OfferStatusColumn: FC<Props> = ({
   assetInDecimals,
   isPartiallyFillable,
 }) => {
-  const offerIdNumber = Number(offerId)
-
-  const { data, isLoading } = useQuery(
-    otcOrderStatusQuery(offerIdNumber, isPartiallyFillable),
+  const { amountInInitial, isLoading } = useInitialOtcOfferAmount(
+    offerId,
+    isPartiallyFillable,
   )
 
   if (isLoading) {
     return <Skeleton />
   }
 
-  const amountInInitial = scaleHuman(
-    data?.events[0]?.args?.amountIn ?? "0",
-    assetInDecimals,
+  const amountInInitialBig = new Big(
+    scaleHuman(amountInInitial, assetInDecimals),
   )
-
-  const amountInInitialBig = new Big(amountInInitial)
 
   if (!isPartiallyFillable || amountInInitialBig.lte(0)) {
     return (
@@ -45,7 +41,7 @@ export const OfferStatusColumn: FC<Props> = ({
   }
 
   const filled = amountInInitialBig.minus(assetInAmount)
-  const filledPct = filled.div(amountInInitial).mul(100).toNumber()
+  const filledPct = filled.div(amountInInitialBig).mul(100).toNumber()
 
   return (
     <ProgressBar

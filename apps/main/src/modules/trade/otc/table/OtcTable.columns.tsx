@@ -1,4 +1,4 @@
-import { Add } from "@galacticcouncil/ui/assets/icons"
+import { Add, Minus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Modal,
@@ -19,6 +19,7 @@ import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferM
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OfferStatusColumn } from "@/modules/trade/otc/table/columns/OfferStatusColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
+import { OtcOffersType } from "@/routes/_trade/trade.otc"
 import { nullFirst, numerically, sortBy } from "@/utils/sort"
 
 export enum OtcColumn {
@@ -37,9 +38,11 @@ export type OtcOfferTabular = OtcOffer & {
 
 const columnHelper = createColumnHelper<OtcOfferTabular>()
 
-export const useOtcTableColums = () => {
+export const useOtcTableColums = (offersType: OtcOffersType) => {
   const { t } = useTranslation(["trade", "common"])
   const { isMobile } = useBreakpoints()
+
+  const isUsersOffer = offersType === "my"
 
   return useMemo(() => {
     const offer = columnHelper.accessor("assetOut.name", {
@@ -118,6 +121,7 @@ export const useOtcTableColums = () => {
             <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
               <FillOrderModalContent
                 otcOffer={row.original}
+                isUsersOffer={isUsersOffer}
                 onClose={() => setIsFillOpen(false)}
               />
             </Modal>
@@ -153,17 +157,20 @@ export const useOtcTableColums = () => {
           <ModalRoot open={isFillOpen} onOpenChange={setIsFillOpen}>
             <ModalTrigger asChild>
               <Button
-                variant="accent"
-                outline
+                variant={isUsersOffer ? "danger" : "accent"}
+                outline={isUsersOffer}
                 disabled={!isConnected}
-                iconStart={Add}
+                iconStart={isUsersOffer ? Minus : Add}
               >
-                {t("otc.fillOrder.cta")}
+                {isUsersOffer
+                  ? t("otc.cancelOrder.cta")
+                  : t("otc.fillOrder.cta")}
               </Button>
             </ModalTrigger>
             <ModalContent>
               <FillOrderModalContent
                 otcOffer={row.original}
+                isUsersOffer={isUsersOffer}
                 onClose={() => setIsFillOpen(false)}
               />
             </ModalContent>
@@ -175,5 +182,5 @@ export const useOtcTableColums = () => {
     return isMobile
       ? [offer, price, profitMobile]
       : [offer, accepting, price, marketPricePercentage, status, actions]
-  }, [isMobile, t])
+  }, [isMobile, t, isUsersOffer])
 }
