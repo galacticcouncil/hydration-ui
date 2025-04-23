@@ -26,6 +26,7 @@ import {
   useOmnipoolIds,
 } from "@/states/liquidity"
 import { scaleHuman } from "@/utils/formatting"
+import { numericallyStrDesc } from "@/utils/sort"
 
 export type OmnipoolAssetTable = {
   id: string
@@ -271,7 +272,7 @@ export const usePoolColumns = () => {
             value: Number(row.original.tvlDisplay),
           }),
         sortingFn: (a, b) =>
-          new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
+          numericallyStrDesc(b.original.tvlDisplay, a.original.tvlDisplay),
       }),
       columnHelper.display({
         header: "Fee",
@@ -298,9 +299,10 @@ export const usePoolColumns = () => {
           if (a.original.isNative) return 1
           if (b.original.isNative) return -1
 
-          return new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay)
-            ? 1
-            : -1
+          return numericallyStrDesc(
+            b.original.tvlDisplay,
+            a.original.tvlDisplay,
+          )
         },
       }),
       columnHelper.accessor("meta.symbol", {
@@ -323,7 +325,6 @@ export const usePoolColumns = () => {
               outline
               onClick={() =>
                 navigate({
-                  from: "/liquidity",
                   to: "/liquidity/$id/add",
                   params: { id: row.original.id },
                   resetScroll: false,

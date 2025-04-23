@@ -1,6 +1,5 @@
 import { useRouterState } from "@tanstack/react-router"
 import { t } from "i18next"
-import { useMemo } from "react"
 import { isNumber } from "remeda"
 
 import { Breadcrumb } from "@/components/Breadcrumb"
@@ -11,7 +10,7 @@ export const liquidityActions = [
   { key: "join", label: t("liquidity:liquidity.breadcrumb.join") },
 ]
 
-const getBreadcrumbLabel = (path: string) => {
+const getBreadcrumbLabel = (path: string): string => {
   if (path === "/liquidity") return t("liquidity:pools")
 
   const lastItem = path.split("/").pop()
@@ -26,18 +25,14 @@ const getBreadcrumbLabel = (path: string) => {
 export const LiquidityBreadcrumb = () => {
   const matches = useRouterState({ select: (s) => s.matches })
 
-  const crumbs = useMemo(
-    () =>
-      matches
-        .filter((match) => match.pathname.includes("liquidity"))
-        .map((match) => {
-          const path = match.pathname
-          const label = getBreadcrumbLabel(path)
+  const crumbs = matches
+    .filter((match) => match.pathname.includes("liquidity"))
+    .map((match) => {
+      const path = match.pathname
+      const label = getBreadcrumbLabel(path)
 
-          return { label, path }
-        }),
-    [matches],
-  )
+      return { label, path }
+    })
 
   return <Breadcrumb crumbs={crumbs} />
 }

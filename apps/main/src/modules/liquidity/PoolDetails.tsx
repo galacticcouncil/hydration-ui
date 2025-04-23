@@ -5,7 +5,11 @@ import { useTranslation } from "react-i18next"
 
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
-import { PoolDetailsHeader, PoolDetailsValues } from "./components"
+import {
+  PoolDetailsHeader,
+  PoolDetailsValues,
+  PositionsTable,
+} from "./components"
 
 export const PoolDetails = () => {
   const { t } = useTranslation("liquidity")
@@ -31,6 +35,7 @@ export const PoolDetails = () => {
       <SectionHeader>{t("details.section.availableFarms")}</SectionHeader>
 
       <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
+      <PositionsTable />
       <Outlet />
     </Flex>
   )

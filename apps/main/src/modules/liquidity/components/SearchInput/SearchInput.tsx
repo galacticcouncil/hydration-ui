@@ -5,20 +5,20 @@ import { useTranslation } from "react-i18next"
 type SearchInputProps = {
   onChange: (value: string) => void
   isFocused: boolean
-  setIsFocused: (value: boolean) => void
+  onFocus: (value: boolean) => void
 }
 
 export const SearchInput = ({
   onChange,
   isFocused,
-  setIsFocused,
+  onFocus,
 }: SearchInputProps) => {
   const { t } = useTranslation("common")
 
   return (
     <Input
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onFocus={() => onFocus(true)}
+      onBlur={() => onFocus(false)}
       placeholder={t("search.placeholder")}
       iconStart={Search}
       onChange={(e) => onChange(e.target.value)}

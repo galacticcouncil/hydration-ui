@@ -16,7 +16,6 @@ export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
         <React.Fragment key={index}>
           {index === crumbs.length - 1 ? (
             <Text
-              key={crumb.path}
               color={getToken("text.high")}
               transform="uppercase"
               fw={500}
@@ -36,9 +35,7 @@ export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
                 "&:hover": { color: getToken("text.medium") },
               }}
             >
-              <Link key={crumb.path} to={crumb.path}>
-                {crumb.label}
-              </Link>
+              <Link to={crumb.path}>{crumb.label}</Link>
             </Text>
           )}
           {index < crumbs.length - 1 && (

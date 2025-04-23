@@ -26,7 +26,7 @@ export const PoolsFilters = ({ onChange }: PoolsFiltersProps) => {
       <SearchInput
         onChange={onChange}
         isFocused={isFocused}
-        setIsFocused={setIsFocused}
+        onFocus={setIsFocused}
       />
     </Flex>
   )

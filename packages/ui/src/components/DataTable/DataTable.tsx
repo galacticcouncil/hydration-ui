@@ -106,6 +106,9 @@ const DataTable = forwardRef(
       hoverable,
     }
 
+    const isControlledSorting =
+      sorting !== undefined && onSortingChange !== undefined
+
     const table = useDataTable({
       data,
       columns,
@@ -125,11 +128,14 @@ const DataTable = forwardRef(
       state: {
         globalFilter,
         columnPinning: columnPinning ?? {},
-        ...(sorting && {
+        // need this prevent disabling native sorting, cause undefined value disable it
+        ...(isControlledSorting && {
           sorting,
         }),
       },
-      onSortingChange,
+      ...(isControlledSorting && {
+        onSortingChange,
+      }),
     })
 
     useImperativeHandle(ref, () => ({

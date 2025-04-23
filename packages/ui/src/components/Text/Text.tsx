@@ -26,21 +26,12 @@ export const getFontSizeProps = (fs: TextProps["fs"]) => {
   return { fontSize: fs }
 }
 
-const getTruncateProps = (truncate: TextProps["truncate"]) => {
-  if (typeof truncate === "boolean") {
-    return {
-      textOverflow: "ellipsis",
-      overflow: "hidden",
-      whiteSpace: "nowrap",
-    }
-  }
-  return {
-    textOverflow: "ellipsis",
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-    maxWidth: truncate,
-  }
-}
+const getTruncateProps = (truncate: TextProps["truncate"]) => ({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  maxWidth: typeof truncate === "boolean" ? undefined : truncate,
+})
 
 export const Text = forwardRef<HTMLParagraphElement, TextProps>(
   (
