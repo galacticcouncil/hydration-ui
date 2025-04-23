@@ -124,8 +124,10 @@ const DataTable = forwardRef(
       },
       state: {
         globalFilter,
-        sorting,
         columnPinning: columnPinning ?? {},
+        ...(sorting && {
+          sorting,
+        }),
       },
       onSortingChange,
     })
