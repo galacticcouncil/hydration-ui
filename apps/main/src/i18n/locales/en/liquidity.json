@@ -9,6 +9,8 @@
   "tab.isolatedPools": "Isolated",
   "section.omnipoolStablepool": "Omnipool + stablepool",
   "section.isolatedPools": "Isolated pools",
+  "section.isolatedPools.btn": "Create Isolated Pool",
+  "section.isolatedPools.btn.short": "Create Pool",
   "details.section.availableFarms": "Available farms",
   "details.section.yourPositions": "Your positions",
   "details.values.liquidityLimit": "Estimated pool liquidity limit",

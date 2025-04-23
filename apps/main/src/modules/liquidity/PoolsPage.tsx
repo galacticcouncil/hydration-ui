@@ -1,26 +1,24 @@
-import { Plus, Search } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   DataTable,
   Flex,
   Icon,
-  Input,
   Paper,
   SectionHeader,
   TableContainer,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { PoolsHeader, PoolTypeTabs } from "./components"
+import { PoolsFilters, PoolsHeader } from "./components"
 import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.utils"
 
 export const PoolsPage = () => {
-  const { t } = useTranslation(["liquidity", "common"])
   const [search, setSearch] = useState("")
 
   const { type, myLiquidity } = useSearch({
@@ -28,23 +26,9 @@ export const PoolsPage = () => {
   })
 
   return (
-    <div>
+    <>
       <PoolsHeader />
-      <Flex
-        justify="space-between"
-        align="center"
-        gap={20}
-        sx={{ pt: 30, pb: getTokenPx("containers.paddings.secondary") }}
-      >
-        <PoolTypeTabs />
-        <Input
-          placeholder={t("common:search.placeholder")}
-          iconStart={Search}
-          onChange={(e) => setSearch(e.target.value)}
-          customSize="medium"
-          sx={{ width: 270 }}
-        />
-      </Flex>
+      <PoolsFilters onChange={setSearch} />
 
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable
@@ -55,7 +39,7 @@ export const PoolsPage = () => {
       {(type === "isolated" || type === "all") && (
         <IsolatedPoolsTable search={search} withPositions={myLiquidity} />
       )}
-    </div>
+    </>
   )
 }
 
@@ -111,6 +95,7 @@ export const IsolatedPoolsTable = ({
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useXYKPools()
   const columns = useIsolatedPoolsColumns()
+  const { isMobile } = useBreakpoints()
 
   const router = useRouter()
 
@@ -123,7 +108,11 @@ export const IsolatedPoolsTable = ({
       <Flex justify="space-between" align="center" gap={20}>
         <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
         <Button iconStart={() => <Icon component={Plus} size={14} />}>
-          Create Isolated Pool
+          {t(
+            isMobile
+              ? "section.isolatedPools.btn.short"
+              : "section.isolatedPools.btn",
+          )}
         </Button>
       </Flex>
       <TableContainer as={Paper}>

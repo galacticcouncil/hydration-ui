@@ -7,6 +7,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
     iconStart?: React.ComponentType
     iconEnd?: React.ComponentType
     unit?: string
+    className?: string
   }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -17,11 +18,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       unit,
       variant,
       customSize,
+      className,
       ...props
     },
     ref,
   ) => (
-    <SInputContainer variant={variant} customSize={customSize}>
+    <SInputContainer
+      variant={variant}
+      customSize={customSize}
+      className={className}
+    >
       {IconStart && <IconStart />}
       <SInput ref={ref} {...props} />
       {unit && <Text>{unit}</Text>}

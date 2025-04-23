@@ -77,6 +77,7 @@ export const SInputContainer = styled.div<
     transition: ${theme.transitions.colors};
 
     svg {
+      flex-shrink: 0;
       color: ${theme.icons.onSurface};
     }
   `,

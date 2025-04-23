@@ -1,5 +1,6 @@
 import { OmniMath, PoolBase, PoolToken } from "@galacticcouncil/sdk"
 import { Button, Flex } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "@tanstack/react-router"
@@ -70,10 +71,11 @@ export const useOmnipools = () => {
       const isNative = native.id === omnipoolId
       const meta = getAssetWithFallback(omnipoolId)
       const price = Big(getAssetPrice(omnipoolId).price).round(5).toString()
-      const tvlDisplay = Big(
-        tvls?.find((tvl) => tvl?.asset_id === Number(omnipoolId))?.tvl_usd ??
-          "NaN",
-      ).toString()
+
+      const tvlDisplay =
+        tvls
+          ?.find((tvl) => tvl?.asset_id === Number(omnipoolId))
+          ?.tvl_usd.toString() ?? "0"
       const fee = isNative
         ? undefined
         : fees
@@ -239,6 +241,7 @@ export const useIsolatedPoolsColumns = () => {
 
 export const usePoolColumns = () => {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
 
   const { navigate } = useRouter()
 
@@ -249,7 +252,7 @@ export const usePoolColumns = () => {
         cell: ({ row }) => (
           <AssetLabelFull
             asset={row.original.meta}
-            withName={isStableSwap(row.original.meta)}
+            withName={isStableSwap(row.original.meta) && !isMobile}
           />
         ),
         sortingFn: (a, b) =>
@@ -347,7 +350,7 @@ export const usePoolColumns = () => {
       }),
     ],
 
-    [navigate, t],
+    [navigate, t, isMobile],
   )
 }
 
