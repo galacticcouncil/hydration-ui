@@ -39,7 +39,7 @@ export const SContent = styled(Content)(
 
     box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
 
-    z-index: 2;
+    z-index: ${theme.zIndices.popover};
   `,
 )
 
