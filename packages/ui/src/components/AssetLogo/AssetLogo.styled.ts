@@ -1,10 +1,9 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
+import { AssetLogoSize } from "@/components/AssetLogo/AssetLogo"
+import { Icon } from "@/components/Icon"
 import { createVariants } from "@/utils"
-
-import { Icon } from "../Icon"
-import { AssetLogoSize } from "./AssetLogo"
 
 const getSizeValue = (size: AssetLogoSize) => {
   if (size === "small") return 18
@@ -14,7 +13,11 @@ const getSizeValue = (size: AssetLogoSize) => {
   return 24
 }
 
-const sizes = createVariants(() => ({
+const sizes = createVariants<AssetLogoSize>(() => ({
+  tiny: css`
+    width: 14px;
+    height: 14px;
+  `,
   small: css`
     width: 18px;
     height: 18px;

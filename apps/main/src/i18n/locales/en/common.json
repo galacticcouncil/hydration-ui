@@ -1,4 +1,6 @@
 {
+  "transferFee": "Transfer fee",
+  "fromChain": "From <0></0> <1>{{ chain }}</1>",
   "all": "All",
   "to": "To",
   "copyAddress": "Copy address",

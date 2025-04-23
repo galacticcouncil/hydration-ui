@@ -1,6 +1,7 @@
 import { Button, Flex } from "@galacticcouncil/ui/components"
 import { Link, useLocation } from "@tanstack/react-router"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 export type SubpageItem = {
   readonly to: string
@@ -23,6 +24,7 @@ export const SubpageMenu: FC<Props> = ({ items, className }) => {
     select: (state) => state.search,
   })
 
+  // TODO check if this is correct for liquidity page
   const isActive = (
     to: string,
     routeSearch?: Record<string, string | boolean>,
@@ -38,20 +40,112 @@ export const SubpageMenu: FC<Props> = ({ items, className }) => {
     )
   }
 
+  const activeKey = items.find(({ to }) => isActive(to))?.to ?? ""
+
+  return (
+    <ModalMenuContainer className={className}>
+      {items.map(({ to, title, icon }) => (
+        <Link to={to} key={to}>
+          <ModalMenuItem
+            key={to}
+            title={title}
+            icon={icon}
+            isActive={activeKey === to}
+          />
+        </Link>
+      ))}
+    </ModalMenuContainer>
+  )
+}
+
+export type ModalMenuItem<TKey extends string> = {
+  readonly key: TKey
+  readonly title: string
+  readonly icon?: React.ComponentType
+}
+
+type ModalMenuProps<TKey extends string> = {
+  readonly activeKeys: ReadonlyArray<TKey>
+  readonly allItem?: boolean
+  readonly items: ReadonlyArray<ModalMenuItem<TKey>>
+  readonly className?: string
+  readonly onActivate?: (keys: ReadonlyArray<TKey>) => void
+}
+
+export const ModalMenu = <TKey extends string>({
+  activeKeys,
+  allItem,
+  items,
+  className,
+  onActivate,
+}: ModalMenuProps<TKey>) => {
+  const { t } = useTranslation()
+
+  return (
+    <ModalMenuContainer className={className}>
+      {allItem && (
+        <ModalMenuItem
+          title={t("all")}
+          isActive={activeKeys.length === items.length}
+          onClick={() =>
+            onActivate?.(
+              activeKeys.length === items.length
+                ? []
+                : items.map(({ key }) => key),
+            )
+          }
+        />
+      )}
+      {items.map(({ key, title, icon }) => (
+        <ModalMenuItem
+          key={key}
+          title={title}
+          icon={icon}
+          isActive={activeKeys.includes(key)}
+          onClick={() =>
+            onActivate?.(
+              activeKeys.includes(key)
+                ? activeKeys.filter((k) => k !== key)
+                : [...activeKeys, key],
+            )
+          }
+        />
+      ))}
+    </ModalMenuContainer>
+  )
+}
+
+const ModalMenuContainer = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => {
   return (
     <Flex gap={20} sx={{ overflowX: "auto" }} className={className}>
-      {items.map(({ to, title, icon: IconComponent, search }, index) => (
-        <Button
-          key={`${to}_${index}`}
-          variant={isActive(to, search) ? "secondary" : "tertiary"}
-          asChild
-        >
-          <Link to={to} search={{ ...currentSearch, ...search }}>
-            {IconComponent && <IconComponent />}
-            {title}
-          </Link>
-        </Button>
-      ))}
+      {children}
     </Flex>
+  )
+}
+
+type ModalMenuItemProps = {
+  readonly isActive: boolean
+  readonly title: string
+  readonly icon?: React.ComponentType
+  readonly onClick?: () => void
+}
+
+const ModalMenuItem = ({
+  isActive,
+  title,
+  icon: IconComponent,
+  onClick,
+}: ModalMenuItemProps) => {
+  return (
+    <Button variant={isActive ? "secondary" : "tertiary"} onClick={onClick}>
+      {IconComponent && <IconComponent />}
+      {title}
+    </Button>
   )
 }

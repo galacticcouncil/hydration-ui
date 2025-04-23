@@ -10,7 +10,7 @@ import {
   SPlaceholder,
 } from "./AssetLogo.styled"
 
-export type AssetLogoSize = "large" | "medium" | "small"
+export type AssetLogoSize = "large" | "medium" | "small" | "tiny"
 export type TBadge = "red" | "yellow"
 
 export type AssetLogoProps = {

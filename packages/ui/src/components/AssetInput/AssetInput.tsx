@@ -13,6 +13,7 @@ import { formatAssetValue } from "./AssetInput.utils"
 
 export type AssetInputProps = {
   label?: string
+  customLabel?: ReactNode
   symbol?: string
   value?: string
   dollarValue?: string
@@ -34,6 +35,7 @@ export const AssetInput = ({
   dollarValue,
   dollarValueLoading,
   label,
+  customLabel,
   maxBalance,
   onChange,
   error,
@@ -46,19 +48,20 @@ export const AssetInput = ({
     if (maxBalance) onChange?.(maxBalance)
   }
 
+  const labelElement = (() => {
+    if (customLabel) {
+      return customLabel
+    }
+
+    if (label) {
+      return <AssetInputLabel>{label}</AssetInputLabel>
+    }
+  })()
+
   return (
     <Flex direction="column" gap={12} sx={{ position: "relative", py: 20 }}>
       <Flex align="center" gap={4} justify="space-between">
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            sx={{ width: "fit-content", lineHeight: "120%" }}
-          >
-            {label}
-          </Text>
-        )}
+        {labelElement}
         <Flex align="center" gap={6} sx={{ marginLeft: "auto" }}>
           <Text
             as="div"
@@ -223,5 +226,25 @@ const AssetButton = ({
       </Text>
       <Icon size={20} component={ChevronDown} />
     </SAssetButtonEmpty>
+  )
+}
+
+export const AssetInputLabel = ({
+  children,
+  className,
+}: {
+  readonly children: ReactNode
+  readonly className?: string
+}) => {
+  return (
+    <Text
+      color={getToken("text.medium")}
+      fs="p5"
+      fw={500}
+      sx={{ width: "fit-content", lineHeight: "120%" }}
+      className={className}
+    >
+      {children}
+    </Text>
   )
 }
