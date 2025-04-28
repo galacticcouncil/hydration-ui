@@ -1,11 +1,12 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
-import { X } from "lucide-react"
+import { ArrowLeft, X } from "lucide-react"
 import { createContext, FC, forwardRef, ReactNode, useContext } from "react"
 
 import { BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
+import { Icon } from "@/components/Icon"
 import { useBreakpoints } from "@/theme"
 
 import {
@@ -82,15 +83,19 @@ ModalDescription.displayName = DialogPrimitive.Description.displayName
 type ModalHeaderProps = Omit<FlexProps, "title"> & {
   title: string
   description?: string
+  align?: "default" | "center"
   customHeader?: ReactNode
   customTitle?: ReactNode
+  onBack?: () => void
 }
 
 const ModalHeader: FC<ModalHeaderProps> = ({
   title,
   description,
+  align = "default",
   customHeader,
   customTitle,
+  onBack,
   ...props
 }: FlexProps & ModalHeaderProps) => {
   const { variant } = useContext(ModalContext)
@@ -109,6 +114,15 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   return (
     <SModalHeader {...props}>
       <Flex>
+        {onBack && (
+          <Icon
+            component={ArrowLeft}
+            size={18}
+            css={{ cursor: "pointer", maxWidth: "fit-content" }}
+            onClick={onBack}
+          />
+        )}
+
         {customTitle ? (
           <>
             <VisuallyHidden.Root>
@@ -117,7 +131,11 @@ const ModalHeader: FC<ModalHeaderProps> = ({
             {customTitle}
           </>
         ) : (
-          <ModalTitle>{title}</ModalTitle>
+          <ModalTitle
+            sx={{ textAlign: align === "center" ? "center" : "left" }}
+          >
+            {title}
+          </ModalTitle>
         )}
 
         <SModalClose className="close">

@@ -25,10 +25,14 @@ export function createStyles<T extends SerializedStyles>(
       callback(theme)
 }
 
-export function createVariants<TKey extends string>(
-  callback: (theme: EmotionTheme) => Record<TKey, SerializedStyles>,
+type ExtractString<T> = T extends string ? T : never
+
+export function createVariants<TKey = string>(
+  callback: (
+    theme: EmotionTheme,
+  ) => Record<ExtractString<TKey>, SerializedStyles>,
 ) {
-  return (key: TKey) =>
+  return (key: ExtractString<TKey>) =>
     ({ theme }: { theme: EmotionTheme }) =>
       callback(theme)[key]
 }

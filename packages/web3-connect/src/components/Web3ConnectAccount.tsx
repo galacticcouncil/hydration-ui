@@ -3,6 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 
 import { SAccountItem } from "@/components/Web3ConnectAccount.styled"
+import { Web3WalletLogo } from "@/components/Web3WalletLogo"
 import { useAccount } from "@/hooks/useAccount"
 import { Account } from "@/hooks/useWeb3Connect"
 import { getWallet } from "@/wallets"
@@ -32,15 +33,7 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
       onClick={() => onSelect?.(account)}
     >
       <Flex align="center" gap={12}>
-        {wallet && (
-          <img
-            loading="lazy"
-            src={wallet.logo}
-            alt={wallet.title}
-            width={32}
-            height={32}
-          />
-        )}
+        {wallet && <Web3WalletLogo wallet={wallet} />}
         <Flex direction="column">
           <Text fs={14}>{account.name}</Text>
           <Text fs={13} color={getToken("text.medium")}>

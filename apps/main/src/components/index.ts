@@ -1,3 +1,4 @@
+export * from "./AddressBook"
 export * from "./AssetLabelFull"
 export * from "./AssetPrice"
 export * from "./AssetSelectModal"

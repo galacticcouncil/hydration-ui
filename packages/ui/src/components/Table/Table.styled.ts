@@ -14,7 +14,7 @@ export type TableProps = {
   fixedLayout?: boolean
 }
 
-const columnSizeStyles = createVariants((theme) => ({
+const columnSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
     --table-column-padding-x: 16px;
     height: 44px;
@@ -50,7 +50,7 @@ export const SExpandedTableRowHorizontalSeparator = styled(Separator)`
   margin-inline: calc(-1 * var(--table-column-padding-x));
 `
 
-const headSizeStyles = createVariants((theme) => ({
+const headSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
     height: 44px;
     padding: 0 16px;

@@ -9,12 +9,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useNavigate } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, useDisplayAssetPrice } from "@/components"
-import { AssetDetailMobileAction } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
@@ -36,6 +36,8 @@ export type MyAsset = TAssetStored & {
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
+
+export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
 export const useMyAssetsColumns = () => {
   const { t } = useTranslation(["wallet", "common"])
@@ -109,11 +111,25 @@ export const useMyAssetsColumns = () => {
           textAlign: "right",
         },
       },
-      cell: () => {
+      cell: function Cell({ row }) {
+        const [modal, setModal] = useState<AssetDetailModal | null>(null)
+        const navigate = useNavigate()
+
         return (
           <Flex gap={8}>
-            <TableRowAction>{t("common:send")}</TableRowAction>
-            <TableRowAction>{t("common:trade")}</TableRowAction>
+            <TableRowAction onClick={() => setModal("transfer")}>
+              {t("common:send")}
+            </TableRowAction>
+            <TableRowAction
+              onClick={() =>
+                navigate({
+                  to: "/trade/swap/market",
+                  search: { assetOut: row.original.id },
+                })
+              }
+            >
+              {t("common:trade")}
+            </TableRowAction>
             <TableRowAction>
               <Icon
                 component={Ellipsis}
@@ -121,6 +137,17 @@ export const useMyAssetsColumns = () => {
                 size={12}
               />
             </TableRowAction>
+            <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
+              {modal === "transfer" && (
+                <TransferPositionModal
+                  position={{
+                    assetId: row.original.id,
+                    amount: row.original.transferable,
+                  }}
+                  onClose={() => setModal(null)}
+                />
+              )}
+            </Modal>
           </Flex>
         )
       },
@@ -144,12 +171,9 @@ export const useMyAssetsColumns = () => {
         },
       },
       cell: function Cell({ row }) {
-        type DetailState =
-          | "closed"
-          | "open"
-          | `action:${AssetDetailMobileAction}`
+        type Modal = "detail" | `action:${AssetDetailModal}`
 
-        const [detailState, setDetailState] = useState<DetailState>("closed")
+        const [modal, setModal] = useState<Modal | null>(null)
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
@@ -157,7 +181,7 @@ export const useMyAssetsColumns = () => {
 
         return (
           <>
-            <TableRowActionMobile onClick={() => setDetailState("open")}>
+            <TableRowActionMobile onClick={() => setModal("detail")}>
               <Amount
                 variant="small"
                 value={t("common:number", {
@@ -167,20 +191,26 @@ export const useMyAssetsColumns = () => {
               />
             </TableRowActionMobile>
             <Modal
-              open={detailState === "open"}
-              onOpenChange={() => setDetailState("closed")}
+              open={modal === "detail"}
+              onOpenChange={() => setModal(null)}
             >
               <AssetDetailMobileModal
                 asset={row.original}
-                onActionOpen={(action) => setDetailState(`action:${action}`)}
+                onModalOpen={(action) => setModal(`action:${action}`)}
               />
             </Modal>
             <Modal
-              open={detailState.startsWith("action")}
-              onOpenChange={() => setDetailState("open")}
+              open={modal?.startsWith("action")}
+              onOpenChange={() => setModal("detail")}
             >
-              {detailState === "action:transfer" && (
-                <TransferPositionModal onClose={() => setDetailState("open")} />
+              {modal === "action:transfer" && (
+                <TransferPositionModal
+                  position={{
+                    assetId: row.original.id,
+                    amount: row.original.transferable,
+                  }}
+                  onClose={() => setModal("detail")}
+                />
               )}
             </Modal>
           </>
