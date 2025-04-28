@@ -32,11 +32,11 @@ export const getAcceptedCurrency = (api: ApiPromise) => async () => {
 }
 
 export const useAcceptedCurrencies = (ids: string[]) => {
-  const { api, isLoaded, tradeRouter } = useRpcProvider()
-  const { native } = useAssets()
+  const { api, isLoaded, tradeRouter, timestamp } = useRpcProvider()
+  const { native, getAsset } = useAssets()
 
   return useQuery(
-    QUERY_KEYS.acceptedCurrencies(ids),
+    [...QUERY_KEYS.acceptedCurrencies(ids), timestamp],
     async () => {
       const [pools, acceptedCurrency] = await Promise.all([
         tradeRouter.getPools(),
@@ -45,6 +45,13 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 
       return ids.map((id) => {
         const currency = acceptedCurrency.find((currency) => currency.id === id)
+
+        if (currency && getAsset(currency.id)?.isErc20) {
+          return {
+            ...currency,
+            accepted: false,
+          }
+        }
 
         if (currency) {
           return currency
@@ -70,6 +77,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
     },
     {
       enabled: isLoaded && ids.length > 0,
+      staleTime: Infinity,
     },
   )
 }

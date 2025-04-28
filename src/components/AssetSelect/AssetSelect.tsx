@@ -7,13 +7,14 @@ import React, { forwardRef, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { scaleHuman } from "utils/balance"
-import { useDisplayPrice, useDisplayShareTokenPrice } from "utils/displayAsset"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { AssetSelectButton } from "./AssetSelectButton"
 import { useMedia } from "react-use"
 import { BN_0 } from "utils/constants"
 import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 type AssetSelectProps = {
   name: string
@@ -51,16 +52,14 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
       isBond(asset) && !asset.isTradable ? asset.underlyingAssetId : asset.id
     const { isShareToken } = asset
 
-    const spotPriceAsset = useDisplayPrice(
-      isShareToken ? undefined : spotPriceId,
-    )
+    const { getAssetPrice } = useAssetsPrice(isShareToken ? [] : [spotPriceId])
     const shareTokenSpotPrice = useDisplayShareTokenPrice(
       isShareToken ? [spotPriceId] : [],
     )
 
     const spotPrice = isShareToken
       ? shareTokenSpotPrice.data?.[0].spotPrice
-      : spotPriceAsset.data?.spotPrice.toString()
+      : getAssetPrice(spotPriceId).price
 
     const displayValue = useMemo(() => {
       if (!props.value || !spotPrice) return undefined
@@ -69,7 +68,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
     }, [props.value, spotPrice])
 
     return (
-      <>
+      <div sx={{ flex: "column" }}>
         <SContainer
           className={props.className}
           htmlFor={props.name}
@@ -173,7 +172,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
           </div>
         </SContainer>
         {props.error && <SErrorMessage>{props.error}</SErrorMessage>}
-      </>
+      </div>
     )
   },
 )

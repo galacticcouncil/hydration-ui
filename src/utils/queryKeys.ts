@@ -6,10 +6,13 @@ import { StatsTimeframe } from "api/stats"
 import type BigNumber from "bignumber.js"
 import { Maybe } from "utils/helpers"
 import { ChartType } from "sections/stats/components/ChartsWrapper/ChartsWrapper"
+import { PaginationState } from "@tanstack/react-table"
+import { EventName } from "sections/lending/subsections/history/types"
 
 export const QUERY_KEY_PREFIX = "@block"
 
 export const QUERY_KEYS = {
+  hdxIssuance: ["hdxIssuance"],
   assets: (rpc: string) => ["assets", rpc],
   bondsAssets: ["bondsAssets"],
   providerAccounts: (provider: string | undefined) => [
@@ -46,10 +49,12 @@ export const QUERY_KEYS = {
     "accountsBalances",
     ids.join("."),
   ],
-  pools: [QUERY_KEY_PREFIX, "pools"],
-  omnipoolTokens: ["omnipoolTokens"],
-  stablePools: ["stablePools"],
-  hubToken: ["hubToken"],
+  allPools: [QUERY_KEY_PREFIX, "allPools"],
+  omnipoolTokens: ["pools", "omnipoolTokens"],
+  stablePools: ["pools", "stable"],
+  stablepoolFees: (ids: string[]) => ["pools", "stable", "fees", ids.join(",")],
+  xykPools: ["pools", "xykPool"],
+  hubToken: ["pools", "hubToken"],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
     "dynamicAssetFee",
     id?.toString(),
@@ -96,18 +101,6 @@ export const QUERY_KEYS = {
   ],
   exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
   calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
-  spotPrice: (assetA: string, assetB: string) => ["spotPrice", assetA, assetB],
-  newSpotPrice: (assetA: string, assetB: string) => [
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
-  newSpotPriceLive: (assetA: string, assetB: string) => [
-    QUERY_KEY_PREFIX,
-    "newSpotPrice",
-    assetA,
-    assetB,
-  ],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",
@@ -162,6 +155,11 @@ export const QUERY_KEYS = {
     "omnipoolSquidVolumes",
     ids.join(","),
   ],
+  stablepoolsSquidVolumes: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "stablepoolsSquidVolumes",
+    ids.join(","),
+  ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
       ? ["timestamp", bestNumber]
@@ -191,7 +189,9 @@ export const QUERY_KEYS = {
     "otcOrdersState",
     orderId?.toString(),
   ],
-  provider: (url: string) => ["provider", url],
+  otcExistentialDepositMultiplier: ["otcExistentialDepositMultiplier"],
+  provider: ["provider"],
+  providerMetadata: ["providerMetadata"],
   math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
@@ -248,6 +248,7 @@ export const QUERY_KEYS = {
   hdxSupply: ["hdxSupply"],
   treasuryBalances: ["treasuryBalances"],
   stake: (address: string | undefined) => ["stake", address],
+  minStake: ["minStake"],
   staking: ["staking"],
   stakingPosition: (id: number | undefined) => ["totalStaking", id],
   stakingConsts: ["stakingConsts"],
@@ -273,8 +274,6 @@ export const QUERY_KEYS = {
     pool,
     block,
   ],
-  xykPools: ["xykPools"],
-  allXykPools: ["allXykPools"],
   xykConsts: ["xykConsts"],
   shareTokens: (rpc: string) => ["shareTokens", rpc],
   totalXYKLiquidity: (address?: string) => [
@@ -339,10 +338,9 @@ export const QUERY_KEYS = {
     "assetHubExistentialDeposit",
     id,
   ],
-  assetHubAssetAdminRights: (id: string) => ["assetHubAssetAdminRights", id],
   memepadDryRun: (address: string) => ["memepadDryRun", address],
   bridgeLink: (hash: string) => ["bridgeLink", hash],
-  progressToast: (hash: string) => ["progressToast", hash],
+  progressToast: (hash: string) => [QUERY_KEY_PREFIX, "progressToast", hash],
   xcmTransfer: (
     asset: string,
     srcAddr: string,
@@ -353,10 +351,60 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
-  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  borrowUserSummary: (address: string) => [
+    QUERY_KEY_PREFIX,
+    "borrowUserSummary",
+    address,
+  ],
+  borrowReserves: (poolContractAddress: string) => [
+    "borrowReserves",
+    poolContractAddress,
+  ],
+  borrowIncentives: (
+    incentivesContractAddress: string,
+    accounntAddress?: string,
+  ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
     address,
   ],
+  spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
+  displayPrices: (stableCoinId: string | undefined) => [
+    QUERY_KEY_PREFIX,
+    "displayPrices",
+    stableCoinId,
+  ],
+  rpcStatus: (url: string) => ["rpcStatus", url],
+  accountMoneyMarketEvents: (
+    accoundId: string,
+    filter: ReadonlyArray<EventName>,
+    searchPhrase: string,
+    pagination: PaginationState,
+  ) => [
+    "moneyMarketEvents",
+    accoundId,
+    filter,
+    searchPhrase,
+    pagination.pageSize,
+    pagination.pageIndex,
+  ],
+  swapAssetFees: (period: string) => ["swapAssetFees", period],
+  bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
+    QUERY_KEY_PREFIX,
+    "trade",
+    "bestTradeSell",
+    assetInId,
+    assetOutId,
+    amountIn,
+  ],
 } as const
+
+export const WS_QUERY_KEYS = {
+  omnipoolAssets: ["omnipoolAssets_"],
+  xcmBalance: (address: string, chain: string) => [
+    "xcmBalance_",
+    address,
+    chain,
+  ],
+}

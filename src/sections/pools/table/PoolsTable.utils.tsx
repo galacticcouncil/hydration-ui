@@ -46,6 +46,7 @@ import {
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
 
 const NonClickableContainer = ({
   children,
@@ -494,13 +495,17 @@ export const usePoolTable = (
               ),
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
-                  <APY
-                    assetId={row.original.id}
-                    fee={row.original.fee}
-                    isLoading={row.original.isFeeLoading}
-                    totalFee={row.original.totalFee}
-                    farms={row.original.farms}
-                  />
+                  <NonClickableContainer>
+                    <OverrideApy assetId={row.original.id}>
+                      <APY
+                        assetId={row.original.id}
+                        fee={row.original.fee}
+                        isLoading={row.original.isFeeLoading}
+                        totalFee={row.original.totalFee}
+                        farms={row.original.farms}
+                      />
+                    </OverrideApy>
+                  </NonClickableContainer>
                 ) : null,
             }),
           ]

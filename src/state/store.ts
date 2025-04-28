@@ -7,9 +7,12 @@ import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
 import { TransactionRequest } from "@ethersproject/providers"
-import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import { EvmCall, SolanaCall, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { Parachain } from "@galacticcouncil/xcm-core"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -29,6 +32,7 @@ export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic
+  txOptions?: SubstrateCall["txOptions"]
   evmTx?: {
     data: TransactionRequest
     abi?: string
@@ -47,7 +51,7 @@ export interface Transaction extends TransactionInput {
   onSuccess?: (result: ISubmittableResult) => void
   onSubmitted?: () => void
   onError?: () => void
-  toastMessage?: ToastMessage
+  toast?: ToastMessage
   isProxy: boolean
   steps?: Array<StepProps>
   onBack?: () => void
@@ -65,6 +69,7 @@ export type TransactionOptions = {
   onClose?: () => void
   onError?: () => void
   disableAutoClose?: boolean
+  rejectOnClose?: boolean
 }
 
 interface Store {
@@ -74,6 +79,7 @@ interface Store {
     options?: TransactionOptions,
   ) => Promise<ISubmittableResult>
   cancelTransaction: (hash: string) => void
+  clearTransactions: () => void
 }
 
 type RpcStore = {
@@ -95,11 +101,7 @@ export const useStore = create<Store>((set) => ({
             {
               ...transaction,
               id: uuid(),
-              toastMessage: {
-                onLoading: options?.toast?.onLoading,
-                onSuccess: options?.toast?.onSuccess,
-                onError: options?.toast?.onError,
-              },
+              toast: options?.toast,
               onSubmitted: () => {
                 options?.onSubmitted?.()
               },
@@ -114,7 +116,12 @@ export const useStore = create<Store>((set) => ({
               isProxy: !!options?.isProxy,
               steps: options?.steps,
               onBack: options?.onBack,
-              onClose: options?.onClose,
+              onClose: () => {
+                if (options?.rejectOnClose) {
+                  reject(new Error("Transaction closed"))
+                }
+                options?.onClose?.()
+              },
               disableAutoClose: options?.disableAutoClose,
             },
             ...(store.transactions ?? []),
@@ -130,6 +137,10 @@ export const useStore = create<Store>((set) => ({
       ),
     }))
   },
+  clearTransactions: () =>
+    set(() => ({
+      transactions: [],
+    })),
 }))
 
 export const useRpcStore = create<RpcStore>()(
@@ -176,10 +187,11 @@ type AssetRegistryStore = {
 
 export enum IndexedDBStores {
   Assets = "assets",
+  ApiMetadata = "apiMetadata",
 }
 
 const db: IDBDatabase | null = await new Promise((resolve) => {
-  const request = indexedDB.open("storage")
+  const request = indexedDB.open("storage", 2)
 
   request.onsuccess = () => resolve(request.result)
 
@@ -189,35 +201,41 @@ const db: IDBDatabase | null = await new Promise((resolve) => {
     if (!db.objectStoreNames.contains(IndexedDBStores.Assets)) {
       db.createObjectStore(IndexedDBStores.Assets, { keyPath: "key" })
     }
+
+    if (!db.objectStoreNames.contains(IndexedDBStores.ApiMetadata)) {
+      db.createObjectStore(IndexedDBStores.ApiMetadata, { keyPath: "key" })
+    }
   }
 
   request.onerror = () => resolve(null)
 })
 
-type StoreKey = "tokens" | "shareTokens"
-
 const getItems = async (
   db: IDBDatabase,
-): Promise<{ tokens: object[]; shareTokens: object[] }> =>
+  key: IndexedDBStores,
+): Promise<Array<{ key: string; data: object[] }>> =>
   await new Promise((resolve) => {
-    const tx = db.transaction(IndexedDBStores.Assets, "readonly")
-    const store = tx.objectStore(IndexedDBStores.Assets)
+    const tx = db.transaction(key, "readonly")
+    const store = tx.objectStore(key)
     const res = store.getAll()
 
     res.onsuccess = () => {
       const data = res.result
-      const tokens = data.find((e) => e.key === "tokens")?.data ?? []
-      const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
 
-      resolve({ tokens, shareTokens })
+      resolve(data)
     }
   })
 
-const setItems = async (db: IDBDatabase, data: object[], key: StoreKey) =>
+const setItems = async (
+  db: IDBDatabase,
+  key: IndexedDBStores,
+  data: { key: string; data: any },
+) =>
   await new Promise((resolve) => {
-    const tx = db.transaction(IndexedDBStores.Assets, "readwrite")
-    const store = tx.objectStore(IndexedDBStores.Assets)
-    store.put({ key, data })
+    const tx = db.transaction(key, "readwrite")
+    const store = tx.objectStore(key)
+
+    store.put(data)
 
     resolve(data)
   })
@@ -227,7 +245,10 @@ const storage: StateStorage = {
     const storage = await db
     if (!storage) return null
 
-    const { tokens, shareTokens } = await getItems(storage)
+    const data = await getItems(storage, IndexedDBStores.Assets)
+
+    const tokens = data.find((e) => e.key === "tokens")?.data ?? []
+    const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
 
     return JSON.stringify({
       version: 0,
@@ -239,7 +260,10 @@ const storage: StateStorage = {
     const storage = await db
 
     if (storage) {
-      const { tokens, shareTokens } = await getItems(storage)
+      const data = await getItems(storage, IndexedDBStores.Assets)
+
+      const tokens = data.find((e) => e.key === "tokens")?.data ?? []
+      const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
 
       const areTokensEqual = arraysEqual(parsedState.state.assets, tokens)
       const areShareTokensEqual = arraysEqual(
@@ -248,11 +272,17 @@ const storage: StateStorage = {
       )
 
       if (!areTokensEqual) {
-        setItems(storage, parsedState.state.assets, "tokens")
+        setItems(storage, IndexedDBStores.Assets, {
+          key: "tokens",
+          data: parsedState.state.assets,
+        })
       }
 
       if (!areShareTokensEqual) {
-        setItems(storage, parsedState.state.shareTokens, "shareTokens")
+        setItems(storage, IndexedDBStores.Assets, {
+          key: "shareTokens",
+          data: parsedState.state.shareTokens,
+        })
       }
     }
   },
@@ -282,6 +312,45 @@ export const useAssetRegistry = create<AssetRegistryStore>()(
   ),
 )
 
+type ExternalMetadataStore = {
+  chains: Record<string, TExternalAsset[]>
+  chainsMap: Record<string, Map<string, TExternalAsset>>
+  isInitialized: boolean
+  sync: (chainId: string, assets: TExternalAsset[]) => void
+  getExternalAssetMetadata: (
+    chainId: string,
+    assetId: string,
+  ) => TExternalAsset | undefined
+}
+
+export const useExternalAssetsMetadata = create<ExternalMetadataStore>(
+  (set, get) => ({
+    chains: {},
+    chainsMap: {},
+    isInitialized: false,
+    sync(chainId, assets) {
+      set((state) => {
+        const newChains = { ...state.chains, [chainId]: assets }
+        const isInitialized =
+          !!newChains[(chainsMap.get("assethub") as Parachain).parachainId] &&
+          !!newChains[(chainsMap.get("pendulum") as Parachain).parachainId]
+
+        return {
+          chains: newChains,
+          isInitialized,
+          chainsMap: {
+            ...state.chainsMap,
+            [chainId]: new Map(assets.map((asset) => [asset.id, asset])),
+          },
+        }
+      })
+    },
+    getExternalAssetMetadata(chainId, assetId) {
+      return get().chainsMap[chainId]?.get(assetId)
+    },
+  }),
+)
+
 type SettingsStore = {
   degenMode: boolean
   toggleDegenMode: () => void
@@ -297,5 +366,69 @@ export const useSettingsStore = create<SettingsStore>()(
       name: "settings",
       version: 1,
     },
+  ),
+)
+
+const metadataStorage: StateStorage = {
+  getItem: async () => {
+    const storage = await db
+    if (!storage) return null
+
+    const data = await getItems(storage, IndexedDBStores.ApiMetadata)
+
+    return JSON.stringify({
+      version: 0,
+      state: {
+        metadata: data.length ? { [data[0].key]: data[0].data } : undefined,
+      },
+    })
+  },
+  setItem: async (_, value) => {
+    const parsedState = JSON.parse(value)
+    const metadata = parsedState.state?.metadata as object
+    const storage = await db
+
+    if (storage && metadata) {
+      const data = await getItems(storage, IndexedDBStores.ApiMetadata)
+
+      const isStored = data.some((el) => metadata.hasOwnProperty(el.key))
+
+      if (!isStored) {
+        const transaction = storage.transaction(
+          IndexedDBStores.ApiMetadata,
+          "readwrite",
+        )
+        const store = transaction.objectStore(IndexedDBStores.ApiMetadata)
+
+        // clear previous metadata
+        store.clear()
+
+        Object.entries(metadata).forEach(([key, data]) => {
+          setItems(storage, IndexedDBStores.ApiMetadata, {
+            key,
+            data,
+          })
+        })
+      }
+    }
+  },
+  removeItem: () => {},
+}
+
+export const useApiMetadata = create(
+  persist<{
+    metadata: Record<string, `0x${string}`> | undefined
+    setMetadata: (specVersion: string, metadata: `0x${string}`) => void
+  }>(
+    (set) => ({
+      metadata: {},
+      setMetadata: (specVersion, metadata) => {
+        set((state) => ({
+          ...state,
+          metadata: { [specVersion]: metadata },
+        }))
+      },
+    }),
+    { name: "api-metadata", storage: createJSONStorage(() => metadataStorage) },
   ),
 )

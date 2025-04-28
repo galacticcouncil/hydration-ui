@@ -10,6 +10,7 @@ type SolanaProviderEventType = "connect" | "disconnect" | "accountChanged"
 export interface SolanaWalletProvider {
   isPhantom?: boolean
   isSolflare?: boolean
+  isBraveWallet?: boolean
   isConnected?: boolean
   publicKey: PublicKey
   connect: () => Promise<{ publicKey: PublicKey }>
@@ -38,6 +39,10 @@ export const isSolflare = (provider?: SolanaWalletProvider) => {
   return !!provider?.isSolflare
 }
 
+export const isBraveSolana = (provider?: SolanaWalletProvider) => {
+  return !!provider?.isBraveWallet
+}
+
 export const safeConvertSolanaAddressToSS58 = (address: string, prefix = 0) => {
   try {
     return encodeAddress(new PublicKey(address).toBytes(), prefix)
@@ -51,19 +56,11 @@ export function getSolanaTxLink(hash: string) {
   return `${chain.explorer}/tx/${hash}`
 }
 
-export function validateSolana(solanaAddr: string) {
-  const re = /^[1-9A-HJ-NP-Za-km-z1-9]{32,44}$/
-  if (!re.test(solanaAddr)) {
-    throw new Error("Invalid solana address provided!")
-  }
-}
-
-export function isSolanaAddress(address?: string) {
-  if (!address) return false
+export function isSolanaAddress(address: string) {
   try {
-    validateSolana(address)
-    return true
-  } catch {
+    const pubkey = new PublicKey(address)
+    return PublicKey.isOnCurve(pubkey.toBuffer())
+  } catch (error) {
     return false
   }
 }

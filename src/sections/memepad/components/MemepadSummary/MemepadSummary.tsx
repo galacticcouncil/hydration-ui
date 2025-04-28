@@ -20,8 +20,8 @@ import { qs } from "utils/formatting"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import {
-  useAssetHubAssetRegistry,
   useAssetHubRevokeAdminRights,
+  useRefetchAssetHub,
 } from "api/external/assethub"
 import { useState } from "react"
 import SuccessIcon from "assets/icons/SuccessIcon.svg?react"
@@ -46,7 +46,7 @@ export const MemepadSummary: React.FC<MemepadSummaryProps> = ({
   const isDesktop = useMedia(theme.viewport.gte.md)
   const { setIsWhiteListed } = useUserExternalTokenStore()
   const refetchProvider = useRefetchProviderData()
-  const { refetch: refetchAssetHub } = useAssetHubAssetRegistry()
+  const refetchAssetHub = useRefetchAssetHub()
   const [adminRightsRevoked, setAdminRightsRevoked] = useState(false)
 
   const chainStoredAsset = values?.internalId

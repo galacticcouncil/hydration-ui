@@ -12,6 +12,8 @@ import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { undefinedNoop } from "utils/helpers"
+import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 interface ISubscanData {
   code: number
@@ -88,6 +90,33 @@ const getUniques = async (
   return data
 }
 
+export const useStakingTotal = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { native } = useAssets()
+
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const { price } = getAssetPrice(native.id)
+
+  return useQuery(
+    QUERY_KEYS.staking,
+    async () => {
+      const res = await api.query.staking.staking()
+      if (!res || !price) return null
+      const totalStake = res.totalStake.toBigNumber()
+      return {
+        totalStake: totalStake.toString(),
+        totalStakeDisplay: totalStake
+          .shiftedBy(-native.decimals)
+          .multipliedBy(price)
+          .toString(),
+      }
+    },
+    {
+      enabled: isLoaded && !!price,
+    },
+  )
+}
+
 export const useStake = (address: string | undefined) => {
   const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stake(address), getStake(api, address))
@@ -96,9 +125,8 @@ export const useStake = (address: string | undefined) => {
 const getStake = (api: ApiPromise, address: string | undefined) => async () => {
   const collectionId = await api.consts.staking.nftCollectionId
 
-  const [staking, minStake, uniques] = await Promise.all([
+  const [staking, uniques] = await Promise.all([
     api.query.staking.staking(),
-    api.consts.staking.minStake,
     getUniques(api, address, collectionId.toString()),
   ])
 
@@ -109,7 +137,6 @@ const getStake = (api: ApiPromise, address: string | undefined) => async () => {
     accumulatedRewardPerStake:
       staking?.accumulatedRewardPerStake?.toBigNumber() as BN,
     potReservedBalance: staking?.potReservedBalance?.toBigNumber() as BN,
-    minStake: minStake.toBigNumber() as BN,
     positionId: stakePositionId,
     stakePosition: stakePositionId
       ? await getStakingPosition(api, stakePositionId)()
@@ -182,6 +209,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsPerPeriod,
     timePointsWeight,
     actionPointsWeight,
+    stakeWeight,
   ] = await Promise.all([
     api.consts.staking.palletId,
     api.consts.staking.periodLength,
@@ -189,6 +217,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     api.consts.staking.timePointsPerPeriod,
     api.consts.staking.timePointsWeight,
     api.consts.staking.actionPointsWeight,
+    api.consts.staking.currentStakeWeight,
   ])
 
   return {
@@ -198,6 +227,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsPerPeriod: timePointsPerPeriod.toBigNumber(),
     timePointsWeight: timePointsWeight.toBigNumber().div(1000000),
     actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000),
+    stakeWeight: stakeWeight.toString(),
   }
 }
 
@@ -361,4 +391,14 @@ export const usePendingVotesIds = () => {
 
     return { newPendingVotesIds, oldPendingVotesIds }
   })
+}
+
+export const useMinStake = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.minStake,
+    async () => await api.consts.staking.minStake.toString(),
+    { enabled: isLoaded },
+  )
 }

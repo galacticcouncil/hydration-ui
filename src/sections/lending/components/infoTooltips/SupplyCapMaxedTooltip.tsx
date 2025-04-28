@@ -14,7 +14,7 @@ export const SupplyCapMaxedTooltip = ({
   return (
     <InfoTooltip
       text={
-        <Text>
+        <Text fs={12}>
           Protocol supply cap at 100% for this asset. Further supply
           unavailable.
         </Text>

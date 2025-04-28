@@ -1,12 +1,13 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-import { useState } from "react"
-import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
-import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
-import { IncentivesTooltipContent } from "./IncentivesTooltipContent"
+import MoreDotsIcon from "assets/icons/MoreDotsIcon.svg?react"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { useState } from "react"
+import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
+import { SContainer } from "./IncentivesButton.styled"
+import { IncentivesTooltipContent } from "./IncentivesTooltipContent"
 import { Text } from "components/Typography/Text/Text"
-import { Button } from "components/Button/Button"
+import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 
 interface IncentivesButtonProps {
   symbol: string
@@ -14,34 +15,14 @@ interface IncentivesButtonProps {
   displayBlank?: boolean
 }
 
-const BlankIncentives = () => {
-  return (
-    <div
-      sx={{
-        px: 4,
-        flex: "row",
-        align: "center",
-        justify: "center",
-      }}
-    >
-      &nbsp;
-    </div>
-  )
-}
-
 export const IncentivesButton = ({
   incentives,
   symbol,
-  displayBlank,
 }: IncentivesButtonProps) => {
   const [open, setOpen] = useState(false)
 
   if (!(incentives && incentives.length > 0)) {
-    if (displayBlank) {
-      return <BlankIncentives />
-    } else {
-      return null
-    }
+    return null
   }
 
   const isIncentivesInfinity = incentives.some(
@@ -53,7 +34,6 @@ export const IncentivesButton = ({
         (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
         0,
       )
-
   const incentivesNetAPR = isIncentivesInfinity
     ? "Infinity"
     : incentivesAPRSum !== "Infinity"
@@ -61,20 +41,25 @@ export const IncentivesButton = ({
       : "Infinity"
 
   if (incentivesNetAPR === 0) {
-    if (displayBlank) {
-      return <BlankIncentives />
-    } else {
-      return null
-    }
+    return null
   }
 
   const incentivesButtonValue = () => {
-    if (incentivesNetAPR !== "Infinity" && incentivesNetAPR < 10000) {
-      return <FormattedNumber value={incentivesNetAPR} percent />
-    } else if (incentivesNetAPR !== "Infinity" && incentivesNetAPR > 9999) {
-      return <FormattedNumber value={incentivesNetAPR} percent compact />
-    } else if (incentivesNetAPR === "Infinity") {
-      return <Text color="basic400">∞</Text>
+    if (incentivesNetAPR !== "Infinity") {
+      return (
+        <FormattedNumber
+          sx={{ color: "basic400" }}
+          value={incentivesNetAPR}
+          percent
+          compact={incentivesNetAPR > 9999}
+        />
+      )
+    } else {
+      return (
+        <Text fs={12} color="basic400">
+          ∞
+        </Text>
+      )
     }
   }
 
@@ -82,6 +67,7 @@ export const IncentivesButton = ({
 
   return (
     <InfoTooltip
+      asChild
       text={
         <IncentivesTooltipContent
           incentives={incentives}
@@ -90,24 +76,21 @@ export const IncentivesButton = ({
         />
       }
     >
-      <Button
-        variant="outline"
-        size="micro"
+      <SContainer
         onClick={() => {
           setOpen(!open)
         }}
       >
-        <div sx={{ mr: 8 }}>{incentivesButtonValue()}</div>
-
-        <div css={{ display: "inline-flex" }}>
+        <div sx={{ mr: 4 }}>{incentivesButtonValue()}</div>
+        <div sx={{ display: "inline-flex" }}>
           <>
             {incentives.length < 5 ? (
               <>
                 {incentives.map((incentive) => (
                   <TokenIcon
-                    symbol={incentive.rewardTokenSymbol}
+                    address={incentive.rewardTokenAddress}
                     size={iconSize}
-                    sx={{ ml: -1 }}
+                    sx={{ ml: -2 }}
                     key={incentive.rewardTokenSymbol}
                   />
                 ))}
@@ -116,18 +99,30 @@ export const IncentivesButton = ({
               <>
                 {incentives.slice(0, 3).map((incentive) => (
                   <TokenIcon
-                    symbol={incentive.rewardTokenSymbol}
+                    address={incentive.rewardTokenAddress}
                     size={iconSize}
-                    sx={{ ml: -1 }}
+                    sx={{ ml: -2 }}
                     key={incentive.rewardTokenSymbol}
                   />
                 ))}
-                ...
+                <div
+                  css={{
+                    background: "white",
+                    borderRadius: "50%",
+                    width: iconSize,
+                    height: iconSize,
+                    marginLeft: -2,
+                    zIndex: 5,
+                    color: "black",
+                  }}
+                >
+                  <MoreDotsIcon width={iconSize - 2} height={iconSize - 2} />
+                </div>
               </>
             )}
           </>
         </div>
-      </Button>
+      </SContainer>
     </InfoTooltip>
   )
 }

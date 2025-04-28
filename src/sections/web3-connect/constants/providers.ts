@@ -8,6 +8,7 @@ export enum WalletProviderType {
   NovaWallet = "nova-wallet",
   TrustWallet = "trustwallet",
   BraveWallet = "bravewallet",
+  BraveWalletSol = "bravewallet-sol",
   CoinbaseWallet = "coinbasewallet",
   RabbyWallet = "rabbywallet",
   Nightly = "nightly",
@@ -45,10 +46,10 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.PolkadotJS,
   WalletProviderType.Talisman,
   WalletProviderType.SubwalletJS,
   WalletProviderType.Enkrypt,
-  WalletProviderType.PolkadotJS,
   WalletProviderType.NovaWallet,
   // WalletProviderType.Nightly,
   WalletProviderType.MantaWallet,
@@ -66,6 +67,7 @@ export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
 export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
+  WalletProviderType.BraveWalletSol,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

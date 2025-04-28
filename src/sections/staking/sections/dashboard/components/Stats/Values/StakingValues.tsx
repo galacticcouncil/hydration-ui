@@ -7,7 +7,6 @@ import { SStakingValuesContainer } from "./StakingValues.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { TStakingData, useStakeARP } from "sections/staking/StakingPage.utils"
-import BN from "bignumber.js"
 import { isApiLoaded } from "utils/helpers"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -109,7 +108,7 @@ export const StakingValues = ({
             <Skeleton width={100} height={24} />
           </div>
         ) : (
-          <AprStatValue availableBalance={data?.availableBalance} />
+          <AprStatValue />
         )
       }
     />
@@ -164,13 +163,9 @@ export const StakingValues = ({
   )
 }
 
-export const AprStatValue = ({
-  availableBalance,
-}: {
-  availableBalance: BN | undefined
-}) => {
+export const AprStatValue = () => {
   const { t } = useTranslation()
-  const stakeApr = useStakeARP(availableBalance)
+  const stakeApr = useStakeARP()
 
   return (
     <Text fs={[19]} color="white">

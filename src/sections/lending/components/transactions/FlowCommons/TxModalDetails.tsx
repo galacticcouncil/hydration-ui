@@ -49,7 +49,7 @@ type DetailsNumberLineProps = {
   futureValue?: string | number
   numberPrefix?: ReactNode
   symbol?: string
-  iconSymbol?: string
+  iconAddress?: string
   loading?: boolean
   percent?: boolean
 }
@@ -60,7 +60,7 @@ export const DetailsNumberLine = ({
   futureValue,
   numberPrefix,
   symbol,
-  iconSymbol,
+  iconAddress,
   loading = false,
   percent,
 }: DetailsNumberLineProps) => {
@@ -75,8 +75,8 @@ export const DetailsNumberLine = ({
           <Skeleton height={20} width={100} />
         ) : (
           <>
-            {iconSymbol && (
-              <TokenIcon symbol={iconSymbol} sx={{ mr: 6 }} size={16} />
+            {iconAddress && (
+              <TokenIcon address={iconAddress} sx={{ mr: 6 }} size={16} />
             )}
             {numberPrefix && (
               <Text fs={14} sx={{ mr: 6 }}>
@@ -118,7 +118,7 @@ interface DetailsNumberLineWithSubProps {
   futureValue: string
   futureValueUSD: string
   hideSymbolSuffix?: boolean
-  tokenIcon?: string
+  iconAddress?: string
   loading?: boolean
 }
 
@@ -130,7 +130,7 @@ export const DetailsNumberLineWithSub = ({
   futureValue,
   futureValueUSD,
   hideSymbolSuffix,
-  tokenIcon,
+  iconAddress,
   loading = false,
 }: DetailsNumberLineWithSubProps) => {
   const { t } = useTranslation()
@@ -139,8 +139,8 @@ export const DetailsNumberLineWithSub = ({
       <div sx={{ flex: "column", align: "flex-end" }}>
         {loading ? (
           <>
-            <Skeleton height={20} width={100} />
-            <Skeleton height={15} width={80} sx={{ mt: 12 }} />
+            <Skeleton height={16} width={100} />
+            <Skeleton height={12} width={80} sx={{ mt: 4 }} />
           </>
         ) : (
           <>
@@ -154,8 +154,8 @@ export const DetailsNumberLineWithSub = ({
                   <ArrowRightIcon width={16} height={16} sx={{ mx: 8 }} />
                 </>
               )}
-              {tokenIcon && (
-                <TokenIcon symbol={tokenIcon} sx={{ mr: 4 }} size={14} />
+              {iconAddress && (
+                <TokenIcon address={iconAddress} sx={{ mr: 4 }} size={14} />
               )}
               <Text fs={14}>
                 {t("value.token", { value: futureValue })}
@@ -247,16 +247,17 @@ export const DetailsIncentivesLine = ({
   futureSymbol,
   loading = false,
 }: DetailsIncentivesLineProps) => {
+  const { t } = useTranslation()
   if (
     !incentives ||
     incentives.filter((i) => i.incentiveAPR !== "0").length === 0
   )
     return null
   return (
-    <Row captionColor="basic400" caption={<span>Rewards APR</span>}>
-      <div sx={{ flex: "row", align: "center" }}>
+    <Row captionColor="basic400" caption={t("lending.rewardsAPR")}>
+      <div sx={{ flex: "row", align: "center", height: 18 }}>
         {loading ? (
-          <Skeleton height={20} width={100} />
+          <Skeleton height={16} width={100} />
         ) : (
           <>
             <IncentivesButton incentives={incentives} symbol={symbol} />

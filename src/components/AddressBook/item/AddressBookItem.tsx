@@ -25,6 +25,7 @@ export const AddressBookItem = ({
   provider,
   onSelect,
   id,
+  isCustom,
 }: Props) => {
   const [editting, setEditting] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -44,12 +45,12 @@ export const AddressBookItem = ({
     <>
       <SItem onClick={() => onSelect(address)}>
         <SNameContainer>
-          <AccountAvatar address={address} size={30} />
+          <AccountAvatar address={address} provider={provider} size={30} />
           <SName>{name}</SName>
         </SNameContainer>
         <SAddressContainer>
           <SAddress>{address}</SAddress>
-          {provider === "external" && (
+          {!!isCustom && (
             <div sx={{ flex: "row" }}>
               <SButton
                 onClick={(e) => {

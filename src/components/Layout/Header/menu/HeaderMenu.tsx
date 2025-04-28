@@ -12,37 +12,44 @@ import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
-import { useAccountAssets } from "api/deposits"
+import { useAccountData } from "api/deposits"
+import { useShallow } from "hooks/useShallow"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
-  const { items, hiddenItems, moreButtonKey, observe } =
+  const { items, visibleItemKeys, hiddenItems, moreButtonKey, observe } =
     useVisibleHeaderMenuItems()
 
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null)
 
   return (
     <Root delayDuration={0} open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
-      <div sx={{ flex: "row" }}>
-        <SList ref={observe}>
-          {items.map((item) => (
-            <div key={item.key} data-intersect={item.key}>
-              <HeaderMenuItem
-                item={item}
-                moreButtonKey={moreButtonKey}
-                onMoreButtonClick={() => setMoreMenuOpen((prev) => !prev)}
-                isSubmenuOpen={activeSubMenu === item.key}
-                onSubmenuOpenChange={() =>
-                  setActiveSubMenu((prev) =>
-                    prev === item.key ? null : item.key,
-                  )
-                }
-              />
-            </div>
-          ))}
-        </SList>
-      </div>
+      <SList ref={observe}>
+        {items.map((item) => (
+          <div
+            key={item.key}
+            data-intersect={item.key}
+            css={{ position: "relative" }}
+          >
+            <HeaderMenuItem
+              item={item}
+              moreButtonKey={moreButtonKey}
+              onMoreButtonClick={() => setMoreMenuOpen((prev) => !prev)}
+              isSubmenuOpen={activeSubMenu === item.key}
+              isHidden={
+                item.key === moreButtonKey ||
+                !visibleItemKeys.includes(item.key)
+              }
+              onSubmenuOpenChange={() =>
+                setActiveSubMenu((prev) =>
+                  prev === item.key ? null : item.key,
+                )
+              }
+            />
+          </div>
+        ))}
+      </SList>
       {hiddenItems.length > 0 && (
         <HeaderSubMenuContents
           onItemClick={() => setMoreMenuOpen(false)}
@@ -73,12 +80,14 @@ const HeaderMenuItem: React.FC<{
   item: TabItem
   isSubmenuOpen: boolean
   moreButtonKey?: string
+  isHidden: boolean
   onMoreButtonClick: () => void
   onSubmenuOpenChange: () => void
 }> = ({
   item,
   isSubmenuOpen,
   moreButtonKey,
+  isHidden,
   onSubmenuOpenChange,
   onMoreButtonClick,
 }) => {
@@ -94,14 +103,15 @@ const HeaderMenuItem: React.FC<{
         item={item}
         isOpen={isSubmenuOpen}
         onOpenChange={onSubmenuOpenChange}
+        isHidden={isHidden}
       />
     )
   }
 
   if (item.external && !isMoreButton) {
     return (
-      <a href={item.href}>
-        <SItem>{t(`header.${item.key}`)}</SItem>
+      <a href={item.href} css={isHidden ? { pointerEvents: "none" } : {}}>
+        <SItem isHidden={isHidden}>{t(`header.${item.key}`)}</SItem>
       </a>
     )
   }
@@ -111,13 +121,14 @@ const HeaderMenuItem: React.FC<{
     !isMoreButton
 
   if (isLoaded && isLiquidityLink) {
-    return <LiquidityMenuItem item={item} search={search} />
+    return <LiquidityMenuItem item={item} search={search} isHidden={isHidden} />
   }
 
   return (
     <MenuItem
       item={item}
       search={search}
+      isHidden={isHidden}
       moreButton={
         moreButtonKey === item.key ? (
           <Trigger
@@ -133,7 +144,8 @@ const HeaderMenuItem: React.FC<{
             }}
           >
             <SItem>
-              {t("header.more")} <IconChevron />
+              {t("header.more")}
+              <IconChevron />
             </SItem>
           </Trigger>
         ) : undefined
@@ -145,21 +157,26 @@ const HeaderMenuItem: React.FC<{
 const LiquidityMenuItem = ({
   item,
   search,
+  isHidden,
 }: {
   item: (typeof MENU_ITEMS)[number]
   search: Partial<Search<unknown>>
+  isHidden: boolean
 }) => {
   const { t } = useTranslation()
-  const { data } = useAccountAssets()
+  const isPositions = useAccountData(useShallow((state) => state.isPositions))
 
   return (
     <Link
-      to={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
+      to={isPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
-      key={data?.isAnyPoolPositions ? LINKS.myLiquidity : item.href}
+      key={isPositions ? LINKS.myLiquidity : item.href}
+      css={isHidden ? { pointerEvents: "none" } : {}}
     >
       {({ isActive }) => (
-        <SItem isActive={isActive}>{t(`header.${item.key}`)}</SItem>
+        <SItem isActive={isActive} isHidden={isHidden}>
+          {t(`header.${item.key}`)}
+        </SItem>
       )}
     </Link>
   )
@@ -169,34 +186,29 @@ const MenuItem = ({
   item,
   search,
   moreButton,
+  isHidden,
 }: {
   item: (typeof MENU_ITEMS)[number]
   search: Partial<Search<unknown>>
   moreButton?: React.ReactNode
+  isHidden: boolean
 }) => {
   const { t } = useTranslation()
+  const hasSubmenuDropdown = (item.subItems?.length ?? 0) > 1
 
   return (
     <Link
       to={item.href}
-      onClick={(e) => {
-        if (moreButton) {
-          e.preventDefault()
-          e.stopPropagation()
-        }
-      }}
       search={resetSearchParams(search)}
+      css={isHidden ? { pointerEvents: "none" } : {}}
     >
       {({ isActive }) => {
         return (
-          <span sx={{ flex: "row" }} css={{ position: "relative" }}>
-            <SItem
-              isActive={isActive}
-              css={{
-                opacity: moreButton ? 0 : 1,
-              }}
-            >
+          <>
+            <SItem isActive={isActive} isHidden={isHidden}>
               {t(`header.${item.key}`)}
+              {/* Extra icon needed to prevent layout shift when item with submenu is hidden due to showing more menu button */}
+              {hasSubmenuDropdown && <IconChevron sx={{ flexShrink: 0 }} />}
               {LINKS.memepad === item.href && (
                 <SNoFunBadge
                   css={{ position: "absolute" }}
@@ -210,11 +222,18 @@ const MenuItem = ({
               )}
             </SItem>
             {!!moreButton && (
-              <span sx={{ flex: "row" }} css={{ position: "absolute" }}>
+              <span
+                css={{
+                  top: 0,
+                  left: 0,
+                  position: "absolute",
+                  pointerEvents: "auto",
+                }}
+              >
                 {moreButton}
               </span>
             )}
-          </span>
+          </>
         )
       }}
     </Link>

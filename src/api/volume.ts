@@ -5,12 +5,13 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { PROVIDERS, useActiveProvider, useSquidUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { useRpcProvider } from "providers/rpcProvider"
+import { groupBy } from "utils/rx"
 
 export type TradeType = {
   name:
@@ -120,7 +121,7 @@ export const getAllTrades =
 
     // This is being typed manually, as GraphQL schema does not
     // describe the event arguments at all
-    return {
+    const { events } = {
       ...(await request<{
         events: Array<TradeType | StableswapType>
       }>(
@@ -183,21 +184,90 @@ export const getAllTrades =
         { after, assetId },
       )),
     }
+
+    const groupedEvents = groupBy(events, ({ extrinsic }) => extrinsic.hash)
+
+    const data = Object.entries(groupedEvents).map(([, value]) => {
+      const routerEvent = value.find(({ name }) => name === "Router.Executed")
+      const tradeEvents = value.filter(isTradeEvent)
+      const stableswapEvents = value.filter(isStableswapEvent)
+      const [firstEvent] = tradeEvents
+
+      if (!tradeEvents.length) return null
+
+      if (firstEvent?.name === "Router.Executed") {
+        const who = stableswapEvents?.[0]?.args?.who
+        if (!who) return null
+        return {
+          value,
+          ...firstEvent,
+          args: {
+            who: stableswapEvents[0].args.who,
+            assetIn: firstEvent.args.assetIn,
+            assetOut: firstEvent.args.assetOut,
+            amountIn: firstEvent.args.amountIn,
+            amountOut: firstEvent.args.amountOut,
+          },
+        }
+      }
+
+      let event: TradeType
+      if (!routerEvent) {
+        const lastEvent = tradeEvents[tradeEvents.length - 1]
+        const assetIn = firstEvent.args.assetIn
+        const assetOut = lastEvent.args.assetOut
+
+        const stableswapIn = stableswapEvents.find(
+          ({ args }) => args.poolId === assetIn,
+        )
+        const stableswapAssetIn = stableswapIn?.args?.assets?.[0]?.assetId
+        const stableswapAmountIn = stableswapIn?.args?.assets?.[0]?.amount
+
+        const stableswapOut = stableswapEvents.find(
+          ({ args }) => args.poolId === assetOut,
+        )
+        const stableswapAssetOut = stableswapOut?.args?.amounts?.[0]?.assetId
+        const stableswapAmountOut = stableswapIn?.args?.amounts?.[0]?.amount
+
+        event = {
+          ...firstEvent,
+          args: {
+            who: firstEvent.args.who,
+            assetIn: stableswapAssetIn || assetIn,
+            assetOut: stableswapAssetOut || assetOut,
+            amountIn:
+              stableswapAmountIn ||
+              firstEvent.args.amount ||
+              firstEvent.args.amountIn,
+            amountOut:
+              stableswapAmountOut ||
+              lastEvent.args.amount ||
+              lastEvent.args.amountOut,
+          },
+        }
+      } else {
+        event = {
+          ...firstEvent,
+          args: {
+            ...firstEvent.args,
+            ...routerEvent.args,
+          },
+        }
+      }
+
+      return event
+    })
+
+    return data
   }
 
 export function useAllTrades(assetId?: number) {
-  const activeProvider = useActiveProvider()
-  const selectedProvider = PROVIDERS.find(
-    (provider) =>
-      activeProvider &&
-      new URL(provider.url).hostname === new URL(activeProvider.url).hostname,
-  )
+  const indexerUrl = useIndexerUrl()
 
-  const indexerUrl =
-    selectedProvider?.indexerUrl ?? import.meta.env.VITE_INDEXER_URL
   return useQuery(
     QUERY_KEYS.allTrades(assetId),
     getAllTrades(indexerUrl, assetId),
+    { staleTime: millisecondsInMinute },
   )
 }
 
@@ -262,7 +332,8 @@ const VOLUME_BLOCK_COUNT = 7200 //24 hours
 
 export const useXYKSquidVolumes = (addresses: string[]) => {
   const { api, isLoaded } = useRpcProvider()
-  const url = useSquidUrl()
+  const url =
+    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
 
   return useQuery(
     QUERY_KEYS.xykSquidVolumes(addresses),
@@ -335,7 +406,8 @@ const omnipoolAddress =
 
 export const useOmnipoolVolumes = (ids: string[]) => {
   const { api, isLoaded } = useRpcProvider()
-  const url = useSquidUrl()
+  const url =
+    "https://galacticcouncil.squids.live/hydration-pools:prod/api/graphql"
 
   return useQuery(
     QUERY_KEYS.omnipoolSquidVolumes(ids),
@@ -388,6 +460,64 @@ export const useOmnipoolVolumes = (ids: string[]) => {
 
     {
       enabled: isLoaded && !!ids.length,
+      staleTime: millisecondsInHour,
+    },
+  )
+}
+
+export const useStablepoolVolumes = (ids: string[]) => {
+  const url = useSquidUrl()
+
+  return useQuery(
+    QUERY_KEYS.stablepoolsSquidVolumes(ids),
+
+    async () => {
+      const { stableswapHistoricalVolumesByPeriod } = await request<{
+        stableswapHistoricalVolumesByPeriod: {
+          nodes: {
+            poolId: any
+            assetVolumes: Array<{
+              assetRegistryId: string
+              swapVolume: string
+            }>
+          }[]
+        }
+      }>(
+        url,
+        gql`
+          query StablepoolVolume($poolIds: [String!]!) {
+            stableswapHistoricalVolumesByPeriod(
+              filter: { poolIds: $poolIds, period: _24H_ }
+            ) {
+              nodes {
+                poolId
+                assetVolumes {
+                  assetRegistryId
+                  swapVolume
+                }
+              }
+            }
+          }
+        `,
+        { poolIds: ids },
+      )
+
+      const { nodes = [] } = stableswapHistoricalVolumesByPeriod
+
+      return nodes.map((node) => {
+        const volumes = node.assetVolumes.map(
+          ({ assetRegistryId, swapVolume }) => ({
+            assetId: assetRegistryId,
+            assetVolume: swapVolume,
+          }),
+        )
+
+        return { poolId: node.poolId, volumes }
+      })
+    },
+
+    {
+      enabled: !!ids.length,
       staleTime: millisecondsInHour,
     },
   )

@@ -10,6 +10,7 @@ import StakingIcon from "assets/icons/StakingIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
+import StrategyIcon from "assets/icons/StrategyIcon.svg?react"
 import IconYieldDCA from "assets/icons/YieldDcaIcon.svg?react"
 import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
 import AssetsIcon from "assets/icons/AssetsIcon.svg?react"
@@ -18,6 +19,10 @@ import AllPools from "assets/icons/AllPools.svg?react"
 import IsolatedPools from "assets/icons/IsolatedPools.svg?react"
 import OmniStablepools from "assets/icons/Omnipool&Stablepool.svg?react"
 import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
+import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
+import UploadIcon from "assets/icons/UploadIcon.svg?react"
+import TreasuryIcon from "assets/icons/Treasury.svg?react"
+import BarChartDecreasingIcon from "assets/icons/BarChartDecreasingIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
 export const LINKS = {
@@ -43,9 +48,10 @@ export const LINKS = {
   bond: "/trade/bond",
   stats: "/stats",
   statsOverview: "/stats/overview",
+  statsOmnipool: "/stats/omnipool",
   statsPOL: "/stats/treasury",
   statsLRNA: "/stats/LRNA",
-  statsOmnipool: "/stats/asset",
+  statsOmnipoolAsset: "/stats/asset",
   staking: "/staking",
   stakingDashboard: "/staking/dashboard",
   stakingGovernance: "/staking/governance",
@@ -53,8 +59,13 @@ export const LINKS = {
   borrow: "/borrow",
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
+  borrowHistory: "/borrow/history",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
+  strategies: "/strategies",
+  gigadotStrategies: "/strategies/gigadot",
 }
 
 export const MENU_ITEMS = [
@@ -109,7 +120,25 @@ export const MENU_ITEMS = [
         Icon: AssetsIcon,
         enabled: true,
       },
+      {
+        key: "borrow.history",
+        href: LINKS.borrowHistory,
+        Icon: TransferIcon,
+        enabled: true,
+      },
     ],
+  },
+  {
+    key: "strategies",
+    href: LINKS.gigadotStrategies,
+    Icon: StrategyIcon,
+    subItems: undefined,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 8,
+    asyncEnabled: false,
   },
   {
     key: "liquidity",
@@ -183,25 +212,32 @@ export const MENU_ITEMS = [
     key: "xcm",
     href: LINKS.cross_chain,
     Icon: TransferIcon,
-    subItems: undefined,
     enabled: true,
     external: false,
     mobVisible: false,
     tabVisible: false,
     mobOrder: 5,
     asyncEnabled: false,
-  },
-  {
-    key: "stats",
-    href: LINKS.statsOverview,
-    Icon: StatsIcon,
-    subItems: undefined,
-    enabled: true,
-    external: false,
-    mobVisible: false,
-    tabVisible: true,
-    mobOrder: 3,
-    asyncEnabled: false,
+    subItems: [
+      {
+        key: "xcm.xcm",
+        href: LINKS.cross_chain,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.deposit",
+        href: LINKS.deposit,
+        Icon: DownloadIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.withdraw",
+        href: LINKS.withdraw,
+        Icon: UploadIcon,
+        enabled: true,
+      },
+    ],
   },
   {
     key: "staking",
@@ -214,6 +250,37 @@ export const MENU_ITEMS = [
     tabVisible: true,
     mobOrder: 4,
     asyncEnabled: false,
+  },
+  {
+    key: "stats",
+    href: LINKS.statsOverview,
+    Icon: StatsIcon,
+    enabled: true,
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 3,
+    asyncEnabled: false,
+    subItems: [
+      {
+        key: "stats.overview",
+        href: LINKS.statsOverview,
+        Icon: BarChartDecreasingIcon,
+        enabled: true,
+      },
+      {
+        key: "stats.omnipool",
+        href: LINKS.statsOmnipool,
+        Icon: StatsIcon,
+        enabled: true,
+      },
+      {
+        key: "stats.treasury",
+        href: LINKS.statsPOL,
+        Icon: TreasuryIcon,
+        enabled: true,
+      },
+    ],
   },
   {
     key: "referrals",
@@ -244,7 +311,7 @@ export const MENU_ITEMS = [
 export type TabKey = (typeof MENU_ITEMS)[number]["key"]
 export type TabItem = (typeof MENU_ITEMS)[number]
 export type TabSubItem = (typeof MENU_ITEMS)[number]["subItems"]
-export type TabItemWithSubItems = TabItem & {
+export type TabItemWithSubItems = Omit<TabItem, "subItems"> & {
   subItems: NonNullable<TabSubItem>
 }
 

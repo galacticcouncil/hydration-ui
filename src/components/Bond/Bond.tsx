@@ -5,13 +5,12 @@ import { useTranslation } from "react-i18next"
 import { SBond, SItem } from "./Bond.styled"
 import { Icon } from "components/Icon/Icon"
 import { useBestNumber } from "api/chain"
-import { BLOCK_TIME, BN_1 } from "utils/constants"
+import { BLOCK_TIME } from "utils/constants"
 import { addSeconds, format } from "date-fns"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { customFormatDuration, formatDate } from "utils/formatting"
 import { SSeparator } from "components/Separator/Separator.styled"
 import { theme } from "theme"
-import { useDisplayPrice } from "utils/displayAsset"
 import { useMedia } from "react-use"
 import Skeleton from "react-loading-skeleton"
 import { useLbpPool } from "api/bonds"
@@ -20,6 +19,8 @@ import { LINKS } from "utils/navigation"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { TBond } from "providers/assets"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { useAssetsPrice } from "state/displayPrice"
+import BN from "bignumber.js"
 
 export type BondView = "card" | "list"
 
@@ -46,17 +47,15 @@ const Discount = ({
   const isCard = view === "card"
 
   const isColumnView = !isDesktop || isCard
-  const spotPrice = useDisplayPrice(assetId)
-  const spotPriceBond = useDisplayPrice(bondId)
 
-  const isLoading = spotPrice.isLoading || spotPriceBond.isLoading
+  const { getAssetPrice, isLoading } = useAssetsPrice([assetId, bondId])
 
-  const currentSpotPrice = spotPrice.data?.spotPrice ?? BN_1
-  const currentBondPrice = spotPriceBond.data?.spotPrice ?? BN_1
+  const currentSpotPrice = getAssetPrice(assetId).price
+  const currentBondPrice = getAssetPrice(bondId).price
 
-  const isDiscount = currentSpotPrice.gt(currentBondPrice)
+  const isDiscount = BN(currentSpotPrice).gt(currentBondPrice)
 
-  const discount = currentSpotPrice
+  const discount = BN(currentSpotPrice)
     .minus(currentBondPrice)
     .div(currentSpotPrice)
     .multipliedBy(100)

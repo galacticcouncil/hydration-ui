@@ -4,17 +4,21 @@ import { InputSkeleton } from "components/Skeleton/InputSkeleton"
 import { TableSkeleton } from "components/Skeleton/TableSkeleton"
 
 import { Suspense, lazy } from "react"
+import { DepositPageSkeleton } from "sections/deposit/DepositPageSkeleton"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
 import { LendingMarketsSkeleton } from "sections/lending/skeleton/LendingMarketsSkeleton"
 import { LendingReserveOverviewSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
+import { LendingHistorySkeleton } from "sections/lending/skeleton/LendingHistorySkeleton"
 import { MemepadPageSkeleton } from "sections/memepad/skeleton/MemepadPageSkeleton"
 import { ReferralsSkeleton } from "sections/referrals/ReferralsSkeleton"
 import { StatsAssetPageSkeleton } from "sections/stats/skeleton/StatsAssetPageSkeleton"
 import { StatsPageSkeleton } from "sections/stats/skeleton/StatsPageSkeleton"
+import { StatsOverviewSkeleton } from "sections/stats/skeleton/StatsOverviewSkeleton"
 import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkeleton"
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
 import { LINKS } from "utils/navigation"
+import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
 
@@ -56,6 +60,11 @@ const WalletAssets = lazy(async () => ({
   default: (await import("sections/wallet/assets/WalletAssets")).WalletAssets,
 }))
 
+const WalletStrategy = lazy(async () => ({
+  default: (await import("sections/wallet/strategy/WalletStrategy"))
+    .WalletStrategy,
+}))
+
 const WalletVesting = lazy(async () => ({
   default: (await import("sections/wallet/vesting/WalletVesting"))
     .WalletVesting,
@@ -86,6 +95,11 @@ const XcmPage = lazy(async () => ({
 const StatsOverview = lazy(async () => ({
   default: (await import("sections/stats/sections/overview/StatsOverview"))
     .StatsOverview,
+}))
+
+const StatsOmnipool = lazy(async () => ({
+  default: (await import("sections/stats/sections/omnipool/StatsOmnipool"))
+    .StatsOmnipool,
 }))
 
 const StatsPOL = lazy(async () => ({
@@ -132,9 +146,23 @@ const LendingMarketsPage = lazy(async () => ({
     .LendingMarketsPage,
 }))
 
+const LendingHistoryPage = lazy(async () => ({
+  default: (
+    await import("sections/lending/subsections/history/LendingHistoryPage")
+  ).LendingHistoryPage,
+}))
+
 const LendingReserveOverviewPage = lazy(async () => ({
   default: (await import("sections/lending/LendingReserveOverviewPage"))
     .LendingReserveOverviewPage,
+}))
+
+const DepositPage = lazy(async () => ({
+  default: (await import("sections/deposit/DepositPage")).DepositPage,
+}))
+
+const WithdrawPage = lazy(async () => ({
+  default: (await import("sections/deposit/WithdrawPage")).WithdrawPage,
 }))
 
 export const routes: Route[] = [
@@ -362,8 +390,16 @@ export const routes: Route[] = [
       {
         path: "overview",
         element: (
-          <Suspense fallback={<StatsPageSkeleton />}>
+          <Suspense fallback={<StatsOverviewSkeleton />}>
             <StatsOverview />
+          </Suspense>
+        ),
+      },
+      {
+        path: "omnipool",
+        element: (
+          <Suspense fallback={<StatsPageSkeleton />}>
+            <StatsOmnipool />
           </Suspense>
         ),
       },
@@ -461,6 +497,47 @@ export const routes: Route[] = [
             ),
           },
         ],
+      },
+      {
+        path: LINKS.borrowHistory.split("/").pop(),
+        element: (
+          <Suspense fallback={<LendingHistorySkeleton />}>
+            <LendingHistoryPage />
+          </Suspense>
+        ),
+      },
+    ],
+  },
+  {
+    path: LINKS.deposit,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <DepositPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.withdraw,
+    element: (
+      <Suspense fallback={<DepositPageSkeleton />}>
+        <WithdrawPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.strategies,
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="gigadot" />,
+      },
+      {
+        path: "gigadot",
+        element: (
+          <Suspense fallback={<WalletStrategySkeleton />}>
+            <WalletStrategy />
+          </Suspense>
+        ),
       },
     ],
   },

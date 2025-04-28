@@ -81,13 +81,20 @@ export class EthereumSigner {
     }
   }
 
-  sendDispatch = async (data: string, chain?: string) => {
-    return this.sendTransaction({
-      to: DISPATCH_ADDRESS,
-      data,
-      from: this.address,
-      chain,
-    })
+  sendDispatch = async (
+    data: string,
+    chain?: string,
+    options?: { onNetworkSwitch?: () => void },
+  ) => {
+    return this.sendTransaction(
+      {
+        to: DISPATCH_ADDRESS,
+        data,
+        from: this.address,
+        chain,
+      },
+      { onNetworkSwitch: options?.onNetworkSwitch },
+    )
   }
 
   getPermit = async (
@@ -235,20 +242,21 @@ export class EthereumSigner {
 
   sendTransaction = async (
     transaction: TransactionRequest & { chain?: string },
+    options?: { onNetworkSwitch?: () => void },
   ) => {
     const { chain, ...tx } = transaction
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
+
     const chainCfg = chainsMap.get(from) as EvmChain
 
     await this.requestNetworkSwitch(from)
 
+    const chainId = chainCfg.evmChain.id
+    const nonce = await this.signer.getTransactionCount()
+
     if (from === "hydration") {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
-
-      const chainId = chainCfg.evmChain.id
-      const nonce = await this.signer.getTransactionCount()
-
       return await this.signer.sendTransaction({
         chainId,
         nonce,
@@ -260,6 +268,8 @@ export class EthereumSigner {
       })
     } else {
       return await this.signer.sendTransaction({
+        chainId,
+        nonce,
         ...tx,
       })
     }

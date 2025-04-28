@@ -1,32 +1,23 @@
-import { u32, u64 } from "@polkadot/types"
 import { Text } from "components/Typography/Text/Text"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/helpers"
 import { m as motion, useAnimationControls } from "framer-motion"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { useInterval, useMountedState } from "react-use"
+import { PingResponse } from "utils/rpc"
 
-function useElapsedTimeStatus(time: Maybe<u64>) {
+const CIRC = Math.ceil(2 * Math.PI * 5)
+
+export const useElapsedTimeStatus = (timestamp: number | null) => {
   const [now, setNow] = useState(Date.now())
 
-  const ref = useRef<number>(0)
-  useEffect(() => {
-    function update() {
-      const now = Date.now()
-      const nextTimer = 1000 - (now % 1000)
-      ref.current = window.setTimeout(update, nextTimer)
-      setNow(now)
-    }
+  useInterval(() => {
+    setNow(Date.now())
+  }, 1000)
 
-    update()
-    return () => {
-      window.clearInterval(ref.current)
-    }
-  }, [])
+  if (timestamp === null) return "offline"
 
-  if (time == null) return "offline"
-
-  const diff = now - time.toNumber()
+  const diff = now - timestamp
 
   // Instead of 24s (usual target), use 32s to not show warnings all the time
   if (diff < 32_000) return "online" as const
@@ -35,21 +26,24 @@ function useElapsedTimeStatus(time: Maybe<u64>) {
 }
 
 function ProviderStatusSuccess() {
-  const circ = Math.ceil(2 * Math.PI * 5)
+  const isMounted = useMountedState()
 
   const controls = useAnimationControls()
-  useEffect(() => {
-    async function animate() {
-      controls.set({ opacity: 1, strokeDashoffset: circ * (1 - 0) })
-      await controls.start(
-        { strokeDashoffset: circ * (1 - 1) },
-        { duration: 0.8 },
-      )
-      await controls.start({ opacity: 0 }, { duration: 0.2 })
-    }
 
-    animate()
-  }, [controls, circ])
+  useEffect(() => {
+    controls.set({ opacity: 1, strokeDashoffset: CIRC * (1 - 0) })
+    controls
+      .start({ strokeDashoffset: CIRC * (1 - 1) }, { duration: 0.8 })
+      .then(() => {
+        if (isMounted()) {
+          controls.start({ opacity: 0 }, { duration: 0.2 })
+        }
+      })
+
+    return () => {
+      controls.stop()
+    }
+  }, [controls, isMounted])
 
   return (
     <span css={{ position: "relative" }}>
@@ -79,8 +73,8 @@ function ProviderStatusSuccess() {
           cy="5.5"
           r="5"
           stroke="currentColor"
-          strokeDasharray={circ}
-          strokeDashoffset={circ}
+          strokeDasharray={CIRC}
+          strokeDashoffset={CIRC}
           animate={controls}
         />
       </svg>
@@ -89,24 +83,20 @@ function ProviderStatusSuccess() {
 }
 
 type ProviderStatusProps = {
-  timestamp: Maybe<u64>
-  parachainBlockNumber: Maybe<u32>
-  ping?: number
   className?: string
   side?: "left" | "top" | "bottom" | "right"
-  showPing?: boolean
-}
+} & Partial<PingResponse>
 
 export const ProviderStatus: React.FC<ProviderStatusProps> = ({
   timestamp,
-  parachainBlockNumber,
+  blockNumber,
   ping,
   className,
   side,
 }) => {
   const { t } = useTranslation()
 
-  const status = useElapsedTimeStatus(timestamp)
+  const status = useElapsedTimeStatus(timestamp ?? 0)
 
   const color =
     status === "online"
@@ -124,15 +114,13 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
       <Text
         fs={9}
         lh={9}
-        sx={{ flex: "row", gap: 4, align: "center" }}
+        sx={{ flex: "row", gap: 4, align: "center", height: 10 }}
         css={{ letterSpacing: "1px", color }}
         className={className}
       >
-        <span>{t("value", { value: parachainBlockNumber })}</span>
+        {blockNumber && <span>{t("value", { value: blockNumber })}</span>}
 
-        {status === "online" && (
-          <ProviderStatusSuccess key={timestamp?.toNumber() ?? 0} />
-        )}
+        {status === "online" && <ProviderStatusSuccess key={timestamp ?? 0} />}
 
         {status === "offline" && (
           <span
@@ -156,7 +144,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
           </svg>
         )}
       </Text>
-      {ping && (
+      {ping && ping < Infinity && (
         <Text
           fs={8}
           lh={14}
@@ -164,7 +152,7 @@ export const ProviderStatus: React.FC<ProviderStatusProps> = ({
             ping < 250 ? "green400" : ping < 500 ? "warningOrange200" : "red300"
           }
         >
-          {t("value", { value: ping })} ms
+          {t("milliseconds", { value: ping, decimalPlaces: 0 })}
         </Text>
       )}
     </InfoTooltip>

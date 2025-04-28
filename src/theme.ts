@@ -50,6 +50,7 @@ const colors = {
   basic750: "#444559",
   basic800: "#26282F",
   basic900: "#00041D",
+  basic1000: "#1C1A1F",
   warning100: "#FFE2C3",
   warning200: "#FFDF38",
   warning300: "#F5A855",
@@ -165,7 +166,7 @@ const viewport = {
 } as const
 
 // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-const hexToRgb = (hex: string) => {
+export const hexToRgb = (hex: string) => {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
   const tmp = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b)
 

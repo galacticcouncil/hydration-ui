@@ -18,7 +18,8 @@ import {
   SValuesContainer,
 } from "./HollarBanner.styled"
 import { HollarBorrowApyRange } from "./HollarBorrowApyRange"
-import hollarImage from "./assets/hollar-image.png"
+import HollarImage from "./assets/hollar-image.png"
+import HollarText from "./assets/hollar-text.svg?react"
 import { useTranslation } from "react-i18next"
 
 type HollarBannerProps = {
@@ -67,13 +68,12 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
       >
         <SContent>
           <div sx={{ pr: [120, 0] }}>
-            <Text font="GeistSemiBold" sx={{ mb: 4 }}>
-              {t("lending.hollar.banner.title")}
-            </Text>
+            <HollarText sx={{ color: ["white", "basic900"] }} />
             <Text
               fs={12}
               lh={16}
-              sx={{ maxWidth: ["100%", 245], opacity: 0.7 }}
+              color={["basic300", "white"]}
+              sx={{ maxWidth: ["100%", 500] }}
             >
               {t("lending.hollar.banner.description")}
             </Text>
@@ -81,7 +81,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
           <SValuesContainer>
             <DataValue
               size="small"
-              label={t("lending.hollar.banner.total")}
+              label={t("lending.market.table.totalBorrowed")}
               labelColor="alpha0"
               isLoading={isLoading}
             >
@@ -89,7 +89,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             </DataValue>
             <DataValue
               size="small"
-              label={t("lending.hollar.banner.apy")}
+              label={t("lending.apyBorrowRate")}
               labelColor="alpha0"
               isLoading={isLoading}
             >
@@ -118,7 +118,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
           </Button>
         </SContent>
       </SInnerContainer>
-      <SHollarImage src={hollarImage} width={120} height={120} />
+      <SHollarImage src={HollarImage} width={120} height={120} />
     </SContainer>
   )
 }

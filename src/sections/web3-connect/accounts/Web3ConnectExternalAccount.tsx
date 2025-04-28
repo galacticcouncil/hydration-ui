@@ -1,17 +1,20 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useExternalWalletDelegates } from "api/proxies"
 import { useShallow } from "hooks/useShallow"
-import { ComponentPropsWithoutRef, FC, useEffect } from "react"
+import {
+  ComponentPropsWithoutRef,
+  FC,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import {
   getWalletProviderByType,
+  mapWalletAccount,
   useAccountBalanceMap,
-  useWalletAccounts,
 } from "sections/web3-connect/Web3Connect.utils"
 import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAccount"
-import {
-  useWeb3ConnectStore,
-  WalletProviderStatus,
-} from "sections/web3-connect/store/useWeb3ConnectStore"
+import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
@@ -25,6 +28,7 @@ import {
 } from "./Web3ConnectExternalAccount.styled"
 import { H160, isEvmAccount } from "utils/evm"
 import { Web3ConnectEvmAccount } from "sections/web3-connect/accounts/Web3ConnectEvmAccount"
+import { WalletAccount } from "@talismn/connect-wallets"
 
 export const Web3ConnectExternalAccount: FC<
   ComponentPropsWithoutRef<typeof Web3ConnectAccount>
@@ -46,6 +50,7 @@ export const Web3ConnectExternalAccount: FC<
       ]),
     ),
   )
+  const [polkadotAccounts, setPolkadotAccounts] = useState<WalletAccount[]>([])
 
   const { address, provider } = account
   const { wallet } = getWalletProviderByType(provider)
@@ -63,8 +68,13 @@ export const Web3ConnectExternalAccount: FC<
     externalWalletAddress,
   )
 
-  const isProxy = externalWalletData?.isProxy ?? false
-  const delegates = externalWalletData?.delegates ?? []
+  const [isProxy, delegates] = useMemo(
+    () => [
+      externalWalletData?.isProxy ?? false,
+      externalWalletData?.delegates ?? [],
+    ],
+    [externalWalletData],
+  )
 
   const { balanceMap } = useAccountBalanceMap()
 
@@ -75,9 +85,6 @@ export const Web3ConnectExternalAccount: FC<
       )
 
       const { installed, extension } = proxyWallet ?? {}
-      const connected = getConnectedProviders().some(
-        ({ type }) => type === externalWallet.proxyWalletProvider,
-      )
 
       if (!installed) return
 
@@ -85,31 +92,35 @@ export const Web3ConnectExternalAccount: FC<
         proxyWallet?.enable(POLKADOT_APP_NAME)
       }
 
-      if (!connected) {
-        setStatus(
-          externalWallet.proxyWalletProvider,
-          WalletProviderStatus.Connected,
-        )
-      }
+      proxyWallet?.getAccounts().then((accounts) => {
+        setPolkadotAccounts(accounts)
+      })
     }
-  }, [externalWallet, getConnectedProviders, isProxy, setStatus])
+  }, [
+    externalWallet,
+    getConnectedProviders,
+    isProxy,
+    setStatus,
+    setPolkadotAccounts,
+  ])
 
-  const { data: accounts } = useWalletAccounts(
-    externalWallet?.proxyWalletProvider,
-    {
-      enabled: isProxy,
-    },
-  )
-
-  const filteredAccounts =
-    accounts?.filter((account) =>
-      delegates.find((delegate) => {
-        return (
-          delegate.toString() ===
-          encodeAddress(decodeAddress(account.address), HYDRA_ADDRESS_PREFIX)
+  const filteredAccounts = useMemo(
+    () =>
+      polkadotAccounts
+        .filter((account) =>
+          delegates.find((delegate) => {
+            return (
+              delegate.toString() ===
+              encodeAddress(
+                decodeAddress(account.address),
+                HYDRA_ADDRESS_PREFIX,
+              )
+            )
+          }),
         )
-      }),
-    ) ?? []
+        .map(mapWalletAccount) ?? [],
+    [delegates, polkadotAccounts],
+  )
 
   if (!account) return null
   if (!externalWallet) return null
@@ -153,7 +164,6 @@ export const Web3ConnectExternalAccount: FC<
           name={externalWallet.proxyAccountName}
           address={address}
           displayAddress={hydraAddress}
-          balance={balance}
           isProxy
         />
       </SContainer>
@@ -167,7 +177,7 @@ export const Web3ConnectExternalAccount: FC<
                 provider={externalWallet?.proxyWalletProvider}
                 name={name ?? "N/A"}
                 address={address}
-                balance={balanceMap.get(address)}
+                balance={balanceMap[address]}
                 onClick={async () => {
                   setAccount({
                     ...account,

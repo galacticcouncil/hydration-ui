@@ -6,15 +6,20 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
+import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useExternalAssetsWhiteList } from "api/external"
+import { ExternalAssetBadgeVariant, useExternalWhitelist } from "api/external"
 import { findNestedKey, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
 import { ResponsiveValue } from "utils/responsive"
-import { useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { Icon } from "components/Icon/Icon"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { useExternalAssetsMetadata } from "state/store"
+import { useShallow } from "hooks/useShallow"
+import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
+import { pick } from "utils/rx"
+import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -39,6 +44,8 @@ export const UigcChainLogo = createComponent({
   elementClass: ChainLogoUi,
   react: React,
 })
+
+const A_TOKEN_HIGHLIGHT_RING_BLACKLIST = [GDOT_ERC20_ASSET_ID]
 
 export const MultipleAssetLogo = ({
   iconId,
@@ -73,18 +80,64 @@ export const MultipleAssetLogo = ({
 export const AssetLogo = ({ id }: { id?: string }) => {
   const { t } = useTranslation()
   const { getAsset, getErc20, isErc20 } = useAssets()
-
-  const { getIsWhiteListed } = useExternalAssetsWhiteList()
+  const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
+    useShallow((state) =>
+      pick(state, ["getExternalAssetMetadata", "isInitialized"]),
+    ),
+  )
+  const { data: whitelist } = useExternalWhitelist()
 
   const asset = useMemo(() => {
     const assetDetails = id ? getErc20(id) || getAsset(id) : undefined
-    const { badge } = getIsWhiteListed(assetDetails?.id ?? "")
+
+    let isWhitelisted: boolean | undefined
+    let badge: ExternalAssetBadgeVariant | undefined
+
+    if (assetDetails?.isExternal) {
+      if (assetDetails.parachainId && assetDetails.externalId) {
+        let meta: TExternalAsset | TAsset | undefined
+
+        if (!assetDetails.symbol) {
+          if (!isInitialized) {
+            return {
+              details: assetDetails,
+              badgeVariant: badge,
+            }
+          }
+
+          meta = getExternalAssetMetadata(
+            assetDetails.parachainId,
+            assetDetails.externalId,
+          )
+        } else {
+          meta = assetDetails
+        }
+
+        if (meta) {
+          const { isWhiteListed } = meta
+          isWhitelisted = isWhiteListed
+        }
+      } else {
+        isWhitelisted = false
+      }
+
+      if (!isWhitelisted) isWhitelisted = !!whitelist?.includes(assetDetails.id)
+
+      badge = isWhitelisted ? "warning" : "danger"
+    }
 
     return {
       details: assetDetails,
       badgeVariant: badge,
     }
-  }, [getAsset, getErc20, getIsWhiteListed, id])
+  }, [
+    getAsset,
+    getErc20,
+    getExternalAssetMetadata,
+    id,
+    whitelist,
+    isInitialized,
+  ])
 
   const { details, badgeVariant } = asset
 
@@ -100,19 +153,23 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       const ethereumChain = findNestedKey(ethereum, "chainId")
       const ethereumAsset = findNestedKey(details.location, "key")
 
+      const ethereumAssetId = ethereumAsset
+        ? ethereumAsset.key
+        : "0x0000000000000000000000000000000000000000"
+
       return (
         <UigcAssetId
           css={{ "& uigc-logo-chain": { display: "none" } }}
           ref={(el) => {
             el &&
-              ethereumChain.chainId &&
+              ethereumChain?.chainId &&
               el.setAttribute("chainOrigin", ethereumChain.chainId)
             el && el.setAttribute("fit", "")
           }}
           ecosystem="ethereum"
-          asset={ethereumAsset.key}
-          chain={ethereumChain.chainId}
-          chainOrigin={ethereumChain.chainId}
+          asset={ethereumAssetId}
+          chain={ethereumChain?.chainId}
+          chainOrigin={ethereumChain?.chainId}
         >
           {badgeVariant && (
             <UigcAssetBadge
@@ -125,32 +182,32 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       )
     }
 
-    const Wrapper = underlyingAssetId ? SATokenWrapper : React.Fragment
-
     return (
-      <Wrapper>
-        <UigcAssetId
-          css={{ "& uigc-logo-chain": { display: "none" } }}
-          ref={(el) => {
-            el &&
-              details.parachainId &&
-              el.setAttribute("chainOrigin", details.parachainId)
-            el && el.setAttribute("fit", "")
-          }}
-          ecosystem="polkadot"
-          asset={underlyingAssetId ?? details.id}
-          chain={HYDRADX_PARACHAIN_ID.toString()}
-          chainOrigin={details.parachainId}
-        >
-          {badgeVariant && (
-            <UigcAssetBadge
-              slot="badge"
-              variant={badgeVariant}
-              text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
-            />
-          )}
-        </UigcAssetId>
-      </Wrapper>
+      <UigcAssetId
+        css={{ "& uigc-logo-chain": { display: "none" } }}
+        ref={(el) => {
+          el &&
+            details.parachainId &&
+            el.setAttribute("chainOrigin", details.parachainId)
+          el && el.setAttribute("fit", "")
+        }}
+        ecosystem="polkadot"
+        isAToken={
+          !!underlyingAssetId &&
+          !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(details.id)
+        }
+        asset={underlyingAssetId ?? details.id}
+        chain={HYDRADX_PARACHAIN_ID.toString()}
+        chainOrigin={details.parachainId}
+      >
+        {badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={badgeVariant}
+            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
   }
 

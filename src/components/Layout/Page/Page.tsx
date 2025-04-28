@@ -2,7 +2,6 @@ import { Outlet, useMatchRoute, useSearch } from "@tanstack/react-location"
 import { BackSubHeader } from "components/Layout/Header/BackSubHeader/BackSubHeader"
 import { Header } from "components/Layout/Header/Header"
 import { MobileNavBar } from "components/Layout/Header/MobileNavBar/MobileNavBar"
-import { Suspense, lazy } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import {
@@ -23,27 +22,12 @@ import {
 } from "./Page.styled"
 import { useControlScroll } from "./Page.utils"
 import { usePreviousUrl } from "hooks/usePreviousUrl"
+import { ProviderSelectButton } from "sections/provider/components/ProviderSelectButton/ProviderSelectButton"
+import { StatsNavigation } from "sections/stats/navigation/StatsNavigation"
 
 type Props = {
   className?: string
 }
-
-const ReferralsConnect = lazy(async () => ({
-  default: (await import("sections/referrals/ReferralsConnect"))
-    .ReferralsConnect,
-}))
-
-const Transactions = lazy(async () => ({
-  default: (await import("sections/transaction/Transactions")).Transactions,
-}))
-
-const Web3Connect = lazy(async () => ({
-  default: (await import("sections/web3-connect/Web3Connect")).Web3Connect,
-}))
-
-const QuerySubscriptions = lazy(async () => ({
-  default: (await import("api/subscriptions")).QuerySubscriptions,
-}))
 
 const useSubheaderComponent = () => {
   const { t } = useTranslation()
@@ -73,14 +57,19 @@ const useSubheaderComponent = () => {
     return <WalletNavigation />
   }
 
-  if (matchRoute({ to: LINKS.statsOmnipool })) {
+  if (matchRoute({ to: LINKS.statsOmnipoolAsset })) {
     return <BackSubHeader label={t("stats.omnipool.navigation.back")} />
+  }
+
+  if (matchRoute({ to: LINKS.stats, fuzzy: true })) {
+    return <StatsNavigation />
   }
 
   if (
     matchRoute({ to: LINKS.borrow }) ||
     matchRoute({ to: LINKS.borrowDashboard }) ||
-    matchRoute({ to: LINKS.borrowMarkets })
+    matchRoute({ to: LINKS.borrowMarkets }) ||
+    matchRoute({ to: LINKS.borrowHistory })
   ) {
     return <LendingNavigation />
   }
@@ -101,30 +90,35 @@ const useSubheaderComponent = () => {
 }
 
 export const Page = ({ className }: Props) => {
-  const matchRoute = useMatchRoute()
   const ref = useControlScroll()
-  const subHeaderComponent = useSubheaderComponent()
-  const flippedBg = !!matchRoute({ to: LINKS.memepad })
 
   return (
-    <>
-      <SPage ref={ref}>
-        <SGradientBg flipped={flippedBg} />
-        <Header />
-        <SPageContent>
-          {subHeaderComponent && <SSubHeader>{subHeaderComponent}</SSubHeader>}
-          <SPageInner className={className}>
-            <Outlet />
-          </SPageInner>
-        </SPageContent>
-        <MobileNavBar />
-      </SPage>
-      <Suspense>
-        <Web3Connect />
-        <Transactions />
-        <ReferralsConnect />
-        <QuerySubscriptions />
-      </Suspense>
-    </>
+    <SPage ref={ref}>
+      <Background />
+      <Header />
+      <SPageContent>
+        <SubHeader />
+        <SPageInner className={className}>
+          <Outlet />
+        </SPageInner>
+      </SPageContent>
+      <MobileNavBar />
+      <ProviderSelectButton />
+    </SPage>
   )
+}
+
+const Background = () => {
+  const matchRoute = useMatchRoute()
+  const flippedBg = !!matchRoute({ to: LINKS.memepad })
+
+  return <SGradientBg flipped={flippedBg} />
+}
+
+const SubHeader = () => {
+  const subHeaderComponent = useSubheaderComponent()
+
+  if (!subHeaderComponent) return null
+
+  return <SSubHeader>{subHeaderComponent}</SSubHeader>
 }

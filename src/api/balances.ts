@@ -125,3 +125,25 @@ export const getTokenLock =
       type: lock.id.toHuman(),
     }))
   }
+
+export const useHDXIssuance = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.hdxIssuance,
+
+    async () => {
+      const [totalissuance, inactiveIssuance] = await Promise.all([
+        api.query.balances.totalIssuance(),
+        api.query.balances.inactiveIssuance(),
+      ])
+
+      return totalissuance
+        .toBigNumber()
+        .minus(inactiveIssuance.toString())
+        .toString()
+    },
+
+    { enabled: isLoaded, staleTime: millisecondsInMinute },
+  )
+}

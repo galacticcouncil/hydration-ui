@@ -15,12 +15,12 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { BN_10 } from "utils/constants"
-import { useDisplayPrice } from "utils/displayAsset"
 import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { useAssetsPrice } from "state/displayPrice"
 
 export const WalletVestingSchedule = () => {
   const { t } = useTranslation()
@@ -35,17 +35,17 @@ export const WalletVestingSchedule = () => {
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())
   const { data: existentialDeposit } = useExistentialDeposit()
 
-  const spotPrice = useDisplayPrice(native.id)
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const price = getAssetPrice(native.id).price
+
   const balance = accountAssets.data?.accountAssetsMap.get(native.id)?.balance
 
   const claimableDisplay = useMemo(() => {
-    if (claimableBalance && spotPrice.data) {
-      return claimableBalance
-        .times(spotPrice.data.spotPrice)
-        .div(BN_10.pow(native.decimals))
+    if (claimableBalance) {
+      return claimableBalance.times(price).div(BN_10.pow(native.decimals))
     }
     return null
-  }, [claimableBalance, native, spotPrice.data])
+  }, [claimableBalance, native, price])
 
   const isClaimAllowed = useMemo(() => {
     if (paymentInfoData && existentialDeposit && claimableBalance) {

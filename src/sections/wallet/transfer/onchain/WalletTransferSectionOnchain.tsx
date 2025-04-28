@@ -13,8 +13,14 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
+  BN_0,
+  BN_1,
+  BN_10,
+  UNIFIED_ADDRESS_FORMAT_ENABLED,
+} from "utils/constants"
+import {
+  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
@@ -33,6 +39,11 @@ import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { createToastMessages } from "state/toasts"
+import { Switch } from "components/Switch/Switch"
+import { useState } from "react"
+import { useHealthFactorChange } from "api/borrow"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -57,6 +68,8 @@ export function WalletTransferSectionOnchain({
   const accountAssets = useAccountAssets()
   const refetchAccountAssets = useRefetchAccountAssets()
 
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
+
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const tokenBalance = accountAssets.data?.accountAssetsMap.get(asset)?.balance
@@ -67,7 +80,7 @@ export function WalletTransferSectionOnchain({
     ? getAssetWithFallback(accountCurrency.data)
     : undefined
 
-  const spotPrice = useSpotPrice(native.id, accountCurrencyMeta?.id)
+  const { data: spotPrice } = useSpotPrice(native.id, accountCurrencyMeta?.id)
 
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
@@ -91,11 +104,9 @@ export function WalletTransferSectionOnchain({
   const nativeDecimalsDiff =
     nativeDecimals - (accountCurrencyMeta?.decimals ?? nativeDecimals)
 
-  const convertedFee = currentFee.multipliedBy(
-    spotPrice.data?.spotPrice ?? BN_1,
-  )
+  const convertedFee = currentFee.multipliedBy(spotPrice?.spotPrice ?? BN_1)
 
-  const convertedMaxFee = maxFee.multipliedBy(spotPrice.data?.spotPrice ?? BN_1)
+  const convertedMaxFee = maxFee.multipliedBy(spotPrice?.spotPrice ?? BN_1)
 
   const balanceMaxAdjusted = balance
     .minus(convertedMaxFee.div(BN_10.pow(nativeDecimalsDiff)))
@@ -167,6 +178,27 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
+  const healthFactorChange = useHealthFactorChange({
+    assetId: assetMeta.id,
+    amount: debouncedAmount,
+    action: ProtocolAction.withdraw,
+  })
+
+  const isHealthFactorChanged =
+    amount.gt(0) &&
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
+
+  const dest = form.watch("dest")
+  const shouldShowDisclaimer =
+    UNIFIED_ADDRESS_FORMAT_ENABLED && dest
+      ? dest.toLowerCase() ===
+        getAddressVariants(dest).polkadotAddress.toLowerCase()
+      : false
+
+  const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
+
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
@@ -215,7 +247,6 @@ export function WalletTransferSectionOnchain({
             )
           }}
         />
-
         <Controller
           name="amount"
           control={form.control}
@@ -240,27 +271,59 @@ export function WalletTransferSectionOnchain({
             />
           )}
         />
-        <SummaryRow
-          label={t("wallet.assets.transfer.transaction_cost")}
-          content={
-            insufficientFee ? (
-              <div sx={{ flex: "row", gap: 4 }}>
-                {basicFeeComp}
-                <Text fs={14} color="brightBlue300" tAlign="right">
-                  {t("value.tokenWithSymbol", {
-                    value: insufficientFee.displayValue.multipliedBy(
-                      spotPrice.data?.spotPrice ?? BN_1,
-                    ),
-                    symbol: accountCurrencyMeta?.symbol,
-                    numberPrefix: "+  ",
-                  })}
+        {shouldShowDisclaimer && (
+          <Alert variant="info" hideIcon>
+            <label sx={{ flex: "row", gap: 12, align: "start" }}>
+              <Switch
+                name="disclaimer-accepted"
+                value={disclaimerAccepted}
+                onCheckedChange={setDisclaimerAccepted}
+              />
+              <div>
+                <Text fs={13} color="basic100" font="GeistSemiBold">
+                  {t("wallet.assets.transfer.disclaimer.cex.title")}
+                </Text>
+                <Text fs={13} color="basic400">
+                  {t("wallet.assets.transfer.disclaimer.cex.description")}
                 </Text>
               </div>
-            ) : (
-              basicFeeComp
-            )
-          }
-        />
+            </label>
+          </Alert>
+        )}
+        <div>
+          <SummaryRow
+            label={t("wallet.assets.transfer.transaction_cost")}
+            content={
+              insufficientFee ? (
+                <div sx={{ flex: "row", gap: 4 }}>
+                  {basicFeeComp}
+                  <Text fs={14} color="brightBlue300" tAlign="right">
+                    {t("value.tokenWithSymbol", {
+                      value: insufficientFee.displayValue.multipliedBy(
+                        spotPrice?.spotPrice ?? BN_1,
+                      ),
+                      symbol: accountCurrencyMeta?.symbol,
+                      numberPrefix: "+  ",
+                    })}
+                  </Text>
+                </div>
+              ) : (
+                basicFeeComp
+              )
+            }
+          />
+          {healthFactorChange && (
+            <SummaryRow
+              content={
+                <HealthFactorChange
+                  healthFactor={healthFactorChange.currentHealthFactor}
+                  futureHealthFactor={healthFactorChange.futureHealthFactor}
+                />
+              }
+              label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
+            />
+          )}
+        </div>
         {asset !== "0" && (
           <Alert variant="warning">
             {t("wallet.assets.transfer.warning.nonNative")}
@@ -270,10 +333,15 @@ export function WalletTransferSectionOnchain({
           <Alert variant="info">
             {t("wallet.assets.transfer.warning.insufficient", {
               value: insufficientFee.displayValue.multipliedBy(
-                spotPrice.data?.spotPrice ?? BN_1,
+                spotPrice?.spotPrice ?? BN_1,
               ),
               symbol: accountCurrencyMeta?.symbol,
             })}
+          </Alert>
+        )}
+        {isHealthFactorChanged && (
+          <Alert variant="error">
+            {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
         )}
       </div>
@@ -283,12 +351,10 @@ export function WalletTransferSectionOnchain({
           <Button onClick={onClose}>
             {t("wallet.assets.transfer.cancel")}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!form.formState.isDirty}
-          >
-            {t("wallet.assets.transfer.submit")}
+          <Button type="submit" variant="primary" disabled={submitDisabled}>
+            {submitDisabled
+              ? t("wallet.assets.transfer.submit.disabled")
+              : t("wallet.assets.transfer.submit")}
           </Button>
         </div>
       </div>

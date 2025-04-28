@@ -26,12 +26,13 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { useDisplayPrice } from "utils/displayAsset"
-import { BN_1 } from "utils/constants"
+import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useAssetsPrice } from "state/displayPrice"
+import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -50,7 +51,7 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        defaultPage={Page.OPTIONS}
+        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
       />
@@ -58,6 +59,9 @@ export const PoolDetails = () => {
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
+
+  const shouldRenderPoolCap =
+    !isXYKPoolType || pool.id !== GDOT_STABLESWAP_ASSET_ID
 
   return (
     <>
@@ -109,7 +113,7 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              !pool.canAddLiquidity ||
+              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
               account?.isExternalWalletConnected ||
               native.id === pool.id
             }
@@ -132,7 +136,7 @@ export const PoolDetails = () => {
         </div>
 
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
-          {!ixXYKPool && (
+          {shouldRenderPoolCap && (
             <>
               <Separator
                 color="white"
@@ -168,7 +172,7 @@ export const PoolDetails = () => {
 
               <SValue>
                 <Text color="basic400" fs={[12, 13]}>
-                  {t("24Volume")}
+                  {t("24hVolume")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   <DisplayValue value={BN(pool.volume ?? NaN)} type="token" />
@@ -255,6 +259,18 @@ export const PoolDetails = () => {
             />
 
             <CurrencyReserves reserves={pool.reserves} />
+
+            {pool.isGigaDOT && (
+              <>
+                <Separator
+                  color="white"
+                  opacity={0.06}
+                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
+                />
+
+                <GDOTIncentives />
+              </>
+            )}
           </>
         ) : null}
 
@@ -270,13 +286,18 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
 
   const prices = useXYKSpotPrice(shareTokenId)
 
-  const usdPriceA = useDisplayPrice(prices?.assetA.id)
-  const usdPriceB = useDisplayPrice(prices?.assetB.id)
+  const { getAssetPrice, isLoading } = useAssetsPrice(
+    prices ? [prices.assetA.id, prices.assetB.id] : [],
+  )
 
   if (!prices) return null
 
-  const displayPriceA = prices.priceA.times(usdPriceB.data?.spotPrice ?? 1)
-  const displayPriceB = prices.priceB.times(usdPriceA.data?.spotPrice ?? 1)
+  const displayPriceA = prices.priceA.times(
+    getAssetPrice(prices.assetB.id).price,
+  )
+  const displayPriceB = prices.priceB.times(
+    getAssetPrice(prices.assetA.id).price,
+  )
 
   return (
     <>
@@ -288,7 +309,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
           </Text>
         </div>
         <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
-          {usdPriceA.isLoading ? (
+          {isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (
             <DisplayValue value={displayPriceA} type="token" />
@@ -305,7 +326,7 @@ export const XYKAssetPrices = ({ shareTokenId }: { shareTokenId: string }) => {
           </Text>
         </div>
         <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
-          {usdPriceB.isLoading ? (
+          {isLoading ? (
             <Skeleton width={60} height={14} />
           ) : (
             <DisplayValue value={displayPriceB} type="token" />
