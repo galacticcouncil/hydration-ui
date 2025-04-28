@@ -1,4 +1,4 @@
-import { Add, Minus } from "@galacticcouncil/ui/assets/icons"
+import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Modal,
@@ -160,7 +160,7 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
                 variant={isUsersOffer ? "danger" : "accent"}
                 outline={isUsersOffer}
                 disabled={!isConnected}
-                iconStart={isUsersOffer ? Minus : Add}
+                iconStart={isUsersOffer ? Minus : Plus}
               >
                 {isUsersOffer
                   ? t("otc.cancelOrder.cta")

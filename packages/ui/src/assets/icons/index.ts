@@ -1,4 +1,3 @@
-export { default as Add } from "./Add.svg?react"
 export { default as AssetIcon } from "./AssetIcon.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"

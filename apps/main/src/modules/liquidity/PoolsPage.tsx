@@ -1,70 +1,53 @@
-import { Search } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
+  Button,
   DataTable,
   Flex,
-  Input,
+  Icon,
   Paper,
   SectionHeader,
   TableContainer,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { PoolType } from "@/routes/_liquidity/liquidity.pools"
 import { useOmnipoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { PoolsHeader, PoolTypeTabs } from "./components"
+import { PoolsFilters, PoolsHeader } from "./components"
 import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.utils"
-import { PoolDetails } from "./PoolDetails"
 
 export const PoolsPage = () => {
-  const { t } = useTranslation(["liquidity", "common"])
   const [search, setSearch] = useState("")
 
-  const { type, id } = useSearch({
-    from: "/_liquidity/liquidity/pools",
+  const { type, myLiquidity } = useSearch({
+    from: "/liquidity/",
   })
 
-  if (id !== undefined) return <PoolDetails id={id.toString()} />
-
   return (
-    <div>
+    <>
       <PoolsHeader />
-      <Flex
-        justify="space-between"
-        align="center"
-        gap={20}
-        sx={{ pt: 30, pb: getTokenPx("containers.paddings.secondary") }}
-      >
-        <PoolTypeTabs />
-        <Input
-          placeholder={t("common:search.placeholder")}
-          iconStart={Search}
-          onChange={(e) => setSearch(e.target.value)}
-          customSize="medium"
-          sx={{ width: 270 }}
-        />
-      </Flex>
+      <PoolsFilters onChange={setSearch} />
 
       {(type === "omnipoolStablepool" || type === "all") && (
-        <OmnipoolAndStablepoolTable search={search} type={type} />
+        <OmnipoolAndStablepoolTable
+          search={search}
+          withPositions={myLiquidity}
+        />
       )}
       {(type === "isolated" || type === "all") && (
-        <IsolatedPoolsTable search={search} type={type} />
+        <IsolatedPoolsTable search={search} withPositions={myLiquidity} />
       )}
-    </div>
+    </>
   )
 }
 
 export const OmnipoolAndStablepoolTable = ({
   search,
-  type,
   withPositions,
 }: {
   search: string
-  type: PoolType
   withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
@@ -82,18 +65,20 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
+          columnPinning={{
+            left: ["meta_name"],
+          }}
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
           columns={columns}
           initialSorting={[{ id: "id", desc: true }]}
-          onRowClick={(asset) =>
+          onRowClick={(asset) => {
             router.navigate({
-              to: router.state.location.pathname,
-              search: { type, id: asset.id },
-              resetScroll: false,
+              to: "/liquidity/$id",
+              params: { id: asset.id },
             })
-          }
+          }}
         />
       </TableContainer>
     </>
@@ -102,16 +87,15 @@ export const OmnipoolAndStablepoolTable = ({
 
 export const IsolatedPoolsTable = ({
   search,
-  type,
   withPositions,
 }: {
   search: string
-  type: PoolType
   withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useXYKPools()
   const columns = useIsolatedPoolsColumns()
+  const { isMobile } = useBreakpoints()
 
   const router = useRouter()
 
@@ -121,7 +105,16 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+      <Flex justify="space-between" align="center" gap={20}>
+        <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+        <Button iconStart={() => <Icon component={Plus} size={14} />}>
+          {t(
+            isMobile
+              ? "section.isolatedPools.btn.short"
+              : "section.isolatedPools.btn",
+          )}
+        </Button>
+      </Flex>
       <TableContainer as={Paper}>
         <DataTable
           data={filteredData ?? []}
@@ -133,9 +126,8 @@ export const IsolatedPoolsTable = ({
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
           onRowClick={(asset) =>
             router.navigate({
-              to: router.state.location.pathname,
-              search: { type, id: asset.id },
-              resetScroll: false,
+              to: "/liquidity/$id",
+              params: { id: asset.id },
             })
           }
         />

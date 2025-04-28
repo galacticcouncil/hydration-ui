@@ -24,7 +24,7 @@ export const SHeader = styled.header(
 
     ${mq(TOP_NAVBAR_BREAKPOINT)} {
       grid-template-columns: auto 1fr auto;
-      padding: 10px 30px;
+      padding: 0px 30px;
       padding-right: 15px;
     }
   `,

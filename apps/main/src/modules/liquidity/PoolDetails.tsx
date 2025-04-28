@@ -1,13 +1,19 @@
 import { Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { Outlet, useParams } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
-import { PoolDetailsHeader, PoolDetailsValues } from "./components"
+import {
+  PoolDetailsHeader,
+  PoolDetailsValues,
+  PositionsTable,
+} from "./components"
 
-export const PoolDetails = ({ id }: { id: string }) => {
+export const PoolDetails = () => {
   const { t } = useTranslation("liquidity")
+  const { id } = useParams({ from: "/liquidity/$id" })
 
   const { data: omnipool } = useOmnipoolAsset(id)
   const { data: xykData } = useXYKPool(id)
@@ -29,6 +35,8 @@ export const PoolDetails = ({ id }: { id: string }) => {
       <SectionHeader>{t("details.section.availableFarms")}</SectionHeader>
 
       <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
+      <PositionsTable />
+      <Outlet />
     </Flex>
   )
 }

@@ -16,6 +16,7 @@ export type TextProps = BoxProps & {
   transform?: ThemeUICSSProperties["textTransform"]
   decoration?: ThemeUICSSProperties["textDecoration"]
   whiteSpace?: ThemeUICSSProperties["whiteSpace"]
+  truncate?: true | ResponsiveStyleValue<number | string>
 }
 
 export const getFontSizeProps = (fs: TextProps["fs"]) => {
@@ -24,6 +25,13 @@ export const getFontSizeProps = (fs: TextProps["fs"]) => {
   }
   return { fontSize: fs }
 }
+
+const getTruncateProps = (truncate: TextProps["truncate"]) => ({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  maxWidth: typeof truncate === "boolean" ? undefined : truncate,
+})
 
 export const Text = forwardRef<HTMLParagraphElement, TextProps>(
   (
@@ -37,6 +45,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
       decoration,
       whiteSpace,
       font = "secondary",
+      truncate,
       ...props
     },
     ref,
@@ -54,6 +63,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
           lineHeight: lh,
           whiteSpace,
           ...getFontSizeProps(fs),
+          ...(truncate && getTruncateProps(truncate)),
         }}
         {...props}
       />

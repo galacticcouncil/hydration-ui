@@ -1,4 +1,3 @@
-import { SxProp } from "@theme-ui/core"
 import { forwardRef } from "react"
 
 import { Text } from "../Text"
@@ -9,7 +8,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
     iconStart?: React.ComponentType
     iconEnd?: React.ComponentType
     unit?: string
-    containerSx?: SxProp["sx"]
+    className?: string
   }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -20,12 +19,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       unit,
       variant,
       customSize,
-      containerSx,
+      className,
       ...props
     },
     ref,
   ) => (
-    <SInputContainer variant={variant} customSize={customSize} sx={containerSx}>
+    <SInputContainer
+      variant={variant}
+      customSize={customSize}
+      className={className}
+    >
       {IconStart && <IconStart />}
       <SInput ref={ref} {...props} />
       {unit && <Text>{unit}</Text>}

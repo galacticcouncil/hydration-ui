@@ -9,7 +9,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull, AssetLabelFullMobile } from "@/components"
+import { AssetLabelFull } from "@/components"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { MyLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityCurrentValue"
 import { useAssets } from "@/providers/assetsProvider"
@@ -100,7 +100,7 @@ export const useMyLiquidityColumns = () => {
       cell: ({ row }) => {
         const asset = getAsset(row.original.assetId)
 
-        return asset && <AssetLabelFullMobile asset={asset} />
+        return asset && <AssetLabelFull asset={asset} withName={false} />
       },
     })
 

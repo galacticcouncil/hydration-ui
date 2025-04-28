@@ -13,11 +13,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  AssetLabelFull,
-  AssetLabelFullMobile,
-  useDisplayAssetPrice,
-} from "@/components"
+import { AssetLabelFull, useDisplayAssetPrice } from "@/components"
 import { AssetDetailMobileAction } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
@@ -136,7 +132,7 @@ export const useMyAssetsColumns = () => {
       cell: ({ row }) => {
         const asset = getAsset(row.original.id)
 
-        return asset && <AssetLabelFullMobile asset={asset} />
+        return asset && <AssetLabelFull asset={asset} withName={false} />
       },
     })
 

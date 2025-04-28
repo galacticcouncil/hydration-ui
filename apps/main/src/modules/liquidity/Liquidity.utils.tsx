@@ -1,5 +1,9 @@
 import { OmniMath, PoolBase, PoolToken } from "@galacticcouncil/sdk"
+import { Button, Flex } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
@@ -9,7 +13,11 @@ import { TAssetData } from "@/api/assets"
 import { useFee, useOmnipoolAssetsData, useTVL } from "@/api/omnipool"
 import { xykPools } from "@/api/pools"
 import { AssetLabelFull, AssetLabelXYK, AssetPrice } from "@/components"
-import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
+import {
+  isStableSwap,
+  useAssets,
+  XYKPoolMeta,
+} from "@/providers/assetsProvider"
 import { useAccountPositions } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import {
@@ -18,6 +26,7 @@ import {
   useOmnipoolIds,
 } from "@/states/liquidity"
 import { scaleHuman } from "@/utils/formatting"
+import { numericallyStrDesc } from "@/utils/sort"
 
 export type OmnipoolAssetTable = {
   id: string
@@ -63,10 +72,11 @@ export const useOmnipools = () => {
       const isNative = native.id === omnipoolId
       const meta = getAssetWithFallback(omnipoolId)
       const price = Big(getAssetPrice(omnipoolId).price).round(5).toString()
-      const tvlDisplay = Big(
-        tvls?.find((tvl) => tvl?.asset_id === Number(omnipoolId))?.tvl_usd ??
-          "NaN",
-      ).toString()
+
+      const tvlDisplay =
+        tvls
+          ?.find((tvl) => tvl?.asset_id === Number(omnipoolId))
+          ?.tvl_usd.toString() ?? "0"
       const fee = isNative
         ? undefined
         : fees
@@ -232,12 +242,20 @@ export const useIsolatedPoolsColumns = () => {
 
 export const usePoolColumns = () => {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
+
+  const { navigate } = useRouter()
 
   return useMemo(
     () => [
       columnHelper.accessor("meta.name", {
         header: "Pool asset",
-        cell: ({ row }) => <AssetLabelFull asset={row.original.meta} />,
+        cell: ({ row }) => (
+          <AssetLabelFull
+            asset={row.original.meta}
+            withName={isStableSwap(row.original.meta) && !isMobile}
+          />
+        ),
         sortingFn: (a, b) =>
           a.original.meta.symbol.localeCompare(b.original.meta.symbol),
       }),
@@ -254,7 +272,7 @@ export const usePoolColumns = () => {
             value: Number(row.original.tvlDisplay),
           }),
         sortingFn: (a, b) =>
-          new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
+          numericallyStrDesc(b.original.tvlDisplay, a.original.tvlDisplay),
       }),
       columnHelper.display({
         header: "Fee",
@@ -275,12 +293,65 @@ export const usePoolColumns = () => {
             : -1
         },
       }),
+      columnHelper.accessor("id", {
+        meta: { visibility: false },
+        sortingFn: (a, b) => {
+          if (a.original.isNative) return 1
+          if (b.original.isNative) return -1
+
+          return numericallyStrDesc(
+            b.original.tvlDisplay,
+            a.original.tvlDisplay,
+          )
+        },
+      }),
       columnHelper.accessor("meta.symbol", {
         meta: { visibility: false },
       }),
+      columnHelper.display({
+        id: "actions",
+        meta: {
+          sx: {
+            width: "200px",
+          },
+        },
+        cell: ({ row }) => (
+          <Flex
+            gap={getTokenPx("containers.paddings.quint")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="accent"
+              outline
+              onClick={() =>
+                navigate({
+                  to: "/liquidity/$id/add",
+                  params: { id: row.original.id },
+                  resetScroll: false,
+                })
+              }
+            >
+              Join pool
+            </Button>
+            <Button
+              variant="tertiary"
+              outline
+              onClick={() =>
+                navigate({
+                  to: "/liquidity/$id",
+                  params: { id: row.original.id },
+                  resetScroll: false,
+                })
+              }
+            >
+              Details
+            </Button>
+          </Flex>
+        ),
+      }),
     ],
 
-    [t],
+    [navigate, t, isMobile],
   )
 }
 

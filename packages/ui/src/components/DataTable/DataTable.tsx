@@ -1,5 +1,6 @@
 import {
   ColumnDef,
+  ColumnPinningState,
   flexRender,
   OnChangeFn,
   RowData,
@@ -56,6 +57,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
         }[keyof TData][]
       | ColumnDef<TData>[]
     className?: string
+    columnPinning?: ColumnPinningState | undefined
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
@@ -88,6 +90,7 @@ const DataTable = forwardRef(
       manualSorting,
       enableSortingRemoval,
       noResultsMessage,
+      columnPinning,
       getIsExpandable,
       renderSubComponent,
       renderOverride,
@@ -102,6 +105,9 @@ const DataTable = forwardRef(
       borderless,
       hoverable,
     }
+
+    const isControlledSorting =
+      sorting !== undefined && onSortingChange !== undefined
 
     const table = useDataTable({
       data,
@@ -121,9 +127,15 @@ const DataTable = forwardRef(
       },
       state: {
         globalFilter,
-        sorting,
+        columnPinning: columnPinning ?? {},
+        // need this prevent disabling native sorting, cause undefined value disable it
+        ...(isControlledSorting && {
+          sorting,
+        }),
       },
-      onSortingChange,
+      ...(isControlledSorting && {
+        onSortingChange,
+      }),
     })
 
     useImperativeHandle(ref, () => ({
@@ -138,6 +150,8 @@ const DataTable = forwardRef(
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const { meta } = header.getContext().column.columnDef
+                  const isPinned = header.getContext().column.getIsPinned()
+
                   return (
                     <TableHead
                       key={header.id}
@@ -146,6 +160,7 @@ const DataTable = forwardRef(
                       onSort={header.column.getToggleSortingHandler()}
                       className={meta?.className}
                       sx={meta?.sx}
+                      isPinned={isPinned}
                     >
                       {header.isPlaceholder
                         ? null
@@ -187,11 +202,16 @@ const DataTable = forwardRef(
                     >
                       {row.getVisibleCells().map((cell) => {
                         const { meta } = cell.getContext().cell.column.columnDef
+                        const isPinned = cell
+                          .getContext()
+                          .cell.column.getIsPinned()
+
                         return (
                           <TableCell
                             key={cell.id}
                             className={meta?.className}
                             sx={meta?.sx}
+                            isPinned={isPinned}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

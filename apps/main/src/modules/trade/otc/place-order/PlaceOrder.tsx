@@ -1,4 +1,4 @@
-import { Add } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import { Button, Modal } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
@@ -17,7 +17,7 @@ export const PlaceOrder: FC = () => {
       <Button
         variant="primary"
         size="medium"
-        iconStart={Add}
+        iconStart={Plus}
         disabled={!isConnected}
         onClick={() => setIsOpen(true)}
       >

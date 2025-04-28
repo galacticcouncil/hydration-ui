@@ -14,7 +14,6 @@ export const SContent = styled(Box)`
 
   margin: 0 auto;
 
-  padding-top: 20px;
   padding-bottom: var(--layout-bottom-safe-area);
   padding-inline: var(--layout-gutter);
 `

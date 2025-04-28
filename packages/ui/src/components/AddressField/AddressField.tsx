@@ -48,7 +48,7 @@ export const AddressField: FC<Props> = ({
       <Flex justify="space-between" align="center">
         <Input
           variant="embedded"
-          containerSx={{ p: 0 }}
+          sx={{ p: 0 }}
           value={address}
           onChange={(e) => onAddressChange(e.target.value)}
           placeholder={addressPlaceholder}

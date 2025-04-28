@@ -37,6 +37,7 @@ export const AssetLabel = ({
         fs={isMedium ? "p5" : "p3"}
         fw={600}
         lh={1}
+        sx={{ whiteSpace: "nowrap" }}
       >
         {symbol}
       </Text>
@@ -46,6 +47,7 @@ export const AssetLabel = ({
           fs={isMedium ? "p6" : "p5"}
           fw={400}
           lh={1}
+          truncate={100}
         >
           {name}
         </Text>
