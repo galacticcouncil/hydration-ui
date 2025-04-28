@@ -4,6 +4,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { DepositModalContainer } from "@/modules/wallet/assets/Deposit/DepositModalContainer"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { WithdrawModalContainer } from "@/modules/wallet/assets/Withdraw/WithdrawModalContainer"
 
@@ -45,6 +46,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
           <TransferPositionModal onClose={() => setModal(null)} />
         )}
         {modal === "withdraw" && <WithdrawModalContainer />}
+        {modal === "deposit" && <DepositModalContainer />}
       </Modal>
     </Flex>
   )

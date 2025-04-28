@@ -75,5 +75,43 @@
   "withdraw.selectAccount.wallets": "Wallets:",
   "withdraw.selectAccount.allWallets": "All wallets",
   "withdraw.selectAccount.accountLabel": "Source account",
-  "withdraw.selectAccount.searchPlaceholder": "Search accounts..."
+  "withdraw.selectAccount.searchPlaceholder": "Search accounts...",
+  "deposit.title": "Deposit",
+  "deposit.section.centralized.title": "Deposit from Centralized Exchange",
+  "deposit.section.centralized.description": "TODO",
+  "deposit.section.onChain.title": "On-chain transfer",
+  "deposit.section.onChain.description": "TODO",
+  "deposit.section.crypto.title": "Fund with crypto",
+  "deposit.section.crypto.description": "TODO",
+  "deposit.onChain.title": "Select source wallet & account",
+  "deposit.onChain.form.title": "On-chain deposit",
+  "deposit.onChain.form.submit": "Confirm & deposit",
+  "deposit.howTo.title": "How to deposit?",
+  "deposit.howTo.depositTo": "Deposit to <0></0>",
+  "deposit.howTo.minimalAmount": "Minimal deposit amount",
+  "deposit.howTo.awaiting": "Awaiting deposit",
+  "deposit.howTo.qna.title": "How to bridge assets into Hydration from a CEX?",
+  "deposit.howTo.qna.steps": [
+    {
+      "label": "Login to your CEX account",
+      "description": "Log in and check that you’ve got the asset you want to send."
+    },
+    {
+      "label": "Select 'Withdraw'",
+      "description": "Hit the “Withdraw” button next to the asset you want to transfer."
+    },
+    {
+      "label": "Chose Polkadot network",
+      "description": "Pick Polkadot from the list of tokens."
+    },
+    {
+      "label": "Don't have HDX?",
+      "description": "Make sure you are pasting the same wallet as copied below"
+    },
+    {
+      "label": "Enter the amount",
+      "description": "Just enter how much cryptocurrency you want to send. Keep in mind there’s usually a minimum amount and a fee for withdrawing."
+    }
+  ],
+  "deposit.howTo.infoMessage": "Please don’t close this tab while proceeding with your deposit, it might cause unexpected errors. Only click shiny buttons."
 }
