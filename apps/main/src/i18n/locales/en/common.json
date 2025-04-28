@@ -1,5 +1,8 @@
 {
   "all": "All",
+  "to": "To",
+  "copyAddress": "Copy address",
+  "open": "Open",
   "add": "Add",
   "cancel": "Cancel",
   "close": "Close",
