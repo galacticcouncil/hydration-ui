@@ -4,7 +4,7 @@ import { Text } from "@/components/Text"
 import { STransactionListItem } from "@/components/TransactionListItem/TransactionListItem.styled"
 import { getToken } from "@/utils"
 
-type TransactionListItemVariant = "default" | "success" | "error"
+type TransactionListItemVariant = "default" | "success" | "error" | "info"
 
 export const TransactionListItemLabel: FC<ComponentProps<typeof Text>> = ({
   sx,
@@ -38,6 +38,8 @@ export const TransactionListItemValue: FC<TransactionListItemValueProps> = ({
         return getToken("accents.success.emphasis")
       case "error":
         return getToken("accents.danger.secondary")
+      case "info":
+        return getToken("textButtons.small.rest")
       default:
         return getToken("text.high")
     }
