@@ -158,7 +158,7 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
             <ModalTrigger asChild>
               <Button
                 variant={isUsersOffer ? "danger" : "accent"}
-                outline={isUsersOffer}
+                outline
                 disabled={!isConnected}
                 iconStart={isUsersOffer ? Minus : Plus}
               >
