@@ -38,7 +38,7 @@ const CONVICTIONS: { [key: string]: number } = {
 }
 
 const lengthOfStaking = BN(50400) // min. amount of block for how long we want to calculate APR from = one week
-const blocksPerYear = 2628000
+const blocksPerYear = BN(2628000) // blocks per year with 12s block period
 
 /* constants that might be changed */
 const a = "20000000000000000"
@@ -244,8 +244,12 @@ export const useStakeARP = () => {
 
     const hasPosition = positionId
 
+    const { sixBlockSince } = stakingConsts.data
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
+    const isSixSecBlocks = sixBlockSince
+      ? currentBlockNumber.minus(sixBlockSince).gt(blocksPerYear.times(2))
+      : false
 
     const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
@@ -257,7 +261,7 @@ export const useStakeARP = () => {
     } = accumulatedRpsUpdated.events.reduce(
       (acc, event) => {
         const isBeforeStaking = currentBlockNumber
-          .minus(lengthOfStaking)
+          .minus(sixBlockSince ? lengthOfStaking.times(2) : lengthOfStaking)
           .gt(event.block.height)
         acc[
           isBeforeStaking
@@ -310,7 +314,7 @@ export const useStakeARP = () => {
 
       const apr = rpsAvg
         .div(BN_QUINTILL)
-        .multipliedBy(blocksPerYear)
+        .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
         .multipliedBy(100)
 
       return { apr }
@@ -370,7 +374,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blocksPerYear)
+          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -381,7 +385,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blocksPerYear)
+          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
           .multipliedBy(100)
 
         return { apr }

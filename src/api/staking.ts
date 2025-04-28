@@ -210,6 +210,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsWeight,
     actionPointsWeight,
     stakeWeight,
+    sixBlockSince,
   ] = await Promise.all([
     api.consts.staking.palletId,
     api.consts.staking.periodLength,
@@ -218,6 +219,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     api.consts.staking.timePointsWeight,
     api.consts.staking.actionPointsWeight,
     api.consts.staking.currentStakeWeight,
+    api.query.staking.sixSecBlocksSince?.(),
   ])
 
   return {
@@ -228,6 +230,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsWeight: timePointsWeight.toBigNumber().div(1000000),
     actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000),
     stakeWeight: stakeWeight.toString(),
+    sixBlockSince: sixBlockSince?.toString(),
   }
 }
 
