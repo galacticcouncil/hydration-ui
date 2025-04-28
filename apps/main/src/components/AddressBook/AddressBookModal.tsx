@@ -1,6 +1,6 @@
 import { Flex, Input } from "@galacticcouncil/ui/components"
 import { ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
-import { useWeb3Connect } from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { Web3ConnectAccount } from "@galacticcouncil/web3-connect/src/components/Web3ConnectAccount"
 import { Search } from "lucide-react"
 import { FC, useState } from "react"
@@ -15,7 +15,7 @@ export const AddressBookModal: FC<Props> = ({ onBack, onSelect }) => {
   const { t } = useTranslation()
   const [searchPhrase, setSearchPhrase] = useState("")
 
-  const accounts = useWeb3Connect((s) => s.accounts)
+  const { accounts } = useAccount()
   const filteredAccounts = accounts.filter(
     (account) =>
       account.name.toLowerCase().includes(searchPhrase.toLowerCase()) ||
