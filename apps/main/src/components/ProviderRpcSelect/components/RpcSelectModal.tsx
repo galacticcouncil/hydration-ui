@@ -15,8 +15,10 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { useActiveProviderProps } from "@/api/provider"
 import { RpcForm } from "@/components/ProviderRpcSelect/components/RpcForm"
 import { RpcList } from "@/components/ProviderRpcSelect/components/RpcList"
+import { RpcListItemActive } from "@/components/ProviderRpcSelect/components/RpcListItem"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type RpcSelectModalProps = ModalProps
@@ -24,6 +26,8 @@ export type RpcSelectModalProps = ModalProps
 export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
   const { t } = useTranslation()
   const { autoMode, setAutoMode } = useProviderRpcUrlStore()
+  const activeProvider = useActiveProviderProps()
+
   return (
     <Modal disableInteractOutside {...props}>
       <ModalHeader
@@ -57,6 +61,20 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
           </Flex>
         }
       />
+      {autoMode && activeProvider && (
+        <ModalBody>
+          <Box
+            bg={getToken("surfaces.containers.dim.dimOnBg")}
+            borderRadius="lg"
+            p={4}
+          >
+            <RpcListItemActive
+              url={activeProvider.url}
+              name={activeProvider.name}
+            />
+          </Box>
+        </ModalBody>
+      )}
       {!autoMode && (
         <ModalBody sx={{ p: 0 }}>
           <RpcList />

@@ -34,7 +34,7 @@ export type PermitResult = {
   message: PermitMessage
 }
 
-type CallType = Omit<EvmCall, "from" | "type">
+type CallType = Omit<EvmCall, "from" | "type" | "dryRun">
 
 type EthereumSignerOptions = {
   chainKey?: string

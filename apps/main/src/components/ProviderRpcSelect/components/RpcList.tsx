@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { prop, uniqueBy } from "remeda"
 
 import { PROVIDER_LIST } from "@/api/provider"
+import { useRpcsStatus } from "@/api/rpc"
 import {
   RpcListHeader,
   RpcListItem,
@@ -38,18 +39,29 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
     return uniqueBy(list, prop("url"))
   }, [rpcList, t])
 
+  const providerListUrls = providerList.map(prop("url"))
+
+  const rpcsStatusQueries = useRpcsStatus(providerListUrls, {
+    calculateAvgPing: true,
+  })
+
   return (
     <SRpcList className={className}>
       <RpcListHeader />
-      {providerList.map((props) => (
-        <RpcListItem
-          key={props.url}
-          {...props}
-          isActive={rpcUrl === props.url}
-          onClick={setRpcUrl}
-          onRemove={removeRpc}
-        />
-      ))}
+      {providerList.map((props, index) => {
+        const rpcStatusQuery = rpcsStatusQueries[index]
+        return (
+          <RpcListItem
+            key={props.url}
+            {...props}
+            {...(rpcStatusQuery?.data ?? {})}
+            isLoading={!!rpcStatusQuery?.isLoading}
+            isActive={rpcUrl === props.url}
+            onClick={setRpcUrl}
+            onRemove={removeRpc}
+          />
+        )
+      })}
     </SRpcList>
   )
 }

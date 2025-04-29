@@ -7,8 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { Toaster } from "sonner"
 
-import { InvalidateOnBlock } from "@/components/InvalidateOnBlock"
 import { Page404 } from "@/components/Page404"
+import { ProvideRpcResolver } from "@/components/ProviderRpcSelect/ProviderRpcResolver"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { RpcProvider } from "@/providers/rpcProvider"
 
@@ -37,16 +37,16 @@ export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AssetsProvider>
-          <RpcProvider>
-            <InvalidateOnBlock>
+        <ProvideRpcResolver>
+          <AssetsProvider>
+            <RpcProvider>
               <TooltipProvider delayDuration={0}>
                 <RouterProvider router={router} />
                 <Toaster />
               </TooltipProvider>
-            </InvalidateOnBlock>
-          </RpcProvider>
-        </AssetsProvider>
+            </RpcProvider>
+          </AssetsProvider>
+        </ProvideRpcResolver>
       </ThemeProvider>
     </QueryClientProvider>
   )
