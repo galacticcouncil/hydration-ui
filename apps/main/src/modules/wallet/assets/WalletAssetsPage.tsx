@@ -1,6 +1,7 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,6 +14,7 @@ import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSub
 
 export const WalletAssetsPage = () => {
   const { t } = useTranslation("wallet")
+  const { account } = useAccount()
   const { isMobile } = useBreakpoints()
   const [searchPhrase, setSearchPhrase] = useState("")
 
@@ -23,6 +25,11 @@ export const WalletAssetsPage = () => {
   useEffect(() => {
     setSearchPhrase("")
   }, [isMobile])
+
+  if (!account) {
+    // TODO empty state
+    return null
+  }
 
   return (
     <Flex direction="column" gap={[0, 20]}>

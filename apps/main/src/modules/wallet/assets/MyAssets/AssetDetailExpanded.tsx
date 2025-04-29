@@ -3,41 +3,34 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { useAssets } from "@/providers/assetsProvider"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
-  readonly assetId: string
+  readonly asset: MyAsset
 }
 
-export const AssetDetailExpanded: FC<Props> = ({ assetId }) => {
+export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { getAsset } = useAssets()
 
-  const asset = getAsset(assetId)
-
-  const reserved = 2855.44
-  const [reservedDisplayPrice] = useDisplayAssetPrice(assetId, reserved)
-
-  const reservedDca = 2855.44
-  const [reservedDcaDisplayPrice] = useDisplayAssetPrice(assetId, reservedDca)
-
-  const assetOrigin = "AssetHub"
+  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
+  const [reservedDcaDisplayPrice] = useDisplayAssetPrice(
+    asset.id,
+    asset.reservedDca,
+  )
 
   return (
     <Flex px={50} justify="space-around">
       <Amount
         label={t("myAssets.expandedAsset.assetOrigin")}
-        value={t("myAssets.expandedAsset.customOrigin", {
-          origin: assetOrigin,
-        })}
+        value={asset.origin?.name || t("common:unknown")}
         sx={{ alignSelf: "center" }}
       />
       <Separator orientation="vertical" />
       <Amount
         label={t("myAssets.expandedAsset.reserved")}
         value={t("common:currency", {
-          value: reserved,
-          symbol: asset?.symbol,
+          value: asset.reserved,
+          symbol: asset.symbol,
         })}
         displayValue={reservedDisplayPrice}
       />
@@ -45,8 +38,8 @@ export const AssetDetailExpanded: FC<Props> = ({ assetId }) => {
       <Amount
         label={t("myAssets.expandedAsset.reservedDca")}
         value={t("common:currency", {
-          value: reservedDca,
-          symbol: asset?.symbol,
+          value: asset.reservedDca,
+          symbol: asset.symbol,
         })}
         displayValue={reservedDcaDisplayPrice}
       />

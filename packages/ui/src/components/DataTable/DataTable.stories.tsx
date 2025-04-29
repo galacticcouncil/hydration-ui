@@ -207,7 +207,7 @@ const MockTable = (args: Story["args"]) => {
         </Box>
       )}
       <DataTable
-        {...args}
+        {...(args as Omit<Story["args"], "globalFilterFn">)}
         globalFilter={search}
         data={(args?.data as TData[]) || LARGE_TABLE_DATA.slice(0, 6)}
         columns={TABLE_COLUMNS}

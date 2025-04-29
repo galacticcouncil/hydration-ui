@@ -1,6 +1,4 @@
-import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
-  Button,
   Flex,
   Toggle,
   ToggleLabel,
@@ -22,9 +20,10 @@ export const MyAssetsActions: FC<Props> = ({
 
   return (
     <Flex gap={16} align="center">
-      <Button size="medium" iconStart={Plus}>
+      {/* TODO add new asset */}
+      {/* <Button size="medium" iconStart={Plus}>
         {t("myAssets.header.cta")}
-      </Button>
+      </Button> */}
       <ToggleRoot>
         <ToggleLabel>{t("myAssets.header.toggle")}</ToggleLabel>
         <Toggle

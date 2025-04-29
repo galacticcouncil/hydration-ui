@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
+import Big from "big.js"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 
@@ -18,5 +19,19 @@ export const uniquesIds = (context: TProviderContext) => {
 
       return { omnipoolNftId, miningNftId, xykMiningNftId }
     },
+  })
+}
+
+export const insufficientFeeQuery = ({ papi, isLoaded }: TProviderContext) => {
+  return queryOptions({
+    queryKey: ["insufficientFee"],
+    queryFn: async () => {
+      const fee = await papi.constants.Balances.ExistentialDeposit()
+
+      return new Big(fee.toString()).times(1.1).toString()
+    },
+    enabled: isLoaded,
+    gcTime: 1000 * 60 * 60 * 24,
+    staleTime: 1000 * 60 * 60 * 1,
   })
 }

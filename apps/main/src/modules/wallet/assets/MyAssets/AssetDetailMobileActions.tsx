@@ -4,23 +4,24 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SAssetDetailMobileActions } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions.styled"
-import { AssetDetailModal } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import {
+  AssetDetailModal,
+  MyAsset,
+} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
-  readonly assetId: string
+  readonly asset: MyAsset
   readonly onModalOpen: (action: AssetDetailModal) => void
 }
 
-export const AssetDetailMobileActions: FC<Props> = ({
-  assetId,
-  onModalOpen,
-}) => {
+export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   return (
     <SAssetDetailMobileActions>
-      <Button size="large" onClick={() => onModalOpen("deposit")}>
+      {/* TODO integrate later with deposit and withdraw functionality */}
+      {/* <Button size="large" onClick={() => onModalOpen("deposit")}>
         {t("deposit")}
       </Button>
       <Button
@@ -29,14 +30,15 @@ export const AssetDetailMobileActions: FC<Props> = ({
         onClick={() => onModalOpen("withdraw")}
       >
         {t("withdraw")}
-      </Button>
+      </Button> */}
       <Button
         variant="tertiary"
         size="large"
+        disabled={!asset.isTradeable}
         onClick={() =>
           navigate({
             to: "/trade/swap/market",
-            search: { assetOut: assetId },
+            search: { assetOut: asset.id },
           })
         }
       >

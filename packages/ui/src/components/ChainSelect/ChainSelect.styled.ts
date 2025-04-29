@@ -49,17 +49,27 @@ export const SChainSelect = styled.button<SChainSelectProps>(
       display: flex;
       align-items: center;
 
+      min-width: fit-content;
+
       color: ${variant === "mobile" && !isActive
         ? theme.text.low
         : theme.text.high};
 
-      cursor: pointer;
+      :not(:disabled) {
+        cursor: pointer;
+      }
 
       ${isActive &&
       css`
         background: #85d1ff33;
         border: 1px solid #85d1ff80;
       `}
+
+      :disabled {
+        background: ${theme.buttons.secondary.low.rest};
+        border: 1px solid ${theme.details.borders};
+        color: ${theme.text.low};
+      }
     `,
     variants(variant),
   ],

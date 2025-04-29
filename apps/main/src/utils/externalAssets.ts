@@ -1,10 +1,13 @@
 import { Asset, findNestedKey } from "@galacticcouncil/sdk"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { Parachain } from "@galacticcouncil/xcm-core"
+import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { XcmV3Junction } from "@polkadot/types/lookup"
 //import { assethub, pendulum } from "api/external"
 import { Buffer } from "buffer"
+
+import { AssetType } from "@/api/assets"
+import { TAssetData } from "@/api/assets"
 
 export const ASSETHUB_ID_BLACKLIST = [
   "34",
@@ -38,6 +41,24 @@ export const ASSETHUB_ID_BLACKLIST = [
 export const assethub = chainsMap.get("assethub") as Parachain
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
+const chainsById = new Map(
+  Array.from(chainsMap.values()).map((chain) => [
+    chain instanceof Parachain ? chain.parachainId : chain.id,
+    chain,
+  ]),
+)
+
+export const getAssetOrigin = (asset: TAssetData): AnyChain | null => {
+  if (
+    (asset.type !== AssetType.TOKEN && asset.type !== AssetType.External) ||
+    !asset.parachainId
+  ) {
+    return null
+  }
+
+  return chainsById.get(Number(asset.parachainId)) ?? null
+}
+
 export type TExternalAsset = {
   id: string
   decimals: number
@@ -46,6 +67,10 @@ export type TExternalAsset = {
   origin: number
   supply?: string
   isWhiteListed: boolean
+}
+
+export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {
+  internalId: string
 }
 
 export type TExternalAssetWithLocation = TExternalAsset & {
