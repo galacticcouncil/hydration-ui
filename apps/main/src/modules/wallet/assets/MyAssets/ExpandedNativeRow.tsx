@@ -4,109 +4,120 @@ import {
   Flex,
   Separator,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
 import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
+import {
+  useNativeAssetLocks,
+  useUnlockableNativeTokens,
+} from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { LockExpiration } from "@/modules/wallet/assets/MyLiquidity/LockExpiration"
 
 type Props = {
-  readonly assetId: string
+  readonly asset: MyAsset
 }
 
-export const ExpandedNativeRow: FC<Props> = ({ assetId }) => {
+export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const lockedInStaking = 2855
-  const [lockedInStakingDisplayPrice] = useDisplayAssetPrice(
-    assetId,
-    lockedInStaking,
-  )
+  const locks = useNativeAssetLocks()
+  const unlockable = useUnlockableNativeTokens(locks.lockedInDemocracy)
 
-  const lockedInDemocracy = 2855
-  const [lockedInDemocracyDisplayPrice] = useDisplayAssetPrice(
-    assetId,
-    lockedInDemocracy,
-  )
-  const fullExpiration = "7 days 7 hrs"
-
-  const unlockable = 2855
-  const [unlockableDisplayPrice] = useDisplayAssetPrice(assetId, unlockable)
-  const expiredLocks = 3
-
-  const reserved = 2855
-  const [reservedDisplayPrice] = useDisplayAssetPrice(assetId, reserved)
-
-  const lockedInVesting = 2855
-  const [lockedInVestingDisplayPrice] = useDisplayAssetPrice(
-    assetId,
-    lockedInVesting,
-  )
+  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
 
   return (
     <Flex direction="column" gap={20}>
       <Flex px={50} justify="space-around">
         <Amount
+          // separators with size auto are not shown when flexbox has align
+          sx={{ alignSelf: "center" }}
           label={t("myAssets.expandedNative.lockedInStaking")}
           value={t("common:number", {
-            value: lockedInStaking,
+            value: locks.lockedInStaking,
           })}
-          displayValue={lockedInStakingDisplayPrice}
-          // align on flexbox does not work with separators with height auto
-          sx={{ alignSelf: "center" }}
+          displayValue={locks.lockedInStakingDisplayPrice}
         />
         <Separator orientation="vertical" />
-        <Flex direction="column" gap={8}>
+        <Flex
+          direction="column"
+          gap={8}
+          // separators with size auto are not shown when flexbox has align
+          sx={{ alignSelf: "center" }}
+        >
           <Amount
             label={t("myAssets.expandedNative.lockedInDemocracy")}
             value={t("common:number", {
-              value: lockedInDemocracy,
+              value: locks.lockedInDemocracy,
             })}
-            displayValue={lockedInDemocracyDisplayPrice}
+            displayValue={locks.lockedInDemocracyDisplayPrice}
           />
-          <LockExpiration>
-            {t("myAssets.expandedNative.fullExpiration", {
-              relativeTime: fullExpiration,
-            })}
-          </LockExpiration>
+          {unlockable.lockedSeconds > 0 && (
+            <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
+          )}
         </Flex>
         <Separator orientation="vertical" />
-        <Flex gap={20} align="center">
+        <Flex
+          gap={20}
+          align="center"
+          // separators with size auto are not shown when flexbox has align
+          sx={{ alignSelf: "center" }}
+        >
           <Flex direction="column" gap={8}>
             <Amount
               label={t("myAssets.expandedNative.unlockable")}
               value={t("common:number", {
-                value: unlockable,
+                value: unlockable.value,
               })}
-              displayValue={unlockableDisplayPrice}
+              displayValue={unlockable.displayValue}
             />
-            <LockExpiration>
-              {t("myAssets.expandedNative.expiredLocks", {
-                amount: expiredLocks,
-              })}
-            </LockExpiration>
+            {unlockable.unlockableIds.length > 0 && (
+              <LockExpiration>
+                {t("myAssets.expandedNative.expiredLocks", {
+                  amount: unlockable.unlockableIds.length,
+                })}
+              </LockExpiration>
+            )}
           </Flex>
-          <AssetDetailUnlock />
+          <AssetDetailUnlock
+            unlockableIds={unlockable.unlockableIds}
+            value={unlockable.value}
+          />
         </Flex>
       </Flex>
       <ExpandedTableRowHorizontalSeparator />
       <Flex px={50} justify="space-around">
         <Amount
-          label={t("myAssets.expandedNative.reserved")}
+          label={t("myAssets.expandedNative.lockedInReferenda")}
           value={t("common:number", {
-            value: reserved,
+            value: locks.lockedInOpenGov,
           })}
-          displayValue={reservedDisplayPrice}
+          displayValue={locks.lockedInOpenGovDisplayPrice}
         />
         <Separator orientation="vertical" />
         <Amount
-          label={t("myAssets.expandedNative.lockedInVesting")}
+          label={t("myAssets.expandedNative.reserved")}
           value={t("common:number", {
-            value: lockedInVesting,
+            value: asset.reserved,
           })}
-          displayValue={lockedInVestingDisplayPrice}
+          displayValue={reservedDisplayPrice}
         />
+        {new Big(locks.lockedInVesting).gt(0) && (
+          <>
+            <Separator orientation="vertical" />
+            <Amount
+              label={t("myAssets.expandedNative.lockedInVesting")}
+              value={t("common:number", {
+                value: locks.lockedInVesting,
+              })}
+              displayValue={locks.lockedInVestingDisplayPrice}
+            />
+          </>
+        )}
       </Flex>
     </Flex>
   )

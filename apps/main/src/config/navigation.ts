@@ -18,7 +18,6 @@ export const LINKS = {
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
-  walletVesting: "/wallet/vesting",
   crossChain: "/cross-chain",
   bridge: "/bridge",
   trade: "/trade",
@@ -84,7 +83,6 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       { key: "walletAssets", to: LINKS.walletAssets },
       { key: "walletTransactions", to: LINKS.walletTransactions },
-      { key: "walletVesting", to: LINKS.walletVesting },
     ],
   },
   {

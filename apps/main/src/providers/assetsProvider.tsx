@@ -8,6 +8,7 @@ import {
 } from "react"
 
 import {
+  AssetEcosystem,
   AssetType,
   TAssetData,
   TBond,
@@ -77,6 +78,7 @@ const fallbackAsset: TAsset = {
   isSufficient: false,
   isTradable: false,
   type: AssetType.TOKEN,
+  ecosystem: AssetEcosystem.POLKADOT,
 }
 
 export type TAsset = TAssetData

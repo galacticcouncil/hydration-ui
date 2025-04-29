@@ -3,8 +3,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
-import { SAssetDetailModalBody } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
+import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
+import { SAssetDetailModalBody } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { LiquidityDetailMobileActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileActions"
 import { LiquidityPositionMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile"
 import {

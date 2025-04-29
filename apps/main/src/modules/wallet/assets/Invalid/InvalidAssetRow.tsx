@@ -14,6 +14,7 @@ type Props = {
   readonly origin: string
 }
 
+// TODO remove everything related to invalid assets if we decide to not use them
 export const InvalidAssetRow: FC<Props> = ({ assetId, origin }) => {
   const { t } = useTranslation("wallet")
   const { isMobile } = useBreakpoints()

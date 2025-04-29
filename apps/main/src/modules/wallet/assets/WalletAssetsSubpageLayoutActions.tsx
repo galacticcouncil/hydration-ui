@@ -1,6 +1,6 @@
-import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Modal } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,11 +10,12 @@ type Modal = "send" | "withdraw" | "deposit"
 
 export const WalletAssetsSubpageLayoutActions = () => {
   const { t } = useTranslation()
+  const { account } = useAccount()
   const { isMobile } = useBreakpoints()
 
   const [modal, setModal] = useState<Modal | null>(null)
 
-  if (isMobile) {
+  if (!account || isMobile) {
     return null
   }
 
@@ -23,7 +24,8 @@ export const WalletAssetsSubpageLayoutActions = () => {
       <Button variant="accent" outline onClick={() => setModal("send")}>
         {t("send")}
       </Button>
-      <Button
+      {/* TODO withdraw and deposit */}
+      {/* <Button
         variant="emphasis"
         outline
         iconStart={Minus}
@@ -38,7 +40,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
         onClick={() => setModal("deposit")}
       >
         {t("deposit")}
-      </Button>
+      </Button> */}
       <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
         {modal === "send" && (
           <TransferPositionModal onClose={() => setModal(null)} />
