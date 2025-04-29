@@ -13,24 +13,25 @@ import { AddressBookModal } from "@/components/AddressBook/AddressBookModal"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
-  TransferPosition,
   TransferPositionFormValues,
   useTransferPositionForm,
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
+import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  readonly position?: TransferPosition
+  readonly assetId?: string
   readonly onClose: () => void
 }
 
-export const TransferPositionModal: FC<Props> = ({ position, onClose }) => {
+export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { tradable } = useAssets()
 
-  const form = useTransferPositionForm({ position })
+  const transferPosition = useSubmitTransferPosition({ onClose })
+  const form = useTransferPositionForm({ assetId })
   const shouldValidate = form.formState.isSubmitted
 
   const balances = useAccountData((data) => data.balances)
@@ -57,9 +58,9 @@ export const TransferPositionModal: FC<Props> = ({ position, onClose }) => {
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit((v) => {
-          console.log("transfer position TODO", v)
-        })}
+        onSubmit={form.handleSubmit((values) =>
+          transferPosition.mutate(values),
+        )}
       >
         <ModalHeader title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
@@ -74,7 +75,6 @@ export const TransferPositionModal: FC<Props> = ({ position, onClose }) => {
             amountFieldName="amount"
             assets={tradable}
             maxBalance={balance.toString()}
-            disabled={!!position}
           />
           <ModalContentDivider />
         </ModalBody>

@@ -9,17 +9,21 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { AnyChain } from "@galacticcouncil/xcm-core"
 import { useNavigate } from "@tanstack/react-router"
-import { createColumnHelper } from "@tanstack/react-table"
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TRugCheckData } from "@/api/external"
 import { AssetLabelFull, useDisplayAssetPrice } from "@/components"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
+import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
 import { TAssetStored } from "@/states/assetRegistry"
+import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
 export enum MyAssetsTableColumn {
   Asset = "asset",
@@ -30,9 +34,15 @@ export enum MyAssetsTableColumn {
 }
 
 export type MyAsset = TAssetStored & {
+  readonly origin: AnyChain | null
   readonly total: string
+  readonly totalDisplay: string
   readonly transferable: string
+  readonly transferableDisplay: string
+  readonly reserved: string
+  readonly reservedDca: string
   readonly canStake: boolean
+  readonly rugCheckData: TRugCheckData | undefined
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
@@ -42,23 +52,28 @@ export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 export const useMyAssetsColumns = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
-  const { getAsset } = useAssets()
+  const { native } = useAssets()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
-      enableSorting: false,
       header: t("common:asset"),
+      sortingFn: sortBy({
+        select: (row) => row.original.symbol,
+        compare: naturally,
+      }),
       cell: ({ row }) => {
-        const asset = getAsset(row.original.id)
-
-        return asset && <AssetLabelFull asset={asset} />
+        return <AssetLabelFull asset={row.original} />
       },
     })
 
     const totalColumn = columnHelper.accessor("total", {
       id: MyAssetsTableColumn.Total,
       header: t("myAssets.header.total"),
+      sortingFn: sortBy({
+        select: (row) => row.original.totalDisplay,
+        compare: numericallyStr,
+      }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
@@ -79,6 +94,10 @@ export const useMyAssetsColumns = () => {
     const transferableColumn = columnHelper.accessor("transferable", {
       id: MyAssetsTableColumn.Transferable,
       header: t("myAssets.header.transferable"),
+      sortingFn: sortBy({
+        select: (row) => row.original.transferableDisplay,
+        compare: numericallyStr,
+      }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
@@ -116,7 +135,7 @@ export const useMyAssetsColumns = () => {
         const navigate = useNavigate()
 
         return (
-          <Flex gap={8}>
+          <Flex gap={8} justify="flex-end">
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
             </TableRowAction>
@@ -130,20 +149,20 @@ export const useMyAssetsColumns = () => {
             >
               {t("common:trade")}
             </TableRowAction>
-            <TableRowAction>
-              <Icon
-                component={Ellipsis}
-                color={getToken("icons.onContainer")}
-                size={12}
-              />
-            </TableRowAction>
+            {/* TODO more actions */}
+            {false && (
+              <TableRowAction>
+                <Icon
+                  component={Ellipsis}
+                  color={getToken("icons.onContainer")}
+                  size={12}
+                />
+              </TableRowAction>
+            )}
             <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
               {modal === "transfer" && (
                 <TransferPositionModal
-                  position={{
-                    assetId: row.original.id,
-                    amount: row.original.transferable,
-                  }}
+                  assetId={row.original.id}
                   onClose={() => setModal(null)}
                 />
               )}
@@ -157,13 +176,12 @@ export const useMyAssetsColumns = () => {
       enableSorting: false,
       header: t("common:asset"),
       cell: ({ row }) => {
-        const asset = getAsset(row.original.id)
-
-        return asset && <AssetLabelFull asset={asset} withName={false} />
+        return <AssetLabelFull asset={row.original} withName={false} />
       },
     })
 
     const totalColumnMobile = columnHelper.accessor("total", {
+      id: MyAssetsTableColumn.Total,
       header: t("myAssets.header.total"),
       meta: {
         sx: {
@@ -194,10 +212,17 @@ export const useMyAssetsColumns = () => {
               open={modal === "detail"}
               onOpenChange={() => setModal(null)}
             >
-              <AssetDetailMobileModal
-                asset={row.original}
-                onModalOpen={(action) => setModal(`action:${action}`)}
-              />
+              {row.original.id === native.id ? (
+                <AssetDetailNativeMobileModal
+                  asset={row.original}
+                  onModalOpen={(action) => setModal(`action:${action}`)}
+                />
+              ) : (
+                <AssetDetailMobileModal
+                  asset={row.original}
+                  onModalOpen={(action) => setModal(`action:${action}`)}
+                />
+              )}
             </Modal>
             <Modal
               open={modal?.startsWith("action")}
@@ -205,10 +230,7 @@ export const useMyAssetsColumns = () => {
             >
               {modal === "action:transfer" && (
                 <TransferPositionModal
-                  position={{
-                    assetId: row.original.id,
-                    amount: row.original.transferable,
-                  }}
+                  assetId={row.original.id}
                   onClose={() => setModal("detail")}
                 />
               )}
@@ -219,13 +241,13 @@ export const useMyAssetsColumns = () => {
     })
 
     return isMobile
-      ? [assetColumnMobile, totalColumnMobile]
-      : [
+      ? ([assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>)
+      : ([
           assetColumn,
           totalColumn,
           transferableColumn,
           stakingColumn,
           actionsColumn,
-        ]
-  }, [getAsset, isMobile, t])
+        ] as Array<ColumnDef<MyAsset>>)
+  }, [isMobile, t, native])
 }

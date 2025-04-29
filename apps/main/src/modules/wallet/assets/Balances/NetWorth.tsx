@@ -7,6 +7,7 @@ import { last } from "remeda"
 import { useDisplayAssetPrice } from "@/components"
 import { ChartState } from "@/components/ChartState"
 
+// TODO wallet net worth
 export const NetWorth: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
 

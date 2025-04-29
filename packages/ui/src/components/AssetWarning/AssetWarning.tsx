@@ -39,8 +39,8 @@ export const AssetWarning: FC<AssetWarningProps> = ({
 }
 
 type AssetPropertyChangedProps = {
-  readonly previous: ReactNode
-  readonly current: ReactNode
+  readonly previous: ReactNode | bigint
+  readonly current: ReactNode | bigint
 }
 
 export const AssetPropertyChanged: FC<AssetPropertyChangedProps> = ({
@@ -50,11 +50,11 @@ export const AssetPropertyChanged: FC<AssetPropertyChangedProps> = ({
   return (
     <Flex gap={6} align="center">
       <Text fw={600} fs="p5" color={getToken("text.high")}>
-        {previous}
+        {typeof previous === "bigint" ? previous.toString() : previous}
       </Text>
       <MoveRight sx={{ color: getToken("accents.danger.secondary") }} />
       <Text fw={600} fs="p5" color={getToken("text.high")}>
-        {current}
+        {typeof current === "bigint" ? current.toString() : current}
       </Text>
     </Flex>
   )

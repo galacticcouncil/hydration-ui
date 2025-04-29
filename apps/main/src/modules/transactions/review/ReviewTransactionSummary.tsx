@@ -53,7 +53,7 @@ export const ReviewTransactionSummary = () => {
                     ? BigNumber(feeEstimate?.toString()) // @TODO replace with big.js when sdk-next is released
                         .shiftedBy(-feeAsset.decimals)
                         .toString()
-                    : "-",
+                    : null,
               })
             )
           }

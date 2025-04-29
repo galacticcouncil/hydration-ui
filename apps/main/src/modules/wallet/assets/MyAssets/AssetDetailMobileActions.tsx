@@ -20,16 +20,21 @@ export const AssetDetailMobileActions: FC<Props> = ({
 
   return (
     <SAssetDetailMobileActions>
-      <Button size="large" onClick={() => onModalOpen("deposit")}>
-        {t("deposit")}
-      </Button>
-      <Button
-        variant="tertiary"
-        size="large"
-        onClick={() => onModalOpen("withdraw")}
-      >
-        {t("withdraw")}
-      </Button>
+      {/* TODO integrate later with deposit and withdraw functionality */}
+      {false && (
+        <Button size="large" onClick={() => onModalOpen("deposit")}>
+          {t("deposit")}
+        </Button>
+      )}
+      {false && (
+        <Button
+          variant="tertiary"
+          size="large"
+          onClick={() => onModalOpen("withdraw")}
+        >
+          {t("withdraw")}
+        </Button>
+      )}
       <Button
         variant="tertiary"
         size="large"

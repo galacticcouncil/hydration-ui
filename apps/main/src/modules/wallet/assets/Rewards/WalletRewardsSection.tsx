@@ -9,6 +9,7 @@ import {
   SWalletRewardsSection,
 } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 
+// TODO wallet rewards
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
   const [totalRewards] = useDisplayAssetPrice("10", 14143000)
@@ -45,6 +46,7 @@ export const WalletRewardsSection: FC = () => {
           label={t("rewards.total")}
           value={totalRewards}
         />
+        {/* TODO wallet rewards claim */}
         <Button size="medium">{t("common:claim")}</Button>
       </SWalletRewardsActionItem>
     </SWalletRewardsSection>

@@ -1,8 +1,9 @@
 import { isSS58Address } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { millisecondsInHour } from "date-fns/constants"
+import { useCallback } from "react"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -58,6 +59,24 @@ export const useNonce = ({ address }: UseNonceProps) => {
   })
 }
 
+export const accountBalanceQueryKey = (address: string | undefined) => [
+  QUERY_KEY_BLOCK_PREFIX,
+  "account",
+  "balance",
+  address,
+]
+
+export const useRefetchAccountBalance = () => {
+  const queryClient = useQueryClient()
+  const { account } = useAccount()
+
+  return useCallback(() => {
+    queryClient.refetchQueries({
+      queryKey: accountBalanceQueryKey(account?.address),
+    })
+  }, [account?.address, queryClient])
+}
+
 export const useAccountBalance = () => {
   const address = useAccount().account?.address
   const { papi, isLoaded } = useRpcProvider()
@@ -65,7 +84,7 @@ export const useAccountBalance = () => {
 
   return useQuery({
     enabled: !!address && isLoaded,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "account", "balance", address],
+    queryKey: accountBalanceQueryKey(address),
     queryFn: async () => {
       if (!address) return null
 

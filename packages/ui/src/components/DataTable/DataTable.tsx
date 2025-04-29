@@ -1,6 +1,7 @@
 import {
   ColumnDef,
   ColumnPinningState,
+  FilterFnOption,
   flexRender,
   OnChangeFn,
   RowData,
@@ -58,6 +59,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
       | ColumnDef<TData>[]
     className?: string
     columnPinning?: ColumnPinningState | undefined
+    globalFilterFn?: FilterFnOption<TData>
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
@@ -89,6 +91,7 @@ const DataTable = forwardRef(
       sorting,
       manualSorting,
       enableSortingRemoval,
+      globalFilterFn,
       noResultsMessage,
       columnPinning,
       getIsExpandable,
@@ -118,6 +121,7 @@ const DataTable = forwardRef(
       skeletonRowCount,
       manualSorting,
       enableSortingRemoval,
+      globalFilterFn,
       initialState: {
         pagination: {
           pageIndex: 0,

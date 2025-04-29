@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next"
 
 import { MyLiquidityActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityActions"
 import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable"
+
 type Props = {
   readonly searchPhrase: string
 }
 
+// TODO integrate
 export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
 
