@@ -1,4 +1,0 @@
-{
-    "root": true,
-    "extends": ["@galacticcouncil/eslint-config/index.js"]
-  }

@@ -1,5 +1,0 @@
-{
-  "root": true,
-  "extends": ["@galacticcouncil/eslint-config/index.js"],
-  "ignorePatterns": ["__generated__"]
-}
