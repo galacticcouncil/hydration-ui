@@ -427,6 +427,8 @@ export const useProviderData = (
         poolService,
         router: tradeRouter,
         ecosystem: Ecosystem.Polkadot,
+        unifiedAddressEnabled:
+          import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true",
         isTestnet: isTestnetRpcUrl(endpoint),
       })
 

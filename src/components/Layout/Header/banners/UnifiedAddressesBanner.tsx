@@ -21,6 +21,7 @@ import { useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { PolkadotAvatar } from "components/AccountAvatar/PolkadotAvatar"
 import { safeConvertAddressSS58 } from "utils/formatting"
+import { Icon } from "components/Icon/Icon"
 
 const EXAMPLE_ADDRESS = "7NPoMQbiA6trJKkjB35uk96MeJD4PGWkLQLH7k7hXEkZpiba"
 
@@ -48,7 +49,7 @@ export const UnifiedAddressesBanner: React.FC<UnifiedAddressesBannerProps> = ({
       >
         <SSecondaryItem />
         <SWarningMessageContent sx={{ fontWeight: 600 }}>
-          <Star width={12} height={12} sx={{ flexShrink: 0 }} />
+          <Icon size={16} icon={<Star sx={{ flexShrink: 0 }} />} />
           <div
             sx={{
               flex: ["column", "row"],
@@ -56,7 +57,9 @@ export const UnifiedAddressesBanner: React.FC<UnifiedAddressesBannerProps> = ({
               gap: [6, 0],
             }}
           >
-            {t("unifiedAddresses.banner.title")}
+            <Text color="basic800" font="GeistSemiBold" fs={[14, 16]}>
+              {t("unifiedAddresses.banner.title")}
+            </Text>
             <Separator
               orientation="vertical"
               color="black"
@@ -68,16 +71,19 @@ export const UnifiedAddressesBanner: React.FC<UnifiedAddressesBannerProps> = ({
                 opacity: 0.25,
               }}
             />
-            <span
+            <Text
+              color="basic800"
+              font="GeistSemiBold"
+              fs={[14, 16]}
               css={{
                 whiteSpace: "nowrap",
-                opacity: 0.7,
+                opacity: 0.8,
                 "&:hover": { opacity: 1 },
               }}
             >
               {t("stats.tiles.link")}
               <LinkIcon sx={{ ml: 10, mb: -2 }} css={{ rotate: "45deg" }} />
-            </span>
+            </Text>
           </div>
         </SWarningMessageContent>
         <SSecondaryItem
