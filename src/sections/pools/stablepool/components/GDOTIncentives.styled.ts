@@ -11,3 +11,10 @@ export const SContainer = styled.div`
   border: 1px solid rgba(${theme.rgbColors.primaryA15Blue}, 0.35);
   border-radius: ${theme.borderRadius.default}px;
 `
+
+export const SIncentiveRow = styled.div`
+  display: flex;
+  gap: 4px;
+  justify-content: space-between;
+  margin-top: 6px;
+`

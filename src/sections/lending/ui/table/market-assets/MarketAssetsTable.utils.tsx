@@ -79,6 +79,7 @@ export const useMarketAssetsTableColumns = () => {
           return (
             <OverrideApy
               assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="supply"
             >
               <IncentivesCard
                 value={supplyAPY}
@@ -144,7 +145,10 @@ export const useMarketAssetsTableColumns = () => {
           } = row.original
 
           return (
-            <>
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="borrow"
+            >
               <IncentivesCard
                 value={
                   Number(totalVariableDebtUSD) > 0 ? variableBorrowAPY : "-1"
@@ -159,7 +163,7 @@ export const useMarketAssetsTableColumns = () => {
                     (Disabled)
                   </Text>
                 )}
-            </>
+            </OverrideApy>
           )
         },
       }),
