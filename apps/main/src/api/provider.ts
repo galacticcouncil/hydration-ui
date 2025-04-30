@@ -5,24 +5,22 @@ import {
   PoolType,
   TradeRouter,
 } from "@galacticcouncil/sdk"
+import { getProviderInstance, hasOwn } from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import { ApiPromise, WsProvider } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
+import { useMemo } from "react"
 
-import { PROVIDERS } from "@/config/rpc"
-
-export type TDataEnv = "testnet" | "paseo" | "mainnet"
-export type ProviderProps = {
-  name: string
-  url: string
-  indexerUrl: string
-  squidUrl: string
-  env: string[]
-  dataEnv: TDataEnv
-}
+import {
+  createProvider,
+  ProviderProps,
+  PROVIDERS,
+  TDataEnv,
+} from "@/config/rpc"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { ApiMetadata, useApiMetadataStore } from "@/states/metadata"
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
@@ -39,27 +37,24 @@ export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 export const getProviderProps = (url: string) =>
   PROVIDERS.find((p) => p.url === url)
 
-type ProviderQueryOptions = {
-  onSuccess?: (endpoint: string) => void
+export const getDefaultDataEnv = (): TDataEnv => {
+  const env = import.meta.env.VITE_ENV
+  if (env === "production") return "mainnet"
+  return "testnet"
 }
 
-export const providerQuery = (
-  rpcUrlList: string[],
-  options: ProviderQueryOptions = {},
-) => {
+export const getProviderDataEnv = (rpcUrl: string) => {
+  const provider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  return provider ? provider.dataEnv : getDefaultDataEnv()
+}
+
+export const providerQuery = (rpcUrlList: string[], metadata?: ApiMetadata) => {
   return queryOptions({
-    queryKey: ["provider", rpcUrlList.join()],
-    queryFn: async () => {
-      const data = await getProviderData(rpcUrlList)
-      const provider = getProviderInstance(data.api)
-
-      options.onSuccess?.(provider.endpoint)
-
-      return data
-    },
-    enabled: !!rpcUrlList.length,
+    queryKey: ["provider"],
+    queryFn: () => getProviderData(rpcUrlList, metadata),
     retry: false,
     refetchOnWindowFocus: false,
+    gcTime: 0,
   })
 }
 
@@ -74,10 +69,13 @@ export const getPapiClient = async (
   return createClient(withPolkadotSdkCompat(wsProvider))
 }
 
-const getProviderData = async (rpcUrlList: string[]) => {
+const getProviderData = async (
+  rpcUrlList: string[] = [],
+  metadata?: ApiMetadata,
+) => {
   const maxRetries = rpcUrlList.length * 5
   const apiPool = SubstrateApis.getInstance()
-  const api = await apiPool.api(rpcUrlList, maxRetries)
+  const api = await apiPool.api(rpcUrlList, maxRetries, metadata)
 
   const papiClient = await getPapiClient(rpcUrlList)
   const papi = papiClient.getTypedApi(hydration)
@@ -112,7 +110,7 @@ const getProviderData = async (rpcUrlList: string[]) => {
     assetClient,
     rpcUrlList,
     endpoint,
-    dataEnv: PROVIDERS.find((p) => p.url === endpoint)?.dataEnv ?? "mainnet",
+    dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     tradeRouter,
     poolService,
     featureFlags: {
@@ -121,39 +119,56 @@ const getProviderData = async (rpcUrlList: string[]) => {
   }
 }
 
-export function getProviderInstance(api: ApiPromise) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const options = api?._options
-  return options?.provider as WsProvider
+export const useActiveProviderProps = (): ProviderProps | null => {
+  const { endpoint } = useRpcProvider()
+
+  return useMemo(() => {
+    if (!endpoint) return null
+
+    return (
+      getProviderProps(endpoint) ||
+      createProvider(
+        "",
+        import.meta.env.VITE_PROVIDER_URL,
+        import.meta.env.VITE_INDEXER_URL,
+        import.meta.env.VITE_SQUID_URL,
+        import.meta.env.VITE_ENV,
+        getDefaultDataEnv(),
+      )
+    )
+  }, [endpoint])
 }
 
-export async function reconnectProvider(provider: WsProvider) {
-  if (provider?.isConnected) return
-  await provider.connect()
-  await new Promise((resolve) => {
-    if (provider.isConnected) {
-      resolve(provider)
-    } else {
-      provider.on("connected", () => {
-        resolve(provider)
-      })
-    }
+export const useProviderMetadata = () => {
+  const { isLoaded, api } = useRpcProvider()
+  const { metadata: storedMetadata, setMetadata } = useApiMetadataStore()
+
+  return useQuery({
+    queryKey: ["providerMetadata"],
+    queryFn: async () => {
+      const [genesisHash, runtimeVersion] = await Promise.all([
+        api.genesisHash.toHex(),
+        api.runtimeVersion.specVersion.toNumber(),
+      ])
+
+      const metadataKey = `${genesisHash}-${runtimeVersion}`
+      const isCurrentMetadataStored = hasOwn(storedMetadata, metadataKey)
+
+      if (isCurrentMetadataStored) {
+        return storedMetadata
+      }
+
+      const metadataHex = api.runtimeMetadata.toHex()
+      const metadata: ApiMetadata = {
+        [metadataKey]: metadataHex,
+      }
+
+      setMetadata(metadata)
+
+      return metadata
+    },
+    enabled: isLoaded,
+    staleTime: Infinity,
+    notifyOnChangeProps: [],
   })
-}
-
-export async function changeProvider(prevUrl: string, nextUrl: string) {
-  if (prevUrl === nextUrl) return
-  const apiPool = SubstrateApis.getInstance()
-  const prevApi = await apiPool.api(prevUrl)
-
-  if (prevApi && prevApi.isConnected) {
-    await prevApi.disconnect()
-  }
-
-  const nextApi = await apiPool.api(nextUrl)
-
-  if (nextApi && !nextApi.isConnected) {
-    await reconnectProvider(getProviderInstance(nextApi))
-  }
 }

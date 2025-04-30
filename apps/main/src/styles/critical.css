@@ -1,0 +1,51 @@
+#root,
+body,
+html {
+  height: 100%;
+  width: 100%;
+}
+
+html.dark body {
+  background: #030816;
+  color: #fff;
+}
+
+html.light body {
+  background: #efedea;
+  color: #232226;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.loader {
+  width: 145px;
+  height: 145px;
+  mask-image: linear-gradient(
+    120deg,
+    #000 25%,
+    rgba(0, 0, 0, 0.1) 50%,
+    #000 75%
+  );
+  mask-size: 800%;
+  mask-position: 0;
+  animation: moveGradient 2s linear infinite;
+}
+
+@keyframes moveGradient {
+  0% {
+    mask-position: 120%;
+  }
+  100% {
+    mask-position: 0;
+  }
+}

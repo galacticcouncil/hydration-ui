@@ -108,10 +108,10 @@ const BASE_URL =
 const pathes = ["/assets-v2.json", "/chains-v2.json"] //, , "/metadata.json"
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { assetClient, tradeRouter, isApiLoaded } = data
+  const { assetClient, tradeRouter, isApiLoaded, dataEnv } = data
 
   return queryOptions({
-    queryKey: ["assets"],
+    queryKey: ["assets", dataEnv],
     queryFn: assetClient
       ? async () => {
           const metadataQueries = pathes.map((path) =>

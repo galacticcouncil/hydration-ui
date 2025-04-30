@@ -5,12 +5,12 @@ import {
   Input,
   Spinner,
 } from "@galacticcouncil/ui/components"
+import { pingRpc } from "@galacticcouncil/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { pingRpc } from "@/api/rpc"
 import { useRpcFormSchema } from "@/components/ProviderRpcSelect/components/RpcForm.utils"
 import { useRpcListStore } from "@/states/provider"
 
@@ -32,9 +32,9 @@ export const RpcForm = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ address }: FormValues) => {
-      const ping = await pingRpc(address, PING_TIMEOUT)
+      const status = await pingRpc(address, PING_TIMEOUT)
 
-      if (ping === Infinity) {
+      if (status.ping === Infinity) {
         throw new Error(t("rpc.change.modal.errors.notExist"))
       }
 

@@ -1,99 +1,80 @@
-import { hexToU8a, u8aToBn } from "@polkadot/util"
-import { queryOptions } from "@tanstack/react-query"
+import { PingResponse, pingRpc, sleep } from "@galacticcouncil/utils"
+import {
+  keepPreviousData,
+  queryOptions,
+  useQueries,
+  useQuery,
+} from "@tanstack/react-query"
+import { useRef } from "react"
 
-import { wsToHttp } from "@/utils/formatting"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
-/**
- * Sends a ping request to the specified URL and measures the round-trip time.
- * @param url The URL to ping.
- * @param timeoutMs The maximum time to wait for a response, in milliseconds.
- */
-export async function pingRpc(url: string, timeoutMs = 5000): Promise<number> {
-  const start = performance.now()
-
-  try {
-    const end = await Promise.race([
-      (async () => {
-        await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
-        return performance.now()
-      })(),
-      new Promise<number>((resolve) => {
-        setTimeout(() => {
-          resolve(Infinity)
-        }, timeoutMs)
-      }),
-    ])
-
-    return end - start
-  } catch (error) {
-    return Infinity
-  }
-}
-
-export type RpcInfoResult = {
-  blockNumber: number | null
-  timestamp: number | null
-}
-
-const TIMESTAMP_STORAGE_KEY =
-  "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb"
-
-export async function fetchRpcInfo(url: string): Promise<RpcInfoResult> {
-  const blockHash = await jsonRpcFetch(wsToHttp(url), "chain_getBlockHash")
-
-  const [header, ts] = await Promise.all([
-    jsonRpcFetch(wsToHttp(url), "chain_getHeader", [blockHash]),
-    jsonRpcFetch(wsToHttp(url), "state_getStorage", [
-      TIMESTAMP_STORAGE_KEY,
-      blockHash,
-    ]),
-  ])
-
-  return {
-    timestamp: u8aToBn(hexToU8a(ts), { isLe: true }).toNumber(),
-    blockNumber: parseInt(header.number, 16),
-  }
-}
-
-async function jsonRpcFetch(
-  url: string,
-  method: string,
-  params: string[] = [],
-) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: 1,
-      jsonrpc: "2.0",
-      method,
-      params,
-    }),
-  })
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch")
-  }
-
-  const json = await res.json()
-
-  if (!json.result) {
-    throw new Error("Failed to fetch")
-  }
-
-  return json.result
-}
-
-export const rpcInfoQuery = (url: string) =>
+export const rpcStatusQueryOptions = (url: string) =>
   queryOptions({
-    queryKey: ["pingRpc", url],
-    queryFn: async () => {
-      const [ping, info] = await Promise.all([pingRpc(url), fetchRpcInfo(url)])
-      return {
-        ping,
-        ...info,
-      }
-    },
+    enabled: !!url,
+    queryKey: ["rpcStatus", url],
+    queryFn: () => pingRpc(url),
+    retry: 0,
+    refetchInterval: PARACHAIN_BLOCK_TIME / 2,
+    placeholderData: keepPreviousData,
+    refetchIntervalInBackground: true,
   })
+
+export const useRpcStatus = (url: string) => {
+  return useQuery(rpcStatusQueryOptions(url))
+}
+
+type RpcsStatusOptions = {
+  calculateAvgPing?: boolean
+}
+
+export const useRpcsStatus = (
+  urls: string[],
+  options: RpcsStatusOptions = {},
+) => {
+  const pingCacheRef = useRef<Map<string, PingResponse["ping"][]>>(new Map())
+
+  return useQueries({
+    queries: urls.map((url, index) => ({
+      ...rpcStatusQueryOptions(url),
+      queryFn: async () => {
+        const delay = index * 150 // stagger queries for more accurate measurements
+        if (delay > 0) await sleep(delay)
+        const result = await pingRpc(url)
+
+        if (!options.calculateAvgPing) return result
+
+        const cache = pingCacheRef.current
+        const prevPingArr = cache.get(url) ?? []
+        const newPingArr = [...prevPingArr, result.ping]
+
+        cache.set(url, newPingArr)
+
+        // Sort and remove invalid values
+        const sortedPings = [...newPingArr]
+          .filter(
+            (ping): ping is number =>
+              typeof ping == "number" && ping > 0 && ping < Infinity,
+          )
+          .sort((a, b) => a - b)
+
+        // Remove outlier
+        const trimmedPings = sortedPings.slice(
+          0,
+          sortedPings.length > 1 ? -1 : sortedPings.length,
+        )
+
+        const avgPing =
+          trimmedPings.length > 0
+            ? trimmedPings.reduce((acc, curr) => acc + curr, 0) /
+              trimmedPings.length
+            : null
+
+        return {
+          ...result,
+          ping: avgPing,
+        }
+      },
+    })),
+  })
+}

@@ -1,8 +1,8 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-import { TDataEnv } from "@/api/provider"
-import { PROVIDERS } from "@/config/rpc"
+import { getProviderDataEnv } from "@/api/provider"
+import { TDataEnv } from "@/config/rpc"
 
 type RpcListStore = {
   rpcList: Array<{
@@ -40,35 +40,30 @@ export const useRpcListStore = create<RpcListStore>()(
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    rpcUrlList: string[]
     autoMode: boolean
+    updatedAt: number
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
     getDataEnv: () => TDataEnv
     setAutoMode: (state: boolean) => void
-    _hasHydrated: boolean
-    _setHasHydrated: (value: boolean) => void
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      rpcUrlList: [],
+      updatedAt: 0,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
-
-        return (
-          PROVIDERS.find((provider) => provider.url === rpcUrl)?.dataEnv ??
-          "mainnet"
-        )
+        return getProviderDataEnv(rpcUrl)
       },
-      _hasHydrated: false,
-      _setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "rpcUrl",
-      version: 2.1,
-      onRehydrateStorage: () => (state) => {
-        state?._setHasHydrated(true)
-      },
+      version: 2.2,
     },
   ),
 )

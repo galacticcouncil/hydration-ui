@@ -60,6 +60,13 @@ export const useThemeStore = create<ThemeStore>()(
   ),
 )
 
+useThemeStore.subscribe(() => {
+  const { theme } = useThemeStore.getState()
+  const html = window.document.documentElement
+  html.classList.remove("light", "dark")
+  html.classList.add(theme)
+})
+
 const getCurrentTheme = (theme: ThemeName) =>
   themes[theme] as unknown as ThemeUITheme
 
