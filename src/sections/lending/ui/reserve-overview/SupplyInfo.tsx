@@ -138,6 +138,7 @@ export const SupplyInfo = ({
                 assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
                 color="basic100"
                 size={19}
+                type="supply"
               >
                 <PercentageValue value={Number(reserve.supplyAPY) * 100} />
               </OverrideApy>

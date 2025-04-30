@@ -94,6 +94,7 @@ export const useSupplyAssetsTableColumns = () => {
           return (
             <OverrideApy
               assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="supply"
             >
               <IncentivesCard
                 value={supplyAPY}

@@ -99,7 +99,7 @@ export const useBorrowAssetsTableColumns = ({
           return (
             <OverrideApy
               assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
-              isSupply={false}
+              type="borrow"
             >
               <IncentivesCard
                 value={variableBorrowRate}
