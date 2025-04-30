@@ -56,7 +56,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             <Text fw={500} fs={11} lh="1.4" tAlign="center" color="whiteish500">
               {t("lending.apy")}
             </Text>
-            <GDOTAPY />
+            <GDOTAPY type="supply" />
           </TableCell>
           <TableCell sx={{ ml: "auto" }}>
             <div sx={{ flex: "row", align: "center" }}>

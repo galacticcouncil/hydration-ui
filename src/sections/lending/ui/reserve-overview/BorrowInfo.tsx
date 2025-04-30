@@ -159,7 +159,7 @@ export const BorrowInfo = ({
                 assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
                 color="basic100"
                 size={19}
-                isSupply={false}
+                type="borrow"
               >
                 <PercentageValue
                   value={Number(reserve.variableBorrowAPY) * 100}
