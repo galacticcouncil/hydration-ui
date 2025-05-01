@@ -12,7 +12,10 @@ import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { reserveSortFn } from "sections/lending/store/poolSelectors"
+import {
+  formatReserveIncentives,
+  reserveSortFn,
+} from "sections/lending/store/poolSelectors"
 import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
@@ -33,6 +36,7 @@ import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 import { VDOT_ASSET_ID } from "utils/constants"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
+import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -88,9 +92,12 @@ export const useBorrowIncentives = () => {
     async () => {
       if (!incentivesContract || !addresses) return null
 
-      return incentivesContract.getReservesIncentivesDataHumanized({
-        lendingPoolAddressProvider,
-      })
+      const incentives =
+        await incentivesContract.getReservesIncentivesDataHumanized({
+          lendingPoolAddressProvider,
+        })
+
+      return formatReserveIncentives(incentives)
     },
     {
       retry: false,
@@ -460,7 +467,8 @@ export type BorrowAssetApyData = {
   totalSupplyApy: number
   totalBorrowApy: number
   lpAPY: number
-  incentivesAPY: number
+  incentivesNetAPR: number
+  incentives: ReserveIncentiveResponse[]
   underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
 }
 
@@ -495,7 +503,7 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
   const {
     totalSupplyApy,
     lpAPY,
-    incentivesAPY,
+    incentivesNetAPR,
     underlyingAssetsAPY,
     totalBorrowApy,
   } = useMemo(() => {
@@ -522,7 +530,7 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
           0,
         ) * 100
 
-    const incentivesAPY = isIncentivesInfinity
+    const incentivesNetAPR = isIncentivesInfinity
       ? Infinity
       : incentivesAPRSum !== Infinity
         ? incentivesAPRSum || 0
@@ -567,11 +575,11 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     return {
       totalSupplyApy: isIncentivesInfinity
         ? Infinity
-        : supplyAPYSum + incentivesAPY + lpAPY,
-      totalBorrowApy: borrowAPYSum + incentivesAPY + lpAPY,
+        : supplyAPYSum + incentivesNetAPR + lpAPY,
+      totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
       lpAPY: lpAPY,
       underlyingAssetsAPY,
-      incentivesAPY,
+      incentivesNetAPR,
     }
   }, [
     assetIds,
@@ -587,8 +595,9 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     totalSupplyApy,
     totalBorrowApy,
     lpAPY,
-    incentivesAPY,
+    incentivesNetAPR,
     underlyingAssetsAPY,
     vDotApy: vDotApy?.apy,
+    incentives: assetReserve?.aIncentivesData ?? [],
   }
 }

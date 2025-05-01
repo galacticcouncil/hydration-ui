@@ -36,7 +36,7 @@ export const SupplyGigadotMobileRow: FC<Props> = ({ onOpenSupply }) => {
             },
           },
           cell: () => {
-            return <GDOTAPY />
+            return <GDOTAPY type="supply" />
           },
         }),
       ],
