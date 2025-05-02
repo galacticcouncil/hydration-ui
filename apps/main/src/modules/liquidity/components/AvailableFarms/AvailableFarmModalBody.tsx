@@ -106,8 +106,7 @@ export const AvailableFarmModalBody = ({
             py: getTokenPx("containers.paddings.secondary"),
           }}
         >
-          Your APR will grow over time as you keep your asset shares in the
-          farm.
+          {t("liquidity.availableFarms.modal.graph.description")}
         </Text>
       </ModalBody>
     </>

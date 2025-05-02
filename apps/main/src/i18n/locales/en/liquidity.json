@@ -32,6 +32,7 @@
   "liquidity.availableFarms.expectedEnd": "Expected end {{ value, date }}",
   "liquidity.availableFarms.modal.title": "{{symbol}} Farm Details",
   "liquidity.availableFarms.modal.graph.title": "Loyalty rewards",
+  "liquidity.availableFarms.modal.graph.description": "Your APR will grow over time as you keep your asset shares in the farm.",
   "liquidity.availableFarms.modal.graph.yAxisLabel": "Rewards APR %",
   "liquidity.availableFarms.modal.graph.xAxisLabel": "Days",
   "liquidity.stablepool.position.label": "Stablepool position",
