@@ -48,7 +48,15 @@ export const PoolDetailsHeader = ({
           </Flex>
         </Flex>
       </Flex>
-      <Flex align="center" gap={getTokenPx("containers.paddings.tertiary")}>
+      <Flex
+        align="center"
+        gap={getTokenPx("containers.paddings.tertiary")}
+        sx={{
+          position: ["fixed", "unset"],
+          bottom: 72,
+          zIndex: 2,
+        }}
+      >
         <Button
           onClick={() =>
             navigate({
@@ -61,7 +69,7 @@ export const PoolDetailsHeader = ({
           <Icon size={14} component={Plus} />
           {t("details.header.addJoinFarms")}
         </Button>
-        <Button outline>
+        <Button variant="secondary">
           <Icon size={14} component={Plus} />
           {t("details.header.swap")}
         </Button>

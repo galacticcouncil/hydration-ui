@@ -11,14 +11,18 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { useFee, useOmnipoolAssetsData, useTVL } from "@/api/omnipool"
-import { xykPools } from "@/api/pools"
+import { stablePools, xykPools } from "@/api/pools"
 import { AssetLabelFull, AssetLabelXYK, AssetPrice } from "@/components"
 import {
   isStableSwap,
   useAssets,
   XYKPoolMeta,
 } from "@/providers/assetsProvider"
-import { useAccountPositions } from "@/states/account"
+import {
+  Balance,
+  useAccountBalances,
+  useAccountPositions,
+} from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import {
   setOmnipoolAssets,
@@ -26,18 +30,21 @@ import {
   useOmnipoolIds,
 } from "@/states/liquidity"
 import { scaleHuman } from "@/utils/formatting"
+import { toBig } from "@/utils/helpers"
 import { numericallyStrDesc } from "@/utils/sort"
 
 export type OmnipoolAssetTable = {
   id: string
   meta: TAssetData
-  price: string
+  price: string | undefined
   tvlDisplay: string
   fee?: string
   isFeeLoading: boolean
   isNative: boolean
   isPositions: boolean
   positionsAmount: number
+  isStablePool: boolean
+  balance?: Balance
 }
 
 export type IsolatedPoolTable = {
@@ -55,6 +62,7 @@ export const useOmnipools = () => {
   const { getAssetWithFallback, native } = useAssets()
   const { ids: omnipoolIds = [] } = useOmnipoolIds()
 
+  const { getBalance } = useAccountBalances()
   const { getPositions } = useAccountPositions()
 
   const { getAssetPrice, isLoading: isPriceLoading } =
@@ -71,7 +79,9 @@ export const useOmnipools = () => {
     const omnipoolData = omnipoolIds.map((omnipoolId) => {
       const isNative = native.id === omnipoolId
       const meta = getAssetWithFallback(omnipoolId)
-      const price = Big(getAssetPrice(omnipoolId).price).round(5).toString()
+      const price = getAssetPrice(omnipoolId).isValid
+        ? Big(getAssetPrice(omnipoolId).price).round(5).toString()
+        : undefined
 
       const tvlDisplay =
         tvls
@@ -87,7 +97,10 @@ export const useOmnipools = () => {
         getPositions(omnipoolId)
       const positionsAmount =
         omnipoolPositions.length + omnipoolMiningPositions.length
-      const isPositions = positionsAmount > 0
+      const balance = getBalance(omnipoolId)
+      const isPositions = positionsAmount > 0 || !!balance
+
+      const isStablePool = isStableSwap(meta)
 
       return {
         id: omnipoolId,
@@ -99,6 +112,8 @@ export const useOmnipools = () => {
         isNative,
         isPositions,
         positionsAmount,
+        isStablePool,
+        balance,
       }
     })
 
@@ -113,6 +128,7 @@ export const useOmnipools = () => {
     isFeeLoading,
     isLoading,
     getPositions,
+    getBalance,
   ])
 
   useEffect(() => {
@@ -171,7 +187,7 @@ export const useIsolatedPools = () => {
     return poolsData.reduce<IsolatedPoolTable[]>(
       (acc, { pool, tvl, spotPriceId }) => {
         const price = getAssetPrice(spotPriceId).price
-        const tvlDisplay = Big(tvl).times(price).toString()
+        const tvlDisplay = toBig(price)?.times(tvl).toString() ?? "-"
 
         const meta = getMetaFromXYKPoolTokens(pool.tokens)
         const { xykMiningPositions } = getPositions(pool.address)
@@ -263,7 +279,7 @@ export const usePoolColumns = () => {
         header: "Price",
         cell: ({ row }) => <AssetPrice assetId={row.original.id} />,
         sortingFn: (a, b) =>
-          new Big(a.original.price).gt(b.original.price) ? 1 : -1,
+          new Big(a.original.price ?? 0).gt(b.original.price ?? 0) ? 1 : -1,
       }),
       columnHelper.accessor("tvlDisplay", {
         header: "Total value locked",
@@ -401,4 +417,51 @@ export const useOmnipoolCapacity = (id: string) => {
   }, [hubToken, id, omnipoolAssets])
 
   return { data, isLoading }
+}
+
+export const useStablepoolReserves = (stablepoolId?: string) => {
+  const { getAssetWithFallback } = useAssets()
+  const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
+
+  const stablepoolAssets =
+    pools
+      .find((stablePool) => stablePool.id === stablepoolId)
+      ?.tokens.filter(
+        (token) => token.type === "Token" || token.type === "Erc20",
+      ) ?? []
+
+  const assetIds = stablepoolAssets.map((asset) => asset.id)
+
+  const { getAssetPrice, isLoading: isAssetsLoading } = useAssetsPrice(assetIds)
+
+  const reserves = stablepoolAssets.map((token) => {
+    const id = token.id
+    const meta = getAssetWithFallback(id)
+
+    const amountHuman = scaleHuman(token.balance, meta.decimals)
+
+    return {
+      asset_id: Number(id),
+      meta,
+      amount: token.balance,
+      amountHuman,
+      displayAmount: toBig(getAssetPrice(id).price)
+        ?.times(amountHuman)
+        .toString(),
+    }
+  })
+
+  const totalDisplayAmount = reserves.reduce(
+    (t, asset) =>
+      Big(t)
+        .plus(asset.displayAmount ?? 0)
+        .toString(),
+    "0",
+  )
+
+  return {
+    reserves,
+    totalDisplayAmount,
+    isLoading: isPoolsLoading || isAssetsLoading,
+  }
 }

@@ -151,6 +151,7 @@ const DataTable = forwardRef(
                 {headerGroup.headers.map((header) => {
                   const { meta } = header.getContext().column.columnDef
                   const isPinned = header.getContext().column.getIsPinned()
+                  const size = header.getSize()
 
                   return (
                     <TableHead
@@ -159,7 +160,10 @@ const DataTable = forwardRef(
                       sortDirection={header.column.getIsSorted()}
                       onSort={header.column.getToggleSortingHandler()}
                       className={meta?.className}
-                      sx={meta?.sx}
+                      sx={{
+                        ...meta?.sx,
+                        width: size !== 150 ? `${size}px` : "auto",
+                      }}
                       isPinned={isPinned}
                     >
                       {header.isPlaceholder

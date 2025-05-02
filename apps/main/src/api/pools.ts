@@ -123,7 +123,7 @@ export const xykPools = queryOptions<PoolBase[]>({
   staleTime: Infinity,
 })
 
-export const stablePools = queryOptions({
+export const stablePools = queryOptions<PoolBase[]>({
   queryKey: ["pools", "stable"],
   staleTime: Infinity,
 })

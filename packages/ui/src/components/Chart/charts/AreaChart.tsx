@@ -16,7 +16,11 @@ import { isNumber, isString } from "remeda"
 
 import { ChartContainer } from "@/components/Chart"
 import { ChartTooltip } from "@/components/Chart/ChartTooltip"
-import { ChartSharedProps, TChartData } from "@/components/Chart/types"
+import {
+  AxisLabelCssProps,
+  ChartSharedProps,
+  TChartData,
+} from "@/components/Chart/types"
 import {
   getAxisLabelProps,
   getColorSet,
@@ -35,6 +39,9 @@ type AreaChartOwnProps<TData extends TChartData> = {
       payload: TData[number]
     },
   ) => React.ReactElement
+  xAxisLabelProps?: AxisLabelCssProps
+  yAxisLabelProps?: AxisLabelCssProps
+  withoutReferenceLine?: boolean
 }
 
 export type AreaChartProps<TData extends TChartData> =
@@ -58,6 +65,9 @@ export function AreaChart<TData extends TChartData>({
   gradient = "area",
   strokeWidth = 2,
   customDot,
+  xAxisLabelProps,
+  yAxisLabelProps,
+  withoutReferenceLine,
 }: AreaChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
   const { themeProps: theme } = useTheme()
@@ -111,47 +121,52 @@ export function AreaChart<TData extends TChartData>({
           tickMargin={8}
           shapeRendering="crispEdges"
           domain={["dataMin", "dataMax"]}
-          style={{ fontSize: 12 }}
+          style={{ fontSize: 12, fill: theme.text.medium }}
           tickFormatter={labelFormatter}
           hide={xAxisHidden}
           {...xAxisProps}
-          label={getAxisLabelProps(xAxisLabel, false)}
+          label={getAxisLabelProps(xAxisLabel, false, xAxisLabelProps)}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          style={{ fontSize: 12 }}
+          style={{ fontSize: 12, fill: theme.text.medium }}
           allowDataOverflow
           tickFormatter={valueFormatter}
           hide={yAxisHidden}
           {...yAxisProps}
-          label={getAxisLabelProps(yAxisLabel, true)}
+          label={getAxisLabelProps(yAxisLabel, true, yAxisLabelProps)}
         />
-        <Tooltip
-          content={ChartTooltip}
-          labelFormatter={labelFormatter}
-          formatter={(value) => {
-            if (valueFormatter && isNumber(value)) {
-              return valueFormatter(value)
-            }
-            return value
-          }}
-          wrapperStyle={tooltipWrapperStyles}
-          cursor={{
-            shapeRendering: "crispEdges",
-            stroke: theme.text.low,
-            strokeWidth: 1,
-            strokeDasharray: "6 6",
-          }}
-        />
-        <ReferenceLine
-          y={activePointValue ?? 0}
-          stroke={theme.text.low}
-          strokeDasharray="6 6"
-          opacity={activePointValue ? 1 : 0}
-          shapeRendering="crispEdges"
-        />
+        {withoutReferenceLine ? null : (
+          <>
+            <Tooltip
+              content={ChartTooltip}
+              labelFormatter={labelFormatter}
+              formatter={(value) => {
+                if (valueFormatter && isNumber(value)) {
+                  return valueFormatter(value)
+                }
+                return value
+              }}
+              wrapperStyle={tooltipWrapperStyles}
+              cursor={{
+                shapeRendering: "crispEdges",
+                stroke: theme.text.low,
+                strokeWidth: 1,
+                strokeDasharray: "6 6",
+              }}
+            />
+
+            <ReferenceLine
+              y={activePointValue ?? 0}
+              stroke={theme.text.low}
+              strokeDasharray="6 6"
+              opacity={activePointValue ? 1 : 0}
+              shapeRendering="crispEdges"
+            />
+          </>
+        )}
         {series.map(({ key, color }) => {
           const colors = getColorSet(color, theme.details.chart)
           return (

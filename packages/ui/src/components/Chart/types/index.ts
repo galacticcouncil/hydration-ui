@@ -51,3 +51,12 @@ export type ChartSharedProps<TData extends TChartData> = {
 export type ChartContextProps<TData extends TChartData> = {
   config: ChartConfig<TData>
 }
+
+export type AxisLabelCssProps = {
+  position?: string
+  angle?: number
+  dy?: number
+  dx?: number
+  fontSize?: number
+  fill?: string
+}

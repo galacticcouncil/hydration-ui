@@ -11,7 +11,7 @@ import {
 
 import { useOmnipoolPositionData } from "./liquidity"
 
-type Balance = {
+export type Balance = {
   assetId: string
   free: bigint
   reserved: bigint
@@ -160,5 +160,20 @@ export const useAccountOmnipoolPositionsData = () => {
     }
   }, [getData, isLoading, omnipool, omnipoolMining])
 
-  return { data, isLoading }
+  const getAssetPositions = useCallback(
+    (id: string) => {
+      const omnipool = data?.omnipool.filter(
+        (position) => position.assetId === id,
+      )
+      const omnipoolMining = data?.omnipoolMining.filter(
+        (position) => position.assetId === id,
+      )
+
+      return { omnipool, omnipoolMining }
+    },
+
+    [data],
+  )
+
+  return { data, isLoading, getAssetPositions }
 }
