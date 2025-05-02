@@ -59,7 +59,7 @@ export const MyAssetsTable = forwardRef(
             )
           }
           renderOverride={(asset) =>
-            asset.rugCheckData?.warnings.length ? (
+            asset.rugCheckData?.warnings.length || asset.id === "10" ? (
               <InvalidAssetRow
                 assetId={asset.id}
                 origin={asset.origin?.name ?? ""}

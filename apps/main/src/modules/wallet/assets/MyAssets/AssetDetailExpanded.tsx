@@ -22,13 +22,7 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
     <Flex px={50} justify="space-around">
       <Amount
         label={t("myAssets.expandedAsset.assetOrigin")}
-        value={
-          asset.origin?.name
-            ? t("myAssets.expandedAsset.customOrigin", {
-                origin: asset.origin.name,
-              })
-            : t("common:unknown")
-        }
+        value={asset.origin?.name || t("common:unknown")}
         sx={{ alignSelf: "center" }}
       />
       <Separator orientation="vertical" />

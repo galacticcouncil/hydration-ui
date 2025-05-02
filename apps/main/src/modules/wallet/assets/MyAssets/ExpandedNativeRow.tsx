@@ -34,16 +34,20 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
     <Flex direction="column" gap={20}>
       <Flex px={50} justify="space-around">
         <Amount
+          // align on flexbox does not work with separators with height auto
+          sx={{ alignSelf: "center" }}
           label={t("myAssets.expandedNative.lockedInStaking")}
           value={t("common:number", {
             value: locks.lockedInStaking,
           })}
           displayValue={locks.lockedInStakingDisplayPrice}
-          // align on flexbox does not work with separators with height auto
-          sx={{ alignSelf: "center" }}
         />
         <Separator orientation="vertical" />
-        <Flex direction="column" gap={8}>
+        <Flex
+          direction="column"
+          gap={8} // align on flexbox does not work with separators with height auto
+          sx={{ alignSelf: "center" }}
+        >
           <Amount
             label={t("myAssets.expandedNative.lockedInDemocracy")}
             value={t("common:number", {
@@ -56,7 +60,11 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           )}
         </Flex>
         <Separator orientation="vertical" />
-        <Flex gap={20} align="center">
+        <Flex
+          gap={20}
+          align="center" // align on flexbox does not work with separators with height auto
+          sx={{ alignSelf: "center" }}
+        >
           <Flex direction="column" gap={8}>
             <Amount
               label={t("myAssets.expandedNative.unlockable")}

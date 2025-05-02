@@ -43,6 +43,7 @@ export type MyAsset = TAssetStored & {
   readonly reservedDca: string
   readonly canStake: boolean
   readonly rugCheckData: TRugCheckData | undefined
+  readonly isTradeable: boolean
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
@@ -140,6 +141,7 @@ export const useMyAssetsColumns = () => {
               {t("common:send")}
             </TableRowAction>
             <TableRowAction
+              disabled={!row.original.isTradeable}
               onClick={() =>
                 navigate({
                   to: "/trade/swap/market",

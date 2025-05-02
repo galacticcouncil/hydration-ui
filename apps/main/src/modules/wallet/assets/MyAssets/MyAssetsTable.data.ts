@@ -11,7 +11,7 @@ import { getAssetOrigin } from "@/utils/externalAssets"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useMyAssetsTableData = (showAllAssets: boolean) => {
-  const { native, all, isExternal } = useAssets()
+  const { native, all, isExternal, tradable } = useAssets()
   const { balances, isBalanceLoading } = useAccountData(
     useShallow(pick(["balances", "isBalanceLoading"])),
   )
@@ -84,9 +84,20 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           reservedDca: "1234567890",
           canStake: asset.id === native.id,
           rugCheckData: undefined,
+          isTradeable: tradable.some(
+            (tradeAsset) => tradeAsset.id === asset.id,
+          ),
         }
       })
-  }, [native.id, balances, isExternal, prices, assetsWithBalance, isLoading])
+  }, [
+    native.id,
+    balances,
+    isExternal,
+    tradable,
+    prices,
+    assetsWithBalance,
+    isLoading,
+  ])
 
   return {
     data: tableAssets,

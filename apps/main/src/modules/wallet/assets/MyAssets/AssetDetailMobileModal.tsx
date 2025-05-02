@@ -30,16 +30,9 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
       />
       <SAssetDetailModalBody>
         <AssetDetailTotal assetId={asset.id} total={asset.total} />
-        <AssetDetailMobileActions
-          assetId={asset.id}
-          onModalOpen={onModalOpen}
-        />
-        {asset.origin && (
-          <>
-            <SAssetDetailMobileSeparator />
-            <AssetOriginMobile origin={asset.origin} />
-          </>
-        )}
+        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
+        <SAssetDetailMobileSeparator />
+        <AssetOriginMobile origin={asset.origin} />
         <div>
           <SAssetDetailMobileSeparator />
           <AssetDetailMobileModalBalancesHeader />

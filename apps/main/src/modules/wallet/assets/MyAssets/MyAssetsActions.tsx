@@ -2,12 +2,15 @@ import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
+  Modal,
   Toggle,
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { AddTokenModal } from "@/modules/wallet/assets/AddToken/AddTokenModal"
 
 type Props = {
   readonly showAllAssets: boolean
@@ -18,12 +21,12 @@ export const MyAssetsActions: FC<Props> = ({
   showAllAssets,
   onToggleShowAllAssets,
 }) => {
+  const [addModal, setAddModal] = useState(false)
   const { t } = useTranslation("wallet")
 
   return (
     <Flex gap={16} align="center">
-      {/* TODO add new asset */}
-      <Button size="medium" iconStart={Plus}>
+      <Button size="medium" iconStart={Plus} onClick={() => setAddModal(true)}>
         {t("myAssets.header.cta")}
       </Button>
       <ToggleRoot>
@@ -33,6 +36,9 @@ export const MyAssetsActions: FC<Props> = ({
           onCheckedChange={onToggleShowAllAssets}
         />
       </ToggleRoot>
+      <Modal open={addModal} onOpenChange={setAddModal}>
+        <AddTokenModal />
+      </Modal>
     </Flex>
   )
 }

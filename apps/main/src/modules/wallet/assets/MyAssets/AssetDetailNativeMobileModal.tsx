@@ -36,10 +36,7 @@ export const AssetDetailNativeMobileModal: FC<Props> = ({
           <AssetDetailTotal assetId={asset.id} total={asset.total} />
           <AssetDetailStaking asset={asset} />
         </Flex>
-        <AssetDetailMobileActions
-          assetId={asset.id}
-          onModalOpen={onModalOpen}
-        />
+        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
         <div>
           <SAssetDetailMobileSeparator />
           <AssetDetailMobileModalBalancesHeader />
