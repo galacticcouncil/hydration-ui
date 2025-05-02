@@ -163,21 +163,14 @@ export const UnifiedAddressesBanner: React.FC<UnifiedAddressesBannerProps> = ({
                       />
                     </Text>
                   </div>
-                  <div
-                    sx={{
-                      flex: ["column", "row"],
-                      justify: "space-between",
-                      mt: 40,
-                      gap: 20,
-                    }}
+                  <Button
+                    fullWidth
+                    onClick={handleAccept}
+                    variant="primary"
+                    sx={{ mt: 40 }}
                   >
-                    <Button onClick={handleAccept} variant="secondary">
-                      {t("unifiedAddresses.modal.cta2")}
-                    </Button>
-                    <Button onClick={handleAccept} variant="primary">
-                      {t("unifiedAddresses.modal.cta1")}
-                    </Button>
-                  </div>
+                    {t("unifiedAddresses.modal.close")}
+                  </Button>
                 </div>
               ),
             },
