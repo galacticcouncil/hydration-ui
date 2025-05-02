@@ -1,25 +1,32 @@
 import * as RadixSeparator from "@radix-ui/react-separator"
+import { ResponsiveStyleValue } from "@theme-ui/css"
 import React from "react"
 
 import { Box, BoxProps } from "@/components/Box"
+import { useResponsiveValue } from "@/styles/media"
 import { getToken } from "@/utils"
 
 type SeparatorOwnProps = {
   size?: number
+  orientation?: ResponsiveStyleValue<"horizontal" | "vertical">
 }
 
-export type SeparatorProps = React.ComponentPropsWithoutRef<
-  typeof RadixSeparator.Root
+export type SeparatorProps = Omit<
+  React.ComponentPropsWithoutRef<typeof RadixSeparator.Root>,
+  "orientation"
 > &
   BoxProps &
   SeparatorOwnProps
 
-export const Separator: React.FC<SeparatorProps> = ({ size = 1, ...props }) => (
-  <RadixSeparator.Root {...props} asChild>
-    <Box
-      width={props.orientation === "vertical" ? size : "auto"}
-      height={props.orientation === "vertical" ? "auto" : size}
-      bg={getToken("details.separators")}
-    />
-  </RadixSeparator.Root>
-)
+export const Separator: React.FC<SeparatorProps> = ({ size = 1, ...props }) => {
+  const orientation = useResponsiveValue(props.orientation)
+  return (
+    <RadixSeparator.Root {...props} orientation={orientation} asChild>
+      <Box
+        width={orientation === "vertical" ? size : "auto"}
+        height={orientation === "vertical" ? "auto" : size}
+        bg={getToken("details.separators")}
+      />
+    </RadixSeparator.Root>
+  )
+}

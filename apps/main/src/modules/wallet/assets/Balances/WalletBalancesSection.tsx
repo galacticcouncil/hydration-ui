@@ -1,6 +1,4 @@
-import { Separator } from "@galacticcouncil/ui/components"
-import { ValueStats } from "@galacticcouncil/ui/components"
-import { Flex } from "@galacticcouncil/ui/components"
+import { Stack, ValueStats } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -22,34 +20,31 @@ export const WalletBalancesSection: FC = () => {
   const [supplyBorrowDisplay] = useDisplayAssetPrice("10", supplyBorrow)
 
   return (
-    <Flex py={[0, 20]} direction="column" justify="space-between" gap={[8, 0]}>
+    <Stack separated direction="column" justify="space-between" gap={[8, 0]}>
       <ValueStats
         size="small"
         label={t("balances.header.assets")}
         value={t("common:number", { value: assets })}
         bottomLabel={assetsDisplay}
       />
-      <Separator />
       <ValueStats
         size="small"
         label={t("balances.header.liquidity")}
         value={t("common:number", { value: liquidity })}
         bottomLabel={liquidityDisplay}
       />
-      <Separator />
       <ValueStats
         size="small"
         label={t("balances.header.farms")}
         value={t("common:number", { value: farms })}
         bottomLabel={farmsDisplay}
       />
-      <Separator />
       <ValueStats
         size="small"
         label={t("balances.header.supplyBorrow")}
         value={t("common:number", { value: supplyBorrow })}
         bottomLabel={supplyBorrowDisplay}
       />
-    </Flex>
+    </Stack>
   )
 }

@@ -1,5 +1,5 @@
 import { BigNumber } from "@galacticcouncil/sdk"
-import { Box, Separator, Skeleton } from "@galacticcouncil/ui/components"
+import { Separator, Skeleton, Stack } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { SummaryRow } from "@/components/Summary"
@@ -26,11 +26,14 @@ export const ReviewTransactionSummary = () => {
   const isFeeOverride = !!meta?.fee && !!meta?.feeSymbol
 
   return (
-    <Box>
+    <Stack
+      separated
+      separator={<RowSeparator />}
+      sx={{ mb: "var(--modal-content-inset)" }}
+    >
       {isFeeOverride ? (
         <SummaryRow
           label={t("transaction.summary.cost")}
-          separator={<RowSeparator />}
           content={t("currency", {
             value: meta.fee,
             symbol: meta.feeSymbol,
@@ -39,7 +42,6 @@ export const ReviewTransactionSummary = () => {
       ) : (
         <SummaryRow
           label={t("transaction.summary.cost")}
-          separator={<RowSeparator />}
           content={
             isLoadingFeeEstimate ? (
               <Skeleton width={60} />
@@ -57,23 +59,19 @@ export const ReviewTransactionSummary = () => {
           }
         />
       )}
-
       {meta?.dstChainFee && meta.dstChainFeeSymbol && (
         <SummaryRow
           label={t("transaction.summary.destFee")}
-          separator={<RowSeparator />}
           content={t("currency", {
             value: meta.dstChainFee,
             symbol: meta.dstChainFeeSymbol,
           })}
         />
       )}
-
       <SummaryRow
         label={t("transaction.summary.nonce")}
         content={isLoadingNonce ? <Skeleton width={30} /> : nonce?.toString()}
-        separator={<RowSeparator />}
       />
-    </Box>
+    </Stack>
   )
 }

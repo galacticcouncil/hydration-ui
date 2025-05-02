@@ -1,7 +1,8 @@
+import { Stack } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SWalletRewardsSection = styled.div(
+export const SWalletRewardsSection = styled(Stack)(
   ({ theme }) => css`
     padding-inline: 20px;
     padding-block: 16px;

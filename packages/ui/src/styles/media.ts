@@ -1,3 +1,4 @@
+import { ResponsiveStyleValue } from "@theme-ui/css"
 import { useCallback, useMemo } from "react"
 import { useMedia } from "react-use"
 
@@ -82,4 +83,36 @@ export const useBreakpoints = () => {
     breakpoint: match.current,
     gte,
   }
+}
+
+export function useResponsiveValue<T = unknown>(
+  value: ResponsiveStyleValue<T>,
+): T | undefined {
+  const { breakpoint } = useBreakpoints()
+
+  if (!value) return
+  if (!Array.isArray(value)) return value
+
+  const index = BREAKPOINTS_TYPES.indexOf(breakpoint)
+  const normalizedProp = normalizeResponsiveProp(value)
+
+  return normalizedProp?.[index]
+}
+
+/**
+ * Replaces null values in the array with the last non-null value to match with the breakpoints array
+ * @example [50, null, 100] => [50, 50, 100]
+ */
+export function normalizeResponsiveProp<T>(
+  input: ResponsiveStyleValue<T>,
+): T[] {
+  const total = BREAKPOINTS_TYPES.length
+  const array = Array.isArray(input) ? input : [input]
+
+  return Array.from({ length: total }).reduce<T[]>((acc, _, i) => {
+    const val = array[i]
+    const prev = acc[i - 1]
+    acc[i] = val ? val : prev
+    return acc
+  }, [])
 }
