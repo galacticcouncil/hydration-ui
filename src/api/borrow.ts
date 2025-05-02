@@ -1,4 +1,5 @@
 import {
+  ProtocolAction,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@aave/contract-helpers"
@@ -11,7 +12,10 @@ import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
 import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { reserveSortFn } from "sections/lending/store/poolSelectors"
+import {
+  formatReserveIncentives,
+  reserveSortFn,
+} from "sections/lending/store/poolSelectors"
 import {
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
@@ -19,6 +23,7 @@ import {
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import {
   calculateHFAfterSupply,
+  calculateHFAfterSwap,
   calculateHFAfterWithdraw,
 } from "sections/lending/utils/hfUtils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -31,6 +36,7 @@ import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 import { VDOT_ASSET_ID } from "utils/constants"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
+import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -86,9 +92,12 @@ export const useBorrowIncentives = () => {
     async () => {
       if (!incentivesContract || !addresses) return null
 
-      return incentivesContract.getReservesIncentivesDataHumanized({
-        lendingPoolAddressProvider,
-      })
+      const incentives =
+        await incentivesContract.getReservesIncentivesDataHumanized({
+          lendingPoolAddressProvider,
+        })
+
+      return formatReserveIncentives(incentives)
     },
     {
       retry: false,
@@ -260,53 +269,145 @@ export type UseHealthFactorChangeResult = {
   isHealthFactorBelowThreshold: boolean
 } | null
 
-export const useHealthFactorChange = (
-  assetId: string,
-  amount: string,
-  action: "withdraw" | "supply" = "withdraw",
-): UseHealthFactorChangeResult => {
-  const { getErc20 } = useAssets()
-  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
+export type UseHealthFactorChangeParams = {
+  assetId: string
+  amount: string
+  action: ProtocolAction.supply | ProtocolAction.withdraw
+  swapAsset?: {
+    assetId: string
+    amount: string
+  }
+}
 
+export const useHealthFactorChange = ({
+  assetId,
+  amount,
+  action,
+  swapAsset,
+}: UseHealthFactorChangeParams): UseHealthFactorChangeResult => {
+  const { getErc20 } = useAssets()
   const { data: user } = useUserBorrowSummary()
 
   return useMemo(() => {
-    if (!underlyingAssetId || !user) return null
+    if (!user) return null
 
-    const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+    const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
 
-    const userReserve = user.userReservesData.find(
-      ({ reserve }) => reserve.underlyingAsset === reserveAddress,
-    )
+    if (!underlyingAssetId) return null
 
-    if (!userReserve) return null
+    if (swapAsset) {
+      const swapUnderlyingAssetId = getErc20(
+        swapAsset.assetId,
+      )?.underlyingAssetId
 
-    const currentHealthFactor = user.healthFactor
-    const futureHealthFactor =
-      action === "withdraw"
-        ? calculateHFAfterWithdraw({
-            user: user,
-            userReserve: userReserve,
-            poolReserve: userReserve.reserve,
-            withdrawAmount: amount || "0",
-          }).toString()
-        : calculateHFAfterSupply({
-            user,
-            poolReserve: userReserve.reserve,
-            supplyAmount: amount || "0",
-          }).toString()
+      if (swapUnderlyingAssetId) {
+        const isWithdrawPrimary = action === ProtocolAction.withdraw
 
-    const isHealthFactorBelowThreshold =
-      currentHealthFactor !== "-1" &&
-      futureHealthFactor !== "-1" &&
-      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
+        const withdrawAmount = isWithdrawPrimary ? amount : swapAsset.amount
+        const withdrawAssetUnderlyingId = isWithdrawPrimary
+          ? underlyingAssetId
+          : swapUnderlyingAssetId
 
-    return {
-      isHealthFactorBelowThreshold,
-      currentHealthFactor,
-      futureHealthFactor,
+        const supplyAmount = isWithdrawPrimary ? swapAsset.amount : amount
+        const supplyAssetUnderlyingId = isWithdrawPrimary
+          ? swapUnderlyingAssetId
+          : underlyingAssetId
+
+        return getHealthFactorChangeAfterSwap(
+          user,
+          withdrawAmount,
+          withdrawAssetUnderlyingId,
+          supplyAmount,
+          supplyAssetUnderlyingId,
+        )
+      }
     }
-  }, [action, amount, underlyingAssetId, user])
+
+    return getHealthFactorChange(user, underlyingAssetId, amount, action)
+  }, [action, amount, assetId, getErc20, swapAsset, user])
+}
+
+const getHealthFactorChange = (
+  user: ExtendedFormattedUser,
+  underlyingAssetId: string,
+  amount: string,
+  action: ProtocolAction.supply | ProtocolAction.withdraw,
+): UseHealthFactorChangeResult => {
+  const reserveAddress = getAddressFromAssetId(underlyingAssetId)
+  const userReserve = user.userReservesData.find(
+    ({ reserve }) => reserve.underlyingAsset === reserveAddress,
+  )
+
+  if (!userReserve) return null
+
+  const currentHealthFactor = user.healthFactor
+  const result =
+    action === ProtocolAction.withdraw
+      ? calculateHFAfterWithdraw({
+          user,
+          userReserve,
+          poolReserve: userReserve.reserve,
+          withdrawAmount: amount || "0",
+        })
+      : calculateHFAfterSupply({
+          user,
+          poolReserve: userReserve.reserve,
+          supplyAmount: amount || "0",
+        })
+
+  const futureHealthFactor = result.toString()
+
+  const isHealthFactorBelowThreshold =
+    currentHealthFactor !== "-1" &&
+    futureHealthFactor !== "-1" &&
+    Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
+
+  return {
+    isHealthFactorBelowThreshold,
+    currentHealthFactor,
+    futureHealthFactor,
+  }
+}
+
+export const getHealthFactorChangeAfterSwap = (
+  user: ExtendedFormattedUser,
+  fromAmount: string,
+  fromAssetUnderlyingId: string,
+  toAmount: string,
+  toAssetUnderlyingId: string,
+): UseHealthFactorChangeResult => {
+  const fromAssetUserData = user.userReservesData.find(
+    ({ reserve }) =>
+      reserve.underlyingAsset === getAddressFromAssetId(fromAssetUnderlyingId),
+  )
+
+  const toAssetData = user.userReservesData.find(
+    ({ reserve }) =>
+      reserve.underlyingAsset === getAddressFromAssetId(toAssetUnderlyingId),
+  )
+
+  if (!fromAssetUserData || !toAssetData) return null
+
+  const result = calculateHFAfterSwap({
+    user,
+    fromAmount: fromAmount,
+    fromAssetData: fromAssetUserData.reserve,
+    fromAssetUserData: fromAssetUserData,
+    toAmountAfterSlippage: toAmount,
+    toAssetData: toAssetData.reserve,
+  })
+
+  const futureHealthFactor = result.hfAfterSwap.isNaN()
+    ? user.healthFactor
+    : result.hfAfterSwap.toString()
+
+  return {
+    isHealthFactorBelowThreshold:
+      futureHealthFactor !== "-1" &&
+      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD,
+    currentHealthFactor: user.healthFactor,
+    futureHealthFactor,
+  }
 }
 
 export const useBorrowMarketTotals = () => {
@@ -362,10 +463,13 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 
 export type BorrowAssetApyData = {
   tvl: string
-  apy: number
+  vDotApy?: string
+  totalSupplyApy: number
+  totalBorrowApy: number
   lpAPY: number
-  incentivesAPY: number
-  underlyingAssetsAPY: { apy: number; id: string }[]
+  incentivesNetAPR: number
+  incentives: ReserveIncentiveResponse[]
+  underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
 }
 
 export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
@@ -396,75 +500,104 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
 
   const stablepoolFee = stablepoolFees?.find((fee) => fee.poolId === assetId)
 
-  const { totalAPY, lpAPY, incentivesAPY, underlyingAssetsAPY } =
-    useMemo(() => {
-      const underlyingAssetIds = assetIds.map((assetId) => {
-        return getErc20(assetId)?.underlyingAssetId ?? assetId
-      })
+  const {
+    totalSupplyApy,
+    lpAPY,
+    incentivesNetAPR,
+    underlyingAssetsAPY,
+    totalBorrowApy,
+  } = useMemo(() => {
+    const underlyingAssetIds = assetIds.map((assetId) => {
+      return getErc20(assetId)?.underlyingAssetId ?? assetId
+    })
 
-      const underlyingReserves = reserves.filter((reserve) => {
-        return underlyingAssetIds
-          .map(getAddressFromAssetId)
-          .includes(reserve.underlyingAsset)
-      })
+    const underlyingReserves = reserves.filter((reserve) => {
+      return underlyingAssetIds
+        .map(getAddressFromAssetId)
+        .includes(reserve.underlyingAsset)
+    })
 
-      const incentives = assetReserve?.aIncentivesData ?? []
+    const incentives = assetReserve?.aIncentivesData ?? []
 
-      const isIncentivesInfinity = incentives.some(
-        (incentive) => incentive.incentiveAPR === "Infinity",
-      )
+    const isIncentivesInfinity = incentives.some(
+      (incentive) => incentive.incentiveAPR === "Infinity",
+    )
 
-      const incentivesAPRSum = isIncentivesInfinity
-        ? Infinity
-        : incentives.reduce(
-            (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
-            0,
-          ) * 100
+    const incentivesAPRSum = isIncentivesInfinity
+      ? Infinity
+      : incentives.reduce(
+          (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
+          0,
+        ) * 100
 
-      const incentivesAPY = isIncentivesInfinity
-        ? Infinity
-        : incentivesAPRSum !== Infinity
-          ? incentivesAPRSum || 0
-          : Infinity
+    const incentivesNetAPR = isIncentivesInfinity
+      ? Infinity
+      : incentivesAPRSum !== Infinity
+        ? incentivesAPRSum || 0
+        : Infinity
 
-      const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
-        const isVdot =
-          reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+    const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
+      const isVdot =
+        reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
 
-        const supplyAPY = isVdot
-          ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
-          : BN(reserve.supplyAPY)
-        return {
-          apy: supplyAPY.div(underlyingReserves.length).times(100).toNumber(),
-          id: getAssetIdFromAddress(reserve.underlyingAsset),
-        }
-      })
+      const supplyAPY = isVdot
+        ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.supplyAPY)
 
-      const supplyAPYSum = underlyingAssetsAPY.reduce((a, b) => a + b.apy, 0)
-      const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
+      const borrowAPY = isVdot
+        ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        : BN(reserve.variableBorrowAPY)
 
       return {
-        totalAPY: isIncentivesInfinity
-          ? Infinity
-          : supplyAPYSum + incentivesAPY + lpAPY,
-        lpAPY: lpAPY,
-        underlyingAssetsAPY,
-        incentivesAPY,
+        supplyApy: supplyAPY
+          .div(underlyingReserves.length)
+          .times(100)
+          .toNumber(),
+        borrowApy: borrowAPY
+          .div(underlyingReserves.length)
+          .times(100)
+          .toNumber(),
+        id: getAssetIdFromAddress(reserve.underlyingAsset),
       }
-    }, [
-      assetIds,
-      assetReserve?.aIncentivesData,
-      getErc20,
-      reserves,
-      vDotApy?.apy,
-      stablepoolFee,
-    ])
+    })
+
+    const supplyAPYSum = underlyingAssetsAPY.reduce(
+      (a, b) => a + b.supplyApy,
+      0,
+    )
+
+    const borrowAPYSum = underlyingAssetsAPY.reduce(
+      (a, b) => a + b.borrowApy,
+      0,
+    )
+    const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
+
+    return {
+      totalSupplyApy: isIncentivesInfinity
+        ? Infinity
+        : supplyAPYSum + incentivesNetAPR + lpAPY,
+      totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
+      lpAPY: lpAPY,
+      underlyingAssetsAPY,
+      incentivesNetAPR,
+    }
+  }, [
+    assetIds,
+    assetReserve?.aIncentivesData,
+    getErc20,
+    reserves,
+    vDotApy?.apy,
+    stablepoolFee,
+  ])
 
   return {
     tvl: assetReserve?.totalLiquidityUSD || "0",
-    apy: totalAPY,
+    totalSupplyApy,
+    totalBorrowApy,
     lpAPY,
-    incentivesAPY,
+    incentivesNetAPR,
     underlyingAssetsAPY,
+    vDotApy: vDotApy?.apy,
+    incentives: assetReserve?.aIncentivesData ?? [],
   }
 }

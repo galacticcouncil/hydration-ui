@@ -145,7 +145,7 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
-      const fee = isGigaDOT ? BN(borrow.apy) : BN_NAN
+      const fee = isGigaDOT ? BN(borrow.totalSupplyApy) : BN_NAN
 
       const name = metaOverride?.name || meta.name
       const symbol = metaOverride?.symbol || meta.symbol
@@ -187,7 +187,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    borrow.apy,
+    borrow.totalSupplyApy,
   ])
 
   return { data, isLoading }
@@ -660,7 +660,11 @@ export const calculatePoolsTotals = (
   if (!pools) return defaultValues
   return pools.reduce((acc, pool) => {
     acc.tvl = BN(acc.tvl)
-      .plus(!pool.tvlDisplay.isNaN() ? pool.tvlDisplay : BN_0)
+      .plus(
+        pool.tvlDisplay.isNaN() || pool.id === GDOT_STABLESWAP_ASSET_ID
+          ? BN_0
+          : pool.tvlDisplay,
+      )
       .toString()
     acc.volume = BN(acc.volume)
       .plus(pool.volume ?? 0)

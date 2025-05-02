@@ -22,6 +22,8 @@ import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -90,11 +92,16 @@ export const useSupplyAssetsTableColumns = () => {
           const { supplyAPY, aIncentivesData, symbol } = row.original
 
           return (
-            <IncentivesCard
-              value={supplyAPY}
-              incentives={aIncentivesData}
-              symbol={symbol}
-            />
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="supply"
+            >
+              <IncentivesCard
+                value={supplyAPY}
+                incentives={aIncentivesData}
+                symbol={symbol}
+              />
+            </OverrideApy>
           )
         },
       }),
