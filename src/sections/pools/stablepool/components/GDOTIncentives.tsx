@@ -12,12 +12,14 @@ import {
 } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
-import { SContainer } from "./GDOTIncentives.styled"
+import { SContainer, SIncentiveRow } from "./GDOTIncentives.styled"
 import { ReactNode } from "react"
 import { useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { ResponsiveValue } from "utils/responsive"
 import { theme } from "theme"
+import { getAssetIdFromAddress } from "utils/evm"
+import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 
 export const GDOTIncentives = () => {
   const { t } = useTranslation()
@@ -41,7 +43,7 @@ export const GDOTIncentives = () => {
             {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
           </Text>
         </div>
-        <GDOTAPY withLabel />
+        <GDOTAPY withLabel type="supply" />
       </SContainer>
     </>
   )
@@ -87,29 +89,27 @@ const APYRow = ({
 
 type ApySummary = Record<string, string>
 
+type ApyType = "supply" | "borrow"
+
 type APYProps = {
+  readonly type: ApyType
   readonly withLabel?: boolean
-  readonly isSupply?: boolean
   readonly size?: ResponsiveValue<number>
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
 }
 
-export const GDOTAPY = ({
-  withLabel,
-  isSupply = true,
-  color,
-  size,
-}: APYProps) => {
+export const GDOTAPY = ({ withLabel, type, color, size }: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const {
     totalSupplyApy,
     totalBorrowApy,
     lpAPY,
-    incentivesAPY,
     underlyingAssetsAPY,
+    incentives,
   } = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
 
+  const isSupply = type === "supply"
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
   return (
@@ -139,30 +139,13 @@ export const GDOTAPY = ({
                   {t("liquidity.table.farms.apr.lpFee")}
                 </Text>
                 <Text fs={12} font="GeistSemiBold">
-                  {t("value.percentage", { value: lpAPY })}
+                  <FormattedNumber percent value={lpAPY / 100} />
                 </Text>
               </div>
             )}
-            {[
-              ...underlyingAssetsAPY,
-              ...[
-                {
-                  borrowApy: incentivesAPY,
-                  supplyApy: incentivesAPY,
-                  id: GDOT_ERC20_ASSET_ID,
-                },
-              ],
-            ].map(({ id, borrowApy, supplyApy }) => {
+            {underlyingAssetsAPY.map(({ id, borrowApy, supplyApy }) => {
               return (
-                <div
-                  key={id}
-                  sx={{
-                    flex: "row",
-                    gap: 4,
-                    justify: "space-between",
-                    mt: 6,
-                  }}
-                >
+                <SIncentiveRow key={id}>
                   <div sx={{ flex: "row", gap: 4, align: "center" }}>
                     <Icon size={14} icon={<AssetLogo id={id} />} />
                     <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
@@ -171,11 +154,29 @@ export const GDOTAPY = ({
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
-                    {t("value.percentage", {
-                      value: isSupply ? supplyApy : borrowApy,
-                    })}
+                    <FormattedNumber
+                      percent
+                      value={(isSupply ? supplyApy : borrowApy) / 100}
+                    />
                   </Text>
-                </div>
+                </SIncentiveRow>
+              )
+            })}
+            {incentives.map(({ rewardTokenAddress, incentiveAPR }) => {
+              const id = getAssetIdFromAddress(rewardTokenAddress)
+              return (
+                <SIncentiveRow key={id}>
+                  <div sx={{ flex: "row", gap: 4, align: "center" }}>
+                    <Icon size={14} icon={<AssetLogo id={id} />} />
+                    <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+                    <Text fs={11} lh={15} color="basic400">
+                      {t("incentivesApr")}
+                    </Text>
+                  </div>
+                  <Text fs={12} font="GeistSemiBold">
+                    <FormattedNumber percent value={incentiveAPR} />
+                  </Text>
+                </SIncentiveRow>
               )
             })}
           </>
@@ -186,21 +187,16 @@ export const GDOTAPY = ({
 }
 
 const gDotSummary: ApySummary = {
-  [GDOT_ERC20_ASSET_ID]: i18n.t("incentivesApy"),
   [DOT_ASSET_ID]: i18n.t("supplyApy"),
-  [VDOT_ASSET_ID]: i18n.t("supplyAndStakeApy"),
+  [VDOT_ASSET_ID]: i18n.t("stakeApy"),
 }
 
-export const VDOTAPY = ({
-  withLabel,
-  isSupply = true,
-  size,
-  color,
-}: APYProps) => {
+export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
   const { t } = useTranslation()
   const { totalSupplyApy, totalBorrowApy, underlyingAssetsAPY, vDotApy } =
     useBorrowAssetApy(VDOT_ASSET_ID)
 
+  const isSupply = type === "supply"
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
   return (
@@ -249,7 +245,7 @@ type OverrideApyProps = APYProps & {
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (props.assetId) {
     case GDOT_STABLESWAP_ASSET_ID:
-      return <GDOTAPY {...props} />
+      return props.type === "supply" ? <GDOTAPY {...props} /> : children
     case VDOT_ASSET_ID:
       return <VDOTAPY {...props} />
     default:
