@@ -98,9 +98,9 @@ export const useOmnipools = () => {
       const positionsAmount =
         omnipoolPositions.length + omnipoolMiningPositions.length
       const balance = getBalance(omnipoolId)
-      const isPositions = positionsAmount > 0 || !!balance
 
       const isStablePool = isStableSwap(meta)
+      const isPositions = positionsAmount > 0 || (!!balance && isStablePool)
 
       return {
         id: omnipoolId,
