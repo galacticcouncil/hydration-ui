@@ -80,6 +80,7 @@ export type TToken = TCommonAssetData & {
   type: AssetType.TOKEN
   iconSrc?: string
   srcChain?: string
+  externalId?: string
   parachainId?: string
   ecosystem: AssetEcosystem
 }
@@ -204,12 +205,15 @@ export const assetsQuery = (data: TProviderContext) => {
                   ),
                 )
 
+                const externalId = getExternalId(asset)
+
                 const assetData: TToken = {
                   ...commonAssetData,
                   type: AssetType.TOKEN,
                   ecosystem,
                   ...(iconSrc ? { iconSrc } : {}),
                   ...(parachainId ? { parachainId } : {}),
+                  ...(externalId ? { externalId } : {}),
                 }
                 return assetData
               }

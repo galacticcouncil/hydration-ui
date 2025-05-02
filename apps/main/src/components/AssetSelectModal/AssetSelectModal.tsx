@@ -14,8 +14,12 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components"
+import {
+  SOption,
+  SVirtualizedOption,
+} from "@/components/AssetSelectModal/AssetSelectModal.styled"
 
-import { SOption } from "./AssetSelectModal.styled"
+export const AssetSelectModalOption = SOption
 
 type AssetSelectModalProps = {
   assets: TAssetData[]
@@ -156,7 +160,7 @@ const Content = ({
                 }
 
                 return (
-                  <SOption
+                  <SVirtualizedOption
                     key={virtualRow.key}
                     id={`asset-${virtualRow.key}`}
                     role="option"
@@ -172,7 +176,7 @@ const Content = ({
                     <Text fs="p6" color={getToken("text.medium")}>
                       $1 000
                     </Text>
-                  </SOption>
+                  </SVirtualizedOption>
                 )
               })}
             </div>

@@ -17,3 +17,25 @@ export const hexToRgba = (hex: string, alpha = 1): string => {
   const b = parseInt(hexValue.substring(4, 6), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
+
+export const isJson = (item: string): boolean => {
+  let value = typeof item !== "string" ? JSON.stringify(item) : item
+  try {
+    value = JSON.parse(value)
+  } catch (e) {
+    return false
+  }
+
+  return typeof value === "object" && value !== null
+}
+
+export const arrayToMap = <T extends object>(
+  prop: keyof T,
+  arr?: T[],
+): ReadonlyMap<T[keyof T], T> => {
+  return new Map(
+    (arr || []).map((item) => {
+      return [item[prop], item]
+    }),
+  )
+}

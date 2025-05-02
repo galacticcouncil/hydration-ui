@@ -1,8 +1,9 @@
 import { Asset, findNestedKey } from "@galacticcouncil/sdk"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
+import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xcm-core"
 import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
 import { XcmV3Junction } from "@polkadot/types/lookup"
+import { XcmV3Junctions } from "@polkadot-api/descriptors"
 //import { assethub, pendulum } from "api/external"
 import { Buffer } from "buffer"
 
@@ -87,22 +88,22 @@ export type InteriorProp = {
 }[XcmV3Junction["type"]]
 
 export type TExternalAssetInput = {
-  parents: string
-  interior: InteriorTypes | string
+  parents: number
+  interior: XcmV3Junctions
 }
 
 export const PARACHAIN_CONFIG: {
   [x: number]: {
     palletInstance: string
     network: string
-    parents: string
+    parents: number
     interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
   }
 } = {
   [assethub.parachainId]: {
     palletInstance: "50",
     network: "polkadot",
-    parents: "1",
+    parents: 1,
     interior: "X3",
   },
 }
@@ -113,7 +114,9 @@ export const isGeneralKey = (
   return typeof prop !== "string" && "GeneralKey" in prop
 }
 
-export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
+export const getParachainInputData = (
+  asset: TExternalAssetWithLocation,
+): TExternalAssetInput => {
   const config = PARACHAIN_CONFIG[asset.origin]
   if (!config) throw new Error("Parachain config not found")
 
@@ -121,15 +124,19 @@ export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
   return {
     parents,
     interior: {
-      X3: [
+      type: "X3",
+      value: [
         {
-          Parachain: asset.origin.toString(),
+          type: "Parachain",
+          value: asset.origin,
         },
         {
-          PalletInstance: palletInstance,
+          type: "PalletInstance",
+          value: +palletInstance,
         },
         {
-          GeneralIndex: asset.id,
+          type: "GeneralIndex",
+          value: BigInt(asset.id),
         },
       ],
     },
@@ -140,6 +147,7 @@ export const getPendulumInputData = (
   location: HydradxRuntimeXcmAssetLocation,
 ): TExternalAssetInput => {
   const interiorType = location.interior.type
+  const interiorValue = location.interior.value
 
   if (interiorType !== "Here") {
     const interior = location.interior[
@@ -149,18 +157,23 @@ export const getPendulumInputData = (
     const newInteriorType = `X${Number(interiorType.slice(1)) + 1}`
 
     return {
-      parents: "1",
+      parents: 1,
       interior: {
-        [newInteriorType]: [
-          { Parachain: pendulum.parachainId.toString() },
+        type: newInteriorType,
+        value: {
+          type: "Parachain",
+          value: pendulum.parachainId,
           ...interior,
-        ],
-      },
+        },
+      } as XcmV3Junctions,
     }
   } else {
     return {
-      parents: location.parents.toString(),
-      interior: interiorType,
+      parents: location.parents.toNumber(),
+      interior: {
+        type: interiorType,
+        value: interiorValue.toJSON(),
+      } as XcmV3Junctions,
     }
   }
 }
@@ -215,3 +228,6 @@ export const getExternalId = (asset: Asset) => {
       return undefined
   }
 }
+
+export const isAnyParachain = (chain: AnyChain): chain is AnyParachain =>
+  (chain as AnyParachain).parachainId !== undefined
