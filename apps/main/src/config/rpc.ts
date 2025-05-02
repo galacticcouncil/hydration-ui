@@ -29,7 +29,6 @@ export const createProvider = (
 })
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("GalacticCouncil", "wss://rpc.hydradx.cloud"),
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),
   createProvider("Dotters", "wss://hydration.dotters.network"),
