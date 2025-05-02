@@ -7,5 +7,16 @@
   "supply.table.title": "Assets to supply",
   "supplied.table.title": "Your supplies",
   "borrow.table.title": "Assets to borrow",
-  "borrowed.table.title": "Your borrows"
+  "borrowed.table.title": "Your borrows",
+  "risk.title": "Liquidation risk parameters",
+  "risk.details": "Risk details",
+  "risk.liquidationValue": "Liquidation value",
+  "risk.liquidationThreshold": "Liquidation threshold",
+  "risk.liquidationPenalty": "Liquidation penalty",
+  "risk.description": "Your health factor and loan to value determine the assurance of your collateral. To avoid liquidations you can supply more collateral or repay borrow positions.",
+  "risk.hf.description": "Safety of your deposited collateral against the borrowed assets and its underlying value.",
+  "risk.hf.hint": "If the health factor goes below 1, the liquidation of your collateral might be triggered.",
+  "risk.ltv.title": "Current LTV",
+  "risk.ltv.description": "Your current loan to value based on your collateral supplied.",
+  "risk.ltv.hint": "If your loan to value goes above the liquidation threshold your collateral supplied may be liquidated."
 }
