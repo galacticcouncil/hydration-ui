@@ -9,12 +9,15 @@ import { lazy } from "react"
 
 import { useAccountBalance, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
+import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
+import { useProviderMetadata } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useDisplayAssetStablecoinUpdate } from "@/states/displayAsset"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -36,13 +39,15 @@ const Web3ConnectModal = lazy(async () => ({
 
 const Subscriptions = () => {
   const rpcProvider = useRpcProvider()
-
+  useProviderMetadata()
   useOmnipoolIds()
+  useInvalidateOnBlock()
   useAccountBalance()
   useAccountUniques()
   usePriceSubscriber()
   useAllPools()
   useQuery(assetsQuery(rpcProvider))
+  useDisplayAssetStablecoinUpdate()
 
   return null
 }

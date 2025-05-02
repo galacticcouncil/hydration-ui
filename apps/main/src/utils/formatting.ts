@@ -10,11 +10,6 @@ const normalizeValue = (value: string | number | bigint) => {
   return BigInt(value)
 }
 
-export const wsToHttp = (url: string) =>
-  url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
-    secure ? "https://" : "http://",
-  )
-
 /**
  *
  * @param amount value to scale

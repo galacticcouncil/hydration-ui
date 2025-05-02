@@ -1,14 +1,15 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
 
-import { TProviderContext } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export const bestNumberQuery = (context: TProviderContext) => {
-  const { isApiLoaded, api, rpcUrlList } = context
+  const { isApiLoaded, api, endpoint } = context
 
   return queryOptions({
     enabled: isApiLoaded,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "bestNumber", rpcUrlList.join(",")],
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "bestNumber", endpoint],
     queryFn: async () => {
       const [validationData, parachainBlockNumber, timestamp] =
         await Promise.all([
@@ -25,4 +26,29 @@ export const bestNumberQuery = (context: TProviderContext) => {
       }
     },
   })
+}
+
+export const useInvalidateOnBlock = () => {
+  const queryClient = useQueryClient()
+  const { api, isLoaded } = useRpcProvider()
+
+  const cancelRef = useRef<VoidFunction | null>(null)
+
+  useEffect(() => {
+    if (isLoaded) {
+      api.rpc.chain
+        .subscribeNewHeads(() => {
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEY_BLOCK_PREFIX],
+          })
+        })
+        .then((cancel) => {
+          cancelRef.current = cancel
+        })
+    }
+
+    return () => {
+      cancelRef.current?.()
+    }
+  }, [isLoaded, api, queryClient])
 }

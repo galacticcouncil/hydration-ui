@@ -1,17 +1,16 @@
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useEffect, useRef } from "react"
+import { PingResponse } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { RpcInfoResult } from "@/api/rpc"
 import {
   SStatusOffline,
   SStatusSuccess,
 } from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
 import { useElapsedTimeStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
 
-export type RpcStatusProps = Partial<RpcInfoResult> & { ping?: number }
+export type RpcStatusProps = Partial<PingResponse>
 
 export const RpcStatusSuccess = () => {
   return (
@@ -66,48 +65,36 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
     <Box>
       <Tooltip text={statusText} side="left" asChild>
         <Flex align="center" gap={4} color={getToken(statusColor)}>
-          <Text fs={12}>
-            {t("number", {
-              value: blockNumber,
-            })}
-          </Text>
+          {blockNumber && (
+            <Text fs={12}>
+              {t("number", {
+                value: blockNumber,
+              })}
+            </Text>
+          )}
           {status === "online" && <RpcStatusSuccess key={timestamp} />}
           {status === "slow" && <RpcStatusSlow />}
           {status === "offline" && <RpcStatusOffline />}
         </Flex>
       </Tooltip>
-      {ping < Infinity && <RpcPingAverage ping={ping} />}
+      {ping && ping < Infinity && <RpcPing ping={ping} />}
     </Box>
   )
 }
 
-const RpcPingAverage: React.FC<{ ping: number }> = ({ ping }) => {
+const RpcPing: React.FC<{ ping: number }> = ({ ping }) => {
   const { t } = useTranslation()
 
-  const avgPingArrRef = useRef<number[]>([])
-
-  useEffect(() => {
-    if (ping < Infinity) {
-      avgPingArrRef.current = [...avgPingArrRef.current, ping].slice(-10)
-    }
-  }, [ping])
-
-  const avgPing =
-    avgPingArrRef.current.length === 0
-      ? ping
-      : avgPingArrRef.current.reduce((acc, curr) => acc + curr, 0) /
-        avgPingArrRef.current.length
-
   const pingColor =
-    avgPing < 250
+    ping < 250
       ? statusColorMap.online
-      : avgPing < 500
+      : ping < 500
         ? statusColorMap.slow
         : statusColorMap.offline
 
   return (
     <Text fs={10} mt={2} color={getToken(pingColor)}>
-      {t("rpc.status.ping", { value: Math.round(avgPing) })}
+      {t("rpc.status.ping", { value: Math.round(ping) })}
     </Text>
   )
 }

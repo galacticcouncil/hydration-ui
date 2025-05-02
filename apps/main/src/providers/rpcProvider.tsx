@@ -1,21 +1,26 @@
 import { AssetClient, PoolService, TradeRouter } from "@galacticcouncil/sdk"
+import { changeProvider } from "@galacticcouncil/utils"
 import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
-import { createContext, ReactNode, useContext, useMemo } from "react"
-import { usePrevious } from "react-use"
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
 import {
-  changeProvider,
-  getProviderProps,
-  PROVIDER_URLS,
+  getProviderDataEnv,
   providerQuery,
-  TDataEnv,
   TFeatureFlags,
 } from "@/api/provider"
+import { TDataEnv } from "@/config/rpc"
 import { useAssetRegistry } from "@/states/assetRegistry"
-import { useDisplayAssetStore } from "@/states/displayAsset"
+import { useApiMetadataStore } from "@/states/metadata"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type Papi = TypedApi<typeof hydration>
@@ -52,77 +57,79 @@ const ProviderContext = createContext<TProviderContext>(defaultData)
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
+const WHITELISTED_QUERIES_ON_PROVIDER_CHANGE = ["rpcStatus"]
+const RPC_CHANGE_QUERY_FILTER: QueryFilters = {
+  type: "active",
+  predicate: (query) =>
+    !WHITELISTED_QUERIES_ON_PROVIDER_CHANGE.includes(
+      query.queryKey[0] as string,
+    ),
+}
+
+export const useInvalidateRpcProvider = () => {
+  const [isInvalidating, setIsInvalidating] = useState(false)
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
+      const prevRpcUrl = prevState.rpcUrl
+      const nextRpcUrl = state.rpcUrl
+      const hasRpcUrlChanged = prevRpcUrl !== nextRpcUrl
+
+      if (!hasRpcUrlChanged) return
+
+      const prevDataEnv = getProviderDataEnv(prevRpcUrl)
+      const nextDataEnv = getProviderDataEnv(nextRpcUrl)
+
+      const hasDataEnvChanged = !nextDataEnv || prevDataEnv !== nextDataEnv
+
+      setIsInvalidating(true)
+      queryClient.removeQueries({
+        queryKey: ["provider"],
+      })
+
+      if (hasDataEnvChanged) {
+        queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
+      } else {
+        queryClient.invalidateQueries(
+          {
+            ...RPC_CHANGE_QUERY_FILTER,
+            refetchType: "none",
+          },
+          { cancelRefetch: true },
+        )
+      }
+      await changeProvider(prevRpcUrl, nextRpcUrl)
+      setIsInvalidating(false)
+    })
+  }, [queryClient])
+
+  return { isInvalidating }
+}
+
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry()
-  const isAssets = !!assets.length
-  const { setRpcUrl, rpcUrl, autoMode } = useProviderRpcUrlStore()
-  const rpcUrlList = autoMode ? PROVIDER_URLS : [rpcUrl]
+  const { rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
+  const { isInvalidating } = useInvalidateRpcProvider()
 
-  const queryClient = useQueryClient()
-  const prevRpcUrl = usePrevious(rpcUrl)
+  const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
 
-  const { data } = useQuery(
-    providerQuery(rpcUrlList, {
-      onSuccess: async (url) => {
-        setRpcUrl(url)
+  const { metadata } = useApiMetadataStore()
 
-        if (prevRpcUrl && prevRpcUrl !== url) {
-          await changeProvider(prevRpcUrl, url)
-
-          const prevDataEnv = getProviderProps(prevRpcUrl)?.dataEnv
-          const nextDataEnv = getProviderProps(url)?.dataEnv
-
-          if (!nextDataEnv || nextDataEnv !== prevDataEnv) {
-            queryClient.invalidateQueries({
-              queryKey: ["assets"],
-            })
-          }
-        }
-      },
-    }),
-  )
-
-  const displayAsset = useDisplayAssetStore()
+  const { data } = useQuery({
+    enabled: !isInvalidating,
+    ...providerQuery(rpcProviderUrls, metadata),
+  })
 
   const value = useMemo(() => {
-    if (data) {
-      const {
-        isStableCoin,
-        stableCoinId: chainStableCoinId,
-        update,
-      } = displayAsset
+    if (!data) return defaultData
 
-      let stableCoinId: string | undefined
-
-      //set USDT as a stable token
-      stableCoinId = assets.find((asset) => asset.symbol === "USDT")?.id
-
-      // set DAI as a stable token if there is no USDT
-      if (!stableCoinId) {
-        stableCoinId = assets.find((asset) => asset.symbol === "DAI")?.id
-      }
-
-      if (stableCoinId && isStableCoin && chainStableCoinId !== stableCoinId) {
-        // setting stable coin id from asset registry
-        update({
-          id: stableCoinId,
-          symbol: "$",
-          isRealUSD: false,
-          isStableCoin: true,
-          stableCoinId,
-        })
-      }
-
-      return {
-        ...data,
-        isApiLoaded: !!Object.keys(data.api).length,
-        isLoaded: isAssets,
-      }
+    return {
+      ...data,
+      isApiLoaded: !!data?.api.isConnected,
+      isLoaded: assets.length > 0,
     }
-
-    return defaultData
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, isAssets])
+  }, [assets, data])
 
   return (
     <ProviderContext.Provider value={value}>
