@@ -34,7 +34,7 @@ export const WithdrawModal = () => {
     ).length ?? 0
   const isBorrowing = user?.totalBorrowsUSD !== "0"
   const fallbackWithdraw =
-    isBorrowing && reserveAssetsCount + borrowAssetsCount > 4
+    isBorrowing && reserveAssetsCount + borrowAssetsCount > 3
 
   if (assetId === GDOT_STABLESWAP_ASSET_ID && !fallbackWithdraw) {
     const userReserve = user?.userReservesData.find((userReserve) => {
