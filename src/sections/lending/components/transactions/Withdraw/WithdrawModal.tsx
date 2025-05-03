@@ -24,7 +24,19 @@ export const WithdrawModal = () => {
 
   const assetId = getAssetIdFromAddress(args.underlyingAsset)
 
-  if (assetId === GDOT_STABLESWAP_ASSET_ID) {
+  const reserveAssetsCount =
+    user?.userReservesData.filter(
+      ({ scaledATokenBalance }) => scaledATokenBalance !== "0",
+    ).length ?? 0
+  const borrowAssetsCount =
+    user?.userReservesData.filter(
+      ({ variableBorrows }) => variableBorrows !== "0",
+    ).length ?? 0
+  const isBorrowing = user?.totalBorrowsUSD !== "0"
+  const fallbackWithdraw =
+    isBorrowing && reserveAssetsCount + borrowAssetsCount > 3
+
+  if (assetId === GDOT_STABLESWAP_ASSET_ID && !fallbackWithdraw) {
     const userReserve = user?.userReservesData.find((userReserve) => {
       return args.underlyingAsset === userReserve?.underlyingAsset
     })
