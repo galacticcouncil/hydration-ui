@@ -28,8 +28,13 @@ export const WithdrawModal = () => {
     user?.userReservesData.filter(
       ({ scaledATokenBalance }) => scaledATokenBalance !== "0",
     ).length ?? 0
+  const borrowAssetsCount =
+    user?.userReservesData.filter(
+      ({ variableBorrows }) => variableBorrows !== "0",
+    ).length ?? 0
   const isBorrowing = user?.totalBorrowsUSD !== "0"
-  const fallbackWithdraw = isBorrowing && reserveAssetsCount > 3
+  const fallbackWithdraw =
+    isBorrowing && reserveAssetsCount + borrowAssetsCount > 4
 
   if (assetId === GDOT_STABLESWAP_ASSET_ID && !fallbackWithdraw) {
     const userReserve = user?.userReservesData.find((userReserve) => {
