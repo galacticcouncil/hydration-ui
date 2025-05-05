@@ -13,9 +13,10 @@ import { useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
+import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { PoolsFilters, PoolsHeader } from "./components"
 import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.utils"
 
 export const PoolsPage = () => {

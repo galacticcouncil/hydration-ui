@@ -4,14 +4,11 @@ import { Outlet, useParams } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
+import { BalancePosition } from "@/modules/liquidity/components/BalancePosition"
+import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
+import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
+import { PositionsTable } from "@/modules/liquidity/components/PositionsTable"
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
-
-import {
-  BalancePosition,
-  PoolDetailsHeader,
-  PoolDetailsValues,
-  PositionsTable,
-} from "./components"
 
 export const PoolDetails = () => {
   const { t } = useTranslation("liquidity")
