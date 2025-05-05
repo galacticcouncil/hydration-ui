@@ -258,7 +258,14 @@ export const AvailableRewards = () => {
                     {t("staking.dashboard.rewards.legend.future")}
                   </Text>
                   <InfoTooltip
-                    text={t("staking.dashboard.rewards.legend.tooltip")}
+                    text={
+                      <Text fs={12} lh={16}>
+                        <Trans
+                          t={t}
+                          i18nKey="staking.dashboard.rewards.legend.tooltip"
+                        />
+                      </Text>
+                    }
                   >
                     <SInfoIcon />
                   </InfoTooltip>
