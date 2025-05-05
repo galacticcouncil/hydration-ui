@@ -18,5 +18,8 @@
   "risk.hf.hint": "If the health factor goes below 1, the liquidation of your collateral might be triggered.",
   "risk.ltv.title": "Current LTV",
   "risk.ltv.description": "Your current loan to value based on your collateral supplied.",
-  "risk.ltv.hint": "If your loan to value goes above the liquidation threshold your collateral supplied may be liquidated."
+  "risk.ltv.hint": "If your loan to value goes above the liquidation threshold your collateral supplied may be liquidated.",
+  "cap.range": "{{ valueA, number(notation: 'compact') }} of {{ valueB, number(notation: 'compact') }}",
+  "cap.range.usd": "{{ valueA, currency(notation: 'compact') }} of {{ valueB, currency(notation: 'compact') }}",
+  "totalSupplied": "Total supplied"
 }

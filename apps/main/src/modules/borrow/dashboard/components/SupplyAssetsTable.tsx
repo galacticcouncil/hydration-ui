@@ -6,11 +6,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
+import { MOCK_DATA } from "@/modules/borrow/_mock"
 import { SupplyAssetsHeader } from "@/modules/borrow/dashboard/components/SupplyAssetsHeader"
-import {
-  MOCK_DATA,
-  useSupplyAssetsTableColumns,
-} from "@/modules/borrow/dashboard/components/SupplyAssetsTable.columns"
+import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/SupplyAssetsTable.columns"
 
 export const SupplyAssetsTable = () => {
   const columns = useSupplyAssetsTableColumns()

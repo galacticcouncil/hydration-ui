@@ -64,7 +64,9 @@ const formatters = {
     }
 
     const percentage = Big(value.toString())
-    const isBelowThreshold = percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+    const isBelowThreshold =
+      !percentage.eq(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+
     const percentageAdjusted = isBelowThreshold
       ? MIN_PERCENTAGE_THRESHOLD.div(100)
       : percentage.div(100)
