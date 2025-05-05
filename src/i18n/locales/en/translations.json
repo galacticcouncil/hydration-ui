@@ -1170,6 +1170,7 @@
   "lending.tooltip.liquidationThreshold": "This represents the threshold at which a borrow position will be considered undercollateralized and subject to liquidation for each collateral. For example, if a collateral has a liquidation threshold of 80%, it means that the position will be liquidated when the debt value is worth 80% of the collateral value.",
   "lending.tooltip.liquidationPenalty": "When a liquidation occurs, liquidators repay up to 50% of the outstanding borrowed amount on behalf of the borrower. In return, they can buy the collateral at a discount and keep the difference (liquidation penalty) as a bonus.",
   "lending.tooltip.fixedAPYTooltip": "This rate may be changed over time depending on the need for the {{ symbol }} supply to contract/expand.",
+  "lending.tooltip.estimatedRewards": "Estimated rewards based on current TVL, without considering the effect of Impermanent lose.",
   "lending.reserve.overview": "Overview",
   "lending.reserve.yourInfo": "Your info",
   "lending.reserve.paused": "Because this asset is paused, no actions can be taken until further notice.",
