@@ -1,13 +1,17 @@
 import { Close, IdenticonEmpty } from "@galacticcouncil/ui/assets/icons"
-import { Button, ButtonIcon, Grid, Modal } from "@galacticcouncil/ui/components"
-import { Flex } from "@galacticcouncil/ui/components"
-import { Icon } from "@galacticcouncil/ui/components"
-import { Input } from "@galacticcouncil/ui/components"
-import { Text } from "@galacticcouncil/ui/components"
+import {
+  AccountAvatar,
+  Button,
+  ButtonIcon,
+  Flex,
+  Grid,
+  Icon,
+  Input,
+  Modal,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useWeb3Connect } from "@galacticcouncil/web3-connect"
-import { Web3WalletLogo } from "@galacticcouncil/web3-connect/src/components/Web3WalletLogo"
-import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { ArrowDownToLine, BookOpen } from "lucide-react"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -34,7 +38,6 @@ export const AddressBook: FC<AddressBookProps> = ({
   const account = useWeb3Connect((s) =>
     s.accounts.find((account) => account.address === address),
   )
-  const wallet = account ? getWallet(account.provider) : null
 
   return (
     <SAddressBook>
@@ -57,8 +60,8 @@ export const AddressBook: FC<AddressBookProps> = ({
       </Flex>
       <Grid columnTemplate="1fr auto" align="center" columnGap={10}>
         <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-          {wallet ? (
-            <Web3WalletLogo sx={{ flexShrink: 0 }} wallet={wallet} />
+          {account ? (
+            <AccountAvatar address={account.address} />
           ) : (
             <IdenticonEmpty />
           )}

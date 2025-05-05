@@ -1,3 +1,4 @@
+export * from "./AccountAvatar"
 export * from "./AccountTile"
 export * from "./Amount"
 export * from "./AssetInput"

@@ -6,6 +6,7 @@ export const SAccountItem = styled.button<{
   position: relative;
   width: 100%;
   min-height: 65px;
+  min-width: 0;
 
   flex-grow: 1;
   display: flex;

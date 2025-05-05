@@ -1,7 +1,12 @@
 import { CaretDown, Wallet } from "@galacticcouncil/ui/assets/icons"
-import { ButtonProps, Flex, Icon } from "@galacticcouncil/ui/components"
-import { Text } from "@galacticcouncil/ui/components"
-import { Button } from "@galacticcouncil/ui/components"
+import {
+  AccountAvatar,
+  Button,
+  ButtonProps,
+  Flex,
+  Icon,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { forwardRef } from "react"
@@ -9,14 +14,13 @@ import { forwardRef } from "react"
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
 import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
-import { getWallet } from "@/wallets"
+import { getAccountAvatarTheme } from "@/utils"
 
 export const Web3ConnectButton = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {
     const { account } = useAccount()
     const { toggle } = useWeb3ConnectModal()
     if (account) {
-      const wallet = getWallet(account.provider)
       return (
         <SConnectedButton
           ref={ref}
@@ -25,11 +29,13 @@ export const Web3ConnectButton = forwardRef<HTMLButtonElement, ButtonProps>(
           variant="tertiary"
           sx={{ px: 10, gap: 8 }}
         >
-          {wallet && (
-            <img src={wallet.logo} alt={wallet.title} width={24} height={24} />
-          )}
+          <AccountAvatar
+            size={24}
+            address={account.displayAddress}
+            theme={getAccountAvatarTheme(account)}
+          />
           <Flex direction="column">
-            <Text fs="p3" lh={1.2}>
+            <Text fs="p3" lh={1.2} truncate={140}>
               {account.name}
             </Text>
             <Text fs="p6" color={getToken("text.medium")}>
