@@ -47,7 +47,7 @@
     "@galacticcouncil/math-xyk": "^1.0.0",
     "@galacticcouncil/sdk": "^6.2.0",
     "@galacticcouncil/ui": "^5.6.0",
-    "@galacticcouncil/xcm-cfg": "^9.1.2",
+    "@galacticcouncil/xcm-cfg": "9.2.0-pr150-30c59bc",
     "@galacticcouncil/xcm-core": "^7.1.0",
     "@galacticcouncil/xcm-sdk": "^9.2.0",
     "@hookform/resolvers": "^3.3.4",
