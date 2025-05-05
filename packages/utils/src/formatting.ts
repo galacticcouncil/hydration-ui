@@ -1,3 +1,9 @@
+export function wsToHttp(url: string) {
+  return url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
+    secure ? "https://" : "http://",
+  )
+}
+
 export function shorten(string: string, fromStart = 10, fromEnd = 0) {
   if (typeof string !== "string") {
     return ""

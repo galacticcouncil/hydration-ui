@@ -130,11 +130,12 @@ export const Market = () => {
 
         <Separator mx={-20} />
         <Summary
+          separator={<Separator mx={-20} />}
+          withTrailingSeparator
           rows={[
             {
               label: "Price impact:",
               content: t("percent", { value: "5" }),
-              separator: <Separator mx={-20} />,
             },
             {
               label: "Est. trade fees:",
@@ -147,12 +148,10 @@ export const Market = () => {
                   <Tooltip text="Some information about trade fees" />
                 </Flex>
               ),
-              separator: <Separator mx={-20} />,
             },
             {
               label: "Minimal  received:",
               content: "33 456.56 HDX",
-              separator: <Separator mx={-20} />,
             },
           ]}
         />

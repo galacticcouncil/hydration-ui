@@ -1,10 +1,14 @@
+import { useQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
 import { isNonNullish } from "remeda"
 import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
+import { TAssetData } from "@/api/assets"
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAssetRegistry } from "@/states/assetRegistry"
 
 type TDisplayAsset = {
   id: string | undefined
@@ -113,4 +117,55 @@ export const useAssetPrice = (assetId?: string): AssetPrice => {
     isLoading: price === undefined,
     isValid: isNonNullish(price),
   }
+}
+
+const findStableCoinId = (assets: TAssetData[]): string | null => {
+  const usdtAsset = assets.find((asset) => asset.symbol === "USDT")
+  if (usdtAsset) {
+    return usdtAsset.id
+  }
+
+  const daiAsset = assets.find((asset) => asset.symbol === "DAI")
+  if (daiAsset) {
+    return daiAsset.id
+  }
+
+  return null
+}
+
+export const useDisplayAssetStablecoinUpdate = () => {
+  const { assets } = useAssetRegistry()
+  const { dataEnv } = useRpcProvider()
+  const {
+    isStableCoin,
+    stableCoinId: currentStableCoinId,
+    update,
+  } = useDisplayAssetStore()
+
+  useQuery({
+    notifyOnChangeProps: [],
+    queryKey: ["displayAssetStablecoin", dataEnv],
+    queryFn: () => {
+      if (!assets.length) return null
+
+      const stableCoinId = findStableCoinId(assets)
+
+      if (
+        stableCoinId &&
+        isStableCoin &&
+        currentStableCoinId !== stableCoinId
+      ) {
+        // setting stable coin id from asset registry
+        update({
+          id: stableCoinId,
+          symbol: "$",
+          isRealUSD: false,
+          isStableCoin: true,
+          stableCoinId,
+        })
+      }
+
+      return stableCoinId
+    },
+  })
 }

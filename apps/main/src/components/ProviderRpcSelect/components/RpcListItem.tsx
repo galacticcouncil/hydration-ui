@@ -11,29 +11,29 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { PingResponse } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
 import { FormEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway, useMount } from "react-use"
 
 import { bestNumberQuery } from "@/api/chain"
-import { rpcInfoQuery } from "@/api/rpc"
-import { RpcInfoResult } from "@/api/rpc"
+import { useRpcStatus } from "@/api/rpc"
 import { RpcRemoveModal } from "@/components/ProviderRpcSelect/components/RpcRemoveModal"
 import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRpcListStore } from "@/states/provider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { SRpcListItem, SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
 
 export type RpcListItemProps = {
   name: string
   url: string
-  isActive: boolean
-  isCustom: boolean
-  onClick: (url: string) => void
-  onRemove: (url: string) => void
+  isActive?: boolean
+  isCustom?: boolean
+  isLoading?: boolean
+  onClick?: (url: string) => void
+  onRemove?: (url: string) => void
 }
 
 export const RpcListHeader: React.FC = () => {
@@ -134,13 +134,20 @@ const RpcListItemEdit: React.FC<RpcListItemEditProps> = ({
   )
 }
 
-const RpcListItemLayout: React.FC<
-  RpcListItemProps & Partial<RpcInfoResult>
-> = ({ onClick, onRemove, isActive, isCustom, url, name, ...status }) => {
+const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
+  name,
+  url,
+  isActive,
+  isCustom,
+  onClick,
+  onRemove,
+  timestamp,
+  blockNumber,
+  ping,
+  isLoading,
+}) => {
   const { t } = useTranslation()
   const [isEdit, setIsEdit] = useState(false)
-
-  const { isApiLoaded } = useRpcProvider()
 
   if (isEdit) {
     return (
@@ -152,10 +159,8 @@ const RpcListItemLayout: React.FC<
     )
   }
 
-  const isLoading = isActive && !isApiLoaded
-
   return (
-    <SRpcListItem data-loading={isLoading} onClick={() => onClick(url)}>
+    <SRpcListItem data-loading={isLoading} onClick={() => onClick?.(url)}>
       <Box>
         <Text
           fs={[14, 16]}
@@ -173,7 +178,15 @@ const RpcListItemLayout: React.FC<
         </Text>
       </Box>
       <Box>
-        {status.blockNumber ? <RpcStatus {...status} /> : <Spinner size={14} />}
+        {isLoading ? (
+          <Spinner size={14} />
+        ) : (
+          <RpcStatus
+            timestamp={timestamp}
+            blockNumber={blockNumber}
+            ping={ping}
+          />
+        )}
       </Box>
       <Flex
         color={getToken("text.medium")}
@@ -182,7 +195,7 @@ const RpcListItemLayout: React.FC<
         align="center"
       >
         <Text display={["none", "block"]}>{new URL(url).hostname}</Text>
-        {isCustom && (
+        {isCustom && !!onRemove && (
           <>
             <RpcRemoveModal
               onRemove={() => onRemove(url)}
@@ -210,42 +223,42 @@ const RpcListItemLayout: React.FC<
             </Tooltip>
           </>
         )}
-        <Box sx={{ ml: 8 }}>
-          {isLoading ? (
-            <Spinner size={14} />
-          ) : (
-            <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
-          )}
-        </Box>
+        {!!onClick && (
+          <Box sx={{ ml: 8 }}>
+            {isLoading ? (
+              <Spinner size={14} />
+            ) : (
+              <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
+            )}
+          </Box>
+        )}
       </Flex>
     </SRpcListItem>
   )
 }
 
-const RpcListItemActive: React.FC<
-  RpcListItemProps & Partial<RpcInfoResult> & { ping?: number }
+export const RpcListItemActive: React.FC<
+  RpcListItemProps & Partial<PingResponse>
 > = (props) => {
   const provider = useRpcProvider()
-  const { data: bestNumber } = useQuery(bestNumberQuery(provider))
+  const { data: bestNumber, isLoading } = useQuery(bestNumberQuery(provider))
+  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "")
 
   return (
     <RpcListItemLayout
       {...props}
+      ping={props?.ping ?? status?.ping}
       blockNumber={bestNumber?.parachainBlockNumber}
       timestamp={bestNumber?.timestamp}
+      isLoading={!provider.isLoaded || isLoading}
     />
   )
 }
 
 export const RpcListItem: React.FC<RpcListItemProps> = (props) => {
-  const { data: status } = useQuery({
-    ...rpcInfoQuery(props.url),
-    refetchInterval: PARACHAIN_BLOCK_TIME / 2,
-    placeholderData: keepPreviousData,
-  })
   return props.isActive ? (
-    <RpcListItemActive {...props} {...status} />
+    <RpcListItemActive {...props} />
   ) : (
-    <RpcListItemLayout {...props} {...status} />
+    <RpcListItemLayout {...props} />
   )
 }

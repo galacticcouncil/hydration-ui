@@ -59,6 +59,8 @@ function poolTypeToEnumPoolType(poolType: PoolType) {
       return "Omnipool"
     case PoolType.Stable:
       return "Stableswap"
+    default:
+      return "Omnipool"
   }
 }
 
