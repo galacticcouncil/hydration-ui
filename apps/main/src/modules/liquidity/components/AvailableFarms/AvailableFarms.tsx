@@ -26,7 +26,7 @@ export const AvailableFarms = () => {
     <>
       <SectionHeader>{t("details.section.availableFarms")}</SectionHeader>
 
-      <Flex gap={20} sx={{ flexWrap: "wrap" }}>
+      <Flex gap={20} wrap>
         {farms.map((farm) => (
           <AvailableFarm key={farm.id} farm={farm} onClick={setSelectedFarm} />
         ))}

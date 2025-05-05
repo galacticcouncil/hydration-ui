@@ -9,8 +9,6 @@ export const SClaimCard = styled.div`
 
     flex-grow: 1;
 
-    max-width: 454px;
-
     background: ${theme.accents.success.dim};
     border-radius: ${theme.containers.cornerRadius.internalPrimary}px;
 

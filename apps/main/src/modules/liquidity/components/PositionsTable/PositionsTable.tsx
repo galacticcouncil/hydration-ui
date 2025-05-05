@@ -17,7 +17,6 @@ import { PositionsHeader } from "./PositionsHeader"
 import { usePositionsTableColumns } from "./PositionsTable.columns"
 
 export type PositionTableData = {
-  label: string
   positionId: string
 } & Partial<OmnipoolPositionData>
 
@@ -27,9 +26,9 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
   const columns = usePositionsTableColumns()
 
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
-  const omnipoolPositions = getAssetPositions(assetId)
 
   const tableData = useMemo(() => {
+    const omnipoolPositions = getAssetPositions(assetId)
     return [
       ...(omnipoolPositions?.omnipool ?? []),
       ...(omnipoolPositions?.omnipoolMining ?? []),
@@ -37,16 +36,13 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
       .sort((a, b) => {
         return numericallyStrDesc(a.positionId, b.positionId)
       })
-      .map((position, index): PositionTableData => {
-        const label = `#${index + 1} Position`
-
+      .map((position): PositionTableData => {
         return {
           positionId: position.positionId,
-          label,
           ...position.data,
         }
       })
-  }, [omnipoolPositions])
+  }, [assetId, getAssetPositions])
 
   if (tableData.length === 0) {
     return null

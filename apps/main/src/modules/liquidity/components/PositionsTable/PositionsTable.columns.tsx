@@ -14,20 +14,23 @@ const columnHelper = createColumnHelper<PositionTableData>()
 
 export const usePositionsTableColumns = () => {
   const { hub } = useAssets()
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "liquidity"])
+
   return useMemo(
     () => [
       columnHelper.display({
         id: "position",
-        header: "Position",
+        header: t("position"),
         cell: ({ row }) => (
           <Text fs="p6" fw={500} sx={{ whiteSpace: "nowrap" }}>
-            {row.original.label}
+            {t("liquidity:liquidity.stablepool.position", {
+              value: row.index + 1,
+            })}
           </Text>
         ),
       }),
       columnHelper.display({
-        header: "Initial Amount",
+        header: t("liquidity:liquidity.positions.header.initialAmount"),
         cell: ({ row }) =>
           row.original.initialValueHuman ? (
             <Amount
@@ -44,7 +47,7 @@ export const usePositionsTableColumns = () => {
           ),
       }),
       columnHelper.display({
-        header: "Current Value",
+        header: t("liquidity:liquidity.positions.header.currentValue"),
         cell: ({ row: { original } }) =>
           original.currentValueHuman ? (
             <Amount
@@ -58,16 +61,16 @@ export const usePositionsTableColumns = () => {
           ),
       }),
       columnHelper.display({
-        header: "Joined Farms",
+        header: t("liquidity:liquidity.positions.header.joinedFarms"),
         cell: () => null,
       }),
       columnHelper.display({
-        header: "Actions",
+        header: t("liquidity:liquidity.positions.header.actions"),
         size: 180,
         cell: () => (
           <Flex gap={getTokenPx("containers.paddings.tertiary")}>
             <Button variant="primary" iconStart={CupSoda}>
-              Join
+              {t("join")}
             </Button>
             <Button
               variant="tertiary"

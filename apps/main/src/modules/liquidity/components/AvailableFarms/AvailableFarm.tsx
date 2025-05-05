@@ -45,8 +45,6 @@ export const AvailableFarm = ({
       ref={ref}
       role="button"
       as={isSelectable ? Paper : undefined}
-      align="center"
-      columnTemplate="auto 1fr"
       onClick={() => onClick?.(farm)}
       isSelectable={isSelectable}
       className={className}

@@ -9,6 +9,8 @@ export const SContainer = styled(Grid)<{ isSelectable?: boolean }>(
 
     column-gap: 30px;
     row-gap: 10px;
+    align-items: center;
+    grid-template-columns: auto 1fr;
 
     flex: 1;
 

@@ -16,7 +16,7 @@ type PositionsHeaderProps = {
 }
 
 export const PositionsHeader = ({ assetId, data }: PositionsHeaderProps) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "liquidity"])
   const { isTablet, isMobile } = useBreakpoints()
   const { hub, getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(assetId)
@@ -60,7 +60,7 @@ export const PositionsHeader = ({ assetId, data }: PositionsHeaderProps) => {
     >
       <Flex direction="column">
         <Text fs="p6" fw={400} color={getToken("text.medium")} sx={{ mb: 4 }}>
-          Locked in liq. positions
+          {t("liquidity:liquidity.positions.header.locked")}
         </Text>
         <Text
           font="primary"
@@ -86,7 +86,7 @@ export const PositionsHeader = ({ assetId, data }: PositionsHeaderProps) => {
 
       <Flex direction="column">
         <Text fs="p6" fw={400} color={getToken("text.medium")} sx={{ mb: 4 }}>
-          Liquidity positions
+          {t("liquidity:liquidity.positions.header.liquidityPositions")}
         </Text>
         <Text
           font="primary"

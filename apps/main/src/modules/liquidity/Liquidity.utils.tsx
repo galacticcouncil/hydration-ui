@@ -9,7 +9,7 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
+import { AssetType, TAssetData } from "@/api/assets"
 import { useFee, useOmnipoolAssetsData, useTVL } from "@/api/omnipool"
 import { stablePools, xykPools } from "@/api/pools"
 import { AssetLabelFull, AssetLabelXYK, AssetPrice } from "@/components"
@@ -79,8 +79,9 @@ export const useOmnipools = () => {
     const omnipoolData = omnipoolIds.map((omnipoolId) => {
       const isNative = native.id === omnipoolId
       const meta = getAssetWithFallback(omnipoolId)
-      const price = getAssetPrice(omnipoolId).isValid
-        ? Big(getAssetPrice(omnipoolId).price).round(5).toString()
+      const assetPrice = getAssetPrice(omnipoolId)
+      const price = assetPrice.isValid
+        ? Big(assetPrice.price).round(5).toString()
         : undefined
 
       const tvlDisplay =
@@ -423,33 +424,42 @@ export const useStablepoolReserves = (stablepoolId?: string) => {
   const { getAssetWithFallback } = useAssets()
   const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
 
-  const stablepoolAssets =
-    pools
-      .find((stablePool) => stablePool.id === stablepoolId)
-      ?.tokens.filter(
-        (token) => token.type === "Token" || token.type === "Erc20",
-      ) ?? []
+  const stablepoolAssets = useMemo(
+    () =>
+      pools
+        .find((stablePool) => stablePool.id === stablepoolId)
+        ?.tokens.filter(
+          (token) =>
+            token.type === AssetType.TOKEN || token.type === AssetType.ERC20,
+        ) ?? [],
+    [pools, stablepoolId],
+  )
 
   const assetIds = stablepoolAssets.map((asset) => asset.id)
 
   const { getAssetPrice, isLoading: isAssetsLoading } = useAssetsPrice(assetIds)
 
-  const reserves = stablepoolAssets.map((token) => {
-    const id = token.id
-    const meta = getAssetWithFallback(id)
+  const reserves = useMemo(
+    () =>
+      stablepoolAssets.map((token) => {
+        const id = token.id
+        const meta = getAssetWithFallback(id)
 
-    const amountHuman = scaleHuman(token.balance, meta.decimals)
+        const amountHuman = scaleHuman(token.balance, meta.decimals)
+        const assetPrice = getAssetPrice(id)
 
-    return {
-      asset_id: Number(id),
-      meta,
-      amount: token.balance,
-      amountHuman,
-      displayAmount: toBig(getAssetPrice(id).price)
-        ?.times(amountHuman)
-        .toString(),
-    }
-  })
+        return {
+          asset_id: Number(id),
+          meta,
+          amount: token.balance,
+          amountHuman,
+          displayAmount: assetPrice.isValid
+            ? toBig(assetPrice.price)?.times(amountHuman).toString()
+            : undefined,
+        }
+      }),
+    [stablepoolAssets, getAssetWithFallback, getAssetPrice],
+  )
 
   const totalDisplayAmount = reserves.reduce(
     (t, asset) =>

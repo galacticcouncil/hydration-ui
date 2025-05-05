@@ -36,9 +36,19 @@
   "liquidity.availableFarms.modal.graph.yAxisLabel": "Rewards APR %",
   "liquidity.availableFarms.modal.graph.xAxisLabel": "Days",
   "liquidity.stablepool.position.label": "Stablepool position",
+  "liquidity.stablepool.position": "#{{ value }} Position",
   "liquidity.stablepool.position.currentValue": "Current value",
   "liquidity.stablepool.position.addPosition": "Add Position",
   "liquidity.stablepool.position.removeLiquidity": "Remove Liquidity",
+  "liquidity.stablepool.positions.header.liquidityPositions": "Liquidity positions",
   "liquidity.stablepool.currencyReserves.label": "Currency Reserves",
-  "liquidity.stablepool.currencyReserves.amount": "<0>{{ value, number }}</0> <1>({{ percentage, percent }})</1>"
+  "liquidity.stablepool.currencyReserves.amount": "<0>{{ value, number }}</0> <1>({{ percentage, percent }})</1>",
+  "liquidity.positions.header.locked": "Locked in liq. positions",
+  "liquidity.positions.header.liquidityPositions": "Liquidity positions",
+  "liquidity.claimCard.totalClaimableValue": "Total claimable value",
+  "liquidity.claimCard.claim": "Claim rewards",
+  "liquidity.positions.header.initialAmount": "Initial amount",
+  "liquidity.positions.header.currentValue": "Current value",
+  "liquidity.positions.header.joinedFarms": "Joined farms",
+  "liquidity.positions.header.actions": "Actions"
 }
