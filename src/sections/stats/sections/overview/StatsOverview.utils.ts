@@ -1,6 +1,7 @@
 import { useBorrowMarketTotals } from "api/borrow"
+import { useOmnipoolDataObserver } from "api/omnipool"
 import { useStakingTotal } from "api/staking"
-import { useSwapAssetFeesByPeriod, useTVL } from "api/stats"
+import { useSwapAssetFeesByPeriod } from "api/stats"
 import BN from "bignumber.js"
 import { BarChartData } from "components/VerticalBarChart/VerticalBarChart"
 import { useAssets } from "providers/assets"
@@ -95,18 +96,34 @@ export const useStatsOverviewChartData = (
 
 const useStableswapTotalTvl = () => {
   const { stableswap } = useAssets()
-  const { data = [], isLoading } = useTVL("all")
+  const stableswapIds = stableswap.map(prop("id"))
+  const { data: omnipoolAssets = [], isLoading } = useOmnipoolDataObserver()
+
+  const filteredOmnipoolAssets = omnipoolAssets.filter((asset) =>
+    stableswapIds.includes(asset.id),
+  )
+
+  const filteredOmnipoolAssetsIds = stableswap.map(prop("id"))
+
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
+    filteredOmnipoolAssetsIds,
+  )
 
   const totalTvl = useMemo(() => {
-    const stableswapIds = stableswap.map(prop("id"))
-    return data
-      .filter(({ asset_id }) => stableswapIds.includes(asset_id.toString()))
-      .reduce((prev, { tvl_usd }) => prev.plus(tvl_usd), BN_0)
-  }, [data, stableswap])
+    return filteredOmnipoolAssets.reduce((prev, asset) => {
+      const tvl = asset.balance
+      const spotPrice = getAssetPrice(asset.id).price
+
+      const displayTvl = BN(tvl).times(spotPrice)
+      prev.plus(displayTvl)
+
+      return prev
+    }, BN_0)
+  }, [filteredOmnipoolAssets, getAssetPrice])
 
   return {
     tvl: totalTvl,
-    isLoading,
+    isLoading: isLoading || isPriceLoading,
   }
 }
 

@@ -85,30 +85,6 @@ const getStatsTvl = (assetId?: string) => async () => {
   return data
 }
 
-export const useTVL = (assetId?: string) => {
-  return useQuery(
-    QUERY_KEYS.tvl(assetId),
-    assetId
-      ? async () => {
-          const data = await getTVL(assetId === "all" ? undefined : assetId)
-          return data
-        }
-      : undefinedNoop,
-    { enabled: !!assetId },
-  )
-}
-
-const getTVL = async (assetId?: string) => {
-  const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v2/stats/tvl${
-      assetId != null ? `/${assetId}` : ""
-    }`,
-  )
-  const data: Promise<{ tvl_usd: number; asset_id: number }[]> = res.json()
-
-  return data
-}
-
 export const useFee = (assetId?: string | "all") => {
   return useQuery(
     QUERY_KEYS.fee(assetId),
