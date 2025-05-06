@@ -1,3 +1,4 @@
+import Big from "big.js"
 import { format as formatDate, isDate } from "date-fns"
 import { FormatFunction } from "i18next"
 
@@ -11,31 +12,35 @@ const formatNumberParts = (part: Intl.NumberFormatPart) => {
 }
 
 const getMaxSignificantDigits = (
-  value: number | bigint,
+  value: number | bigint | string,
   options: Intl.NumberFormatOptions,
 ) => {
   if (options.notation === "compact") {
     return 2
   }
 
-  if (value <= 1) {
+  const numberBig = Big(typeof value === "bigint" ? value.toString() : value)
+
+  if (numberBig.lte(1)) {
     return 4
   }
 
   const intPartLen = Math.ceil(Math.log10(Number(value) + 1))
+
   return Math.min(
     21,
-    (value > 99999.9999 ? 0 : value > 999.9999 ? 2 : 4) + intPartLen,
+    (numberBig.gt(99999.9999) ? 0 : numberBig.gt(999.9999) ? 2 : 4) +
+      intPartLen,
   )
 }
 
 const formatters = {
   number: (
-    value: number | bigint | null | undefined,
+    value: number | bigint | string | null | undefined,
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined || Number.isNaN(value)) {
+    if (!value) {
       return "N / A"
     }
 
@@ -67,11 +72,11 @@ const formatters = {
   },
 
   currency: (
-    value: number | bigint | null | undefined,
+    value: number | bigint | string | null | undefined,
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined || Number.isNaN(value)) {
+    if (!value) {
       return "N / A"
     }
 

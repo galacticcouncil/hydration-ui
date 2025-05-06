@@ -1,4 +1,4 @@
-import { Amount, Flex, ModalHeader } from "@galacticcouncil/ui/components"
+import { Amount, ModalHeader } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -6,58 +6,44 @@ import { useDisplayAssetPrice } from "@/components"
 import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { SAssetDetailModalBody } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { LiquidityDetailMobileActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileActions"
-import { LiquidityPositionMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile"
-import {
-  WalletLiquidityCurrentValue,
-  WalletLiquidityPosition,
-} from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
-import { useAssets } from "@/providers/assetsProvider"
+import { LiquidityPositionsMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionsMobile"
+import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly assetId: string
-  readonly currentValue: WalletLiquidityCurrentValue
-  readonly positions: ReadonlyArray<WalletLiquidityPosition>
+  readonly asset: TAsset
+  readonly currentValue: string
+  readonly positions: ReadonlyArray<MyLiquidityPosition>
 }
 
 export const LiquidityDetailMobileModal: FC<Props> = ({
-  assetId,
+  asset,
   currentValue,
   positions,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { getAsset } = useAssets()
-  const asset = getAsset(assetId)
 
-  const balance = 2855.24566
-  const [balanceDisplayPrice] = useDisplayAssetPrice(assetId, balance)
+  const [currentValueDisplay] = useDisplayAssetPrice(asset.id, currentValue)
 
   return (
     <>
       <ModalHeader
         sx={{ p: 16 }}
-        title={asset?.symbol ?? ""}
-        description={asset?.name}
+        title={asset.symbol ?? ""}
+        description={asset.name}
       />
       <SAssetDetailModalBody>
         <Amount
           label={t("myLiquidity.header.currentValue")}
           value={t("common:number", {
-            value: currentValue.balance,
+            value: currentValue,
           })}
-          displayValue={balanceDisplayPrice}
+          displayValue={currentValueDisplay}
         />
         <SAssetDetailMobileSeparator />
-        <LiquidityDetailMobileActions />
+        <LiquidityDetailMobileActions assetId={asset.id} />
         <SAssetDetailMobileSeparator />
-        <Flex direction="column" gap={12}>
-          {positions.map((position, index) => (
-            <LiquidityPositionMobile
-              key={index}
-              assetId={assetId}
-              position={position}
-            />
-          ))}
-        </Flex>
+        <LiquidityPositionsMobile asset={asset} positions={positions} />
       </SAssetDetailModalBody>
     </>
   )

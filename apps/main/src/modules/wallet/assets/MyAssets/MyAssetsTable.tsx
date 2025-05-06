@@ -48,7 +48,12 @@ export const MyAssetsTable = forwardRef(
           columns={columns}
           expandable={!isMobile}
           initialSorting={[
-            { id: MyAssetsTableColumn.Transferable, desc: true },
+            {
+              id: isMobile
+                ? MyAssetsTableColumn.Total
+                : MyAssetsTableColumn.Transferable,
+              desc: true,
+            },
           ]}
           renderSubComponent={(asset) =>
             asset.id === native.id ? (

@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { AnyChain } from "@galacticcouncil/xcm-core"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -128,23 +128,20 @@ export const useMyAssetsColumns = () => {
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
-        const navigate = useNavigate()
 
         return (
           <Flex gap={8} justify="flex-end">
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
             </TableRowAction>
-            <TableRowAction
-              disabled={!row.original.isTradeable}
-              onClick={() =>
-                navigate({
-                  to: "/trade/swap/market",
-                  search: { assetOut: row.original.id },
-                })
-              }
-            >
-              {t("common:trade")}
+            <TableRowAction disabled={!row.original.isTradeable} asChild>
+              <Link
+                to="/trade/swap/market"
+                search={{ assetOut: row.original.id }}
+                disabled={!row.original.isTradeable}
+              >
+                {t("common:trade")}
+              </Link>
             </TableRowAction>
             {/* TODO more actions */}
             {/* <TableRowAction>
@@ -183,6 +180,10 @@ export const useMyAssetsColumns = () => {
           textAlign: "right",
         },
       },
+      sortingFn: sortBy({
+        select: (row) => row.original.totalDisplay,
+        compare: numericallyStr,
+      }),
       cell: function Cell({ row }) {
         type Modal = "detail" | `action:${AssetDetailModal}`
 
