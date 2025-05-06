@@ -130,7 +130,7 @@ export const GDOTAPY = ({ withLabel, type, color, size }: APYProps) => {
         preventDefault
         text={
           <>
-            <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
+            <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
             {BN(apy).gt(0) && (
               <div
                 sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
@@ -217,7 +217,7 @@ export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
         preventDefault
         text={
           <>
-            <Text fs={12}>{t("liquidity.table.farms.apr.description")}</Text>
+            <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
             <APYRow id={VDOT_ASSET_ID} label={t("stakeApy")} value={vDotApy} />
             {[...underlyingAssetsAPY].map(({ id, borrowApy, supplyApy }) => {
               return (
