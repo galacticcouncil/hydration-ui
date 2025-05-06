@@ -13,7 +13,6 @@ import {
   useTreasuryAssets,
 } from "sections/stats/StatsPage.utils"
 import { omit } from "utils/rx"
-import BN from "bignumber.js"
 
 type PieWrapperProps = {
   data: TUseOmnipoolAssetDetailsData
@@ -58,7 +57,7 @@ export const PieWrapper = ({ data, className }: PieWrapperProps) => {
         />
         <PieTotalValue
           title={t("stats.overview.pie.values.volume")}
-          data={BN(totalVolume).div(2).toString()}
+          data={totalVolume}
           isLoading={isLoading || isLoadingVolume}
         />
       </div>

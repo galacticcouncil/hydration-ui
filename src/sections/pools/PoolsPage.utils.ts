@@ -214,7 +214,7 @@ export const usePools = () => {
     stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
   )
 
-  const { data: fees, isLoading: isFeeLoading } = useFee("all")
+  const { data: fees, isInitialLoading: isFeeLoading } = useFee("all")
   const { data: tvls } = useTVL("all")
 
   const { data: volumes, isLoading: isVolumeLoading } =
@@ -660,15 +660,12 @@ export const calculatePoolsTotals = (
   }
   if (!pools) return defaultValues
   return pools.reduce((acc, pool) => {
+    const isGDOT = pool.id === GDOT_STABLESWAP_ASSET_ID
     acc.tvl = BN(acc.tvl)
-      .plus(
-        pool.tvlDisplay.isNaN() || pool.id === GDOT_STABLESWAP_ASSET_ID
-          ? BN_0
-          : pool.tvlDisplay,
-      )
+      .plus(pool.tvlDisplay.isNaN() || isGDOT ? BN_0 : pool.tvlDisplay)
       .toString()
     acc.volume = BN(acc.volume)
-      .plus(pool.volume ?? 0)
+      .plus(BN(pool.volume ?? 0).div(isGDOT ? 1 : 2))
       .toString()
 
     return acc
