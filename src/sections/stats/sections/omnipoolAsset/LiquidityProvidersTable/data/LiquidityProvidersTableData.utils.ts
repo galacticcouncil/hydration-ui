@@ -1,12 +1,12 @@
 import { useAssets } from "providers/assets"
 import { useAllLiquidityPositions, useOmnipoolDataObserver } from "api/omnipool"
-import { useTVL } from "api/stats"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { BN_NAN } from "utils/constants"
 import { isNotNil } from "utils/helpers"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { groupBy } from "utils/rx"
+import { useAssetsPrice } from "state/displayPrice"
 
 const rowLimit = 10
 
@@ -18,13 +18,15 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
 
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
+    omnipoolAsset?.id ? [omnipoolAsset.id] : [],
+  )
+
   const { getData } = useLiquidityPositionData([assetId])
 
-  const tvl = useTVL(assetId)
+  const queries = [positions, omnipoolAssets]
 
-  const queries = [positions, omnipoolAssets, tvl]
-
-  const isLoading = queries.some((q) => q.isLoading)
+  const isLoading = queries.some((q) => q.isLoading) || isPriceLoading
 
   const data = useMemo(() => {
     const meta = getAsset(assetId)
@@ -33,7 +35,9 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
       return []
     }
 
-    const omnipoolTvlPrice = BN(tvl.data?.[0]?.tvl_usd ?? BN_NAN)
+    const omnipoolTvlPrice = BN(omnipoolAsset.balance)
+      .times(getAssetPrice(omnipoolAsset.id).price)
+      .shiftedBy(-meta.decimals)
 
     const data = positions.data
 
@@ -113,7 +117,7 @@ export const useLiquidityProvidersTableData = (assetId: string) => {
     })
 
     return sortedData.slice(0, rowLimit)
-  }, [assetId, getAsset, getData, omnipoolAsset, positions.data, tvl.data])
+  }, [assetId, getAsset, getData, omnipoolAsset, positions.data, getAssetPrice])
 
   return { isLoading, data }
 }
