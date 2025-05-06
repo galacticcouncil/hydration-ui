@@ -61,7 +61,7 @@ export const PieWrapper = ({
       >
         <PieTotalValue
           title={t("stats.pol.volume")}
-          data={BN(totalVolume).div(2).multipliedBy(POLMultiplier).toString()}
+          data={BN(totalVolume).multipliedBy(POLMultiplier).toString()}
           isLoading={isLoading}
         />
       </div>

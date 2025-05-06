@@ -961,7 +961,7 @@
   "staking.dashboard.rewards.legend.current": "Current rewards",
   "staking.dashboard.rewards.legend.increase": "Rewards after increased staking",
   "staking.dashboard.rewards.legend.future": "Rewards after voting",
-  "staking.dashboard.rewards.legend.tooltip": "You have to vote max conviction with whole staking position",
+  "staking.dashboard.rewards.legend.tooltip": "You have to vote max conviction with whole staking position.<br /> Your rewards will be updated when referenda which you voted for will be Approved.",
   "staking.dashboard.graph.axisY": "Payable Percentage",
   "staking.dashboard.graph.axisX": "Days",
   "staking.dashboard.rewards.button": "Claim",
