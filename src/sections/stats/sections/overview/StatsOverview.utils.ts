@@ -95,7 +95,7 @@ export const useStatsOverviewChartData = (
 }
 
 const useStableswapTotalTvl = () => {
-  const { stableswap } = useAssets()
+  const { stableswap, getAssetWithFallback } = useAssets()
   const stableswapIds = stableswap.map(prop("id"))
   const { data: omnipoolAssets = [], isLoading } = useOmnipoolDataObserver()
 
@@ -113,13 +113,13 @@ const useStableswapTotalTvl = () => {
     return filteredOmnipoolAssets.reduce((prev, asset) => {
       const tvl = asset.balance
       const spotPrice = getAssetPrice(asset.id).price
+      const meta = getAssetWithFallback(asset.id)
 
-      const displayTvl = BN(tvl).times(spotPrice)
-      prev.plus(displayTvl)
+      const displayTvl = BN(tvl).times(spotPrice).shiftedBy(-meta.decimals)
 
-      return prev
+      return prev.plus(displayTvl)
     }, BN_0)
-  }, [filteredOmnipoolAssets, getAssetPrice])
+  }, [filteredOmnipoolAssets, getAssetPrice, getAssetWithFallback])
 
   return {
     tvl: totalTvl,
