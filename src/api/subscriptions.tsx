@@ -10,6 +10,7 @@ import { usePriceSubscriber } from "./spotPrice"
 import { useProviderMetadata } from "./provider"
 import { useOmnipoolVolumeSubscription } from "./omnipool"
 import { useActiveQueries } from "hooks/useActiveQueries"
+import { useXYKVolumeSubscription } from "./volume"
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
@@ -26,6 +27,7 @@ export const QuerySubscriptions = () => {
       <OmnipoolAssetsSubscription />
       <ExternalAssetsMetadata />
       <OmnipoolVolumes />
+      <XYKVolumes />
     </>
   )
 }
@@ -78,10 +80,17 @@ const OmnipoolVolumes = () => {
     ...QUERY_KEYS.omnipoolSquidVolumes,
   ])
 
-  return activeQueriesAmount > 0 ? <OmnipoolVolumeSubscription /> : null
+  return activeQueriesAmount ? <OmnipoolVolumeSubscription /> : null
 }
 
 const OmnipoolVolumeSubscription = () => {
   useOmnipoolVolumeSubscription()
+  return null
+}
+
+const XYKVolumes = () => {
+  //const activeQueriesAmount = useActiveQueries(["xykSquidVolumes"])
+  useXYKVolumeSubscription()
+
   return null
 }

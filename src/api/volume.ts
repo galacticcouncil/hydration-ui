@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { gql, request } from "graphql-request"
 import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useIndexerUrl, useSquidUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl, useSquidWSClient } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -14,6 +14,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { groupBy } from "utils/rx"
 import { useOmnipoolIds } from "state/store"
 import { useShallow } from "hooks/useShallow"
+import { useEffect } from "react"
 
 export type TradeType = {
   name:
@@ -66,6 +67,18 @@ export type OmnipoolQuery = {
     nodes: {
       assetId: number
       assetVolume: string
+    }[]
+  }
+}
+
+export type XYKQuery = {
+  xykpoolHistoricalVolumesByPeriod: {
+    nodes: {
+      poolId: string
+      assetAId: number
+      assetAVolume: string
+      assetBId: number
+      assetBVolume: string
     }[]
   }
 }
@@ -355,17 +368,7 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
         u8aToHex(decodeAddress(address)),
       )
 
-      const { xykpoolHistoricalVolumesByPeriod } = await request<{
-        xykpoolHistoricalVolumesByPeriod: {
-          nodes: {
-            poolId: string
-            assetAId: number
-            assetAVolume: string
-            assetBId: number
-            assetBVolume: string
-          }[]
-        }
-      }>(
+      const { xykpoolHistoricalVolumesByPeriod } = await request<XYKQuery>(
         url,
         gql`
           query XykVolume($poolIds: [String!]!) {
@@ -500,4 +503,73 @@ export const useStablepoolVolumes = (ids: string[]) => {
       staleTime: millisecondsInHour,
     },
   )
+}
+
+export const useXYKVolumeSubscription = () => {
+  const squidWSClient = useSquidWSClient()
+  const queryClient = useQueryClient()
+
+  const queryKey = queryClient
+    .getQueriesData({
+      queryKey: ["xykSquidVolumes"],
+      predicate: (query) => query.getObserversCount() > 0,
+    })
+    .map(([queryKey, _]) => queryKey)?.[0]?.[1] as string | undefined
+
+  const poolIds = queryKey?.split(",")
+
+  console.log({ poolIds })
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined
+
+    if (poolIds?.length) {
+      unsubscribe = squidWSClient.subscribe<XYKQuery>(
+        {
+          query: `
+            subscription {
+              xykpoolHistoricalVolumesByPeriod(
+                filter: {poolIds: ${JSON.stringify(poolIds)}, period: _24H_}
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
+              }
+            }
+          `,
+        },
+        {
+          next: (data) => {
+            const changedVolumes =
+              data.data?.xykpoolHistoricalVolumesByPeriod?.nodes.map(
+                (node) => node,
+              )
+            console.log({ changedVolumes })
+            // const prevData = queryClient.getQueryData<OmnipoolVolume[]>(
+            //   QUERY_KEYS.omnipoolSquidVolumes,
+            // )
+
+            // const newData = prevData?.map((asset) => {
+            //   const changedVolume = changedVolumes?.find(
+            //     (changedVolume) => changedVolume.assetId === asset.assetId,
+            //   )
+
+            //   return changedVolume ?? asset
+            // })
+
+            // queryClient.setQueryData(QUERY_KEYS.omnipoolSquidVolumes, newData)
+          },
+          error: (error) => {
+            console.error("error", error)
+          },
+          complete: () => {},
+        },
+      )
+    }
+
+    return () => unsubscribe?.()
+  }, [poolIds, queryClient, squidWSClient])
+
+  return null
 }

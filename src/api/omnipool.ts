@@ -12,11 +12,10 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
 import { useEffect, useMemo } from "react"
-import { createClient } from "graphql-ws"
 import { useOmnipoolIds } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { OmnipoolQuery, OmnipoolVolume } from "./volume"
-import { useSquidUrl } from "./provider"
+import { useSquidWSClient } from "./provider"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -159,15 +158,6 @@ export const getTradabilityFromBits = (bits: number) => {
   const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
 
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
-}
-
-const useSquidWSClient = () => {
-  const url = useSquidUrl()
-
-  return createClient({
-    webSocketImpl: WebSocket,
-    url,
-  })
 }
 
 export const useOmnipoolVolumeSubscription = () => {
