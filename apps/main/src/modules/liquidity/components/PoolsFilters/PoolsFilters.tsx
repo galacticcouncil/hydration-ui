@@ -3,7 +3,8 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 
-import { PoolTypeTabs, SearchInput } from "@/modules/liquidity/components"
+import { PoolTypeTabs } from "@/modules/liquidity/components/PoolsTypeTabs"
+import { SearchInput } from "@/modules/liquidity/components/SearchInput"
 
 type PoolsFiltersProps = {
   onChange: (value: string) => void

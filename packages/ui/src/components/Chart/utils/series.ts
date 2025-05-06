@@ -3,6 +3,7 @@ import { BaseAxisProps } from "recharts/types/util/types"
 import { first, isArray, isNumber, isObjectType, isString } from "remeda"
 
 import {
+  AxisLabelCssProps,
   ChartConfig,
   ChartSeriesType,
   TChartData,
@@ -118,7 +119,8 @@ export const getBarSeriesBorderRadius = (
 
 export const getAxisLabelProps = (
   config: BaseAxisProps["label"],
-  isVerticalLayout = false,
+  isVerticalLayout: boolean,
+  labelProps?: AxisLabelCssProps,
 ) => {
   if (!config) return
 
@@ -128,6 +130,7 @@ export const getAxisLabelProps = (
     dy: isVerticalLayout ? 35 : 3,
     dx: isVerticalLayout ? 35 : 0,
     fontSize: 12,
+    ...labelProps,
   }
 
   if (isString(config) || isNumber(config)) {

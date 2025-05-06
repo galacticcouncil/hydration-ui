@@ -5,7 +5,6 @@ import {
   ProgressBarSize,
 } from "@/components/ProgressBar/ProgressBar"
 import { createVariants, css } from "@/utils"
-
 const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
   small: css`
     gap: 12px;
@@ -22,7 +21,7 @@ const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
     }
 
     & ${SProgressBarLabel} {
-      font-weight: 400px;
+      font-weight: 400;
       line-height: 1;
     }
   `,
@@ -36,7 +35,7 @@ const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
     }
 
     & ${SProgressBarLabel} {
-      font-weight: 400px;
+      font-weight: 400;
       line-height: 16.9px;
     }
   `,
@@ -68,7 +67,9 @@ export const SProgressBar = styled.div(
   `,
 )
 
-export const SProgressBarFill = styled.div<{ readonly value: number }>(
+export const SProgressBarFill = styled.div<{
+  readonly value: number
+}>(
   ({ theme, value }) => css`
     position: absolute;
     top: 0;

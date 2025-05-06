@@ -16,6 +16,7 @@ import { create } from "zustand"
 import { useShallow } from "zustand/shallow"
 
 import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
+import { TAssetData } from "@/api/assets"
 import { omnipoolTokens, TOmnipoolAssetsData } from "@/api/pools"
 import {
   IsolatedPoolTable,
@@ -71,6 +72,26 @@ export const getLiquidityOutParams = (
   ]
 }
 
+export type OmnipoolPositionData = {
+  currentValue: string
+  currentValueHuman: string
+  currentDisplay: string
+
+  currentHubValue: string
+  currentHubValueHuman: string
+  currentHubDisplay: string
+
+  currentTotalValue: string
+  currentTotalValueHuman: string
+  currentTotalDisplay: string
+
+  initialValue: string
+  initialValueHuman: string
+  initialDisplay: string
+
+  meta: TAssetData
+}
+
 export const useOmnipoolPositionData = (
   enabled: boolean | undefined = true,
 ) => {
@@ -87,7 +108,9 @@ export const useOmnipoolPositionData = (
   const isLoading = isPriceLoading || isOmnipoolTokensLoading
 
   const getData = useCallback(
-    (position: OmnipoolPosition | OmnipoolDepositFull) => {
+    (
+      position: OmnipoolPosition | OmnipoolDepositFull,
+    ): OmnipoolPositionData | undefined => {
       const price = getAssetPrice(position.assetId).price
       const meta = getAssetWithFallback(position.assetId)
       const omnipoolData = omnipoolTokensData.find(

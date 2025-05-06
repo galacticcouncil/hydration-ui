@@ -20,6 +20,8 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 import { scale, scaleHuman } from "@/utils/formatting"
 
+import { CurrencyReserves } from "./CurrencyReserves"
+
 export const PoolDetailsValues = ({
   data,
 }: {
@@ -95,6 +97,8 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         label={t("liquidity:details.values.omnipoolShare")}
         value={t("percent", { value: 10 })}
       />
+
+      {data.isStablePool && <CurrencyReserves id={data.id} />}
     </>
   )
 }

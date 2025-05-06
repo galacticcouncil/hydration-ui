@@ -11,6 +11,7 @@ export type ButtonVariant =
   | "danger"
   | "emphasis"
   | "accent"
+  | "success"
 
 export type MicroButtonVariant = "low" | "emphasis"
 
@@ -101,7 +102,7 @@ const disabledStyles = css`
   }
 `
 
-const variants = createVariants(({ buttons }) => ({
+const variants = createVariants(({ buttons, accents }) => ({
   primary: variantStyles(
     buttons.primary.high.onButton,
     buttons.primary.high.rest,
@@ -131,6 +132,11 @@ const variants = createVariants(({ buttons }) => ({
     buttons.primary.high.onButton,
     buttons.secondary.accent.onRest,
     buttons.secondary.accent.outline,
+  ),
+  success: variantStyles(
+    accents.success.onEmphasis,
+    accents.success.emphasis,
+    accents.success.dim,
   ),
 }))
 
@@ -186,6 +192,12 @@ const outlineVariants = createVariants((theme) => ({
     theme.buttons.secondary.accent.onRest,
     theme.buttons.secondary.accent.rest,
     theme.buttons.secondary.accent.hover,
+  ),
+  success: outlineVariantStyles(
+    theme.accents.success.onEmphasis,
+    theme.accents.success.emphasis,
+    theme.accents.success.emphasis,
+    theme.accents.success.emphasis,
   ),
 }))
 
