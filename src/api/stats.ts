@@ -21,6 +21,7 @@ import {
 } from "graphql/__generated__/squid/graphql"
 import { useSquidUrl } from "api/provider"
 import request from "graphql-request"
+import { z } from "zod"
 
 export type StatsData = {
   timestamp: string
@@ -109,6 +110,15 @@ const getTVL = async (assetId?: string) => {
   return data
 }
 
+const feeItemSchema = z.object({
+  asset_id: z.number(),
+  accrued_fees_usd: z.number(),
+  projected_apy_perc: z.number(),
+  projected_apr_perc: z.number(),
+})
+
+const feeResponseSchema = z.array(feeItemSchema)
+
 export const useFee = (assetId?: string | "all") => {
   return useQuery(
     QUERY_KEYS.fee(assetId),
@@ -117,10 +127,11 @@ export const useFee = (assetId?: string | "all") => {
           const asset_id = assetId === "all" ? undefined : assetId
           const data = await geFee(asset_id)
 
-          return data
+          return feeResponseSchema.parse(data)
         }
       : undefinedNoop,
     {
+      retry: 0,
       enabled: !!assetId,
     },
   )
