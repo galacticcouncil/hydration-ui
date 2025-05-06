@@ -1,15 +1,15 @@
 import { useXYKSquidVolumes } from "api/volume"
 import { useMemo } from "react"
-import { TShareToken, useAssets } from "providers/assets"
+import { useAssets } from "providers/assets"
 import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
 import { useAssetsPrice } from "state/displayPrice"
 
-export const useXYKPoolTradeVolumes = (shareTokens: TShareToken[]) => {
+export const useXYKPoolTradeVolumes = () => {
   const { getAssetWithFallback } = useAssets()
 
   const { data: volumes = [], isLoading: isVolumesLoading } =
-    useXYKSquidVolumes(shareTokens.map((shareToken) => shareToken.poolAddress))
+    useXYKSquidVolumes()
 
   const allAssetsInPools = [...new Set(volumes.map((volume) => volume.assetId))]
   const { getAssetPrice, isLoading: isLoadingPrices } =

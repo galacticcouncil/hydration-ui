@@ -89,8 +89,12 @@ const OmnipoolVolumeSubscription = () => {
 }
 
 const XYKVolumes = () => {
-  //const activeQueriesAmount = useActiveQueries(["xykSquidVolumes"])
-  useXYKVolumeSubscription()
+  const activeQueriesAmount = useActiveQueries(["xykSquidVolumes"])
 
+  return activeQueriesAmount ? <XYKVolumeSubscription /> : null
+}
+
+const XYKVolumeSubscription = () => {
+  useXYKVolumeSubscription()
   return null
 }

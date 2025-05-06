@@ -10,12 +10,15 @@ import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
-import { setOmnipoolIds } from "state/store"
+import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
+import { useExternalWhitelist } from "./external"
 
 export const useSDKPools = () => {
   const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
   const activeQueriesAmount = useActiveQueries(["pools"])
+  const { data: whitelist, isSuccess: isWhitelistLoaded } =
+    useExternalWhitelist()
 
   return useQuery({
     queryKey: [...QUERY_KEYS.allPools, timestamp],
@@ -80,9 +83,19 @@ export const useSDKPools = () => {
 
       setOmnipoolIds(tokens.map((token) => token.id))
 
+      setValidXYKPoolAddresses(
+        xykPools
+          .filter((pool) =>
+            pool.tokens.some(
+              (asset) => asset.isSufficient || whitelist?.includes(asset.id),
+            ),
+          )
+          .map((pool) => pool.address),
+      )
+
       return false
     },
-    enabled: isLoaded && !!activeQueriesAmount,
+    enabled: isLoaded && !!activeQueriesAmount && isWhitelistLoaded,
     staleTime: millisecondsInMinute,
   })
 }
