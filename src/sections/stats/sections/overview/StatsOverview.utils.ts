@@ -154,9 +154,7 @@ export const useStatsOverviewTotals = () => {
   const totals = useMemo(() => {
     if (isLoading) return null
 
-    const volume24h = BN(xyk.volume)
-      .plus(BN(omnipools.volume).div(2))
-      .toString()
+    const volume24h = BN(xyk.volume).plus(BN(omnipools.volume)).toString()
 
     const hydrationTvl = BN(omnipools.tvl)
       .plus(stablepools.tvl)
