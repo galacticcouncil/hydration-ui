@@ -1,25 +1,26 @@
-import { Flex } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
+import { SLiquidityDetailExpandedContainer } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded.styled"
 import { LiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition"
-import { WalletLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
+import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly assetId: string
-  readonly positions: ReadonlyArray<WalletLiquidityPosition>
+  readonly asset: TAsset
+  readonly positions: ReadonlyArray<MyLiquidityPosition>
 }
 
-export const LiquidityDetailExpanded: FC<Props> = ({ assetId, positions }) => {
+export const LiquidityDetailExpanded: FC<Props> = ({ asset, positions }) => {
   return (
-    <Flex direction="column" gap={8}>
+    <SLiquidityDetailExpandedContainer>
       {positions.map((position, index) => (
         <LiquidityPosition
           key={index}
-          assetId={assetId}
+          asset={asset}
           number={index + 1}
           position={position}
         />
       ))}
-    </Flex>
+    </SLiquidityDetailExpandedContainer>
   )
 }

@@ -8,72 +8,10 @@ import { FC } from "react"
 
 import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
 import {
+  MyLiquidityTableColumnId,
   useMyLiquidityColumns,
-  WalletLiquidityRow as MyLiquidityRow,
 } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
-
-const data: MyLiquidityRow[] = [
-  {
-    assetId: "1",
-    positions: [
-      {
-        name: "USDC/USDT",
-        initialValue: 1000,
-        currentValue: 1000,
-        rewards: 10,
-      },
-      {
-        name: "USDC/USDT",
-        initialValue: 1000,
-        currentValue: 1000,
-        rewards: 10,
-      },
-    ],
-    currentValue: {
-      balance: 2855.24,
-      asset1Id: "0",
-      asset1Amount: "152000000000000",
-      asset2Id: "2",
-      asset2Amount: "200000000000000000000",
-    },
-  },
-  {
-    assetId: "2",
-    positions: [
-      {
-        name: "USDC/USDT",
-        initialValue: 1000,
-        currentValue: 1000,
-        rewards: 10,
-      },
-    ],
-    currentValue: {
-      balance: 2855.24,
-      asset1Id: "0",
-      asset1Amount: "152000000000000",
-      asset2Id: "2",
-      asset2Amount: "200000000000000000000",
-    },
-  },
-  {
-    assetId: "3",
-    positions: [
-      {
-        name: "USDC/USDT",
-        initialValue: 1000,
-        currentValue: 1000,
-        rewards: 5.24,
-      },
-    ],
-    currentValue: {
-      balance: 2855.24,
-      asset1Id: "0",
-      asset1Amount: "152000000000000",
-      asset2Id: "2",
-      asset2Amount: "200000000000000000000",
-    },
-  },
-]
+import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
 type Props = {
   readonly searchPhrase: string
@@ -83,6 +21,8 @@ export const MyLiquidityTable: FC<Props> = ({ searchPhrase }) => {
   const { isMobile } = useBreakpoints()
   const columns = useMyLiquidityColumns()
 
+  const { data, isLoading } = useMyLiquidityTableData()
+
   return (
     <TableContainer as={Paper}>
       <DataTable
@@ -90,13 +30,23 @@ export const MyLiquidityTable: FC<Props> = ({ searchPhrase }) => {
         columns={columns}
         paginated
         pageSize={10}
+        isLoading={isLoading}
+        initialSorting={[
+          { id: MyLiquidityTableColumnId.CurrentValue, desc: true },
+        ]}
         globalFilter={searchPhrase}
-        expandable={!isMobile}
-        renderSubComponent={(asset) => (
-          <LiquidityDetailExpanded
-            assetId={asset.assetId}
-            positions={asset.positions}
-          />
+        globalFilterFn={(row) =>
+          row.original.asset.symbol
+            .toLowerCase()
+            .includes(searchPhrase.toLowerCase()) ||
+          row.original.asset.name
+            .toLowerCase()
+            .includes(searchPhrase.toLowerCase())
+        }
+        expandable={isMobile ? false : "single"}
+        getIsExpandable={({ positions }) => positions.length > 1}
+        renderSubComponent={({ asset, positions }) => (
+          <LiquidityDetailExpanded asset={asset} positions={positions} />
         )}
       />
     </TableContainer>
