@@ -1,9 +1,8 @@
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { FC } from "react"
 
-import { Identicon } from "@/assets/icons"
+import { AccountAvatar } from "@/components/AccountAvatar"
 import { Flex } from "@/components/Flex"
-import { Icon } from "@/components/Icon"
 import { Text } from "@/components/Text"
 import { getToken, getTokenPx, px } from "@/utils"
 
@@ -40,7 +39,7 @@ export const AccountTile: FC<Props> = ({
         className={className}
         onClick={onClick}
       >
-        <Icon component={Identicon} size={32} />
+        <AccountAvatar address={address} />
         <Flex direction="column" gap={4}>
           <Flex gap={4}>
             {/* TODO blockchain icon */}

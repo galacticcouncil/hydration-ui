@@ -1,4 +1,4 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { AccountAvatar, Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 
@@ -6,6 +6,7 @@ import { SAccountItem } from "@/components/Web3ConnectAccount.styled"
 import { Web3WalletLogo } from "@/components/Web3WalletLogo"
 import { useAccount } from "@/hooks/useAccount"
 import { Account } from "@/hooks/useWeb3Connect"
+import { getAccountAvatarTheme } from "@/utils"
 import { getWallet } from "@/wallets"
 
 export type Web3ConnectAccountProps = Account & {
@@ -33,10 +34,20 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
       onClick={() => onSelect?.(account)}
     >
       <Flex align="center" gap={12}>
-        {wallet && <Web3WalletLogo wallet={wallet} />}
-        <Flex direction="column">
-          <Text fs={14}>{account.name}</Text>
-          <Text fs={13} color={getToken("text.medium")}>
+        <Box sx={{ flexShrink: 0 }}>
+          <AccountAvatar
+            address={account.displayAddress}
+            theme={getAccountAvatarTheme(account)}
+          />
+        </Box>
+        <Flex direction="column" sx={{ minWidth: 0 }}>
+          <Flex align="center" gap={4}>
+            {wallet && <Web3WalletLogo size={12} wallet={wallet} />}
+            <Text fs="p3" truncate>
+              {account.name}
+            </Text>
+          </Flex>
+          <Text fs="p4" color={getToken("text.medium")}>
             <Text as="span" display={["none", "block"]}>
               {account.displayAddress}
             </Text>

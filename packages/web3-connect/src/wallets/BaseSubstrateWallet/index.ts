@@ -103,7 +103,10 @@ export class BaseSubstrateWallet implements Wallet {
         this,
       )
     }
-    return this._extension.getAccounts()
+    const accounts = this._extension.getAccounts()
+    // @ts-expect-error Papi types dont expect ethereum accounts from substrate wallets,
+    // but it can happen in Talisman or SubWallet
+    return accounts.filter(({ type }) => type !== "ethereum")
   }
 
   getAccounts = async (): Promise<WalletAccount[]> => {

@@ -1,10 +1,3 @@
-#root,
-body,
-html {
-  height: 100%;
-  width: 100%;
-}
-
 html.dark body {
   background: #030816;
   color: #fff;
