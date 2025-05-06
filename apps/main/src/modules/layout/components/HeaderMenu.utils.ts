@@ -56,10 +56,6 @@ export const useMenuTranslations = () => {
           title: t("navigation.walletTransactions.title"),
           description: "",
         },
-        walletVesting: {
-          title: t("navigation.walletVesting.title"),
-          description: "",
-        },
         crossChain: {
           title: t("navigation.crossChain.title"),
           description: "",

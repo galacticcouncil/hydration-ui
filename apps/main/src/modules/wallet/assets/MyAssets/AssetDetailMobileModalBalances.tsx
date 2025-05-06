@@ -1,90 +1,48 @@
-import { Amount, Grid } from "@galacticcouncil/ui/components"
+import { Amount } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components"
-import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal.styled"
-import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
+import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly assetId: string
+  readonly reserved: string
+  readonly reservedDca: string
 }
 
-export const AssetDetailMobileModalBalances: FC<Props> = ({ assetId }) => {
+export const AssetDetailMobileModalBalances: FC<Props> = ({
+  assetId,
+  reserved,
+  reservedDca,
+}) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
-  const balance = 2855.24566
-  const [balanceDisplayPrice] = useDisplayAssetPrice(asset.id, balance)
+  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, reserved)
+  const [reservedDcaDisplayPrice] = useDisplayAssetPrice(asset.id, reservedDca)
 
   return (
     <>
       <Amount
         variant="horizontalLabel"
-        label={t("myAssets.expandedNative.transferableAmount")}
+        label={t("myAssets.expandedAsset.reserved")}
         value={t("common:number", {
-          value: balance,
+          value: reserved,
         })}
-        displayValue={balanceDisplayPrice}
+        displayValue={reservedDisplayPrice}
       />
       <SAssetDetailMobileSeparator />
       <Amount
         variant="horizontalLabel"
-        label={t("myAssets.expandedNative.borrowedAmount")}
+        label={t("myAssets.expandedAsset.reservedDca")}
         value={t("common:number", {
-          value: balance,
+          value: reservedDca,
         })}
-        displayValue={balanceDisplayPrice}
-      />
-      <SAssetDetailMobileSeparator />
-      <Amount
-        variant="horizontalLabel"
-        label={t("myAssets.expandedNative.lockedInStaking")}
-        value={t("common:number", {
-          value: balance,
-        })}
-        displayValue={balanceDisplayPrice}
-      />
-      <SAssetDetailMobileSeparator />
-      <Grid
-        sx={{
-          gridTemplateRows: "auto auto",
-          gridTemplateColumns: "1fr auto",
-          "& > :nth-child(1)": { gridColumn: "1/-1" },
-          "& > :nth-child(2)": { gridColumn: 2 },
-        }}
-        rowGap={8}
-      >
-        <Amount
-          variant="horizontalLabel"
-          label={t("myAssets.expandedNative.unlockable")}
-          value={t("common:number", {
-            value: balance,
-          })}
-          displayValue={balanceDisplayPrice}
-        />
-        <AssetDetailUnlock />
-      </Grid>
-      <SAssetDetailMobileSeparator />
-      <Amount
-        variant="horizontalLabel"
-        label={t("myAssets.expandedNative.lockedInDemocracy")}
-        value={t("common:number", {
-          value: balance,
-        })}
-        displayValue={balanceDisplayPrice}
-      />
-      <SAssetDetailMobileSeparator />
-      <Amount
-        variant="horizontalLabel"
-        label={t("myAssets.expandedNative.lockedInVesting")}
-        value={t("common:number", {
-          value: balance,
-        })}
-        displayValue={balanceDisplayPrice}
+        displayValue={reservedDcaDisplayPrice}
       />
     </>
   )

@@ -16,6 +16,7 @@ export type TransactionMock = {
   readonly addressTo: string
 }
 
+// TODO integrate
 export const walletTransactionsQuery = (
   type: ReadonlyArray<TransactionTypeMock> | undefined,
 ) =>

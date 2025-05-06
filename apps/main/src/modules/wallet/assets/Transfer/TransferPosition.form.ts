@@ -39,29 +39,23 @@ const useSchema = () => {
 
 export type TransferPositionFormValues = z.infer<ReturnType<typeof useSchema>>
 
-export type TransferPosition = {
-  readonly assetId: string
-  readonly amount: string
-}
-
 type Props = {
-  readonly position?: TransferPosition
+  readonly assetId?: string
 }
 
 export const useTransferPositionForm = (props?: Props) => {
   const { getAsset } = useAssets()
-  const asset = props?.position?.assetId && getAsset(props?.position?.assetId)
+  const asset = props?.assetId ? (getAsset(props?.assetId) ?? null) : null
 
   const defaultValues: TransferPositionFormValues = {
     address: "",
-    asset: asset || null,
-    amount: props?.position?.amount || "",
+    asset: asset,
+    amount: "",
   }
 
   return useForm<TransferPositionFormValues>({
     mode: "onChange",
     defaultValues,
     resolver: zodResolver(useSchema()),
-    disabled: !!props?.position,
   })
 }

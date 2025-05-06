@@ -58,6 +58,7 @@ export enum AssetType {
   STABLESWAP = "StableSwap",
   ERC20 = "Erc20",
   External = "External",
+  Unknown = "Unknown",
 }
 
 export enum AssetEcosystem {
@@ -67,7 +68,6 @@ export enum AssetEcosystem {
 
 type TCommonAssetData = {
   id: string
-  type: AssetType
   existentialDeposit: string
   symbol: string
   decimals: number
@@ -77,6 +77,7 @@ type TCommonAssetData = {
 }
 
 export type TToken = TCommonAssetData & {
+  type: AssetType.TOKEN
   iconSrc?: string
   srcChain?: string
   parachainId?: string
@@ -84,23 +85,38 @@ export type TToken = TCommonAssetData & {
 }
 
 export type TErc20 = TCommonAssetData & {
+  type: AssetType.ERC20
   underlyingAssetId?: string
 }
 
 export type TBond = TCommonAssetData & {
+  type: AssetType.BOND
   underlyingAssetId: string
   maturity: number
 }
 
 export type TStableswap = TCommonAssetData & {
+  type: AssetType.STABLESWAP
   underlyingAssetId?: string[]
 }
 
 export type TExternal = TCommonAssetData & {
+  type: AssetType.External
   externalId?: string
+  parachainId?: string
 }
 
-export type TAssetData = TToken | TErc20 | TBond | TStableswap | TExternal
+export type TUnknown = TCommonAssetData & {
+  type: AssetType.Unknown
+}
+
+export type TAssetData =
+  | TToken
+  | TErc20
+  | TBond
+  | TStableswap
+  | TExternal
+  | TUnknown
 
 const BASE_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
@@ -142,7 +158,6 @@ export const assetsQuery = (data: TProviderContext) => {
 
             const commonAssetData: TCommonAssetData = {
               id: asset.id,
-              type: asset.type as AssetType,
               existentialDeposit: asset.existentialDeposit,
               symbol: asset.symbol ?? "",
               decimals: asset.decimals ?? 0,
@@ -177,6 +192,7 @@ export const assetsQuery = (data: TProviderContext) => {
 
                 return {
                   ...commonAssetData,
+                  type: AssetType.TOKEN,
                   ecosystem,
                   ...(iconSrc ? { iconSrc } : {}),
                   ...(parachainId ? { parachainId } : {}),
@@ -190,6 +206,7 @@ export const assetsQuery = (data: TProviderContext) => {
 
                 const assetData: TToken = {
                   ...commonAssetData,
+                  type: AssetType.TOKEN,
                   ecosystem,
                   ...(iconSrc ? { iconSrc } : {}),
                   ...(parachainId ? { parachainId } : {}),
@@ -201,6 +218,7 @@ export const assetsQuery = (data: TProviderContext) => {
 
               const assetData: TErc20 = {
                 ...commonAssetData,
+                type: AssetType.ERC20,
                 ...(underlyingAssetId ? { underlyingAssetId } : {}),
               }
 
@@ -211,6 +229,7 @@ export const assetsQuery = (data: TProviderContext) => {
 
               const assetData: TBond = {
                 ...commonAssetData,
+                type: AssetType.BOND,
                 underlyingAssetId,
                 maturity,
               }
@@ -223,21 +242,31 @@ export const assetsQuery = (data: TProviderContext) => {
 
               const assetData: TStableswap = {
                 ...commonAssetData,
+                type: AssetType.STABLESWAP,
                 underlyingAssetId,
               }
 
               return assetData
             } else if (asset.type === AssetType.External) {
               const externalId = getExternalId(asset)
+              parachainId = findNestedKey(
+                asset.location,
+                "parachain",
+              )?.parachain.toString()
 
               const assetData: TExternal = {
                 ...commonAssetData,
+                type: AssetType.External,
                 ...(externalId ? { externalId } : {}),
+                ...(parachainId ? { parachainId } : {}),
               }
 
               return assetData
             } else {
-              return commonAssetData
+              return {
+                ...commonAssetData,
+                type: AssetType.Unknown,
+              }
             }
           })
           console.log({ syncData })
