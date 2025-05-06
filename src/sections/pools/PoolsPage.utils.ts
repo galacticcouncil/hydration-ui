@@ -93,9 +93,7 @@ const useStablepools = () => {
       : "",
   )
 
-  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes(
-    filteredStablepools.map((filteredStablepool) => filteredStablepool.id),
-  )
+  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes()
 
   const isLoading = isPoolsLoading || isLoadingPrices
 
