@@ -274,7 +274,6 @@ export const QUERY_KEYS = {
     address,
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
-  tvl: (assetId?: string) => ["tvl", assetId],
   identity: (address?: string) => ["identity", address],
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],

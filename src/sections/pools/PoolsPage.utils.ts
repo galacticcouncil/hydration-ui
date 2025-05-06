@@ -11,10 +11,7 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   VALID_STABLEPOOLS,
 } from "utils/constants"
-import {
-  useDisplayAssetStore,
-  useDisplayShareTokenPrice,
-} from "utils/displayAsset"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStableSDKPools, useStableswapPool } from "api/stableswap"
 import { XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
@@ -23,7 +20,6 @@ import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { useFee } from "api/stats"
-import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
 import { useAccountAssets } from "api/deposits"
 import { TShareToken, useAssets } from "providers/assets"
@@ -194,7 +190,6 @@ const useStablepools = () => {
 
 export const usePools = () => {
   const { native, getAssetWithFallback } = useAssets()
-  const { stableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
@@ -209,12 +204,9 @@ export const usePools = () => {
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
 
-  const { isLoading, getAssetPrice } = useAssetsPrice(
-    stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
-  )
+  const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  const { data: fees, isInitialLoading: isFeeLoading } = useFee("all")
-  const { data: tvls } = useTVL("all")
+  const { data: fees, isLoading: isFeeLoading } = useFee("all")
 
   const { data: volumes, isLoading: isVolumeLoading } = useOmnipoolVolumes()
 
@@ -231,14 +223,9 @@ export const usePools = () => {
       const spotPrice = getAssetPrice(asset.id).price
       const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
-      const apiSpotPrice = stableCoinId
-        ? getAssetPrice(stableCoinId).price
-        : undefined
-
-      const tvlDisplay = BN(
-        tvls?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
-          BN_NAN,
-      ).multipliedBy(apiSpotPrice ?? 1)
+      const tvlDisplay = BN(asset.balance)
+        .times(spotPrice)
+        .shiftedBy(-meta.decimals)
 
       const volumeRaw = volumes?.find(
         (volume) => volume.assetId === asset.id,
@@ -299,10 +286,8 @@ export const usePools = () => {
     return rows
   }, [
     omnipoolAssets.data,
-    tvls,
     native.id,
     accountAssets,
-    stableCoinId,
     getAssetWithFallback,
     allFarms,
     isAllFarmsLoading,
