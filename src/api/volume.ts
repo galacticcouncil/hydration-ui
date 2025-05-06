@@ -4,7 +4,7 @@ import { gql, request } from "graphql-request"
 import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, VALID_STABLEPOOLS } from "utils/constants"
 import { useIndexerUrl, useSquidUrl, useSquidWSClient } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
@@ -78,6 +78,26 @@ export type XYKQuery = {
       assetAVolume: string
       assetBId: number
       assetBVolume: string
+    }[]
+  }
+}
+
+export type StablepoolVolume = {
+  poolId: string
+  volumes: Array<{
+    assetId: string
+    assetVolume: string
+  }>
+}
+
+export type StablepoolQuery = {
+  stableswapHistoricalVolumesByPeriod: {
+    nodes: {
+      poolId: any
+      assetVolumes: Array<{
+        assetRegistryId: string
+        swapVolume: string
+      }>
     }[]
   }
 }
@@ -457,46 +477,37 @@ export const useOmnipoolVolumes = () => {
   )
 }
 
-export const useStablepoolVolumes = (ids: string[]) => {
+export const useStablepoolVolumes = () => {
   const url = useSquidUrl()
 
   return useQuery(
-    QUERY_KEYS.stablepoolsSquidVolumes(ids),
+    QUERY_KEYS.stablepoolsSquidVolumes,
 
     async () => {
-      const { stableswapHistoricalVolumesByPeriod } = await request<{
-        stableswapHistoricalVolumesByPeriod: {
-          nodes: {
-            poolId: any
-            assetVolumes: Array<{
-              assetRegistryId: string
-              swapVolume: string
-            }>
-          }[]
-        }
-      }>(
-        url,
-        gql`
-          query StablepoolVolume($poolIds: [String!]!) {
-            stableswapHistoricalVolumesByPeriod(
-              filter: { poolIds: $poolIds, period: _24H_ }
-            ) {
-              nodes {
-                poolId
-                assetVolumes {
-                  assetRegistryId
-                  swapVolume
+      const { stableswapHistoricalVolumesByPeriod } =
+        await request<StablepoolQuery>(
+          url,
+          gql`
+            query StablepoolVolume($poolIds: [String!]!) {
+              stableswapHistoricalVolumesByPeriod(
+                filter: { poolIds: $poolIds, period: _24H_ }
+              ) {
+                nodes {
+                  poolId
+                  assetVolumes {
+                    assetRegistryId
+                    swapVolume
+                  }
                 }
               }
             }
-          }
-        `,
-        { poolIds: ids },
-      )
+          `,
+          { poolIds: VALID_STABLEPOOLS },
+        )
 
       const { nodes = [] } = stableswapHistoricalVolumesByPeriod
 
-      return nodes.map((node) => {
+      return nodes.map((node): StablepoolVolume => {
         const volumes = node.assetVolumes.map(
           ({ assetRegistryId, swapVolume }) => ({
             assetId: assetRegistryId,
@@ -509,10 +520,77 @@ export const useStablepoolVolumes = (ids: string[]) => {
     },
 
     {
-      enabled: !!ids.length,
       staleTime: millisecondsInHour,
     },
   )
+}
+
+export const useStablepoolVolumeSubscription = () => {
+  const squidWSClient = useSquidWSClient()
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined
+
+    unsubscribe = squidWSClient.subscribe<StablepoolQuery>(
+      {
+        query: `
+            subscription {
+              stableswapHistoricalVolumesByPeriod(
+                filter: {poolIds: ${JSON.stringify(VALID_STABLEPOOLS)}, period: _24H_}
+              ) {
+                nodes {
+                  poolId
+                  assetVolumes {
+                    assetRegistryId
+                    swapVolume
+                  }
+                }
+              }
+            }
+          `,
+      },
+      {
+        next: (data) => {
+          const changedVolumes =
+            data.data?.stableswapHistoricalVolumesByPeriod?.nodes.map(
+              (node): StablepoolVolume => {
+                const volumes = node.assetVolumes.map(
+                  ({ assetRegistryId, swapVolume }) => ({
+                    assetId: assetRegistryId,
+                    assetVolume: swapVolume,
+                  }),
+                )
+
+                return { poolId: node.poolId, volumes }
+              },
+            )
+
+          const prevData = queryClient.getQueryData<StablepoolVolume[]>(
+            QUERY_KEYS.stablepoolsSquidVolumes,
+          )
+
+          const newData = prevData?.map((pool) => {
+            const changedVolume = changedVolumes?.find(
+              (changedVolume) => changedVolume.poolId === pool.poolId,
+            )
+
+            return changedVolume ?? pool
+          })
+
+          queryClient.setQueryData(QUERY_KEYS.stablepoolsSquidVolumes, newData)
+        },
+        error: (error) => {
+          console.error("error", error)
+        },
+        complete: () => {},
+      },
+    )
+
+    return () => unsubscribe?.()
+  }, [queryClient, squidWSClient])
+
+  return null
 }
 
 export const useXYKVolumeSubscription = () => {

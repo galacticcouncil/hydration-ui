@@ -151,11 +151,7 @@ export const QUERY_KEYS = {
     addresses.join(","),
   ],
   omnipoolSquidVolumes: ["omnipoolSquidVolumes"],
-  stablepoolsSquidVolumes: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "stablepoolsSquidVolumes",
-    ids.join(","),
-  ],
+  stablepoolsSquidVolumes: ["stablepoolsSquidVolumes"],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
     bestNumber != null
       ? ["timestamp", bestNumber]
