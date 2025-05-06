@@ -2,11 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import {
-  getReferendumInfoOf,
-  TAccountVote,
-  useAccountOpenGovVotes,
-} from "./democracy"
+import { TAccountVote, useAccountOpenGovVotes } from "./democracy"
 import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -154,22 +150,25 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   const createdAt: BN = positionData.createdAt.toBigNumber()
 
   const votes: Array<{
-    id: BN
+    id: string
     amount: BN
     conviction: string
     //@ts-ignore
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
     const prevAcc = await acc
-    const id = key.toBigNumber()
+    const id = key.toString()
     const amount = data.amount.toBigNumber()
     const conviction = data.conviction.toString()
 
-    const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.isNone
-      ? true
-      : referendaInfo.unwrap().isFinished
+    const referendaInfo = await api.query.referenda.referendumInfoFor(
+      id as string,
+    )
 
-    if (isFinished) {
+    const isApproved = referendaInfo.isNone
+      ? false
+      : referendaInfo.unwrap().isApproved
+
+    if (isApproved) {
       prevAcc.push({
         id,
         amount,
@@ -181,16 +180,15 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
 
   return {
-    stake: positionData.stake.toBigNumber() as BN,
-    rewardPerStake: positionData.rewardPerStake.toBigNumber() as BN,
+    stake: positionData.stake.toBigNumber(),
+    rewardPerStake: positionData.rewardPerStake.toBigNumber(),
     createdAt,
-    actionPoints: positionData.actionPoints.toBigNumber() as BN,
+    actionPoints: positionData.actionPoints.toBigNumber(),
     accumulatedUnpaidRewards:
-      positionData.accumulatedUnpaidRewards.toBigNumber() as BN,
-    accumulatedSlashPoints:
-      positionData.accumulatedSlashPoints.toBigNumber() as BN,
+      positionData.accumulatedUnpaidRewards.toBigNumber(),
+    accumulatedSlashPoints: positionData.accumulatedSlashPoints.toBigNumber(),
     accumulatedLockedRewards:
-      positionData.accumulatedLockedRewards.toBigNumber() as BN,
+      positionData.accumulatedLockedRewards.toBigNumber(),
     votes: votes,
   }
 }
