@@ -18,6 +18,7 @@ import { BondsPageSkeleton } from "sections/trade/sections/bonds/BondsPageSkelet
 import { SwapAppSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { SwapPageSkeleton } from "sections/trade/skeleton/SwapPageSkeleton"
 import { LINKS } from "utils/navigation"
+import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
 
 const isDevelopment = import.meta.env.VITE_ENV === "development"
 
@@ -57,6 +58,11 @@ const WalletTransactions = lazy(async () => ({
 
 const WalletAssets = lazy(async () => ({
   default: (await import("sections/wallet/assets/WalletAssets")).WalletAssets,
+}))
+
+const WalletStrategy = lazy(async () => ({
+  default: (await import("sections/wallet/strategy/WalletStrategy"))
+    .WalletStrategy,
 }))
 
 const WalletVesting = lazy(async () => ({
@@ -517,6 +523,23 @@ export const routes: Route[] = [
         <WithdrawPage />
       </Suspense>
     ),
+  },
+  {
+    path: LINKS.strategies,
+    children: [
+      {
+        path: "/",
+        element: <Navigate to="gigadot" />,
+      },
+      {
+        path: "gigadot",
+        element: (
+          <Suspense fallback={<WalletStrategySkeleton />}>
+            <WalletStrategy />
+          </Suspense>
+        ),
+      },
+    ],
   },
   {
     path: "*",

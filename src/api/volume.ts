@@ -5,7 +5,7 @@ import { normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
-import { useIndexerUrl } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
@@ -460,6 +460,64 @@ export const useOmnipoolVolumes = (ids: string[]) => {
 
     {
       enabled: isLoaded && !!ids.length,
+      staleTime: millisecondsInHour,
+    },
+  )
+}
+
+export const useStablepoolVolumes = (ids: string[]) => {
+  const url = useSquidUrl()
+
+  return useQuery(
+    QUERY_KEYS.stablepoolsSquidVolumes(ids),
+
+    async () => {
+      const { stableswapHistoricalVolumesByPeriod } = await request<{
+        stableswapHistoricalVolumesByPeriod: {
+          nodes: {
+            poolId: any
+            assetVolumes: Array<{
+              assetRegistryId: string
+              swapVolume: string
+            }>
+          }[]
+        }
+      }>(
+        url,
+        gql`
+          query StablepoolVolume($poolIds: [String!]!) {
+            stableswapHistoricalVolumesByPeriod(
+              filter: { poolIds: $poolIds, period: _24H_ }
+            ) {
+              nodes {
+                poolId
+                assetVolumes {
+                  assetRegistryId
+                  swapVolume
+                }
+              }
+            }
+          }
+        `,
+        { poolIds: ids },
+      )
+
+      const { nodes = [] } = stableswapHistoricalVolumesByPeriod
+
+      return nodes.map((node) => {
+        const volumes = node.assetVolumes.map(
+          ({ assetRegistryId, swapVolume }) => ({
+            assetId: assetRegistryId,
+            assetVolume: swapVolume,
+          }),
+        )
+
+        return { poolId: node.poolId, volumes }
+      })
+    },
+
+    {
+      enabled: !!ids.length,
       staleTime: millisecondsInHour,
     },
   )

@@ -12,11 +12,12 @@ import { useTranslation } from "react-i18next"
 import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
 import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
 import { AllAssets, Assets } from "./WalletSections"
+import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBanner/WalletStrategyBanner"
 
 export const WalletAssets = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { isLoaded } = useRpcProvider()
+  const { isLoaded, featureFlags } = useRpcProvider()
 
   const { category } = useWalletAssetsFilters()
 
@@ -26,10 +27,10 @@ export const WalletAssets = () => {
 
   if (!account)
     return (
-      <>
+      <div sx={{ flex: "column", gap: [24, 40] }}>
         <WalletAssetsHeader disconnected />
         <WalletAssetsTablePlaceholder />
-      </>
+      </div>
     )
 
   let section
@@ -38,7 +39,7 @@ export const WalletAssets = () => {
     section = isLoaded ? (
       <Assets />
     ) : (
-      <div sx={{ flex: "column", gap: [16, 30] }}>
+      <div sx={{ flex: "column", gap: [24, 40] }}>
         <WalletAssetsTableSkeleton />
         <BondsTableSkeleton title={t("bonds.table.title")} />
       </div>
@@ -59,7 +60,7 @@ export const WalletAssets = () => {
     section = isLoaded ? (
       <AllAssets />
     ) : (
-      <div sx={{ flex: "column", gap: [16, 30] }}>
+      <div sx={{ flex: "column", gap: [24, 40] }}>
         <WalletAssetsTableSkeleton />
         <BondsTableSkeleton title={t("bonds.table.title")} />
         <WalletAssetsHydraPositionsSkeleton />
@@ -69,10 +70,13 @@ export const WalletAssets = () => {
   }
 
   return (
-    <>
+    <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      <WalletAssetsFilters />
-      {section}
-    </>
+      {featureFlags.strategies && <WalletStrategyBanner />}
+      <div sx={{ flex: "column", gap: [16, 20] }}>
+        <WalletAssetsFilters />
+        {section}
+      </div>
+    </div>
   )
 }

@@ -1,4 +1,7 @@
-import { ReserveDataHumanized } from "@aave/contract-helpers"
+import {
+  ReserveDataHumanized,
+  ReservesIncentiveDataHumanized,
+} from "@aave/contract-helpers"
 import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
@@ -16,6 +19,12 @@ import { PoolReserve } from "./poolSlice"
 import { RootStore } from "./root"
 import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 import { produce } from "immer"
+import { getAddressFromAssetId } from "utils/evm"
+import {
+  DOT_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
+  VDOT_ASSET_ID,
+} from "utils/constants"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -129,16 +138,10 @@ export const reserveSortFn = (
   return numB > numA ? 1 : -1
 }
 
-export const selectFormattedReserves = (
-  state: RootStore,
-  currentTimestamp: number,
+export const formatReserveIncentives = (
+  reserveIncentives: ReservesIncentiveDataHumanized[],
 ) => {
-  const reserves = selectCurrentReserves(state)
-  const baseCurrencyData = selectCurrentBaseCurrencyData(state)
-  const currentNetworkConfig = state.currentNetworkConfig
-
-  const defaultReserveIncentives = state.reserveIncentiveData || []
-  const reserveIncentives = defaultReserveIncentives.map((incentive) => {
+  return reserveIncentives.map((incentive) => {
     if (!incentive.aIncentiveData.rewardsTokenInformation.length) {
       return incentive
     }
@@ -152,6 +155,19 @@ export const selectFormattedReserves = (
       })
     })
   })
+}
+
+export const selectFormattedReserves = (
+  state: RootStore,
+  currentTimestamp: number,
+) => {
+  const reserves = selectCurrentReserves(state)
+  const baseCurrencyData = selectCurrentBaseCurrencyData(state)
+  const currentNetworkConfig = state.currentNetworkConfig
+
+  const reserveIncentives = formatReserveIncentives(
+    state.reserveIncentiveData || [],
+  )
 
   const formattedPoolReserves = formatReservesAndIncentives({
     reserves,
@@ -172,7 +188,42 @@ export const selectFormattedReserves = (
     }))
     .sort(reserveSortFn)
 
-  return formattedPoolReserves
+  return produce(formattedPoolReserves, (draft) => {
+    const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
+
+    if (vDotReserve) {
+      const vDotSupplyApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
+        state.vDotApy,
+      )
+
+      const vDotBorrowApy = valueToBigNumber(
+        vDotReserve.variableBorrowAPY,
+      ).plus(state.vDotApy)
+
+      vDotReserve.supplyAPY = vDotSupplyApy.toString()
+      vDotReserve.variableBorrowAPY = vDotBorrowApy.toString()
+
+      const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
+      const gDotReserve = reserveMap.get(
+        getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+      )
+
+      if (gDotReserve && dotReserve) {
+        const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
+        const vdotApyHalf = vDotSupplyApy.div(2)
+
+        // @TODO: Add GDOT LP Fee when available
+        const gdotLpFee = "0"
+
+        gDotReserve.supplyAPY = vdotApyHalf
+          .plus(dotApyHalf)
+          .plus(gdotLpFee)
+          .toString()
+      }
+    }
+  })
 }
 
 export const selectUserSummaryAndIncentives = (
@@ -229,7 +280,7 @@ export const selectNonEmptyUserBorrowPositions = (
 export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
   const eModes = reserves.reduce(
     (acc, r) => {
-      if (!acc[r.eModeCategoryId])
+      if (!acc[r.eModeCategoryId]) {
         acc[r.eModeCategoryId] = {
           liquidationBonus: r.eModeLiquidationBonus,
           id: r.eModeCategoryId,
@@ -240,9 +291,11 @@ export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
           liquidationThreshold: r.eModeLiquidationThreshold,
           ltv: r.eModeLtv,
           priceSource: r.eModePriceSource,
-          assets: [r.symbol],
+          assets: [fetchIconSymbolAndName(r).symbol],
         }
-      else acc[r.eModeCategoryId].assets.push(r.symbol)
+      } else {
+        acc[r.eModeCategoryId].assets.push(fetchIconSymbolAndName(r).symbol)
+      }
       return acc
     },
     {} as Record<number, EmodeCategory>,

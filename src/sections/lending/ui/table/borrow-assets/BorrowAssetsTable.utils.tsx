@@ -29,6 +29,8 @@ import {
   getMaxGhoMintAmount,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>
@@ -95,11 +97,16 @@ export const useBorrowAssetsTableColumns = ({
           const { variableBorrowRate, vIncentivesData, symbol } = row.original
 
           return (
-            <IncentivesCard
-              value={variableBorrowRate}
-              incentives={vIncentivesData}
-              symbol={symbol}
-            />
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="borrow"
+            >
+              <IncentivesCard
+                value={variableBorrowRate}
+                incentives={vIncentivesData}
+                symbol={symbol}
+              />
+            </OverrideApy>
           )
         },
       }),

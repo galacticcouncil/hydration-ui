@@ -12,9 +12,7 @@ import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { LiquidationRiskParametresInfoModal } from "sections/lending/ui/risk-parametres/LiquidationRiskParametresModal"
-import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
-import { useBifrostVDotApy } from "api/external/bifrost"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { Button } from "components/Button/Button"
 
@@ -64,25 +62,13 @@ export const DashboardHeaderValues: FC<{
           .dividedBy(user?.totalCollateralMarketReferenceCurrency || "1")
           .toFixed()
 
-  const vDotSuppliedOrBorrowed = user.userReservesData.some(
-    ({ reserve, underlyingBalance, totalBorrows }) =>
-      reserve.symbol === "vDOT" &&
-      (BN(underlyingBalance).gt(0) || BN(totalBorrows).gt(0)),
-  )
-
-  const { data: vDotApy, isLoading: isVDotApyLoading } = useBifrostVDotApy({
-    enabled: vDotSuppliedOrBorrowed,
-  })
-
-  const shouldRenderVdotApy = vDotSuppliedOrBorrowed && !!vDotApy
-
   return (
     <>
       <DataValueList
         separated
         className={className}
         sx={{
-          maxWidth: ["100%", shouldRenderVdotApy ? "100%" : 1000],
+          maxWidth: ["100%", 1000],
         }}
       >
         <DataValue
@@ -108,15 +94,6 @@ export const DashboardHeaderValues: FC<{
             <NoData />
           )}
         </DataValue>
-        {shouldRenderVdotApy && (
-          <DataValue
-            labelColor="brightBlue300"
-            label={t("lending.header.vdotAPY.title")}
-            isLoading={loading || isVDotApyLoading}
-          >
-            <PercentageValue value={Number(vDotApy.apy)} />
-          </DataValue>
-        )}
         <DataValue
           labelColor="brightBlue300"
           label={t("lending.header.healthfactor.title")}

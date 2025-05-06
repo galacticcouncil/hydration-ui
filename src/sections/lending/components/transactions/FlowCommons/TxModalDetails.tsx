@@ -247,13 +247,14 @@ export const DetailsIncentivesLine = ({
   futureSymbol,
   loading = false,
 }: DetailsIncentivesLineProps) => {
+  const { t } = useTranslation()
   if (
     !incentives ||
     incentives.filter((i) => i.incentiveAPR !== "0").length === 0
   )
     return null
   return (
-    <Row captionColor="basic400" caption={<span>Rewards APR</span>}>
+    <Row captionColor="basic400" caption={t("lending.rewardsAPR")}>
       <div sx={{ flex: "row", align: "center", height: 18 }}>
         {loading ? (
           <Skeleton height={16} width={100} />

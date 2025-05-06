@@ -1,6 +1,5 @@
 import { PERMISSION } from "@aave/contract-helpers"
 
-import React from "react"
 import {
   ModalContextType,
   ModalType,

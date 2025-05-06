@@ -52,6 +52,7 @@ export const QUERY_KEYS = {
   allPools: [QUERY_KEY_PREFIX, "allPools"],
   omnipoolTokens: ["pools", "omnipoolTokens"],
   stablePools: ["pools", "stable"],
+  stablepoolFees: (ids: string[]) => ["pools", "stable", "fees", ids.join(",")],
   xykPools: ["pools", "xykPool"],
   hubToken: ["pools", "hubToken"],
   dynamicAssetFee: (id: Maybe<u32 | string>) => [
@@ -152,6 +153,11 @@ export const QUERY_KEYS = {
   omnipoolSquidVolumes: (ids: string[]) => [
     QUERY_KEY_PREFIX,
     "omnipoolSquidVolumes",
+    ids.join(","),
+  ],
+  stablepoolsSquidVolumes: (ids: string[]) => [
+    QUERY_KEY_PREFIX,
+    "stablepoolsSquidVolumes",
     ids.join(","),
   ],
   timestamp: (bestNumber: Maybe<u32 | BigNumber>) =>
@@ -276,7 +282,6 @@ export const QUERY_KEYS = {
     address,
   ],
   volumeDaily: (assetId?: string) => ["volumeDaily", assetId],
-  tvl: (assetId?: string) => ["tvl", assetId],
   identity: (address?: string) => ["identity", address],
   fee: (assetId?: string) => ["fee", assetId],
   evmTxCost: (data: string) => ["evmTxCost", data],
@@ -345,11 +350,19 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
-  borrowUserSummary: (address: string) => ["borrowUserSummary", address],
+  borrowUserSummary: (address: string) => [
+    QUERY_KEY_PREFIX,
+    "borrowUserSummary",
+    address,
+  ],
   borrowReserves: (poolContractAddress: string) => [
     "borrowReserves",
     poolContractAddress,
   ],
+  borrowIncentives: (
+    incentivesContractAddress: string,
+    accounntAddress?: string,
+  ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
@@ -376,6 +389,14 @@ export const QUERY_KEYS = {
     pagination.pageIndex,
   ],
   swapAssetFees: (period: string) => ["swapAssetFees", period],
+  bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
+    QUERY_KEY_PREFIX,
+    "trade",
+    "bestTradeSell",
+    assetInId,
+    assetOutId,
+    amountIn,
+  ],
 } as const
 
 export const WS_QUERY_KEYS = {
