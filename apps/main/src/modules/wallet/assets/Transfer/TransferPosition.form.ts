@@ -1,4 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
@@ -32,7 +32,7 @@ const useSchema = () => {
       },
       {
         path: ["amount"],
-        message: maxBalanceError,
+        error: maxBalanceError,
       },
     )
 }
@@ -56,6 +56,6 @@ export const useTransferPositionForm = (props?: Props) => {
   return useForm<TransferPositionFormValues>({
     mode: "onChange",
     defaultValues,
-    resolver: zodResolver(useSchema()),
+    resolver: standardSchemaResolver(useSchema()),
   })
 }

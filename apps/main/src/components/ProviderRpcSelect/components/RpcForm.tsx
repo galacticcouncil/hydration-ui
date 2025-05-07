@@ -6,7 +6,7 @@ import {
   Spinner,
 } from "@galacticcouncil/ui/components"
 import { pingRpc } from "@galacticcouncil/utils"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -27,7 +27,7 @@ export const RpcForm = () => {
   const form = useForm<FormValues>({
     defaultValues: { address: "wss://" },
     mode: "onChange",
-    resolver: zodResolver(useRpcFormSchema()),
+    resolver: standardSchemaResolver(useRpcFormSchema()),
   })
 
   const { mutate, isPending } = useMutation({

@@ -11,23 +11,23 @@ export const useSettingsValidation = () => {
   return z.object({
     swap: required
       .refine((value) => Number(value) <= MAX, {
-        message: t("error.maxNumber", {
+        error: t("error.maxNumber", {
           value: MAX,
         }),
       })
       .refine((value) => Number(value) >= MIN, {
-        message: t("error.minNumber", {
+        error: t("error.minNumber", {
           value: MIN,
         }),
       }),
     twap: required
       .refine((value) => Number(value) <= MAX, {
-        message: t("error.maxNumber", {
+        error: t("error.maxNumber", {
           value: MAX,
         }),
       })
       .refine((value) => Number(value) >= MIN, {
-        message: t("error.minNumber", {
+        error: t("error.minNumber", {
           value: MIN,
         }),
       }),
