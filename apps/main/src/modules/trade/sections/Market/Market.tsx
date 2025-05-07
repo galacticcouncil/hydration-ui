@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -48,7 +48,7 @@ export const Market = () => {
       buyAsset: assetOut ? getAsset(assetOut) : undefined,
     },
     mode: "onChange",
-    resolver: zodResolver(useMarketValidation()),
+    resolver: standardSchemaResolver(useMarketValidation()),
   })
 
   const [sellAsset, buyAsset] = form.watch(["sellAsset", "buyAsset"])
