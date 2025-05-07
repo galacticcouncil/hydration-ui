@@ -12,6 +12,9 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
 import { useMemo } from "react"
+import { useSquidUrl } from "./provider"
+import { millisecondsInHour } from "date-fns"
+import request, { gql } from "graphql-request"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -154,4 +157,46 @@ export const getTradabilityFromBits = (bits: number) => {
   const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
 
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+}
+
+type OmnipoolYieldMetricsQuery = {
+  omnipoolAssetsYieldMetrics: {
+    nodes: {
+      assetId: string
+      projectedAprPerc: string
+    }[]
+  }
+}
+
+export const useOmnipoolYieldMetrics = () => {
+  const url = useSquidUrl()
+
+  return useQuery(
+    QUERY_KEYS.omnipoolYieldMetrics,
+
+    async () => {
+      const { omnipoolAssetsYieldMetrics } =
+        await request<OmnipoolYieldMetricsQuery>(
+          url,
+          gql`
+            query OmnipoolYieldMetrics {
+              omnipoolAssetsYieldMetrics {
+                nodes {
+                  assetId
+                  projectedAprPerc
+                }
+              }
+            }
+          `,
+        )
+
+      const { nodes = [] } = omnipoolAssetsYieldMetrics
+
+      return nodes
+    },
+
+    {
+      staleTime: millisecondsInHour,
+    },
+  )
 }
