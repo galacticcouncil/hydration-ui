@@ -1,4 +1,5 @@
 import fs from "node:fs"
+import { resolve } from "node:path"
 
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
@@ -22,12 +23,15 @@ const headCriticalCss = await transformWithEsbuild(
 
 export default defineConfig({
   build: {
-    target: "esnext",
+    target: "es2022",
     outDir: "build",
   },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: "esnext",
+  resolve: {
+    alias: {
+      "@polkadot-api/descriptors": resolve(
+        __dirname,
+        "../../.papi/descriptors/dist/index.mjs",
+      ),
     },
   },
   plugins: [

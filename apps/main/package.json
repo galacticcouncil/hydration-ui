@@ -19,7 +19,6 @@
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "i18n": "i18next src/**/*.{js,jsx,ts,tsx}",
-    "postinstall": "papi",
     "codegen:indexer": "graphql-codegen --require dotenv/config --config src/codegen/indexer.ts dotenv_config_path=.env.development",
     "codegen:squid": "graphql-codegen --require dotenv/config --config src/codegen/squid.ts dotenv_config_path=.env.development"
   },
@@ -31,7 +30,6 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@hookform/resolvers": "^3.10.0",
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@tanstack/react-query": "^5.59.15",
     "@tanstack/react-query-devtools": "^5.59.15",
     "@tanstack/react-router": "^1.75.0",
@@ -45,7 +43,6 @@
     "graffle": "^8.0.0-next.104",
     "i18next": "^23.16.4",
     "papaparse": "^5.5.2",
-    "polkadot-api": "^1.9.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",

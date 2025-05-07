@@ -1,6 +1,6 @@
 import { createIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 
-export type ApiMetadata = Record<string, `0x${string}`>
+export type ApiMetadata = Record<string, string>
 
 type ApiMetadataStore = {
   metadata: ApiMetadata
