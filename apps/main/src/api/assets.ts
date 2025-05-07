@@ -1,9 +1,15 @@
-import { Bond, findNestedKey, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { Asset, Bond } from "@galacticcouncil/sdk-next"
 import { queryOptions } from "@tanstack/react-query"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 import { useAssetRegistry } from "@/states/assetRegistry"
-import { getExternalId } from "@/utils/externalAssets"
+import { HYDRATION_PARACHAIN_ID } from "@/utils/consts"
+import {
+  getAccountKey20,
+  getEthereumNetworkEntry,
+  getExternalId,
+  getParachainId,
+} from "@/utils/externalAssets"
 
 /**
  * Map of aTokens and their corresponding underlying asset ids
@@ -118,193 +124,211 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
-const BASE_URL =
+const METADATA_BASE_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
 
-const pathes = ["/assets-v2.json", "/chains-v2.json"] //, , "/metadata.json"
+const METADATA_PATHS = ["/assets-v2.json", "/chains-v2.json"]
 
 export const assetsQuery = (data: TProviderContext) => {
   const { assetClient, tradeRouter, isApiLoaded, dataEnv } = data
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
-    queryFn: assetClient
-      ? async () => {
-          const metadataQueries = pathes.map((path) =>
-            fetch(BASE_URL + path).then((d) => d.json()),
-          )
-          const { sync, syncMetadata } = useAssetRegistry.getState()
+    queryFn: async () => {
+      const metadataQueries = METADATA_PATHS.map((path) =>
+        fetch(METADATA_BASE_URL + path).then(
+          (d) => d.json() as unknown as TAssetResouce,
+        ),
+      )
 
-          const [tradeAssets, assets, ...metadata] = await Promise.all([
-            tradeRouter.getAllAssets(),
-            assetClient.getOnChainAssets(true),
-            ...metadataQueries,
-          ])
+      const { sync, syncMetadata } = useAssetRegistry.getState()
 
-          const assetsMetadata: TAssetResouce = metadata[0]
-          const chainsMetadata: TAssetResouce = metadata[1]
-          const { cdn, path, repository, items } = assetsMetadata
+      const [tradeAssets, assets, assetsMetadata, chainsMetadata] =
+        await Promise.all([
+          tradeRouter.getTradeableAssets(),
+          assetClient.getOnChainAssets(true),
+          ...metadataQueries,
+        ])
 
-          const url = [cdn["jsDelivr"], repository + "@latest", path].join("/")
+      const syncData = assets.map((asset): TAssetData => {
+        const isTradable = tradeAssets.some((id) => id === asset.id)
 
-          const syncData = assets.map((asset): TAssetData => {
-            const isTradable = tradeAssets.some(
-              (tradeAsset) => tradeAsset.id === asset.id,
-            )
-
-            let parachainId: string | undefined
-            let iconSrc: string | undefined
-            let ecosystem = AssetEcosystem.POLKADOT
-
-            const commonAssetData: TCommonAssetData = {
-              id: asset.id,
-              existentialDeposit: asset.existentialDeposit,
-              symbol: asset.symbol ?? "",
-              decimals: asset.decimals ?? 0,
-              name: asset.name ?? "",
-              isTradable,
-              isSufficient: asset.isSufficient,
-            }
-
-            if (asset.type === AssetType.TOKEN) {
-              parachainId = findNestedKey(
-                asset.location,
-                "parachain",
-              )?.parachain.toString()
-
-              const ethereumNetworkEntry = findNestedKey(
-                asset.location,
-                "ethereum",
-              )
-
-              if (ethereumNetworkEntry) {
-                const { ethereum } = ethereumNetworkEntry
-                ecosystem = AssetEcosystem.ETHEREUM
-
-                parachainId = findNestedKey(
-                  ethereum,
-                  "chainId",
-                )?.chainId.toString()
-                const assetId = findNestedKey(asset.location, "key")?.key
-                iconSrc = items.find((item) =>
-                  item.includes(`${parachainId}/assets/${assetId}`),
-                )
-
-                return {
-                  ...commonAssetData,
-                  type: AssetType.TOKEN,
-                  ecosystem,
-                  ...(iconSrc ? { iconSrc } : {}),
-                  ...(parachainId ? { parachainId } : {}),
-                }
-              } else {
-                iconSrc = items.find((item) =>
-                  item.includes(
-                    `${HYDRADX_PARACHAIN_ID.toString()}/assets/${commonAssetData.id}`,
-                  ),
-                )
-
-                const assetData: TToken = {
-                  ...commonAssetData,
-                  type: AssetType.TOKEN,
-                  ecosystem,
-                  ...(iconSrc ? { iconSrc } : {}),
-                  ...(parachainId ? { parachainId } : {}),
-                }
-                return assetData
-              }
-            } else if (asset.type === AssetType.ERC20) {
-              const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[asset.id]
-
-              const assetData: TErc20 = {
-                ...commonAssetData,
-                type: AssetType.ERC20,
-                ...(underlyingAssetId ? { underlyingAssetId } : {}),
-              }
-
-              return assetData
-            } else if (asset.type === AssetType.BOND) {
-              const bondData = asset as Bond
-              const { underlyingAssetId, maturity } = bondData
-
-              const assetData: TBond = {
-                ...commonAssetData,
-                type: AssetType.BOND,
-                underlyingAssetId,
-                maturity,
-              }
-
-              return assetData
-            } else if (asset.type === AssetType.STABLESWAP) {
-              const underlyingAssetId = asset?.meta
-                ? Object.keys(asset.meta)
-                : undefined
-
-              const assetData: TStableswap = {
-                ...commonAssetData,
-                type: AssetType.STABLESWAP,
-                underlyingAssetId,
-              }
-
-              return assetData
-            } else if (asset.type === AssetType.External) {
-              const externalId = getExternalId(asset)
-              parachainId = findNestedKey(
-                asset.location,
-                "parachain",
-              )?.parachain.toString()
-
-              const assetData: TExternal = {
-                ...commonAssetData,
-                type: AssetType.External,
-                ...(externalId ? { externalId } : {}),
-                ...(parachainId ? { parachainId } : {}),
-              }
-
-              return assetData
-            } else {
-              return {
-                ...commonAssetData,
-                type: AssetType.Unknown,
-              }
-            }
-          })
-          console.log({ syncData })
-          syncMetadata({ url, chainsMetadata })
-          sync(syncData)
-
-          // const [shareToken, poolAssets] = await Promise.all([
-          //   api.query.xyk.shareToken.entries(),
-          //   api.query.xyk.poolAssets.entries(),
-          // ])
-
-          // const shareTokens = shareToken
-          //   .map(([key, shareTokenIdRaw]) => {
-          //     const poolAddress = key.args[0].toString()
-          //     const shareTokenId = shareTokenIdRaw.toString()
-
-          //     const xykAssets = poolAssets.find(
-          //       (xykPool) => xykPool[0].args[0].toString() === poolAddress,
-          //     )?.[1]
-
-          //     if (xykAssets)
-          //       return {
-          //         poolAddress,
-          //         shareTokenId,
-          //         assets: xykAssets.unwrap().map((asset) => asset.toString()),
-          //       }
-
-          //     return undefined
-          //   })
-          //   .filter(isNonNullish)
-
-          // syncShareTokens(shareTokens)
-          return []
+        const commonAssetData: TCommonAssetData = {
+          id: asset.id.toString(),
+          existentialDeposit: asset.existentialDeposit.toString(),
+          symbol: asset.symbol ?? "",
+          decimals: asset.decimals ?? 0,
+          name: asset.name ?? "",
+          isTradable,
+          isSufficient: asset.isSufficient,
         }
-      : () => undefined,
+
+        if (asset.type === AssetType.TOKEN) {
+          return assetToTokenType(
+            asset,
+            commonAssetData,
+            findIconSrc(assetsMetadata?.items ?? []),
+          )
+        } else if (asset.type === AssetType.ERC20) {
+          return assetToErc20Type(asset, commonAssetData)
+        } else if (asset.type === AssetType.BOND) {
+          return assetToBondType(asset, commonAssetData)
+        } else if (asset.type === AssetType.STABLESWAP) {
+          return assetToStableSwapType(asset, commonAssetData)
+        } else if (asset.type === AssetType.External) {
+          return assetToExternalType(asset, commonAssetData)
+        } else {
+          return {
+            ...commonAssetData,
+            type: AssetType.Unknown,
+          }
+        }
+      })
+      console.log({ syncData })
+      syncMetadata({
+        url: assetsMetadata ? getMetadataUrl(assetsMetadata) : undefined,
+        chainsMetadata,
+      })
+      sync(syncData)
+
+      // const [shareToken, poolAssets] = await Promise.all([
+      //   api.query.xyk.shareToken.entries(),
+      //   api.query.xyk.poolAssets.entries(),
+      // ])
+
+      // const shareTokens = shareToken
+      //   .map(([key, shareTokenIdRaw]) => {
+      //     const poolAddress = key.args[0].toString()
+      //     const shareTokenId = shareTokenIdRaw.toString()
+
+      //     const xykAssets = poolAssets.find(
+      //       (xykPool) => xykPool[0].args[0].toString() === poolAddress,
+      //     )?.[1]
+
+      //     if (xykAssets)
+      //       return {
+      //         poolAddress,
+      //         shareTokenId,
+      //         assets: xykAssets.unwrap().map((asset) => asset.toString()),
+      //       }
+
+      //     return undefined
+      //   })
+      //   .filter(isNonNullish)
+
+      // syncShareTokens(shareTokens)
+      return []
+    },
     enabled: isApiLoaded,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   })
+}
+
+function findIconSrc(items: string[]) {
+  return (parachainId: string, assetIdOrAddress: string) => {
+    return items.find((item) =>
+      item.includes(`${parachainId}/assets/${assetIdOrAddress}`),
+    )
+  }
+}
+
+function getMetadataUrl(resource: TAssetResouce) {
+  const { cdn, path, repository } = resource
+  return [cdn["jsDelivr"], repository + "@latest", path].join("/")
+}
+
+function assetToTokenType(
+  asset: Asset,
+  commonAssetData: TCommonAssetData,
+  getIconSrc: (
+    parachainId: string,
+    assetIdOrAddress: string,
+  ) => string | undefined,
+): TToken {
+  const ethereumNetworkEntry = getEthereumNetworkEntry(asset)
+
+  if (ethereumNetworkEntry) {
+    const accountKey20 = getAccountKey20(asset)
+    const parachainId = ethereumNetworkEntry?.value?.chain_id?.toString()
+    const address = accountKey20?.key ? accountKey20.key.asHex() : ""
+
+    return {
+      ...commonAssetData,
+      type: AssetType.TOKEN,
+      ecosystem: AssetEcosystem.ETHEREUM,
+      iconSrc: getIconSrc(parachainId, address),
+      parachainId,
+    }
+  } else {
+    const parachainId = getParachainId(asset)?.toString()
+
+    return {
+      ...commonAssetData,
+      parachainId,
+      type: AssetType.TOKEN,
+      ecosystem: AssetEcosystem.POLKADOT,
+      iconSrc: getIconSrc(
+        HYDRATION_PARACHAIN_ID.toString(),
+        commonAssetData.id,
+      ),
+    }
+  }
+}
+
+function assetToErc20Type(
+  asset: Asset,
+  commonAssetData: TCommonAssetData,
+): TErc20 {
+  const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[asset.id]
+
+  return {
+    ...commonAssetData,
+    type: AssetType.ERC20,
+    underlyingAssetId,
+  }
+}
+
+function assetToBondType(
+  asset: Asset,
+  commonAssetData: TCommonAssetData,
+): TBond {
+  const bondData = asset as Bond
+  const { underlyingAssetId, maturity } = bondData
+
+  return {
+    ...commonAssetData,
+    type: AssetType.BOND,
+    underlyingAssetId: underlyingAssetId.toString(),
+    maturity,
+  }
+}
+
+function assetToStableSwapType(
+  asset: Asset,
+  commonAssetData: TCommonAssetData,
+): TStableswap {
+  const underlyingAssetId = asset?.meta ? Object.keys(asset.meta) : undefined
+
+  return {
+    ...commonAssetData,
+    type: AssetType.STABLESWAP,
+    underlyingAssetId,
+  }
+}
+
+function assetToExternalType(
+  asset: Asset,
+  commonAssetData: TCommonAssetData,
+): TExternal {
+  const externalId = getExternalId(asset)
+  const parachainId = getParachainId(asset)?.toString()
+
+  return {
+    ...commonAssetData,
+    type: AssetType.External,
+    externalId: externalId ? externalId.toString() : undefined,
+    parachainId: parachainId ? parachainId.toString() : undefined,
+  }
 }

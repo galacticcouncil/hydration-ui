@@ -1,37 +1,9 @@
-import { ApiPromise } from "@polkadot/api"
-import { hydration } from "@polkadot-api/descriptors"
-import { Binary, TypedApi } from "polkadot-api"
-import { isString } from "remeda"
-
 import {
   TxActionType,
   TxState,
   TxStateAction,
   TxStatus,
 } from "@/modules/transactions/types"
-import { isSubstrateCall } from "@/modules/transactions/utils/xcm"
-import { AnyTransaction } from "@/states/transactions"
-
-/**
- *
- * Transform a transaction from SubmittableExtrinsic to PapiTx
- *
- * @TODO: remove after migrating to sdk-next
- * */
-export const transformPjsToPapiTx = async (
-  api: ApiPromise,
-  papi: TypedApi<typeof hydration>,
-  tx: AnyTransaction | string,
-) => {
-  if (isString(tx) || isSubstrateCall(tx)) {
-    const dataHex = isString(tx) ? tx : tx.data
-    const submittableExtrinsic = api.tx(dataHex)
-    const callData = Binary.fromHex(submittableExtrinsic.inner.toHex())
-    return papi.txFromCallData(callData)
-  }
-
-  return tx
-}
 
 export const INITIAL_STATUS: TxState = {
   open: true,

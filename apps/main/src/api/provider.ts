@@ -1,16 +1,11 @@
-import {
-  AssetClient,
-  BalanceClient,
-  PoolService,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
+import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import { api, client, pool, sor } from "@galacticcouncil/sdk-next"
 import { getProviderInstance, hasOwn } from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { createClient, PolkadotClient } from "polkadot-api"
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
+import { PolkadotClient } from "polkadot-api"
 import { useMemo } from "react"
 
 import {
@@ -19,14 +14,32 @@ import {
   PROVIDERS,
   TDataEnv,
 } from "@/config/rpc"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { ApiMetadata, useApiMetadataStore } from "@/states/metadata"
 
-export type TFeatureFlags = {
-  dispatchPermit: boolean
-}
+export type TFeatureFlags = object
 
-export type TProviderData = Awaited<ReturnType<typeof getProviderData>>
+export type TProviderData = {
+  papi: Papi
+  papiClient: PolkadotClient
+  featureFlags: TFeatureFlags
+  rpcUrlList: string[]
+  balanceClient: client.BalanceClient
+  assetClient: client.AssetClient
+  poolService: pool.PoolContextProvider
+  endpoint: string
+  dataEnv: TDataEnv
+  tradeRouter: sor.TradeRouter
+  tradeUtils: sor.TradeUtils
+  /**
+   * @deprecated
+   */
+  legacy_api: ApiPromise
+  /**
+   * @deprecated
+   */
+  legacy_tradeRouter: TradeRouter
+}
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   provider.env.includes(import.meta.env.VITE_ENV),
@@ -48,75 +61,61 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-export const providerQuery = (rpcUrlList: string[], metadata?: ApiMetadata) => {
+export const providerQuery = (rpcUrlList: string[]) => {
   return queryOptions({
     queryKey: ["provider"],
-    queryFn: () => getProviderData(rpcUrlList, metadata),
+    queryFn: () => getProviderData(rpcUrlList),
     retry: false,
     refetchOnWindowFocus: false,
     gcTime: 0,
   })
 }
 
-export const getPapiClient = async (
-  wsUrl: string | string[],
-): Promise<PolkadotClient> => {
-  const endpoints = typeof wsUrl === "string" ? wsUrl.split(",") : wsUrl
-  const getWsProvider = (await import("polkadot-api/ws-provider/web"))
-    .getWsProvider
-
-  const wsProvider = getWsProvider(endpoints)
-  return createClient(withPolkadotSdkCompat(wsProvider))
-}
-
-const getProviderData = async (
-  rpcUrlList: string[] = [],
-  metadata?: ApiMetadata,
-) => {
-  const maxRetries = rpcUrlList.length * 5
-  const apiPool = SubstrateApis.getInstance()
-  const api = await apiPool.api(rpcUrlList, maxRetries, metadata)
-
-  const papiClient = await getPapiClient(rpcUrlList)
+const getProviderData = async (rpcUrlList: string[] = []) => {
+  const papiClient = await api.getWs(rpcUrlList)
   const papi = papiClient.getTypedApi(hydration)
 
-  const provider = getProviderInstance(api)
+  const balanceClient = new client.BalanceClient(papiClient)
 
+  const assetClient = new client.AssetClient(papiClient)
+
+  const poolService = new pool.PoolContextProvider(papiClient)
+    .withOmnipool()
+    .withStableswap()
+    .withXyk()
+
+  const tradeRouter = new sor.TradeRouter(poolService)
+  const tradeUtils = new sor.TradeUtils(papiClient)
+
+  /**
+   * @TODO Legacy clients for backward compatibility, remove when fully migrated
+   */
+  const maxRetries = rpcUrlList.length * 5
+  const apiPool = SubstrateApis.getInstance()
+  const legacy_api = await apiPool.api(rpcUrlList, maxRetries)
+  const provider = getProviderInstance(legacy_api)
   const endpoint = provider.endpoint
 
-  const [isDispatchPermitEnabled] = await Promise.all([
-    api.tx.multiTransactionPayment.dispatchPermit,
-  ])
-
-  const balanceClient = new BalanceClient(api)
-  const assetClient = new AssetClient(api)
-
-  const poolService = new PoolService(api)
-  const traderRoutes = [
-    PoolType.Omni,
-    PoolType.Stable,
-    PoolType.XYK,
-    PoolType.LBP,
-  ]
-
-  const tradeRouter = new TradeRouter(poolService, {
-    includeOnly: traderRoutes,
+  const legacy_poolService = new PoolService(legacy_api)
+  const legacy_tradeRouter = new TradeRouter(legacy_poolService, {
+    includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
   })
 
   return {
-    api,
     papi,
+    papiClient,
+    endpoint,
+    poolService,
     balanceClient,
     assetClient,
     rpcUrlList,
-    endpoint,
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     tradeRouter,
-    poolService,
-    featureFlags: {
-      dispatchPermit: !!isDispatchPermitEnabled,
-    },
-  }
+    tradeUtils,
+    featureFlags: {},
+    legacy_api,
+    legacy_tradeRouter,
+  } satisfies TProviderData
 }
 
 export const useActiveProviderProps = (): ProviderProps | null => {
@@ -140,16 +139,20 @@ export const useActiveProviderProps = (): ProviderProps | null => {
 }
 
 export const useProviderMetadata = () => {
-  const { isLoaded, api } = useRpcProvider()
+  const { papi, papiClient, isApiLoaded } = useRpcProvider()
   const { metadata: storedMetadata, setMetadata } = useApiMetadataStore()
 
   return useQuery({
+    enabled: isApiLoaded,
     queryKey: ["providerMetadata"],
     queryFn: async () => {
-      const [genesisHash, runtimeVersion] = await Promise.all([
-        api.genesisHash.toHex(),
-        api.runtimeVersion.specVersion.toNumber(),
+      const [specData, lastRuntimeUpgrade] = await Promise.all([
+        papiClient.getChainSpecData(),
+        papi.query.System.LastRuntimeUpgrade.getValue(),
       ])
+
+      const genesisHash = specData.genesisHash
+      const runtimeVersion = lastRuntimeUpgrade?.spec_version
 
       const metadataKey = `${genesisHash}-${runtimeVersion}`
       const isCurrentMetadataStored = hasOwn(storedMetadata, metadataKey)
@@ -158,16 +161,16 @@ export const useProviderMetadata = () => {
         return storedMetadata
       }
 
-      const metadataHex = api.runtimeMetadata.toHex()
+      const metadataBinary = await papi.apis.Metadata.metadata()
+      const metadataHex = metadataBinary.asHex()
       const metadata: ApiMetadata = {
         [metadataKey]: metadataHex,
       }
 
       setMetadata(metadata)
-
       return metadata
     },
-    enabled: isLoaded,
+
     staleTime: Infinity,
     notifyOnChangeProps: [],
   })

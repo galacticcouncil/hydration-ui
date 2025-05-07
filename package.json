@@ -10,7 +10,8 @@
     "dev": "turbo dev",
     "preview": "turbo preview",
     "lint": "turbo lint",
-    "i18n": "turbo i18n"
+    "i18n": "turbo i18n",
+    "postinstall": "papi"
   },
   "resolutions": {
     "@polkadot/api": "14.0.1",
@@ -28,23 +29,28 @@
     "@polkadot/keyring": "^13.1.1",
     "@polkadot/util": "^13.1.1",
     "@polkadot/util-crypto": "^13.1.1",
-    "@polkadot/ui-shared": "^3.1.4"
+    "@polkadot/ui-shared": "^3.1.4",
+    "polkadot-api": "^1.10.0"
   },
   "dependencies": {
+    "@galacticcouncil/descriptors": "^1.1.0",
     "@galacticcouncil/math-lbp": "^1.0.0",
     "@galacticcouncil/math-liquidity-mining": "^1.0.0",
     "@galacticcouncil/math-omnipool": "^1.1.0",
     "@galacticcouncil/math-stableswap": "^2.0.0",
     "@galacticcouncil/math-staking": "^1.0.0",
     "@galacticcouncil/math-xyk": "^1.0.0",
-    "@galacticcouncil/sdk": "^6.1.4",
+    "@galacticcouncil/sdk": "^7.0.1",
+    "@galacticcouncil/sdk-next": "^1.0.0-beta.0",
     "@galacticcouncil/xcm-cfg": "^9.1.0",
     "@galacticcouncil/xcm-core": "^7.1.0",
     "@galacticcouncil/xcm-sdk": "^9.2.0",
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot/api": "14.0.1",
     "@polkadot/apps-config": "^0.132.1",
     "@polkadot/networks": "^13.2.3",
     "@polkadot/ui-shared": "^3.1.4",
+    "polkadot-api": "^1.10.0",
     "react-use": "^17.6.0",
     "remeda": "^2.19.0",
     "zustand": "^5.0.1"

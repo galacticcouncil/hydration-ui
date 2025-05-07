@@ -1,6 +1,4 @@
-import { AssetClient, PoolService, TradeRouter } from "@galacticcouncil/sdk"
 import { changeProvider } from "@galacticcouncil/utils"
-import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
@@ -16,41 +14,34 @@ import {
 import {
   getProviderDataEnv,
   providerQuery,
-  TFeatureFlags,
+  TProviderData,
 } from "@/api/provider"
-import { TDataEnv } from "@/config/rpc"
 import { useAssetRegistry } from "@/states/assetRegistry"
-import { useApiMetadataStore } from "@/states/metadata"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type Papi = TypedApi<typeof hydration>
 
-export type TProviderContext = {
-  api: ApiPromise
-  papi: Papi
+export type TProviderContext = TProviderData & {
   isLoaded: boolean
   isApiLoaded: boolean
-  featureFlags: TFeatureFlags
-  rpcUrlList: string[]
-  assetClient: AssetClient
-  endpoint: string
-  dataEnv: TDataEnv
-  tradeRouter: TradeRouter
-  poolService: PoolService
 }
 
 const defaultData: TProviderContext = {
   isLoaded: false,
   isApiLoaded: false,
-  api: {} as TProviderContext["api"],
-  papi: {} as TProviderContext["papi"],
-  featureFlags: { dispatchPermit: false } as TProviderContext["featureFlags"],
-  assetClient: {} as TProviderContext["assetClient"],
   rpcUrlList: [],
   endpoint: "",
   dataEnv: "mainnet",
-  tradeRouter: {} as TradeRouter,
-  poolService: {} as PoolService,
+  papi: {} as TProviderData["papi"],
+  papiClient: {} as TProviderData["papiClient"],
+  featureFlags: {} as TProviderData["featureFlags"],
+  balanceClient: {} as TProviderData["balanceClient"],
+  poolService: {} as TProviderData["poolService"],
+  assetClient: {} as TProviderData["assetClient"],
+  tradeRouter: {} as TProviderData["tradeRouter"],
+  tradeUtils: {} as TProviderData["tradeUtils"],
+  legacy_api: {} as TProviderData["legacy_api"],
+  legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -114,11 +105,12 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
 
-  const { metadata } = useApiMetadataStore()
+  // @TODO enable when Papi supports cached metadata
+  // const { metadata } = useApiMetadataStore()
 
   const { data } = useQuery({
     enabled: !isInvalidating,
-    ...providerQuery(rpcProviderUrls, metadata),
+    ...providerQuery(rpcProviderUrls),
   })
 
   const value = useMemo(() => {
@@ -126,7 +118,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
     return {
       ...data,
-      isApiLoaded: !!data?.api.isConnected,
+      isApiLoaded: Object.keys(data.papi).length > 0,
       isLoaded: assets.length > 0,
     }
   }, [assets, data])

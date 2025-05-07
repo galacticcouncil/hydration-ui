@@ -1,4 +1,4 @@
-import { TradeRouter } from "@galacticcouncil/sdk"
+import { sor } from "@galacticcouncil/sdk-next"
 import {
   queryOptions,
   useQueries,
@@ -77,7 +77,8 @@ export const spotPrice = (
 }
 
 export const getSpotPrice =
-  (tradeRouter: TradeRouter, tokenIn: string, tokenOut: string) => async () => {
+  (tradeRouter: sor.TradeRouter, tokenIn: string, tokenOut: string) =>
+  async () => {
     const tokenInParam = tokenIn
     const tokenOutParam = tokenOut
     // X -> X would return undefined, no need for spot price in such case
@@ -88,9 +89,9 @@ export const getSpotPrice =
     let spotPrice: string | null = null
 
     try {
-      const res = await tradeRouter.getBestSpotPrice(
-        tokenInParam,
-        tokenOutParam,
+      const res = await tradeRouter.getSpotPrice(
+        Number(tokenInParam),
+        Number(tokenOutParam),
       )
 
       if (res) {

@@ -1,13 +1,15 @@
-import { Asset, findNestedKey } from "@galacticcouncil/sdk"
+import { Asset } from "@galacticcouncil/sdk-next"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
-import { HydradxRuntimeXcmAssetLocation } from "@polkadot/types/lookup"
-import { XcmV3Junction } from "@polkadot/types/lookup"
+import {
+  HydradxRuntimeXcmAssetLocation,
+  XcmV3Junction,
+} from "@polkadot/types/lookup"
 //import { assethub, pendulum } from "api/external"
 import { Buffer } from "buffer"
+import { FixedSizeBinary } from "polkadot-api"
 
-import { AssetType } from "@/api/assets"
-import { TAssetData } from "@/api/assets"
+import { AssetType, TAssetData } from "@/api/assets"
 
 export const ASSETHUB_ID_BLACKLIST = [
   "34",
@@ -107,12 +109,6 @@ export const PARACHAIN_CONFIG: {
   },
 }
 
-export const isGeneralKey = (
-  prop: InteriorProp,
-): prop is { GeneralKey: string } => {
-  return typeof prop !== "string" && "GeneralKey" in prop
-}
-
 export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
   const config = PARACHAIN_CONFIG[asset.origin]
   if (!config) throw new Error("Parachain config not found")
@@ -175,30 +171,57 @@ export const getInputData = (
   return getParachainInputData(asset)
 }
 
-export const getPendulumAssetIdFromGeneralKey = (generalKey: {
+type GeneralKeyType = {
   length?: number
-  data?: string
-}) => {
+  data?: FixedSizeBinary<32>
+}
+
+export const getPendulumAssetIdFromGeneralKey = (
+  generalKey: GeneralKeyType,
+) => {
   if (!generalKey || !generalKey.length || !generalKey.data) return undefined
 
-  const bytes = Buffer.from(generalKey.data.slice(2), "hex")
-
+  const hex = generalKey.data.asHex()
+  const bytes = Buffer.from(hex.slice(2), "hex")
   return `0x${bytes.slice(0, generalKey.length).toString("hex")}`
 }
 
-const getParachainId = (asset: Asset) => {
-  const entry = findNestedKey(asset.location, "parachain")
-  return entry && entry.parachain
+const getLocationEntry = <T extends XcmV3Junction["type"]>(
+  asset: Asset,
+  type: T,
+) => {
+  if (!asset.location) return undefined
+  const interiorType = asset.location.interior.type
+  if (interiorType !== "Here" && interiorType !== "X1") {
+    return asset.location.interior.value.find((l) => l.type === type)
+  }
 }
 
-const getGeneralIndex = (asset: Asset) => {
-  const entry = findNestedKey(asset.location, "generalIndex")
-  return entry && entry.generalIndex.toString()
+export const getParachainId = (asset: Asset) => {
+  const entry = getLocationEntry(asset, "Parachain")
+  return entry?.type === "Parachain" ? entry.value : undefined
 }
 
-const getGeneralKey = (asset: Asset): object => {
-  const entry = findNestedKey(asset.location, "generalKey")
-  return entry && entry.generalKey
+export const getGeneralIndex = (asset: Asset) => {
+  const entry = getLocationEntry(asset, "GeneralIndex")
+  return entry?.type === "GeneralIndex" ? entry.value : undefined
+}
+
+export const getGeneralKey = (asset: Asset) => {
+  const entry = getLocationEntry(asset, "GeneralKey")
+  return entry?.type === "GeneralKey" ? entry.value : undefined
+}
+
+export const getEthereumNetworkEntry = (asset: Asset) => {
+  const entry = getLocationEntry(asset, "GlobalConsensus")
+  return entry?.type === "GlobalConsensus" && entry?.value.type === "Ethereum"
+    ? entry.value
+    : undefined
+}
+
+export const getAccountKey20 = (asset: Asset) => {
+  const entry = getLocationEntry(asset, "AccountKey20")
+  return entry?.type === "AccountKey20" ? entry.value : undefined
 }
 
 export const getExternalId = (asset: Asset) => {
@@ -207,7 +230,9 @@ export const getExternalId = (asset: Asset) => {
   switch (parachainId) {
     case pendulum.parachainId: {
       const generalKey = getGeneralKey(asset)
-      return getPendulumAssetIdFromGeneralKey(generalKey)
+      return generalKey
+        ? getPendulumAssetIdFromGeneralKey(generalKey)
+        : undefined
     }
     case assethub.parachainId:
       return getGeneralIndex(asset)

@@ -107,12 +107,12 @@ export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
   })
 
 export const useAllPools = () => {
-  const { isApiLoaded, tradeRouter } = useRpcProvider()
+  const { isApiLoaded, legacy_tradeRouter } = useRpcProvider()
   const queryClient = useQueryClient()
   const activeQueriesAmount = useIsActiveQueries(["pools"])
 
   return useQuery({
-    ...allPools(tradeRouter, queryClient),
+    ...allPools(legacy_tradeRouter, queryClient),
     notifyOnChangeProps: [],
     enabled: isApiLoaded && activeQueriesAmount,
   })

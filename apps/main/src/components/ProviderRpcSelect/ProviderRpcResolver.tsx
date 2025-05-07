@@ -23,7 +23,6 @@ export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
     const bestRpc = first(result)
 
     if (bestRpc) {
-      console.log(bestRpc)
       queryClient.setQueryData(
         rpcStatusQueryOptions(bestRpc.url).queryKey,
         bestRpc,

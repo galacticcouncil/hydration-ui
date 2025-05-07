@@ -1,28 +1,32 @@
 import { queryOptions, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export const bestNumberQuery = (context: TProviderContext) => {
-  const { isApiLoaded, api, endpoint } = context
+  const { isApiLoaded, papi, endpoint } = context
 
   return queryOptions({
     enabled: isApiLoaded,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "bestNumber", endpoint],
     queryFn: async () => {
-      const [validationData, parachainBlockNumber, timestamp] =
-        await Promise.all([
-          api.query.parachainSystem.validationData(),
-          api.derive.chain.bestNumber(),
-          api.query.timestamp.now(),
-        ])
+      const [validationData, blockNumber, timestamp] = await Promise.all([
+        papi.query.ParachainSystem.ValidationData.getValue({
+          at: "best",
+        }),
+        papi.query.System.Number.getValue({
+          at: "best",
+        }),
+        papi.query.Timestamp.Now.getValue({
+          at: "best",
+        }),
+      ])
 
-      const relaychainBlockNumber = validationData.unwrap().relayParentNumber
       return {
-        parachainBlockNumber: parachainBlockNumber.toNumber(),
-        relaychainBlockNumber: relaychainBlockNumber.toNumber(),
-        timestamp: timestamp.toNumber(),
+        parachainBlockNumber: blockNumber,
+        relaychainBlockNumber: validationData?.relay_parent_number,
+        timestamp: Number(timestamp),
       }
     },
   })
@@ -30,25 +34,21 @@ export const bestNumberQuery = (context: TProviderContext) => {
 
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
-  const { api, isLoaded } = useRpcProvider()
-
-  const cancelRef = useRef<VoidFunction | null>(null)
+  const { isLoaded, papi } = useRpcProvider()
 
   useEffect(() => {
-    if (isLoaded) {
-      api.rpc.chain
-        .subscribeNewHeads(() => {
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEY_BLOCK_PREFIX],
-          })
+    if (!isLoaded) return
+
+    const sub = papi.query.System.Number.watchValue("best").subscribe({
+      next: () => {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEY_BLOCK_PREFIX],
         })
-        .then((cancel) => {
-          cancelRef.current = cancel
-        })
-    }
+      },
+    })
 
     return () => {
-      cancelRef.current?.()
+      sub.unsubscribe()
     }
-  }, [isLoaded, api, queryClient])
+  }, [isLoaded, papi, queryClient])
 }
