@@ -15,7 +15,10 @@ import { TAssetData } from "@/api/assets"
 import { AssetSelectModal, Logo } from "@/components"
 import { useAssetPrice } from "@/states/displayAsset"
 
-export type AssetSelectProps = Omit<AssetInputProps, "dollarValue"> & {
+export type AssetSelectProps = Omit<
+  AssetInputProps,
+  "dollarValue" | "dollarValueLoading"
+> & {
   assets: TAssetData[]
   selectedAsset: TAssetData | undefined | null
   setSelectedAsset?: (asset: TAssetData) => void
@@ -58,6 +61,7 @@ export const AssetSelect = ({
   setSelectedAsset,
   ...props
 }: AssetSelectProps) => {
+  const { t } = useTranslation()
   const [openModal, setOpeModal] = useState(false)
 
   const {
@@ -74,7 +78,6 @@ export const AssetSelect = ({
     <>
       <AssetInput
         {...props}
-        onAsssetBtnClick={() => setOpeModal(true)}
         selectedAssetIcon={
           selectedAsset ? <Logo id={selectedAsset.id} /> : undefined
         }
@@ -82,6 +85,8 @@ export const AssetSelect = ({
         modalDisabled={!setSelectedAsset}
         dollarValue={price}
         dollarValueLoading={assetPriceLoading}
+        formatValue={(value) => t("number", { value })}
+        onAsssetBtnClick={() => setOpeModal(true)}
       />
 
       <AssetSelectModal

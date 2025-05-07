@@ -1,4 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect } from "react"
@@ -37,61 +37,54 @@ const useSchema = () => {
       price: z.string(),
       isPartiallyFillable: z.boolean(),
     })
-    .superRefine(({ offerAsset, buyAsset }, ctx) => {
-      if (!offerAsset || !buyAsset || offerAsset.id == buyAsset.id) {
-        ctx.addIssue({
-          code: "custom",
-          message: i18n.t("trade:otc.placeOrder.validation.sameAssets"),
-          path: ["buyAsset" satisfies keyof PlaceOrderFormValues],
-        })
-      }
-    })
-    .superRefine(({ offerAsset, offerAmount }, ctx) => {
-      const isValid = validateExistentialDeposit(
-        offerAsset,
-        offerAmount || "0",
-        existentialDepositMultiplier,
-      )
+    .check(
+      z.refine(
+        ({ offerAsset, buyAsset }) =>
+          !offerAsset || !buyAsset || offerAsset.id !== buyAsset.id,
+        {
+          error: i18n.t("trade:otc.placeOrder.validation.sameAssets"),
+          path: ["buyAsset"],
+        },
+      ),
+      z.refine(
+        ({ offerAsset, offerAmount }) =>
+          validateExistentialDeposit(
+            offerAsset,
+            offerAmount || "0",
+            existentialDepositMultiplier,
+          ),
+        {
+          error: existentialDepositError,
+          path: ["offerAmount"],
+        },
+      ),
+      z.refine(
+        ({ offerAsset, offerAmount }) => {
+          const balance = scaleHuman(
+            balances[offerAsset?.id ?? ""]?.total ?? 0n,
+            offerAsset?.decimals ?? 12,
+          )
 
-      if (!isValid) {
-        ctx.addIssue({
-          code: "custom",
-          message: existentialDepositError,
-          path: ["offerAmount" satisfies keyof PlaceOrderFormValues],
-        })
-      }
-    })
-    .superRefine(({ offerAsset, offerAmount }, ctx) => {
-      const balance = scaleHuman(
-        balances[offerAsset?.id ?? ""]?.total ?? 0n,
-        offerAsset?.decimals ?? 12,
-      )
-
-      const isValid = validateMaxBalance(balance, offerAmount || "0")
-
-      if (!isValid) {
-        ctx.addIssue({
-          code: "custom",
-          message: maxBalanceError,
-          path: ["offerAmount" satisfies keyof PlaceOrderFormValues],
-        })
-      }
-    })
-    .superRefine(({ buyAsset, buyAmount }, ctx) => {
-      const isValid = validateExistentialDeposit(
-        buyAsset,
-        buyAmount || "0",
-        existentialDepositMultiplier,
-      )
-
-      if (!isValid) {
-        ctx.addIssue({
-          code: "custom",
-          message: existentialDepositError,
-          path: ["buyAmount" satisfies keyof PlaceOrderFormValues],
-        })
-      }
-    })
+          return validateMaxBalance(balance, offerAmount || "0")
+        },
+        {
+          error: maxBalanceError,
+          path: ["offerAmount"],
+        },
+      ),
+      z.refine(
+        ({ buyAsset, buyAmount }) =>
+          validateExistentialDeposit(
+            buyAsset,
+            buyAmount || "0",
+            existentialDepositMultiplier,
+          ),
+        {
+          error: existentialDepositError,
+          path: ["buyAmount"],
+        },
+      ),
+    )
 }
 
 export type PlaceOrderFormValues = z.infer<ReturnType<typeof useSchema>>
@@ -108,7 +101,7 @@ export const usePlaceOrderForm = () => {
 
   const form = useForm<PlaceOrderFormValues>({
     defaultValues,
-    resolver: zodResolver(useSchema()),
+    resolver: standardSchemaResolver(useSchema()),
     mode: "onChange",
   })
 

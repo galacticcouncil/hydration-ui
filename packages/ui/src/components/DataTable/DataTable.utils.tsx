@@ -17,7 +17,7 @@ import { useBreakpoints } from "@/theme"
 
 export type UseDataTableOwnOptions = {
   paginated?: boolean
-  expandable?: boolean
+  expandable?: boolean | "single"
   isLoading?: boolean
   skeletonRowCount?: number
 }
@@ -113,7 +113,7 @@ export const useDataTable = <TData extends RowData>({
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: paginated ? getPaginationRowModel() : undefined,
     getExpandedRowModel: expandable ? getExpandedRowModel() : undefined,
-    getRowCanExpand: () => expandable,
+    getRowCanExpand: () => !!expandable,
     getFilteredRowModel:
       typeof options.state?.globalFilter === "string"
         ? getFilteredRowModel()

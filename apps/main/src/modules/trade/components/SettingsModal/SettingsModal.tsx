@@ -10,7 +10,7 @@ import {
   SliderTabs,
   Text,
 } from "@galacticcouncil/ui/components"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -44,7 +44,7 @@ export const SettingsModal = ({ onOpenChange }: SettingsModalProps) => {
   } = useForm<FormValues>({
     defaultValues: { swap: slippage, twap: slippageTwap },
     mode: "onChange",
-    resolver: zodResolver(useSettingsValidation()),
+    resolver: standardSchemaResolver(useSettingsValidation()),
   })
 
   const handleClose = () => {

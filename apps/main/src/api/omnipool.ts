@@ -58,7 +58,7 @@ const getTVL = async () => {
     return tvlResponseSchema.parse(rawData)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error("Invalid TVL data:", error.errors)
+      console.error("Invalid TVL data:", z.prettifyError(error))
     }
     throw error
   }
@@ -78,7 +78,7 @@ const geFee = async () => {
     return feeResponseSchema.parse(rawData)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error("Invalid fee data:", error.errors)
+      console.error("Invalid fee data:", z.prettifyError(error))
     }
     throw error
   }

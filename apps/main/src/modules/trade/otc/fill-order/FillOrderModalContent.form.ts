@@ -1,4 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect } from "react"
@@ -53,7 +53,7 @@ export const useFillOrderForm = (
   const schema = useSchema(otcOffer, assetInBalance)
   const form = useForm<FillOrderFormValues>({
     defaultValues,
-    resolver: isUsersOffer ? undefined : zodResolver(schema),
+    resolver: isUsersOffer ? undefined : standardSchemaResolver(schema),
     mode: "onChange",
   })
 

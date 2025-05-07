@@ -9,7 +9,7 @@ import {
   XykDeposit,
 } from "@/api/account"
 
-import { useOmnipoolPositionData } from "./liquidity"
+import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
 export type Balance = {
   assetId: string
@@ -138,6 +138,14 @@ export const useAccountPositions = () => {
   return { positions, isPositions, getPositions }
 }
 
+export type OmnipoolPositionWithData = OmnipoolPosition & {
+  readonly data: OmnipoolPositionData | undefined
+}
+
+export type OmnipoolMiningPositionWithData = OmnipoolDepositFull & {
+  readonly data: OmnipoolPositionData | undefined
+}
+
 export const useAccountOmnipoolPositionsData = () => {
   const positions = useAccountData(prop("positions"))
   const { omnipool, omnipoolMining } = positions
@@ -148,14 +156,16 @@ export const useAccountOmnipoolPositionsData = () => {
   const data = useMemo(() => {
     if (!isLoading) {
       return {
-        omnipool: omnipool.map((position) => {
+        omnipool: omnipool.map<OmnipoolPositionWithData>((position) => {
           const data = getData(position)
           return { ...position, data }
         }),
-        omnipoolMining: omnipoolMining.map((position) => {
-          const data = getData(position)
-          return { ...position, data }
-        }),
+        omnipoolMining: omnipoolMining.map<OmnipoolMiningPositionWithData>(
+          (position) => {
+            const data = getData(position)
+            return { ...position, data }
+          },
+        ),
       }
     }
   }, [getData, isLoading, omnipool, omnipoolMining])

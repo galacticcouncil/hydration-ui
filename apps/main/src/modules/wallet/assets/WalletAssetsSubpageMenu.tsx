@@ -4,13 +4,19 @@ export const WalletAssetsSubpageMenu = () => {
   return (
     <SubpageMenu
       items={[
-        { to: "/wallet/assets?category=all", title: "All" },
         {
-          to: "/wallet/assets?category=assets",
+          to: "/wallet/assets",
+          search: { category: "all" },
+          title: "All",
+        },
+        {
+          to: "/wallet/assets",
+          search: { category: "assets" },
           title: "Assets",
         },
         {
-          to: "/wallet/assets?category=liquidity",
+          to: "/wallet/assets",
+          search: { category: "liquidity" },
           title: "Liquidity",
         },
       ]}
