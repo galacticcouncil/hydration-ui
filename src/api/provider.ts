@@ -14,6 +14,7 @@ import {
   CachingPoolService,
   PoolType,
   TradeRouter,
+  TradeUtils,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
@@ -397,6 +398,7 @@ export const useProviderData = (
       const dataEnv = getProviderDataEnv(endpoint)
 
       const poolService = new CachingPoolService(api)
+      const txUtils = new TradeUtils(api)
       const traderRoutes = [
         PoolType.Omni,
         PoolType.Stable,
@@ -459,6 +461,7 @@ export const useProviderData = (
         api,
         evm,
         tradeRouter,
+        txUtils,
         poolService,
         balanceClient,
         endpoint,
