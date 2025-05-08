@@ -105,13 +105,8 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
-    name: "3",
-    url: "wss://3.rpc.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
     name: "5",
-    url: "wss://5.rpc.hydration.cloud",
+    url: "wss://rpc.5.hydration.cloud",
     ...defaultProvider,
   },
   {
