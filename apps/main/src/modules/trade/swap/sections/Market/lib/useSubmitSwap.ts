@@ -16,8 +16,11 @@ import { scaleHuman } from "@/utils/formatting"
 export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { papi, sdk } = useRpcProvider()
+
   const {
-    single: { swapSlippage },
+    swap: {
+      single: { swapSlippage },
+    },
   } = useTradeSettings()
 
   const { account } = useAccount()
@@ -33,32 +36,9 @@ export const useSubmitSwap = () => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
 
-      if (!sellAsset || !buyAsset || !address) {
+      if (!address) {
         return
       }
-
-      const params =
-        type === TradeType.Sell
-          ? {
-              in: t("currency", {
-                value: scaleHuman(amountIn, sellAsset.decimals),
-                symbol: sellAsset.symbol,
-              }),
-              out: t("currency", {
-                value: scaleHuman(amountOut, buyAsset.decimals),
-                symbol: buyAsset.symbol,
-              }),
-            }
-          : {
-              in: t("currency", {
-                value: scaleHuman(amountOut, buyAsset.decimals),
-                symbol: buyAsset.symbol,
-              }),
-              out: t("currency", {
-                value: scaleHuman(amountIn, sellAsset.decimals),
-                symbol: sellAsset.symbol,
-              }),
-            }
 
       const callData = await sdk.tx
         .trade(swap)
@@ -66,6 +46,34 @@ export const useSubmitSwap = () => {
         .withBeneficiary(address)
         .build()
         .then((tx) => tx.get().getEncodedData())
+
+      const sellDecimals = sellAsset?.decimals ?? 0
+      const sellSymbol = sellAsset?.symbol ?? ""
+      const buyDecimals = buyAsset?.decimals ?? 0
+      const buySymbol = buyAsset?.symbol ?? ""
+
+      const params =
+        type === TradeType.Sell
+          ? {
+              in: t("currency", {
+                value: scaleHuman(amountIn, sellDecimals),
+                symbol: sellSymbol,
+              }),
+              out: t("currency", {
+                value: scaleHuman(amountOut, buyDecimals),
+                symbol: buySymbol,
+              }),
+            }
+          : {
+              in: t("currency", {
+                value: scaleHuman(amountOut, buyDecimals),
+                symbol: buySymbol,
+              }),
+              out: t("currency", {
+                value: scaleHuman(amountIn, sellDecimals),
+                symbol: sellSymbol,
+              }),
+            }
 
       await createTransaction({
         tx: await papi.txFromCallData(callData),

@@ -19,10 +19,13 @@ export const MarketWarnings: FC<Props> = ({ isSingleTrade, twap }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { t } = useTranslation("trade")
   const { watch } = useFormContext<MarketFormValues>()
-  const {
-    split: { twapSlippage },
-  } = useTradeSettings()
   const sellAsset = watch("sellAsset")
+
+  const {
+    swap: {
+      split: { twapSlippage },
+    },
+  } = useTradeSettings()
 
   return (
     <Flex direction="column" gap={6} mt={10}>
