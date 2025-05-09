@@ -1,3 +1,4 @@
+import { DashboardReserve } from "@galacticcouncil/money-market/utils"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -13,13 +14,10 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components"
-import { MOCK_DATA } from "@/modules/borrow/_mock"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
-export type SupplyAsset = (typeof MOCK_DATA)[number]
-
-const columnHelper = createColumnHelper<SupplyAsset>()
+const columnHelper = createColumnHelper<DashboardReserve>()
 
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 

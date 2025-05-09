@@ -1,3 +1,4 @@
+import { useSupplyAssetsData } from "@galacticcouncil/money-market/hooks"
 import {
   DataTable,
   Paper,
@@ -6,12 +7,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
-import { MOCK_DATA } from "@/modules/borrow/_mock"
 import { SupplyAssetsHeader } from "@/modules/borrow/dashboard/components/SupplyAssetsHeader"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/SupplyAssetsTable.columns"
 
 export const SupplyAssetsTable = () => {
   const columns = useSupplyAssetsTableColumns()
+  const { data, isLoading } = useSupplyAssetsData({ showAll: true })
   const navigate = useNavigate()
 
   return (
@@ -20,6 +21,7 @@ export const SupplyAssetsTable = () => {
       <Separator />
       <TableContainer>
         <DataTable
+          isLoading={isLoading}
           onRowClick={(row) =>
             navigate({
               to: `/borrow/markets/${row.underlyingAsset}`,
@@ -27,7 +29,7 @@ export const SupplyAssetsTable = () => {
           }
           fixedLayout
           hoverable
-          data={MOCK_DATA}
+          data={data}
           columns={columns}
         />
       </TableContainer>

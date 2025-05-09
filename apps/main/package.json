@@ -25,6 +25,7 @@
   "dependencies": {
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",
+    "@galacticcouncil/money-market": "*",
     "@galacticcouncil/web3-connect": "*",
     "@emotion/babel-plugin": "^11.12.0",
     "@emotion/react": "^11.13.3",
