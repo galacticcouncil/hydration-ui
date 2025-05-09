@@ -1,0 +1,19 @@
+query OmnipoolYieldMetrics {
+    omnipoolAssetsYieldMetrics {
+        nodes {
+            assetId
+            projectedAprPerc
+        }
+    }
+}
+
+
+query StableswapYieldMetrics($filter: StableswapYieldMetricsFilter!) {
+    stableswapYieldMetrics(filter: $filter ) {
+        nodes {
+            poolId
+            projectedAprPerc
+            projectedApyPerc
+        }
+    }
+}
