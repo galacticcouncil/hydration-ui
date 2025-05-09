@@ -31,6 +31,9 @@ export const SEO_METADATA = {
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   return {
+    server: {
+      port: 5174,
+    },
     build: {
       target: "esnext",
       outDir: "build",
