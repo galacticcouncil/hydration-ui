@@ -1,23 +1,24 @@
 import { Button } from "@/components/Button"
 import { SSliderTabs } from "@/components/SliderTabs/SliderTabs.styled"
 
-export type SliderTabsOption<T> = {
-  readonly id: string
+type SliderTabsOptionKey = string | number
+
+export type SliderTabsOption<TKey extends SliderTabsOptionKey> = {
+  readonly id: TKey
   readonly label: string
-  readonly value: T
 }
 
-type SliderTabsProps<T> = {
-  readonly options: ReadonlyArray<SliderTabsOption<T>>
-  readonly selected?: string
-  readonly onSelect: (option: SliderTabsOption<T>) => void
+type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
+  readonly options: ReadonlyArray<SliderTabsOption<TKey>>
+  readonly selected?: NoInfer<TKey>
+  readonly onSelect: (option: SliderTabsOption<NoInfer<TKey>>) => void
 }
 
-export const SliderTabs = <T,>({
+export const SliderTabs = <TKey extends SliderTabsOptionKey>({
   options,
   selected,
   onSelect,
-}: SliderTabsProps<T>) => {
+}: SliderTabsProps<TKey>) => {
   return (
     <SSliderTabs>
       {options.map((option) => {

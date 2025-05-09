@@ -27,6 +27,7 @@ fragment Swap on Swap {
       schedule {
         id
         status
+        assetInId
         budgetAmountIn: totalAmount
         totalExecutedAmountIn
       }

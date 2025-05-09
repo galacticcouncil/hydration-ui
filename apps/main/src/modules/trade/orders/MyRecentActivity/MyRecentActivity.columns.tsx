@@ -134,7 +134,7 @@ export const useMyRecentActivityColumns = () => {
                       scheduleId={status.scheduleId}
                       sold={status.sold}
                       total={status.total}
-                      symbol={row.original.to.symbol}
+                      symbol={status.symbol}
                       onClose={() => setModal("none")}
                     />
                   </Modal>

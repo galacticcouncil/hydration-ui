@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TProviderContext } from "@/providers/rpcProvider"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { GC_TIME, QUERY_KEY_BLOCK_PREFIX, STALE_TIME } from "@/utils/consts"
 
 type BestSellArgs = {
   readonly assetIn: string
@@ -59,8 +59,8 @@ type BestBuyArgs = {
 export const bestBuyQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut }: BestBuyArgs,
-) => {
-  return queryOptions({
+) =>
+  queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,
       "trade",
@@ -73,13 +73,12 @@ export const bestBuyQuery = (
       sdk.api.router.getBestBuy(Number(assetIn), Number(assetOut), amountOut),
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
-}
 
 export const bestBuyTwapQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut }: BestBuyArgs,
-) => {
-  return queryOptions({
+) =>
+  queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,
       "trade",
@@ -95,5 +94,54 @@ export const bestBuyTwapQuery = (
         amountOut,
       ),
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+  })
+
+type DcaTradeOrderArgs = {
+  readonly assetIn: string
+  readonly assetOut: string
+  readonly amountIn: string
+  readonly duration: number
+}
+
+export const dcaTradeOrderQuery = (
+  { sdk, isLoaded }: TProviderContext,
+  { assetIn, assetOut, amountIn, duration }: DcaTradeOrderArgs,
+) =>
+  queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "dcaTradeOrder",
+      assetIn,
+      assetOut,
+      amountIn,
+      duration,
+    ],
+    queryFn: () =>
+      sdk.api.scheduler.getDcaOrder(
+        Number(assetIn),
+        Number(assetOut),
+        amountIn,
+        duration,
+      ),
+    enabled:
+      isLoaded &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountIn || "0").gt(0) &&
+      duration >= 0,
+  })
+
+export const minimumOrderBudgetQuery = (
+  { isLoaded, sdk }: TProviderContext,
+  assetId: string,
+) => {
+  return queryOptions({
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "trade", "minOrderBudget", assetId],
+    queryFn: async () =>
+      sdk.api.scheduler.getMinimumOrderBudget(Number(assetId)),
+    enabled: isLoaded,
+    gcTime: GC_TIME,
+    staleTime: STALE_TIME,
   })
 }

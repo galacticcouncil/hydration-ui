@@ -1,3 +1,5 @@
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
+
 export const HYDRATION_PARACHAIN_ID = 2034
 export const HYDRATION_CHAIN_KEY = "hydration"
 
@@ -17,3 +19,6 @@ export const PARACHAIN_BLOCK_TIME = 12_000
 export const QUERY_KEY_BLOCK_PREFIX = "@block"
 
 export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID]
+
+export const GC_TIME = millisecondsInDay
+export const STALE_TIME = millisecondsInHour

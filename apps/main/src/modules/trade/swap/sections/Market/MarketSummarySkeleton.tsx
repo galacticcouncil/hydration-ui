@@ -16,15 +16,15 @@ export const MarketSummarySkeleton: FC = () => {
         rows={[
           {
             label: t("market.summary.priceImpact"),
-            content: <Skeleton sx={{ width: 150 }} />,
+            content: <Skeleton sx={{ width: 150, marginLeft: "auto" }} />,
           },
           {
             label: t("market.summary.estTradeFees"),
-            content: <Skeleton sx={{ width: 150 }} />,
+            content: <Skeleton sx={{ width: 150, marginLeft: "auto" }} />,
           },
           {
             label: t("market.summary.minReceived"),
-            content: <Skeleton sx={{ width: 150 }} />,
+            content: <Skeleton sx={{ width: 150, marginLeft: "auto" }} />,
           },
         ]}
       />

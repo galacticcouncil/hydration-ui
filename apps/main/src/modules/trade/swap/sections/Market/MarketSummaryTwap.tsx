@@ -29,9 +29,12 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
-    single: { swapSlippage },
-    split: { twapSlippage },
+    swap: {
+      single: { swapSlippage },
+      split: { twapSlippage },
+    },
   } = useTradeSettings()
+
   const form = useFormContext<MarketFormValues>()
   const { watch } = form
   const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
