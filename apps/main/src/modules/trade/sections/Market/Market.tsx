@@ -1,10 +1,4 @@
-import {
-  Button,
-  Flex,
-  Separator,
-  Text,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
+import { Button, Flex, Separator, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,7 +6,7 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { DynamicFee } from "@/components"
+import { DynamicFee, DynamicFeeRangeType } from "@/components"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { Summary } from "@/components/Summary"
 import { useAssets } from "@/providers/assetsProvider"
@@ -31,7 +25,11 @@ type FormValues = {
   buyAsset: TAssetData | undefined
 }
 
-const range = { low: 1, middle: 1.5, high: 2 }
+const range: Record<DynamicFeeRangeType, number> = {
+  low: 1,
+  middle: 1.5,
+  high: 2,
+}
 
 export const Market = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -140,13 +138,11 @@ export const Market = () => {
             {
               label: "Est. trade fees:",
               content: (
-                <Flex align="center" gap={8}>
-                  <Text fs="p6" fw={500} color={getToken("text.high")}>
-                    {t("percent", { value: "2.5" })}
-                  </Text>
-                  <DynamicFee range={range} value={2.5} />
-                  <Tooltip text="Some information about trade fees" />
-                </Flex>
+                <DynamicFee
+                  range={range}
+                  value={2.5}
+                  tooltip="Some information about trade fees"
+                />
               ),
             },
             {
