@@ -35,6 +35,9 @@ export default defineConfig({
     },
   },
   plugins: [
+    TanStackRouterVite({
+      autoCodeSplitting: true,
+    }),
     react({
       jsxImportSource: "@galacticcouncil/ui/jsx",
       babel: {
@@ -65,6 +68,5 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
-    TanStackRouterVite(),
   ],
 })
