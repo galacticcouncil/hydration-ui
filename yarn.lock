@@ -3576,11 +3576,6 @@
   resolved "https://registry.yarnpkg.com/@tanstack/virtual-file-routes/-/virtual-file-routes-1.115.0.tgz#7d5bfa133808cf6718687a54822671ecf744a9bb"
   integrity sha512-XLUh1Py3AftcERrxkxC5Y5m5mfllRH3YR6YVlyjFgI2Tc2Ssy2NKmQFQIafoxfW459UJ8Dn81nWKETEIJifE4g==
 
-"@tanstack/zod-adapter@^1.120.3":
-  version "1.120.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/zod-adapter/-/zod-adapter-1.120.3.tgz#2d79439c2fb437af2483207c23c9369ccae1fa2e"
-  integrity sha512-eu7WbZen8o9bzTeBeMB2H3vM8dxNmCsywuBQxGmmtsOxAms3fP8SJJWkRu/B0ZFryWo8BujjT6WlOUiy9zGiYA==
-
 "@testing-library/dom@10.4.0":
   version "10.4.0"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-10.4.0.tgz#82a9d9462f11d240ecadbf406607c6ceeeff43a8"

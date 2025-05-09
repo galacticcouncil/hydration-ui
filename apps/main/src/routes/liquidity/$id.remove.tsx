@@ -1,5 +1,4 @@
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
-import { zodValidator } from "@tanstack/zod-adapter"
 import z from "zod"
 
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
@@ -10,7 +9,7 @@ const RemoveLiquiditySchema = z.object({
 
 export const Route = createFileRoute("/liquidity/$id/remove")({
   component: RouteComponent,
-  validateSearch: zodValidator(RemoveLiquiditySchema),
+  validateSearch: RemoveLiquiditySchema,
 })
 
 function RouteComponent() {

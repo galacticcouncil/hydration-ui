@@ -1,50 +1,54 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SFeeSection } from "./DynamicFee.styled"
-
-const rangeTypes = ["low", "middle", "high"] as const
-export type RangeType = (typeof rangeTypes)[number]
+import {
+  DynamicFeeRangeType,
+  dynamicFeeRangeTypes,
+  SFeeSection,
+} from "@/components/DynamicFee/DynamicFee.styled"
 
 type DynamicFeeProps = {
-  value?: number
-  range: Record<RangeType, number>
-  displayValue?: boolean
+  readonly value?: number
+  readonly range: Record<DynamicFeeRangeType, number>
+  readonly tooltip?: string
+  readonly displayValue?: boolean
 }
 
-export const DynamicFee = ({ value, range, displayValue }: DynamicFeeProps) => {
-  const { t } = useTranslation("common")
+export const DynamicFee = ({
+  value,
+  range,
+  tooltip,
+  displayValue = true,
+}: DynamicFeeProps) => {
+  const { t } = useTranslation()
 
-  const currentKey = useMemo(() => {
-    if (value) {
-      let currentKey: RangeType = "high"
+  const currentKey = useMemo((): DynamicFeeRangeType | undefined => {
+    if (!value) {
+      return undefined
+    }
 
-      for (const key in range) {
-        const typedKey = key as RangeType
-        const rangeValue = range[typedKey]
+    for (const key in range) {
+      const typedKey = key as DynamicFeeRangeType
+      const rangeValue = range[typedKey]
 
-        if (value <= rangeValue) {
-          currentKey = typedKey
-          break
-        }
+      if (value <= rangeValue) {
+        return typedKey
       }
-
-      return currentKey
     }
     return undefined
   }, [value, range])
 
   return (
-    <Flex align="center" gap={8}>
+    <Flex gap={8} align="center">
       {displayValue && (
-        <Text color={getToken("text.high")} fs="p6" fw={500}>
+        <Text fs="p6" fw={500} color={getToken("text.high")}>
           {t("percent", { value })}
         </Text>
       )}
       <Flex p="1px 2px" gap={1} height="min-content">
-        {rangeTypes.map((rangeType) => {
+        {dynamicFeeRangeTypes.map((rangeType) => {
           const isActive = rangeType === currentKey
 
           return (
@@ -54,6 +58,7 @@ export const DynamicFee = ({ value, range, displayValue }: DynamicFeeProps) => {
           )
         })}
       </Flex>
+      {tooltip && <Tooltip text={tooltip} />}
     </Flex>
   )
 }

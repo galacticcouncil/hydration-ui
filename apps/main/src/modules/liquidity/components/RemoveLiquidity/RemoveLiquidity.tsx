@@ -275,7 +275,6 @@ export const RemoveLiquidity = ({
                 <DynamicFee
                   range={range}
                   value={Number(values?.withdrawalFee)}
-                  displayValue
                 />
               }
               sx={{ px: getTokenPx("containers.paddings.primary") }}

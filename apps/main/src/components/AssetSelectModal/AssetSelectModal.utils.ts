@@ -23,32 +23,32 @@ export const useAssetSelectModalAssets = (
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(assetsBalanceIds)
 
-  const sortedAssets = useMemo(() => {
-    const assetsWithBalances = assets.map((asset) => {
-      const balance = scaleHuman(getFreeBalance(asset.id), asset.decimals)
+  const assetsWithBalances = assets.map((asset) => {
+    const balance = scaleHuman(getFreeBalance(asset.id), asset.decimals)
 
-      const { price, isValid } = getAssetPrice(asset.id)
-      const balanceDisplay = isValid
-        ? Big(price).times(balance).toString()
-        : "0"
+    const { price, isValid } = getAssetPrice(asset.id)
+    const balanceDisplay = isValid ? Big(price).times(balance).toString() : "0"
 
-      return {
-        ...asset,
-        balance,
-        balanceDisplay,
-      }
-    })
+    return {
+      ...asset,
+      balance,
+      balanceDisplay,
+    }
+  })
 
-    const filteredAssets = search.length
-      ? assetsWithBalances.filter(
-          (asset) =>
-            asset.name.toLowerCase().includes(search.toLowerCase()) ||
-            asset.symbol.toLowerCase().includes(search.toLowerCase()),
-        )
-      : assetsWithBalances
+  const filteredAssets = search.length
+    ? assetsWithBalances.filter(
+        (asset) =>
+          asset.name.toLowerCase().includes(search.toLowerCase()) ||
+          asset.symbol.toLowerCase().includes(search.toLowerCase()),
+      )
+    : assetsWithBalances
 
-    return sortAssets(filteredAssets, "balanceDisplay", selectedAssetId)
-  }, [assets, getFreeBalance, getAssetPrice, selectedAssetId, search])
+  const sortedAssets = sortAssets(
+    filteredAssets,
+    "balanceDisplay",
+    selectedAssetId,
+  )
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
 }

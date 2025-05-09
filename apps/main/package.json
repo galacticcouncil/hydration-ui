@@ -34,7 +34,6 @@
     "@tanstack/react-router": "^1.120.3",
     "@tanstack/react-virtual": "^3.13.0",
     "@tanstack/router-plugin": "^1.120.3",
-    "@tanstack/zod-adapter": "^1.120.3",
     "big.js": "^6.2.2",
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",
