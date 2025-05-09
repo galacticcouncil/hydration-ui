@@ -14,7 +14,9 @@ import { PoolToken } from "@galacticcouncil/sdk"
 import { useMemo } from "react"
 import { useSquidUrl } from "./provider"
 import { millisecondsInHour } from "date-fns"
-import request, { gql } from "graphql-request"
+import request from "graphql-request"
+import { OmnipoolYieldMetricsDocument } from "graphql/__generated__/squid/graphql"
+import { isNotNil } from "utils/helpers"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -159,44 +161,16 @@ export const getTradabilityFromBits = (bits: number) => {
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
 }
 
-type OmnipoolYieldMetricsQuery = {
-  omnipoolAssetsYieldMetrics: {
-    nodes: {
-      assetId: string
-      projectedAprPerc: string
-    }[]
-  }
-}
-
 export const useOmnipoolYieldMetrics = () => {
   const url = useSquidUrl()
 
-  return useQuery(
-    QUERY_KEYS.omnipoolYieldMetrics,
+  return useQuery({
+    queryKey: QUERY_KEYS.omnipoolYieldMetrics,
+    queryFn: async () => {
+      const data = await request(url, OmnipoolYieldMetricsDocument)
 
-    async () => {
-      const { omnipoolAssetsYieldMetrics } =
-        await request<OmnipoolYieldMetricsQuery>(
-          url,
-          gql`
-            query OmnipoolYieldMetrics {
-              omnipoolAssetsYieldMetrics {
-                nodes {
-                  assetId
-                  projectedAprPerc
-                }
-              }
-            }
-          `,
-        )
-
-      const { nodes = [] } = omnipoolAssetsYieldMetrics
-
-      return nodes
+      return data.omnipoolAssetsYieldMetrics.nodes.filter(isNotNil)
     },
-
-    {
-      staleTime: millisecondsInHour,
-    },
-  )
+    staleTime: millisecondsInHour,
+  })
 }
