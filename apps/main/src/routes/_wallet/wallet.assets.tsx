@@ -5,6 +5,8 @@ import { createFileRoute } from "@tanstack/react-router"
 import { fallback, zodValidator } from "@tanstack/zod-adapter"
 import * as z from "zod"
 
+import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
+
 const searchSchema = z.object({
   category: fallback(z.enum(["all", "assets", "liquidity"]), "all").default(
     "all",
@@ -76,6 +78,7 @@ const WalletAssetsSkeleton = () => {
 }
 
 export const Route = createFileRoute("/_wallet/wallet/assets")({
+  component: WalletAssetsPage,
   pendingComponent: WalletAssetsSkeleton,
   validateSearch: zodValidator(searchSchema),
 })

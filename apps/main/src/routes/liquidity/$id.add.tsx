@@ -1,8 +1,8 @@
-import { createLazyFileRoute, useParams } from "@tanstack/react-router"
+import { createFileRoute, useParams } from "@tanstack/react-router"
 
 import { AddLiquidity } from "@/modules/liquidity/components/AddLiquidity"
 
-export const Route = createLazyFileRoute("/liquidity/$id/add")({
+export const Route = createFileRoute("/liquidity/$id/add")({
   component: RouteComponent,
 })
 
