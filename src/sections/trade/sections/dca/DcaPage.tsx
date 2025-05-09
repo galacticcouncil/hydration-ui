@@ -42,10 +42,11 @@ export function DcaPage() {
   const activeProvider = useActiveProvider()
 
   const handleSubmit = async (e: CustomEvent<TxInfo>) => {
-    const { transaction, notification } = e.detail
+    const { transaction, notification, meta } = e.detail
     await createTransaction(
       {
         tx: api.tx(transaction.hex),
+        txMeta: meta,
       },
       {
         onSuccess: () => {},

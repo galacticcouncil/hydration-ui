@@ -31,13 +31,14 @@ import { useAccountAssets } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
 import { ProtocolAction } from "@aave/contract-helpers"
+import { TradeMetadata, XcmMetadata } from "@galacticcouncil/apps"
 
 export const useTransactionValues = ({
   xcallMeta,
   overrides,
   tx,
 }: {
-  xcallMeta?: Record<string, string>
+  xcallMeta?: XcmMetadata
   overrides?: {
     currencyId?: string
     feeExtra?: BigNumber
@@ -276,6 +277,22 @@ export const useEditFeePaymentAsset = (
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
   }
+}
+
+export const useHealthFactorChangeFromTxMetadata = (
+  txMetadata?: TradeMetadata,
+) => {
+  const { assetIn, assetOut, amountIn } = txMetadata || {}
+  const amountOut = null
+  return useHealthFactorChange({
+    assetId: assetIn?.id || "",
+    amount: amountIn || "",
+    action: ProtocolAction.withdraw,
+    swapAsset:
+      assetOut && amountOut
+        ? { assetId: assetOut.id, amount: amountOut }
+        : undefined,
+  })
 }
 
 export const useHealthFactorChangeFromTx = (

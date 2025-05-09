@@ -1,8 +1,9 @@
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
+import { Transaction } from "@galacticcouncil/sdk"
+import { DryRunResult, EvmCall } from "@galacticcouncil/xcm-sdk"
 import { SubstrateApis, AnyChain, Parachain } from "@galacticcouncil/xcm-core"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { TxInfo } from "@galacticcouncil/apps"
+import { TxInfo, XcmMetadata } from "@galacticcouncil/apps"
 import { isAnyParachain } from "utils/helpers"
 import { WalletMode } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
@@ -24,10 +25,10 @@ export function getDefaultSrcChain(provider?: WalletProviderType) {
   return DEFAULT_NATIVE_CHAIN
 }
 
-export async function getSubmittableExtrinsic(txInfo: TxInfo) {
+export async function getSubmittableExtrinsic(txInfo: TxInfo<XcmMetadata>) {
   const { transaction, meta } = txInfo
 
-  const { srcChain } = meta ?? {}
+  const { srcChain } = meta!
 
   const chain = chainsMap.get(srcChain)
 
@@ -45,12 +46,11 @@ export async function getSubmittableExtrinsic(txInfo: TxInfo) {
 }
 
 export function getCall(txInfo: TxInfo) {
-  const { transaction, meta } = txInfo
+  const { transaction } = txInfo
 
-  return {
-    xcall: transaction.get<EvmCall>(),
-    xcallMeta: meta,
-  }
+  const tx = transaction as Transaction<EvmCall, DryRunResult | undefined>
+
+  return tx.get()
 }
 
 export function getNotificationToastTemplates(txInfo: TxInfo) {

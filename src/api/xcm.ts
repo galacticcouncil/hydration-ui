@@ -167,6 +167,7 @@ export const useCrossChainTransaction = ({
             dstChain: values.dstChain,
             dstChainFee: destinationFee.toDecimal(destinationFee.decimals),
             dstChainFeeSymbol: destinationFee.originSymbol,
+            tags: [],
           },
         },
         {
