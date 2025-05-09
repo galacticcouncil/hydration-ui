@@ -160,15 +160,15 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     const amount = data.amount.toBigNumber()
     const conviction = data.conviction.toString()
 
-    const referendaInfo = await api.query.referenda.referendumInfoFor(
+    const referendaInfoRaw = await api.query.referenda.referendumInfoFor(
       id as string,
     )
 
-    const isApproved = referendaInfo.isNone
-      ? false
-      : referendaInfo.unwrap().isApproved
+    if (referendaInfoRaw.isNone) return prevAcc
 
-    if (isApproved) {
+    const referendaInfo = referendaInfoRaw.unwrap()
+
+    if (referendaInfo.isApproved || referendaInfo.isRejected) {
       prevAcc.push({
         id,
         amount,
