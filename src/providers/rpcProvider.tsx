@@ -1,5 +1,6 @@
 import {
   type TradeRouter,
+  type TradeUtils,
   type PoolService,
   type BalanceClient,
 } from "@galacticcouncil/sdk"
@@ -28,6 +29,7 @@ type TProviderContext = {
   isLoaded: boolean
   poolService: PoolService
   tradeRouter: TradeRouter
+  txUtils: TradeUtils
   timestamp: string
 }
 
@@ -41,6 +43,7 @@ const defaultData: TProviderContext = {
   isLoaded: false,
   poolService: {} as TProviderContext["poolService"],
   tradeRouter: {} as TradeRouter,
+  txUtils: {} as TProviderContext["txUtils"],
   timestamp: "",
 }
 
@@ -103,6 +106,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         api: providerData.api,
         evm: providerData.evm,
         tradeRouter: providerData.tradeRouter,
+        txUtils: providerData.txUtils,
         balanceClient: providerData.balanceClient,
         featureFlags: providerData.featureFlags,
         isLoaded: providerData.api.isConnected,

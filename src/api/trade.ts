@@ -22,7 +22,7 @@ export const useBestTradeSell = (
   assetOutId: string,
   amountIn: string,
 ) => {
-  const { api, tradeRouter, isLoaded } = useRpcProvider()
+  const { api, tradeRouter, txUtils, isLoaded } = useRpcProvider()
 
   const slippageData = TradeConfigCursor.deref().slippage
 
@@ -35,11 +35,11 @@ export const useBestTradeSell = (
   const amountOut = tradeData?.amountOut.toString() || "0"
   const minAmountOut = getMinAmountOut(amountOut, slippageData || "0")
 
-  const swapTx = useMemo(
-    () =>
-      tradeData ? api.tx(tradeData.toTx(BN(minAmountOut)).hex) : undefined,
-    [api, minAmountOut, tradeData],
-  )
+  const tx = tradeData
+    ? txUtils.buildSellTx(tradeData, Number(slippageData)).hex
+    : undefined
+
+  const swapTx = useMemo(() => (tx ? api.tx(tx) : undefined), [api, tx])
 
   return { minAmountOut, swapTx, amountOut, isLoading: isInitialLoading }
 }

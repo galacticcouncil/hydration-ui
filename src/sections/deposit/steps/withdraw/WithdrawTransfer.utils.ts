@@ -225,6 +225,10 @@ export const useWithdraw = (cexId: string, assetId: string) => {
             .toString(),
           srcChainFee: paymentFee.shiftedBy(-assetMeta.decimals).toString(),
           srcChainFeeSymbol: assetMeta.symbol,
+          dstChain: "",
+          dstChainFee: "",
+          dstChainFeeSymbol: "",
+          tags: [],
         },
       },
       {

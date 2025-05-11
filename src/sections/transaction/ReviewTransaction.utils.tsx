@@ -52,6 +52,7 @@ import { getSolanaTxLink } from "utils/solana"
 import { TxEvent } from "polkadot-api"
 import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
+import { XcmMetadata } from "@galacticcouncil/apps"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -66,7 +67,7 @@ function isTxMethod(x: AnyJson): x is TxMethod {
 }
 
 export type TTxErrorData = {
-  [key: string]: string | number | boolean | null | undefined
+  [key: string]: string | string[] | number | boolean | null | undefined
 }
 
 export class TransactionError extends Error {
@@ -83,12 +84,9 @@ export class TransactionError extends Error {
 
 type TxHuman = Record<string, { args: TxMethod["args"] }>
 
-function getXcmTab(tags?: string) {
+function getXcmTab(tags?: string[]) {
   if (!tags) return undefined
-
-  const parts = tags.split(",")
-
-  return parts[parts.length - 1] as MetaTags
+  return tags as unknown as MetaTags
 }
 
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
@@ -233,7 +231,7 @@ export const useSendEvmTransactionMutation = (
   > = {},
   id: string,
   toast?: ToastMessage,
-  xcallMeta?: Record<string, string>,
+  xcallMeta?: XcmMetadata,
 ) => {
   const { account } = useAccount()
   const { t } = useTranslation()
@@ -339,7 +337,7 @@ export const useSendSolanaTransactionMutation = (
   options: MutationObserverOptions<ISubmittableResult, unknown, string> = {},
   id: string,
   toast?: ToastMessage,
-  xcallMeta?: Record<string, string>,
+  xcallMeta?: XcmMetadata,
 ) => {
   const { t } = useTranslation()
   const { account } = useAccount()
@@ -497,7 +495,7 @@ export const usePendingDispatchPermit = (
 
 const getTransactionData = (
   txHash: string | undefined,
-  xcallMeta?: Record<string, string>,
+  xcallMeta?: XcmMetadata,
 ) => {
   const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
   const metaTags = xcallMeta?.tags
@@ -538,7 +536,7 @@ export const useSendDispatchPermit = (
   > = {},
   id: string,
   toast?: ToastMessage,
-  xcallMeta?: Record<string, string>,
+  xcallMeta?: XcmMetadata,
 ) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
@@ -704,7 +702,7 @@ export const useSendTransactionMutation = (
   > = {},
   id: string,
   toast?: ToastMessage,
-  xcallMeta?: Record<string, string>,
+  xcallMeta?: XcmMetadata,
 ) => {
   const { account } = useAccount()
   const { api } = useRpcProvider()
@@ -1034,7 +1032,7 @@ export const useSendTx = ({
   toast?: ToastMessage
   onSuccess?: (data: ISubmittableResult) => void
   onError?: () => void
-  xcallMeta?: Record<string, string>
+  xcallMeta?: XcmMetadata
 }) => {
   const [txType, setTxType] = useState<TxType>("default")
 
