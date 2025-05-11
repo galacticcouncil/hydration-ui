@@ -29,11 +29,12 @@ import {
   SScrollableContent,
   SShowMoreButton,
 } from "./ReviewTransactionData.styled"
-import { EvmCall, SolanaCall } from "@galacticcouncil/xcm-sdk"
+import { Call } from "@galacticcouncil/xcm-sdk"
 import {
   isEvmCall,
   isSolanaCall,
 } from "sections/transaction/ReviewTransactionXCallForm.utils"
+import { XcmMetadata } from "@galacticcouncil/apps"
 
 const MAX_DECODED_HEIGHT = 130
 
@@ -43,8 +44,8 @@ type Props = {
     data: TransactionRequest
     abi?: string
   }
-  xcall?: EvmCall | SolanaCall
-  xcallMeta?: Record<string, string>
+  xcall?: Call
+  xcallMeta?: XcmMetadata
 }
 
 type TransactionMode = "auto" | "evm" | "solana" | "substrate"

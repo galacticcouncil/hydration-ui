@@ -1,6 +1,6 @@
 import { SContainer } from "./YieldDcaPage.styled"
 
-import type { TxInfo } from "@galacticcouncil/apps"
+import type { TxInfo, YieldMetadata } from "@galacticcouncil/apps"
 
 import * as React from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -35,13 +35,14 @@ export function YieldDcaPage() {
 
   const activeProvider = useActiveProvider()
 
-  const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+  const handleSubmit = async (e: CustomEvent<TxInfo<YieldMetadata>>) => {
     const { transaction, meta } = e.detail
-    const { amountInFrom, assetIn } = meta ?? {}
+    const { amountInFrom, assetIn } = meta!
 
     await createTransaction(
       {
         tx: api.tx(transaction.hex),
+        txMeta: meta,
       },
       {
         onSuccess: () => {},
@@ -53,7 +54,7 @@ export function YieldDcaPage() {
               i18nKey="yield.toast.onLoading"
               tOptions={{
                 amount: amountInFrom,
-                symbol: assetIn,
+                symbol: assetIn.symbol,
               }}
             >
               <span />
@@ -66,7 +67,7 @@ export function YieldDcaPage() {
               i18nKey="yield.toast.onSuccess"
               tOptions={{
                 amount: amountInFrom,
-                symbol: assetIn,
+                symbol: assetIn.symbol,
               }}
             >
               <span />
