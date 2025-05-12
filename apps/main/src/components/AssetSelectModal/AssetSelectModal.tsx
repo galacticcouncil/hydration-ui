@@ -9,7 +9,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
@@ -38,17 +38,13 @@ const Content = ({
   const [search, setSearch] = useState("")
   const [highlighted, setHighlighted] = useState(0)
 
-  const filteredAssets = useMemo(() => {
-    if (search.length) {
-      return assets.filter(
+  const filteredAssets = search
+    ? assets.filter(
         (asset) =>
           asset.name.toLowerCase().includes(search.toLowerCase()) ||
           asset.symbol.toLowerCase().includes(search.toLowerCase()),
       )
-    }
-
-    return assets
-  }, [assets, search])
+    : assets
 
   const virtualizer = useVirtualizer({
     count: filteredAssets.length,

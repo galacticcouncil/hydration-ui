@@ -60,7 +60,7 @@ export const PeriodInput: FC<Props> = ({ label, period, onPeriodChange }) => {
 }
 
 export const periodInputSchema = z.object({
-  value: z.number().gt(0),
+  value: z.number().gte(1),
   type: z.enum(periodTypes),
 })
 
