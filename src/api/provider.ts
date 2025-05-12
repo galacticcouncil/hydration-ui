@@ -28,6 +28,7 @@ import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { createClient } from "graphql-ws"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -494,6 +495,15 @@ export const useIndexerUrl = () => {
 export const useSquidUrl = () => {
   const activeProvider = useActiveProvider()
   return activeProvider.squidUrl
+}
+
+export const useSquidWSClient = () => {
+  const url = useSquidUrl()
+
+  return createClient({
+    webSocketImpl: WebSocket,
+    url,
+  })
 }
 
 export const useActiveProvider = (): ProviderProps => {
