@@ -9,25 +9,36 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { DCAFormValues } from "@/modules/trade/sections/DCA/DCA.form"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
+import { useAccountBalances } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 export const DCAForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control } = useFormContext<DCAFormValues>()
-  // TODO integrate
-  const { tradable } = useAssets()
+  const { control, watch } = useFormContext<DCAFormValues>()
+  const { tradable, erc20 } = useAssets()
+
+  const assets = tradable.filter((asset) => asset.isSufficient).concat(erc20)
+
+  const { balances } = useAccountBalances()
+
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
+  const sellAssetBalance = sellAsset ? (balances[sellAsset.id]?.free ?? 0n) : 0n
+  const buyAssetBalance = buyAsset ? (balances[buyAsset.id]?.free ?? 0n) : 0n
 
   return (
     <div>
       <AssetSelectFormField<DCAFormValues>
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
-        assets={tradable}
+        assets={assets}
+        maxBalance={scaleHuman(sellAssetBalance, sellAsset?.decimals ?? 0)}
       />
       <SwapSectionSeparator />
       <AssetSelectFormField<DCAFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
-        assets={tradable}
+        assets={assets}
+        maxBalance={scaleHuman(buyAssetBalance, buyAsset?.decimals ?? 0)}
       />
       <SwapSectionSeparator />
       <Controller

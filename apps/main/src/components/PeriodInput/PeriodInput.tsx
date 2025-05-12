@@ -1,10 +1,16 @@
-import { Flex, Input, MainTab, Text } from "@galacticcouncil/ui/components"
+import { Flex, Input, SliderTabs, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
+import { capitalize } from "remeda"
 import { z } from "zod"
 
 const periodTypes = ["hour", "day", "week", "month"] as const
 export type PeriodType = (typeof periodTypes)[number]
+
+const periodOptions = periodTypes.map((type) => ({
+  id: type,
+  label: capitalize(type),
+}))
 
 type Props = {
   readonly label?: string
@@ -32,35 +38,20 @@ export const PeriodInput: FC<Props> = ({ label, period, onPeriodChange }) => {
             })
           }
         />
-        <Flex
-          justify="space-between"
-          align="center"
-          flex={1}
-          py={4}
-          px={6}
-          borderWidth={1}
-          borderStyle="solid"
-          borderColor={getToken("buttons.outlineDark.onOutline")}
-          borderRadius={32}
-        >
-          {periodTypes.map((type) => (
-            <MainTab
-              key={type}
-              sx={{ textTransform: "capitalize" }}
-              isActive={period.type === type}
-              onClick={() => onPeriodChange({ ...period, type })}
-            >
-              {type}
-            </MainTab>
-          ))}
-        </Flex>
+        <SliderTabs
+          options={periodOptions}
+          selected={period.type}
+          onSelect={(option) =>
+            onPeriodChange({ ...period, type: option.id as PeriodType })
+          }
+        />
       </Flex>
     </Flex>
   )
 }
 
 export const periodInputSchema = z.object({
-  value: z.number().gt(0),
+  value: z.number().gte(1),
   type: z.enum(periodTypes),
 })
 

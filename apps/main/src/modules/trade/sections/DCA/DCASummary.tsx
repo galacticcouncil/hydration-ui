@@ -1,22 +1,16 @@
-import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { Flex, Summary, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { DynamicFee, DynamicFeeRangeType } from "@/components"
-import { Summary } from "@/components/Summary"
+import { DynamicFee } from "@/components/DynamicFee"
 import { DCAFormValues } from "@/modules/trade/sections/DCA/DCA.form"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 // TODO integrate
 const priceImpact = 5
 const estTradeFees = 0.1
-const tradeFeeRange: Record<DynamicFeeRangeType, number> = {
-  low: 0.1,
-  middle: 0.2,
-  high: 0.3,
-}
 
 export const DCASummary: FC = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -64,7 +58,8 @@ export const DCASummary: FC = () => {
             content: (
               <DynamicFee
                 value={estTradeFees}
-                range={tradeFeeRange}
+                rangeLow={0.2}
+                rangeHigh={0.3}
                 tooltip="TODO"
               />
             ),
