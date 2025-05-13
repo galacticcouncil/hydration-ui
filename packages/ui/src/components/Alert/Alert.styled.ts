@@ -1,4 +1,4 @@
-import { Icon } from "@/components"
+import { Icon } from "@/components/Icon"
 import { createVariants, css, styled } from "@/utils"
 
 export type AlertVariant = "info" | "error" | "warning"
