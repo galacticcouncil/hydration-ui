@@ -17,12 +17,13 @@ import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { isEvmCall } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { XcmMetadata } from "@galacticcouncil/apps"
 
 type ReviewTransactionSummaryProps = {
   tx: SubmittableExtrinsic<"promise">
   transactionValues: ReturnType<typeof useTransactionValues>
   editFeePaymentAssetEnabled: boolean
-  xcallMeta?: Record<string, string>
+  xcallMeta?: XcmMetadata
   openEditFeePaymentAssetModal: () => void
   onTipChange?: (amount: BN) => void
   onNonceChange?: (nonce: string) => void

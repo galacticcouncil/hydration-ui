@@ -18,6 +18,7 @@ import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
   useEditFeePaymentAsset,
   useHealthFactorChangeFromTx,
+  useHealthFactorChangeFromTxMetadata,
   usePolkadotJSTxUrl,
   useTransactionValues,
 } from "./ReviewTransactionForm.utils"
@@ -105,7 +106,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     pendingPermit,
   } = transactionValues.data
 
-  const healthFactorChange = useHealthFactorChangeFromTx(tx)
+  const healthFactorFromMeta = useHealthFactorChangeFromTxMetadata(props.txMeta)
+  const healthFactorFromTx = useHealthFactorChangeFromTx(tx)
+
+  const healthFactorChange = healthFactorFromMeta || healthFactorFromTx
 
   const isHealthFactorChanged =
     !!healthFactorChange &&
