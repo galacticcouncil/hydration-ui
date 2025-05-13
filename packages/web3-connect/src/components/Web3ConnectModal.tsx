@@ -37,16 +37,14 @@ export const Web3ConnectModal = () => {
       {page !== Web3ConnectModalPage.ProviderSelect && (
         <ModalFooter justify="end">
           {account && (
-            <Button variant="tertiary" iconEnd={LogOut} onClick={onLogout}>
+            <Button variant="tertiary" onClick={onLogout}>
               Log out
+              <LogOut />
             </Button>
           )}
-          <Button
-            variant="tertiary"
-            iconEnd={ChevronRight}
-            onClick={() => setPage(0)}
-          >
+          <Button variant="tertiary" onClick={() => setPage(0)}>
             Manage wallets
+            <ChevronRight />
           </Button>
         </ModalFooter>
       )}

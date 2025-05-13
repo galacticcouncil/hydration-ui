@@ -108,7 +108,8 @@ export const IsolatedPoolsTable = ({
     <>
       <Flex justify="space-between" align="center" gap={20}>
         <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
-        <Button iconStart={() => <Icon component={Plus} size={14} />}>
+        <Button>
+          <Icon component={Plus} size={14} />
           {t(
             isMobile
               ? "section.isolatedPools.btn.short"

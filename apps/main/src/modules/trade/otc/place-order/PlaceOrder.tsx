@@ -17,10 +17,10 @@ export const PlaceOrder: FC = () => {
       <Button
         variant="primary"
         size="medium"
-        iconStart={Plus}
         disabled={!isConnected}
         onClick={() => setIsOpen(true)}
       >
+        <Plus />
         {t("otc.placeOrder.cta")}
       </Button>
       <Modal open={isOpen} onOpenChange={setIsOpen}>

@@ -62,8 +62,9 @@ export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
       <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="tertiary" outline iconEnd={ChevronDown}>
+          <Button variant="tertiary" outline>
             {t("common:actions")}
+            <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

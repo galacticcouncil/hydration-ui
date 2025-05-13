@@ -31,8 +31,9 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
       <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="tertiary" outline iconEnd={ChevronDown}>
+          <Button variant="tertiary" outline>
             {t("actions")}
+            <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

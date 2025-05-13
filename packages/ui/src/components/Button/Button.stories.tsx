@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { Download } from "lucide-react"
 
 import { Flex } from "@/components"
 
@@ -48,22 +47,6 @@ export const Disabled: Story = {
   render: Template,
   args: {
     disabled: true,
-  },
-}
-
-export const IconStart: Story = {
-  render: VariantTemplate,
-  args: {
-    iconStart: Download,
-    variant: "primary",
-  },
-}
-
-export const IconEnd: Story = {
-  render: VariantTemplate,
-  args: {
-    iconEnd: Download,
-    variant: "primary",
   },
 }
 

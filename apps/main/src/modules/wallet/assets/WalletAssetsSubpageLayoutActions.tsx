@@ -28,17 +28,17 @@ export const WalletAssetsSubpageLayoutActions = () => {
       {/* <Button
         variant="emphasis"
         outline
-        iconStart={Minus}
         onClick={() => setModal("withdraw")}
       >
+        <Minus />
         {t("withdraw")}
       </Button>
       <Button
         variant="emphasis"
         outline
-        iconStart={Plus}
         onClick={() => setModal("deposit")}
       >
+        <Plus />
         {t("deposit")}
       </Button> */}
       <Modal open={modal !== null} onOpenChange={() => setModal(null)}>

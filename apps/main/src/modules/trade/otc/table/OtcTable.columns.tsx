@@ -160,8 +160,8 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
                 variant={isUsersOffer ? "danger" : "accent"}
                 outline
                 disabled={!isConnected}
-                iconStart={isUsersOffer ? Minus : Plus}
               >
+                {isUsersOffer ? <Minus /> : <Plus />}
                 {isUsersOffer
                   ? t("otc.cancelOrder.cta")
                   : t("otc.fillOrder.cta")}

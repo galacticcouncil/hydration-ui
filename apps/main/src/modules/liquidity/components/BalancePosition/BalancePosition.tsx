@@ -59,15 +59,12 @@ export const BalancePosition = ({ label, pool }: BalancePositionProps) => {
           />
         </Flex>
         <Flex gap={12} align="center">
-          <Button variant="primary" iconStart={Plus} sx={{ flex: [1, "auto"] }}>
+          <Button variant="primary" sx={{ flex: [1, "auto"] }}>
+            <Plus />
             {t("liquidity:liquidity.stablepool.position.addPosition")}
           </Button>
-          <Button
-            variant="tertiary"
-            outline
-            iconStart={Minus}
-            sx={{ flex: [1, "auto"] }}
-          >
+          <Button variant="tertiary" outline sx={{ flex: [1, "auto"] }}>
+            <Minus />
             {t("liquidity:liquidity.stablepool.position.removeLiquidity")}
           </Button>
         </Flex>

@@ -22,7 +22,6 @@ export const AssetDetailStaking: FC<Props> = ({ asset }) => {
       type="button"
       variant="emphasis"
       outline
-      iconStart={StylizedAdd}
       onClick={(e) => {
         e.stopPropagation()
         navigate({
@@ -30,6 +29,7 @@ export const AssetDetailStaking: FC<Props> = ({ asset }) => {
         })
       }}
     >
+      <StylizedAdd />
       {t("myAssets.actions.staking", {
         symbol: asset.symbol,
       })}

@@ -14,7 +14,8 @@ export const OtcFilters: FC = () => {
     <Flex gap={12} align="center">
       {isConnected && (
         <>
-          <OrderFilter offers="my" iconStart={UserRound}>
+          <OrderFilter offers="my">
+            <UserRound />
             {t("otc.filters.offers.my")}
           </OrderFilter>
           <Separator orientation="vertical" sx={{ height: 38 }} />
