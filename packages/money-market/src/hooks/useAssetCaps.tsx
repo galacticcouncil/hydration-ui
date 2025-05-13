@@ -1,7 +1,7 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { createContext, ReactNode, useContext, useMemo } from "react"
 
-import { ComputedReserveData } from "@/hooks/app-data-provider/useAppDataProvider"
+import { ComputedReserveData } from "@/hooks/commonTypes"
 
 type WarningDisplayProps = {
   supplyCap?: AssetCapData

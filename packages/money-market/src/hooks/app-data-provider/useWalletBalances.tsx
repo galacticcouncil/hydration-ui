@@ -2,8 +2,12 @@ import {
   API_ETH_MOCK_ADDRESS,
   ReservesDataHumanized,
 } from "@aave/contract-helpers"
-import { nativeToUSD, normalize, USD_DECIMALS } from "@aave/math-utils"
-import { BigNumber } from "bignumber.js"
+import {
+  nativeToUSD,
+  normalize,
+  USD_DECIMALS,
+  valueToBigNumber,
+} from "@aave/math-utils"
 import { useMemo, useState } from "react"
 import { useDeepCompareEffect } from "react-use"
 
@@ -61,7 +65,7 @@ const formatAggregatedBalance = ({
         acc[reserve.address] = {
           amount: normalize(reserve.amount, poolReserve.decimals),
           amountUSD: nativeToUSD({
-            amount: new BigNumber(reserve.amount),
+            amount: valueToBigNumber(reserve.amount),
             currencyDecimals: poolReserve.decimals,
             priceInMarketReferenceCurrency:
               poolReserve.priceInMarketReferenceCurrency,

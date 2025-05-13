@@ -1,11 +1,10 @@
 import { USD_DECIMALS, valueToBigNumber } from "@aave/math-utils"
+import { bigMin } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
-import {
-  ComputedReserveData,
-  useAppDataContext,
-} from "@/hooks/app-data-provider/useAppDataProvider"
+import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useWalletBalances } from "@/hooks/app-data-provider/useWalletBalances"
+import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
 import { MONEY_MARKET_SUPPLY_BLACKLIST } from "@/ui-config/misc"
@@ -34,16 +33,18 @@ export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
         const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
         const walletBalanceUSD =
           walletBalances[reserve.underlyingAsset]?.amountUSD
-        let availableToDeposit = valueToBigNumber(walletBalance)
+        let availableToDeposit = valueToBigNumber(walletBalance).toString()
         if (reserve.supplyCap !== "0") {
-          availableToDeposit = availableToDeposit.isNaN()
-            ? valueToBigNumber(0)
-            : BigNumber.min(
-                availableToDeposit,
-                new BigNumber(reserve.supplyCap)
-                  .minus(reserve.totalLiquidity)
-                  .multipliedBy("0.995"),
-              )
+          availableToDeposit =
+            availableToDeposit === "NaN"
+              ? "0"
+              : bigMin(
+                  availableToDeposit.toString(),
+                  valueToBigNumber(reserve.supplyCap)
+                    .minus(reserve.totalLiquidity)
+                    .multipliedBy("0.995")
+                    .toString(),
+                ).toString()
         }
         const availableToDepositUSD = valueToBigNumber(availableToDeposit)
           .multipliedBy(reserve.priceInMarketReferenceCurrency)
@@ -71,9 +72,7 @@ export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
           walletBalance,
           walletBalanceUSD,
           availableToDeposit:
-            availableToDeposit.toNumber() <= 0
-              ? "0"
-              : availableToDeposit.toString(),
+            +availableToDeposit <= 0 ? "0" : availableToDeposit.toString(),
           availableToDepositUSD:
             Number(availableToDepositUSD) <= 0
               ? "0"

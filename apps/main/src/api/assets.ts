@@ -163,7 +163,17 @@ export const assetsQuery = (data: TProviderContext) => {
           isSufficient: asset.isSufficient,
         }
 
-        if (asset.type === AssetType.TOKEN) {
+        if (asset.id === 690) {
+          return {
+            ...assetToTokenType(
+              asset,
+              commonAssetData,
+              findIconSrc(assetsMetadata?.items ?? []),
+            ),
+            name: "GIGADOT",
+            symbol: "GDOT",
+          }
+        } else if (asset.type === AssetType.TOKEN) {
           return assetToTokenType(
             asset,
             commonAssetData,

@@ -1,6 +1,6 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
-import { valueToBigNumber } from "@aave/math-utils"
-import BigNumber from "bignumber.js"
+import { bigMin } from "@galacticcouncil/utils"
+import Big from "big.js"
 
 import { roundToTokenDecimals } from "./utils"
 
@@ -15,7 +15,7 @@ interface PoolReserveSupplySubset {
 }
 
 export function remainingCap(cap: string, total: string) {
-  return cap === "0" ? new BigNumber(-1) : new BigNumber(cap).minus(total)
+  return cap === "0" ? Big(-1) : Big(cap).minus(total)
 }
 
 export function getMaxAmountAvailableToSupply(
@@ -29,7 +29,7 @@ export function getMaxAmountAvailableToSupply(
   }
 
   // Calculate max amount to supply
-  let maxAmountToSupply = valueToBigNumber(walletBalance)
+  let maxAmountToSupply = Big(walletBalance)
 
   // keep a bit for other transactions
   if (
@@ -41,9 +41,13 @@ export function getMaxAmountAvailableToSupply(
 
   // make sure we don't try to supply more then maximum supply cap
   if (poolReserve.supplyCap !== "0") {
-    maxAmountToSupply = BigNumber.min(
-      maxAmountToSupply,
-      remainingCap(poolReserve.supplyCap, poolReserve.totalLiquidity),
+    const remaining = remainingCap(
+      poolReserve.supplyCap,
+      poolReserve.totalLiquidity,
+    )
+    maxAmountToSupply = bigMin(
+      maxAmountToSupply.toString(),
+      remaining.toString(),
     )
   }
 
@@ -53,7 +57,7 @@ export function getMaxAmountAvailableToSupply(
 
   // Convert amount to smallest allowed precision based on token decimals
   return roundToTokenDecimals(
-    maxAmountToSupply.toString(10),
+    maxAmountToSupply.toString(),
     poolReserve.decimals,
   )
 }

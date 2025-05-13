@@ -1,4 +1,4 @@
-import { DashboardReserve } from "@galacticcouncil/money-market/utils"
+import { useSuppliedAssetsData } from "@galacticcouncil/money-market/hooks"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -17,16 +17,17 @@ import { AssetLabelFull } from "@/components"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
-const columnHelper = createColumnHelper<DashboardReserve>()
+type TSuppliedAssetsTable = typeof useSuppliedAssetsData
+type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
+type TSuppliedAssetsRow = TSuppliedAssetsTableData["data"][number]
+const columnHelper = createColumnHelper<TSuppliedAssetsRow>()
 
-export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
-
-export const useSupplyAssetsTableColumns = () => {
+export const useSuppliedAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
 
   return useMemo(() => {
-    const assetColumn = columnHelper.accessor("symbol", {
+    const assetColumn = columnHelper.accessor("reserve.symbol", {
       header: t("asset"),
       cell: ({ row }) => {
         const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
@@ -36,21 +37,21 @@ export const useSupplyAssetsTableColumns = () => {
       },
     })
 
-    const balanceColumn = columnHelper.accessor("walletBalanceUSD", {
+    const balanceColumn = columnHelper.accessor("underlyingBalanceUSD", {
       header: t("balance"),
       sortingFn: sortBy({
-        select: (row) => row.original.walletBalanceUSD,
+        select: (row) => row.original.underlyingBalanceUSD,
         compare: numericallyStr,
       }),
       cell: ({ row }) => {
-        const { walletBalance, walletBalanceUSD } = row.original
+        const { underlyingBalanceUSD, underlyingBalance } = row.original
 
         return (
           <Amount
             value={t("number", {
-              value: walletBalance,
+              value: underlyingBalance,
             })}
-            displayValue={t("currency", { value: walletBalanceUSD })}
+            displayValue={t("currency", { value: underlyingBalanceUSD })}
           />
         )
       },

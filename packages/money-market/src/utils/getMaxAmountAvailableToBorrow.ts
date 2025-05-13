@@ -1,15 +1,10 @@
 import { InterestRate } from "@aave/contract-helpers"
-import {
-  FormatUserSummaryAndIncentivesResponse,
-  valueToBigNumber,
-} from "@aave/math-utils"
-import BigNumber from "bignumber.js"
+import { FormatUserSummaryAndIncentivesResponse } from "@aave/math-utils"
+import { bigMax, bigMin, bigShift } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { ethers } from "ethers"
 
-import {
-  ComputedReserveData,
-  ExtendedFormattedUser,
-} from "@/hooks/app-data-provider/useAppDataProvider"
+import { ComputedReserveData, ExtendedFormattedUser } from "@/hooks/commonTypes"
 
 import { roundToTokenDecimals } from "./utils"
 
@@ -37,38 +32,37 @@ export function getMaxAmountAvailableToBorrow(
   rateMode: InterestRate,
 ): string {
   const availableInPoolUSD = poolReserve.availableLiquidityUSD
-  const availableForUserUSD = BigNumber.min(
+  const availableForUserUSD = bigMin(
     user.availableBorrowsUSD,
     availableInPoolUSD,
   )
 
   const availableBorrowCap =
     poolReserve.borrowCap === "0"
-      ? valueToBigNumber(ethers.constants.MaxUint256.toString())
-      : valueToBigNumber(Number(poolReserve.borrowCap)).minus(
-          valueToBigNumber(poolReserve.totalDebt),
-        )
-  const availableLiquidity = BigNumber.max(
-    BigNumber.min(poolReserve.formattedAvailableLiquidity, availableBorrowCap),
+      ? Big(ethers.constants.MaxUint256.toString())
+      : Big(Number(poolReserve.borrowCap)).minus(poolReserve.totalDebt)
+  const availableLiquidity = bigMax(
+    bigMin(
+      poolReserve.formattedAvailableLiquidity,
+      availableBorrowCap.toString(),
+    ),
     0,
   )
 
-  const availableForUserMarketReferenceCurrency = valueToBigNumber(
+  const availableForUserMarketReferenceCurrency = Big(
     user?.availableBorrowsMarketReferenceCurrency || 0,
   ).div(poolReserve.formattedPriceInMarketReferenceCurrency)
 
-  let maxUserAmountToBorrow = BigNumber.min(
-    availableForUserMarketReferenceCurrency,
+  let maxUserAmountToBorrow = bigMin(
+    availableForUserMarketReferenceCurrency.toString(),
     availableLiquidity,
   )
 
   if (rateMode === InterestRate.Stable) {
-    maxUserAmountToBorrow = BigNumber.min(
+    maxUserAmountToBorrow = bigMin(
       maxUserAmountToBorrow,
       // TODO: put MAX_STABLE_RATE_BORROW_SIZE_PERCENT on uipooldataprovider instead of using the static value here
-      valueToBigNumber(poolReserve.formattedAvailableLiquidity).multipliedBy(
-        0.25,
-      ),
+      Big(poolReserve.formattedAvailableLiquidity).mul(0.25),
     )
   }
 
@@ -100,19 +94,19 @@ export function getMaxAmountAvailableToBorrow(
     (user.isInIsolationMode &&
       user.isolatedReserve?.isolationModeTotalDebt !== "0" &&
       // TODO: would be nice if userFormatter contained formatted reserve as this math is done twice now
-      valueToBigNumber(user.isolatedReserve?.debtCeiling || "0")
-        .minus(user.isolatedReserve?.isolationModeTotalDebt || "0")
-        .shiftedBy(-(user.isolatedReserve?.debtCeilingDecimals || 0))
-        .multipliedBy("0.99")
+      bigShift(
+        Big(user.isolatedReserve?.debtCeiling || "0").minus(
+          user.isolatedReserve?.isolationModeTotalDebt || "0",
+        ),
+        -(user.isolatedReserve?.debtCeilingDecimals || 0),
+      )
+        .mul("0.99")
         .lt(user.availableBorrowsUSD))
 
   const amountWithMargin = shouldAddMargin
-    ? maxUserAmountToBorrow.multipliedBy("0.99")
+    ? maxUserAmountToBorrow.mul("0.99")
     : maxUserAmountToBorrow
-  return roundToTokenDecimals(
-    amountWithMargin.toString(10),
-    poolReserve.decimals,
-  )
+  return roundToTokenDecimals(amountWithMargin.toString(), poolReserve.decimals)
 }
 
 /**
@@ -123,19 +117,17 @@ export function getMaxGhoMintAmount(
   user: FormatUserSummaryAndIncentivesResponse,
   poolReserve: PoolReserveBorrowSubset,
 ) {
-  const userAvailableBorrows = valueToBigNumber(
+  const userAvailableBorrows = Big(
     user?.availableBorrowsMarketReferenceCurrency || 0,
   )
 
   const availableBorrowCap =
     poolReserve.borrowCap === "0"
-      ? valueToBigNumber(ethers.constants.MaxUint256.toString())
-      : valueToBigNumber(Number(poolReserve.borrowCap)).minus(
-          valueToBigNumber(poolReserve.totalDebt),
-        )
+      ? Big(ethers.constants.MaxUint256.toString())
+      : Big(Number(poolReserve.borrowCap)).minus(poolReserve.totalDebt)
 
-  const maxAmountUserCanMint = BigNumber.max(
-    BigNumber.min(userAvailableBorrows, availableBorrowCap),
+  const maxAmountUserCanMint = bigMax(
+    bigMin(userAvailableBorrows, availableBorrowCap),
     0,
   )
 
@@ -157,16 +149,19 @@ export function getMaxGhoMintAmount(
     (user.isInIsolationMode &&
       user.isolatedReserve?.isolationModeTotalDebt !== "0" &&
       // TODO: would be nice if userFormatter contained formatted reserve as this math is done twice now
-      valueToBigNumber(user.isolatedReserve?.debtCeiling || "0")
-        .minus(user.isolatedReserve?.isolationModeTotalDebt || "0")
-        .shiftedBy(-(user.isolatedReserve?.debtCeilingDecimals || 0))
-        .multipliedBy("0.99")
+      bigShift(
+        Big(user.isolatedReserve?.debtCeiling || "0").minus(
+          user.isolatedReserve?.isolationModeTotalDebt || "0",
+        ),
+        -(user.isolatedReserve?.debtCeilingDecimals || 0),
+      )
+        .mul("0.99")
         .lt(user.availableBorrowsUSD))
 
   const amountWithMargin = shouldAddMargin
-    ? maxAmountUserCanMint.multipliedBy("0.99")
+    ? maxAmountUserCanMint.mul("0.99")
     : maxAmountUserCanMint
-  return roundToTokenDecimals(amountWithMargin.toString(10), 18)
+  return roundToTokenDecimals(amountWithMargin.toString(), 18)
 }
 
 export function assetCanBeBorrowedByUser(

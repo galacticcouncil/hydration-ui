@@ -1,3 +1,4 @@
+import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import {
   Button,
   Flex,
@@ -5,6 +6,7 @@ import {
   ModalBody,
   ModalHeader,
   Separator,
+  Skeleton,
   Stack,
   SValueStatsValue,
   ValueStats,
@@ -17,6 +19,7 @@ import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk
 
 export const DashboardHeader = () => {
   const { t } = useTranslation(["common", "borrow"])
+  const { user, loading } = useMoneyMarketData()
 
   const [riskModalOpen, setRiskModalOpen] = useState(false)
 
@@ -25,13 +28,30 @@ export const DashboardHeader = () => {
       <Stack direction={["column", "row"]} justify="flex-start" gap={[0, 40]}>
         <ValueStats
           label={t("borrow:netWorth")}
-          value={t("common:currency", { value: 1000000 })}
-          size="large"
+          customValue={
+            <SValueStatsValue size="large">
+              {loading ? (
+                <Skeleton width={100} />
+              ) : (
+                t("currency", { value: user.netWorthUSD })
+              )}
+            </SValueStatsValue>
+          }
         />
         <Separator orientation="vertical" sx={{ my: 10 }} />
         <ValueStats
           label={t("borrow:netApy")}
-          value={t("common:currency", { value: 1000000 })}
+          customValue={
+            <SValueStatsValue size="large">
+              {loading ? (
+                <Skeleton width={50} />
+              ) : (
+                t("percent", {
+                  value: user.netAPY * 100,
+                })
+              )}
+            </SValueStatsValue>
+          }
           size="large"
         />
         <Separator orientation="vertical" sx={{ my: 10 }} />
@@ -41,11 +61,21 @@ export const DashboardHeader = () => {
             <Flex align="center" gap={10}>
               <SValueStatsValue
                 size="large"
-                sx={{ color: getToken("accents.danger.emphasis") }}
+                sx={{ color: getToken("accents.alert.primary") }}
               >
-                1.25
+                {loading ? (
+                  <Skeleton width={50} />
+                ) : user.healthFactor !== "-1" ? (
+                  t("number", {
+                    value: user.healthFactor,
+                    maximumFractionDigits: 2,
+                  })
+                ) : (
+                  "-"
+                )}
               </SValueStatsValue>
               <Button
+                disabled={loading}
                 outline
                 variant="danger"
                 onClick={() => setRiskModalOpen(true)}

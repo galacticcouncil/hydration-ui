@@ -1,21 +1,18 @@
-import { ReserveDataHumanized } from "@aave/contract-helpers"
 import {
-  ComputedUserReserve,
   formatGhoReserveData,
   formatGhoUserData,
-  formatReservesAndIncentives,
   FormattedGhoReserveData,
   FormattedGhoUserData,
-  FormatUserSummaryAndIncentivesResponse,
   formatUserSummaryWithDiscount,
   USD_DECIMALS,
   UserReserveData,
+  valueToBigNumber,
 } from "@aave/math-utils"
-import BigNumber from "bignumber.js"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useContext } from "react"
 
 import { EmodeCategory } from "@/helpers/types"
+import { ComputedReserveData, ExtendedFormattedUser } from "@/hooks/commonTypes"
 import { useCurrentTimestamp } from "@/hooks/useCurrentTimestamp"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
@@ -47,36 +44,12 @@ export const unPrefixSymbol = (symbol: string, prefix: string) => {
     .replace(RegExp(`^(${prefix[0]}?${prefix.slice(1)})`), "")
 }
 
-export type ComputedReserveData = ReturnType<
-  typeof formatReservesAndIncentives
->[0] &
-  ReserveDataHumanized & {
-    iconSymbol: string
-    isEmodeEnabled: boolean
-    isWrappedBaseAsset: boolean
-  }
-
-export type ComputedUserReserveData = ComputedUserReserve<ComputedReserveData>
-
-export type ExtendedFormattedUser =
-  FormatUserSummaryAndIncentivesResponse<ComputedReserveData> & {
-    earnedAPY: number
-    debtAPY: number
-    netAPY: number
-    isInEmode: boolean
-    userEmodeCategoryId: number
-  }
-
 export interface AppDataContextType {
   loading: boolean
   reserves: ComputedReserveData[]
   eModes: Record<number, EmodeCategory>
-  // refreshPoolData?: () => Promise<void[]>;
   isUserHasDeposits: boolean
   user: ExtendedFormattedUser
-  // refreshIncentives?: () => Promise<void>;
-  // loading: boolean;
-
   marketReferencePriceInUsd: string
   marketReferenceCurrencyDecimals: number
   userReserves: UserReserveData[]
@@ -86,7 +59,7 @@ export interface AppDataContextType {
   ghoEnabled: boolean
 }
 
-const AppDataContext = React.createContext<AppDataContextType>(
+export const AppDataContext = React.createContext<AppDataContextType>(
   {} as AppDataContextType,
 )
 
@@ -181,14 +154,14 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
       if (reserve) {
         if (value.underlyingBalanceUSD !== "0") {
           acc.positiveProportion = acc.positiveProportion.plus(
-            new BigNumber(reserve.supplyAPY).multipliedBy(
+            valueToBigNumber(reserve.supplyAPY).multipliedBy(
               value.underlyingBalanceUSD,
             ),
           )
           if (reserve.aIncentivesData) {
             reserve.aIncentivesData.forEach((incentive) => {
               acc.positiveProportion = acc.positiveProportion.plus(
-                new BigNumber(incentive.incentiveAPR).multipliedBy(
+                valueToBigNumber(incentive.incentiveAPR).multipliedBy(
                   value.underlyingBalanceUSD,
                 ),
               )
@@ -207,14 +180,14 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
               formattedGhoReserveData.ghoBorrowAPYWithMaxDiscount,
             )
             acc.negativeProportion = acc.negativeProportion.plus(
-              new BigNumber(borrowRateAfterDiscount).multipliedBy(
+              valueToBigNumber(borrowRateAfterDiscount).multipliedBy(
                 formattedGhoUserData.userGhoBorrowBalance,
               ),
             )
             if (reserve.vIncentivesData) {
               reserve.vIncentivesData.forEach((incentive) => {
                 acc.positiveProportion = acc.positiveProportion.plus(
-                  new BigNumber(incentive.incentiveAPR).multipliedBy(
+                  valueToBigNumber(incentive.incentiveAPR).multipliedBy(
                     formattedGhoUserData.userGhoBorrowBalance,
                   ),
                 )
@@ -222,14 +195,14 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
             }
           } else {
             acc.negativeProportion = acc.negativeProportion.plus(
-              new BigNumber(reserve.variableBorrowAPY).multipliedBy(
+              valueToBigNumber(reserve.variableBorrowAPY).multipliedBy(
                 value.variableBorrowsUSD,
               ),
             )
             if (reserve.vIncentivesData) {
               reserve.vIncentivesData.forEach((incentive) => {
                 acc.positiveProportion = acc.positiveProportion.plus(
-                  new BigNumber(incentive.incentiveAPR).multipliedBy(
+                  valueToBigNumber(incentive.incentiveAPR).multipliedBy(
                     value.variableBorrowsUSD,
                   ),
                 )
@@ -239,14 +212,14 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
         }
         if (value.stableBorrowsUSD !== "0") {
           acc.negativeProportion = acc.negativeProportion.plus(
-            new BigNumber(value.stableBorrowAPY).multipliedBy(
+            valueToBigNumber(value.stableBorrowAPY).multipliedBy(
               value.stableBorrowsUSD,
             ),
           )
           if (reserve.sIncentivesData) {
             reserve.sIncentivesData.forEach((incentive) => {
               acc.positiveProportion = acc.positiveProportion.plus(
-                new BigNumber(incentive.incentiveAPR).multipliedBy(
+                valueToBigNumber(incentive.incentiveAPR).multipliedBy(
                   value.stableBorrowsUSD,
                 ),
               )
@@ -260,8 +233,8 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
       return acc
     },
     {
-      positiveProportion: new BigNumber(0),
-      negativeProportion: new BigNumber(0),
+      positiveProportion: valueToBigNumber(0),
+      negativeProportion: valueToBigNumber(0),
     },
   )
 

@@ -26,7 +26,6 @@ import {
   ReserveIncentiveResponse,
 } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { SignatureLike } from "@ethersproject/bytes"
-import BigNumber from "bignumber.js"
 import { BigNumberish } from "ethers"
 
 import { Approval } from "@/helpers/useTransactionHandler"
@@ -832,7 +831,7 @@ export const selectMigrationBorrowPermitPayloads = (
     const combinedAmountInWei = valueToWei(totalDebt.toString(), debt.decimals)
     let bufferedAmount = combinedAmountInWei
     if (buffer) {
-      const amountBN = new BigNumber(bufferedAmount)
+      const amountBN = valueToBigNumber(bufferedAmount)
       const tenPercent = amountBN.dividedBy(10)
       bufferedAmount = amountBN.plus(tenPercent).toFixed(0)
     }

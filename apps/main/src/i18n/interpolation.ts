@@ -46,7 +46,10 @@ const formatters = {
     }
 
     return new Intl.NumberFormat(lng, {
-      maximumSignificantDigits: getMaxSignificantDigits(value, options),
+      maximumSignificantDigits:
+        options.maximumSignificantDigits || options.maximumFractionDigits
+          ? undefined
+          : getMaxSignificantDigits(value, options),
       ...options,
     })
       .formatToParts(value)
@@ -65,7 +68,7 @@ const formatters = {
 
     const percentage = Big(value.toString())
     const isBelowThreshold =
-      !percentage.eq(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+      percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
 
     const percentageAdjusted = isBelowThreshold
       ? MIN_PERCENTAGE_THRESHOLD.div(100)

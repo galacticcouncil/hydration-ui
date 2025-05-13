@@ -1,4 +1,4 @@
-import { useSupplyAssetsData } from "@galacticcouncil/money-market/hooks"
+import { useSuppliedAssetsData } from "@galacticcouncil/money-market/hooks"
 import {
   DataTable,
   Paper,
@@ -7,20 +7,21 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
-import { SupplyAssetsHeader } from "@/modules/borrow/dashboard/components/SupplyAssetsHeader"
-import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/SupplyAssetsTable.columns"
+import { SuppliedAssetsHeader } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsHeader"
+import { useSuppliedAssetsTableColumns } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsTable.columns"
 
-export const SupplyAssetsTable = () => {
-  const columns = useSupplyAssetsTableColumns()
-  const { data, isLoading } = useSupplyAssetsData({ showAll: true })
+export const SuppliedAssetsTable = () => {
+  const columns = useSuppliedAssetsTableColumns()
+  const { data, isLoading } = useSuppliedAssetsData()
   const navigate = useNavigate()
 
   return (
     <Paper>
-      <SupplyAssetsHeader />
+      <SuppliedAssetsHeader />
       <Separator />
       <TableContainer>
         <DataTable
+          skeletonRowCount={4}
           isLoading={isLoading}
           onRowClick={(row) =>
             navigate({

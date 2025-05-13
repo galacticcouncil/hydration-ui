@@ -5,7 +5,6 @@ import {
   valueToBigNumber,
 } from "@aave/math-utils"
 import { Provider } from "@ethersproject/providers"
-import BigNumber from "bignumber.js"
 
 // @TODO rework to dynamic colors
 const theme = {

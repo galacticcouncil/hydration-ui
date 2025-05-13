@@ -4,7 +4,7 @@ import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/i
 import {
   ComputedReserveData,
   ComputedUserReserveData,
-} from "@/hooks/app-data-provider/useAppDataProvider"
+} from "@/hooks/commonTypes"
 
 export type BorrowAssetsItem = {
   id: string
@@ -12,10 +12,10 @@ export type BorrowAssetsItem = {
   name: string
   iconSymbol: string
   underlyingAsset: string
-  stableBorrowRate: number | string
-  variableBorrowRate: number | string
-  availableBorrows: number | string
-  availableBorrowsInUSD: number | string
+  stableBorrowRate: string
+  variableBorrowRate: string
+  availableBorrows: string
+  availableBorrowsInUSD: string
   stableBorrowRateEnabled?: boolean
   isFreezed?: boolean
   aIncentivesData?: ReserveIncentiveResponse[]
