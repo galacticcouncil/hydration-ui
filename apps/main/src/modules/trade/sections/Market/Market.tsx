@@ -2,6 +2,7 @@ import {
   Button,
   Flex,
   Separator,
+  Summary,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -14,7 +15,6 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { DynamicFee } from "@/components"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { Summary } from "@/components/Summary"
 import { useAssets } from "@/providers/assetsProvider"
 import { Route } from "@/routes/_trade/trade.swap.market"
 

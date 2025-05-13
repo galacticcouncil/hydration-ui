@@ -8,12 +8,14 @@ import {
   SValueStatsValueContainer,
   ValueStatsSize,
 } from "@/components/ValueStats/ValueStats.styled"
+import { ThemeFont } from "@/theme"
 
 export const ValueStatsLabel = SValueStatsLabel
 export const ValueStatsValue = SValueStatsValue
 export const ValueStatsBottomValue = SValueStatsBottomValue
 
 type ValueStatsProps = {
+  readonly font?: ThemeFont
   readonly alwaysWrap?: boolean
   readonly size?: ValueStatsSize
   readonly label?: string
@@ -25,6 +27,7 @@ type ValueStatsProps = {
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
+  font = "primary",
   alwaysWrap,
   size,
   label,
@@ -39,7 +42,9 @@ export const ValueStats: FC<ValueStatsProps> = ({
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size}>
         {customValue ?? (
-          <SValueStatsValue size={size}>{value}</SValueStatsValue>
+          <SValueStatsValue font={font} size={size}>
+            {value}
+          </SValueStatsValue>
         )}
         {customBottomLabel ?? (
           <SValueStatsBottomValue>{bottomLabel}</SValueStatsBottomValue>

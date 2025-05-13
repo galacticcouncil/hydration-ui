@@ -1,8 +1,8 @@
 import { BigNumber } from "@galacticcouncil/sdk"
 import { Separator, Skeleton, Stack } from "@galacticcouncil/ui/components"
+import { SummaryRow } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { SummaryRow } from "@/components/Summary"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
