@@ -36,6 +36,8 @@ const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content)<{
 
     box-shadow: 0px 38px 187px 0px #00000066;
     box-shadow: 0px 3px 9px 0px #0000001a;
+
+    z-index: ${theme.zIndices.popover};
   `,
 )
 

@@ -57,12 +57,8 @@ export const WalletTransactionsTableHeader: FC<Props> = ({ data }) => {
           })
         }
       />
-      <Button
-        variant="accent"
-        outline
-        iconStart={FileDown}
-        onClick={() => downloadCsv()}
-      >
+      <Button variant="accent" outline onClick={() => downloadCsv()}>
+        <FileDown />
         {isMobile ? t("common:csv") : t("common:downloadCsv")}
       </Button>
     </Flex>

@@ -11,13 +11,7 @@ import {
   SMicroButton,
 } from "./Button.styled"
 
-type ButtonOwnProps = {
-  iconStart?: React.ComponentType<{ readonly className?: string }>
-  iconEnd?: React.ComponentType<{ readonly className?: string }>
-}
-
 export type ButtonProps = BoxProps &
-  ButtonOwnProps &
   SButtonProps &
   React.ButtonHTMLAttributes<HTMLButtonElement>
 
@@ -26,18 +20,10 @@ export type MicroButtonProps = BoxProps & {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, iconStart: IconStart, iconEnd: IconEnd, ...props }, ref) => {
+  ({ children, ...props }, ref) => {
     return (
       <SButton as="button" type="button" ref={ref} {...props}>
-        {props.asChild ? (
-          children
-        ) : (
-          <>
-            {IconStart && <IconStart sx={{ flexShrink: 0 }} />}
-            {children}
-            {IconEnd && <IconEnd sx={{ flexShrink: 0 }} />}
-          </>
-        )}
+        {children}
       </SButton>
     )
   },

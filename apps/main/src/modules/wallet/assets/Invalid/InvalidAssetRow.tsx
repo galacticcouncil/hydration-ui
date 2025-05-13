@@ -37,12 +37,8 @@ export const InvalidAssetRow: FC<Props> = ({ assetId, origin }) => {
           {t("invalidAsset.description")}
         </Text>
       )}
-      <Button
-        variant="danger"
-        outline
-        iconStart={ExclamationMark}
-        onClick={() => setIsModalOpen(true)}
-      >
+      <Button variant="danger" outline onClick={() => setIsModalOpen(true)}>
+        <ExclamationMark />
         {t("invalidAsset.cta")}
       </Button>
       <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>

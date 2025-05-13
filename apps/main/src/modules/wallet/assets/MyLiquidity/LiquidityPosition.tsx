@@ -15,50 +15,56 @@ import { useDisplayAssetPrice } from "@/components"
 import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
-import { WalletLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
+import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly assetId: string
+  readonly asset: TAsset
   readonly number: number
-  readonly position: WalletLiquidityPosition
+  readonly position: MyLiquidityPosition
 }
 
-export const LiquidityPosition: FC<Props> = ({ assetId, number, position }) => {
-  const { t } = useTranslation()
+export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
+  const { t } = useTranslation(["wallet", "common"])
 
   const [initialDisplayPrice] = useDisplayAssetPrice(
-    assetId,
+    asset.id,
     position.initialValue,
   )
   const [currentDisplayPrice] = useDisplayAssetPrice(
-    assetId,
+    asset.id,
     position.currentValue,
   )
 
   return (
     <SLiquidityPosition>
       <Text fs="p4" fw={500} color={getToken("text.high")}>
-        #{number} {position.name}
+        {position.isFarm
+          ? t("myLiquidity.position.farmName", { number })
+          : t("myLiquidity.position.name", { number })}
       </Text>
       <Amount
-        label={t("initialValue")}
-        value={t("number", {
+        label={t("common:initialValue")}
+        value={t("common:currency", {
           value: position.initialValue,
+          symbol: asset.symbol,
         })}
         displayValue={initialDisplayPrice}
       />
       <Amount
-        label={t("currentValue")}
-        value={t("number", {
+        label={t("common:currentValue")}
+        value={t("common:currency", {
           value: position.currentValue,
+          symbol: asset.symbol,
         })}
         displayValue={currentDisplayPrice}
       />
-      <LiquidityFarms assetId={assetId} rewards={position.rewards} />
+      <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="tertiary" outline iconEnd={ChevronDown}>
-            {t("actions")}
+          <Button variant="tertiary" outline>
+            {t("common:actions")}
+            <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

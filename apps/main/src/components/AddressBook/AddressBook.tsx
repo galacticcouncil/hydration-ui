@@ -49,13 +49,13 @@ export const AddressBook: FC<AddressBookProps> = ({
           variant="accent"
           outline
           size="small"
-          iconEnd={BookOpen}
           sx={{ textTransform: "uppercase" }}
           onClick={
             onOpenMyContacts ? onOpenMyContacts : () => setIsModalOpen(true)
           }
         >
           {t("addressBook.myContacts")}
+          <BookOpen />
         </Button>
       </Flex>
       <Grid columnTemplate="1fr auto" align="center" columnGap={10}>

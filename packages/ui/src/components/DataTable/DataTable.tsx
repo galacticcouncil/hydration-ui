@@ -60,6 +60,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     className?: string
     columnPinning?: ColumnPinningState | undefined
     globalFilterFn?: FilterFnOption<TData>
+    multiExpandable?: boolean
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
@@ -185,9 +186,13 @@ const DataTable = forwardRef(
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
-                const override = renderOverride?.(row.original)
+                const override = isLoading
+                  ? renderOverride?.(row.original)
+                  : undefined
+
                 const isRowExpandable =
-                  expandable &&
+                  !isLoading &&
+                  !!expandable &&
                   !override &&
                   (getIsExpandable?.(row.original) ?? true)
 
@@ -200,6 +205,9 @@ const DataTable = forwardRef(
                       data-selected={row.getIsSelected()}
                       onClick={() => {
                         if (isRowExpandable) {
+                          if (expandable === "single") {
+                            table.resetExpanded()
+                          }
                           row.toggleExpanded()
                         }
                         onRowClick?.(row.original)

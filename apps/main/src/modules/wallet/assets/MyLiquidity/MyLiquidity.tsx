@@ -9,7 +9,6 @@ type Props = {
   readonly searchPhrase: string
 }
 
-// TODO integrate
 export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
 

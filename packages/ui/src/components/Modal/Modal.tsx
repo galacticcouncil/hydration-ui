@@ -1,7 +1,14 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { ArrowLeft, X } from "lucide-react"
-import { createContext, FC, forwardRef, ReactNode, useContext } from "react"
+import {
+  createContext,
+  FC,
+  forwardRef,
+  ReactNode,
+  useContext,
+  useMemo,
+} from "react"
 
 import { BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
@@ -51,7 +58,7 @@ const ModalContent = forwardRef<
 >(({ children, ...props }, ref) => (
   <ModalPortal>
     <ModalOverlay />
-    <SModalWrapper>
+    <SModalWrapper onClick={(e) => e.stopPropagation()}>
       <SModalContent ref={ref} {...props}>
         <SModalPaper>{children}</SModalPaper>
       </SModalContent>
@@ -172,10 +179,11 @@ const Modal = ({
   const { gte } = useBreakpoints()
 
   const isDrawer = variant === "auto" ? !gte("md") : variant === "drawer"
+  const context = useMemo(() => ({ variant }), [variant])
 
   if (isDrawer) {
     return (
-      <ModalContext.Provider value={{ variant }}>
+      <ModalContext.Provider value={context}>
         <DrawerRoot {...props}>
           <DrawerContent
             onInteractOutside={
@@ -190,9 +198,10 @@ const Modal = ({
   }
 
   return (
-    <ModalContext.Provider value={{ variant }}>
+    <ModalContext.Provider value={context}>
       <ModalRoot {...props}>
         <ModalContent
+          onClick={(e) => e.stopPropagation()}
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
           }

@@ -5,9 +5,10 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
 } from "@galacticcouncil/ui/components"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const LiquidityPositionActions = () => {
+export const LiquidityPositionActions: FC = () => {
   const { t } = useTranslation("wallet")
 
   return (
@@ -15,6 +16,7 @@ export const LiquidityPositionActions = () => {
       <DropdownMenuItem asChild>
         <MenuSelectionItem variant="filterLink">
           <MenuItemIcon component={Trash2} />
+          {/* TODO remove liquidity */}
           <MenuItemLabel>
             {t("myLiquidity.expanded.actions.removeLiquidity")}
           </MenuItemLabel>
@@ -24,6 +26,7 @@ export const LiquidityPositionActions = () => {
         <MenuSelectionItem variant="filterLink">
           <MenuItemIcon component={Farm} />
           <MenuItemLabel>
+            {/* TODO join farms */}
             {t("myLiquidity.expanded.actions.joinFarms")}
           </MenuItemLabel>
         </MenuSelectionItem>

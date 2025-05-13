@@ -8,7 +8,8 @@ export const MyLiquidityActions: FC = () => {
 
   // TODO isolated pool from wallet page
   return (
-    <Button size="medium" iconStart={Plus}>
+    <Button size="medium">
+      <Plus />
       {t("myLiquidity.header.cta")}
     </Button>
   )

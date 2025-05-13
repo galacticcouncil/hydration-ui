@@ -21,7 +21,8 @@ export const MyAssetsActions: FC<Props> = ({
   return (
     <Flex gap={16} align="center">
       {/* TODO add new asset */}
-      {/* <Button size="medium" iconStart={Plus}>
+      {/* <Button size="medium">
+        <Plus />
         {t("myAssets.header.cta")}
       </Button> */}
       <ToggleRoot>

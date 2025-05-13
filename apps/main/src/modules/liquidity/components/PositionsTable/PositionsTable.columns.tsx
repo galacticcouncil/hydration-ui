@@ -69,15 +69,13 @@ export const usePositionsTableColumns = () => {
         size: 180,
         cell: () => (
           <Flex gap={getTokenPx("containers.paddings.tertiary")}>
-            <Button variant="primary" iconStart={CupSoda}>
+            <Button variant="primary">
+              <CupSoda />
               {t("join")}
             </Button>
-            <Button
-              variant="tertiary"
-              outline
-              iconStart={Trash}
-              sx={{ flexShrink: 0 }}
-            />
+            <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
+              <Trash />
+            </Button>
           </Flex>
         ),
       }),
