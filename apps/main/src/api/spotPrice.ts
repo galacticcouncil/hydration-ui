@@ -66,7 +66,7 @@ export const spotPrice = (
   const { isApiLoaded, tradeRouter } = context
 
   return queryOptions({
-    enabled: isApiLoaded,
+    enabled: isApiLoaded && !!assetIn && !!assetOut,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "spotPrice", assetIn, assetOut],
     queryFn: async () => {
       const spotPrice = await getSpotPrice(tradeRouter, assetIn, assetOut)()

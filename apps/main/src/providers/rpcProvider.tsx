@@ -40,6 +40,8 @@ const defaultData: TProviderContext = {
   assetClient: {} as TProviderData["assetClient"],
   tradeRouter: {} as TProviderData["tradeRouter"],
   tradeUtils: {} as TProviderData["tradeUtils"],
+  twapApi: {} as TProviderData["twapApi"],
+  timeApi: {} as TProviderData["timeApi"],
   legacy_api: {} as TProviderData["legacy_api"],
   legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }

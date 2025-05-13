@@ -19,7 +19,7 @@ import { useAccountBalances } from "@/states/account"
 import { useOmnipoolAsset } from "@/states/liquidity"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
-import { maxBalance, required } from "@/utils/validators"
+import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export const getLimitShares = (shares: string, limit: number) => {
   return Big(shares).times(Big(100).minus(limit).div(100)).toFixed(0)
@@ -95,10 +95,11 @@ export const useAddToOmnipoolZod = (
   )
 
   const rules = required
-    .pipe(
-      isStablepool
-        ? z.string()
-        : maxBalance(scaleHuman(accountBalance, decimals)),
+    .pipe(positive)
+    .check(
+      ...(isStablepool
+        ? []
+        : [validateFieldMaxBalance(scaleHuman(accountBalance, decimals))]),
     )
     .refine(
       (value) => Big(scale(value, decimals)).gte(minPoolLiquidity.toString()),

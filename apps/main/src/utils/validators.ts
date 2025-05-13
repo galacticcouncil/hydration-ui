@@ -1,16 +1,22 @@
 import Big from "big.js"
+import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod"
 
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
+import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
-export const required = z.string().trim().min(1, i18n.t("error.required"))
+const requiredError = i18n.t("error.required")
 
-export const requiredAny = [
-  (value: unknown) => value !== null || value !== undefined,
-  i18n.t("error.required"),
-] as const
+export const required = z.string().trim().min(1, requiredError)
+
+export const requiredObject = <T extends Record<string, unknown>>() =>
+  z.custom<T | null>().check(
+    z.refine((value) => value !== null, {
+      error: requiredError,
+    }),
+  )
 
 export const WSS_REGEX =
   /^wss?:\/\/(localhost|[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]+)?(\/.*)?$/i
@@ -31,39 +37,50 @@ export const validNumber = z.string().refine((value) => {
 export const positive = z
   .string()
   .pipe(validNumber)
-  .refine((value) => new Big(value).gt(0), i18n.t("error.positive"))
+  .refine((value) => new Big(value || "0").gt(0), i18n.t("error.positive"))
 
-export const maxBalanceError = i18n.t("error.maxBalance")
+const maxBalanceError = i18n.t("error.maxBalance")
 
-export const maxBalance = (balance: bigint | string | number) =>
-  z
-    .string()
-    .pipe(positive)
-    .refine((value) => validateMaxBalance(balance, value), maxBalanceError)
-
-export const validateMaxBalance = (
-  balance: bigint | string | number,
+const validateMaxBalance = (
+  balance: string | number,
   amount: string,
-): boolean =>
-  new Big(amount).lte(
-    typeof balance === "bigint" ? balance.toString() : balance,
-  )
+): boolean => new Big(amount || "0").lte(balance)
 
-export const existentialDepositError = i18n.t("error.existentialDeposit")
+export const validateFieldMaxBalance = (balance: string | number) =>
+  z.refine<string>((value) => validateMaxBalance(balance, value), {
+    error: maxBalanceError,
+  })
 
-export const existentialDeposit = (
-  asset: TAsset | undefined | null,
-  multiplier: number | undefined,
-) =>
-  z
-    .string()
-    .pipe(positive)
-    .refine(
-      (value) => validateExistentialDeposit(asset, value, multiplier),
-      existentialDepositError,
+export const useValidateFormMaxBalance = () => {
+  const { getBalance } = useAccountBalances()
+
+  return <TFormValues extends FieldValues>(
+    path: Path<NoInfer<TFormValues>>,
+    selectData: (form: TFormValues) => [asset: TAsset | null, amount: string],
+  ) =>
+    z.refine<TFormValues>(
+      (form) => {
+        const [asset, amount] = selectData(form)
+
+        if (!asset) {
+          return true
+        }
+
+        const balance = getBalance(asset.id)?.free.toString() || "0"
+        const balanceHuman = scaleHuman(balance, asset.decimals)
+
+        return validateMaxBalance(balanceHuman, amount)
+      },
+      {
+        error: maxBalanceError,
+        path: [path],
+      },
     )
+}
 
-export const validateExistentialDeposit = (
+const existentialDepositError = i18n.t("error.existentialDeposit")
+
+const validateExistentialDeposit = (
   asset: TAsset | undefined | null,
   amount: string,
   multiplier: number | undefined,
@@ -72,4 +89,43 @@ export const validateExistentialDeposit = (
   !asset ||
   new Big(scaleHuman(asset.existentialDeposit, asset.decimals))
     .mul(multiplier)
-    .lte(amount)
+    .lte(amount || "0")
+
+export const validateFieldExistentialDeposit = (
+  asset: TAsset | undefined | null,
+  multiplier: number | undefined,
+) =>
+  z.refine<string>(
+    (value) => validateExistentialDeposit(asset, value, multiplier),
+    existentialDepositError,
+  )
+
+export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
+  path: Path<NoInfer<TFormValues>>,
+  selectData: (
+    form: TFormValues,
+  ) => [multiplier: number | undefined, asset: TAsset | null, amount: string],
+) =>
+  z.refine<TFormValues>(
+    (form) => {
+      const [multiplier, asset, amount] = selectData(form)
+
+      return validateExistentialDeposit(asset, amount, multiplier)
+    },
+    {
+      error: maxBalanceError,
+      path: [path],
+    },
+  )
+
+export const validateAssetSellOnly = z.refine<TAsset | null>(
+  (asset) => {
+    const isLrna = asset?.id === "1" && asset?.symbol.toLowerCase() === "h2o"
+    const isGdotShare =
+      asset?.id === "690" && asset?.symbol.toLowerCase() === "2-pool-gdot"
+    return !isLrna && !isGdotShare
+  },
+  {
+    error: i18n.t("error.sellOnly"),
+  },
+)
