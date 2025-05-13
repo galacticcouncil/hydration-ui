@@ -1,4 +1,4 @@
-import { HelpIcon } from "@galacticcouncil/ui/assets/icons"
+import { CircleInfo } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
@@ -27,7 +27,7 @@ export const LockExpiration: FC<Props> = ({ children, className }) => {
         {children}
       </Text>
       <Icon
-        component={HelpIcon}
+        component={CircleInfo}
         size={14}
         color={getToken("icons.onContainer")}
       />

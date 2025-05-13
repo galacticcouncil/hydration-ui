@@ -1,4 +1,4 @@
-import { HelpIcon, Warning } from "@galacticcouncil/ui/assets/icons"
+import { CircleInfo, Warning } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
   ModalContentDivider,
@@ -37,7 +37,7 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
         variant="success"
         customLabel={
           <TransactionListItemLabel>
-            <HelpIcon />
+            <CircleInfo />
             {t("invalidAsset.modal.hydraRegistered")}
           </TransactionListItemLabel>
         }
@@ -47,7 +47,7 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
       <TransactionListItem
         customLabel={
           <TransactionListItemLabel>
-            <HelpIcon />
+            <CircleInfo />
             {t("invalidAsset.modal.availableOnOtherChains")}
           </TransactionListItemLabel>
         }
@@ -57,7 +57,7 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
       <TransactionListItem
         customLabel={
           <TransactionListItemLabel>
-            <HelpIcon />
+            <CircleInfo />
             {t("invalidAsset.modal.masterKeyExisting")}
           </TransactionListItemLabel>
         }

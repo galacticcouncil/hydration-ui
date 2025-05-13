@@ -1,4 +1,4 @@
-import { HelpIcon, Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
+import { CircleInfo, Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItem,
   MenuItemAction,
@@ -24,7 +24,7 @@ export const DegenMode: FC = () => {
         sx={{ color: getToken("buttons.secondary.emphasis.onRest") }}
       />
       <MenuItemLabel>
-        {t("degenMode")} <HelpIcon />
+        {t("degenMode")} <CircleInfo />
       </MenuItemLabel>
       <MenuItemDescription>{t("degenMode.warning")}</MenuItemDescription>
       <MenuItemAction>

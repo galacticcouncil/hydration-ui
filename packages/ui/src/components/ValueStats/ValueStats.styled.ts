@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { mq } from "@galacticcouncil/ui/theme"
+import { mq, ThemeFont } from "@galacticcouncil/ui/theme"
 import { createVariants, css } from "@galacticcouncil/ui/utils"
 
 export type ValueStatsSize = "small" | "medium" | "large"
@@ -96,19 +96,20 @@ const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   `,
 }))
 
-export const SValueStatsValue = styled.div<{ readonly size?: ValueStatsSize }>(
-  ({ theme, size = "large" }) => [
-    css`
-      font-family: ${theme.fontFamilies1.primary};
-      font-weight: 500;
+export const SValueStatsValue = styled.div<{
+  readonly size?: ValueStatsSize
+  readonly font?: ThemeFont
+}>(({ theme, size = "large", font = "primary" }) => [
+  css`
+    font-family: ${theme.fontFamilies1[font]};
+    font-weight: 500;
 
-      color: ${theme.text.high};
+    color: ${theme.text.high};
 
-      white-space: nowrap;
-    `,
-    valueSizeVariants(size),
-  ],
-)
+    white-space: nowrap;
+  `,
+  valueSizeVariants(size),
+])
 
 export const SValueStatsBottomValue = styled.div(
   ({ theme }) => css`

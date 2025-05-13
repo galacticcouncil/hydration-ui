@@ -122,7 +122,7 @@ const DataTable = forwardRef(
       skeletonRowCount,
       manualSorting,
       enableSortingRemoval,
-      globalFilterFn,
+      globalFilterFn: globalFilterFn ?? "auto",
       initialState: {
         pagination: {
           pageIndex: 0,

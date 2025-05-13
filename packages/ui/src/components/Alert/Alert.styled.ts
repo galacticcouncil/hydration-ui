@@ -1,9 +1,9 @@
-import { Icon } from "@/components/Icon"
+import { Icon } from "@/components"
 import { createVariants, css, styled } from "@/utils"
 
-export type ErrorMessageBarVariant = "info" | "error" | "warning"
+export type AlertVariant = "info" | "error" | "warning"
 
-const containerVariants = createVariants<ErrorMessageBarVariant>((theme) => ({
+const containerVariants = createVariants<AlertVariant>((theme) => ({
   info: css`
     background: ${theme.colors.azureBlue.alpha[500]};
   `,
@@ -15,8 +15,8 @@ const containerVariants = createVariants<ErrorMessageBarVariant>((theme) => ({
   `,
 }))
 
-export const SErrorMessageBarContainer = styled.div<{
-  readonly variant?: ErrorMessageBarVariant
+export const SAlertContainer = styled.div<{
+  readonly variant?: AlertVariant
 }>(({ theme, variant = "info" }) => [
   css`
     display: grid;
@@ -29,7 +29,7 @@ export const SErrorMessageBarContainer = styled.div<{
   containerVariants(variant),
 ])
 
-const textColorVariants = createVariants<ErrorMessageBarVariant>((theme) => ({
+const textColorVariants = createVariants<AlertVariant>((theme) => ({
   info: css`
     color: ${theme.accents.info.onPrimary};
   `,
@@ -41,8 +41,8 @@ const textColorVariants = createVariants<ErrorMessageBarVariant>((theme) => ({
   `,
 }))
 
-export const SErrorMessageBarTitle = styled.span<{
-  readonly variant?: ErrorMessageBarVariant
+export const SAlertTitle = styled.span<{
+  readonly variant?: AlertVariant
 }>(({ theme, variant = "info" }) => [
   css`
     font-family: ${theme.fontFamilies1.secondary};
@@ -53,8 +53,8 @@ export const SErrorMessageBarTitle = styled.span<{
   textColorVariants(variant),
 ])
 
-export const SErrorMessageBarIcon = styled(Icon)<{
-  readonly variant: ErrorMessageBarVariant
+export const SAlertIcon = styled(Icon)<{
+  readonly variant: AlertVariant
 }>(({ variant }) => [
   css`
     width: 14px;
