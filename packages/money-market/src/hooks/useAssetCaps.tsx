@@ -1,18 +1,19 @@
 import { valueToBigNumber } from "@aave/math-utils"
 import { createContext, ReactNode, useContext, useMemo } from "react"
 
-import { ComputedReserveData } from "@/hooks/commonTypes"
+import { BorrowCapMaxedTooltip } from "@/components/tooltips/BorrowCapMaxedTooltip"
+import { DebtCeilingMaxedTooltip } from "@/components/tooltips/DebtCeilingMaxedTooltip"
+import { SupplyCapMaxedTooltip } from "@/components/tooltips/SupplyCapMaxedTooltip"
+import { BorrowCapWarning } from "@/components/warnings/BorrowCapWarning"
+import { DebtCeilingWarning } from "@/components/warnings/DebtCeilingWarning"
+import { SupplyCapWarning } from "@/components/warnings/SupplyCapWarning"
+import { AssetCapData, ComputedReserveData } from "@/hooks/commonTypes"
 
 type WarningDisplayProps = {
   supplyCap?: AssetCapData
   borrowCap?: AssetCapData
   debtCeiling?: AssetCapData
   icon?: boolean
-}
-
-export type AssetCapData = {
-  percentUsed: number
-  isMaxed: boolean
 }
 
 export type AssetCapHookData = AssetCapData & {
@@ -43,30 +44,34 @@ export const getAssetCapData = (
       isMaxed: supplyCapReached,
       // percentUsed: 99.9,
       // isMaxed: true,
-      determineWarningDisplay: ({ supplyCap }) =>
-        supplyCap ? <>TODO SUPPLY CAP COMPONENT</> : null,
+      determineWarningDisplay: ({ supplyCap, ...rest }) =>
+        supplyCap ? <SupplyCapWarning supplyCap={supplyCap} {...rest} /> : null,
       displayMaxedTooltip: ({ supplyCap }) =>
-        supplyCap ? <>TODO SUPPLY CAP MAXED COMPONENT</> : null,
+        supplyCap ? <SupplyCapMaxedTooltip supplyCap={supplyCap} /> : null,
     },
     borrowCap: {
       percentUsed: borrowCapUsage,
       isMaxed: borrowCapReached,
       // percentUsed: 98.5,
       // isMaxed: false,
-      determineWarningDisplay: ({ borrowCap }) =>
-        borrowCap ? <>TODO BORROW CAP COMPONENT</> : null,
+      determineWarningDisplay: ({ borrowCap, ...rest }) =>
+        borrowCap ? <BorrowCapWarning borrowCap={borrowCap} {...rest} /> : null,
       displayMaxedTooltip: ({ borrowCap }) =>
-        borrowCap ? <>TODO BORROW CAP MAXED COMPONENT</> : null,
+        borrowCap ? <BorrowCapMaxedTooltip borrowCap={borrowCap} /> : null,
     },
     debtCeiling: {
       percentUsed: debtCeilingUsage,
       isMaxed: debtCeilingReached,
       // percentUsed: 99.994,
       // isMaxed: true,
-      determineWarningDisplay: ({ debtCeiling }) =>
-        debtCeiling ? <>TODO DEBT CEILING COMPONENT</> : null,
+      determineWarningDisplay: ({ debtCeiling, ...rest }) =>
+        debtCeiling ? (
+          <DebtCeilingWarning debtCeiling={debtCeiling} {...rest} />
+        ) : null,
       displayMaxedTooltip: ({ debtCeiling }) =>
-        debtCeiling ? <>TODO DEBT CEILING MAXED COMPONENT</> : null,
+        debtCeiling ? (
+          <DebtCeilingMaxedTooltip debtCeiling={debtCeiling} />
+        ) : null,
     },
   }
 

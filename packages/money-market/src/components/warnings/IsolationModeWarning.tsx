@@ -1,6 +1,6 @@
 import { Alert } from "@galacticcouncil/ui/components"
 
-interface IsolationModeWarningProps {
+type IsolationModeWarningProps = {
   asset?: string
   severity?: "warning" | "error"
   className?: string

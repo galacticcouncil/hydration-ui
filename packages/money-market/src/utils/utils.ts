@@ -111,23 +111,6 @@ export const getFunctionDefsFromAbi = (abi: any[], method: string) => {
   }
 }
 
-export const getHealthFactorColor = (hf: number | string) => {
-  const formattedHealthFactor = Number(
-    valueToBigNumber(hf).toFixed(2, BigNumber.ROUND_DOWN),
-  )
-
-  let healthFactorColor = ""
-  if (formattedHealthFactor >= 3) {
-    healthFactorColor = theme.colors.green400
-  } else if (formattedHealthFactor < 1.1) {
-    healthFactorColor = theme.colors.red400
-  } else {
-    healthFactorColor = theme.colors.warning300
-  }
-
-  return healthFactorColor
-}
-
 export const getLtvColor = (
   loanToValue: number | string,
   currentLoanToValue: number | string,

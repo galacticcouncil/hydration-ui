@@ -30,3 +30,8 @@ export type ExtendedFormattedUser =
     isInEmode: boolean
     userEmodeCategoryId: number
   }
+
+export type AssetCapData = {
+  percentUsed: number
+  isMaxed: boolean
+}

@@ -4,15 +4,18 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import { Flex, Stack } from "@galacticcouncil/ui/components"
+import { Separator, Stack, SummaryRow } from "@galacticcouncil/ui/components"
 import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import React, { useMemo, useState } from "react"
 
 import { MoneyMarketAssetInput } from "@/components/MoneyMarketAssetInput"
+import { CollateralState } from "@/components/primitives/CollateralState"
+import { HealthFactorChange } from "@/components/primitives/HealthFactorChange"
 import { TxModalWrapperProps } from "@/components/transactions/TxModalWrapper"
-import { IsolationModeWarning } from "@/components/transactions/warnings/IsolationModeWarning"
+import { IsolationModeWarning } from "@/components/warnings/IsolationModeWarning"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
 import { useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
@@ -36,6 +39,8 @@ export const SupplyModalContent = React.memo(
     nativeBalance,
     tokenBalance,
   }: TxModalWrapperProps) => {
+    const { formatPercent } = useAppFormatters()
+
     const { marketReferencePriceInUsd, user } = useAppDataContext()
     const { currentNetworkConfig } = useProtocolDataContext()
     const { mainTxState: supplyTxState } = useModalContext()
@@ -103,11 +108,6 @@ export const SupplyModalContent = React.memo(
       }
     }
 
-    console.log({
-      amount,
-      res: poolReserve.formattedPriceInMarketReferenceCurrency,
-    })
-
     // Calculation of future HF
     const amountIntEth = Big(amount || 0).mul(
       poolReserve.formattedPriceInMarketReferenceCurrency,
@@ -131,7 +131,7 @@ export const SupplyModalContent = React.memo(
       : "-1"
 
     const isMaxSelected = amount === maxAmountToSupply
-    const isMaxExceeded = !!amount && BigNumber(amount).gt(maxAmountToSupply)
+    const isMaxExceeded = !!amount && Big(amount).gt(maxAmountToSupply)
 
     let healthFactorAfterDeposit = user
       ? valueToBigNumber(user.healthFactor)
@@ -227,37 +227,45 @@ export const SupplyModalContent = React.memo(
           }
         />
 
-        <Stack separated>
-          <Flex>
-            <span>Supply APY</span>
-            <span>{supplyApy}</span>
-          </Flex>
-          <Flex>
-            <span>Incentives</span>
-            <span>
-              {
-                "incentives={poolReserve.aIncentivesData} symbol={poolReserve.symbol}"
-              }
-            </span>
-          </Flex>
-          <Flex>
-            <span>Collateral</span>
-            <span>{collateralType}</span>
-          </Flex>
-          <Flex>
-            <span>HF</span>
-            <span>
-              {user.healthFactor} {"->"} {healthFactorAfterDeposit.toString(10)}
-            </span>
-          </Flex>
+        <Stack
+          separated
+          separator={<Separator mx="var(--modal-content-inset)" />}
+          withTrailingSeparator
+        >
+          <SummaryRow
+            label="Supply APY"
+            content={<>{formatPercent(Number(supplyApy) * 100)}</>}
+          />
+          <SummaryRow
+            label="Incentives"
+            content={
+              <>
+                incentives={poolReserve.aIncentivesData} symbol=
+                {poolReserve.symbol}
+              </>
+            }
+          />
+          <SummaryRow
+            label="Collateral"
+            content={<CollateralState collateralType={collateralType} />}
+          />
+          <SummaryRow
+            label="Health Factor"
+            content={
+              <HealthFactorChange
+                healthFactor={user ? user.healthFactor : "-1"}
+                futureHealthFactor={healthFactorAfterDeposit.toString(10)}
+              />
+            }
+          />
         </Stack>
 
-        {/* {txError && <GasEstimationError txError={txError} />} */}
         {showIsolationWarning && (
-          <IsolationModeWarning asset={poolReserve.symbol} sx={{ mt: 12 }} />
+          <IsolationModeWarning asset={poolReserve.symbol} />
         )}
-
-        {supplyCapUsage.determineWarningDisplay({ supplyCap: supplyCapUsage })}
+        {supplyCapUsage.determineWarningDisplay({
+          supplyCap: supplyCapUsage,
+        })}
         {debtCeilingUsage.determineWarningDisplay({
           debtCeiling: debtCeilingUsage,
         })}

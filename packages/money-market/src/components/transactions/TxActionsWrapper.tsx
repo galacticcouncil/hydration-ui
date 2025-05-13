@@ -137,6 +137,9 @@ export const TxActionsWrapper = ({
 
   const { content, disabled, handleClick } = getMainParams()
   const approvalParams = getApprovalParams()
+  const isSubmitDisabled =
+    disabled || blocked || readOnlyModeAddress !== undefined
+
   return (
     <div sx={{ flex: "column", mt: ["auto", 16] }} className={className}>
       {approvalParams && !readOnlyModeAddress && (
@@ -152,10 +155,11 @@ export const TxActionsWrapper = ({
         </Button>
       )}
       <Button
-        variant="primary"
-        disabled={disabled || blocked || readOnlyModeAddress !== undefined}
+        variant={isSubmitDisabled ? "tertiary" : "primary"}
+        width="100%"
+        disabled={isSubmitDisabled}
         onClick={() => handleClick?.()}
-        size="medium"
+        size="large"
         sx={approvalParams ? { mt: 8 } : undefined}
       >
         {content}
