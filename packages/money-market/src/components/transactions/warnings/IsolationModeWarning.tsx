@@ -1,4 +1,4 @@
-import { ErrorMessageBar } from "@galacticcouncil/ui/components"
+import { Alert } from "@galacticcouncil/ui/components"
 
 interface IsolationModeWarningProps {
   asset?: string
@@ -12,7 +12,7 @@ export const IsolationModeWarning = ({
   className,
 }: IsolationModeWarningProps) => {
   return (
-    <ErrorMessageBar
+    <Alert
       className={className}
       title="You are entering Isolation mode"
       description={`In Isolation mode, you cannot supply other assets as collateral. A

@@ -10,7 +10,7 @@ import {
   ComputedReserveData,
   ComputedUserReserveData,
   ExtendedFormattedUser,
-} from "@/hooks/app-data-provider/useAppDataProvider"
+} from "@/hooks/commonTypes"
 
 interface CalculateHFAfterSwapProps {
   fromAmount: BigNumberValue

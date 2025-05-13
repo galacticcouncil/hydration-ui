@@ -1,4 +1,4 @@
-import { ComputedReserveData } from "@/hooks/app-data-provider/useAppDataProvider"
+import { ComputedReserveData } from "@/hooks/commonTypes"
 
 export const GHO_SYMBOL = "HOLLAR"
 export const GHO_ASSET_ID = "222"

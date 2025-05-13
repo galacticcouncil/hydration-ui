@@ -1,7 +1,7 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { SignatureLike } from "@ethersproject/bytes"
 
-import { ComputedReserveData } from "@/hooks/app-data-provider/useAppDataProvider"
+import { ComputedReserveData } from "@/hooks/commonTypes"
 import { SignedParams } from "@/hooks/useApprovalTx"
 
 export type TxState = {

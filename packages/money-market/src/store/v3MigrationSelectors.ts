@@ -29,7 +29,7 @@ import { SignatureLike } from "@ethersproject/bytes"
 import { BigNumberish } from "ethers"
 
 import { Approval } from "@/helpers/useTransactionHandler"
-import { ComputedUserReserveData } from "@/hooks/app-data-provider/useAppDataProvider"
+import { ComputedUserReserveData } from "@/hooks/commonTypes"
 
 import {
   selectCurrentChainIdV2PoolReserve,
