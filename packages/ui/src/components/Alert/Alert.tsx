@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 
 import { CircleInfo, TriangleAlert } from "@/assets/icons"
 import {
@@ -15,6 +15,7 @@ type Props = {
   readonly variant?: AlertVariant
   readonly title?: string
   readonly description: string
+  readonly action?: ReactNode
   readonly className?: string
 }
 
@@ -22,6 +23,7 @@ export const Alert: FC<Props> = ({
   variant = "info",
   title,
   description,
+  action,
   className,
 }) => {
   return (
@@ -31,7 +33,7 @@ export const Alert: FC<Props> = ({
         component={variant === "warning" ? TriangleAlert : CircleInfo}
       />
 
-      <Flex direction="column" gap={8}>
+      <Flex direction="column" gap={8} align="baseline">
         {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
         <Text
           fw={title ? 400 : 500}
@@ -41,6 +43,7 @@ export const Alert: FC<Props> = ({
         >
           {description}
         </Text>
+        {action}
       </Flex>
     </SAlertContainer>
   )

@@ -9,15 +9,11 @@ import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 import {
-  existentialDepositError,
-  maxBalanceError,
   required,
-  requiredAny,
-  validateExistentialDeposit,
-  validateMaxBalance,
+  requiredObject,
+  useValidateFormMaxBalance,
+  validateFormExistentialDeposit,
 } from "@/utils/validators"
 
 const useSchema = () => {
@@ -26,13 +22,13 @@ const useSchema = () => {
     otcExistentialDepositorMultiplierQuery(rpc),
   )
 
-  const balances = useAccountData((data) => data.balances)
+  const refineFormMaxBalance = useValidateFormMaxBalance()
 
   return z
     .object({
-      offerAsset: z.custom<TAsset | null>().refine(...requiredAny),
+      offerAsset: requiredObject<TAsset>(),
       offerAmount: required,
-      buyAsset: z.custom<TAsset | null>().refine(...requiredAny),
+      buyAsset: requiredObject<TAsset>(),
       buyAmount: required,
       price: z.string(),
       isPartiallyFillable: z.boolean(),
@@ -46,44 +42,20 @@ const useSchema = () => {
           path: ["buyAsset"],
         },
       ),
-      z.refine(
-        ({ offerAsset, offerAmount }) =>
-          validateExistentialDeposit(
-            offerAsset,
-            offerAmount || "0",
-            existentialDepositMultiplier,
-          ),
-        {
-          error: existentialDepositError,
-          path: ["offerAmount"],
-        },
-      ),
-      z.refine(
-        ({ offerAsset, offerAmount }) => {
-          const balance = scaleHuman(
-            balances[offerAsset?.id ?? ""]?.total ?? 0n,
-            offerAsset?.decimals ?? 12,
-          )
-
-          return validateMaxBalance(balance, offerAmount || "0")
-        },
-        {
-          error: maxBalanceError,
-          path: ["offerAmount"],
-        },
-      ),
-      z.refine(
-        ({ buyAsset, buyAmount }) =>
-          validateExistentialDeposit(
-            buyAsset,
-            buyAmount || "0",
-            existentialDepositMultiplier,
-          ),
-        {
-          error: existentialDepositError,
-          path: ["buyAmount"],
-        },
-      ),
+      validateFormExistentialDeposit("offerAmount", (form) => [
+        existentialDepositMultiplier,
+        form.offerAsset,
+        form.offerAmount,
+      ]),
+      refineFormMaxBalance("offerAmount", (form) => [
+        form.offerAsset,
+        form.offerAmount,
+      ]),
+      validateFormExistentialDeposit("buyAmount", (form) => [
+        existentialDepositMultiplier,
+        form.buyAsset,
+        form.buyAmount,
+      ]),
     )
 }
 

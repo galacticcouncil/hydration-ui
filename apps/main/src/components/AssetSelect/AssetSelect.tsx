@@ -13,7 +13,9 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelectModal, Logo } from "@/components"
+import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
 export type AssetSelectProps = Omit<
   AssetInputProps,
@@ -58,6 +60,7 @@ const EmptyState = () => {
 export const AssetSelect = ({
   assets,
   selectedAsset,
+  maxBalance: providedMaxBalance,
   setSelectedAsset,
   ...props
 }: AssetSelectProps) => {
@@ -74,6 +77,22 @@ export const AssetSelect = ({
     ? new Big(assetPrice).times(props.value || "0").toString()
     : "NaN"
 
+  const { getBalance } = useAccountBalances()
+  const maxBalance = ((): string | undefined => {
+    if (providedMaxBalance) {
+      return providedMaxBalance
+    }
+
+    const maxBalance =
+      !props.ignoreBalance && selectedAsset
+        ? getBalance(selectedAsset.id)
+        : undefined
+
+    return maxBalance && selectedAsset
+      ? scaleHuman(maxBalance.free, selectedAsset.decimals)
+      : undefined
+  })()
+
   return (
     <>
       <AssetInput
@@ -85,6 +104,7 @@ export const AssetSelect = ({
         modalDisabled={!setSelectedAsset}
         dollarValue={price}
         dollarValueLoading={assetPriceLoading}
+        maxBalance={maxBalance}
         formatValue={(value) => t("number", { value })}
         onAsssetBtnClick={() => setOpeModal(true)}
       />

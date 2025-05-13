@@ -1,6 +1,5 @@
 import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -10,29 +9,30 @@ import {
 } from "@/components/DynamicFee/DynamicFee.styled"
 
 type DynamicFeeProps = {
-  readonly value?: number
-  readonly range: Record<DynamicFeeRangeType, number>
+  readonly value: number
+  readonly rangeLow: number
+  readonly rangeHigh: number
   readonly tooltip?: string
 }
 
-export const DynamicFee = ({ value, range, tooltip }: DynamicFeeProps) => {
+export const DynamicFee = ({
+  value,
+  rangeLow,
+  rangeHigh,
+  tooltip,
+}: DynamicFeeProps) => {
   const { t } = useTranslation()
 
-  const currentKey = useMemo((): DynamicFeeRangeType | undefined => {
-    if (!value) {
-      return undefined
+  const currentKey = ((): DynamicFeeRangeType | undefined => {
+    switch (true) {
+      case value < rangeLow:
+        return "low"
+      case value <= rangeHigh:
+        return "middle"
+      case value > rangeHigh:
+        return "high"
     }
-
-    for (const key in range) {
-      const typedKey = key as DynamicFeeRangeType
-      const rangeValue = range[typedKey]
-
-      if (value <= rangeValue) {
-        return typedKey
-      }
-    }
-    return undefined
-  }, [value, range])
+  })()
 
   return (
     <Flex gap={8} alignItems="center">
