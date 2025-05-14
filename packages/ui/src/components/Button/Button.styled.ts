@@ -29,7 +29,7 @@ const defaulStyles = createStyles(
     grid-auto-flow: column;
     column-gap: 4px;
     align-items: center;
-    justify-items: center;
+    place-content: center;
 
     text-decoration: none;
     font-weight: 500;
