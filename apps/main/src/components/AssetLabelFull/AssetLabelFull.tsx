@@ -7,7 +7,7 @@ import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
 import { Logo } from "@/components/Logo"
-
+import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
 export const AssetLabelFull = ({
   asset,
   size,
@@ -44,6 +44,28 @@ export const AssetLabelXYK = ({
     <AssetLabelFullContainer>
       <Logo id={iconIds} />
       <AssetLabel symbol={symbol} name={name} size={size} />
+    </AssetLabelFullContainer>
+  )
+}
+
+export const AssetLabelStablepool = ({
+  asset,
+  size,
+  withName = true,
+}: {
+  asset: TAssetData
+  size?: AssetLabelProps["size"]
+  withName?: boolean
+}) => {
+  return (
+    <AssetLabelFullContainer>
+      <Logo id={asset.id} size={size} />
+      <AssetLabel
+        symbol={asset.symbol}
+        name={withName ? asset.name : undefined}
+        size={size}
+        badge={<StablepoolBadge />}
+      />
     </AssetLabelFullContainer>
   )
 }

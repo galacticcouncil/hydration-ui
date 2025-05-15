@@ -114,7 +114,7 @@ export const useAssetPrice = (assetId?: string): AssetPrice => {
 
   return {
     price: price ?? "",
-    isLoading: price === undefined,
+    isLoading: !!assetId && price === undefined,
     isValid: isNonNullish(price),
   }
 }

@@ -108,7 +108,7 @@ export const IsolatedPoolsTable = ({
     <>
       <Flex justify="space-between" align="center" gap={20}>
         <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
-        <Button>
+        <Button onClick={() => router.navigate({ to: "/liquidity/create" })}>
           <Icon component={Plus} size={14} />
           {t(
             isMobile

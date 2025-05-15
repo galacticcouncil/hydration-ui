@@ -120,21 +120,33 @@ export const useAllPools = () => {
 
 export const xykPools = queryOptions<PoolBase[]>({
   queryKey: ["pools", "xyk"],
+  queryFn: () => {
+    throw new Error("queryFn should not run")
+  },
   staleTime: Infinity,
 })
 
 export const stablePools = queryOptions<PoolBase[]>({
   queryKey: ["pools", "stable"],
+  queryFn: () => {
+    throw new Error("queryFn should not run")
+  },
   staleTime: Infinity,
 })
 
 export const hubToken = queryOptions<PoolToken>({
   queryKey: ["pools", "hub"],
+  queryFn: () => {
+    throw new Error("queryFn should not run")
+  },
   staleTime: Infinity,
 })
 
 export const omnipoolTokens = queryOptions<TOmnipoolAssetsData>({
   queryKey: ["pools", "omnipool"],
+  queryFn: () => {
+    throw new Error("queryFn should not run")
+  },
   staleTime: Infinity,
 })
 

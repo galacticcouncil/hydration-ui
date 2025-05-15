@@ -146,3 +146,25 @@ export const Logo = ({
     />
   )
 }
+
+// export const MultipleAssetLogo = ({
+//   size = "medium",
+//   assets,
+// }: {
+//   size?: AssetLogoSize
+//   assets: TAsset[]
+// }) => {
+//   return (
+//     <MultipleAssetLogoWrapper size={size}>
+//       {logoMetadata.map((data, i) => (
+//         <AssetLogo
+//           key={`${data.alt}_${i}`}
+//           alt={data.alt}
+//           src={data.assetSrc}
+//           chainSrc={data.chainSrc}
+//           size={size}
+//         />
+//       ))}
+//     </MultipleAssetLogoWrapper>
+//   )
+// }

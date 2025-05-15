@@ -26,13 +26,13 @@ export const PositionsHeader = ({ assetId, data }: PositionsHeaderProps) => {
       (acc, curr) => {
         return {
           value: Big(acc.value)
-            .plus(curr.currentValueHuman ?? 0)
+            .plus(curr.data?.currentValueHuman ?? 0)
             .toString(),
           hubValue: Big(acc.hubValue)
-            .plus(curr.currentHubValueHuman ?? 0)
+            .plus(curr.data?.currentHubValueHuman ?? 0)
             .toString(),
           valueDisplay: Big(acc.valueDisplay)
-            .plus(curr.currentTotalDisplay ?? 0)
+            .plus(curr.data?.currentTotalDisplay ?? 0)
             .toString(),
         }
       },

@@ -24,6 +24,28 @@ type Positions = {
   xykMining: XykDeposit[]
 }
 
+export const isOmnipoolDepositPosition = (
+  position: OmnipoolPosition | OmnipoolDepositFull,
+): position is OmnipoolDepositFull => "yield_farm_entries" in position
+
+export type OmnipoolPositionWithData = OmnipoolPosition & {
+  data?: OmnipoolPositionData
+}
+
+export type OmnipoolDepositFullWithData = OmnipoolDepositFull & {
+  data?: OmnipoolPositionData
+}
+
+export type AccountOmnipoolPosition =
+  | OmnipoolPositionWithData
+  | OmnipoolDepositFullWithData
+
+type AccountOmnipoolPositions = {
+  omnipool: OmnipoolPositionWithData[]
+  omnipoolMining: OmnipoolDepositFullWithData[]
+  all: AccountOmnipoolPosition[]
+}
+
 type BalanceRecord = Record<string, Balance>
 
 type BalanceStorageSlice = {
@@ -138,48 +160,48 @@ export const useAccountPositions = () => {
   return { positions, isPositions, getPositions }
 }
 
-export type OmnipoolPositionWithData = OmnipoolPosition & {
-  readonly data: OmnipoolPositionData | undefined
-}
-
-export type OmnipoolMiningPositionWithData = OmnipoolDepositFull & {
-  readonly data: OmnipoolPositionData | undefined
-}
-
 export const useAccountOmnipoolPositionsData = () => {
   const positions = useAccountData(prop("positions"))
-  const { omnipool, omnipoolMining } = positions
-  const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
+  const {
+    omnipool: omnipoolPositions,
+    omnipoolMining: omnipoolMiningPositions,
+  } = positions
+  const isPositions =
+    omnipoolPositions.length > 0 || omnipoolMiningPositions.length > 0
 
   const { isLoading, getData } = useOmnipoolPositionData(isPositions)
 
-  const data = useMemo(() => {
+  const data = useMemo((): AccountOmnipoolPositions | undefined => {
     if (!isLoading) {
-      return {
-        omnipool: omnipool.map<OmnipoolPositionWithData>((position) => {
+      const omnipool = omnipoolPositions.map<OmnipoolPositionWithData>(
+        (position) => {
           const data = getData(position)
           return { ...position, data }
-        }),
-        omnipoolMining: omnipoolMining.map<OmnipoolMiningPositionWithData>(
-          (position) => {
-            const data = getData(position)
-            return { ...position, data }
-          },
-        ),
+        },
+      )
+
+      const omnipoolMining =
+        omnipoolMiningPositions.map<OmnipoolDepositFullWithData>((position) => {
+          const data = getData(position)
+          return { ...position, data }
+        })
+
+      return {
+        omnipool,
+        omnipoolMining,
+        all: [...omnipool, ...omnipoolMining],
       }
     }
-  }, [getData, isLoading, omnipool, omnipoolMining])
+  }, [getData, isLoading, omnipoolPositions, omnipoolMiningPositions])
 
   const getAssetPositions = useCallback(
-    (id: string) => {
-      const omnipool = data?.omnipool.filter(
-        (position) => position.assetId === id,
-      )
-      const omnipoolMining = data?.omnipoolMining.filter(
-        (position) => position.assetId === id,
-      )
+    (id: string): AccountOmnipoolPositions => {
+      const omnipool =
+        data?.omnipool.filter((position) => position.assetId === id) ?? []
+      const omnipoolMining =
+        data?.omnipoolMining.filter((position) => position.assetId === id) ?? []
 
-      return { omnipool, omnipoolMining }
+      return { omnipool, omnipoolMining, all: [...omnipool, ...omnipoolMining] }
     },
 
     [data],

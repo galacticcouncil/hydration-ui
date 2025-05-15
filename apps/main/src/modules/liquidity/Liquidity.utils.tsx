@@ -10,9 +10,14 @@ import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetType, TAssetData } from "@/api/assets"
-import { useFee, useOmnipoolAssetsData, useTVL } from "@/api/omnipool"
+import { useFee, useOmnipoolAssetsData } from "@/api/omnipool"
 import { stablePools, xykPools } from "@/api/pools"
-import { AssetLabelFull, AssetLabelXYK, AssetPrice } from "@/components"
+import {
+  AssetLabelFull,
+  AssetLabelStablepool,
+  AssetLabelXYK,
+  AssetPrice,
+} from "@/components"
 import {
   isStableSwap,
   useAssets,
@@ -37,7 +42,7 @@ export type OmnipoolAssetTable = {
   id: string
   meta: TAssetData
   price: string | undefined
-  tvlDisplay: string
+  tvlDisplay: string | undefined
   fee?: string
   isFeeLoading: boolean
   isNative: boolean
@@ -61,6 +66,8 @@ const isolatedColumnHelper = createColumnHelper<IsolatedPoolTable>()
 export const useOmnipools = () => {
   const { getAssetWithFallback, native } = useAssets()
   const { ids: omnipoolIds = [] } = useOmnipoolIds()
+  const { dataMap: omnipoolAssets, isLoading: isOmnipoolAssetsLoading } =
+    useOmnipoolAssetsData()
 
   const { getBalance } = useAccountBalances()
   const { getPositions } = useAccountPositions()
@@ -68,10 +75,10 @@ export const useOmnipools = () => {
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(omnipoolIds)
 
-  const { data: tvls, isLoading: isTvlLoading } = useTVL()
   const { data: fees, isLoading: isFeeLoading } = useFee()
 
-  const isLoading = isPriceLoading || !omnipoolIds.length || isTvlLoading
+  const isLoading =
+    isPriceLoading || !omnipoolIds.length || isOmnipoolAssetsLoading
 
   const data: OmnipoolAssetTable[] = useMemo(() => {
     if (isLoading) return []
@@ -84,10 +91,6 @@ export const useOmnipools = () => {
         ? Big(assetPrice.price).round(5).toString()
         : undefined
 
-      const tvlDisplay =
-        tvls
-          ?.find((tvl) => tvl?.asset_id === Number(omnipoolId))
-          ?.tvl_usd.toString() ?? "0"
       const fee = isNative
         ? undefined
         : fees
@@ -102,7 +105,11 @@ export const useOmnipools = () => {
 
       const isStablePool = isStableSwap(meta)
       const isPositions = positionsAmount > 0 || (!!balance && isStablePool)
-
+      const tvlNew = omnipoolAssets?.get(omnipoolId)?.balance
+      const tvlDisplay =
+        tvlNew && price
+          ? Big(scaleHuman(tvlNew, meta.decimals)).times(price).toString()
+          : undefined
       return {
         id: omnipoolId,
         meta,
@@ -123,13 +130,13 @@ export const useOmnipools = () => {
     omnipoolIds,
     getAssetWithFallback,
     getAssetPrice,
-    tvls,
     fees,
     native.id,
     isFeeLoading,
     isLoading,
     getPositions,
     getBalance,
+    omnipoolAssets,
   ])
 
   useEffect(() => {
@@ -267,12 +274,16 @@ export const usePoolColumns = () => {
     () => [
       columnHelper.accessor("meta.name", {
         header: "Pool asset",
-        cell: ({ row }) => (
-          <AssetLabelFull
-            asset={row.original.meta}
-            withName={isStableSwap(row.original.meta) && !isMobile}
-          />
-        ),
+        size: 250,
+        cell: ({ row }) =>
+          isStableSwap(row.original.meta) ? (
+            <AssetLabelStablepool
+              asset={row.original.meta}
+              withName={!isMobile}
+            />
+          ) : (
+            <AssetLabelFull asset={row.original.meta} />
+          ),
         sortingFn: (a, b) =>
           a.original.meta.symbol.localeCompare(b.original.meta.symbol),
       }),
@@ -289,11 +300,13 @@ export const usePoolColumns = () => {
             value: Number(row.original.tvlDisplay),
           }),
         sortingFn: (a, b) =>
-          numericallyStrDesc(b.original.tvlDisplay, a.original.tvlDisplay),
+          numericallyStrDesc(
+            b.original.tvlDisplay ?? "0",
+            a.original.tvlDisplay ?? "0",
+          ),
       }),
       columnHelper.display({
         header: "Fee",
-
         cell: ({ row }) =>
           t("percent", {
             value: Number(row.original.fee),
@@ -305,7 +318,9 @@ export const usePoolColumns = () => {
           if (a.original.isNative) return 1
           if (b.original.isNative) return -1
 
-          return new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay)
+          return new Big(a.original.tvlDisplay ?? "0").gt(
+            b.original.tvlDisplay ?? "0",
+          )
             ? 1
             : -1
         },
@@ -317,8 +332,8 @@ export const usePoolColumns = () => {
           if (b.original.isNative) return -1
 
           return numericallyStrDesc(
-            b.original.tvlDisplay,
-            a.original.tvlDisplay,
+            b.original.tvlDisplay ?? "0",
+            a.original.tvlDisplay ?? "0",
           )
         },
       }),
@@ -327,11 +342,7 @@ export const usePoolColumns = () => {
       }),
       columnHelper.display({
         id: "actions",
-        meta: {
-          sx: {
-            width: "200px",
-          },
-        },
+        size: 170,
         cell: ({ row }) => (
           <Flex
             gap={getTokenPx("containers.paddings.quint")}

@@ -16,17 +16,33 @@ export type Farm = {
 import { AvailableFarm } from "./AvailableFarm"
 import { AvailableFarmModalBody } from "./AvailableFarmModalBody"
 
-export const AvailableFarms = () => {
+export const AvailableFarmsSection = () => {
   const { t } = useTranslation("liquidity")
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
 
   if (farms.length === 0) return null
 
   return (
     <>
       <SectionHeader>{t("details.section.availableFarms")}</SectionHeader>
+      <AvailableFarms
+        farms={farms}
+        sx={{ flexWrap: "wrap", flexDirection: "row" }}
+      />
+    </>
+  )
+}
 
-      <Flex gap={20} wrap>
+type AvailableFarmsProps = {
+  farms: Farm[]
+  className?: string
+}
+
+export const AvailableFarms = ({ farms, className }: AvailableFarmsProps) => {
+  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
+
+  return (
+    <>
+      <Flex direction="column" gap={20} className={className}>
         {farms.map((farm) => (
           <AvailableFarm key={farm.id} farm={farm} onClick={setSelectedFarm} />
         ))}
