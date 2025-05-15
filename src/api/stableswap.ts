@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
-import { undefinedNoop } from "utils/helpers"
+import { isNotNil, undefinedNoop } from "utils/helpers"
 import { StableSwap } from "@galacticcouncil/sdk"
 import { useSquidUrl } from "./provider"
-import request, { gql } from "graphql-request"
+import request from "graphql-request"
+import { StableswapYieldMetricsDocument } from "graphql/__generated__/squid/graphql"
+import { millisecondsInHour } from "date-fns"
 
 export const useStableswapPool = (poolId?: string) => {
   const { api } = useRpcProvider()
@@ -32,38 +34,16 @@ export const useStableSDKPools = () => {
 export const useStablepoolFees = (poolIds: string[]) => {
   const url = useSquidUrl()
 
-  return useQuery(
-    QUERY_KEYS.stablepoolFees(poolIds),
-    async () => {
-      return await request<{
-        stableswapYieldMetrics: {
-          nodes: {
-            poolId: string
-            projectedAprPerc: string
-            projectedApyPerc: string
-          }[]
-        }
-      }>(
-        url,
-        gql`
-          query StablepoolFees($poolIds: [String!]!) {
-            stableswapYieldMetrics(
-              filter: { poolIds: $poolIds, interval: _1MON_ }
-            ) {
-              nodes {
-                poolId
-                projectedAprPerc
-                projectedApyPerc
-              }
-            }
-          }
-        `,
-        { poolIds },
-      )
+  return useQuery({
+    queryKey: QUERY_KEYS.stablepoolFees(poolIds),
+    queryFn: async () => {
+      const data = await request(url, StableswapYieldMetricsDocument, {
+        filter: { poolIds },
+      })
+
+      return data.stableswapYieldMetrics.nodes.filter(isNotNil)
     },
-    {
-      enabled: !!poolIds.length,
-      select: (data) => data.stableswapYieldMetrics.nodes,
-    },
-  )
+    staleTime: millisecondsInHour,
+    enabled: !!poolIds.length,
+  })
 }

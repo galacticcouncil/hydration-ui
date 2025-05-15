@@ -21,7 +21,6 @@ import {
 } from "graphql/__generated__/squid/graphql"
 import { useSquidUrl } from "api/provider"
 import request from "graphql-request"
-import { z } from "zod"
 
 export type StatsData = {
   timestamp: string
@@ -82,51 +81,6 @@ const getStatsTvl = (assetId?: string) => async () => {
   )
 
   const data: Promise<StatsData[]> = res.json()
-
-  return data
-}
-
-const feeItemSchema = z.object({
-  asset_id: z.number(),
-  accrued_fees_usd: z.number(),
-  projected_apy_perc: z.number(),
-  projected_apr_perc: z.number(),
-})
-
-const feeResponseSchema = z.array(feeItemSchema)
-
-export const useFee = (assetId?: string | "all") => {
-  return useQuery(
-    QUERY_KEYS.fee(assetId),
-    assetId
-      ? async () => {
-          const asset_id = assetId === "all" ? undefined : assetId
-          const data = await geFee(asset_id)
-
-          return feeResponseSchema.parse(data)
-        }
-      : undefinedNoop,
-    {
-      retry: 0,
-      enabled: !!assetId,
-    },
-  )
-}
-
-const geFee = async (assetId?: string) => {
-  const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v2/stats/fees${
-      assetId !== undefined ? `/${assetId}` : ""
-    }`,
-  )
-  const data: Promise<
-    {
-      asset_id: number
-      accrued_fees_usd: number
-      projected_apy_perc: number
-      projected_apr_perc: number
-    }[]
-  > = res.json()
 
   return data
 }
