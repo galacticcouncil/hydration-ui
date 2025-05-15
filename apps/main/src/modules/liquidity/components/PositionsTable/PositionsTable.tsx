@@ -67,7 +67,6 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
       <Flex align="center" justify="space-between">
         <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
         <Button
-          iconStart={Minus}
           variant="tertiary"
           outline
           onClick={() =>
@@ -81,6 +80,7 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
             })
           }
         >
+          <Minus />
           {t("liquidity.positions.removeAll")}
         </Button>
       </Flex>

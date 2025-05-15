@@ -13,7 +13,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -53,7 +53,7 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
   const form = useForm<TFormValues>({
     mode: "onChange",
     defaultValues,
-    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
+    resolver: zodSchema ? standardSchemaResolver(zodSchema) : undefined,
   })
 
   const isFarms = farms.length > 0

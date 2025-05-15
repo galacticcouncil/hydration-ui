@@ -9,10 +9,11 @@ import {
   ModalHeader,
   Slider,
   SSliderTabs,
+  SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import Big from "big.js"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -22,7 +23,6 @@ import { z } from "zod"
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull, DynamicFee } from "@/components"
 import { Logo } from "@/components/Logo"
-import { SummaryRow } from "@/components/Summary"
 import { useAssets } from "@/providers/assetsProvider"
 
 import { getIsRemoveAll, useRemoveLiquidity } from "./RemoveLiquidity.utils"
@@ -55,7 +55,7 @@ export const RemoveLiquidity = ({
   const form = useForm<{ value: number }>({
     mode: "onChange",
     defaultValues: { value: isRemoveAll ? 100 : 25 },
-    resolver: zodResolver(
+    resolver: standardSchemaResolver(
       z.object({
         value: z
           .number()

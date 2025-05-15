@@ -7,7 +7,7 @@ import {
   ModalHeader,
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -56,7 +56,7 @@ export const CreateIsolatedPool = () => {
 
   const form = useForm<CreateIsolatedPoolFormData>({
     mode: "onChange",
-    resolver: zodResolver(
+    resolver: standardSchemaResolver(
       zodCreateIsolatedPool(assetABalance, assetBBalance, assetA, assetB),
     ),
     defaultValues: {
