@@ -1,10 +1,10 @@
-import { useOmnipoolDataObserver } from "api/omnipool"
+import { useOmnipoolDataObserver, useOmnipoolYieldMetrics } from "api/omnipool"
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { HYDRA_TREASURE_ACCOUNT } from "utils/api"
 import { scaleHuman } from "utils/balance"
 import { BN_0, BN_NAN } from "utils/constants"
-import { useFee, useTreasuryBalances } from "api/stats"
+import { useTreasuryBalances } from "api/stats"
 import { useOmnipoolVolumes } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
@@ -296,12 +296,14 @@ export const useOmnipoolAssetDetails = () => {
   const { data: volumes = [], isLoading: isVolumeLoading } =
     useOmnipoolVolumes(omnipoolAssetsIds)
 
-  const { data: fees, isLoading: isFeesLoading } = useFee("all")
+  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+    useOmnipoolYieldMetrics()
 
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(omnipoolAssetsIds)
 
   const isLoading = omnipoolAssets.isLoading || isPriceLoading
+  const isLoadingFee = isOmnipoolMetricsLoading || isAllFarmsLoading
 
   const data = useMemo(() => {
     if (!omnipoolAssets.data || isPriceLoading) return []
@@ -340,7 +342,6 @@ export const useOmnipoolAssetDetails = () => {
         volumeRaw && spotPrice
           ? BN(volumeRaw).shiftedBy(-meta.decimals).multipliedBy(spotPrice)
           : BN_NAN
-      const isLoadingFee = isFeesLoading || isAllFarmsLoading
 
       const { totalApr, farms = [] } = allFarms?.get(omnipoolAsset.id) ?? {}
 
@@ -348,8 +349,9 @@ export const useOmnipoolAssetDetails = () => {
         native.id === omnipoolAssetId
           ? BN_0
           : BN(
-              fees?.find((fee) => fee?.asset_id === Number(omnipoolAssetId))
-                ?.projected_apr_perc ?? BN_NAN,
+              omnipoolMetrics.find(
+                (omnipoolMetric) => omnipoolMetric.assetId === omnipoolAssetId,
+              )?.projectedAprPerc ?? BN_NAN,
             )
 
       const totalFee = !isLoadingFee ? fee.plus(totalApr ?? 0) : BN_NAN
@@ -374,17 +376,16 @@ export const useOmnipoolAssetDetails = () => {
     })
     return rows
   }, [
-    fees,
-    isFeesLoading,
     getAssetWithFallback,
     native.id,
     omnipoolAssets.data,
     volumes,
     isVolumeLoading,
     allFarms,
-    isAllFarmsLoading,
     getAssetPrice,
     isPriceLoading,
+    isLoadingFee,
+    omnipoolMetrics,
   ]).sort((assetA, assetB) => {
     if (assetA.id === native.id) {
       return -1
