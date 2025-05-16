@@ -2,13 +2,12 @@ import { Flex, Grid, Paper, Skeleton } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createFileRoute } from "@tanstack/react-router"
-import { fallback, zodValidator } from "@tanstack/zod-adapter"
 import * as z from "zod"
 
+import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
+
 const searchSchema = z.object({
-  category: fallback(z.enum(["all", "assets", "liquidity"]), "all").default(
-    "all",
-  ),
+  category: z.enum(["all", "assets", "liquidity"]).default("all"),
 })
 
 const WalletAssetsSkeleton = () => {
@@ -76,6 +75,7 @@ const WalletAssetsSkeleton = () => {
 }
 
 export const Route = createFileRoute("/_wallet/wallet/assets")({
+  component: WalletAssetsPage,
   pendingComponent: WalletAssetsSkeleton,
-  validateSearch: zodValidator(searchSchema),
+  validateSearch: searchSchema,
 })

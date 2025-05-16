@@ -1,8 +1,8 @@
 import { Box, Grid, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
-import { FormHeader } from "@/modules/trade/components"
-import { TradeChart } from "@/modules/trade/components/TradeChart/TradeChart"
+import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
+import { TradeChart } from "@/modules/trade/swap/components/TradeChart"
 
 import { SContainer } from "./SwapPage.styled"
 

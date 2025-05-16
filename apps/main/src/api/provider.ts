@@ -8,6 +8,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { PolkadotClient } from "polkadot-api"
 import { useMemo } from "react"
 
+import { TwapApi } from "@/api/utils/twapApi"
 import {
   createProvider,
   ProviderProps,
@@ -31,6 +32,7 @@ export type TProviderData = {
   dataEnv: TDataEnv
   tradeRouter: sor.TradeRouter
   tradeUtils: sor.TradeUtils
+  twapApi: TwapApi
   /**
    * @deprecated
    */
@@ -101,6 +103,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
   })
 
+  const twapApi = new TwapApi(papi, tradeUtils, tradeRouter)
+
   return {
     papi,
     papiClient,
@@ -112,6 +116,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     tradeRouter,
     tradeUtils,
+    twapApi,
     featureFlags: {},
     legacy_api,
     legacy_tradeRouter,

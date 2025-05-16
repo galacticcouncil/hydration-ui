@@ -1,47 +1,56 @@
-import { Flex } from "@galacticcouncil/ui/components"
-import { useMemo } from "react"
+import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 
-import { SFeeSection } from "./DynamicFee.styled"
-
-const rangeTypes = ["low", "middle", "high"] as const
-export type RangeType = (typeof rangeTypes)[number]
+import {
+  DynamicFeeRangeType,
+  dynamicFeeRangeTypes,
+  SFeeSection,
+} from "@/components/DynamicFee/DynamicFee.styled"
 
 type DynamicFeeProps = {
-  value?: number
-  range: Record<RangeType, number>
+  readonly value: number
+  readonly rangeLow: number
+  readonly rangeHigh: number
+  readonly tooltip?: string
 }
 
-export const DynamicFee = ({ value, range }: DynamicFeeProps) => {
-  const currentKey = useMemo(() => {
-    if (value) {
-      let currentKey: RangeType = "high"
+export const DynamicFee = ({
+  value,
+  rangeLow,
+  rangeHigh,
+  tooltip,
+}: DynamicFeeProps) => {
+  const { t } = useTranslation()
 
-      for (const key in range) {
-        const typedKey = key as RangeType
-        const rangeValue = range[typedKey]
-
-        if (value <= rangeValue) {
-          currentKey = typedKey
-          break
-        }
-      }
-
-      return currentKey
+  const currentKey = ((): DynamicFeeRangeType | undefined => {
+    switch (true) {
+      case value < rangeLow:
+        return "low"
+      case value <= rangeHigh:
+        return "middle"
+      case value > rangeHigh:
+        return "high"
     }
-    return undefined
-  }, [value, range])
+  })()
 
   return (
-    <Flex p="1px 2px" gap={1} sx={{ height: "min-content" }}>
-      {rangeTypes.map((rangeType) => {
-        const isActive = rangeType === currentKey
+    <Flex gap={8} alignItems="center">
+      <Text fs="p6" fw={500} color={getToken("text.high")}>
+        {t("percent", { value })}
+      </Text>
+      <Flex p="1px 2px" gap={1} sx={{ height: "min-content" }}>
+        {dynamicFeeRangeTypes.map((rangeType) => {
+          const isActive = rangeType === currentKey
 
-        return (
-          <SFeeSection key={rangeType} type={rangeType} isActive={isActive}>
-            {isActive && <div />}
-          </SFeeSection>
-        )
-      })}
+          return (
+            <SFeeSection key={rangeType} type={rangeType} isActive={isActive}>
+              {isActive && <div />}
+            </SFeeSection>
+          )
+        })}
+      </Flex>
+      {tooltip && <Tooltip text={tooltip} />}
     </Flex>
   )
 }
