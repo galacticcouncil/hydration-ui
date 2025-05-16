@@ -90,4 +90,8 @@ export const ASSET_COLORS: { [key: string]: string } = {
   ztg: "#808080",
   cru: "#f4792b",
   ring: "#434343",
+  usdc: "#2775CA",
+  ausdc: "#2775CA",
+  gdot: "#979FAA",
+  "2-pool-btc": "#FFD700",
 }
