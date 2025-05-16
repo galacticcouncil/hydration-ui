@@ -1,7 +1,8 @@
 import Big from "big.js"
 import { useCallback, useMemo } from "react"
-import { isDeepEqual, prop } from "remeda"
+import { isDeepEqual, pick, prop } from "remeda"
 import { create, StateCreator } from "zustand"
+import { useShallow } from "zustand/react/shallow"
 
 import {
   OmnipoolDepositFull,
@@ -124,14 +125,21 @@ export const useAccountData = create<
 }))
 
 export const useAccountBalances = () => {
-  const balances = useAccountData(prop("balances"))
+  const { balances, isBalanceLoading } = useAccountData(
+    useShallow(pick(["balances", "isBalanceLoading"])),
+  )
 
   const getBalance = useCallback(
     (assetId: string) => balances[assetId],
     [balances],
   )
 
-  return { balances, getBalance }
+  const getFreeBalance = useCallback(
+    (assetId: string) => balances[assetId]?.free ?? 0n,
+    [balances],
+  )
+
+  return { balances, getBalance, getFreeBalance, isBalanceLoading }
 }
 
 export const useAccountPositions = () => {

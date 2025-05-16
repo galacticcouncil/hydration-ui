@@ -2,28 +2,51 @@ import {
   AssetLabel,
   AssetLabelProps,
   Flex,
+  Skeleton,
 } from "@galacticcouncil/ui/components"
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
 import { Logo } from "@/components/Logo"
 import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
+
 export const AssetLabelFull = ({
   asset,
   size,
   withName = true,
+  loading = false,
 }: {
-  asset: TAssetData
+  asset?: TAssetData
   size?: AssetLabelProps["size"]
   withName?: boolean
+  loading?: boolean
 }) => {
+  if (!asset) {
+    return (
+      <AssetLabelFullContainer>
+        <Skeleton circle width={24} height={24} />
+        <AssetLabel
+          symbol={""}
+          name={withName ? "" : undefined}
+          size={size}
+          loading
+        />
+      </AssetLabelFullContainer>
+    )
+  }
+
   return (
     <AssetLabelFullContainer>
-      <Logo id={asset.id} size={size} />
+      {loading ? (
+        <Skeleton circle width={24} height={24} />
+      ) : (
+        <Logo id={asset.id} size={size} />
+      )}
       <AssetLabel
         symbol={asset.symbol}
         name={withName ? asset.name : undefined}
         size={size}
+        loading={loading}
       />
     </AssetLabelFullContainer>
   )

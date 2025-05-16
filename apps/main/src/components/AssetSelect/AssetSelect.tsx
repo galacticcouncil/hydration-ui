@@ -95,6 +95,7 @@ export const AssetSelect = ({
         onOpenChange={setOpeModal}
         onSelect={setSelectedAsset}
         emptyState={<EmptyState />}
+        selectedAssetId={selectedAsset?.id}
       />
     </>
   )

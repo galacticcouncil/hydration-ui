@@ -61,7 +61,7 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
   if (tableData.length === 0) {
     return null
   }
-  console.log(tableData)
+
   return (
     <>
       <Flex align="center" justify="space-between">

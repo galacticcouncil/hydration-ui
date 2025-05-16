@@ -178,18 +178,7 @@ export const useOraclePrice = (
               }
             }
 
-            //         const n = price.n.toString()
-            //         const d = price.d.toString()
-
-            // let oraclePrice
-            // if (Number(rewardCurrency) < Number(incentivizedAsset)) {
-            //   oraclePrice = fixed_from_rational(n, d)
-            // } else {
-            //   oraclePrice = fixed_from_rational(d, n)
-            // }
-
-            console.log({ res })
-            return {}
+            return undefined
           }
         : undefined,
   })
