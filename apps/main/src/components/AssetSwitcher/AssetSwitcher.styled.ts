@@ -7,8 +7,12 @@ const buttonStyles = createStyles(
   (theme) => css`
     background: ${theme.details.separators};
 
-    &:hover {
+    &:hover:not([disabled]) {
       opacity: 0.2;
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
     }
   `,
 )
@@ -21,7 +25,7 @@ export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
 
     transition: ${theme.transitions.transform};
 
-    &:hover {
+    &:hover:not([disabled]) {
       transform: rotate(180deg);
     }
   `,

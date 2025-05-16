@@ -27,6 +27,7 @@ export type AssetInputProps = {
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
   formatValue?: (value: string) => string
+  className?: string
 }
 
 export const AssetInput = ({
@@ -44,13 +45,19 @@ export const AssetInput = ({
   loading,
   onAsssetBtnClick,
   formatValue = defaultAssetValueFormatter,
+  className,
 }: AssetInputProps) => {
   const onMaxButtonClick = () => {
     if (maxBalance) onChange?.(maxBalance)
   }
 
   return (
-    <Flex direction="column" gap={12} sx={{ position: "relative", py: 20 }}>
+    <Flex
+      direction="column"
+      gap={12}
+      sx={{ position: "relative", py: 20 }}
+      className={className}
+    >
       <Flex align="center" gap={4} justify="space-between">
         {label && (
           <Text
@@ -165,7 +172,7 @@ export const AssetInput = ({
   )
 }
 
-const AssetButton = ({
+export const AssetButton = ({
   loading,
   symbol,
   error,
@@ -209,11 +216,13 @@ const AssetButton = ({
           >
             {symbol}
           </Text>
-          <Icon
-            size={20}
-            component={ChevronDown}
-            color={getToken("icons.onContainer")}
-          />
+          {onAsssetBtnClick && (
+            <Icon
+              size={20}
+              component={ChevronDown}
+              color={getToken("icons.onContainer")}
+            />
+          )}
         </Flex>
       </SAssetButton>
     )

@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 
 import { CircleInfo, TriangleAlert } from "@/assets/icons"
 import {
@@ -14,8 +14,9 @@ import { getToken } from "@/utils"
 type Props = {
   readonly variant?: AlertVariant
   readonly title?: string
-  readonly description: string
+  readonly description: string | ReactNode
   readonly className?: string
+  readonly displayIcon?: boolean
 }
 
 export const Alert: FC<Props> = ({
@@ -23,24 +24,31 @@ export const Alert: FC<Props> = ({
   title,
   description,
   className,
+  displayIcon = true,
 }) => {
   return (
     <SAlertContainer variant={variant} className={className}>
-      <SAlertIcon
-        variant={variant}
-        component={variant === "warning" ? TriangleAlert : CircleInfo}
-      />
+      {displayIcon && (
+        <SAlertIcon
+          variant={variant}
+          component={variant === "warning" ? TriangleAlert : CircleInfo}
+        />
+      )}
 
       <Flex direction="column" gap={8}>
         {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
-        <Text
-          fw={title ? 400 : 500}
-          fs={13}
-          lh={1.3}
-          color={getToken("text.high")}
-        >
-          {description}
-        </Text>
+        {typeof description === "string" ? (
+          <Text
+            fw={title ? 400 : 500}
+            fs={13}
+            lh={1.3}
+            color={getToken("text.high")}
+          >
+            {description}
+          </Text>
+        ) : (
+          description
+        )}
       </Flex>
     </SAlertContainer>
   )

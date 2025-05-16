@@ -1,3 +1,5 @@
+import { ReactNode } from "react"
+
 import { getToken } from "@/utils"
 
 import { Flex } from "../Flex"
@@ -11,6 +13,7 @@ export type AssetLabelProps = {
   symbol: string
   size?: AssetLabelSize
   loading?: boolean
+  badge?: ReactNode
 }
 
 export const AssetLabel = ({
@@ -18,29 +21,46 @@ export const AssetLabel = ({
   symbol,
   size = "medium",
   loading,
+  badge,
 }: AssetLabelProps) => {
   const isMedium = size === "medium"
 
   if (loading) {
     return (
-      <Flex sx={{ flexDirection: "column", gap: 2 }}>
+      <div>
         <Skeleton width={32} height={12} />
         <Skeleton width={56} height={12} />
-      </Flex>
+      </div>
     )
   }
 
   return (
     <Flex sx={{ flexDirection: "column", gap: 2 }}>
-      <Text
-        color={getToken("text.high")}
-        fs={isMedium ? "p5" : "p3"}
-        fw={600}
-        lh={1}
-        sx={{ whiteSpace: "nowrap" }}
-      >
-        {symbol}
-      </Text>
+      {badge ? (
+        <Flex sx={{ gap: 4 }} alignItems="center">
+          <Text
+            color={getToken("text.high")}
+            fs={isMedium ? "p5" : "p3"}
+            fw={600}
+            lh={1}
+            sx={{ whiteSpace: "nowrap" }}
+          >
+            {symbol}
+          </Text>
+          {badge}
+        </Flex>
+      ) : (
+        <Text
+          color={getToken("text.high")}
+          fs={isMedium ? "p5" : "p3"}
+          fw={600}
+          lh={1}
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          {symbol}
+        </Text>
+      )}
+
       {name && (
         <Text
           color={getToken("text.medium")}

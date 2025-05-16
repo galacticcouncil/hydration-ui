@@ -37,21 +37,22 @@ export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(
 TextButton.displayName = "TextButton"
 
 export type LinkTextButtonProps = React.ComponentPropsWithoutRef<"a"> &
-  Omit<CustomTextButtonProps, "variant" | "direction">
+  CustomTextButtonProps
 
 export const LinkTextButton = forwardRef<
   HTMLAnchorElement,
   LinkTextButtonProps
->((props, ref) => (
+>(({ direction = "external", variant = "plain", ...props }, ref) => (
   <SLinkTextButton
     ref={ref}
     target="_blank"
     rel="noreferrer"
-    direction="external"
+    direction={direction}
+    variant={variant}
     {...props}
   >
     {props.children}
-    <TextButtonIcon direction="external" />
+    <TextButtonIcon direction={direction} />
   </SLinkTextButton>
 ))
 

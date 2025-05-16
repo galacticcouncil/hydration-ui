@@ -21,6 +21,8 @@ export const scale = (
   amount: string | number | bigint,
   decimals: number | "t" | "q",
 ) => {
+  if (!amount.toString().length) return "0"
+
   const amountBig = new Big(
     typeof amount === "bigint" ? amount.toString() : amount,
   )

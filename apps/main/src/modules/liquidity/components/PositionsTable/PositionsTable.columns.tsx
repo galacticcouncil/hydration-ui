@@ -1,11 +1,13 @@
 import { CupSoda, Trash } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { useNavigate } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { Logo } from "@/components/Logo/Logo"
 import { useAssets } from "@/providers/assetsProvider"
 
 import { PositionTableData } from "./PositionsTable"
@@ -15,6 +17,7 @@ const columnHelper = createColumnHelper<PositionTableData>()
 export const usePositionsTableColumns = () => {
   const { hub } = useAssets()
   const { t } = useTranslation(["common", "liquidity"])
+  const navigate = useNavigate()
 
   return useMemo(
     () => [
@@ -31,15 +34,19 @@ export const usePositionsTableColumns = () => {
       }),
       columnHelper.display({
         header: t("liquidity:liquidity.positions.header.initialAmount"),
-        cell: ({ row }) =>
-          row.original.initialValueHuman ? (
+        cell: ({
+          row: {
+            original: { data },
+          },
+        }) =>
+          data?.initialValueHuman ? (
             <Amount
               value={t("currency", {
-                value: row.original.initialValueHuman,
-                symbol: row.original.meta?.symbol,
+                value: data.initialValueHuman,
+                symbol: data.meta?.symbol,
               })}
               displayValue={t("currency", {
-                value: row.original.initialDisplay,
+                value: data.initialDisplay,
               })}
             />
           ) : (
@@ -48,12 +55,16 @@ export const usePositionsTableColumns = () => {
       }),
       columnHelper.display({
         header: t("liquidity:liquidity.positions.header.currentValue"),
-        cell: ({ row: { original } }) =>
-          original.currentValueHuman ? (
+        cell: ({
+          row: {
+            original: { data },
+          },
+        }) =>
+          data?.currentValueHuman ? (
             <Amount
-              value={`${t("currency", { value: original.currentValueHuman, symbol: original.meta?.symbol })} ${original.currentHubValueHuman && Big(original.currentHubValueHuman).gt(0) ? t("currency", { value: original.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`}
+              value={`${t("currency", { value: data.currentValueHuman, symbol: data.meta?.symbol })} ${data.currentHubValueHuman && Big(data.currentHubValueHuman).gt(0) ? t("currency", { value: data.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`}
               displayValue={t("currency", {
-                value: original.currentTotalDisplay,
+                value: data.currentTotalDisplay,
               })}
             />
           ) : (
@@ -62,24 +73,55 @@ export const usePositionsTableColumns = () => {
       }),
       columnHelper.display({
         header: t("liquidity:liquidity.positions.header.joinedFarms"),
-        cell: () => null,
+        cell: ({
+          row: {
+            original: { joinedFarms },
+          },
+        }) => (joinedFarms.length ? <Logo id={joinedFarms} /> : null),
       }),
       columnHelper.display({
         header: t("liquidity:liquidity.positions.header.actions"),
         size: 180,
-        cell: () => (
-          <Flex gap={getTokenPx("containers.paddings.tertiary")}>
-            <Button variant="primary">
-              <CupSoda />
-              {t("join")}
-            </Button>
-            <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
+        cell: ({ row }) => (
+          <Flex gap={getTokenPx("containers.paddings.tertiary")} justify="end">
+            {!row.original.joinedFarms.length && (
+              <Button
+                variant="primary"
+                onClick={() =>
+                  navigate({
+                    to: "/liquidity/$id/join/$positionId",
+                    params: {
+                      id: row.original.poolId,
+                      positionId: row.original.positionId,
+                    },
+                  })
+                }
+              >
+                <CupSoda />
+                {t("join")}
+              </Button>
+            )}
+            <Button
+              variant="tertiary"
+              outline
+              sx={{ flexShrink: 0 }}
+              onClick={() =>
+                navigate({
+                  to: "/liquidity/$id/remove/$positionId",
+                  params: {
+                    id: row.original.poolId,
+                    positionId: row.original.positionId,
+                  },
+                  resetScroll: false,
+                })
+              }
+            >
               <Trash />
             </Button>
           </Flex>
         ),
       }),
     ],
-    [t, hub.symbol],
+    [t, hub.symbol, navigate],
   )
 }

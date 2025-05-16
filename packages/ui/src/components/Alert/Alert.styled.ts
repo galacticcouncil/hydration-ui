@@ -31,7 +31,7 @@ export const SAlertContainer = styled.div<{
 
 const textColorVariants = createVariants<AlertVariant>((theme) => ({
   info: css`
-    color: ${theme.accents.info.onPrimary};
+    color: ${theme.icons.primary};
   `,
   error: css`
     color: #ff674c;
