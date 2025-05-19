@@ -67,9 +67,11 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
         <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
         <Button variant="tertiary" outline asChild>
           <Link
-            to="/liquidity/$id/remove/$positionId"
+            to="/liquidity/$id/remove"
             params={{
               id: assetId,
+            }}
+            search={{
               positionId: "all",
             }}
           >

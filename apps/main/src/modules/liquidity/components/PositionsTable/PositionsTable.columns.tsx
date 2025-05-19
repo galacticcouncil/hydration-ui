@@ -86,9 +86,11 @@ export const usePositionsTableColumns = () => {
             {!row.original.joinedFarms.length && (
               <Button variant="primary" asChild>
                 <Link
-                  to="/liquidity/$id/join/$positionId"
+                  to="/liquidity/$id/join"
                   params={{
                     id: row.original.poolId,
+                  }}
+                  search={{
                     positionId: row.original.positionId,
                   }}
                 >
@@ -99,9 +101,11 @@ export const usePositionsTableColumns = () => {
             )}
             <Button variant="tertiary" outline sx={{ flexShrink: 0 }} asChild>
               <Link
-                to="/liquidity/$id/remove/$positionId"
+                to="/liquidity/$id/remove"
                 params={{
                   id: row.original.poolId,
+                }}
+                search={{
                   positionId: row.original.positionId,
                 }}
               >
