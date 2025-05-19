@@ -3,7 +3,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { Trans, useTranslation } from "react-i18next"
 
-import { Logo } from "@/components"
+import { Logo } from "@/components/Logo"
 import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 
 export const CurrencyReserves = ({ id }: { id: string }) => {

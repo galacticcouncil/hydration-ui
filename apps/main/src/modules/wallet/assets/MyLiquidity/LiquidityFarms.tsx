@@ -3,7 +3,7 @@ import { px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components"
+import { Logo } from "@/components/Logo"
 
 type Props = {
   readonly assetId: string

@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { DynamicFee } from "@/components/DynamicFee"
 import { Logo } from "@/components/Logo"
 import { useAssets } from "@/providers/assetsProvider"

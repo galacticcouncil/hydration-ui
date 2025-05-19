@@ -16,8 +16,8 @@ import {
   AssetLabelFull,
   AssetLabelStablepool,
   AssetLabelXYK,
-  AssetPrice,
-} from "@/components"
+} from "@/components/AssetLabelFull"
+import { AssetPrice } from "@/components/AssetPrice"
 import {
   isStableSwap,
   useAssets,

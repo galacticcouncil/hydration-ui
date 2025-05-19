@@ -12,7 +12,8 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { AssetSelectModal, Logo } from "@/components"
+import { AssetSelectModal } from "@/components/AssetSelectModal"
+import { Logo } from "@/components/Logo"
 import { useAssetPrice } from "@/states/displayAsset"
 
 export type AssetSelectProps = Omit<

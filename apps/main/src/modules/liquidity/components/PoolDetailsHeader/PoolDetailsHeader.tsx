@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components"
+import { Logo } from "@/components/Logo"
 import {
   isIsolatedPool,
   IsolatedPoolTable,

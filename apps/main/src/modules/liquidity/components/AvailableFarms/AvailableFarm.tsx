@@ -13,7 +13,7 @@ import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useAssets } from "@/providers/assetsProvider"
 
 import { SContainer } from "./AvailableFarm.styled"

@@ -15,7 +15,7 @@ import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 
 import { SOption } from "./AssetSelectModal.styled"
 import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
