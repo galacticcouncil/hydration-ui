@@ -23,9 +23,11 @@ const getSrcLink = (url: string, iconSrc?: string) => {
 export const Logo = ({
   id,
   size = "medium",
+  className,
 }: {
   id: string | string[]
   size?: AssetLogoSize
+  className?: string
 }) => {
   const {
     getAssetWithFallback,
@@ -139,6 +141,7 @@ export const Logo = ({
 
   return (
     <AssetLogo
+      className={className}
       alt={logoMetadata.alt}
       src={logoMetadata.assetSrc}
       chainSrc={logoMetadata.chainSrc}

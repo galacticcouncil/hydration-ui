@@ -27,7 +27,13 @@ export const PoolDetails = () => {
       <Flex gap={20}>
         <Paper sx={{ flex: 1 }}></Paper>
 
-        <Paper width={360} p={getTokenPx("containers.paddings.primary")}>
+        <Paper
+          as={Flex}
+          width={360}
+          p={getTokenPx("containers.paddings.primary")}
+          gap={getTokenPx("containers.paddings.primary")}
+          sx={{ flexDirection: "column" }}
+        >
           <PoolDetailsValues data={data} />
         </Paper>
       </Flex>

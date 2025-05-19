@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next"
 const farms = [
   { id: 0, assetId: "5" },
   { id: 1, assetId: "0" },
-  { id: 2, assetId: "15" },
 ]
 
 export type Farm = {
