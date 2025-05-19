@@ -76,6 +76,8 @@ export const useMaxAddLiquidityLimit = () => {
 
       const [n = 0, d = 0] = data ?? []
 
+      if (!n || !d) return undefined
+
       const maxAddLiquidity = Big(n).div(d).toString()
 
       return maxAddLiquidity

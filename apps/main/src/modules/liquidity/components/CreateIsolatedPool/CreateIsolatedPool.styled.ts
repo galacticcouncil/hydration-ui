@@ -12,8 +12,6 @@ export const SRate = styled(ButtonTransparent)(
 
     height: 28px;
 
-    //flex: 1 0 auto;
-
     font-size: ${theme.paragraphSize.p6};
     color: ${theme.text.high};
 

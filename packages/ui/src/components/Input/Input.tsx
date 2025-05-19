@@ -34,7 +34,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       {IconStart && <IconStart />}
       <SInput ref={ref} {...props} />
       {unit && (
-        <Text fs="p5" fw={600} color={getToken("text.medium")}>
+        <Text
+          fs="p5"
+          fw={600}
+          color={getToken("text.medium")}
+          sx={{ whiteSpace: "nowrap" }}
+        >
           {unit}
         </Text>
       )}

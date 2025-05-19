@@ -11,7 +11,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
@@ -45,23 +45,12 @@ const Content = ({
 
   const { sortedAssets, isLoading } = useAssetSelectModalAssets(
     assets,
+    search,
     selectedAssetId,
   )
 
-  const filteredAssets = useMemo(() => {
-    if (search.length) {
-      return sortedAssets.filter(
-        (asset) =>
-          asset.name.toLowerCase().includes(search.toLowerCase()) ||
-          asset.symbol.toLowerCase().includes(search.toLowerCase()),
-      )
-    }
-
-    return sortedAssets
-  }, [sortedAssets, search])
-
   const virtualizer = useVirtualizer({
-    count: filteredAssets.length,
+    count: sortedAssets.length,
     getScrollElement: () => divRef.current,
     estimateSize: () => 50,
     overscan: 5,
@@ -83,7 +72,7 @@ const Content = ({
     if (e.key === "ArrowDown") {
       setHighlighted((prevIndex) => {
         const nextIndex =
-          prevIndex < filteredAssets.length - 1 ? prevIndex + 1 : prevIndex
+          prevIndex < sortedAssets.length - 1 ? prevIndex + 1 : prevIndex
         scrollToHighlighted(nextIndex)
         return nextIndex
       })
@@ -97,7 +86,7 @@ const Content = ({
       setSearch((prevValue) => prevValue.slice(0, -1))
       inputRef.current?.focus()
     } else if (e.key === "Enter") {
-      const asset = filteredAssets[highlighted]
+      const asset = sortedAssets[highlighted]
 
       if (asset) {
         onSelectOption(asset)
@@ -179,7 +168,7 @@ const Content = ({
                 </Flex>
               ))}
             </Flex>
-          ) : filteredAssets.length ? (
+          ) : sortedAssets.length ? (
             <div
               sx={{
                 width: "100%",
@@ -188,7 +177,7 @@ const Content = ({
               }}
             >
               {virtualizer.getVirtualItems().map((virtualRow) => {
-                const asset = filteredAssets[virtualRow.index]
+                const asset = sortedAssets[virtualRow.index]
 
                 if (!asset) {
                   return null

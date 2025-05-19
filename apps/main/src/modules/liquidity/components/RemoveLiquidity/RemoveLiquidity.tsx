@@ -21,7 +21,8 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull, DynamicFee } from "@/components"
+import { AssetLabelFull } from "@/components"
+import { DynamicFee } from "@/components/DynamicFee"
 import { Logo } from "@/components/Logo"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -143,8 +144,8 @@ export const RemoveLiquidity = ({
                         min={0}
                         max={100}
                         step={1}
-                        value={[value]}
-                        onChange={([val]) => {
+                        value={value}
+                        onChange={(val) => {
                           setCustomValue("")
                           onChange(val)
                         }}
@@ -193,7 +194,7 @@ export const RemoveLiquidity = ({
 
                         <Input
                           unit={asset.symbol}
-                          sx={{ width: 88 }}
+                          sx={{ flexBasis: "20%" }}
                           value={customValue}
                           disabled={totalValue === "0"}
                           onChange={(e) => {

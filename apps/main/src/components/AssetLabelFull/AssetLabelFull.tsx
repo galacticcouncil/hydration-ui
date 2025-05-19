@@ -21,7 +21,7 @@ export const AssetLabelFull = ({
   withName?: boolean
   loading?: boolean
 }) => {
-  if (!asset) {
+  if (loading && !asset) {
     return (
       <AssetLabelFullContainer>
         <Skeleton circle width={24} height={24} />
@@ -34,6 +34,8 @@ export const AssetLabelFull = ({
       </AssetLabelFullContainer>
     )
   }
+
+  if (!asset) return null
 
   return (
     <AssetLabelFullContainer>

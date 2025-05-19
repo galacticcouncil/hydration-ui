@@ -9,7 +9,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useRouter, useSearch } from "@tanstack/react-router"
+import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -108,13 +108,15 @@ export const IsolatedPoolsTable = ({
     <>
       <Flex justify="space-between" align="center" gap={20}>
         <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
-        <Button onClick={() => router.navigate({ to: "/liquidity/create" })}>
-          <Icon component={Plus} size={14} />
-          {t(
-            isMobile
-              ? "section.isolatedPools.btn.short"
-              : "section.isolatedPools.btn",
-          )}
+        <Button asChild>
+          <Link to="/liquidity/create">
+            <Icon component={Plus} size={14} />
+            {t(
+              isMobile
+                ? "section.isolatedPools.btn.short"
+                : "section.isolatedPools.btn",
+            )}
+          </Link>
         </Button>
       </Flex>
       <TableContainer as={Paper}>

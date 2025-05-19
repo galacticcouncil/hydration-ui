@@ -14,7 +14,7 @@ import { getToken } from "@/utils"
 type Props = {
   readonly variant?: AlertVariant
   readonly title?: string
-  readonly description: string | ReactNode
+  readonly description: ReactNode
   readonly className?: string
   readonly displayIcon?: boolean
 }

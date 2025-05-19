@@ -9,10 +9,6 @@ export const useXYKPoolsLiquidity = (poolAddress: string) => {
     enabled: isApiLoaded,
     queryKey: ["xykLiquidity"],
     queryFn: async () => {
-      //   const data = await papi.query.XYK.TotalLiquidity.getValues(
-      //     poolAddresses.map((poolAddress) => [poolAddress]),
-      //   )
-
       const data = await papi.query.XYK.TotalLiquidity.getValue(poolAddress)
 
       return data

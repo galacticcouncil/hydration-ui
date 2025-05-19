@@ -7,7 +7,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,7 +32,6 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
   const { t } = useTranslation("liquidity")
   const { isTablet, isMobile } = useBreakpoints()
   const columns = usePositionsTableColumns()
-  const navigate = useNavigate()
 
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
 
@@ -66,22 +65,17 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
     <>
       <Flex align="center" justify="space-between">
         <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
-        <Button
-          variant="tertiary"
-          outline
-          onClick={() =>
-            navigate({
-              to: "/liquidity/$id/remove/$positionId",
-              params: {
-                id: assetId,
-                positionId: "all",
-              },
-              resetScroll: false,
-            })
-          }
-        >
-          <Minus />
-          {t("liquidity.positions.removeAll")}
+        <Button variant="tertiary" outline asChild>
+          <Link
+            to="/liquidity/$id/remove/$positionId"
+            params={{
+              id: assetId,
+              positionId: "all",
+            }}
+          >
+            <Minus />
+            {t("liquidity.positions.removeAll")}
+          </Link>
         </Button>
       </Flex>
 

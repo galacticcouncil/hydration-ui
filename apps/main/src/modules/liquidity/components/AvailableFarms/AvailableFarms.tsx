@@ -1,11 +1,5 @@
-import { Flex, Modal, SectionHeader } from "@galacticcouncil/ui/components"
+import { Flex, Modal } from "@galacticcouncil/ui/components"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
-
-const farms = [
-  { id: 0, assetId: "5" },
-  { id: 1, assetId: "0" },
-]
 
 export type Farm = {
   id: number
@@ -14,22 +8,6 @@ export type Farm = {
 
 import { AvailableFarm } from "./AvailableFarm"
 import { AvailableFarmModalBody } from "./AvailableFarmModalBody"
-
-export const AvailableFarmsSection = () => {
-  const { t } = useTranslation("liquidity")
-
-  if (farms.length === 0) return null
-
-  return (
-    <>
-      <SectionHeader>{t("details.section.availableFarms")}</SectionHeader>
-      <AvailableFarms
-        farms={farms}
-        sx={{ flexWrap: "wrap", flexDirection: "row" }}
-      />
-    </>
-  )
-}
 
 type AvailableFarmsProps = {
   farms: Farm[]

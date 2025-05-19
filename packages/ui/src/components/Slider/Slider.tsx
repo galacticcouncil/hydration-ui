@@ -1,8 +1,8 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { Range } from "@radix-ui/react-slider"
-import { useLayoutEffect, useMemo, useRef } from "react"
-import { useState } from "react"
+import { useMemo } from "react"
 import { FC } from "react"
+import { useMeasure } from "react-use"
 
 import { Union } from "@/assets/icons"
 import { getToken } from "@/utils"
@@ -11,15 +11,14 @@ import { Icon } from "../Icon/Icon"
 import { SDash, SRange, SRoot, SThumb, STrack } from "./Slider.styled"
 
 export type SliderProps = {
-  value: number[]
-  onChange: (value: number[]) => void
+  value: number
+  onChange: (value: number) => void
   min: number
   max: number
   step: number
   disabled?: boolean
+  dashCount?: number
 }
-
-const dashCount = 20
 
 export const Slider: FC<SliderProps> = ({
   min,
@@ -28,42 +27,34 @@ export const Slider: FC<SliderProps> = ({
   value,
   onChange,
   disabled,
+  dashCount = 20,
 }) => {
-  const [rootWidth, setRootWidth] = useState(0)
-  const rootRef = useRef<HTMLSpanElement>(null)
+  const [ref, { width }] = useMeasure<HTMLSpanElement>()
 
   const dashes = useMemo(
     () =>
       Array.from({ length: dashCount + 1 }).map((_, i) => (
         <Fragment key={i}>
-          <SDash
-            key={`top-${i}`}
-            offset={i * (rootWidth / dashCount)}
-            row="top"
-          />
+          <SDash key={`top-${i}`} offset={i * (width / dashCount)} row="top" />
           <SDash
             key={`bottom-${i}`}
-            offset={i * (rootWidth / dashCount)}
+            offset={i * (width / dashCount)}
             row="bottom"
           />
         </Fragment>
       )),
-    [rootWidth],
+    [width, dashCount],
   )
-
-  useLayoutEffect(() => {
-    if (rootRef.current) setRootWidth(rootRef.current.offsetWidth)
-  }, [])
 
   return (
     <SRoot
-      value={value}
-      onValueChange={onChange}
+      value={[value]}
+      onValueChange={(v) => onChange(v[0])}
       min={min}
       max={max}
       step={step}
       disabled={disabled}
-      ref={rootRef}
+      ref={ref}
     >
       {dashes}
       <STrack>

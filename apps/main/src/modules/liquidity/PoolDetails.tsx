@@ -3,7 +3,7 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Outlet, useParams } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms"
+import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
 import { BalancePosition } from "@/modules/liquidity/components/BalancePosition"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
 import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"

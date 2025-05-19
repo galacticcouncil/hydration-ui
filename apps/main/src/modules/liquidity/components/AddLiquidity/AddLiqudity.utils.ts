@@ -103,7 +103,7 @@ export const useAddToOmnipoolZod = (
     .refine(
       (value) => Big(scale(value, decimals)).gte(minPoolLiquidity.toString()),
       {
-        message: t("liquidity.add.modal.validation.minPoolLiquidity"),
+        error: t("liquidity.add.modal.validation.minPoolLiquidity"),
       },
     )
     .refine(
@@ -127,7 +127,7 @@ export const useAddToOmnipoolZod = (
         return isWithinLimit
       },
       {
-        message: t("liquidity.add.modal.validation.cap"),
+        error: t("liquidity.add.modal.validation.cap"),
         path: ["cap"],
       },
     )
@@ -138,7 +138,7 @@ export const useAddToOmnipoolZod = (
         return Big(circuitBreakerLimit).gte(value)
       },
       {
-        message: t("liquidity.add.modal.validation.circuitBreaker", {
+        error: t("liquidity.add.modal.validation.circuitBreaker", {
           amount: circuitBreakerLimit,
           symbol,
         }),

@@ -9,6 +9,7 @@ import { sortAssets } from "@/utils/sort"
 
 export const useAssetSelectModalAssets = (
   assets: TAsset[],
+  search: string,
   selectedAssetId?: string,
 ) => {
   const { balances, getFreeBalance, isBalanceLoading } = useAccountBalances()
@@ -38,8 +39,16 @@ export const useAssetSelectModalAssets = (
       }
     })
 
-    return sortAssets(assetsWithBalances, "balanceDisplay", selectedAssetId)
-  }, [assets, getFreeBalance, getAssetPrice, selectedAssetId])
+    const filteredAssets = search.length
+      ? assetsWithBalances.filter(
+          (asset) =>
+            asset.name.toLowerCase().includes(search.toLowerCase()) ||
+            asset.symbol.toLowerCase().includes(search.toLowerCase()),
+        )
+      : assetsWithBalances
+
+    return sortAssets(filteredAssets, "balanceDisplay", selectedAssetId)
+  }, [assets, getFreeBalance, getAssetPrice, selectedAssetId, search])
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
 }

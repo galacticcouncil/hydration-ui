@@ -8,7 +8,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -33,26 +33,17 @@ export type CreateIsolatedPoolFormData = {
 export const CreateIsolatedPool = () => {
   const { t } = useTranslation("liquidity")
   const { tradable } = useAssets()
-  const { getBalance } = useAccountBalances()
+  const { getFreeBalance } = useAccountBalances()
   const [assetA, setAssetA] = useState<TAssetData | undefined>(undefined)
   const [assetB, setAssetB] = useState<TAssetData | undefined>(undefined)
   const [isReversedPrice, setIsReversedPrice] = useState(false)
 
-  const { assetABalance, assetBBalance } = useMemo(() => {
-    const balanceA = assetA ? getBalance(assetA?.id)?.free : undefined
-    const balanceB = assetB ? getBalance(assetB?.id)?.free : undefined
-
-    return {
-      assetABalance:
-        balanceA && assetA
-          ? scaleHuman(balanceA, assetA.decimals).toString()
-          : "0",
-      assetBBalance:
-        balanceB && assetB
-          ? scaleHuman(balanceB, assetB.decimals).toString()
-          : "0",
-    }
-  }, [assetA, assetB, getBalance])
+  const assetABalance = assetA
+    ? scaleHuman(getFreeBalance(assetA.id), assetA.decimals)
+    : "0"
+  const assetBBalance = assetB
+    ? scaleHuman(getFreeBalance(assetB.id), assetB.decimals)
+    : "0"
 
   const form = useForm<CreateIsolatedPoolFormData>({
     mode: "onChange",

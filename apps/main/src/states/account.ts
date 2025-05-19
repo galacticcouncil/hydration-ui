@@ -30,11 +30,11 @@ export const isOmnipoolDepositPosition = (
 ): position is OmnipoolDepositFull => "yield_farm_entries" in position
 
 export type OmnipoolPositionWithData = OmnipoolPosition & {
-  data?: OmnipoolPositionData
+  data: OmnipoolPositionData | undefined
 }
 
 export type OmnipoolDepositFullWithData = OmnipoolDepositFull & {
-  data?: OmnipoolPositionData
+  data: OmnipoolPositionData | undefined
 }
 
 export type AccountOmnipoolPosition =

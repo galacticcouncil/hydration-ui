@@ -11,26 +11,24 @@ export const PoolsHeader = () => {
   const { data: xykPools = [], isLoading: isLoadingXYK } = useXYKPools()
 
   const xykTotal = useMemo(() => {
-    return xykPools.reduce(
-      (acc, asset) =>
-        Big(acc)
-          .plus(asset.tvlDisplay ?? 0)
-          .toString(),
-      "0",
-    )
+    return xykPools
+      .reduce((acc, asset) => acc.plus(asset.tvlDisplay ?? 0), Big(0))
+      .toString()
   }, [xykPools])
 
   const totals = useMemo(() => {
-    return data.reduce(
+    const totals = data.reduce(
       (acc, asset) => ({
-        liquidity: Big(acc.liquidity)
-          .plus(asset.tvlDisplay ?? 0)
-          .toString(),
+        liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
       }),
       {
-        liquidity: "0",
+        liquidity: Big(0),
       },
     )
+
+    return {
+      liquidity: totals.liquidity.toString(),
+    }
   }, [data])
 
   return (

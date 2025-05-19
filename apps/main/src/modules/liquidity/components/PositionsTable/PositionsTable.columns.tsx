@@ -1,7 +1,7 @@
 import { CupSoda, Trash } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -17,7 +17,6 @@ const columnHelper = createColumnHelper<PositionTableData>()
 export const usePositionsTableColumns = () => {
   const { hub } = useAssets()
   const { t } = useTranslation(["common", "liquidity"])
-  const navigate = useNavigate()
 
   return useMemo(
     () => [
@@ -85,43 +84,34 @@ export const usePositionsTableColumns = () => {
         cell: ({ row }) => (
           <Flex gap={getTokenPx("containers.paddings.tertiary")} justify="end">
             {!row.original.joinedFarms.length && (
-              <Button
-                variant="primary"
-                onClick={() =>
-                  navigate({
-                    to: "/liquidity/$id/join/$positionId",
-                    params: {
-                      id: row.original.poolId,
-                      positionId: row.original.positionId,
-                    },
-                  })
-                }
-              >
-                <CupSoda />
-                {t("join")}
-              </Button>
-            )}
-            <Button
-              variant="tertiary"
-              outline
-              sx={{ flexShrink: 0 }}
-              onClick={() =>
-                navigate({
-                  to: "/liquidity/$id/remove/$positionId",
-                  params: {
+              <Button variant="primary" asChild>
+                <Link
+                  to="/liquidity/$id/join/$positionId"
+                  params={{
                     id: row.original.poolId,
                     positionId: row.original.positionId,
-                  },
-                  resetScroll: false,
-                })
-              }
-            >
-              <Trash />
+                  }}
+                >
+                  <CupSoda />
+                  {t("join")}
+                </Link>
+              </Button>
+            )}
+            <Button variant="tertiary" outline sx={{ flexShrink: 0 }} asChild>
+              <Link
+                to="/liquidity/$id/remove/$positionId"
+                params={{
+                  id: row.original.poolId,
+                  positionId: row.original.positionId,
+                }}
+              >
+                <Trash />
+              </Link>
             </Button>
           </Flex>
         ),
       }),
     ],
-    [t, hub.symbol, navigate],
+    [t, hub.symbol],
   )
 }
