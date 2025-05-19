@@ -110,7 +110,8 @@ export function XcmPage() {
     await createTransaction(
       {
         tx: await getSubmittableExtrinsic(e.detail),
-        ...getCall(e.detail),
+        xcall: getCall(e.detail),
+        xcallMeta: e.detail.meta,
       },
       {
         onSuccess: () => {},
