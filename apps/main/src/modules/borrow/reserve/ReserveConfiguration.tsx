@@ -1,9 +1,9 @@
 import {
-  AreaChart,
-  Stack,
-  Text,
-  ValueStats,
-} from "@galacticcouncil/ui/components"
+  ComputedReserveData,
+  useAssetCaps,
+  useProtocolDataContext,
+} from "@galacticcouncil/money-market/hooks"
+import { Stack, Text, ValueStats } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
@@ -11,7 +11,7 @@ import { InterestRateModelChart } from "@/modules/borrow/reserve/components/Inte
 import { SupplyInfo } from "@/modules/borrow/reserve/components/SupplyInfo"
 
 type ReserveConfigurationProps = {
-  reserve: any
+  reserve: ComputedReserveData
 }
 
 export const ReserveSectionDivider = () => (
@@ -29,43 +29,38 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
   reserve,
 }) => {
   const { t } = useTranslation(["common", "borrow"])
-  const renderCharts = false
-  const showSupplyCapStatus = true
-  const showBorrowCapStatus = true
 
-  const shouldRenderBorrowInfo = true
+  const { currentMarketData } = useProtocolDataContext()
+  const { supplyCap, debtCeiling, borrowCap } = useAssetCaps()
 
-  const shouldRenderEModeInfo = true
+  const showSupplyCapStatus = reserve.supplyCap !== "0"
+  const showBorrowCapStatus = reserve.borrowCap !== "0"
+
+  const shouldRenderBorrowInfo =
+    reserve.borrowingEnabled || Number(reserve.totalDebt) > 0
+
+  const shouldRenderEModeInfo = reserve.eModeCategoryId !== 0
 
   return (
     <>
       <Text fs="p3" fw={500} sx={{ mb: 30 }}>
         Supply info
       </Text>
-      <SupplyInfo
-        reserve={reserve}
-        currentMarketData={{}}
-        renderCharts={renderCharts}
-        showSupplyCapStatus={showSupplyCapStatus}
-        supplyCap={"0"}
-        debtCeiling={"0"}
-      />
+      {supplyCap && (
+        <SupplyInfo
+          reserve={reserve}
+          currentMarketData={currentMarketData}
+          showSupplyCapStatus={showSupplyCapStatus}
+          supplyCap={supplyCap}
+          debtCeiling={debtCeiling}
+        />
+      )}
 
-      <ReserveSectionDivider />
+      {/* <ReserveSectionDivider />
 
       <Text fs="p3" fw={500} sx={{ mb: 30 }}>
         Borrow info
-      </Text>
-
-      <SupplyInfo
-        borrow
-        reserve={reserve}
-        currentMarketData={{}}
-        renderCharts={renderCharts}
-        showSupplyCapStatus={showSupplyCapStatus}
-        supplyCap={"0"}
-        debtCeiling={"0"}
-      />
+      </Text> */}
 
       <ReserveSectionDivider />
 
@@ -82,35 +77,39 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
       </Text>
 
       <ValueStats
-        size="medium"
+        size="small"
+        font="secondary"
         alwaysWrap
         label={"E-Mode Category"}
-        customValue={"Stablecoins"}
+        value={"Stablecoins"}
       />
 
       <Stack direction="row" gap={40} sx={{ mt: 20 }}>
         <ValueStats
-          size="medium"
+          size="small"
           alwaysWrap
-          label={"Max LTV"}
+          font="secondary"
+          label={t("borrow:maxLTV")}
           value={t("percent", {
-            value: 75,
+            value: Number(reserve.formattedEModeLtv) * 100,
           })}
         />
         <ValueStats
-          size="medium"
+          size="small"
           alwaysWrap
-          label={"Liquidation Threshold"}
+          font="secondary"
+          label={t("borrow:risk.liquidationThreshold")}
           value={t("percent", {
-            value: 80,
+            value: Number(reserve.formattedEModeLiquidationThreshold) * 100,
           })}
         />
         <ValueStats
-          size="medium"
+          size="small"
           alwaysWrap
-          label={"Liquidation Penalty"}
+          font="secondary"
+          label={t("borrow:risk.liquidationPenalty")}
           value={t("percent", {
-            value: 7,
+            value: Number(reserve.formattedEModeLiquidationBonus) * 100,
           })}
         />
       </Stack>

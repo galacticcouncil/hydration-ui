@@ -1,36 +1,41 @@
 import {
+  AssetCapHookData,
+  ComputedReserveData,
+} from "@galacticcouncil/money-market/hooks"
+import { MarketDataType } from "@galacticcouncil/money-market/utils"
+import { Check } from "@galacticcouncil/ui/assets/icons"
+import { CircleInfo } from "@galacticcouncil/ui/assets/icons"
+import {
+  Alert,
   Box,
   CircularProgress,
   Flex,
+  Icon,
+  ProgressBar,
   Stack,
   Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { ThemeProps, useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
-/* import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig" */
 
 type SupplyInfoProps = {
-  reserve: any
-  currentMarketData: any
-  renderCharts: boolean
+  reserve: ComputedReserveData
+  currentMarketData: MarketDataType
   showSupplyCapStatus: boolean
-  supplyCap: any
-  debtCeiling: any
-  borrow?: boolean
+  supplyCap: AssetCapHookData
+  debtCeiling: AssetCapHookData
 }
 
 export const SupplyInfo = ({
   reserve,
-  currentMarketData,
-  renderCharts,
   showSupplyCapStatus,
   supplyCap,
   debtCeiling,
-  borrow = false,
 }: SupplyInfoProps) => {
+  const { themeProps } = useTheme()
   const { t } = useTranslation(["common", "borrow"])
 
   return (
@@ -42,17 +47,19 @@ export const SupplyInfo = ({
         align={["start", "center"]}
       >
         <Box
-          sx={{
-            display: ["none", "block"],
-            color: borrow
-              ? getToken("colors.utility.red.400")
-              : getToken("colors.successGreen.400"),
-          }}
+          display={["none", "block"]}
+          color={getToken("colors.successGreen.400")}
         >
           <CircularProgress
             radius={45}
             thickness={3}
-            percent={borrow ? 75 : 43}
+            percent={
+              supplyCap.percentUsed <= 2
+                ? 2
+                : supplyCap.percentUsed > 100
+                  ? 100
+                  : supplyCap.percentUsed
+            }
           />
         </Box>
         <Stack gap={40} direction="row" separated>
@@ -92,149 +99,137 @@ export const SupplyInfo = ({
             alwaysWrap
             label={t("apy")}
             value={t("percent", {
-              value: 20,
+              value: Number(reserve.supplyAPY) * 100,
             })}
           />
         </Stack>
       </Flex>
-      <Text mb={6}>Collateral Usage</Text>
-      <Stack direction="row" gap={40}>
-        <ValueStats
-          size="medium"
-          alwaysWrap
-          label={"Max LTV"}
-          value={t("percent", {
-            value: 75,
-          })}
-        />
-        <ValueStats
-          size="medium"
-          alwaysWrap
-          label={"Liquidation Threshold"}
-          value={t("percent", {
-            value: 80,
-          })}
-        />
-        <ValueStats
-          size="medium"
-          alwaysWrap
-          label={"Liquidation Penalty"}
-          value={t("percent", {
-            value: 7,
-          })}
-        />
-      </Stack>
-      {/* {renderCharts &&
-        (reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
-          <ApyChartContainer
-            type="supply"
-            reserve={reserve}
-            currentMarketData={currentMarketData}
-          />
-        )}
-      <div sx={{ mb: 10, mt: 20 }}>
-        {reserve.isIsolated ? (
-          <div>
-            <Text
-              fs={14}
-              sx={{ mb: 10 }}
-              css={{ textTransform: "uppercase" }}
-              font="GeistSemiBold"
-            >
-              {t("lending.collateralUsage")}
-            </Text>
-            <Alert variant="warning" sx={{ color: "white" }}>
-              <Text fs={13} font="GeistSemiBold" sx={{ mb: 4 }}>
-                {t("lending.supply.isolatedCollateral.title")}
+
+      <Stack gap={14}>
+        <Box>
+          {reserve.isIsolated ? (
+            <Box>
+              <Text fs={14} mb={10} fw={500} transform="uppercase">
+                {t("borrow:collateralUsage")}
               </Text>
-              <Text fs={13}>
-                {t("lending.supply.isolatedCollateral.description")}
+              <Alert
+                variant="warning"
+                title={t("borrow:supply.isolatedCollateral.title")}
+                description={t("borrow:supply.isolatedCollateral.description")}
+              />
+            </Box>
+          ) : reserve.reserveLiquidationThreshold !== "0" ? (
+            <Flex justify="space-between" align="center">
+              <Text fs={14} mb={10} fw={500} transform="uppercase">
+                {t("borrow:collateralUsage")}
               </Text>
-            </Alert>
-          </div>
-        ) : reserve.reserveLiquidationThreshold !== "0" ? (
-          <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-            <Text
-              fs={14}
-              css={{ textTransform: "uppercase" }}
-              font="GeistSemiBold"
-            >
-              {t("lending.collateralUsage")}
-            </Text>
-            <Text
-              fs={14}
-              color="green400"
-              sx={{ flex: "row", align: "center" }}
-            >
-              <CheckIcon width={14} height={14} sx={{ mr: 4 }} />
-              {t("lending.supply.table.canBeCollateral")}
-            </Text>
-          </div>
-        ) : (
-          <div>
-            <Text
-              fs={14}
-              sx={{ mb: 10 }}
-              css={{ textTransform: "uppercase" }}
-              font="GeistSemiBold"
-            >
-              {t("lending.collateralUsage")}
-            </Text>
-            <Alert variant="warning">
-              <Text fs={14}>{t("lending.supply.assetCannotBeCollateral")}</Text>
-            </Alert>
-          </div>
-        )}
-      </div>
-      {reserve.reserveLiquidationThreshold !== "0" && (
-        <>
-          <DataValueList sx={{ mt: 20 }}>
-            <DataValue
-              label={t("lending.maxLTV")}
-              labelColor="basic400"
-              font="Geist"
-              size="small"
-              tooltip={t("lending.tooltip.maxLTV")}
-            >
-              <PercentageValue
-                value={Number(reserve.formattedBaseLTVasCollateral) * 100}
+              <Text
+                fs={14}
+                color={getToken("accents.success.primary")}
+                display="flex"
+                sx={{ alignItems: "center", gap: 4 }}
+              >
+                <Icon component={Check} size={16} />
+                <Text as="span">{t("borrow:canBeCollateral")}</Text>
+              </Text>
+            </Flex>
+          ) : (
+            <Box>
+              <Text fs={14} mb={10} fw={500} transform="uppercase">
+                {t("borrow:collateralUsage")}
+              </Text>
+              <Alert
+                variant="warning"
+                description={t("borrow:supply.assetCannotBeCollateral")}
               />
-            </DataValue>
-            <DataValue
-              label={t("lending.risk.liquidationThreshold")}
-              labelColor="basic400"
-              font="Geist"
-              size="small"
-              tooltip={t("lending.tooltip.liquidationThreshold")}
-            >
-              <PercentageValue
-                value={
-                  Number(reserve.formattedReserveLiquidationThreshold) * 100
-                }
-              />
-            </DataValue>
-            <DataValue
-              label={t("lending.risk.liquidationPenalty")}
-              labelColor="basic400"
-              font="Geist"
-              size="small"
-              tooltip={t("lending.tooltip.liquidationPenalty")}
-            >
-              <PercentageValue
-                value={Number(reserve.formattedReserveLiquidationBonus) * 100}
-              />
-            </DataValue>
-          </DataValueList>
-          {reserve.isIsolated && (
-            <DebtCeilingStatus
-              sx={{ mt: 16 }}
-              debt={reserve.isolationModeTotalDebtUSD}
-              ceiling={reserve.debtCeilingUSD}
-              usageData={debtCeiling}
-            />
+            </Box>
           )}
-        </>
-      )} */}
+        </Box>
+
+        {reserve.reserveLiquidationThreshold !== "0" && (
+          <>
+            <Stack direction="row" gap={40}>
+              <ValueStats
+                size="small"
+                alwaysWrap
+                font="secondary"
+                label={t("borrow:maxLTV")}
+                //tooltip={t("borrow:tooltip.maxLTV")}
+                value={t("percent", {
+                  value: Number(reserve.formattedBaseLTVasCollateral) * 100,
+                })}
+              />
+
+              <ValueStats
+                size="small"
+                alwaysWrap
+                font="secondary"
+                label={t("borrow:risk.liquidationThreshold")}
+                //tooltip={t("borrow:tooltip.liquidationThreshold")}
+                value={t("percent", {
+                  value:
+                    Number(reserve.formattedReserveLiquidationThreshold) * 100,
+                })}
+              />
+              <ValueStats
+                size="small"
+                alwaysWrap
+                font="secondary"
+                label={t("borrow:risk.liquidationPenalty")}
+                //tooltip={t("borrow:tooltip.liquidationPenalty")}
+                value={t("percent", {
+                  value: Number(reserve.formattedReserveLiquidationBonus) * 100,
+                })}
+              />
+            </Stack>
+            {reserve.isIsolated && (
+              <Box>
+                <Flex justify="space-between" align="center">
+                  <Flex align="center">
+                    <Text fs={13} color={getToken("text.medium")}>
+                      Isolated Debt Ceiling
+                    </Text>
+                    <Tooltip text={t("borrow:tooltip.debtCeilingLimits")}>
+                      <CircleInfo />
+                    </Tooltip>
+                  </Flex>
+                  <Text fs={14}>
+                    {t("currency", {
+                      value: Number(reserve.isolationModeTotalDebtUSD),
+                    })}
+                    <Text as="span" display="inline-block" mx={4}>
+                      of
+                    </Text>
+                    {t("currency", {
+                      value: Number(reserve.debtCeilingUSD),
+                    })}
+                  </Text>
+                </Flex>
+                <ProgressBar
+                  size="small"
+                  color={determineDebtCeilingColor(themeProps, debtCeiling)}
+                  value={
+                    debtCeiling.percentUsed <= 1 ? 1 : debtCeiling.percentUsed
+                  }
+                />
+              </Box>
+            )}
+          </>
+        )}
+      </Stack>
     </>
   )
+}
+
+const determineDebtCeilingColor = (
+  theme: ThemeProps,
+  debtCeiling: AssetCapHookData,
+) => {
+  if (debtCeiling.isMaxed || debtCeiling.percentUsed >= 99.99) {
+    return theme.accents.danger.emphasis
+  } else if (debtCeiling.percentUsed >= 98) {
+    return theme.accents.alert.primary
+  } else {
+    return theme.accents.success.emphasis
+  }
 }

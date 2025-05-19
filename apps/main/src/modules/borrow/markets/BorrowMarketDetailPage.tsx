@@ -1,4 +1,7 @@
-import { useMarketAssetsData } from "@galacticcouncil/money-market/hooks"
+import {
+  AssetCapsProvider,
+  useMarketAssetsData,
+} from "@galacticcouncil/money-market/hooks"
 import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
@@ -48,70 +51,75 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   if (!reserve) return null
 
   return (
-    <Stack gap={30} py={20}>
-      <Flex gap={8}>
-        <Logo id={assetId} size="large" />
-        <Stack>
-          <Text fs="h7" lh={1} fw={600} font="primary">
-            {reserve?.name}
+    <AssetCapsProvider asset={reserve}>
+      <Stack gap={30} py={20}>
+        <Flex gap={8}>
+          <Logo id={assetId} size="large" />
+          <Stack>
+            <Text fs="h7" lh={1} fw={600} font="primary">
+              {reserve?.name}
+            </Text>
+            <Text fs="p6" color={getToken("text.medium")}>
+              {reserve?.symbol}
+            </Text>
+          </Stack>
+        </Flex>
+
+        <ReserveHeader reserve={reserve} />
+
+        <Box>
+          <Text fs="h7" fw={600} font="primary" sx={{ mb: 10 }}>
+            Reserve status and configuration
           </Text>
-          <Text fs="p6" color={getToken("text.medium")}>
-            {reserve?.symbol}
-          </Text>
-        </Stack>
-      </Flex>
 
-      <ReserveHeader />
+          <SContent>
+            <Paper p={20}>
+              {isGho ? <></> : <ReserveConfiguration reserve={reserve} />}
+            </Paper>
 
-      <Box>
-        <Text fs="h7" fw={600} font="primary" sx={{ mb: 10 }}>
-          Reserve status and configuration
-        </Text>
-
-        <SContent>
-          <Paper p={20}>
-            {isGho ? <></> : <ReserveConfiguration reserve={reserve} />}
-          </Paper>
-
-          <Paper p={20}>
-            <Stack separated gap={20} separator={<Separator mx={-20} />}>
-              <Flex gap={20} align="center">
-                <Icon component={Wallet} sx={{ color: getToken("text.low") }} />
-                <ValueStats
-                  label="Balance"
-                  customValue={t("currency", {
-                    value: 1000,
-                    symbol: reserve?.symbol,
-                  })}
-                  alwaysWrap
-                />
-              </Flex>
-              <Flex gap={20} justify="space-between" align="center">
-                <ValueStats
-                  label="Available to Supply"
-                  customValue={t("currency", {
-                    value: 5.132,
-                    symbol: reserve?.symbol,
-                  })}
-                  alwaysWrap
-                />
-                <Button>Supply</Button>
-              </Flex>
-              <Flex gap={20} justify="space-between" align="center">
-                <ValueStats
-                  label="Available to Borrow"
-                  customValue={t("currency", {
-                    value: 0,
-                    symbol: reserve?.symbol,
-                  })}
-                  alwaysWrap
-                />
-                <Button>Borrow</Button>
-              </Flex>
-            </Stack>
-          </Paper>
-        </SContent>
-      </Box>
-    </Stack>
+            <Paper p={20}>
+              <Stack separated gap={20} separator={<Separator mx={-20} />}>
+                <Flex gap={20} align="center">
+                  <Icon
+                    component={Wallet}
+                    sx={{ color: getToken("text.low") }}
+                  />
+                  <ValueStats
+                    label="Balance"
+                    customValue={t("currency", {
+                      value: 1000,
+                      symbol: reserve?.symbol,
+                    })}
+                    alwaysWrap
+                  />
+                </Flex>
+                <Flex gap={20} justify="space-between" align="center">
+                  <ValueStats
+                    label="Available to Supply"
+                    customValue={t("currency", {
+                      value: 5.132,
+                      symbol: reserve?.symbol,
+                    })}
+                    alwaysWrap
+                  />
+                  <Button>Supply</Button>
+                </Flex>
+                <Flex gap={20} justify="space-between" align="center">
+                  <ValueStats
+                    label="Available to Borrow"
+                    customValue={t("currency", {
+                      value: 0,
+                      symbol: reserve?.symbol,
+                    })}
+                    alwaysWrap
+                  />
+                  <Button>Borrow</Button>
+                </Flex>
+              </Stack>
+            </Paper>
+          </SContent>
+        </Box>
+      </Stack>
+    </AssetCapsProvider>
   )
 }
