@@ -31,6 +31,7 @@ type TProviderContext = {
   tradeRouter: TradeRouter
   txUtils: TradeUtils
   timestamp: string
+  slotDurationMs: string
 }
 
 const defaultData: TProviderContext = {
@@ -45,6 +46,7 @@ const defaultData: TProviderContext = {
   tradeRouter: {} as TradeRouter,
   txUtils: {} as TProviderContext["txUtils"],
   timestamp: "",
+  slotDurationMs: "",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -113,6 +115,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         endpoint: providerData.endpoint,
         dataEnv: providerData.dataEnv,
         timestamp: providerData.timestamp,
+        slotDurationMs: providerData.slotDurationMs,
       }
     }
 

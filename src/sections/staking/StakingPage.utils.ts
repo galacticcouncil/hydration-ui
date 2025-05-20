@@ -11,12 +11,7 @@ import {
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
-import {
-  BN_0,
-  BN_BILL,
-  BN_QUINTILL,
-  PARACHAIN_BLOCK_TIME,
-} from "utils/constants"
+import { BN_0, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
@@ -34,6 +29,7 @@ import {
   calculate_slashed_points,
   sigmoid,
 } from "@galacticcouncil/math-staking"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -413,6 +409,7 @@ export const useStakeARP = () => {
 }
 
 export const useClaimReward = () => {
+  const { slotDurationMs } = useRpcProvider()
   const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -570,6 +567,7 @@ export const useClaimReward = () => {
       timePointsPerPeriod.toString(),
       timePointsWeight.toString(),
       periodLength.toString(),
+      slotDurationMs,
     ).map((chartPoints, i, arr) => {
       const current =
         BN(payablePercentageHuman).gte(chartPoints.y) &&
@@ -644,6 +642,7 @@ export const useClaimReward = () => {
     openGovReferendas,
     increaseStake,
     storedDiffDays,
+    slotDurationMs,
     update,
   ])
 
@@ -655,6 +654,7 @@ const getChartValues = (
   timePointsPerPeriod: string,
   timePointsWeight: string,
   periodLength: string,
+  slodtDurationMs: string,
 ) => {
   return Array.from({ length: periodAmount }).reduce<
     { y: number; x: number }[]
@@ -679,7 +679,10 @@ const getChartValues = (
       .toNumber()
 
     const x = BN.max(
-      BN(periodLength).times(period).times(PARACHAIN_BLOCK_TIME).div(86400),
+      BN(periodLength)
+        .times(period)
+        .times(BN(slodtDurationMs).div(1000))
+        .div(86400),
       BN_0,
     ).toNumber()
 
