@@ -20,7 +20,6 @@ import {
   UNIFIED_ADDRESS_FORMAT_ENABLED,
 } from "utils/constants"
 import {
-  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
