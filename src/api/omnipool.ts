@@ -16,6 +16,11 @@ import { useOmnipoolIds } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { OmnipoolQuery, OmnipoolVolume } from "./volume"
 import { useSquidWSClient } from "./provider"
+import { useSquidUrl } from "./provider"
+import { millisecondsInHour } from "date-fns"
+import request from "graphql-request"
+import { OmnipoolYieldMetricsDocument } from "graphql/__generated__/squid/graphql"
+import { isNotNil } from "utils/helpers"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -220,4 +225,18 @@ export const useOmnipoolVolumeSubscription = () => {
   }, [ids, queryClient, squidWSClient])
 
   return null
+}
+
+export const useOmnipoolYieldMetrics = () => {
+  const url = useSquidUrl()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.omnipoolYieldMetrics,
+    queryFn: async () => {
+      const data = await request(url, OmnipoolYieldMetricsDocument)
+
+      return data.omnipoolAssetsYieldMetrics.nodes.filter(isNotNil)
+    },
+    staleTime: millisecondsInHour,
+  })
 }

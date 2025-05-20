@@ -7,12 +7,13 @@ import { ReactElement } from "react"
 import BigNumber from "bignumber.js"
 import { StepProps } from "components/Stepper/Stepper"
 import { TransactionRequest } from "@ethersproject/providers"
-import { EvmCall, SolanaCall, SubstrateCall } from "@galacticcouncil/xcm-sdk"
+import { Call, SubstrateCall } from "@galacticcouncil/xcm-sdk"
 import { arraysEqual } from "utils/helpers"
 import { Asset } from "@galacticcouncil/sdk"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain } from "@galacticcouncil/xcm-core"
+import { TradeMetadata, XcmMetadata } from "@galacticcouncil/apps"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -33,12 +34,13 @@ export interface TransactionInput {
   description?: string
   tx?: SubmittableExtrinsic
   txOptions?: SubstrateCall["txOptions"]
+  txMeta?: TradeMetadata
   evmTx?: {
     data: TransactionRequest
     abi?: string
   }
-  xcall?: EvmCall | SolanaCall
-  xcallMeta?: Record<string, string>
+  xcall?: Call
+  xcallMeta?: XcmMetadata
   overrides?: {
     fee: BigNumber
     currencyId?: string

@@ -1,4 +1,4 @@
-import { useOmnipoolDataObserver } from "api/omnipool"
+import { useOmnipoolYieldMetrics, useOmnipoolDataObserver } from "api/omnipool"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
@@ -19,7 +19,6 @@ import { useOmnipoolVolumes, useStablepoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
-import { useFee } from "api/stats"
 import { scaleHuman } from "utils/balance"
 import { useAccountAssets } from "api/deposits"
 import { TShareToken, useAssets } from "providers/assets"
@@ -193,6 +192,8 @@ export const usePools = () => {
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
+  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+    useOmnipoolYieldMetrics()
 
   const { data: stablepools, isLoading: isLoadingStablepools } =
     useStablepools()
@@ -206,12 +207,12 @@ export const usePools = () => {
 
   const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  const { data: fees, isLoading: isFeeLoading } = useFee("all")
-
   const { data: volumes, isLoading: isVolumeLoading } = useOmnipoolVolumes()
 
   const isInitialLoading =
     omnipoolAssets.isLoading || isLoading || isLoadingStablepools
+
+  const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
   const data = useMemo(() => {
     if (!omnipoolAssets.data || isLoading) return undefined
@@ -239,16 +240,15 @@ export const usePools = () => {
               .toString()
           : undefined
 
-      const isTotalFeeLoading = isFeeLoading || isAllFarmsLoading
-
       const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
       const fee =
         native.id === asset.id
           ? BN_0
           : BN(
-              fees?.find((fee) => fee?.asset_id?.toString() === asset.id)
-                ?.projected_apr_perc ?? BN_NAN,
+              omnipoolMetrics.find(
+                (omnipoolMetric) => omnipoolMetric.assetId === asset.id,
+              )?.projectedAprPerc ?? BN_NAN,
             )
 
       const totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
@@ -290,13 +290,12 @@ export const usePools = () => {
     accountAssets,
     getAssetWithFallback,
     allFarms,
-    isAllFarmsLoading,
     volumes,
-    isVolumeLoading,
     getAssetPrice,
     isLoading,
-    fees,
-    isFeeLoading,
+    isTotalFeeLoading,
+    isVolumeLoading,
+    omnipoolMetrics,
   ])
 
   const sortedData = useMemo(() => {

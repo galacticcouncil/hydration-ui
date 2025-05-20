@@ -111,6 +111,7 @@ export const ReviewTransaction = (props: Transaction) => {
         ) : props.tx ? (
           <ReviewTransactionForm
             tx={props.tx}
+            txMeta={props.txMeta}
             txOptions={props.txOptions}
             xcallMeta={props.xcallMeta}
             evmTx={props.evmTx}
