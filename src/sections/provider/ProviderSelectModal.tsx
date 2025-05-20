@@ -96,6 +96,7 @@ export function ProviderSelectModal(props: {
 const AutoModeActiveProvider: React.FC<
   React.ComponentPropsWithoutRef<typeof ProviderItemActive>
 > = (props) => {
-  const { data } = useRpcStatus(props.url)
+  const { slotDurationMs } = useRpcProvider()
+  const { data } = useRpcStatus(props.url, slotDurationMs)
   return <ProviderItemActive {...props} ping={data?.ping ?? null} />
 }

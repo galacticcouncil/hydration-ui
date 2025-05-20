@@ -1,6 +1,5 @@
 import { useBestNumber } from "api/chain"
 import BN, { BigNumber } from "bignumber.js"
-import * as wasm from "@galacticcouncil/math-staking"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import {
   TAccumulatedRpsUpdated,
@@ -12,12 +11,7 @@ import {
 } from "api/staking"
 import { useTokenBalance, useTokenLocks } from "api/balances"
 import { getHydraAccountAddress } from "utils/api"
-import {
-  BN_0,
-  BN_BILL,
-  BN_QUINTILL,
-  PARACHAIN_BLOCK_TIME,
-} from "utils/constants"
+import { BN_0, BN_BILL, BN_QUINTILL } from "utils/constants"
 import { useMemo } from "react"
 import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
@@ -26,6 +20,16 @@ import { useAccountAssets } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
 import { useIncreaseStake } from "./sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
 import { useShallow } from "hooks/useShallow"
+import {
+  calculate_accumulated_rps,
+  calculate_percentage_amount,
+  calculate_period_number,
+  calculate_points,
+  calculate_rewards,
+  calculate_slashed_points,
+  sigmoid,
+} from "@galacticcouncil/math-staking"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const CONVICTIONS: { [key: string]: number } = {
   none: 0.1,
@@ -38,7 +42,7 @@ const CONVICTIONS: { [key: string]: number } = {
 }
 
 const lengthOfStaking = BN(50400) // min. amount of block for how long we want to calculate APR from = one week
-const blocksPerYear = 2628000
+const blocksPerYear = BN(2628000) // blocks per year with 12s block period
 
 /* constants that might be changed */
 const a = "20000000000000000"
@@ -244,8 +248,12 @@ export const useStakeARP = () => {
 
     const hasPosition = positionId
 
+    const { sixBlockSince } = stakingConsts.data
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
+    const isSixSecBlocks = sixBlockSince
+      ? currentBlockNumber.minus(sixBlockSince).gt(blocksPerYear.times(2))
+      : false
 
     const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
@@ -257,7 +265,7 @@ export const useStakeARP = () => {
     } = accumulatedRpsUpdated.events.reduce(
       (acc, event) => {
         const isBeforeStaking = currentBlockNumber
-          .minus(lengthOfStaking)
+          .minus(sixBlockSince ? lengthOfStaking.times(2) : lengthOfStaking)
           .gt(event.block.height)
         acc[
           isBeforeStaking
@@ -282,7 +290,7 @@ export const useStakeARP = () => {
         rpsNow = accumulatedRewardPerStake
       } else {
         rpsNow = BN(
-          wasm.calculate_accumulated_rps(
+          calculate_accumulated_rps(
             accumulatedRewardPerStake.toString(),
             pendingRewards.toString(),
             totalStake.toString(),
@@ -310,7 +318,7 @@ export const useStakeARP = () => {
 
       const apr = rpsAvg
         .div(BN_QUINTILL)
-        .multipliedBy(blocksPerYear)
+        .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
         .multipliedBy(100)
 
       return { apr }
@@ -370,7 +378,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blocksPerYear)
+          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -381,7 +389,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(blocksPerYear)
+          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -401,6 +409,7 @@ export const useStakeARP = () => {
 }
 
 export const useClaimReward = () => {
+  const { slotDurationMs } = useRpcProvider()
   const { native } = useAssets()
   const { account } = useAccount()
   const bestNumber = useBestNumber()
@@ -445,6 +454,7 @@ export const useClaimReward = () => {
       timePointsWeight,
       actionPointsWeight,
       stakeWeight,
+      sixBlockSince,
     } = stakingConsts.data
 
     const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
@@ -452,24 +462,26 @@ export const useClaimReward = () => {
     let rewardPerStake = accumulatedRewardPerStake.toString()
 
     if (!pendingRewards.isZero() && !totalStake.isZero()) {
-      rewardPerStake = wasm.calculate_accumulated_rps(
+      rewardPerStake = calculate_accumulated_rps(
         accumulatedRewardPerStake.toString(),
         pendingRewards.toString(),
         totalStake.toString(),
       )
     }
 
-    const currentPeriod = wasm.calculate_period_number(
+    const currentPeriod = calculate_period_number(
       periodLength.toString(),
       bestNumber.data.parachainBlockNumber.toString(),
+      sixBlockSince,
     )
 
-    const enteredAt = wasm.calculate_period_number(
+    const enteredAt = calculate_period_number(
       periodLength.toString(),
       stakePosition.createdAt.toString(),
+      sixBlockSince,
     )
 
-    const maxRewards = wasm.calculate_rewards(
+    const maxRewards = calculate_rewards(
       rewardPerStake,
       stakePosition.rewardPerStake.toString(),
       stakePosition.stake.toString(),
@@ -482,7 +494,7 @@ export const useClaimReward = () => {
       openGovReferendas.map((referenda) => referenda.id),
     )
 
-    const points = wasm.calculate_points(
+    const points = calculate_points(
       enteredAt,
       currentPeriod,
       timePointsPerPeriod.toString(),
@@ -494,7 +506,7 @@ export const useClaimReward = () => {
 
     let increasePayablePercentageHuman: string | undefined
     if (increaseStake) {
-      const slashedPoints = wasm.calculate_slashed_points(
+      const slashedPoints = calculate_slashed_points(
         points,
         stakePosition.stake.toString(),
         increaseStake,
@@ -507,11 +519,7 @@ export const useClaimReward = () => {
         BN_0,
       ).toString()
 
-      const increasePaylablePercentage = wasm.sigmoid(
-        pointsAfterIncreasing,
-        a,
-        b,
-      )
+      const increasePaylablePercentage = sigmoid(pointsAfterIncreasing, a, b)
 
       increasePayablePercentageHuman = scaleHuman(
         increasePaylablePercentage,
@@ -523,7 +531,7 @@ export const useClaimReward = () => {
 
     let extraPayablePercentageHuman: string | undefined
     if (openGovReferendas.length) {
-      const extraPoints = wasm.calculate_points(
+      const extraPoints = calculate_points(
         enteredAt,
         currentPeriod,
         timePointsPerPeriod.toString(),
@@ -533,14 +541,14 @@ export const useClaimReward = () => {
         stakePosition.accumulatedSlashPoints.toString(),
       )
 
-      const extraPayablePercentage = wasm.sigmoid(extraPoints, a, b)
+      const extraPayablePercentage = sigmoid(extraPoints, a, b)
 
       extraPayablePercentageHuman = scaleHuman(extraPayablePercentage, "q")
         .multipliedBy(100)
         .toString()
     }
 
-    const payablePercentage = wasm.sigmoid(points, a, b)
+    const payablePercentage = sigmoid(points, a, b)
 
     const payablePercentageHuman = scaleHuman(
       payablePercentage,
@@ -559,6 +567,7 @@ export const useClaimReward = () => {
       timePointsPerPeriod.toString(),
       timePointsWeight.toString(),
       periodLength.toString(),
+      slotDurationMs,
     ).map((chartPoints, i, arr) => {
       const current =
         BN(payablePercentageHuman).gte(chartPoints.y) &&
@@ -606,10 +615,7 @@ export const useClaimReward = () => {
     }
 
     const userRewards = BN(
-      wasm.calculate_percentage_amount(
-        totalRewards.toString(),
-        payablePercentage,
-      ),
+      calculate_percentage_amount(totalRewards.toString(), payablePercentage),
     )
 
     const availabeRewards = BN.max(
@@ -636,6 +642,7 @@ export const useClaimReward = () => {
     openGovReferendas,
     increaseStake,
     storedDiffDays,
+    slotDurationMs,
     update,
   ])
 
@@ -647,13 +654,14 @@ const getChartValues = (
   timePointsPerPeriod: string,
   timePointsWeight: string,
   periodLength: string,
+  slodtDurationMs: string,
 ) => {
   return Array.from({ length: periodAmount }).reduce<
     { y: number; x: number }[]
   >((acc, _, i) => {
     const period = BN(i).times(10).toString()
 
-    const points = wasm.calculate_points(
+    const points = calculate_points(
       "0",
       period,
       timePointsPerPeriod,
@@ -663,7 +671,7 @@ const getChartValues = (
       "0",
     )
 
-    const payablePercentage_ = wasm.sigmoid(points, a, b)
+    const payablePercentage_ = sigmoid(points, a, b)
 
     const y = scaleHuman(payablePercentage_, "q")
       .multipliedBy(100)
@@ -671,7 +679,10 @@ const getChartValues = (
       .toNumber()
 
     const x = BN.max(
-      BN(periodLength).times(period).times(PARACHAIN_BLOCK_TIME).div(86400),
+      BN(periodLength)
+        .times(period)
+        .times(BN(slodtDurationMs).div(1000))
+        .div(86400),
       BN_0,
     ).toNumber()
 
