@@ -1,6 +1,7 @@
 import styled from "@emotion/styled"
 import { ArrowRight } from "lucide-react"
 
+import { Box } from "@/components/Box"
 import { Icon } from "@/components/Icon"
 import { createVariants, css } from "@/utils"
 
@@ -30,7 +31,7 @@ const menuItemVariants = createVariants<MenuItemVariant>((theme) => ({
   `,
 }))
 
-export const MenuItem = styled.div<{ variant?: MenuItemVariant }>(
+export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
   ({ theme, variant = "default" }) => [
     css`
       display: grid;

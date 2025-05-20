@@ -5,30 +5,49 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
 } from "@galacticcouncil/ui/components"
+import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const LiquidityPositionActions: FC = () => {
+type Props = {
+  readonly assetId: string
+  readonly positionId: string
+}
+
+export const LiquidityPositionActions: FC<Props> = ({
+  assetId,
+  positionId,
+}) => {
   const { t } = useTranslation("wallet")
 
   return (
     <>
       <DropdownMenuItem asChild>
-        <MenuSelectionItem variant="filterLink">
-          <MenuItemIcon component={Trash2} />
-          {/* TODO remove liquidity */}
-          <MenuItemLabel>
-            {t("myLiquidity.expanded.actions.removeLiquidity")}
-          </MenuItemLabel>
+        <MenuSelectionItem variant="filterLink" asChild>
+          <Link
+            to="/liquidity/$id/remove"
+            params={{ id: assetId }}
+            search={{ positionId }}
+          >
+            <MenuItemIcon component={Trash2} />
+            <MenuItemLabel>
+              {t("myLiquidity.expanded.actions.removeLiquidity")}
+            </MenuItemLabel>
+          </Link>
         </MenuSelectionItem>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <MenuSelectionItem variant="filterLink">
-          <MenuItemIcon component={Farm} />
-          <MenuItemLabel>
-            {/* TODO join farms */}
-            {t("myLiquidity.expanded.actions.joinFarms")}
-          </MenuItemLabel>
+        <MenuSelectionItem variant="filterLink" asChild>
+          <Link
+            to="/liquidity/$id/join"
+            params={{ id: assetId }}
+            search={{ positionId }}
+          >
+            <MenuItemIcon component={Farm} />
+            <MenuItemLabel>
+              {t("myLiquidity.expanded.actions.joinFarms")}
+            </MenuItemLabel>
+          </Link>
         </MenuSelectionItem>
       </DropdownMenuItem>
     </>

@@ -5,6 +5,7 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAccountOmnipoolPositionsData } from "@/states/account"
 
 export type MyLiquidityPosition = {
+  readonly id: string
   readonly initialValue: string
   readonly currentValue: string
   readonly isFarm: boolean
@@ -41,6 +42,7 @@ export const useMyLiquidityTableData = () => {
         .map(({ position, isFarm }) =>
           position.data
             ? {
+                id: position.positionId,
                 assetId: position.assetId,
                 data: position.data,
                 isFarm,
@@ -68,6 +70,7 @@ export const useMyLiquidityTableData = () => {
             )
             .toString(),
           positions: positions.map<MyLiquidityPosition>((position) => ({
+            id: position.id,
             initialValue: position.data.initialValueHuman,
             currentValue: position.data.currentValueHuman,
             isFarm: position.isFarm,
