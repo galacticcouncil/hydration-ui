@@ -46,7 +46,7 @@ const defaultData: TProviderContext = {
   tradeRouter: {} as TradeRouter,
   txUtils: {} as TProviderContext["txUtils"],
   timestamp: "",
-  slotDurationMs: "",
+  slotDurationMs: "12000",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
