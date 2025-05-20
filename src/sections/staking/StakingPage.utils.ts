@@ -460,6 +460,8 @@ export const useClaimReward = () => {
     const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
+    const currentBlokNumber = bestNumber.data.parachainBlockNumber.toString()
+    const sixBlockFallback = BN(currentBlokNumber).plus(1).toString()
 
     if (!pendingRewards.isZero() && !totalStake.isZero()) {
       rewardPerStake = calculate_accumulated_rps(
@@ -471,14 +473,14 @@ export const useClaimReward = () => {
 
     const currentPeriod = calculate_period_number(
       periodLength.toString(),
-      bestNumber.data.parachainBlockNumber.toString(),
-      sixBlockSince,
+      currentBlokNumber,
+      sixBlockSince ?? sixBlockFallback,
     )
 
     const enteredAt = calculate_period_number(
       periodLength.toString(),
       stakePosition.createdAt.toString(),
-      sixBlockSince,
+      sixBlockSince ?? sixBlockFallback,
     )
 
     const maxRewards = calculate_rewards(
