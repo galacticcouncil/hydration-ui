@@ -495,19 +495,19 @@ export const usePoolTable = (
               ),
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
-                  row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
-                    <NonClickableContainer>
-                      <GDOTAPY />
-                    </NonClickableContainer>
-                  ) : (
-                    <APY
-                      assetId={row.original.id}
-                      fee={row.original.fee}
-                      isLoading={row.original.isFeeLoading}
-                      totalFee={row.original.totalFee}
-                      farms={row.original.farms}
-                    />
-                  )
+                  <NonClickableContainer>
+                    {row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
+                      <GDOTAPY type="supply" />
+                    ) : (
+                      <APY
+                        assetId={row.original.id}
+                        fee={row.original.fee}
+                        isLoading={row.original.isFeeLoading}
+                        totalFee={row.original.totalFee}
+                        farms={row.original.farms}
+                      />
+                    )}
+                  </NonClickableContainer>
                 ) : null,
             }),
           ]

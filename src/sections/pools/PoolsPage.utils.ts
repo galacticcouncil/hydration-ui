@@ -1,4 +1,4 @@
-import { useOmnipoolDataObserver } from "api/omnipool"
+import { useOmnipoolYieldMetrics, useOmnipoolDataObserver } from "api/omnipool"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { normalizeBigNumber } from "utils/balance"
@@ -11,10 +11,7 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   VALID_STABLEPOOLS,
 } from "utils/constants"
-import {
-  useDisplayAssetStore,
-  useDisplayShareTokenPrice,
-} from "utils/displayAsset"
+import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStableSDKPools, useStableswapPool } from "api/stableswap"
 import { XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
@@ -22,8 +19,6 @@ import { useOmnipoolVolumes, useStablepoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
-import { useFee } from "api/stats"
-import { useTVL } from "api/stats"
 import { scaleHuman } from "utils/balance"
 import { useAccountAssets } from "api/deposits"
 import { TShareToken, useAssets } from "providers/assets"
@@ -145,7 +140,7 @@ const useStablepools = () => {
         return acc.plus(tvlDisplay)
       }, BN_0)
 
-      const fee = isGigaDOT ? BN(borrow.apy) : BN_NAN
+      const fee = isGigaDOT ? BN(borrow.totalSupplyApy) : BN_NAN
 
       const name = metaOverride?.name || meta.name
       const symbol = metaOverride?.symbol || meta.symbol
@@ -187,7 +182,7 @@ const useStablepools = () => {
     volumes,
     isVolumeLoading,
     getAssetPrice,
-    borrow.apy,
+    borrow.totalSupplyApy,
   ])
 
   return { data, isLoading }
@@ -195,10 +190,11 @@ const useStablepools = () => {
 
 export const usePools = () => {
   const { native, getAssetWithFallback } = useAssets()
-  const { stableCoinId } = useDisplayAssetStore()
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
+  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+    useOmnipoolYieldMetrics()
 
   const { data: stablepools, isLoading: isLoadingStablepools } =
     useStablepools()
@@ -210,18 +206,15 @@ export const usePools = () => {
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
 
-  const { isLoading, getAssetPrice } = useAssetsPrice(
-    stableCoinId && !!assetsId.length ? [...assetsId, stableCoinId] : assetsId,
-  )
-
-  const { data: fees, isLoading: isFeeLoading } = useFee("all")
-  const { data: tvls } = useTVL("all")
+  const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
   const { data: volumes, isLoading: isVolumeLoading } =
     useOmnipoolVolumes(assetsId)
 
   const isInitialLoading =
     omnipoolAssets.isLoading || isLoading || isLoadingStablepools
+
+  const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
   const data = useMemo(() => {
     if (!omnipoolAssets.data || isLoading) return undefined
@@ -233,14 +226,9 @@ export const usePools = () => {
       const spotPrice = getAssetPrice(asset.id).price
       const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
-      const apiSpotPrice = stableCoinId
-        ? getAssetPrice(stableCoinId).price
-        : undefined
-
-      const tvlDisplay = BN(
-        tvls?.find((tvl) => tvl?.asset_id === Number(asset.id))?.tvl_usd ??
-          BN_NAN,
-      ).multipliedBy(apiSpotPrice ?? 1)
+      const tvlDisplay = BN(asset.balance)
+        .times(spotPrice)
+        .shiftedBy(-meta.decimals)
 
       const volumeRaw = volumes?.find(
         (volume) => volume.assetId === asset.id,
@@ -254,16 +242,15 @@ export const usePools = () => {
               .toString()
           : undefined
 
-      const isTotalFeeLoading = isFeeLoading || isAllFarmsLoading
-
       const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
       const fee =
         native.id === asset.id
           ? BN_0
           : BN(
-              fees?.find((fee) => fee?.asset_id?.toString() === asset.id)
-                ?.projected_apr_perc ?? BN_NAN,
+              omnipoolMetrics.find(
+                (omnipoolMetric) => omnipoolMetric.assetId === asset.id,
+              )?.projectedAprPerc ?? BN_NAN,
             )
 
       const totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
@@ -301,19 +288,16 @@ export const usePools = () => {
     return rows
   }, [
     omnipoolAssets.data,
-    tvls,
     native.id,
     accountAssets,
-    stableCoinId,
     getAssetWithFallback,
     allFarms,
-    isAllFarmsLoading,
     volumes,
-    isVolumeLoading,
     getAssetPrice,
     isLoading,
-    fees,
-    isFeeLoading,
+    isTotalFeeLoading,
+    isVolumeLoading,
+    omnipoolMetrics,
   ])
 
   const sortedData = useMemo(() => {
@@ -660,15 +644,12 @@ export const calculatePoolsTotals = (
   }
   if (!pools) return defaultValues
   return pools.reduce((acc, pool) => {
+    const isGDOT = pool.id === GDOT_STABLESWAP_ASSET_ID
     acc.tvl = BN(acc.tvl)
-      .plus(
-        pool.tvlDisplay.isNaN() || pool.id === GDOT_STABLESWAP_ASSET_ID
-          ? BN_0
-          : pool.tvlDisplay,
-      )
+      .plus(pool.tvlDisplay.isNaN() || isGDOT ? BN_0 : pool.tvlDisplay)
       .toString()
     acc.volume = BN(acc.volume)
-      .plus(pool.volume ?? 0)
+      .plus(BN(pool.volume ?? 0).div(isGDOT ? 1 : 2))
       .toString()
 
     return acc

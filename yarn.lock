@@ -2628,10 +2628,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
   integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
 
-"@galacticcouncil/sdk@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-6.1.2.tgz#d3d47f94b1b0c3a55f76784f9d4db9417485ae81"
-  integrity sha512-N5WvRDKHvD2dlFLIIvbANl+VVB+5fzjlk3Jh8FyoGZvqVFMhhdc4zuJiPBYSOM4KUf6ma24eNFQkeWLrdReiUA==
+"@galacticcouncil/sdk@^7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-7.1.1.tgz#314df47af19ca20783cac44bd944d0d82e288b56"
+  integrity sha512-/WCEUMtEYrT+R9wh3SysjRYTNMODZ0WtoIb++ka3mJE6AGad7cKeDUC3uL28arkYnMDTOodh2JQXVfmsTouUeA==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.0.0"
     "@galacticcouncil/math-liquidity-mining" "^1.0.0"
@@ -2655,10 +2655,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-9.1.0.tgz#233f257d6130cb20702b41cc5a03912b92125422"
-  integrity sha512-i3OiasMz7yUwYu5Y+0YTravKIiZ6w+Nk/Wf4KrOw4tWgqjG9ZqFmAEntTGC268njLo4FnQHLoeWPjGwbe1YSqQ==
+"@galacticcouncil/xcm-cfg@^9.2.1":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-9.2.1.tgz#43fcf397983198a2f10edf1399769778ef4a9403"
+  integrity sha512-nRl06QNWIHjCzGROVa2CeMMvTxiwWpqpxJIZnHltf/7UxesP7TnFVfCflltjA4ZogUI7zK5cAZ7UJt6TSqHA2Q==
   dependencies:
     "@galacticcouncil/xcm-core" "^7.1.0"
 
@@ -2678,10 +2678,10 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-9.2.0.tgz#18677448adfd13dc25f21139d221bb11d43d03fe"
-  integrity sha512-0lPWz5nEH+qPibSz9QamzOAtCGQ5Nayg4yzB6sl4wZgbV3zzk2O6SB+j4KgqkjuVK3GXhf+GbnbrUUSxRrIjBg==
+"@galacticcouncil/xcm-sdk@^9.2.1":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-9.2.1.tgz#83aba1011bf8d0d7533877295eb5cd28ad277e3c"
+  integrity sha512-gnY+eMGfj3uUwxwCawE2LxE7zvtDQMlAGDh5TZg4XPU/9rNZIucejvkQjLNIPn1IvTYcwzW6etzmd1O0SwLEwQ==
   dependencies:
     "@galacticcouncil/xcm-core" "^7.1.0"
 
