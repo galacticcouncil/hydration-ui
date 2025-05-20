@@ -202,6 +202,7 @@ export const AssetButton = ({
   if (symbol && icon)
     return (
       <SAssetButton
+        type="button"
         disabled={!!disabled}
         isError={!!error}
         onClick={onAsssetBtnClick}

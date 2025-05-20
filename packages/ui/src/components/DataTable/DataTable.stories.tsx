@@ -180,6 +180,7 @@ const TABLE_COLUMNS = [
         </Button>
         {row.getCanExpand() && (
           <button
+            type="button"
             onClick={row.getToggleExpandedHandler()}
             sx={{ cursor: "pointer" }}
           >

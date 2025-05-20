@@ -29,6 +29,7 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
 
   return (
     <SAccountItem
+      type="button"
       data-active={isActive}
       data-proxy={isProxy}
       onClick={() => onSelect?.(account)}

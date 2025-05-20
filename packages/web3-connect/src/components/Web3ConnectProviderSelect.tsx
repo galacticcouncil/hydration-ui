@@ -63,7 +63,7 @@ export const Web3ConnectProviderSelect: React.FC<
             <Text mb={4}>Installed</Text>
             <Grid columns={[2, 4]} gap={10}>
               {providers.length > 0 && mode === WalletMode.Default && (
-                <SProviderButton onClick={onLastConnectedClick}>
+                <SProviderButton type="button" onClick={onLastConnectedClick}>
                   <Web3ConnectProviderIcons
                     providers={providers.map(prop("type"))}
                   />
@@ -82,6 +82,7 @@ export const Web3ConnectProviderSelect: React.FC<
             </Grid>
             {disabledCompatible.length > 0 && (
               <SProviderButton
+                type="button"
                 sx={{ width: "100%", mt: 8, py: 10 }}
                 onClick={enableCompatible}
               >
