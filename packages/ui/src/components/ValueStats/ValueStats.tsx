@@ -10,6 +10,8 @@ import {
 } from "@/components/ValueStats/ValueStats.styled"
 import { ThemeFont } from "@/theme"
 
+import { Skeleton } from "../Skeleton"
+
 export const ValueStatsLabel = SValueStatsLabel
 export const ValueStatsValue = SValueStatsValue
 export const ValueStatsBottomValue = SValueStatsBottomValue
@@ -24,6 +26,7 @@ type ValueStatsProps = {
   readonly customValue?: ReactNode
   readonly bottomLabel?: string
   readonly customBottomLabel?: ReactNode
+  readonly isLoading?: boolean
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
@@ -36,6 +39,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   customValue,
   bottomLabel,
   customBottomLabel,
+  isLoading,
 }) => {
   return (
     <SValueStats alwaysWrap={alwaysWrap} size={size}>
@@ -43,11 +47,17 @@ export const ValueStats: FC<ValueStatsProps> = ({
       <SValueStatsValueContainer size={size}>
         {customValue ?? (
           <SValueStatsValue font={font} size={size}>
-            {value}
+            {isLoading ? <Skeleton width={120} height="100%" /> : value}
           </SValueStatsValue>
         )}
         {customBottomLabel ?? (
-          <SValueStatsBottomValue>{bottomLabel}</SValueStatsBottomValue>
+          <SValueStatsBottomValue>
+            {isLoading && bottomLabel ? (
+              <Skeleton width="100%" height="100%" />
+            ) : (
+              bottomLabel
+            )}
+          </SValueStatsBottomValue>
         )}
       </SValueStatsValueContainer>
     </SValueStats>

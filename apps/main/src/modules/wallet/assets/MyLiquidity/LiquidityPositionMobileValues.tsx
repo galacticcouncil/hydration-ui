@@ -4,7 +4,7 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { TAsset } from "@/providers/assetsProvider"
 

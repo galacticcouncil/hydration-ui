@@ -1,5 +1,7 @@
 import { forwardRef } from "react"
 
+import { getToken } from "@/utils"
+
 import { Text } from "../Text"
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
 
@@ -31,7 +33,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     >
       {IconStart && <IconStart />}
       <SInput ref={ref} {...props} />
-      {unit && <Text>{unit}</Text>}
+      {unit && (
+        <Text
+          fs="p5"
+          fw={600}
+          color={getToken("text.medium")}
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          {unit}
+        </Text>
+      )}
       {IconEnd && <IconEnd />}
     </SInputContainer>
   ),

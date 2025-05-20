@@ -2,7 +2,7 @@ import { Stack, ValueStats } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/WalletBalancesSection.data"
 
 export const WalletBalancesSection: FC = () => {

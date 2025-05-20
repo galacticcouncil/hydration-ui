@@ -1,7 +1,7 @@
 import { ValueStats, ValueStatsValue } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
-import { AssetPrice } from "@/components"
+import { AssetPrice } from "@/components/AssetPrice"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 
 type Props = {

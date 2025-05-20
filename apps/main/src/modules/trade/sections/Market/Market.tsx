@@ -13,12 +13,13 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { DynamicFee } from "@/components"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AssetSwitcher } from "@/components/AssetSwitcher"
+import { DynamicFee } from "@/components/DynamicFee/DynamicFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { Route } from "@/routes/_trade/trade.swap.market"
 
-import { AssetSwitcher, TradeOption, TradeRoutes } from "./components"
+import { TradeOption, TradeRoutes } from "./components"
 import { useMarketValidation } from "./Market.utils"
 
 type SwapType = "swap" | "twap"
@@ -81,7 +82,11 @@ export const Market = () => {
           )}
         />
 
-        <AssetSwitcher onSwitchAssets={onSwitchAssets} />
+        <AssetSwitcher
+          onSwitchAssets={onSwitchAssets}
+          onPriceClick={() => null}
+          price="1 HDX = 3 661.923 kUSD"
+        />
 
         <Controller<FormValues, "buy">
           name="buy"

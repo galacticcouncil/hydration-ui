@@ -1,24 +1,28 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
+  Flex,
   Input,
   Modal,
   ModalBody,
   ModalHeader,
+  Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 
 import { SOption } from "./AssetSelectModal.styled"
+import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
 
 type AssetSelectModalProps = {
   assets: TAssetData[]
+  selectedAssetId?: string
   onOpenChange: (value: boolean) => void
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
@@ -30,6 +34,7 @@ const Content = ({
   onOpenChange,
   onSelect,
   emptyState,
+  selectedAssetId,
 }: AssetSelectModalProps) => {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -38,20 +43,14 @@ const Content = ({
   const [search, setSearch] = useState("")
   const [highlighted, setHighlighted] = useState(0)
 
-  const filteredAssets = useMemo(() => {
-    if (search.length) {
-      return assets.filter(
-        (asset) =>
-          asset.name.toLowerCase().includes(search.toLowerCase()) ||
-          asset.symbol.toLowerCase().includes(search.toLowerCase()),
-      )
-    }
-
-    return assets
-  }, [assets, search])
+  const { sortedAssets, isLoading } = useAssetSelectModalAssets(
+    assets,
+    search,
+    selectedAssetId,
+  )
 
   const virtualizer = useVirtualizer({
-    count: filteredAssets.length,
+    count: sortedAssets.length,
     getScrollElement: () => divRef.current,
     estimateSize: () => 50,
     overscan: 5,
@@ -73,7 +72,7 @@ const Content = ({
     if (e.key === "ArrowDown") {
       setHighlighted((prevIndex) => {
         const nextIndex =
-          prevIndex < filteredAssets.length - 1 ? prevIndex + 1 : prevIndex
+          prevIndex < sortedAssets.length - 1 ? prevIndex + 1 : prevIndex
         scrollToHighlighted(nextIndex)
         return nextIndex
       })
@@ -87,7 +86,7 @@ const Content = ({
       setSearch((prevValue) => prevValue.slice(0, -1))
       inputRef.current?.focus()
     } else if (e.key === "Enter") {
-      const asset = filteredAssets[highlighted]
+      const asset = sortedAssets[highlighted]
 
       if (asset) {
         onSelectOption(asset)
@@ -140,7 +139,36 @@ const Content = ({
             overflowY: "auto",
           }}
         >
-          {filteredAssets.length ? (
+          <Flex
+            pt={getTokenPx("scales.paddings.m")}
+            pb={getTokenPx("scales.paddings.s")}
+            px={getTokenPx("containers.paddings.primary")}
+            justify="space-between"
+            align="center"
+          >
+            <Text fs="p5" fw={400} color={getToken("text.medium")}>
+              {t("asset")}
+            </Text>
+            <Text fs="p5" fw={400} color={getToken("text.medium")}>
+              {t("balance")}
+            </Text>
+          </Flex>
+
+          {isLoading ? (
+            <Flex direction="column" gap={10}>
+              {[...Array(8)].map((_, index) => (
+                <Flex
+                  key={index}
+                  justify="space-between"
+                  align="center"
+                  px={getTokenPx("containers.paddings.primary")}
+                >
+                  <AssetLabelFull loading />
+                  <Skeleton width={50} height={20} />
+                </Flex>
+              ))}
+            </Flex>
+          ) : sortedAssets.length ? (
             <div
               sx={{
                 width: "100%",
@@ -149,7 +177,7 @@ const Content = ({
               }}
             >
               {virtualizer.getVirtualItems().map((virtualRow) => {
-                const asset = filteredAssets[virtualRow.index]
+                const asset = sortedAssets[virtualRow.index]
 
                 if (!asset) {
                   return null
@@ -169,9 +197,14 @@ const Content = ({
                     }}
                   >
                     <AssetLabelFull asset={asset} />
-                    <Text fs="p6" color={getToken("text.medium")}>
-                      $1 000
-                    </Text>
+                    <Flex direction="column" align="flex-end">
+                      <Text fs="p4" fw={500} color={getToken("text.high")}>
+                        {t("number", { value: asset.balance })}
+                      </Text>
+                      <Text fs="p6" fw={400} color={getToken("text.medium")}>
+                        {t("currency", { value: asset.balanceDisplay })}
+                      </Text>
+                    </Flex>
                   </SOption>
                 )
               })}

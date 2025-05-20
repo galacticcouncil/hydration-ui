@@ -8,7 +8,7 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
 import { SLiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"

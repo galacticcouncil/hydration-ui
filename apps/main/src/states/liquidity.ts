@@ -43,6 +43,11 @@ export const setOmnipoolIds = (ids: string[]) =>
 
 type LiquidityOutParams = Parameters<typeof calculate_liquidity_out>
 
+type LiquidityOutOptions = {
+  sharesValue?: string
+  fee?: string
+}
+
 export const calculateLiquidityOut = (args: LiquidityOutParams) => {
   const liquidity = calculate_liquidity_out.apply(this, args)
   const hubLiquidity = calculate_liquidity_lrna_out.apply(this, args)
@@ -53,6 +58,7 @@ export const calculateLiquidityOut = (args: LiquidityOutParams) => {
 export const getLiquidityOutParams = (
   omnipoolData: TOmnipoolAssetsData[number],
   position: OmnipoolPosition | OmnipoolDepositFull,
+  options?: LiquidityOutOptions,
 ): LiquidityOutParams => {
   const [nom, denom] = position.price.map((n) => n.toString()) as [
     string,
@@ -67,8 +73,8 @@ export const getLiquidityOutParams = (
     position.amount.toString(),
     position.shares.toString(),
     Big(scale(price, "q")).toFixed(0),
-    position.shares.toString(),
-    "0",
+    options?.sharesValue ?? position.shares.toString(),
+    options?.fee ?? "0",
   ]
 }
 
@@ -110,6 +116,7 @@ export const useOmnipoolPositionData = (
   const getData = useCallback(
     (
       position: OmnipoolPosition | OmnipoolDepositFull,
+      options?: LiquidityOutOptions,
     ): OmnipoolPositionData | undefined => {
       const price = getAssetPrice(position.assetId).price
       const meta = getAssetWithFallback(position.assetId)
@@ -119,7 +126,7 @@ export const useOmnipoolPositionData = (
 
       if (omnipoolData && price) {
         const { liquidity, hubLiquidity } = calculateLiquidityOut(
-          getLiquidityOutParams(omnipoolData, position),
+          getLiquidityOutParams(omnipoolData, position, options),
         )
 
         const initialValue = position.amount.toString()
@@ -156,7 +163,9 @@ export const useOmnipoolPositionData = (
           currentTotalValueHuman = Big(currentTotalDisplay)
             .div(price)
             .toString()
-          currentTotalValue = scale(currentTotalValueHuman, meta.decimals)
+          currentTotalValue = Big(
+            scale(currentTotalValueHuman, meta.decimals),
+          ).toFixed(0)
         }
 
         return {
@@ -202,7 +211,12 @@ export const setOmnipoolAssets = (
 ) => useOmnipoolAssetsStore.setState({ data, isLoading })
 
 export const useOmnipoolAssets = () => {
-  useQuery({ queryKey: ["omnipoolAssets"] })
+  useQuery({
+    queryKey: ["omnipoolAssets"],
+    queryFn: () => {
+      throw new Error("queryFn should not run")
+    },
+  })
   const store = useOmnipoolAssetsStore()
 
   const getOmnipoolAsset = useCallback(
@@ -214,7 +228,13 @@ export const useOmnipoolAssets = () => {
 }
 
 export const useOmnipoolAsset = (assetId: string) => {
-  useQuery({ queryKey: ["omnipoolAssets"] })
+  useQuery({
+    queryKey: ["omnipoolAssets"],
+    staleTime: Infinity,
+    queryFn: () => {
+      throw new Error("queryFn should not run")
+    },
+  })
 
   const isLoading = useOmnipoolAssetsStore(prop("isLoading"))
   const data = useOmnipoolAssetsStore(
@@ -238,7 +258,12 @@ export const setXYKPools = (data: IsolatedPoolTable[], isLoading: boolean) =>
   useXYKPoolsStore.setState({ data, isLoading })
 
 export const useXYKPools = () => {
-  useQuery({ queryKey: ["xykLiquidityPools"] })
+  useQuery({
+    queryKey: ["xykLiquidityPools"],
+    queryFn: () => {
+      throw new Error("queryFn should not run")
+    },
+  })
   const store = useXYKPoolsStore()
 
   const getXYKPool = useCallback(
@@ -250,7 +275,12 @@ export const useXYKPools = () => {
 }
 
 export const useXYKPool = (address: string) => {
-  useQuery({ queryKey: ["xykLiquidityPools"] })
+  useQuery({
+    queryKey: ["xykLiquidityPools"],
+    queryFn: () => {
+      throw new Error("queryFn should not run")
+    },
+  })
 
   const isLoading = useXYKPoolsStore(prop("isLoading"))
   const data = useXYKPoolsStore(

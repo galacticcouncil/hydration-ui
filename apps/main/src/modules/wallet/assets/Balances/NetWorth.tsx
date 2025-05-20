@@ -4,7 +4,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
-import { useDisplayAssetPrice } from "@/components"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
 
 // TODO wallet net worth

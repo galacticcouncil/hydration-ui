@@ -5,6 +5,7 @@ import { Text } from "@/components/Text"
 import { getToken, px } from "@/utils"
 
 type AmountVariant = "default" | "horizontalLabel" | "tokenLabel" | "small"
+type AmountSize = "default" | "large"
 
 type AmountProps = {
   readonly label?: string
@@ -12,6 +13,7 @@ type AmountProps = {
   readonly displayValue?: string
   readonly variant?: AmountVariant
   readonly className?: string
+  readonly size?: AmountSize
 }
 
 export const Amount: FC<AmountProps> = ({
@@ -20,6 +22,7 @@ export const Amount: FC<AmountProps> = ({
   displayValue,
   variant = "default",
   className,
+  size = "default",
 }) => {
   return (
     <Flex
@@ -34,7 +37,9 @@ export const Amount: FC<AmountProps> = ({
         gap={2}
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
-        <AmountValue variant={variant}>{value}</AmountValue>
+        <AmountValue variant={variant} size={size}>
+          {value}
+        </AmountValue>
         {displayValue && (
           <AmountDisplayValue variant={variant}>
             {displayValue}
@@ -78,12 +83,12 @@ type AmountValueProps = ComponentProps<typeof Text> & {
 }
 
 const AmountValue = forwardRef<HTMLParagraphElement, AmountValueProps>(
-  ({ variant = "default", ...props }, ref) => {
+  ({ variant = "default", size = "default", ...props }, ref) => {
     return variant === "default" ? (
       <Text
         ref={ref}
         fw={500}
-        fs="p4"
+        fs={size === "large" ? "p2" : "p4"}
         lh={1}
         color={getToken("text.high")}
         {...props}
@@ -92,7 +97,7 @@ const AmountValue = forwardRef<HTMLParagraphElement, AmountValueProps>(
       <Text
         ref={ref}
         fw={600}
-        fs={12}
+        fs={size === "large" ? "p2" : 12}
         lh={px(15)}
         color={getToken("text.high")}
         {...props}

@@ -20,6 +20,7 @@ export type AssetLogoProps = {
   size?: AssetLogoSize
   badge?: TBadge
   badgeTooltip?: string
+  className?: string
 }
 
 export const AssetLogo = ({
@@ -29,11 +30,15 @@ export const AssetLogo = ({
   chainSrc,
   badge,
   badgeTooltip,
+  className,
 }: AssetLogoProps) => {
   if (!src) return <SPlaceholder component={PlaceholderAssetLogo} size={size} />
 
   return (
-    <Box sx={{ position: "relative", width: "fit-content", flexShrink: 0 }}>
+    <Box
+      sx={{ position: "relative", width: "fit-content", flexShrink: 0 }}
+      className={className}
+    >
       <SAssetLogo
         loading="lazy"
         src={src}

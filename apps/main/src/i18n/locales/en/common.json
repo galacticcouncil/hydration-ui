@@ -58,6 +58,7 @@
   "no": "No",
   "position": "Position",
   "join": "Join",
+  "stablepool": "Stablepool",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
   "error.maxNumber": "Max value is {{value}}",
   "error.minNumber": "Min value is {{value}}",

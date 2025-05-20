@@ -8,21 +8,29 @@ import {
   SSwitchContainer,
 } from "./AssetSwitcher.styled"
 
+type AssetSwitcherProps = {
+  onSwitchAssets: () => void
+  onPriceClick: () => void
+  price: string
+  disabled?: boolean
+}
+
 export const AssetSwitcher = ({
   onSwitchAssets,
-}: {
-  onSwitchAssets: () => void
-}) => {
+  onPriceClick,
+  price,
+  disabled = false,
+}: AssetSwitcherProps) => {
   return (
     <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
       <Separator />
-      <SSwitchContainer onClick={onSwitchAssets}>
+      <SSwitchContainer onClick={onSwitchAssets} disabled={disabled}>
         <Icon size={16} component={ArrowDown} />
       </SSwitchContainer>
       <Separator />
-      <SPriceContainer>
+      <SPriceContainer onClick={onPriceClick} disabled={disabled}>
         <Text fs="p6" color={getToken("text.high")}>
-          Price: 1 HDX = 3 661.923 kUSD
+          {price}
         </Text>
       </SPriceContainer>
       <Separator />

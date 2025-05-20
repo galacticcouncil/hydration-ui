@@ -1,15 +1,22 @@
 import {
+  Button,
   DataTable,
+  Flex,
   Paper,
   SectionHeader,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Link } from "@tanstack/react-router"
+import { Minus } from "lucide-react"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useAccountOmnipoolPositionsData } from "@/states/account"
-import { OmnipoolPositionData } from "@/states/liquidity"
+import {
+  AccountOmnipoolPosition,
+  isOmnipoolDepositPosition,
+  useAccountOmnipoolPositionsData,
+} from "@/states/account"
 import { numericallyStrDesc } from "@/utils/sort"
 
 import { ClaimCard } from "./ClaimCard"
@@ -17,8 +24,9 @@ import { PositionsHeader } from "./PositionsHeader"
 import { usePositionsTableColumns } from "./PositionsTable.columns"
 
 export type PositionTableData = {
-  positionId: string
-} & Partial<OmnipoolPositionData>
+  poolId: string
+  joinedFarms: string[]
+} & AccountOmnipoolPosition
 
 export const PositionsTable = ({ assetId }: { assetId: string }) => {
   const { t } = useTranslation("liquidity")
@@ -28,18 +36,23 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
 
   const tableData = useMemo(() => {
-    const omnipoolPositions = getAssetPositions(assetId)
-    return [
-      ...(omnipoolPositions?.omnipool ?? []),
-      ...(omnipoolPositions?.omnipoolMining ?? []),
-    ]
+    const { all: omnipoolPositions } = getAssetPositions(assetId)
+
+    return omnipoolPositions
       .sort((a, b) => {
         return numericallyStrDesc(a.positionId, b.positionId)
       })
       .map((position): PositionTableData => {
+        const joinedFarms = isOmnipoolDepositPosition(position)
+          ? position.yield_farm_entries.map((entry) =>
+              entry.global_farm_id.toString(),
+            )
+          : []
+
         return {
-          positionId: position.positionId,
-          ...position.data,
+          poolId: assetId,
+          joinedFarms,
+          ...position,
         }
       })
   }, [assetId, getAssetPositions])
@@ -50,7 +63,23 @@ export const PositionsTable = ({ assetId }: { assetId: string }) => {
 
   return (
     <>
-      <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
+      <Flex align="center" justify="space-between">
+        <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
+        <Button variant="tertiary" outline asChild>
+          <Link
+            to="/liquidity/$id/remove"
+            params={{
+              id: assetId,
+            }}
+            search={{
+              positionId: "all",
+            }}
+          >
+            <Minus />
+            {t("liquidity.positions.removeAll")}
+          </Link>
+        </Button>
+      </Flex>
 
       {(isTablet || isMobile) && <ClaimCard sx={{ mb: 12 }} />}
       <TableContainer as={Paper}>

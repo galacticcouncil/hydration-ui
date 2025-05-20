@@ -1,4 +1,4 @@
-import { XykMath } from "@galacticcouncil/sdk"
+import { PoolToken, XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
   ProgressBar,
@@ -11,13 +11,14 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components"
+import { Logo } from "@/components/Logo"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
   useOmnipoolCapacity,
 } from "@/modules/liquidity/Liquidity.utils"
+import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import { CurrencyReserves } from "./CurrencyReserves"
@@ -30,13 +31,13 @@ export const PoolDetailsValues = ({
   const isOmnipool = !isIsolatedPool(data)
 
   return (
-    <Flex direction="column" gap={getTokenPx("containers.paddings.primary")}>
+    <>
       {isOmnipool ? (
         <OmnipoolValues data={data} />
       ) : (
         <IsolatedPoolValues data={data} />
       )}
-    </Flex>
+    </>
   )
 }
 
@@ -137,13 +138,20 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       {assetAIconId && priceA && assetA && (
         <>
           <ValueStats
-            label={assetA.symbol}
             customValue={
-              <Flex gap={4} align="center">
-                <Logo id={assetAIconId} />
-                <SValueStatsValue>
-                  {t("currency", { value: priceA })}
-                </SValueStatsValue>
+              <Flex gap={4} align="self-start">
+                <Logo id={assetAIconId} sx={{ mt: 4 }} />
+                <Flex
+                  direction="column"
+                  gap={getTokenPx("scales.paddings.s")}
+                  width="100%"
+                >
+                  <SValueStatsValue>
+                    {t("currency", { value: priceA })}
+                  </SValueStatsValue>
+                  <Separator />
+                  <AssetPrice asset={assetA} />
+                </Flex>
               </Flex>
             }
           />
@@ -154,13 +162,20 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       {assetBIconId && priceB && assetB && (
         <>
           <ValueStats
-            label={assetB.symbol}
             customValue={
-              <Flex gap={4} align="center">
-                <Logo id={assetBIconId} />
-                <SValueStatsValue>
-                  {t("currency", { value: priceB })}
-                </SValueStatsValue>
+              <Flex gap={4} align="self-start">
+                <Logo id={assetBIconId} sx={{ mt: 4 }} />
+                <Flex
+                  direction="column"
+                  gap={getTokenPx("scales.paddings.s")}
+                  width="100%"
+                >
+                  <SValueStatsValue>
+                    {t("currency", { value: priceB })}
+                  </SValueStatsValue>
+                  <Separator />
+                  <AssetPrice asset={assetB} />
+                </Flex>
               </Flex>
             }
           />
@@ -189,5 +204,19 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
 
       <Separator mx={-20} />
     </>
+  )
+}
+
+const AssetPrice = ({ asset }: { asset: PoolToken }) => {
+  const { t } = useTranslation("liquidity")
+  const { price } = useAssetPrice(asset.id)
+
+  return (
+    <Text fs="p6" fw={400} color={getToken("text.medium")}>
+      {t("details.values.xyk.price", {
+        value: price,
+        priceSymbol: asset.symbol,
+      })}
+    </Text>
   )
 }

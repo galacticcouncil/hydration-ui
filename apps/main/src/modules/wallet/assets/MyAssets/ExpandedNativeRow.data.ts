@@ -5,7 +5,7 @@ import Big from "big.js"
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
 import { bestNumberQuery } from "@/api/chain"
 import { accountVotesQuery } from "@/api/democracy"
-import { useDisplayAssetPrice } from "@/components"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID, PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 

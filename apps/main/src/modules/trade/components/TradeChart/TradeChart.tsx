@@ -13,7 +13,7 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
-import { useDisplayAssetPrice } from "@/components"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
 import { DATA } from "@/modules/trade/swap/_mock"
 

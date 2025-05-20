@@ -1,16 +1,17 @@
 import { css } from "@emotion/react"
 import { Grid } from "@galacticcouncil/ui/components"
+import { mq } from "@galacticcouncil/ui/theme"
 import { styled } from "@galacticcouncil/ui/utils"
 
 export const SContainer = styled(Grid)<{ isSelectable?: boolean }>(
   ({ theme, isSelectable }) => css`
-    min-width: 250px;
+    min-width: 350px;
     padding: ${isSelectable ? theme.containers.paddings.primary : 0}px;
 
-    column-gap: 30px;
+    column-gap: 10px;
     row-gap: 10px;
     align-items: center;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(200px, auto) minmax(90px, 1fr);
 
     flex: 1;
 
@@ -26,6 +27,10 @@ export const SContainer = styled(Grid)<{ isSelectable?: boolean }>(
     & > [role="separator"] {
       margin: 0 -${theme.containers.paddings.primary}px;
       grid-column: 1 / span 2;
+    }
+
+    ${mq("lg")} {
+      column-gap: 30px;
     }
   `,
 )

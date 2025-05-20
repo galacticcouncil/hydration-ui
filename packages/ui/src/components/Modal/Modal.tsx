@@ -16,6 +16,7 @@ import { Flex, FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
 import { useBreakpoints } from "@/theme"
 
+import { Paper } from "../Paper"
 import {
   SModalBody,
   SModalClose,
@@ -94,6 +95,7 @@ type ModalHeaderProps = Omit<FlexProps, "title"> & {
   customHeader?: ReactNode
   customTitle?: ReactNode
   onBack?: () => void
+  closable?: boolean
 }
 
 const ModalHeader: FC<ModalHeaderProps> = ({
@@ -103,6 +105,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   customHeader,
   customTitle,
   onBack,
+  closable = true,
   ...props
 }: FlexProps & ModalHeaderProps) => {
   const { variant } = useContext(ModalContext)
@@ -145,9 +148,11 @@ const ModalHeader: FC<ModalHeaderProps> = ({
           </ModalTitle>
         )}
 
-        <SModalClose className="close">
-          <X sx={{ width: 20, height: 20 }} />
-        </SModalClose>
+        {closable && (
+          <SModalClose className="close">
+            <X sx={{ width: 20, height: 20 }} />
+          </SModalClose>
+        )}
       </Flex>
 
       {description && <ModalDescription>{description}</ModalDescription>}
@@ -213,12 +218,27 @@ const Modal = ({
   )
 }
 
+const ModalContainer = ({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof ModalRoot> & {
+  className?: string
+}) => (
+  <ModalRoot {...props} modal={false}>
+    <SModalContent sx={{ position: "unset" }} className={className}>
+      <Paper>{children}</Paper>
+    </SModalContent>
+  </ModalRoot>
+)
+
 const ModalContentDivider = SModalContentDivider
 
 export {
   Modal,
   ModalBody,
   ModalClose,
+  ModalContainer,
   ModalContent,
   ModalContentDivider,
   ModalDescription,

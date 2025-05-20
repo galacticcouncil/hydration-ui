@@ -4,7 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { SInvalidAssetHeader } from "@/modules/wallet/assets/Invalid/InvalidAssetModalHeader.styled"
 import { useAssets } from "@/providers/assetsProvider"
 

@@ -3,7 +3,7 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Outlet, useParams } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
+import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
 import { BalancePosition } from "@/modules/liquidity/components/BalancePosition"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
 import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
@@ -27,12 +27,18 @@ export const PoolDetails = () => {
       <Flex gap={20}>
         <Paper sx={{ flex: 1 }}></Paper>
 
-        <Paper width={360} p={getTokenPx("containers.paddings.primary")}>
+        <Paper
+          as={Flex}
+          width={360}
+          p={getTokenPx("containers.paddings.primary")}
+          gap={getTokenPx("containers.paddings.primary")}
+          sx={{ flexDirection: "column" }}
+        >
           <PoolDetailsValues data={data} />
         </Paper>
       </Flex>
 
-      <AvailableFarms />
+      <AvailableFarmsSection />
 
       {omnipool?.isStablePool ? (
         <BalancePosition

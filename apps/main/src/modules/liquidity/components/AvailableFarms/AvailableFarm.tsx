@@ -1,4 +1,4 @@
-import { Cup, Distribution } from "@galacticcouncil/ui/assets/icons"
+import { Distribution } from "@galacticcouncil/ui/assets/icons"
 import {
   Chip,
   Flex,
@@ -13,7 +13,7 @@ import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useAssets } from "@/providers/assetsProvider"
 
 import { SContainer } from "./AvailableFarm.styled"
@@ -96,25 +96,24 @@ export const AvailableFarm = ({
 
       <Flex align="center" gap={8}>
         <Icon
-          component={Cup}
-          color={getToken("text.tint.secondary")}
+          component={Distribution}
+          color={getToken("text.medium")}
           size={20}
         />
         <Text fs={14} fw={500} color={getToken("text.high")}>
-          {t("liquidity.availableFarms.hydrated", {
-            value: 50,
-          })}
+          {t("liquidity.availableFarms.expectedEnd")}
         </Text>
       </Flex>
-      {displayProgressBar ? (
-        <ProgressBar value={10} hideLabel sx={{ flex: 1 }} />
-      ) : null}
 
-      <Separator />
-
-      <Text fs="p5" fw={400} color={getToken("text.medium")}>
-        {t("liquidity.availableFarms.expectedEnd", {
+      <Text
+        fs="p3"
+        fw={500}
+        color={getToken("text.tint.secondary")}
+        sx={{ justifySelf: "end", minWidth: 90 }}
+      >
+        {t("common:date.default", {
           value: new Date("2023-08-29"),
+          format: "dd.MM.yyyy",
         })}
       </Text>
     </SContainer>
