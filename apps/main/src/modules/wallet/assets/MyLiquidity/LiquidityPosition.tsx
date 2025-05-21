@@ -68,7 +68,10 @@ export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <LiquidityPositionActions />
+          <LiquidityPositionActions
+            assetId={asset.id}
+            positionId={position.id}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </SLiquidityPosition>

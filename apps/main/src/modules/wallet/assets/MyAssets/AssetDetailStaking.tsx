@@ -1,6 +1,6 @@
 import { StylizedAdd } from "@galacticcouncil/ui/assets/icons"
 import { Button } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,28 +11,19 @@ type Props = {
 
 export const AssetDetailStaking: FC<Props> = ({ asset }) => {
   const { t } = useTranslation("wallet")
-  const navigate = useNavigate()
 
   if (!asset.canStake) {
     return null
   }
 
   return (
-    <Button
-      type="button"
-      variant="emphasis"
-      outline
-      onClick={(e) => {
-        e.stopPropagation()
-        navigate({
-          to: "/staking",
-        })
-      }}
-    >
-      <StylizedAdd />
-      {t("myAssets.actions.staking", {
-        symbol: asset.symbol,
-      })}
+    <Button type="button" variant="emphasis" outline asChild>
+      <Link to="/staking">
+        <StylizedAdd />
+        {t("myAssets.actions.staking", {
+          symbol: asset.symbol,
+        })}
+      </Link>
     </Button>
   )
 }

@@ -37,7 +37,10 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <LiquidityPositionActions />
+          <LiquidityPositionActions
+            assetId={asset.id}
+            positionId={position.id}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </SLiquidityPositionMobileHeader>
