@@ -2,7 +2,6 @@ import {
   safeConvertAddressSS58,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
-import { HYDRA_ADDRESS_PREFIX } from "@galacticcouncil/web3-connect/src/constants"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
@@ -38,8 +37,7 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       }
 
       const amountScaled = scale(amount, asset.decimals)
-      const normalizedDest =
-        safeConvertAddressSS58(address, HYDRA_ADDRESS_PREFIX) ?? address
+      const normalizedDest = safeConvertAddressSS58(address) ?? address
 
       return createTransaction({
         tx:
