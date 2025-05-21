@@ -7,7 +7,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
-import { BLOCK_TIME, BN_0, BN_1, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { BLOCK_TIME, BN_0, BN_1 } from "utils/constants"
 import { undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
@@ -35,7 +35,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BalanceClient } from "@galacticcouncil/sdk"
 import { useAssetsPrice } from "state/displayPrice"
 
-const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / PARACHAIN_BLOCK_TIME.toNumber() // 48 hours
+const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / 12
 
 type TFarmIds = {
   poolId: string

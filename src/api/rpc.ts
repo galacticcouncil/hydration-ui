@@ -1,21 +1,22 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useRef } from "react"
-import { PARACHAIN_BLOCK_TIME_MS } from "utils/constants"
 import { sleep } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { PingResponse, pingRpc } from "utils/rpc"
+import BN from "bignumber.js"
 
-const rpcStatusQueryOptions = (url: string) => ({
+const rpcStatusQueryOptions = (url: string, slotDuration: string) => ({
   queryKey: QUERY_KEYS.rpcStatus(url),
   queryFn: () => pingRpc(url),
   retry: 0,
-  refetchInterval: PARACHAIN_BLOCK_TIME_MS / 2,
+  refetchInterval: BN(slotDuration).div(2).toNumber(),
   keepPreviousData: true,
   refetchIntervalInBackground: true,
 })
 
-export const useRpcStatus = (url: string) => {
-  return useQuery(rpcStatusQueryOptions(url))
+export const useRpcStatus = (url: string, slotDuration: string) => {
+  return useQuery(rpcStatusQueryOptions(url, slotDuration))
 }
 
 type RpcsStatusOptions = {
@@ -26,11 +27,12 @@ export const useRpcsStatus = (
   urls: string[],
   options: RpcsStatusOptions = {},
 ) => {
+  const { slotDurationMs } = useRpcProvider()
   const pingCacheRef = useRef<Map<string, PingResponse["ping"][]>>(new Map())
 
   return useQueries({
     queries: urls.map((url, index) => ({
-      ...rpcStatusQueryOptions(url),
+      ...rpcStatusQueryOptions(url, slotDurationMs),
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)
