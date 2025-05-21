@@ -22,7 +22,7 @@ module.exports = {
   },
   rules: {
     "react/react-in-jsx-scope": "off",
-    'react/prop-types': "off",
+    "react/prop-types": "off",
     "react/button-has-type": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
@@ -32,8 +32,9 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": [
       "error",
       { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-  ],
-    "react/no-unknown-property": ["error", { "ignore": ["css", "sx"] }],
+    ],
+    "@typescript-eslint/switch-exhaustiveness-check": "error",
+    "react/no-unknown-property": ["error", { ignore: ["css", "sx"] }],
     "no-restricted-imports": [
       "error",
       {

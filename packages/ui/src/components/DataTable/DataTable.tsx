@@ -10,11 +10,13 @@ import {
 } from "@tanstack/react-table"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import {
+  ComponentProps,
+  FC,
   ForwardedRef,
   forwardRef,
   Fragment,
+  ReactNode,
   Ref,
-  useCallback,
   useImperativeHandle,
   useMemo,
 } from "react"
@@ -41,17 +43,19 @@ import {
   useDataTable,
   UseDataTableOwnOptions,
 } from "./DataTable.utils"
+import { ExternalLink } from "@/components/ExternalLink"
 
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
     pageSize?: number
+    pageNumber?: number
     globalFilter?: string
     initialSorting?: SortingState
     sorting?: SortingState
     manualSorting?: boolean
     enableSortingRemoval?: boolean
     data: TData[]
-    noResultsMessage?: string
+    emptyState?: ReactNode
     columns:
       | {
           [K in keyof Required<TData>]: ColumnDef<TData, TData[K]>
@@ -61,11 +65,14 @@ export type DataTableProps<TData extends RowData> = TableProps &
     columnPinning?: ColumnPinningState | undefined
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
+    rowCount?: number
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
     onSortingChange?: OnChangeFn<SortingState>
+    onPageClick?: (number: number) => void
+    getExternalLink?: (item: TData) => string | undefined
   }
 
 export type DataTableRef = {
@@ -83,6 +90,7 @@ const DataTable = forwardRef(
       paginated = false,
       expandable = false,
       pageSize = 20,
+      pageNumber = 1,
       borderless,
       hoverable,
       isLoading,
@@ -93,13 +101,16 @@ const DataTable = forwardRef(
       manualSorting,
       enableSortingRemoval,
       globalFilterFn,
-      noResultsMessage,
+      emptyState,
       columnPinning,
+      rowCount,
       getIsExpandable,
       renderSubComponent,
       renderOverride,
       onRowClick,
       onSortingChange,
+      onPageClick,
+      getExternalLink,
     }: DataTableProps<TData>,
     ref: ForwardedRef<DataTableRef>,
   ) => {
@@ -123,9 +134,13 @@ const DataTable = forwardRef(
       manualSorting,
       enableSortingRemoval,
       globalFilterFn: globalFilterFn ?? "auto",
+      ...(rowCount && {
+        rowCount,
+        manualPagination: true,
+      }),
       initialState: {
         pagination: {
-          pageIndex: 0,
+          pageIndex: pageNumber - 1,
           pageSize,
         },
         sorting: initialSorting,
@@ -184,7 +199,7 @@ const DataTable = forwardRef(
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length || isLoading ? (
               table.getRowModel().rows.map((row) => {
                 const override = isLoading
                   ? renderOverride?.(row.original)
@@ -200,44 +215,59 @@ const DataTable = forwardRef(
 
                 return (
                   <Fragment key={row.id}>
-                    <TableRow
-                      data-expanded={isRowExpanded}
-                      data-selected={row.getIsSelected()}
-                      onClick={() => {
-                        if (isRowExpandable) {
-                          if (expandable === "single" && !isRowExpanded) {
-                            table.resetExpanded()
-                          }
-
-                          row.toggleExpanded()
-                        }
-                        onRowClick?.(row.original)
+                    <DataTableExternalLink
+                      sx={{
+                        display: "contents",
+                        textDecoration: "none",
+                        color: "inherit",
+                        "& td": {
+                          verticalAlign: "middle",
+                        },
                       }}
-                      isExpandable={isRowExpandable}
-                      hasOverride={!!override}
-                      isClickable={!!onRowClick}
+                      href={getExternalLink?.(row.original)}
                     >
-                      {row.getVisibleCells().map((cell) => {
-                        const { meta } = cell.getContext().cell.column.columnDef
-                        const isPinned = cell
-                          .getContext()
-                          .cell.column.getIsPinned()
+                      <TableRow
+                        data-expanded={isRowExpanded}
+                        data-selected={row.getIsSelected()}
+                        onClick={() => {
+                          if (isRowExpandable) {
+                            if (expandable === "single" && !isRowExpanded) {
+                              table.resetExpanded()
+                            }
 
-                        return (
-                          <TableCell
-                            key={cell.id}
-                            className={meta?.className}
-                            sx={meta?.sx}
-                            isPinned={isPinned}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </TableCell>
-                        )
-                      })}
-                      {isRowExpandable && (
+                            row.toggleExpanded()
+                          }
+                          onRowClick?.(row.original)
+                        }}
+                        isExpandable={isRowExpandable}
+                        hasOverride={!!override}
+                        isClickable={!!onRowClick}
+                      >
+                        {row.getVisibleCells().map((cell) => {
+                          const { meta } =
+                            cell.getContext().cell.column.columnDef
+                          const isPinned = cell
+                            .getContext()
+                            .cell.column.getIsPinned()
+
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              className={meta?.className}
+                              sx={meta?.sx}
+                              isPinned={isPinned}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          )
+                        })}
+                      </TableRow>
+                    </DataTableExternalLink>
+                    {isRowExpandable && (
+                      <TableRow>
                         <TableCell>
                           <Flex justify="center" align="center">
                             <Icon
@@ -249,15 +279,15 @@ const DataTable = forwardRef(
                             />
                           </Flex>
                         </TableCell>
-                      )}
-                      {override && (
-                        <TableRowOverride
-                          colSpan={table.getVisibleLeafColumns().length + 1}
-                        >
-                          {override}
-                        </TableRowOverride>
-                      )}
-                    </TableRow>
+                      </TableRow>
+                    )}
+                    {override && (
+                      <TableRowOverride
+                        colSpan={table.getVisibleLeafColumns().length + 1}
+                      >
+                        {override}
+                      </TableRowOverride>
+                    )}
                     {isRowExpandable && renderSubComponent && isRowExpanded && (
                       <TableRow>
                         <TableCell
@@ -271,30 +301,30 @@ const DataTable = forwardRef(
                 )
               })
             ) : (
-              <TableRow>
+              <TableRow isEmptyState>
                 <TableCell colSpan={columns.length}>
-                  {noResultsMessage ?? "No results."}
+                  {emptyState ?? "No results."}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
         {!isLoading && paginated && table.getPageCount() > 1 && (
-          <DataTablePagination table={table} />
+          <DataTablePagination table={table} onPageClick={onPageClick} />
         )}
       </>
     )
   },
 )
 
-DataTable.displayName = "DataTable"
-
 type DataTablePaginationProps<T> = {
   table: TableDef<T>
+  onPageClick?: (number: number) => void
 }
 
 export const DataTablePagination = <T,>({
   table,
+  onPageClick,
 }: DataTablePaginationProps<T>) => {
   const totalPages = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex + 1
@@ -304,8 +334,10 @@ export const DataTablePagination = <T,>({
     [currentPage, totalPages],
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onPageIndexClick = useCallback((i: number) => table.setPageIndex(i), [])
+  const onPageClickHandler = (number: number) => {
+    table.setPageIndex(number - 1)
+    onPageClick?.(number)
+  }
 
   return (
     <Flex gap={6} p={10} justify="center">
@@ -331,10 +363,10 @@ export const DataTablePagination = <T,>({
         ) : (
           <Button
             key={`${index}-page`}
-            width={32}
+            minWidth={32}
             size="small"
             variant={pageNumber === currentPage ? "primary" : "tertiary"}
-            onClick={() => onPageIndexClick(pageNumber - 1)}
+            onClick={() => onPageClickHandler(pageNumber)}
             sx={{ textAlign: "center" }}
           >
             {pageNumber}
@@ -362,3 +394,10 @@ type DataTableComponent = {
 const DataTableWithType = DataTable as unknown as DataTableComponent
 
 export { DataTableWithType as DataTable }
+
+const DataTableExternalLink: FC<ComponentProps<typeof ExternalLink>> = ({
+  href,
+  ...props
+}) => {
+  return href ? <ExternalLink href={href} {...props} /> : props.children
+}

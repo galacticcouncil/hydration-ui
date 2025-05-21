@@ -39,7 +39,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
               fs="p5"
               fw={500}
               color={getToken("text.high")}
-              sx={{ whiteSpace: "nowrap" }}
+              whiteSpace="nowrap"
             >
               {getAssetWithFallback(String(firstRoute.assetIn)).symbol}
             </Text>
@@ -55,7 +55,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
                     fs="p5"
                     fw={500}
                     color={getToken("text.high")}
-                    sx={{ whiteSpace: "nowrap" }}
+                    whiteSpace="nowrap"
                   >
                     {getAssetWithFallback(String(route.assetOut)).symbol}
                   </Text>

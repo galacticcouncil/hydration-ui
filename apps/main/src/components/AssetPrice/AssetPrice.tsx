@@ -45,7 +45,7 @@ export const useDisplayAssetPrice = (
     isValid
       ? t(compact ? "currency.compact" : "currency", {
           value: new Big(value || "0").times(price || "0").toString(),
-          ...(isDollar ? {} : { currency: symbol }),
+          ...(!isDollar && { currency: symbol }),
         })
       : price,
     { isLoading },
