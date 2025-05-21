@@ -3,7 +3,7 @@ import {
   Flex,
   Modal,
   TableRowAction,
-  TableRowActionMobile,
+  TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { AnyChain } from "@galacticcouncil/xcm-core"
@@ -196,7 +196,7 @@ export const useMyAssetsColumns = () => {
 
         return (
           <>
-            <TableRowActionMobile onClick={() => setModal("detail")}>
+            <TableRowDetailsExpand onClick={() => setModal("detail")}>
               <Amount
                 variant="small"
                 value={t("common:number", {
@@ -204,7 +204,7 @@ export const useMyAssetsColumns = () => {
                 })}
                 displayValue={displayPrice}
               />
-            </TableRowActionMobile>
+            </TableRowDetailsExpand>
             <Modal
               open={modal === "detail"}
               onOpenChange={() => setModal(null)}

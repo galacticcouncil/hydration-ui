@@ -1,5 +1,5 @@
 import { Flex, Modal } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
+import { Link, useSearch } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,12 +23,16 @@ export const FormHeader = () => {
   const { t } = useTranslation("trade")
   const [openSettings, setOpenSettings] = useState(false)
 
+  const search = useSearch({ from: "/trade/_history/swap" })
+
   return (
     <SFormHeader justify="space-between" align="center">
       <Flex>
         {swapTabs.map((tab) => (
           <SHeaderTab key={tab} asChild>
-            <Link to={`/trade/swap/${tab}`}>{t(`swap.header.${tab}`)}</Link>
+            <Link to={`/trade/swap/${tab}`} search={search}>
+              {t(`swap.header.${tab}`)}
+            </Link>
           </SHeaderTab>
         ))}
       </Flex>

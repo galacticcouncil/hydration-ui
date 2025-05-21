@@ -12,7 +12,7 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { CancelOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOrderModalContent"
+import { CancelOtcOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOtcOrderModalContent"
 import { AvailableAmount } from "@/modules/trade/otc/fill-order/AvailableAmount"
 import { useFillOrderForm } from "@/modules/trade/otc/fill-order/FillOrderModalContent.form"
 import { useSubmitFillOrder } from "@/modules/trade/otc/fill-order/FillOrderModalContent.submit"
@@ -52,7 +52,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
   if (isSubmitCancelOpen) {
     return (
-      <CancelOrderModalContent
+      <CancelOtcOrderModalContent
         otcOffer={otcOffer}
         onBack={() => setIsSubmitCancelOpen(false)}
         onClose={onClose}
@@ -180,7 +180,9 @@ export const FillOrderModalContent: FC<Props> = ({
               width="100%"
               disabled={!isSubmitEnabled}
             >
-              {isUsersOffer ? t("otc.cancelOrder.cta") : t("otc.fillOrder.cta")}
+              {isUsersOffer
+                ? t("trade.cancelOrder.cta")
+                : t("otc.fillOrder.cta")}
             </Button>
           </ModalFooter>
         </form>
