@@ -189,7 +189,7 @@ export class OmnipoolLiquidityMiningClaimSim {
       .integerValue(BN.ROUND_FLOOR)
       .toString()
 
-    if (!loyaltyCurve.isNone) {
+    if (false) {
       const { initialRewardPercentage, scaleCoef } = loyaltyCurve.unwrap()
 
       loyaltyMultiplier = liquidityMining.calculate_loyalty_multiplier(
