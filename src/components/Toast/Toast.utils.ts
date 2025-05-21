@@ -448,7 +448,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
       queryFn: async () => {
         if (!isLoaded) return null
 
-        const { bridge, xcm, txHash, link } = toastData
+        const { bridge, xcm, txHash, link, isHydraSource } = toastData
 
         const diffInMinutes = differenceInMinutes(
           new Date(),
@@ -471,9 +471,17 @@ export const useBridgeToast = (toasts: ToastData[]) => {
 
         const isEvm =
           link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
-        const isHydrationSource = extractKeyFromURL(link, isEvm) === "hydration"
 
         const pullSnowbridgeToast = (status: number, messageId: string) => {
+          if (status === 0) {
+            toast.editToast(toastData.id, {
+              txHash: messageId,
+              link: `https://app.snowbridge.network/history#${messageId}`,
+            })
+
+            return true
+          }
+
           if (status === 2) {
             toast.add(
               "error",
@@ -498,7 +506,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           }
         }
 
-        if (bridge === "Wormhole" && !isHydrationSource) {
+        if (bridge === "Wormhole" && !isHydraSource) {
           const url = new URL(link)
           const hash = url.hash.split("/").slice(-1)[0]
 
@@ -526,54 +534,54 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           } catch {}
           return false
           // from hydration to eth (not supported by snowbridge indexer)
-        } else if (bridge === "Snowbridge" && isHydrationSource) {
-          if (isEvm) {
-            const ethTx = await api.rpc.eth.getTransactionByHash(txHash)
+        } else if (bridge === "Snowbridge") {
+          let hash =
+            link.includes("snowbridge") || xcm === "evm" ? txHash : undefined
 
-            const blockNumber = ethTx.blockNumber.toString()
+          if (!hash) {
+            if (isEvm) {
+              const ethTx = await api.rpc.eth.getTransactionByHash(txHash)
 
-            const extrinsics = await getExtrinsicByBlockNumber(
-              indexerUrl,
-              Number(blockNumber),
-            )
+              const blockNumber = ethTx.blockNumber.toString()
 
-            const extrinsic = extrinsics?.extrinsics.length
-              ? extrinsics?.extrinsics[0]
-              : undefined
-            const hash = extrinsic?.hash
+              const extrinsics = await getExtrinsicByBlockNumber(
+                indexerUrl,
+                Number(blockNumber),
+              )
 
-            if (hash) {
+              const extrinsic = extrinsics?.extrinsics.length
+                ? extrinsics?.extrinsics[0]
+                : undefined
+
+              hash = extrinsic?.hash
+            } else {
+              const extrinsics = await getExtrinsicByHash(indexerUrl, txHash)
+              const extrinsic = extrinsics?.extrinsics.length
+                ? extrinsics?.extrinsics[0]
+                : undefined
+
+              hash = extrinsic?.hash
+            }
+          }
+
+          if (hash) {
+            if (isHydraSource) {
               const data = await getSnowbridgeStatusToEth(hash)
 
               const { status, messageId } = data.transferStatusToEthereums?.[0]
 
               pullSnowbridgeToast(status, messageId)
-            }
-          } else {
-            const extrinsics = await getExtrinsicByHash(indexerUrl, txHash)
-            const extrinsic = extrinsics?.extrinsics.length
-              ? extrinsics?.extrinsics[0]
-              : undefined
-            const hash = extrinsic?.hash
+            } else {
+              const data = await getSnowbridgeStatusToPolkadot(hash)
 
-            if (hash) {
-              const data = await getSnowbridgeStatusToEth(hash)
-
-              const { status, messageId } = data.transferStatusToEthereums?.[0]
+              const { status, messageId } = data.transferStatusToPolkadots?.[0]
 
               pullSnowbridgeToast(status, messageId)
             }
           }
 
           // from eth to hydration (only through evm wallet)
-        } else if (bridge === "Snowbridge" && xcm === "evm") {
-          const data = await getSnowbridgeStatusToPolkadot(txHash)
-          const { status, messageId } = data.transferStatusToPolkadots?.[0]
-
-          pullSnowbridgeToast(status, messageId)
-
-          return false
-        } else if (bridge === "Wormhole" && isHydrationSource) {
+        } else if (bridge === "Wormhole" && isHydraSource) {
           if (diffInMinutes > 5) {
             toast.add(
               "unknown",

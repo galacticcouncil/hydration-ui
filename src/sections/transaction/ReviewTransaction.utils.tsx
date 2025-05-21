@@ -286,6 +286,7 @@ export const useSendEvmTransactionMutation = (
           bridge,
           hidden: true,
           xcm,
+          isHydraSource: xcallMeta ? xcallMeta.srcChain === "hydration" : true,
         })
 
         setIsBroadcasted(true)
@@ -375,6 +376,7 @@ export const useSendSolanaTransactionMutation = (
           bridge,
           hidden: true,
           xcm,
+          isHydraSource: false,
         })
 
         setIsBroadcasted(true)
@@ -514,6 +516,7 @@ const getTransactionData = (
       ? getXcmTab(metaTags)
       : undefined
 
+  const isHydraSource = true
   const xcm: "substrate" | undefined = xcallMeta ? "substrate" : undefined
 
   return {
@@ -523,6 +526,7 @@ const getTransactionData = (
     link,
     bridge,
     xcm,
+    isHydraSource,
   }
 }
 
@@ -571,10 +575,8 @@ export const useSendDispatchPermit = (
 
           const isInBlock = result.status.type === "InBlock"
 
-          const { txHash, link, bridge, xcm } = getTransactionData(
-            result.txHash.toHex(),
-            xcallMeta,
-          )
+          const { txHash, link, bridge, xcm, isHydraSource } =
+            getTransactionData(result.txHash.toHex(), xcallMeta)
 
           if (result.status.isBroadcast && txHash && !isLoadingNotified) {
             loading({
@@ -585,6 +587,7 @@ export const useSendDispatchPermit = (
               bridge,
               hidden: true,
               xcm,
+              isHydraSource,
             })
 
             isLoadingNotified = true
@@ -740,10 +743,8 @@ export const useSendTransactionMutation = (
               )
             },
             next: (event) => {
-              const { txHash, link, bridge, xcm } = getTransactionData(
-                event.txHash,
-                xcallMeta,
-              )
+              const { txHash, link, bridge, xcm, isHydraSource } =
+                getTransactionData(event.txHash, xcallMeta)
 
               if (event.type === "broadcasted") {
                 setIsBroadcasted(true)
@@ -755,6 +756,7 @@ export const useSendTransactionMutation = (
                   bridge,
                   hidden: true,
                   xcm,
+                  isHydraSource,
                 })
               }
 
@@ -816,10 +818,8 @@ export const useSendTransactionMutation = (
         const unsubscribe = await tx.send(async (result) => {
           if (!result || !result.status) return
 
-          const { txHash, link, bridge, xcm } = getTransactionData(
-            result.txHash.toHex(),
-            xcallMeta,
-          )
+          const { txHash, link, bridge, xcm, isHydraSource } =
+            getTransactionData(result.txHash.toHex(), xcallMeta)
 
           if (result.status.isBroadcast && txHash && !isLoadingNotified) {
             loading({
@@ -830,6 +830,7 @@ export const useSendTransactionMutation = (
               bridge,
               hidden: true,
               xcm,
+              isHydraSource,
             })
 
             isLoadingNotified = true
