@@ -1,4 +1,3 @@
-import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -29,7 +28,7 @@ export const useUnlockNativeLocks = (
       }
 
       const target = account?.address
-        ? safeConvertAddressSS58(account.address, HYDRADX_SS58_PREFIX)
+        ? safeConvertAddressSS58(account.address)
         : null
 
       const batchTx = [

@@ -123,7 +123,7 @@ const Content = ({
             onChange={(v) => setSearch(v.target.value)}
             onKeyDown={handleInputKeyDown}
             ref={inputRef}
-            css={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, px: 0, my: "var(--modal-content-inset)" }}
           />
         }
       />

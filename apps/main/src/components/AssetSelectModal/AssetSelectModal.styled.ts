@@ -20,7 +20,7 @@ export const SOption = styled.div<{ highlighted: boolean }>(
 
     ${highlighted &&
     css`
-      background: ${theme.buttons.secondary.outline.outline};
+      background: ${theme.surfaces.containers.dim.dimOnBg};
     `}
   `,
 )
