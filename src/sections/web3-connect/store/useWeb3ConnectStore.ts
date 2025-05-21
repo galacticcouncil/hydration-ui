@@ -9,6 +9,8 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
+import { safeConvertAddressSS58 } from "utils/formatting"
+import { produce } from "immer"
 
 export enum WalletProviderStatus {
   Connected = "connected",
@@ -185,6 +187,33 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
       name: "web3-connect",
       partialize: (state) => omit(["open"], state),
       version: 5,
+      merge: (persistedState, currentState) => {
+        if (!persistedState) return currentState
+
+        const state = persistedState as WalletProviderStore
+
+        if (safeConvertAddressSS58(state.account?.address, 0)) {
+          const updatedState = produce(state, (draft) => {
+            const updatedDisplayAddress = safeConvertAddressSS58(
+              draft.account?.displayAddress,
+              0,
+            )
+            if (draft.account && updatedDisplayAddress) {
+              draft.account.displayAddress = updatedDisplayAddress
+            }
+          })
+
+          return {
+            ...currentState,
+            ...updatedState,
+          }
+        }
+
+        return {
+          ...currentState,
+          ...state,
+        }
+      },
     },
   ),
 )
